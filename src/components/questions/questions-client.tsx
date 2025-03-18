@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import type { Question, Category } from '@/lib/types/questions'
+import type { Question, Category } from '@/types/questions'
 
 interface QuestionsClientProps {
   initialQuestions: Question[]

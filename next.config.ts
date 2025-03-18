@@ -5,10 +5,15 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'htsnkuudinrcgfqlqmpi.supabase.co',
+        pathname: '/storage/v1/object/public/images/**',
       },
       {
         protocol: 'https',
         hostname: 'www.pathologyoutlines.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.captodayonline.com',
       },
     ],
   },

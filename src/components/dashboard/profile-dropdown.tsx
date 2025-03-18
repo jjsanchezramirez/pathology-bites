@@ -3,9 +3,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { User as LucideUser } from "lucide-react"
-import { User } from "@supabase/supabase-js"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import type { User } from "@supabase/auth-helpers-nextjs"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -18,11 +16,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { supabase } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import ProfileAvatar from "@/components/dashboard/profile-avatar"
 
 interface UserDisplayInfo {
   displayName: string
   email: string
-  avatarUrl?: string
+  avatarUrl?: string | null
 }
 
 export function ProfileDropdown() {
@@ -60,12 +59,17 @@ export function ProfileDropdown() {
     if (!user) {
       return {
         displayName: 'Guest',
-        email: 'guest@example.com'
+        email: 'guest@example.com',
+        avatarUrl: null
       }
     }
 
+    const name = user.user_metadata?.first_name 
+      ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`
+      : user.email?.split('@')[0] || 'User'
+
     return {
-      displayName: user.email ? user.email.split('@')[0] : 'User',
+      displayName: name,
       email: user.email || 'No email provided',
       avatarUrl: user.user_metadata?.avatar_url
     }
@@ -117,18 +121,14 @@ export function ProfileDropdown() {
       <DropdownMenuTrigger asChild>
         <Button 
           variant="ghost" 
-          className="relative h-10 w-10 rounded-full border border-gray-200 hover:bg-gray-100 focus:ring-2 focus:ring-primary"
+          className="relative h-10 w-10 rounded-full"
           disabled={isLoading}
         >
-          <Avatar className="h-10 w-10">
-            <AvatarImage 
-              src={userInfo.avatarUrl || "/avatars/placeholder.png"} 
-              alt={`${userInfo.displayName}'s profile`} 
-            />
-            <AvatarFallback>
-              <LucideUser className="h-5 w-5" />
-            </AvatarFallback>
-          </Avatar>
+          <ProfileAvatar
+            url={userInfo.avatarUrl}
+            name={userInfo.displayName}
+            className="h-10 w-10"
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>

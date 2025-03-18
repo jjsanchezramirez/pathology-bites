@@ -45,7 +45,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import FloatingCharacter from "@/components/landing/dr-albright"
 import { useToast } from "@/hooks/use-toast"
 import { Icons } from "@/components/theme/icons"
-import { submitContactForm } from '@/app/_actions/contact'
+import { submitContactForm } from '@/app/api/contact/contact'
 
 type FormData = {
   requestType: 'technical' | 'general'

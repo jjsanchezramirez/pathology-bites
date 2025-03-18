@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { DIFFICULTY_LABELS, YIELD_LABELS } from '@/types/questions'
 
 interface QuestionFilter {
   search: string
@@ -44,9 +45,11 @@ export function QuestionFilters({ filters, onFilterChange }: QuestionFiltersProp
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">All Difficulties</SelectItem>
-            <SelectItem value="EASY">Easy</SelectItem>
-            <SelectItem value="MEDIUM">Medium</SelectItem>
-            <SelectItem value="HARD">Hard</SelectItem>
+            {Object.entries(DIFFICULTY_LABELS).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
@@ -59,9 +62,11 @@ export function QuestionFilters({ filters, onFilterChange }: QuestionFiltersProp
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">All Yields</SelectItem>
-            <SelectItem value="HIGH_YIELD">High Yield</SelectItem>
-            <SelectItem value="MEDIUM_YIELD">Medium Yield</SelectItem>
-            <SelectItem value="LOW_YIELD">Low Yield</SelectItem>
+            {Object.entries(YIELD_LABELS).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

@@ -16,7 +16,7 @@ const SignUpPage: React.FC = () => {
 
   const handleGoogleSignUp = async () => {
     try {
-      const redirectUrl = `${window.location.origin}/auth/callback`
+      const redirectUrl = `${window.location.origin}/api/auth/callback`
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

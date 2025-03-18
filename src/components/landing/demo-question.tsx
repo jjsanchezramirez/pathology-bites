@@ -35,26 +35,29 @@ function DemoQuestion() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setQuestion({
-        title: "Head & Neck Pathology",
-        body: "A 32-year-old woman presents with a slowly growing, non-tender mass in the right parotid gland that has been present for approximately 8 months. Physical examination reveals a 2.5 cm mobile, well-circumscribed mass. CT imaging shows a well-defined lesion without infiltrative growth or lymphadenopathy. The patient undergoes a superficial parotidectomy. An image is shown below.\n\nWhich of the following is the MOST likely fusion product found in this neoplasm?",
-        image: "https://www.pathologyoutlines.com/imgau/salivaryglandsMECasiry17.jpg",
+        title: "Lymph Node Pathology",
+        body: "A 25-year-old woman presents with an enlarged cervical lymph node that has been slowly growing over the past year. She denies fever, night sweats, or weight loss. Physical examination reveals a single, mobile 3 cm lymph node. CT imaging shows no other lymphadenopathy. The lymph node is excised, and a representative image is shown below.\n\nWhich of the following is the MOST likely diagnosis based on the histologic features?",
+        image: "https://htsnkuudinrcgfqlqmpi.supabase.co/storage/v1/object/public/images//1739651332927-castleman-disease-hyaline-vascular-variant-onion-skinning.png",
         options: [
-          { id: 'a', text: "EWSR1-ATF1", correct: false },
-          { id: 'b', text: "LIFR-PLAG1", correct: false },
-          { id: 'c', text: "HMGA2-NFIB", correct: false },
-          { id: 'd', text: "CRTC1-MAML2", correct: true },
-          { id: 'e', text: "ETV6-NR4A3", correct: false }
+          { id: 'a', text: "Reactive follicular hyperplasia", correct: false },
+          { id: 'b', text: "Hyaline vascular Castleman disease", correct: true },
+          { id: 'c', text: "Nodular lymphocyte predominant Hodgkin lymphoma", correct: false },
+          { id: 'd', text: "Progressive transformation of germinal centers", correct: false },
+          { id: 'e', text: "Angioimmunoblastic T-cell lymphoma", correct: false }
         ],
-        teachingPoint: "CRTC1-MAML2 is the characteristic fusion found in approximately 55-75% of mucoepidermoid carcinomas (MECs). The histologic features in this case - including mucin-containing cells, intermediate cells, and well-formed cystic spaces - are classic for MEC. This fusion is associated with low to intermediate-grade tumors and better prognosis.",
+        teachingPoint: "The histologic features are classic for hyaline vascular Castleman disease (HV-CD), showing characteristic 'onion-skinning' of mantle zone lymphocytes around regressed/hyalinized germinal centers with penetrating hyalinized vessels ('lollipop' follicles). This is the most common variant of unicentric Castleman disease, typically presenting as a single enlarged lymph node in young adults. The presence of these features in a single lymph node without systemic symptoms strongly supports the diagnosis of unicentric HV-CD.",
         incorrectExplanations: {
-          'a': "EWSR1-ATF1: This fusion is characteristic of hyalinizing clear cell carcinoma of salivary glands, which typically shows sheets of monomorphic cells with clear cytoplasm, distinct cell borders, and hyalinized stroma.",
-          'b': "LIFR-PLAG1: This fusion is found in pleomorphic adenomas, which typically show a biphasic pattern with epithelial/myoepithelial cells in a chondromyxoid stroma.",
-          'c': "HMGA2-NFIB: This fusion is also commonly found in pleomorphic adenomas.",
-          'e': "ETV6-NR4A3: This fusion is characteristic of acinic cell carcinomas, which typically show the typical zymogen granules, basophilic cytoplasm, and acinar architecture."
+          'a': "Reactive follicular hyperplasia shows expanded germinal centers with preserved architecture, tingible body macrophages, and a normal mantle zone without the characteristic 'onion-skinning' seen here.",
+          'c': "Nodular lymphocyte predominant Hodgkin lymphoma shows large abnormal lymphocytes ('popcorn cells') in a nodular background of small lymphocytes, without the hyalinized vessels or onion-skinning pattern seen here.",
+          'd': "Progressive transformation of germinal centers shows large nodules composed of small mantle cells with scattered germinal center remnants, but lacks the hyalinized vessels and concentric mantle cell layering characteristic of HV-CD.",
+          'e': "Angioimmunoblastic T-cell lymphoma typically shows effaced architecture with prominent arborizing high endothelial venules, polymorphous infiltrate, and expanded follicular dendritic cell meshwork, features not seen in this case."
         },
+        imageCaption: "Histologic section showing a lymphoid follicle with an atrophic germinal center, penetrating hyalinized vessel, and concentrically arranged mantle zone lymphocytes ('onion-skinning').",
+        comparativeImage: "https://htsnkuudinrcgfqlqmpi.supabase.co/storage/v1/object/public/images//Screenshot%202025-02-19%20at%2012.20.58%20AM.png",
+        comparativeImageCaption: "Comparison of different Castleman disease variants showing key clinical and pathologic features.",
         references: [
-          "https://www.pathologyoutlines.com/topic/salivaryglandsMEC.html",
-          "Toper MH, Sarioglu S. Molecular pathology of salivary gland neoplasms: diagnostic, prognostic, and predictive perspective. Adv Anat Pathol. 2021;28(2):81–93."
+          "Liu AY, Nabel CS, Finkelman BS, et al. Idiopathic multicentric Castleman's disease: a systematic literature review. Lancet Haematol. 2016;3(4):e163-e175.",
+          "https://pubmed.ncbi.nlm.nih.gov/32106302/"
         ]
       });
       setIsLoading(false);
@@ -173,7 +176,7 @@ function DemoQuestion() {
                 <div className="space-y-2">
                   <div className="max-w-full overflow-hidden">
                     <Image
-                      src="https://www.captodayonline.com/wordpress/wp-content/uploads/2021/08/CytoTable_1.gif"
+                      src="https://htsnkuudinrcgfqlqmpi.supabase.co/storage/v1/object/public/images//Screenshot%202025-02-19%20at%2012.20.58%20AM.png"
                       alt="Table showing characteristic genetic changes in salivary gland neoplasms"
                       width={500}
                       height={300}

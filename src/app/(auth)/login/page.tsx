@@ -34,12 +34,12 @@ export default function LoginPage() {
 // src/app/(auth)/login/page.tsx
 const handleGoogleSignIn = async () => {
 
-  console.log("Redirect URL:", `${window.location.origin}/auth/callback`)
+  console.log("Redirect URL:", `${window.location.origin}/api/auth/callback`)
 
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,  // Update this path
+      redirectTo: `${window.location.origin}/api/auth/callback`,  // Update this path
       queryParams: {
         access_type: 'offline',
         prompt: 'consent',
