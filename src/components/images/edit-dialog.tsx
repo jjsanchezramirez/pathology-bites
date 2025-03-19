@@ -30,7 +30,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Loader2, Trash2 } from 'lucide-react';
 import { useImageEdit } from '@/hooks/use-image-edit';
-import { IMAGE_CATEGORIES, type ImageData } from '@/types/images';
+import { IMAGE_CATEGORIES, type ImageData, ImageCategory } from '@/types/images';
+import Image from 'next/image';
 
 interface EditDialogProps {
   image: ImageData | null;
@@ -129,47 +130,62 @@ export function EditImageDialog({
         {image ? (
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Image Preview */}
-            <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
-              <img
+            <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted flex items-center justify-center">
+              <Image
                 src={image.url}
                 alt={formData.alt_text || image.alt_text}
-                className="h-full w-full object-contain"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-contain"
+                priority
               />
             </div>
+
             {/* Description */}
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData(prev => ({ ...prev, description: e.target.value }))
-                }
+                onChange={(e) => {
+                  setFormData({
+                    ...formData,
+                    description: e.target.value
+                  });
+                }}
                 placeholder="Enter a detailed description of the image"
                 className="resize-none"
                 rows={3}
               />
             </div>
+
             {/* Alt Text */}
             <div className="space-y-2">
               <Label htmlFor="alt_text">Alt Text</Label>
               <Input
                 id="alt_text"
                 value={formData.alt_text}
-                onChange={(e) =>
-                  setFormData(prev => ({ ...prev, alt_text: e.target.value }))
-                }
+                onChange={(e) => {
+                  setFormData({
+                    ...formData,
+                    alt_text: e.target.value
+                  });
+                }}
                 placeholder="Enter alternative text for screen readers"
               />
             </div>
+
             {/* Category */}
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label>Category</Label>
               <Select
                 value={formData.category}
-                onValueChange={(value) =>
-                  setFormData(prev => ({ ...prev, category: value }))
-                }
+                onValueChange={(value) => {
+                  setFormData({
+                    ...formData,
+                    category: value as ImageCategory
+                  });
+                }}
               >
                 <SelectTrigger id="category">
                   <SelectValue placeholder="Select a category" />
@@ -183,6 +199,7 @@ export function EditImageDialog({
                 </SelectContent>
               </Select>
             </div>
+
             <DialogFooter className="gap-2 sm:gap-0">
               <Button
                 type="button"

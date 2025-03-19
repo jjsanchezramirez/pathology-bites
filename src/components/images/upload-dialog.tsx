@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Image, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -164,7 +164,7 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               ) : (
                 <>
-                  <Image className="h-8 w-8 mb-2 text-muted-foreground" />
+                  <ImageIcon className="h-8 w-8 mb-2 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
                     {isDragging 
                       ? 'Drop images here'

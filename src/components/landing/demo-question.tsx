@@ -22,6 +22,9 @@ interface Question {
   teachingPoint: string;
   incorrectExplanations: Record<string, string>;
   references: string[];
+  imageCaption: string;
+  comparativeImage: string;
+  comparativeImageCaption: string;
 }
 
 function DemoQuestion() {

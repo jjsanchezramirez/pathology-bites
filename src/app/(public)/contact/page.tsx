@@ -1,38 +1,4 @@
-
-/**
- * @source src/app/(public)/contact/page.tsx
- * Contact page component with form submission and validation.
- * 
- * @component ContactPage
- * @description Renders a contact form with fields for request type, name, organization,
- * email and inquiry. Includes form validation, submission handling, and success/error
- * notifications. Also displays hero section with floating character and Discord community section.
- * 
- * @example
- * ```tsx
- * <ContactPage />
- * ```
- * 
- * @remarks
- * - Uses client-side form validation
- * - Handles form submission through submitContactForm action
- * - Displays toast notifications for success/error states
- * - Includes loading state during submission
- * - Responsive layout with mobile optimization
- * 
- * @typedef {Object} FormData
- * @property {'technical' | 'general'} requestType - Type of contact request
- * @property {string} firstName - User's first name
- * @property {string} lastName - User's last name
- * @property {string} organization - Optional organization name
- * @property {string} email - User's email address
- * @property {string} inquiry - User's message (min 10 characters)
- * 
- * @typedef {Partial<Record<keyof FormData, string>>} FormErrors
- * 
- * @returns {JSX.Element} Rendered contact page with form and sections
- */
-
+// src/app/(public)/contact/page.tsx
 'use client'
 
 import { useState } from 'react'
@@ -58,6 +24,13 @@ type FormData = {
 
 type FormErrors = {
   [K in keyof FormData]?: string
+}
+
+// Update the interface to match Zod's error structure
+interface ZodIssue {
+  path: (string | number)[]  // This is the correct type for Zod path
+  message: string
+  // Other Zod issue properties can be included if needed
 }
 
 export default function ContactPage() {
@@ -101,11 +74,13 @@ export default function ContactPage() {
         })
       } else {
         if (result.details && Array.isArray(result.details)) {
-          // Handle Zod validation errors
+          // Handle Zod validation errors - fix the type here
           const newErrors: FormErrors = {}
-          result.details.forEach((error: any) => {
-            const path = error.path[0]
-            newErrors[path] = error.message
+          result.details.forEach((error: ZodIssue) => {
+            // Safely handle the path - it could be a string or number
+            const pathSegment = error.path[0]
+            const path = String(pathSegment) // Convert to string regardless of type
+            newErrors[path as keyof FormData] = error.message
           })
           setErrors(newErrors)
           
@@ -138,9 +113,16 @@ export default function ContactPage() {
     }
   }
 
+  // Type for Radio Group Value Change Event
+  type RadioChangeEvent = {
+    target: {
+      name: string;
+      value: 'technical' | 'general';
+    }
+  }
+
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | 
-    { target: { name: string; value: 'technical' | 'general' } }
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | RadioChangeEvent
   ) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -158,7 +140,7 @@ export default function ContactPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Hero Section - unchanged */}
+      {/* Hero Section */}
       <section className="relative py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.08),transparent_25%),radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.08),transparent_25%),linear-gradient(to_bottom,rgba(56,189,248,0.05),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-[0.15]" />
@@ -198,7 +180,7 @@ export default function ContactPage() {
                 <RadioGroup
                   name="requestType"
                   value={formData.requestType}
-                  onValueChange={(value) => handleChange({ target: { name: 'requestType', value } } as any)}
+                  onValueChange={(value) => handleChange({ target: { name: 'requestType', value } } as RadioChangeEvent)}
                   className="grid grid-cols-1 md:grid-cols-2 gap-4"
                 >
                   <div className="flex items-center space-x-2">
@@ -321,7 +303,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Community Section - unchanged */}
+      {/* Community Section */}
       <section className="relative py-20">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/5" />
         <div className="container px-4 max-w-3xl mx-auto text-center relative">

@@ -52,7 +52,10 @@ export function SignupForm({ className, onSubmit, onGoogleSignUp }: SignupFormPr
   const onFormSubmit = async (values: FormData) => {
     try {
       setIsLoading(true)
-      const { confirmPassword, ...submitData } = values
+      // Create a new object with all properties except confirmPassword
+      const submitData = Object.fromEntries(
+        Object.entries(values).filter(([key]) => key !== 'confirmPassword')
+      ) as Omit<FormData, "confirmPassword">
       await onSubmit(submitData)
     } finally {
       setIsLoading(false)

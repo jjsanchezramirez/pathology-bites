@@ -16,14 +16,14 @@ export async function createServerSupabase() {
           try {
             cookieStore.set({ name, value, ...options })
           } catch (error) {
-            // Handle error or ignore for static rendering
+            console.error('Error:', error);
           }
         },
         remove(name: string, options: CookieOptions) {
           try {
             cookieStore.delete({ name, ...options })
           } catch (error) {
-            // Handle error or ignore for static rendering
+            console.error('Error:', error);
           }
         },
       },

@@ -30,6 +30,9 @@ import {
   PAGE_SIZE 
 } from '@/types/images';
 
+// Define the valid category values type
+type CategoryFilterType = 'all' | ImageCategory;
+
 // Table Header component with search and filters
 function TableControls({
   onSearch,
@@ -38,9 +41,9 @@ function TableControls({
   categoryFilter,
 }: {
   onSearch: (term: string) => void;
-  onCategoryChange: (category: string) => void;
+  onCategoryChange: (category: CategoryFilterType) => void;
   onUpload: () => void;
-  categoryFilter: string;
+  categoryFilter: CategoryFilterType;
 }) {
   return (
     <div className="flex gap-4 items-center justify-between">
@@ -55,7 +58,7 @@ function TableControls({
         </div>
         <Select 
           value={categoryFilter}
-          onValueChange={onCategoryChange}
+          onValueChange={(value: CategoryFilterType) => onCategoryChange(value)}
         >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Categories" />
@@ -63,7 +66,7 @@ function TableControls({
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
             {Object.entries(IMAGE_CATEGORIES).map(([value, label]) => (
-              <SelectItem key={value} value={value}>{label}</SelectItem>
+              <SelectItem key={value} value={value as ImageCategory}>{label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -157,7 +160,7 @@ export function ImagesTable() {
   const [images, setImages] = useState<ImageData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<'all' | ImageCategory>('all');
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>('all');
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
@@ -257,7 +260,7 @@ export function ImagesTable() {
     setPage(0);
   }, []);
 
-  const handleCategoryChange = useCallback((category: typeof categoryFilter) => {
+  const handleCategoryChange = useCallback((category: CategoryFilterType) => {
     setCategoryFilter(category);
     setPage(0);
   }, []);

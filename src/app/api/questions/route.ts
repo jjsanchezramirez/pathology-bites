@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import type { Database } from '@/lib/types/database'
+import type { Database } from '@/types/supabase'
 
 const questionSchema = z.object({
   body: z.string().min(10, 'Question must be at least 10 characters'),
@@ -23,19 +23,20 @@ export async function POST(request: Request) {
     const validatedData = questionSchema.parse(json)
     
     // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    if (userError) throw userError
-    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error('User is not authenticated');
+
     // Insert the question
     const { data, error } = await supabase
       .from('questions')
       .insert({
         ...validatedData,
-        created_by: user.id,
+        created_by: user.id, // Now TypeScript knows user is not null
         status: 'draft'
       })
       .select()
-      .single()
+      .single();
 
     if (error) throw error
 

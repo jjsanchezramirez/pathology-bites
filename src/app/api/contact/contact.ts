@@ -162,7 +162,7 @@ export async function submitContactForm(formData: ContactFormData) {
       const emailResult = await resend.emails.send({
         from: 'Pathology Bites <contact@pathologybites.com>',
         to: ['jjsanchezramirez@gmail.com'], // Replace with your email
-        reply_to: validatedData.email,
+        replyTo: validatedData.email,
         subject: emailContent.subject,
         text: emailContent.text,
         html: emailContent.html,

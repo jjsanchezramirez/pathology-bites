@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import Image from 'next/image';
 import { 
   Upload, 
   Download, 
@@ -15,6 +16,19 @@ import {
 import Compressor from 'compressorjs';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+// Define CompressorOptions interface
+interface CompressorOptions {
+  quality: number;
+  strict: boolean;
+  checkOrientation: boolean;
+  maxWidth?: number;
+  maxHeight?: number;
+  convertSize?: number;
+  mimeType?: string;
+  success: (result: File) => void;
+  error: (err: Error) => void;
+}
 
 export default function AdvancedImageCompressor() {
   // State management
@@ -62,10 +76,18 @@ export default function AdvancedImageCompressor() {
     setIsProcessing(true);
     
     try {
-      const compressionOptions: any = {
+      const compressionOptions: CompressorOptions = {
         quality,
         strict: false,
         checkOrientation: false,
+        success(result) {
+          setCompressedImage(result);
+          setIsProcessing(false);
+        },
+        error(err) {
+          console.error('Compression error:', err);
+          setIsProcessing(false);
+        }
       };
 
       // Dimension handling
@@ -80,17 +102,7 @@ export default function AdvancedImageCompressor() {
         compressionOptions.mimeType = `image/${outputFormat}`;
       }
 
-      new Compressor(file, {
-        ...compressionOptions,
-        success(result) {
-          setCompressedImage(result);
-          setIsProcessing(false);
-        },
-        error(err) {
-          console.error('Compression error:', err);
-          setIsProcessing(false);
-        }
-      });
+      new Compressor(file, compressionOptions);
     } catch (error) {
       console.error('Error:', error);
       setIsProcessing(false);
@@ -286,48 +298,61 @@ export default function AdvancedImageCompressor() {
         {/* Image Preview and Results */}
         {originalImage && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="font-medium mb-2 flex items-center">
-                  <FileImage className="w-4 h-4 mr-2" /> Original
-                </h3>
-                <div className="border rounded-lg p-2">
-                  <img
-                    src={URL.createObjectURL(originalImage)}
-                    alt="Original"
-                    className="max-w-full h-auto"
-                    onLoad={(e) => {
-                      URL.revokeObjectURL(e.currentTarget.src);
-                    }}
-                  />
-                </div>
-                <p className="text-sm text-gray-600 mt-2">
-                  Size: {formatSize(originalImage.size)}
-                </p>
+            {isProcessing ? (
+              <div className="flex items-center justify-center p-4">
+                <RefreshCcw className="w-6 h-6 animate-spin" />
+                <span className="ml-2">Processing image...</span>
               </div>
-              {compressedImage && (
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium mb-2 flex items-center">
-                    <Download className="w-4 h-4 mr-2" /> Compressed
+                    <FileImage className="w-4 h-4 mr-2" /> Original
                   </h3>
-                  <div className="border rounded-lg p-2">
-                    <img
-                      src={URL.createObjectURL(compressedImage)}
-                      alt="Compressed"
-                      className="max-w-full h-auto"
+                  <div className="border rounded-lg overflow-hidden relative h-48">
+                    <Image
+                      src={URL.createObjectURL(originalImage)}
+                      alt="Original"
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 768px) 100vw, 50vw"
                       onLoad={(e) => {
-                        URL.revokeObjectURL(e.currentTarget.src);
+                        const target = e.target as HTMLImageElement;
+                        URL.revokeObjectURL(target.src);
                       }}
                     />
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
-                    Size: {formatSize(compressedImage.size)}
+                    Size: {formatSize(originalImage.size)}
                   </p>
                 </div>
-              )}
-            </div>
+                {compressedImage && (
+                  <div>
+                    <h3 className="font-medium mb-2 flex items-center">
+                      <Download className="w-4 h-4 mr-2" /> Compressed
+                    </h3>
+                    <div className="border rounded-lg overflow-hidden relative h-48">
+                      <Image
+                        src={URL.createObjectURL(compressedImage)}
+                        alt="Compressed"
+                        fill
+                        className="object-contain"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        onLoad={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          URL.revokeObjectURL(target.src);
+                        }}
+                      />
+                    </div>
+                    <p className="text-sm text-gray-600 mt-2">
+                      Size: {formatSize(compressedImage.size)}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
-            {compressedImage && (
+            {compressedImage && !isProcessing && (
               <div className="text-center space-y-2">
                 <p className="text-lg font-medium">
                   Size Reduction: {calculateReduction()}%

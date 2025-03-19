@@ -1,79 +1,45 @@
-// src/components/questions/questions-client.tsx
+// src/components/questions/question-table/index.tsx
 'use client'
 
-import React, { useState } from 'react'
-import { Plus } from 'lucide-react'
-import { QuestionFilters } from '@/components/questions/question-filters'
-import { QuestionTable } from '@/components/questions/question-table'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import type { Question, Category } from '@/types/questions'
+import { QuestionTableHeader } from '@/components/questions/question-table/question-table-header'
+import { QuestionTableBody } from '@/components/questions/question-table/question-table-body'
+import { QuestionTableEmpty } from '@/components/questions/question-table/question-table-empty'
+import { QuestionTableLoading } from '@/components/questions/question-table/question-table-loading'
+import { Question, Category } from '@/types/questions'
 
-interface QuestionsClientProps {
-  initialQuestions: Question[]
+interface QuestionTableProps {
+  questions: Question[]
+  categoryPaths: Map<number, Category>
+  isLoading: boolean
+  onDelete: (id: string) => void
+  hasFilters: boolean
 }
 
-export function QuestionsClient({ initialQuestions }: QuestionsClientProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [filters, setFilters] = useState({
-    search: '',
-    difficulty: 'ALL',
-    yield: 'ALL'
-  })
-
-  const handleFilterChange = (key: string, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value
-    }))
+export function QuestionTable({
+  questions,
+  categoryPaths,
+  isLoading,
+  onDelete,
+  hasFilters
+}: QuestionTableProps) {
+  if (isLoading) {
+    return <QuestionTableLoading />
   }
 
-  const handleDelete = async (id: string) => {
-    // Would normally make API call here
-    console.log('Deleting question:', id)
+  if (questions.length === 0) {
+    return <QuestionTableEmpty hasFilters={hasFilters} />
   }
-
-  // Convert categories array to Map for the table component
-  const categoryPaths = new Map(
-    initialQuestions.flatMap(q => 
-      q.categories.map(c => [c.id, c])
-    )
-  )
-
-  const hasFilters = filters.search !== '' || 
-    filters.difficulty !== 'ALL' || 
-    filters.yield !== 'ALL'
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Question Bank</CardTitle>
-        <CardDescription>
-          View, filter, and manage all questions in the database
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <QuestionFilters 
-            filters={filters}
-            onFilterChange={handleFilterChange}
-          />
-          
-          <QuestionTable
-            questions={initialQuestions}
-            categoryPaths={categoryPaths}
-            isLoading={isLoading}
-            onDelete={handleDelete}
-            hasFilters={hasFilters}
-          />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="overflow-hidden rounded-md border">
+      <table className="min-w-full divide-y divide-border">
+        <QuestionTableHeader />
+        <QuestionTableBody
+          questions={questions}
+          categoryPaths={categoryPaths}
+          onDelete={onDelete}
+        />
+      </table>
+    </div>
   )
 }

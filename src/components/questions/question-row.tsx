@@ -13,70 +13,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-
-interface Category {
-  id: number
-  name: string
-  level: number
-  parent_id: number | null
-  path: string
-}
-
-interface Image {
-  id: string
-  url: string
-  description: string
-  alt_text: string
-}
-
-interface Question {
-  id: string
-  body: string
-  difficulty: 'EASY' | 'MEDIUM' | 'HARD'
-  rank: 'HIGH_YIELD' | 'MEDIUM_YIELD' | 'LOW_YIELD'
-  categories: Category[]
-  explanation: string
-  reference_text: string | null
-  images: Image[]
-  created_at: string
-  updated_at: string
-}
+import { 
+  Question, 
+  Category, 
+  DIFFICULTY_CONFIG, 
+  YIELD_CONFIG 
+} from '@/types/questions'
 
 interface QuestionRowProps {
   question: Question
   categoryPaths: Map<number, Category>
   onDelete: (questionId: string) => void
 }
-
-const difficultyConfig = {
-  EASY: { 
-    color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300', 
-    short: 'E' 
-  },
-  MEDIUM: { 
-    color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300', 
-    short: 'M' 
-  },
-  HARD: { 
-    color: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300', 
-    short: 'H' 
-  }
-} as const
-
-const yieldConfig = {
-  HIGH_YIELD: { 
-    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300', 
-    short: 'HY' 
-  },
-  MEDIUM_YIELD: { 
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300', 
-    short: 'MY' 
-  },
-  LOW_YIELD: { 
-    color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300', 
-    short: 'LY' 
-  }
-} as const
 
 function getCategoryPathString(category: Category, categoryPaths: Map<number, Category>): string {
   const parts: string[] = [category.name]
@@ -226,8 +174,8 @@ export default function QuestionRow({ question, categoryPaths, onDelete }: Quest
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className={`inline-flex items-center rounded px-1.5 py-0 text-[10px] font-medium ${difficultyConfig[question.difficulty].color}`}>
-                  {difficultyConfig[question.difficulty].short}
+                <span className={`inline-flex items-center rounded px-1.5 py-0 text-[10px] font-medium ${DIFFICULTY_CONFIG[question.difficulty].color}`}>
+                  {DIFFICULTY_CONFIG[question.difficulty].short}
                 </span>
               </TooltipTrigger>
               <TooltipContent>
@@ -242,8 +190,8 @@ export default function QuestionRow({ question, categoryPaths, onDelete }: Quest
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className={`inline-flex items-center rounded px-1.5 py-0 text-[10px] font-medium ${yieldConfig[question.rank].color}`}>
-                  {yieldConfig[question.rank].short}
+                <span className={`inline-flex items-center rounded px-1.5 py-0 text-[10px] font-medium ${YIELD_CONFIG[question.rank].color}`}>
+                  {YIELD_CONFIG[question.rank].short}
                 </span>
               </TooltipTrigger>
               <TooltipContent>

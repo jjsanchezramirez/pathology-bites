@@ -1,5 +1,6 @@
 // src/components/questions/question-table/question-table-body.tsx
 import QuestionRow from '../question-row'
+import { Question, Category } from '@/types/questions'
 
 interface QuestionTableBodyProps {
   questions: Question[]

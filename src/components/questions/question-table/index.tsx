@@ -5,34 +5,7 @@ import { QuestionTableHeader } from './question-table-header'
 import { QuestionTableBody } from './question-table-body'
 import { QuestionTableEmpty } from './question-table-empty'
 import { QuestionTableLoading } from './question-table-loading'
-
-interface Category {
-  id: number
-  name: string
-  level: number
-  parent_id: number | null
-  path: string
-}
-
-interface Image {
-  id: string
-  url: string
-  description: string
-  alt_text: string
-}
-
-interface Question {
-  id: string
-  body: string
-  difficulty: 'EASY' | 'MEDIUM' | 'HARD'
-  rank: 'HIGH_YIELD' | 'MEDIUM_YIELD' | 'LOW_YIELD'
-  categories: Category[]
-  explanation: string
-  reference_text: string | null
-  images: Image[]
-  created_at: string
-  updated_at: string
-}
+import { Question, Category } from '@/types/questions'
 
 interface QuestionTableProps {
   questions: Question[]

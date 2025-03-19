@@ -1,7 +1,7 @@
 // src/components/admin/notifications-handler.tsx
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Bell, Loader2, AlertCircle, Info, ChevronDown, Flag, CheckCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -11,15 +11,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-
-interface NotificationState {
-  id: string
-  user_id: string
-  source_type: 'inquiry' | 'report'
-  source_id: string
-  read: boolean
-  created_at: string
-}
 
 interface BaseNotification {
   id: string
@@ -54,6 +45,27 @@ interface ReportNotification extends BaseNotification {
 
 type Notification = InquiryNotification | ReportNotification
 
+// Define types for the inquiry and report payload
+interface InquiryPayload {
+  id: string
+  first_name: string
+  last_name: string
+  organization?: string
+  request_type: string
+  email: string
+  status: string
+  created_at: string
+}
+
+interface ReportPayload {
+  id: string
+  question_id: string
+  report_type: string
+  reported_by: string
+  status: string
+  created_at: string
+}
+
 const NOTIFICATIONS_PER_PAGE = 10
 
 export function NotificationsHandler() {
@@ -65,12 +77,104 @@ export function NotificationsHandler() {
   const supabase = createClientComponentClient()
   const { toast } = useToast()
 
-  useEffect(() => {
-    loadNotifications()
-    setupSubscriptions()
-  }, [filter])
+  // Handle new inquiry notification
+  const handleNewInquiry = useCallback((inquiry: InquiryPayload) => {
+    if (filter === 'reports') return
 
-  const loadNotifications = async (loadMore = false) => {
+    const notification: InquiryNotification = {
+      id: inquiry.id,
+      type: `${inquiry.request_type}_inquiry` as 'technical_inquiry' | 'general_inquiry',
+      title: `New ${inquiry.request_type.charAt(0).toUpperCase() + inquiry.request_type.slice(1)} Inquiry`,
+      description: `${inquiry.first_name} ${inquiry.last_name} from ${inquiry.organization || 'Unknown Organization'}`,
+      created_at: inquiry.created_at,
+      read: false,
+      metadata: {
+        inquiryId: inquiry.id,
+        requestType: inquiry.request_type,
+        email: inquiry.email,
+        status: inquiry.status
+      }
+    }
+    
+    setNotifications(prev => [notification, ...prev])
+    
+    toast({
+      title: notification.title,
+      description: notification.description,
+    })
+  }, [filter, toast]);
+
+  // Handle new report notification
+  const handleNewReport = useCallback(async (report: ReportPayload) => {
+    if (filter === 'inquiries') return
+
+    // Fetch question details
+    const { data: question } = await supabase
+      .from('questions')
+      .select('title')
+      .eq('id', report.question_id)
+      .single()
+
+    const notification: ReportNotification = {
+      id: report.id,
+      type: 'question_report',
+      title: 'New Question Report',
+      description: `Report: ${report.report_type} for "${question?.title}"`,
+      created_at: report.created_at,
+      read: false,
+      metadata: {
+        reportId: report.id,
+        questionId: report.question_id,
+        reportType: report.report_type,
+        reportedBy: report.reported_by,
+        status: report.status
+      }
+    }
+    
+    setNotifications(prev => [notification, ...prev])
+    
+    toast({
+      title: notification.title,
+      description: notification.description,
+    })
+  }, [filter, supabase, toast]);
+
+  // Setup subscriptions
+  const setupSubscriptions = useCallback(() => {
+    // Subscribe to new inquiries
+    const inquiriesSubscription = supabase
+      .channel('inquiries-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'inquiries'
+        },
+        payload => handleNewInquiry(payload.new as InquiryPayload)
+      )      
+
+    // Subscribe to new reports
+    const reportsSubscription = supabase
+      .channel('reports-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'question_reports'
+        },
+        payload => handleNewReport(payload.new as ReportPayload)
+      )      
+
+    return () => {
+      supabase.removeChannel(inquiriesSubscription)
+      supabase.removeChannel(reportsSubscription)
+    }
+  }, [supabase, handleNewInquiry, handleNewReport]);
+
+  // Load notifications
+  const loadNotifications = useCallback(async (loadMore = false) => {
     try {
       setLoading(true)
       const currentPage = loadMore ? page + 1 : 0
@@ -175,103 +279,15 @@ export function NotificationsHandler() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filter, page, supabase, toast]);
 
-  const setupSubscriptions = () => {
-    // Subscribe to new inquiries
-    const inquiriesSubscription = supabase
-      .channel('inquiries-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'inquiries'
-        },
-        payload => handleNewInquiry(payload.new)
-      )
-      .subscribe()
+  // Initialize notifications and subscriptions
+  useEffect(() => {
+    loadNotifications();
+    return setupSubscriptions();
+  }, [filter, loadNotifications, setupSubscriptions]);
 
-    // Subscribe to new reports
-    const reportsSubscription = supabase
-      .channel('reports-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'question_reports'
-        },
-        payload => handleNewReport(payload.new)
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(inquiriesSubscription)
-      supabase.removeChannel(reportsSubscription)
-    }
-  }
-
-  const handleNewInquiry = async (inquiry: any) => {
-    if (filter === 'reports') return
-
-    const notification: InquiryNotification = {
-      id: inquiry.id,
-      type: `${inquiry.request_type}_inquiry` as 'technical_inquiry' | 'general_inquiry',
-      title: `New ${inquiry.request_type.charAt(0).toUpperCase() + inquiry.request_type.slice(1)} Inquiry`,
-      description: `${inquiry.first_name} ${inquiry.last_name} from ${inquiry.organization || 'Unknown Organization'}`,
-      created_at: inquiry.created_at,
-      read: false,
-      metadata: {
-        inquiryId: inquiry.id,
-        requestType: inquiry.request_type,
-        email: inquiry.email,
-        status: inquiry.status
-      }
-    }
-    
-    setNotifications(prev => [notification, ...prev])
-    
-    toast({
-      title: notification.title,
-      description: notification.description,
-    })
-  }
-
-  const handleNewReport = async (report: any) => {
-    if (filter === 'inquiries') return
-
-    // Fetch question details
-    const { data: question } = await supabase
-      .from('questions')
-      .select('title')
-      .eq('id', report.question_id)
-      .single()
-
-    const notification: ReportNotification = {
-      id: report.id,
-      type: 'question_report',
-      title: 'New Question Report',
-      description: `Report: ${report.report_type} for "${question?.title}"`,
-      created_at: report.created_at,
-      read: false,
-      metadata: {
-        reportId: report.id,
-        questionId: report.question_id,
-        reportType: report.report_type,
-        reportedBy: report.reported_by,
-        status: report.status
-      }
-    }
-    
-    setNotifications(prev => [notification, ...prev])
-    
-    toast({
-      title: notification.title,
-      description: notification.description,
-    })
-  }
-
+  // Mark notification as read
   const markAsRead = async (notification: Notification) => {
     try {
       const { data: user } = await supabase.auth.getUser()
@@ -358,8 +374,9 @@ export function NotificationsHandler() {
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="w-[400px] max-h-[85vh]" // Increased width and max height
+        className="w-[400px] max-h-[85vh]"
       >
+        {/* Component content remains the same */}
         <div className="px-2 py-3 border-b">
           <div className="flex items-center justify-between mb-2">
             <h2 className="font-semibold">Notifications</h2>

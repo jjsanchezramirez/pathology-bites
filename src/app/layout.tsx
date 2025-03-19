@@ -22,10 +22,10 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   // Initialize Supabase with await on cookies
-  const cookieStore = await cookies()
+  const cookieStore = cookies();
   const supabase = createServerComponentClient({
-    cookies: () => cookieStore
-  })
+    cookies: async () => cookieStore
+  });  
 
   try {
     // Perform initial session check

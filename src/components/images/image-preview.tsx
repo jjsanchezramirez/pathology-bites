@@ -1,7 +1,9 @@
+// src/components/images/image-preview.tsx
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface Position {
   top: number;
@@ -32,8 +34,8 @@ export function ImagePreview({
   const [position, setPosition] = useState<Position>({ top: 0, left: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
-  const showTimeoutRef = useRef<number>();
-  const hideTimeoutRef = useRef<number>();
+  const showTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const calculatePosition = useCallback(() => {
     if (!containerRef.current || !previewRef.current) return null;
@@ -68,10 +70,10 @@ export function ImagePreview({
 
   const handleShowPreview = useCallback(() => {
     if (hideTimeoutRef.current) {
-      window.clearTimeout(hideTimeoutRef.current);
+      clearTimeout(hideTimeoutRef.current);
     }
     
-    showTimeoutRef.current = window.setTimeout(() => {
+    showTimeoutRef.current = setTimeout(() => {
       setIsPreviewVisible(true);
       requestAnimationFrame(() => {
         updatePosition();
@@ -81,10 +83,10 @@ export function ImagePreview({
 
   const handleHidePreview = useCallback(() => {
     if (showTimeoutRef.current) {
-      window.clearTimeout(showTimeoutRef.current);
+      clearTimeout(showTimeoutRef.current);
     }
     
-    hideTimeoutRef.current = window.setTimeout(() => {
+    hideTimeoutRef.current = setTimeout(() => {
       setIsPreviewVisible(false);
     }, 100);
   }, []);
@@ -114,10 +116,10 @@ export function ImagePreview({
   useEffect(() => {
     return () => {
       if (showTimeoutRef.current) {
-        window.clearTimeout(showTimeoutRef.current);
+        clearTimeout(showTimeoutRef.current);
       }
       if (hideTimeoutRef.current) {
-        window.clearTimeout(hideTimeoutRef.current);
+        clearTimeout(hideTimeoutRef.current);
       }
     };
   }, []);
@@ -147,14 +149,16 @@ export function ImagePreview({
         tabIndex={0}
         aria-label={`View ${alt}`}
       >
-        <img
+        <Image
           src={src}
           alt={alt}
+          fill
           className={cn(
-            "w-full h-full object-cover",
+            "object-cover",
             "transition-transform duration-200",
             "hover:scale-105"
           )}
+          sizes={`(max-width: 768px) ${size === 'sm' ? '64px' : size === 'md' ? '96px' : '128px'}, ${size === 'sm' ? '64px' : size === 'md' ? '96px' : '128px'}`}
         />
       </div>
 
@@ -182,9 +186,11 @@ export function ImagePreview({
               }
             }
           `}</style>
-          <img 
+          <Image 
             src={src} 
             alt={alt}
+            width={300}
+            height={300}
             className="max-w-[300px] max-h-[300px] w-auto h-auto object-contain rounded-xl"
           />
         </div>
@@ -208,10 +214,12 @@ export function ImagePreview({
             <DialogTitle>{alt}</DialogTitle>
           </VisuallyHidden>
 
-          <img
-            src={src}
+          <Image 
+            src={src} 
             alt={alt}
-            className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg"
+            width={800}
+            height={800}
+            className="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain rounded-xl"
           />
         </DialogContent>
       </Dialog>

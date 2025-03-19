@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     if (code) {
       // Await cookies before using them
-      const cookieStore = await cookies()
+      const cookieStore = cookies()
       const supabase = createRouteHandlerClient({ 
         cookies: () => cookieStore 
       })

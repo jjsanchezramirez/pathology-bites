@@ -37,7 +37,7 @@ const ERROR_CONTENT = {
   ]
 } as const;
 
-const getRandomElement = <T,>(arr: T[]): T => 
+const getRandomElement = <T,>(arr: readonly T[]): T => 
   arr[Math.floor(Math.random() * arr.length)];
 
 export default function ErrorPage({ 
@@ -49,11 +49,18 @@ export default function ErrorPage({
     // Log error
     console.error('Page Error:', error);
     
-    // Announce error to screen readers
-    const message = `Error occurred: ${error.message}`;
+    // Create and use the error message for screen readers
+    const errorMessage = `Error occurred: ${error.message}`;
+    
+    // You could use this with an aria-live region if needed
+    // For now, just focus the error message element
     if (typeof window !== 'undefined') {
       window.setTimeout(() => {
-        document.getElementById('error-message')?.focus();
+        const errorElement = document.getElementById('error-message');
+        if (errorElement) {
+          errorElement.setAttribute('aria-label', errorMessage);
+          errorElement.focus();
+        }
       }, 100);
     }
   }, [error]);

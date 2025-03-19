@@ -45,7 +45,7 @@ type RandomContent = {
   buttonText: string;
 };
 
-const getRandomElement = <T,>(arr: T[]): T => 
+const getRandomElement = <T,>(arr: readonly T[]): T => 
   arr[Math.floor(Math.random() * arr.length)];
 
 const generateRandomContent = (): RandomContent => ({

@@ -40,7 +40,7 @@ const SignUpPage: React.FC = () => {
         throw error
       }
       
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -109,7 +109,8 @@ const SignUpPage: React.FC = () => {
       }
   
       router.push("/verify-email")
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
+      console.error('Error:', error);
       toast({
         variant: "destructive",
         description: "Something went wrong. Please try again."

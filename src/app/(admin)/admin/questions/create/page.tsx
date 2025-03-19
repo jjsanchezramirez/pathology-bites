@@ -9,7 +9,18 @@ import Link from 'next/link';
 export default function CreateQuestionPage() {
   const router = useRouter();
 
-  const handleSubmit = async (data: any) => {
+  // Define an interface for the form data
+  interface QuestionFormData {
+    body: string;
+    difficulty: string;
+    yield: string;
+    explanation: string;
+    reference_text?: string;
+    categories: string[];
+    // Add any other fields that might be in your form
+  }
+
+  const handleSubmit = async (data: QuestionFormData) => {
     try {
       const response = await fetch('/api/questions', {
         method: 'POST',
