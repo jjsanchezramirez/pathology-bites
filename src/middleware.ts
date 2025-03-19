@@ -1,3 +1,4 @@
+// src/middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
@@ -11,7 +12,7 @@ export async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname
 
     // Auth callback bypass
-    if (pathname === 'api/auth/callback') {
+    if (pathname.includes('/api/auth/callback')) {
       return res
     }
 
@@ -91,13 +92,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/admin',
     '/admin/:path*',
-    '/dashboard',
     '/dashboard/:path*',
-    //'/login',
-    //'/signup',
-    //'/reset-password',
-    //'/api/auth/callback'
+    '/login',
+    '/signup',
+    '/reset-password'
   ]
 }

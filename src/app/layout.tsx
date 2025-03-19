@@ -21,18 +21,15 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Initialize Supabase with await on cookies
-  const cookieStore = cookies();
-  const supabase = createServerComponentClient({
-    cookies: async () => cookieStore
-  });  
-
-  try {
-    // Perform initial session check
-    await supabase.auth.getSession()
-  } catch (error) {
-    console.error('Error checking session:', error)
-  }
+  // Create a simple server component client (we don't need to await anything here)
+  const cookieStore = cookies()
+  
+  // We're not using the Supabase client here directly, just creating it
+  // to initialize the cookie handling. The actual session check will happen 
+  // in the middleware for protected routes.
+  createServerComponentClient({
+    cookies: () => cookieStore
+  })
 
   return (
     <html lang="en" suppressHydrationWarning>

@@ -1,5 +1,6 @@
 // src/lib/supabase/client.ts
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import type { Database } from '@/types/supabase'
 
-// Remove the parameters - they're causing the cookie issue
-export const supabase = createClientComponentClient()
+// Create a type-safe client with the Database type
+export const supabase = createClientComponentClient<Database>()
