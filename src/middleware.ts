@@ -95,9 +95,9 @@ export const config = {
     '/admin/:path*',
     '/dashboard',
     '/dashboard/:path*',
-    '/login',
-    '/signup',
-    '/reset-password',
-    '/api/auth/callback'
+    //'/login',
+    //'/signup',
+    //'/reset-password',
+    //'/api/auth/callback'
   ]
 }

@@ -1,11 +1,5 @@
 // src/lib/supabase/client.ts
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
-const createClient = () => {
-  return createClientComponentClient({
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  })
-}
-
-export const supabase = createClient()
+// Remove the parameters - they're causing the cookie issue
+export const supabase = createClientComponentClient()
