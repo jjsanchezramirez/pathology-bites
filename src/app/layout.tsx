@@ -1,7 +1,7 @@
 // src/app/layout.tsx
 import { cookies } from 'next/headers'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { ThemeProvider } from '@/components/theme/theme-provider'
+import { ConditionalThemeProvider } from '@/components/theme/conditional-theme-provider'
 import { Toaster } from "@/components/ui/toaster"
 import { cn } from '@/lib/utils'
 import '@/styles/globals.css'
@@ -21,10 +21,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Create a server component client properly with await
+  // Create a simple server component client (we don't need to await anything here)
   const cookieStore = cookies()
   
-  // Ensure Supabase client is initialized correctly
+  // Initialize Supabase client for cookie handling (session checks happen in middleware)
   createServerComponentClient({
     cookies: () => cookieStore
   })
@@ -32,12 +32,12 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-sans antialiased')}>
-        <ThemeProvider attribute="class" defaultTheme="system">
+        <ConditionalThemeProvider attribute="class" defaultTheme="light">
           <div className="relative flex min-h-screen flex-col">
             {children}
           </div>
           <Toaster />
-        </ThemeProvider>
+        </ConditionalThemeProvider>
       </body>
     </html>
   )
