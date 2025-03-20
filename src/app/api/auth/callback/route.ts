@@ -9,23 +9,26 @@ export async function GET(request: NextRequest) {
   try {
     const requestUrl = new URL(request.url)
     const code = requestUrl.searchParams.get('code')
+    const type = requestUrl.searchParams.get('type')
 
     if (code) {
-      // Create Supabase client for route handler
       const cookieStore = cookies()
       const supabase = createRouteHandlerClient({ 
         cookies: () => cookieStore
       })
       
-      // Exchange code for session
       await supabase.auth.exchangeCodeForSession(code)
 
-      // Redirect back to appropriate page
-      const redirectTo = requestUrl.searchParams.get('next') || '/dashboard'
-      return NextResponse.redirect(new URL(redirectTo, request.url))
+      // Handle different callback types
+      if (type === 'recovery') {
+        return NextResponse.redirect(new URL('/reset-password', request.url))
+      }
+      
+      // Default redirect for normal sign-in
+      return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 
-    // If no code, redirect to login
+    // No code present
     return NextResponse.redirect(new URL('/login', request.url))
   } catch (error) {
     console.error('Auth callback error:', error)

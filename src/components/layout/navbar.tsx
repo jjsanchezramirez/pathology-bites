@@ -1,11 +1,4 @@
-/**
- * @source src/components/layout/navbar.tsx
- * 
- * This component renders the navigation bar for the application.
- * It includes links to the home page, login page, and signup page.
- * The navigation bar is fixed at the top of the page and has a responsive design.
- */
-
+// src/components/layout/navbar.tsx
 'use client'
 
 import { Button } from "@/components/ui/button"

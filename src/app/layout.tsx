@@ -21,12 +21,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Create a simple server component client (we don't need to await anything here)
+  // Create a server component client properly with await
   const cookieStore = cookies()
   
-  // We're not using the Supabase client here directly, just creating it
-  // to initialize the cookie handling. The actual session check will happen 
-  // in the middleware for protected routes.
+  // Ensure Supabase client is initialized correctly
   createServerComponentClient({
     cookies: () => cookieStore
   })
