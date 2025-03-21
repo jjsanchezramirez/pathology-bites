@@ -81,7 +81,7 @@ const SignUpPage: React.FC = () => {
             last_name: values.lastName,
             user_type: values.userType,
           },
-          emailRedirectTo: `${window.location.origin}/confirm`
+          emailRedirectTo: `${window.location.origin}/email-verified`
         },
       })
   

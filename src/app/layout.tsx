@@ -1,6 +1,4 @@
-// src/app/layout.tsx
-import { cookies } from 'next/headers'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+// src/app/layout.tsx - Updated version
 import { ConditionalThemeProvider } from '@/components/theme/conditional-theme-provider'
 import { Toaster } from "@/components/ui/toaster"
 import { cn } from '@/lib/utils'
@@ -21,14 +19,8 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Create a simple server component client (we don't need to await anything here)
-  const cookieStore = cookies()
-  
-  // Initialize Supabase client for cookie handling (session checks happen in middleware)
-  createServerComponentClient({
-    cookies: () => cookieStore
-  })
-
+  // Don't try to initialize Supabase here at all since middleware handles auth
+  // Just render the layout
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-sans antialiased')}>
