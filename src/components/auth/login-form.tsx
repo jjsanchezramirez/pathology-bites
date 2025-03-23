@@ -139,29 +139,36 @@ export function LoginForm({
               </div>
               <div className="grid gap-6">
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" id="email-label">Email</Label>
                   <Input
                     id="email"
                     {...register("email")}
                     type="email"
                     autoComplete="email"
-                    placeholder="m@example.com"
+                    placeholder="name@example.com"
                     aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? "email-error" : undefined}
+                    aria-labelledby="email-label"
                     disabled={isLoading}
                   />
                   {errors.email && (
-                    <p className="text-sm text-destructive" role="alert">
+                    <p 
+                      className="text-sm text-destructive" 
+                      role="alert"
+                      id="email-error"
+                    >
                       {errors.email.message}
                     </p>
                   )}
                 </div>
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password" id="password-label">Password</Label>
                     <Link
                       href="/forgot-password"
                       className="text-sm text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
                       tabIndex={0}
+                      aria-label="Forgot password? Click to reset"
                     >
                       Forgot password?
                     </Link>
@@ -172,10 +179,16 @@ export function LoginForm({
                     type="password"
                     autoComplete="current-password"
                     aria-invalid={!!errors.password}
+                    aria-describedby={errors.password ? "password-error" : undefined}
+                    aria-labelledby="password-label"
                     disabled={isLoading}
                   />
                   {errors.password && (
-                    <p className="text-sm text-destructive" role="alert">
+                    <p 
+                      className="text-sm text-destructive" 
+                      role="alert"
+                      id="password-error"
+                    >
                       {errors.password.message}
                     </p>
                   )}

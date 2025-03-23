@@ -81,7 +81,7 @@ const SignUpPage: React.FC = () => {
             last_name: values.lastName,
             user_type: values.userType,
           },
-          emailRedirectTo: `${window.location.origin}/email-verified`
+          emailRedirectTo: `${window.location.origin}/api/auth/callback?type=signup_confirmation&next=/email-verified`
         },
       })
   
@@ -107,6 +107,10 @@ const SignUpPage: React.FC = () => {
       }
   
       router.push("/verify-email")
+      // Store email for resend functionality
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('pendingVerificationEmail', values.email)
+      }
     } catch (error: Error | unknown) {
       console.error('Error:', error);
       toast({

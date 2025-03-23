@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Icons } from "@/components/theme/icons"
+import { PasswordRequirements } from "@/components/auth/password-requirements"
+import { PasswordStrength } from "@/components/auth/password-strength"
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -23,6 +25,9 @@ const formSchema = z.object({
   message: "Passwords do not match",
   path: ["confirmPassword"],
 })
+
+const [password, setPassword] = useState("")
+const [passwordFocused, setPasswordFocused] = useState(false)
 
 type FormData = z.infer<typeof formSchema>
 
@@ -52,6 +57,21 @@ export function SignupForm({ className, onSubmit, onGoogleSignUp }: SignupFormPr
   const onFormSubmit = async (values: FormData) => {
     try {
       setIsLoading(true)
+      // First check if the email exists in the users table
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('email')
+        .eq('email', values.email)
+        .single()
+
+      if (existingUser) {
+        // Change from toast to inline error
+        setError("email", { 
+          type: "manual", 
+          message: "This email address is already registered. Please sign in instead." 
+        });
+        return;
+      }
       // Create a new object with all properties except confirmPassword
       const submitData = Object.fromEntries(
         Object.entries(values).filter(([key]) => key !== 'confirmPassword')
@@ -162,9 +182,23 @@ export function SignupForm({ className, onSubmit, onGoogleSignUp }: SignupFormPr
                 type="password"
                 autoComplete="new-password"
                 {...register("password")}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  register("password").onChange(e);
+                }}
+                onFocus={() => setPasswordFocused(true)}
+                onBlur={(e) => {
+                  register("password").onBlur(e);
+                  // Keep requirements visible if there's text but not if empty
+                  if (!e.target.value) {
+                    setPasswordFocused(false);
+                  }
+                }}
                 aria-invalid={!!errors.password}
                 disabled={isLoading}
               />
+              <PasswordRequirements password={password} visible={passwordFocused || !!errors.password} />
+              <PasswordStrength password={password} />
               {errors.password && (
                 <p className="text-sm text-destructive" role="alert">{errors.password.message}</p>
               )}
