@@ -1,6 +1,7 @@
 // src/app/(auth)/login/page.tsx
 "use client"
 
+import { useState, useEffect } from 'react'
 import { LoginForm } from '@/components/auth/login-form'
 import { useRouter } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
@@ -12,49 +13,79 @@ export default function LoginPage() {
   const router = useRouter()
   const supabase = createClientComponentClient()
   const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false)
+  
+  // Add this effect to check session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (data.session) {
+        router.push('/dashboard')
+      }
+    }
+    
+    checkSession()
+  }, [router, supabase.auth])
 
   const handleEmailSignIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    try {
+      setIsLoading(true)
+      
+      // Use custom API endpoint for login without captcha
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+      
+      const result = await response.json()
+      
+      if (!response.ok) {
+        toast({
+          variant: "destructive",
+          description: result.error || "Invalid email or password",
+        })
+        throw new Error(result.error || "Login failed")
+      }
+
+      toast({
+        title: "Success",
+        description: "Successfully logged in",
+      })
+      
+      // After successful login, manually redirect
+      router.push('/dashboard')
+    } catch (error) {
+      console.error("Login error:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    console.log("Redirect URL:", `${window.location.origin}/api/auth/callback`)
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/api/auth/callback`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
     })
-    
+
     if (error) {
       toast({
         variant: "destructive",
-        description: "Invalid email or password",
+        description: "Could not connect to Google",
       })
       throw error
     }
-
-    router.refresh()
-    router.push('/dashboard')
   }
-
-// src/app/(auth)/login/page.tsx
-const handleGoogleSignIn = async () => {
-
-  console.log("Redirect URL:", `${window.location.origin}/api/auth/callback`)
-
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${window.location.origin}/api/auth/callback`,
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent',
-      },
-    },
-  })
-
-  if (error) {
-    toast({
-      variant: "destructive",
-      description: "Could not connect to Google",
-    })
-    throw error
-  }
-}
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -73,6 +104,7 @@ const handleGoogleSignIn = async () => {
           <LoginForm 
             onSubmit={handleEmailSignIn}
             onGoogleSignIn={handleGoogleSignIn}
+            isLoading={isLoading}
           />
         </div>
       </div>

@@ -1,6 +1,14 @@
 // src/lib/supabase/client.ts
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import type { Database } from '@/types/supabase'
 
-// Create a type-safe client with the Database type
-export const supabase = createClientComponentClient<Database>()
+export const supabase = createClientComponentClient({
+  cookieOptions: {
+    name: 'sb-auth', // Custom cookie name
+    lifetime: 60 * 60 * 8, // 8 hours
+    domain: process.env.NODE_ENV === 'production' 
+      ? process.env.COOKIE_DOMAIN 
+      : 'localhost',
+    path: '/',
+    sameSite: 'lax'
+  }
+})

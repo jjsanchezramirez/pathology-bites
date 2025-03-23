@@ -1,6 +1,7 @@
+// src/components/auth/signup-form.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -13,6 +14,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Icons } from "@/components/theme/icons"
 import { PasswordRequirements } from "@/components/auth/password-requirements"
 import { PasswordStrength } from "@/components/auth/password-strength"
+import { supabase } from '@/lib/supabase/client'
+import Script from 'next/script'
+
+// Define type for reCAPTCHA Enterprise global
+declare global {
+  interface Window {
+    grecaptcha: {
+      enterprise: {
+        ready: (callback: () => void) => void
+        execute: (siteKey: string, options: { action: string }) => Promise<string>
+      }
+    }
+  }
+}
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -26,27 +41,29 @@ const formSchema = z.object({
   path: ["confirmPassword"],
 })
 
-const [password, setPassword] = useState("")
-const [passwordFocused, setPasswordFocused] = useState(false)
-
 type FormData = z.infer<typeof formSchema>
 
 interface SignupFormProps {
   className?: string
-  onSubmit: (values: Omit<FormData, "confirmPassword">) => Promise<void>
+  onSubmit: (values: Omit<FormData, "confirmPassword">, captchaToken?: string) => Promise<void>
   onGoogleSignUp?: () => Promise<void>
 }
 
 export function SignupForm({ className, onSubmit, onGoogleSignUp }: SignupFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [password, setPassword] = useState("")
+  const [passwordFocused, setPasswordFocused] = useState(false)
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false)
+  const recaptchaSiteKey = '6Lc0j_0qAAAAAPYTZIIVdNvJXX4hmZ6brnhk60ga' // Your site key
   
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
-    watch
+    watch,
+    setError
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,9 +71,47 @@ export function SignupForm({ className, onSubmit, onGoogleSignUp }: SignupFormPr
     }
   })
 
+  // Handle reCAPTCHA script loading
+  const handleRecaptchaLoad = () => {
+    window.grecaptcha?.enterprise.ready(() => {
+      setRecaptchaLoaded(true)
+    })
+  }
+
+  // Function to execute reCAPTCHA
+  const executeRecaptcha = async (action: string): Promise<string | null> => {
+    if (!recaptchaLoaded || !window.grecaptcha?.enterprise) {
+      console.error('reCAPTCHA Enterprise not loaded')
+      return null
+    }
+    
+    try {
+      const token = await window.grecaptcha.enterprise.execute(
+        recaptchaSiteKey,
+        { action }
+      )
+      return token
+    } catch (error) {
+      console.error('reCAPTCHA execution error:', error)
+      return null
+    }
+  }
+
   const onFormSubmit = async (values: FormData) => {
     try {
       setIsLoading(true)
+      
+      // Get reCAPTCHA token
+      const recaptchaToken = await executeRecaptcha('SIGNUP')
+      
+      if (!recaptchaToken) {
+        setError("root", {
+          type: "manual",
+          message: "Verification failed. Please try again."
+        })
+        return
+      }
+      
       // First check if the email exists in the users table
       const { data: existingUser } = await supabase
         .from('users')
@@ -65,18 +120,26 @@ export function SignupForm({ className, onSubmit, onGoogleSignUp }: SignupFormPr
         .single()
 
       if (existingUser) {
-        // Change from toast to inline error
         setError("email", { 
           type: "manual", 
-          message: "This email address is already registered. Please sign in instead." 
-        });
-        return;
+          message: "This email address is already registered." 
+        })
+        return
       }
+      
       // Create a new object with all properties except confirmPassword
       const submitData = Object.fromEntries(
         Object.entries(values).filter(([key]) => key !== 'confirmPassword')
       ) as Omit<FormData, "confirmPassword">
-      await onSubmit(submitData)
+      
+      // Pass the reCAPTCHA token along with the form data
+      await onSubmit(submitData, recaptchaToken)
+    } catch (error) {
+      console.error('Form submission error:', error)
+      setError("root", {
+        type: "manual",
+        message: "An error occurred. Please try again."
+      })
     } finally {
       setIsLoading(false)
     }
@@ -94,6 +157,13 @@ export function SignupForm({ className, onSubmit, onGoogleSignUp }: SignupFormPr
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Load reCAPTCHA Enterprise script */}
+      <Script
+        src={`https://www.google.com/recaptcha/enterprise.js?render=${recaptchaSiteKey}`}
+        onLoad={handleRecaptchaLoad}
+        strategy="afterInteractive"
+      />
+      
       <Card className={className}>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Create an account</CardTitle>
@@ -133,6 +203,7 @@ export function SignupForm({ className, onSubmit, onGoogleSignUp }: SignupFormPr
             </div>
             )}
 
+            {/* Form fields remain the same */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label htmlFor="firstName">First Name</Label>
@@ -239,6 +310,13 @@ export function SignupForm({ className, onSubmit, onGoogleSignUp }: SignupFormPr
               </Select>
             </div>
 
+            {/* General error display */}
+            {errors.root && (
+              <div className="text-sm text-destructive text-center mt-4" role="alert">
+                {errors.root.message}
+              </div>
+            )}
+
             <div>
               <Button type="submit" className="w-full mt-6" disabled={isLoading}>
                 {isLoading && (
@@ -262,13 +340,20 @@ export function SignupForm({ className, onSubmit, onGoogleSignUp }: SignupFormPr
         </CardContent>
       </Card>
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary space-y-1">
-  <div>By signing up, you agree to our</div>
-  <div>
-    <Link href="/terms" tabIndex={0}>Terms of Service</Link>{" "}
-    and{" "}
-    <Link href="/privacy" tabIndex={0}>Privacy Policy</Link>.
-  </div>
-</div>
+        <div>By signing up, you agree to our</div>
+        <div>
+          <Link href="/terms" tabIndex={0}>Terms of Service</Link>{" "}
+          and{" "}
+          <Link href="/privacy" tabIndex={0}>Privacy Policy</Link>.
+        </div>
+        {/* reCAPTCHA disclaimer */}
+        <div className="mt-2">
+          This site is protected by reCAPTCHA and the Google
+          {" "}<Link href="https://policies.google.com/privacy">Privacy Policy</Link>{" "}
+          and{" "}<Link href="https://policies.google.com/terms">Terms of Service</Link>{" "}
+          apply.
+        </div>
+      </div>
     </div>
   )
 }

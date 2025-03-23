@@ -1,4 +1,4 @@
-// src/app/layout.tsx - Updated version
+// src/app/layout.tsx
 import { ConditionalThemeProvider } from '@/components/theme/conditional-theme-provider'
 import { Toaster } from "@/components/ui/toaster"
 import { ConnectionStatus } from "@/components/network/connection-status"

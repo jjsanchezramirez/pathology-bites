@@ -1,4 +1,4 @@
-// src/app/signup/page.tsx
+// src/app/(auth)/signup/page.tsx
 "use client"
 
 import { SignupForm } from '@/components/auth/signup-form'
@@ -38,7 +38,7 @@ const SignUpPage: React.FC = () => {
         throw error
       }
       
-    } catch (error: Error | unknown) {
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -54,7 +54,7 @@ const SignUpPage: React.FC = () => {
     firstName: string
     lastName: string
     userType: string
-  }) => {
+  }, captchaToken?: string) => {
     try {
       // First check if the email exists in the users table
       const { data: existingUser } = await supabase
@@ -71,6 +71,15 @@ const SignUpPage: React.FC = () => {
         return
       }
 
+      // If no captcha token, show error
+      if (!captchaToken) {
+        toast({
+          variant: "destructive",
+          description: "CAPTCHA verification is required. Please try again.",
+        })
+        return
+      }
+
       // Proceed with signup if email doesn't exist
       const { error: signUpError, data } = await supabase.auth.signUp({
         email: values.email,
@@ -81,21 +90,34 @@ const SignUpPage: React.FC = () => {
             last_name: values.lastName,
             user_type: values.userType,
           },
-          emailRedirectTo: `${window.location.origin}/api/auth/callback?type=signup_confirmation&next=/email-verified`
+          emailRedirectTo: `${window.location.origin}/api/auth/callback?type=signup_confirmation&next=/email-verified`,
+          // Add the captcha token to the signup request
+          captchaToken: captchaToken,
         },
       })
   
       if (signUpError) {
+        // Handle specific signup errors
         if (signUpError.message?.includes('already registered')) {
           toast({
             description: "This email address is already registered. Please sign in instead.",
           })
           return
         }
+        
+        // Handle CAPTCHA-specific errors
+        if (signUpError.message?.includes('captcha verification')) {
+          toast({
+            variant: "destructive",
+            description: "CAPTCHA verification failed. Please try again.",
+          })
+          return
+        }
+        
         throw signUpError
       }
   
-          // Store signup data in user metadata for later profile creation
+      // Store signup data in user metadata for later profile creation
       if (data.user) {
         await supabase.auth.updateUser({
           data: {
@@ -111,7 +133,7 @@ const SignUpPage: React.FC = () => {
       if (typeof window !== 'undefined') {
         localStorage.setItem('pendingVerificationEmail', values.email)
       }
-    } catch (error: Error | unknown) {
+    } catch (error) {
       console.error('Error:', error);
       toast({
         variant: "destructive",

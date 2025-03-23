@@ -27,18 +27,21 @@ interface LoginFormProps {
   className?: string
   onSubmit?: (email: string, password: string) => Promise<void>
   onGoogleSignIn?: () => Promise<void>
+  isLoading?: boolean // Add this
 }
 
 export function LoginForm({
   className,
   onSubmit,
   onGoogleSignIn,
+  isLoading: externalLoading,
   ...props
 }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const loading = externalLoading || isLoading || googleLoading  
   const { toast } = useToast()
-  
+
   // Initialize form with useForm hook
   const {
     register,
@@ -117,7 +120,7 @@ export function LoginForm({
                   variant="outline"
                   className="w-full"
                   onClick={handleGoogleSignIn}
-                  disabled={isLoading || googleLoading}
+                  disabled={loading || googleLoading}
                 >
                   {googleLoading ? (
                     <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -149,7 +152,7 @@ export function LoginForm({
                     aria-invalid={!!errors.email}
                     aria-describedby={errors.email ? "email-error" : undefined}
                     aria-labelledby="email-label"
-                    disabled={isLoading}
+                    disabled={loading}
                   />
                   {errors.email && (
                     <p 
@@ -181,7 +184,7 @@ export function LoginForm({
                     aria-invalid={!!errors.password}
                     aria-describedby={errors.password ? "password-error" : undefined}
                     aria-labelledby="password-label"
-                    disabled={isLoading}
+                    disabled={loading}
                   />
                   {errors.password && (
                     <p 
@@ -196,9 +199,9 @@ export function LoginForm({
                 <Button 
                   type="submit" 
                   className="w-full"
-                  disabled={isLoading || googleLoading}
+                  disabled={loading || googleLoading}
                 >
-                  {isLoading && (
+                  {loading && (
                     <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                   )}
                   Login

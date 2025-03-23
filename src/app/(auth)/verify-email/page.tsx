@@ -1,20 +1,21 @@
 // src/app/(auth)/verify-email/page.tsx
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Microscope } from "lucide-react"
 import Link from "next/link"
 import { ResendVerification } from "@/components/auth/resend-verification"
 
 export default function VerifyEmailPage() {
-  const [email, setEmail] = useState<string>(() => {
-    // Try to get email from localStorage if available
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('pendingVerificationEmail') || '';
-    }
-    return '';
-  });
+  const [email, setEmail] = useState<string>('')
+  
+  // Move the localStorage check to useEffect to prevent hydration mismatch
+  useEffect(() => {
+    // Get email from localStorage after component mounts on client
+    const storedEmail = localStorage.getItem('pendingVerificationEmail') || ''
+    setEmail(storedEmail)
+  }, [])
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -29,24 +30,27 @@ export default function VerifyEmailPage() {
             </span>
           </Link>
 
-          <Card className="w-full p-6 space-y-6">
-            <div className="flex flex-col items-center gap-2 text-center">
-              <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                <EnvelopeIcon className="h-6 w-6 text-blue-600" />
-              </div>
+          <Card className="w-full p-8 space-y-6">
+            <div className="flex flex-col items-center space-y-5 text-center">
               <h1 className="text-2xl font-bold">Check your email</h1>
-              <p className="text-gray-500">
+              
+              <p className="text-gray-500 text-lg">
                 We've sent you a verification link. Please check your email to verify your account.
               </p>
+              
               <p className="text-sm text-gray-500">
                 If you don't see the email, check your spam folder. The link will expire in 24 hours.
               </p>
               
-              {email && <ResendVerification email={email} />}
+              {email && (
+                <div className="w-full pt-3">
+                  <ResendVerification email={email} />
+                </div>
+              )}
               
               <Link 
                 href="/" 
-                className="mt-4 text-primary hover:underline text-sm"
+                className="text-primary hover:underline text-sm mt-2"
               >
                 Return to home page
               </Link>
