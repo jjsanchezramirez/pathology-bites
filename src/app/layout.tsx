@@ -1,6 +1,7 @@
-// src/app/layout.tsx - Updated version
+// src/app/layout.tsx
 import { ConditionalThemeProvider } from '@/components/theme/conditional-theme-provider'
 import { Toaster } from "@/components/ui/toaster"
+import { ConnectionStatus } from "@/components/network/connection-status"
 import { cn } from '@/lib/utils'
 import '@/styles/globals.css'
 
@@ -29,6 +30,7 @@ export default async function RootLayout({
             {children}
           </div>
           <Toaster />
+          <ConnectionStatus />
         </ConditionalThemeProvider>
       </body>
     </html>

@@ -27,18 +27,24 @@ interface LoginFormProps {
   className?: string
   onSubmit?: (email: string, password: string) => Promise<void>
   onGoogleSignIn?: () => Promise<void>
+  isLoading?: boolean
 }
 
 export function LoginForm({
   className,
   onSubmit,
   onGoogleSignIn,
+  isLoading: parentLoading = false,
   ...props
 }: LoginFormProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const [formLoading, setFormLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-  const { toast } = useToast()
   
+  // Compute the overall loading state
+  const loading = parentLoading || formLoading || googleLoading
+  
+  const { toast } = useToast()
+
   // Initialize form with useForm hook
   const {
     register,
@@ -54,46 +60,26 @@ export function LoginForm({
 
   // Form submission handler
   async function onFormSubmit(values: FormData) {
+    if (!onSubmit) return
+    
     try {
-      setIsLoading(true)
-      if (onSubmit) {
-        await onSubmit(values.email, values.password)
-        toast({
-          title: "Success",
-          description: "Successfully logged in",
-        })
-      }
+      setFormLoading(true)
+      await onSubmit(values.email, values.password)
     } catch (error) {
-      console.error("Login error:", error)
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: error instanceof Error 
-          ? error.message 
-          : "Failed to sign in. Please try again.",
-      })
+      console.error("Form submission error:", error)
     } finally {
-      setIsLoading(false)
+      setFormLoading(false)
     }
   }
 
   async function handleGoogleSignIn() {
+    if (!onGoogleSignIn) return
+    
     try {
       setGoogleLoading(true)
-      if (onGoogleSignIn) {
-        await onGoogleSignIn()
-        toast({
-          title: "Success",
-          description: "Successfully logged in with Google",
-        })
-      }
+      await onGoogleSignIn()
     } catch (error) {
-      console.error("Google login error:", error)
-      toast({
-        variant: "destructive",
-        title: "Authentication Error",
-        description: "Failed to sign in with Google. Please try again.",
-      })
+      console.error("Google sign-in error:", error)
     } finally {
       setGoogleLoading(false)
     }
@@ -117,7 +103,7 @@ export function LoginForm({
                   variant="outline"
                   className="w-full"
                   onClick={handleGoogleSignIn}
-                  disabled={isLoading || googleLoading}
+                  disabled={loading}
                 >
                   {googleLoading ? (
                     <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -139,29 +125,36 @@ export function LoginForm({
               </div>
               <div className="grid gap-6">
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" id="email-label">Email</Label>
                   <Input
                     id="email"
                     {...register("email")}
                     type="email"
                     autoComplete="email"
-                    placeholder="m@example.com"
+                    placeholder="name@example.com"
                     aria-invalid={!!errors.email}
-                    disabled={isLoading}
+                    aria-describedby={errors.email ? "email-error" : undefined}
+                    aria-labelledby="email-label"
+                    disabled={loading}
                   />
                   {errors.email && (
-                    <p className="text-sm text-destructive" role="alert">
+                    <p 
+                      className="text-sm text-destructive" 
+                      role="alert"
+                      id="email-error"
+                    >
                       {errors.email.message}
                     </p>
                   )}
                 </div>
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password" id="password-label">Password</Label>
                     <Link
                       href="/forgot-password"
                       className="text-sm text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
                       tabIndex={0}
+                      aria-label="Forgot password? Click to reset"
                     >
                       Forgot password?
                     </Link>
@@ -172,10 +165,16 @@ export function LoginForm({
                     type="password"
                     autoComplete="current-password"
                     aria-invalid={!!errors.password}
-                    disabled={isLoading}
+                    aria-describedby={errors.password ? "password-error" : undefined}
+                    aria-labelledby="password-label"
+                    disabled={loading}
                   />
                   {errors.password && (
-                    <p className="text-sm text-destructive" role="alert">
+                    <p 
+                      className="text-sm text-destructive" 
+                      role="alert"
+                      id="password-error"
+                    >
                       {errors.password.message}
                     </p>
                   )}
@@ -183,11 +182,11 @@ export function LoginForm({
                 <Button 
                   type="submit" 
                   className="w-full"
-                  disabled={isLoading || googleLoading}
+                  disabled={loading}
                 >
-                  {isLoading && (
+                  {formLoading ? (
                     <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                  ) : null}
                   Login
                 </Button>
               </div>
@@ -206,11 +205,11 @@ export function LoginForm({
         </CardContent>
       </Card>
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">
-      By clicking continue, you agree to our{" "}
-      <Link href="/terms" tabIndex={0}>Terms of Service</Link>{" "}
-      and{" "}
-      <Link href="/privacy" tabIndex={0}>Privacy Policy</Link>.
-    </div>
+        By clicking continue, you agree to our{" "}
+        <Link href="/terms" tabIndex={0}>Terms of Service</Link>{" "}
+        and{" "}
+        <Link href="/privacy" tabIndex={0}>Privacy Policy</Link>.
+      </div>
     </div>
   )
 }
