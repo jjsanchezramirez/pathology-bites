@@ -1,15 +1,48 @@
-/**
- * @source src/components/theme/icons.tsx
- * 
- * Collection of icon components used throughout the application.
- * Includes both Lucide icons and custom SVG implementations for various services.
- */
+// src/components/theme/icons.tsx
 
-import { Apple, Loader2, LucideProps } from "lucide-react"
+import {
+  Apple,
+  AlertTriangle,
+  CheckCircle,
+  Loader2,
+  LucideProps,
+  Mail,
+  User,
+  X,
+  Instagram,
+  Twitter,
+  Facebook,
+  Github,
+  Linkedin,
+} from "lucide-react"
+
+export type IconKeys =
+  | "spinner"
+  | "error"
+  | "success"
+  | "close"
+  | "user"
+  | "mail"
+  | "instagram"
+  | "twitter"
+  | "facebook"
+  | "github"
+  | "linkedin"
+  | "google"
 
 export const Icons = {
   spinner: Loader2,
   apple: Apple,
+  error: AlertTriangle,
+  success: CheckCircle,
+  close: X,
+  user: User,
+  mail: Mail,
+  instagram: Instagram,
+  twitter: Twitter,
+  facebook: Facebook,
+  github: Github,
+  linkedin: Linkedin,
   google: (props: LucideProps) => (
     <svg
       aria-hidden="true"

@@ -1,66 +1,62 @@
 // src/components/network/connection-status.tsx
 "use client"
 
-import React, { useState, useEffect } from 'react'
-import { Wifi, WifiOff } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { cn } from '@/lib/utils'
+import { Wifi, WifiOff } from 'lucide-react'
 
 export function ConnectionStatus() {
-  const isOnline = useNetworkStatus({
-    pingUrl: 'https://1.1.1.1',
-    pingInterval: 30000 // 30 seconds
-  })
-  
-  const [showReconnectedMessage, setShowReconnectedMessage] = useState(false)
+  const isOnline = useNetworkStatus()
+  const [show, setShow] = useState(false)
   const [wasOffline, setWasOffline] = useState(false)
   
-  // Handle status change
+  // Show offline indicator immediately, but delay hiding it
   useEffect(() => {
     if (!isOnline) {
+      setShow(true)
       setWasOffline(true)
     } else if (wasOffline) {
-      // We were offline but now we're online again
-      setShowReconnectedMessage(true)
-      
-      // Auto-hide the reconnected message after 3 seconds
-      const timerId = setTimeout(() => {
-        setShowReconnectedMessage(false)
-        setWasOffline(false)
+      // If we were offline and came back online, wait a bit before hiding
+      const timer = setTimeout(() => {
+        setShow(false)
+        // Reset after animation completes
+        const resetTimer = setTimeout(() => {
+          setWasOffline(false)
+        }, 500) // animation duration
+        
+        return () => clearTimeout(resetTimer)
       }, 3000)
       
-      return () => clearTimeout(timerId)
+      return () => clearTimeout(timer)
     }
   }, [isOnline, wasOffline])
   
-  if (isOnline && !showReconnectedMessage) {
+  // If we've never been offline and we're online, don't render anything
+  if (!wasOffline && isOnline) {
     return null
   }
   
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
-      {!isOnline && (
-        <div className={cn(
-          "bg-red-100 border border-red-200 text-red-800 px-4 py-2 rounded-md shadow-md",
-          "flex items-center gap-2 transition-opacity duration-300 animate-in fade-in-0 slide-in-from-right-10"
-        )}>
-          <WifiOff className="h-4 w-4" />
-          <span className="text-sm font-medium">
-            You are offline. Some features may be unavailable.
-          </span>
-        </div>
+    <div
+      className={cn(
+        "fixed bottom-4 left-4 z-50 flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium shadow-lg transition-all duration-500",
+        isOnline 
+          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
+          : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+        show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
       )}
-      
-      {showReconnectedMessage && (
-        <div className={cn(
-          "bg-green-100 border border-green-200 text-green-800 px-4 py-2 rounded-md shadow-md",
-          "flex items-center gap-2 transition-opacity duration-300 animate-in fade-in-0 slide-in-from-right-10"
-        )}>
+    >
+      {isOnline ? (
+        <>
           <Wifi className="h-4 w-4" />
-          <span className="text-sm font-medium">
-            You are back online.
-          </span>
-        </div>
+          <span>Back online</span>
+        </>
+      ) : (
+        <>
+          <WifiOff className="h-4 w-4" />
+          <span>You're offline</span>
+        </>
       )}
     </div>
   )

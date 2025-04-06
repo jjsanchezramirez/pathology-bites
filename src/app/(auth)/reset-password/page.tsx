@@ -1,125 +1,107 @@
 // src/app/(auth)/reset-password/page.tsx
 "use client"
 
+import { useState, useEffect } from 'react'
 import { ResetPasswordForm } from '@/components/auth/reset-password-form'
-import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useToast } from '@/hooks/use-toast'
 import { Microscope } from "lucide-react"
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import type { AuthError } from '@supabase/supabase-js'
+import { useRouter } from 'next/navigation'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { useAuth } from '@/hooks/use-auth'
+import { useToast } from '@/hooks/use-toast'
+import { useNetworkStatus } from '@/hooks/use-network-status'
+import { Icons } from "@/components/theme/icons"
 
 export default function ResetPasswordPage() {
+  const [isValid, setIsValid] = useState<boolean | null>(null)
   const router = useRouter()
   const supabase = createClientComponentClient()
+  const { updatePassword, isLoading } = useAuth()
   const { toast } = useToast()
-  const [isLoading, setIsLoading] = useState(true)
+  const isOnline = useNetworkStatus()
 
+  // Check if reset token is valid
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
+        const { data, error } = await supabase.auth.getSession()
         
-        if (!session) {
-          throw new Error('No active session')
+        if (error) {
+          throw error
         }
         
-        setIsLoading(false)
+        // If no session or not in recovery mode, redirect to login
+        if (!data.session || !data.session.user?.email_confirmed_at) {
+          setIsValid(false)
+          
+          // Give time for state to update
+          setTimeout(() => {
+            toast({
+              variant: "destructive",
+              title: "Invalid or expired link",
+              description: "Please request a new password reset link."
+            })
+            router.push('/forgot-password')
+          }, 300)
+          return
+        }
+        
+        setIsValid(true)
       } catch (error) {
-        console.error('Session check error:', error)
+        console.error("Session check error:", error)
+        setIsValid(false)
         toast({
           variant: "destructive",
-          description: "Please use the reset link from your email to access this page.",
+          title: "Error",
+          description: "Failed to validate reset link. Please try again."
         })
-        router.push('/login')
       }
     }
-
+    
     checkSession()
-  }, [router, toast, supabase.auth])
+  }, [router, supabase, toast])
 
-  const handlePasswordReset = async (password: string) => {
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      })
-      
-      if (error) {
-        throw error
-      }
-
-      // Sign out after password update
-      await supabase.auth.signOut()
-
+  const handleUpdatePassword = async (password: string) => {
+    // Check if online first
+    if (!isOnline) {
       toast({
-        description: "Password updated successfully! Please log in with your new password.",
+        variant: "destructive",
+        title: "Network Error",
+        description: "You appear to be offline. Please check your internet connection and try again."
       })
-      
-      setTimeout(() => {
-        router.push('/login')
-      }, 2000)
-    } catch (error) {
-      console.error('Reset password error:', error)
-      
-      // Type guard to check if error is AuthError
-      const isAuthError = (error: unknown): error is AuthError => {
-        return (error as AuthError)?.message !== undefined
-      }
-      
-      if (isAuthError(error)) {
-        // Check specifically for same password error
-        if (error.message.includes('should be different from the old password')) {
-          toast({
-            variant: "destructive",
-            description: "New password must be different from your current password.",
-          })
-        } else {
-          toast({
-            variant: "destructive",
-            description: "Error resetting password. Please try again.",
-          })
-        }
-      } else {
-        toast({
-          variant: "destructive",
-          description: "An unexpected error occurred. Please try again.",
-        })
-      }
+      return
     }
+
+    // Use the updatePassword function from the hook
+    await updatePassword(password)
   }
 
-  if (isLoading) {
+  if (isValid === null) {
     return (
-      <div className="flex min-h-screen flex-col">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.08),transparent_25%),radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.08),transparent_25%),linear-gradient(to_bottom,rgba(56,189,248,0.05),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-[0.15]" />
-        
-        <div className="relative flex flex-col items-center justify-center min-h-screen p-6">
-          <div className="w-full max-w-sm space-y-8">
-            <Link href="/" className="flex items-center gap-2 justify-center hover:opacity-80 transition-opacity">
-              <Microscope className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Pathology Bites
-              </span>
-            </Link>
+      <div className="flex min-h-screen flex-col items-center justify-center">
+        <Icons.spinner className="h-8 w-8 animate-spin text-primary" />
+        <p className="mt-2 text-muted-foreground">Verifying your reset link...</p>
+      </div>
+    )
+  }
 
-            <div className="text-center text-muted-foreground">
-              Verifying your session...
-            </div>
-          </div>
-        </div>
+  if (isValid === false) {
+    // Will be redirected via the useEffect
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center">
+        <Icons.error className="h-8 w-8 text-destructive" />
+        <p className="mt-2 text-muted-foreground">Invalid or expired reset link.</p>
+        <p className="text-muted-foreground">Redirecting...</p>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen flex-col flex-1">
+    <div className="flex min-h-screen flex-col">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.08),transparent_25%),radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.08),transparent_25%),linear-gradient(to_bottom,rgba(56,189,248,0.05),transparent)]" />
       <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-[0.15]" />
       
       <div className="relative flex flex-col items-center justify-center min-h-screen p-6">
-        {/* Match the login page's max-w-sm */}
         <div className="w-full max-w-sm space-y-8">
           <Link href="/" className="flex items-center gap-2 justify-center hover:opacity-80 transition-opacity">
             <Microscope className="h-6 w-6 text-primary" />
@@ -127,9 +109,13 @@ export default function ResetPasswordPage() {
               Pathology Bites
             </span>
           </Link>
-          <ResetPasswordForm onSubmit={handlePasswordReset}/>
+
+          <ResetPasswordForm 
+            onSubmit={handleUpdatePassword}
+            isLoading={isLoading}
+          />
         </div>
       </div>
     </div>
-)
+  )
 }

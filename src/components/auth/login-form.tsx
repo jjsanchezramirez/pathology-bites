@@ -12,7 +12,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/theme/icons"
-import { useToast } from "@/hooks/use-toast"
 
 // Form schema definition
 const formSchema = z.object({
@@ -42,8 +41,6 @@ export function LoginForm({
   
   // Compute the overall loading state
   const loading = parentLoading || formLoading || googleLoading
-  
-  const { toast } = useToast()
 
   // Initialize form with useForm hook
   const {

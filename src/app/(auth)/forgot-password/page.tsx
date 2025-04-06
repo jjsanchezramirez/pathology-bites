@@ -1,33 +1,32 @@
 // src/app/(auth)/forgot-password/page.tsx
 "use client"
 
+import { useState } from 'react'
 import { ForgotPasswordForm } from '@/components/auth/forgot-password-form'
-import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useToast } from '@/hooks/use-toast'
 import { Microscope } from "lucide-react"
 import Link from 'next/link'
+import { useAuth } from '@/hooks/use-auth'
+import { useNetworkStatus } from '@/hooks/use-network-status'
+import { useToast } from '@/hooks/use-toast'
 
 export default function ForgotPasswordPage() {
-  const router = useRouter()
-  const supabase = createClientComponentClient()
+  const { resetPassword, isLoading } = useAuth()
+  const isOnline = useNetworkStatus()
   const { toast } = useToast()
 
   const handleResetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/api/auth/callback?type=recovery`,
-    })
-    
-    if (error) {
+    // Check if online first
+    if (!isOnline) {
       toast({
         variant: "destructive",
-        description: "Error sending reset password email",
+        title: "Network Error",
+        description: "You appear to be offline. Please check your internet connection and try again."
       })
-      throw error
+      return
     }
 
-    // Redirect to check email page
-    router.push('/check-email')
+    // Use the resetPassword function from the hook
+    await resetPassword(email)
   }
 
   return (
@@ -44,7 +43,10 @@ export default function ForgotPasswordPage() {
             </span>
           </Link>
 
-          <ForgotPasswordForm onSubmit={handleResetPassword} />
+          <ForgotPasswordForm 
+            onSubmit={handleResetPassword}
+            isLoading={isLoading}
+          />
         </div>
       </div>
     </div>
