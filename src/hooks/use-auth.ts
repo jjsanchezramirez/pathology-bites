@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/utils/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 export function useAuth() {
   const [isLoading, setIsLoading] = useState(false)
@@ -16,7 +16,7 @@ export function useAuth() {
     setIsLoading(true)
     try {
       const supabase = createClient()
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -29,6 +29,42 @@ export function useAuth() {
             : error.message
         })
         return false
+      }
+      
+      // Check if there's a user and session
+      if (data?.user) {
+        try {
+          // Fetch user role from the database
+          const { data: userData } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', data.user.id)
+            .single()
+          
+          toast({
+            description: "Successfully logged in",
+          })
+          
+          router.refresh()
+          
+          // Redirect based on role
+          if (userData?.role === 'admin') {
+            router.push('/admin/dashboard')
+          } else {
+            router.push('/dashboard')
+          }
+          return true
+        } catch (error) {
+          console.error('Error fetching user role:', error)
+          
+          // Default redirect if role check fails
+          toast({
+            description: "Successfully logged in",
+          })
+          router.refresh()
+          router.push('/dashboard')
+          return true
+        }
       }
       
       toast({
@@ -111,7 +147,7 @@ export function useAuth() {
     } finally {
       setIsLoading(false)
     }
-  }, [toast])
+  }, [toast, router]) // Removed supabase from dependencies
   
   /**
    * Sign up with email and password
@@ -352,25 +388,32 @@ export function useAuth() {
   /**
    * Check if user is authenticated
    */
-// In your useAuth hook checkAuth method
-const checkAuth = useCallback(async () => {
-  try {
-    const supabase = createClient()
-    const { data } = await supabase.auth.getSession()
-    
-    return {
-      isAuthenticated: !!data.session,
-      user: data.session?.user || null
+/**
+ * Check if user is authenticated
+ */
+  const checkAuth = useCallback(async () => {
+    try {
+      const supabase = createClient()
+      
+      // Get user directly from getUser() as recommended by Supabase
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      // Only check session for session properties if needed
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      return {
+        isAuthenticated: !!user, // Use presence of user to determine authentication
+        user: user || null
+      }
+    } catch (error) {
+      // Silently ignore Auth Session Missing errors
+      console.error('Check auth error:', error)
+      return {
+        isAuthenticated: false,
+        user: null
+      }
     }
-  } catch (error) {
-    // Silently ignore Auth Session Missing errors
-    console.error('Check auth error:', error)
-    return {
-      isAuthenticated: false,
-      user: null
-    }
-  }
-}, [])
+  }, [])
   
   return {
     isLoading,

@@ -1,16 +1,16 @@
-// Simplified login page
+// src/app/(auth)/login/page.tsx
 "use client"
 
 import { useEffect, useState } from 'react'
 import { LoginForm } from '@/components/auth/login-form'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/utils/supabase/client'
 import { Microscope } from "lucide-react"
 import Link from 'next/link'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { Icons } from "@/components/theme/icons"
+import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -32,8 +32,11 @@ export default function LoginPage() {
         
         const supabase = createClient()
         try {
-          const { data } = await supabase.auth.getSession()
+          const { data, error } = await supabase.auth.getSession()
+          console.log("Session check:", data, error)
+          
           if (data.session) {
+            console.log("User is logged in, redirecting to dashboard")
             router.push('/dashboard')
           }
         } catch (error) {

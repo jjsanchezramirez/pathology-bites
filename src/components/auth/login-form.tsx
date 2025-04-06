@@ -8,10 +8,11 @@ import * as z from "zod"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/theme/icons"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 // Form schema definition
 const formSchema = z.object({
@@ -38,6 +39,7 @@ export function LoginForm({
 }: LoginFormProps) {
   const [formLoading, setFormLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   
   // Compute the overall loading state
   const loading = parentLoading || formLoading || googleLoading
@@ -60,10 +62,12 @@ export function LoginForm({
     if (!onSubmit) return
     
     try {
+      setError(null)
       setFormLoading(true)
       await onSubmit(values.email, values.password)
     } catch (error) {
       console.error("Form submission error:", error)
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred')
     } finally {
       setFormLoading(false)
     }
@@ -73,10 +77,12 @@ export function LoginForm({
     if (!onGoogleSignIn) return
     
     try {
+      setError(null)
       setGoogleLoading(true)
       await onGoogleSignIn()
     } catch (error) {
       console.error("Google sign-in error:", error)
+      setError(error instanceof Error ? error.message : 'Failed to sign in with Google')
     } finally {
       setGoogleLoading(false)
     }
@@ -92,6 +98,12 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
           <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
             <div className="grid gap-6">
               <div className="flex flex-col gap-4">
