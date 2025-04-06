@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/theme/icons"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { GoogleSignIn } from './google-signin' 
 
 // Form schema definition
 const formSchema = z.object({

@@ -3,6 +3,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
+  // Handle OAuth redirects to production URL while in development
+  if (request.nextUrl.pathname === '/' && request.nextUrl.searchParams.has('code')) {
+    // This is an OAuth callback that was redirected to production
+    const code = request.nextUrl.searchParams.get('code');
+    const state = request.nextUrl.searchParams.get('state');
+    
+    if (code) {
+      // Redirect to the local callback handler, preserving the state parameter
+      const redirectUrl = new URL(`/api/auth/callback?code=${code}`, request.url);
+      if (state) redirectUrl.searchParams.append('state', state);
+      console.log('Redirecting OAuth callback to:', redirectUrl.toString());
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -45,7 +60,17 @@ export async function middleware(request: NextRequest) {
   // Define protected routes
   const authRoutes = ['/dashboard', '/profile', '/settings']
   const adminRoutes = ['/admin']
-  const publicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/check-email', '/email-verified']
+  const publicRoutes = [
+    '/login', 
+    '/signup', 
+    '/forgot-password', 
+    '/reset-password', 
+    '/verify-email', 
+    '/check-email', 
+    '/email-verified',
+    // Add the Google auth endpoints:
+    '/api/auth/callback'  // Changed from '/api/auth/google-signin-callback'
+  ]
   
   const path = request.nextUrl.pathname
   const isAuthRoute = authRoutes.some(route => path.startsWith(route))

@@ -108,10 +108,12 @@ export function useAuth() {
     setIsLoading(true)
     try {
       const supabase = createClient()
+      
+      // Let Supabase handle the redirect automatically, without specifying redirectTo
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`,
+          // Skip the redirectTo entirely for simplest solution
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -130,25 +132,16 @@ export function useAuth() {
       return true
     } catch (error) {
       console.error('Google login error:', error)
-      
-      // Check for network-related errors
-      const isNetworkError = error instanceof Error && 
-        (error.message.includes('fetch') || 
-         error.message.includes('network'))
-      
       toast({
         variant: "destructive",
-        description: isNetworkError
-          ? "Network connection issue. Please check your internet connection and try again."
-          : "Could not connect to Google. Please try again.",
+        description: "Could not connect to Google. Please try again."
       })
-      
       return false
     } finally {
       setIsLoading(false)
     }
-  }, [toast, router]) // Removed supabase from dependencies
-  
+  }, [toast])
+
   /**
    * Sign up with email and password
    */
