@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { Database } from '@/types/supabase'
 
-export async function createServerSupabase() {
+export function createServerSupabase() {
   const cookieStore = cookies()
   
   return createServerClient<Database>(
@@ -18,7 +18,7 @@ export async function createServerSupabase() {
           cookieStore.set(name, value, options)
         },
         remove(name, options) {
-          cookieStore.set(name, "", { ...options, maxAge: 0 })
+          cookieStore.delete(name)
         }
       }
     }

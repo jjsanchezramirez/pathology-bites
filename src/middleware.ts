@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
-  // Handle OAuth redirects to production URL while in development
+  // Handle OAuth redirects
   if (request.nextUrl.pathname === '/' && request.nextUrl.searchParams.has('code')) {
     // This is an OAuth callback that was redirected to production
     const code = request.nextUrl.searchParams.get('code');
@@ -29,22 +29,28 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name) {
-          return request.cookies.get(name)?.value
+        getAll() {
+          return Array.from(request.cookies.getAll()).map((cookie) => ({
+            name: cookie.name,
+            value: cookie.value,
+            options: {
+              domain: cookie.domain,
+              expires: cookie.expires,
+              httpOnly: cookie.httpOnly,
+              maxAge: cookie.maxAge,
+              path: cookie.path,
+              sameSite: cookie.sameSite,
+              secure: cookie.secure
+            }
+          }))
         },
-        set(name, value, options) {
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-        },
-        remove(name, options) {
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-            maxAge: 0,
+        setAll(cookies) {
+          cookies.forEach(({ name, value, options }) => {
+            response.cookies.set({
+              name,
+              value,
+              ...options,
+            })
           })
         }
       }

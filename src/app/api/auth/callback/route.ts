@@ -1,4 +1,4 @@
-// src/app/api/auth/callback/route.ts - Update the cookie handling
+// src/app/api/auth/callback/route.ts
 import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
@@ -23,24 +23,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
     
-    // Create the client with async cookie handling
-    const cookieStore = cookies()
+    // Create response to manipulate cookies
+    const response = NextResponse.next()
+    
+    // Create a simpler client that doesn't rely on complex cookie handling
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
-        cookies: {
-          get(name) {
-            return cookieStore.get(name)?.value
-          },
-          async set(name, value, options) {
-            // Use await to handle the async cookies API
-            await cookieStore.set(name, value, options)
-          },
-          async remove(name, options) {
-            // Use await to handle the async cookies API
-            await cookieStore.set(name, '', { ...options, maxAge: 0 })
-          }
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
         }
       }
     )
@@ -90,8 +83,8 @@ export async function GET(request: NextRequest) {
             email: user.email,
             first_name: firstName,
             last_name: lastName,
-            role: 'user', // Default role for OAuth users
-            user_type: 'other' // Default type
+            role: 'user',
+            user_type: 'other'
           })
           
           console.log('User profile created, redirecting to dashboard')

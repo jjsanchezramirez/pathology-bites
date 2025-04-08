@@ -105,42 +105,47 @@ export function useAuth() {
    * Login with Google OAuth
    */
   const loginWithGoogle = useCallback(async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const supabase = createClient()
+      const supabase = createClient();
       
-      // Let Supabase handle the redirect automatically, without specifying redirectTo
+      // Determine the current environment
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      const baseUrl = isDevelopment 
+        ? 'http://localhost:3000'
+        : process.env.NEXT_PUBLIC_URL || 'https://pathology-bites-qbank-pathology-bites.vercel.app';
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          // Skip the redirectTo entirely for simplest solution
+          redirectTo: `${baseUrl}/api/auth/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
           },
         },
-      })
+      });
       
       if (error) {
         toast({
           variant: "destructive",
           description: error.message
-        })
-        return false
+        });
+        return false;
       }
       
-      return true
+      return true;
     } catch (error) {
-      console.error('Google login error:', error)
+      console.error('Google sign-in error:', error);
       toast({
         variant: "destructive",
-        description: "Could not connect to Google. Please try again."
-      })
-      return false
+        description: error instanceof Error ? error.message : "Failed to sign in with Google"
+      });
+      return false;
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [toast])
+  }, [toast]);
 
   /**
    * Sign up with email and password

@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { useRouter } from 'next/navigation'
 import { Bell, Loader2, AlertCircle, Info, ChevronDown, Flag, CheckCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
@@ -66,8 +67,6 @@ interface ReportPayload {
   created_at: string
 }
 
-const NOTIFICATIONS_PER_PAGE = 10
-
 export function NotificationsHandler() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
@@ -76,6 +75,8 @@ export function NotificationsHandler() {
   const [filter, setFilter] = useState<'all' | 'inquiries' | 'reports'>('all')
   const supabase = createClientComponentClient()
   const { toast } = useToast()
+  const [limit, setLimit] = useState(10) // Default limit of 10 notifications
+  const router = useRouter()
 
   // Handle new inquiry notification
   const handleNewInquiry = useCallback((inquiry: InquiryPayload) => {
@@ -102,42 +103,48 @@ export function NotificationsHandler() {
       title: notification.title,
       description: notification.description,
     })
-  }, [filter, toast]);
+  }, [filter, toast])
 
   // Handle new report notification
   const handleNewReport = useCallback(async (report: ReportPayload) => {
     if (filter === 'inquiries') return
 
-    // Fetch question details
-    const { data: question } = await supabase
-      .from('questions')
-      .select('title')
-      .eq('id', report.question_id)
-      .single()
+    try {
+      // Fetch question details
+      const { data: question, error } = await supabase
+        .from('questions')
+        .select('title')
+        .eq('id', report.question_id)
+        .single()
+      
+      if (error) throw error
 
-    const notification: ReportNotification = {
-      id: report.id,
-      type: 'question_report',
-      title: 'New Question Report',
-      description: `Report: ${report.report_type} for "${question?.title}"`,
-      created_at: report.created_at,
-      read: false,
-      metadata: {
-        reportId: report.id,
-        questionId: report.question_id,
-        reportType: report.report_type,
-        reportedBy: report.reported_by,
-        status: report.status
+      const notification: ReportNotification = {
+        id: report.id,
+        type: 'question_report',
+        title: 'New Question Report',
+        description: `Report: ${report.report_type} for "${question?.title || 'Unknown Question'}"`,
+        created_at: report.created_at,
+        read: false,
+        metadata: {
+          reportId: report.id,
+          questionId: report.question_id,
+          reportType: report.report_type,
+          reportedBy: report.reported_by,
+          status: report.status
+        }
       }
+      
+      setNotifications(prev => [notification, ...prev])
+      
+      toast({
+        title: notification.title,
+        description: notification.description,
+      })
+    } catch (error) {
+      console.error('Error processing report notification:', error)
     }
-    
-    setNotifications(prev => [notification, ...prev])
-    
-    toast({
-      title: notification.title,
-      description: notification.description,
-    })
-  }, [filter, supabase, toast]);
+  }, [filter, supabase, toast])
 
   // Setup subscriptions
   const setupSubscriptions = useCallback(() => {
@@ -152,7 +159,8 @@ export function NotificationsHandler() {
           table: 'inquiries'
         },
         payload => handleNewInquiry(payload.new as InquiryPayload)
-      )      
+      )
+      .subscribe()
 
     // Subscribe to new reports
     const reportsSubscription = supabase
@@ -165,127 +173,80 @@ export function NotificationsHandler() {
           table: 'question_reports'
         },
         payload => handleNewReport(payload.new as ReportPayload)
-      )      
+      )
+      .subscribe()
 
     return () => {
       supabase.removeChannel(inquiriesSubscription)
       supabase.removeChannel(reportsSubscription)
     }
-  }, [supabase, handleNewInquiry, handleNewReport]);
+  }, [supabase, handleNewInquiry, handleNewReport])
 
   // Load notifications
   const loadNotifications = useCallback(async (loadMore = false) => {
     try {
       setLoading(true)
+      
+      // Check authentication status first
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session) {
+        console.error("No active session found")
+        router.push('/login')
+        return
+      }
+      
+      // Set up query parameters
       const currentPage = loadMore ? page + 1 : 0
-
-      const { data: user } = await supabase.auth.getUser()
-      if (!user.user) throw new Error('Not authenticated')
-
-      // Get notification states
-      const { data: states, error: statesError } = await supabase
-        .from('notification_states')
+      const offset = currentPage * limit
+      
+      // Apply filters if needed
+      let query = supabase
+        .from('notifications')
         .select('*')
-        .eq('user_id', user.user.id)
         .order('created_at', { ascending: false })
-
-      if (statesError) throw statesError
-
-      // Create a map of read states
-      const readStates = new Map(
-        states.map(state => [`${state.source_type}-${state.source_id}`, state.read])
-      )
-
-      // Load notifications based on filter
-      let notifications: Notification[] = []
-
-      if (filter !== 'reports') {
-        const { data: inquiries, error: inquiriesError } = await supabase
-          .from('inquiries')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .range(currentPage * NOTIFICATIONS_PER_PAGE, (currentPage + 1) * NOTIFICATIONS_PER_PAGE)
-
-        if (inquiriesError) throw inquiriesError
-
-        const inquiryNotifications = inquiries.map(inquiry => ({
-          id: inquiry.id,
-          type: `${inquiry.request_type}_inquiry` as 'technical_inquiry' | 'general_inquiry',
-          title: `New ${inquiry.request_type.charAt(0).toUpperCase() + inquiry.request_type.slice(1)} Inquiry`,
-          description: `${inquiry.first_name} ${inquiry.last_name} from ${inquiry.organization || 'Unknown Organization'}`,
-          created_at: inquiry.created_at,
-          read: readStates.get(`inquiry-${inquiry.id}`) ?? false,
-          metadata: {
-            inquiryId: inquiry.id,
-            requestType: inquiry.request_type,
-            email: inquiry.email,
-            status: inquiry.status
-          }
-        }))
-
-        notifications = [...notifications, ...inquiryNotifications]
+        .range(offset, offset + limit - 1)
+      
+      // Apply type filter if not 'all'
+      if (filter === 'inquiries') {
+        query = query.in('type', ['technical_inquiry', 'general_inquiry'])
+      } else if (filter === 'reports') {
+        query = query.eq('type', 'question_report')
       }
-
-      if (filter !== 'inquiries') {
-        const { data: reports, error: reportsError } = await supabase
-          .from('question_reports')
-          .select(`
-            *,
-            questions (
-              title
-            )
-          `)
-          .order('created_at', { ascending: false })
-          .range(currentPage * NOTIFICATIONS_PER_PAGE, (currentPage + 1) * NOTIFICATIONS_PER_PAGE)
-
-        if (reportsError) throw reportsError
-
-        const reportNotifications = reports.map(report => ({
-          id: report.id,
-          type: 'question_report' as const,
-          title: 'Question Report',
-          description: `Report: ${report.report_type} for "${report.questions.title}"`,
-          created_at: report.created_at,
-          read: readStates.get(`report-${report.id}`) ?? false,
-          metadata: {
-            reportId: report.id,
-            questionId: report.question_id,
-            reportType: report.report_type,
-            reportedBy: report.reported_by,
-            status: report.status
-          }
-        }))
-
-        notifications = [...notifications, ...reportNotifications]
+      
+      const { data, error } = await query
+        
+      if (error) throw error
+      
+      // Update notifications state
+      if (loadMore) {
+        setNotifications(prev => [...prev, ...(data || [])])
+        setPage(currentPage)
+      } else {
+        setNotifications(data || [])
+        setPage(0)
       }
-
-      // Sort combined notifications by date
-      notifications.sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      )
-
-      setNotifications(prev => 
-        loadMore ? [...prev, ...notifications] : notifications
-      )
-      setHasMore(notifications.length === NOTIFICATIONS_PER_PAGE)
-      setPage(currentPage)
+      
+      // Check if there are more results
+      setHasMore(data && data.length === limit)
+      
     } catch (error) {
-      console.error('Error loading notifications:', error)
+      console.error("Error loading notifications:", error)
       toast({
         variant: "destructive",
-        title: "Error loading notifications",
-        description: "Please try again later"
+        title: "Error",
+        description: "Failed to load notifications. Please try again."
       })
     } finally {
       setLoading(false)
     }
-  }, [filter, page, supabase, toast]);
-
+  }, [supabase, limit, page, filter, router, toast])
+  
   // Initialize notifications and subscriptions
   useEffect(() => {
-    loadNotifications();
-    return setupSubscriptions();
-  }, [filter, loadNotifications, setupSubscriptions]);
+    loadNotifications()
+    return setupSubscriptions()
+  }, [filter, loadNotifications, setupSubscriptions])
 
   // Mark notification as read
   const markAsRead = async (notification: Notification) => {
@@ -376,7 +337,6 @@ export function NotificationsHandler() {
         align="end" 
         className="w-[400px] max-h-[85vh]"
       >
-        {/* Component content remains the same */}
         <div className="px-2 py-3 border-b">
           <div className="flex items-center justify-between mb-2">
             <h2 className="font-semibold">Notifications</h2>
