@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useToast } from './use-toast';
 import { FileProgress, ImageCategory } from '@/types/images';
-import { compressImage, cleanFileName, formatImageName } from '@/lib/utils/image-upload';
+import { compressImage, cleanFileName, formatImageName } from '@/utils/image-upload';
 
 interface UseImageUploadOptions {
   onUploadComplete?: () => void;

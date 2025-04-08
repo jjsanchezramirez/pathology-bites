@@ -1,6 +1,6 @@
 // src/hooks/use-network-status.ts
 import { useState, useEffect } from 'react'
-import { networkMonitor } from '@/lib/utils/network-monitor'
+import { networkMonitor } from '@/utils/network-monitor'
 
 interface NetworkStatusOptions {
   /**

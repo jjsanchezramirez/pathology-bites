@@ -1,7 +1,6 @@
 // src/app/api/auth/callback/route.ts
-import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,20 +22,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
     
-    // Create response to manipulate cookies
-    const response = NextResponse.next()
-    
-    // Create a simpler client that doesn't rely on complex cookie handling
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-        }
-      }
-    )
+    // Use the new async createClient
+    const supabase = await createClient()
     
     // Exchange code for session
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
@@ -48,15 +35,6 @@ export async function GET(request: NextRequest) {
     // Get authenticated user data
     const { data: { user } } = await supabase.auth.getUser()
     console.log('User authenticated:', user?.id)
-    
-    // Handle special callback types
-    if (type === 'recovery') {
-      return NextResponse.redirect(new URL('/reset-password', request.url))
-    }
-
-    if (type === 'signup_confirmation') {
-      return NextResponse.redirect(new URL(next || '/email-verified', request.url))
-    }
     
     // If user exists, check for or create a user record in the database
     if (user) {

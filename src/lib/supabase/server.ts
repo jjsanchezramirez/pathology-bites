@@ -1,26 +1,32 @@
 // src/lib/supabase/server.ts
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import type { Database } from '@/types/supabase'
 
-export function createServerSupabase() {
-  const cookieStore = cookies()
+export async function createClient() {
+  // IMPORTANT: We must await cookies()
+  const cookieStore = await cookies()
   
-  return createServerClient<Database>(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value
+        // Use getAll/setAll pattern instead of individual get/set methods
+        getAll() {
+          return cookieStore.getAll()
         },
-        set(name, value, options) {
-          cookieStore.set(name, value, options)
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
         },
-        remove(name, options) {
-          cookieStore.delete(name)
-        }
-      }
+      },
     }
   )
 }
