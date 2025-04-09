@@ -12,60 +12,15 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-
-interface BaseNotification {
-  id: string
-  created_at: string
-  read: boolean
-}
-
-interface InquiryNotification extends BaseNotification {
-  type: 'technical_inquiry' | 'general_inquiry'
-  title: string
-  description: string
-  metadata: {
-    inquiryId: string
-    requestType: string
-    email: string
-    status: string
-  }
-}
-
-interface ReportNotification extends BaseNotification {
-  type: 'question_report'
-  title: string
-  description: string
-  metadata: {
-    reportId: string
-    questionId: string
-    reportType: string
-    reportedBy: string
-    status: string
-  }
-}
-
-type Notification = InquiryNotification | ReportNotification
-
-// Define types for the inquiry and report payload
-interface InquiryPayload {
-  id: string
-  first_name: string
-  last_name: string
-  organization?: string
-  request_type: string
-  email: string
-  status: string
-  created_at: string
-}
-
-interface ReportPayload {
-  id: string
-  question_id: string
-  report_type: string
-  reported_by: string
-  status: string
-  created_at: string
-}
+import { useAuthStatus } from '@/hooks/use-auth-status'
+import { useNetworkStatus } from '@/hooks/use-network-status'
+import { 
+  Notification, 
+  InquiryNotification, 
+  ReportNotification,
+  InquiryPayload,
+  ReportPayload
+} from '@/types/notifications'
 
 export function NotificationsHandler() {
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -77,6 +32,8 @@ export function NotificationsHandler() {
   const { toast } = useToast()
   const [limit, setLimit] = useState(10) // Default limit of 10 notifications
   const router = useRouter()
+  const { isAuthenticated, isLoading: authLoading } = useAuthStatus()
+  const isOnline = useNetworkStatus()
 
   // Handle new inquiry notification
   const handleNewInquiry = useCallback((inquiry: InquiryPayload) => {
@@ -146,8 +103,13 @@ export function NotificationsHandler() {
     }
   }, [filter, supabase, toast])
 
-  // Setup subscriptions
+  // Setup subscriptions - only when authenticated and online
   const setupSubscriptions = useCallback(() => {
+    // Only set up subscriptions if authenticated and online
+    if (!isAuthenticated || !isOnline) {
+      return () => {}
+    }
+
     // Subscribe to new inquiries
     const inquiriesSubscription = supabase
       .channel('inquiries-changes')
@@ -180,19 +142,23 @@ export function NotificationsHandler() {
       supabase.removeChannel(inquiriesSubscription)
       supabase.removeChannel(reportsSubscription)
     }
-  }, [supabase, handleNewInquiry, handleNewReport])
+  }, [supabase, handleNewInquiry, handleNewReport, isAuthenticated, isOnline])
 
-  // Load notifications
+  // Load notifications with proper auth and network checks
   const loadNotifications = useCallback(async (loadMore = false) => {
+    // Don't attempt to load if not authenticated or offline
+    if (!isAuthenticated || authLoading || !isOnline) {
+      return
+    }
+    
     try {
       setLoading(true)
       
-      // Check authentication status first
+      // Double-check authentication status to be safe
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session) {
-        console.error("No active session found")
-        router.push('/login')
+        console.log("No active session available, skipping notifications load")
         return
       }
       
@@ -232,24 +198,42 @@ export function NotificationsHandler() {
       
     } catch (error) {
       console.error("Error loading notifications:", error)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load notifications. Please try again."
-      })
+      
+      // Check if this is an auth error specifically
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      const isAuthError = errorMessage.toLowerCase().includes('auth') || 
+                         errorMessage.toLowerCase().includes('session') ||
+                         errorMessage.toLowerCase().includes('unauthorized')
+      
+      if (isAuthError) {
+        console.log("Authentication error detected, avoiding notification")
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load notifications. Please try again."
+        })
+      }
     } finally {
       setLoading(false)
     }
-  }, [supabase, limit, page, filter, router, toast])
+  }, [supabase, limit, page, filter, toast, isAuthenticated, authLoading, isOnline])
   
-  // Initialize notifications and subscriptions
+  // Initialize notifications and subscriptions when auth state or network state changes
   useEffect(() => {
-    loadNotifications()
-    return setupSubscriptions()
-  }, [filter, loadNotifications, setupSubscriptions])
+    // Only proceed if authenticated and online
+    if (isAuthenticated && !authLoading && isOnline) {
+      loadNotifications()
+      return setupSubscriptions()
+    }
+    return () => {}
+  }, [filter, loadNotifications, setupSubscriptions, isAuthenticated, authLoading, isOnline])
 
   // Mark notification as read
   const markAsRead = async (notification: Notification) => {
+    // Don't attempt if not authenticated
+    if (!isAuthenticated || !isOnline) return
+    
     try {
       const { data: user } = await supabase.auth.getUser()
       if (!user.user) return
@@ -316,6 +300,11 @@ export function NotificationsHandler() {
   }
 
   const unreadCount = notifications.filter(n => !n.read).length
+
+  // Don't render anything if not authenticated
+  if (!isAuthenticated || authLoading) {
+    return null
+  }
 
   return (
     <DropdownMenu>
