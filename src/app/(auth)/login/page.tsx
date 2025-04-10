@@ -2,14 +2,13 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { LoginForm } from '@/components/auth/login-form'
 import { useRouter } from 'next/navigation'
-import { Microscope } from "lucide-react"
-import Link from 'next/link'
+import { LoginForm } from '@/components/auth/forms/login-form'
+import { AuthPageLayout } from '@/components/auth/ui/auth-page-layout'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
-import { Icons } from "@/components/theme/icons"
+import { LoadingSpinner } from '@/components/common/loading-spinner'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
@@ -33,14 +32,12 @@ export default function LoginPage() {
         const supabase = createClient()
         try {
           const { data, error } = await supabase.auth.getSession()
-          console.log("Session check:", data, error)
           
           if (data.session) {
             console.log("User is logged in, redirecting to dashboard")
             router.push('/dashboard')
           }
         } catch (error) {
-          // Ignore Auth Session Missing errors
           console.log('Auth error:', error)
         }
       } finally {
@@ -78,32 +75,18 @@ export default function LoginPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Icons.spinner className="h-5 w-5 animate-spin" />
+        <LoadingSpinner size="md" text="Loading..." />
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.08),transparent_25%),radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.08),transparent_25%),linear-gradient(to_bottom,rgba(56,189,248,0.05),transparent)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-[0.15]" />
-      
-      <div className="relative flex flex-col items-center justify-center min-h-screen p-6">
-        <div className="w-full max-w-sm space-y-8">
-          <Link href="/" className="flex items-center gap-2 justify-center hover:opacity-80 transition-opacity">
-            <Microscope className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Pathology Bites
-            </span>
-          </Link>
-
-          <LoginForm 
-            onSubmit={handleEmailSignIn}
-            onGoogleSignIn={handleGoogleSignIn}
-            isLoading={isLoading}
-          />
-        </div>
-      </div>
-    </div>
+    <AuthPageLayout maxWidth="sm">
+      <LoginForm 
+        onSubmit={handleEmailSignIn}
+        onGoogleSignIn={handleGoogleSignIn}
+        isLoading={isLoading}
+      />
+    </AuthPageLayout>
   )
 }

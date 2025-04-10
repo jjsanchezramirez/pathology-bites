@@ -1,6 +1,7 @@
 // src/hooks/use-network-status.ts
+
 import { useState, useEffect } from 'react'
-import { networkMonitor } from '@/utils/network-monitor'
+import { networkService } from '@/lib/network/network-service'
 
 interface NetworkStatusOptions {
   /**
@@ -18,7 +19,7 @@ interface NetworkStatusOptions {
 
 /**
  * Hook that tracks network connectivity status
- * Uses the centralized network monitor for consistent status across the app
+ * Uses the centralized network service for consistent status across the app
  * 
  * @param options Configuration options
  * @returns Boolean indicating if the network appears to be online
@@ -26,21 +27,21 @@ interface NetworkStatusOptions {
 export function useNetworkStatus(options: NetworkStatusOptions = {}) {
   const { pingUrl } = options
   
-  const [isOnline, setIsOnline] = useState<boolean>(networkMonitor.isConnected())
+  const [isOnline, setIsOnline] = useState<boolean>(networkService.isConnected())
   
   useEffect(() => {
-    // If a custom ping URL is provided, set it on the monitor
+    // If a custom ping URL is provided, set it on the service
     if (pingUrl) {
-      networkMonitor.setPingUrl(pingUrl)
+      networkService.setPingUrl(pingUrl)
     }
     
     // Register for status updates
-    const removeListener = networkMonitor.addListener((status) => {
+    const removeListener = networkService.addNetworkListener((status) => {
       setIsOnline(status)
     })
     
     // Force an immediate connectivity check
-    networkMonitor.checkConnection()
+    networkService.checkConnection()
     
     return () => {
       removeListener()

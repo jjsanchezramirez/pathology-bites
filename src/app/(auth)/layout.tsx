@@ -4,9 +4,7 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      {children}
-    </div>
-  )
+  // The layout is now only a simple wrapper
+  // Most styling will be handled by AuthPageLayout component
+  return children
 }

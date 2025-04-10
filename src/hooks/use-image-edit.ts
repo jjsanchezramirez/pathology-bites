@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useToast } from './use-toast';
-import { deleteImage, updateImage } from '@/utils/images';
+import { deleteImage, updateImage } from '@/lib/images/images';
 import type { ImageData, ImageFormData } from '@/types/images';
 
 interface UseImageEditOptions {

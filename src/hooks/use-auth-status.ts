@@ -1,6 +1,7 @@
 // src/hooks/use-auth-status.ts
+
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { networkService } from '@/lib/network/network-service'
 
 /**
  * Hook to track the authentication status of the current user
@@ -15,38 +16,15 @@ export function useAuthStatus() {
   const checkAuth = useCallback(async () => {
     try {
       setIsLoading(true)
-      const supabase = createClient()
       
-      // First try getSession
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        
-        if (sessionError) {
-          throw sessionError
-        }
-        
-        setIsAuthenticated(!!session)
-        setLastError(null)
-        return
-      } catch (sessionError) {
-        // If getSession fails, fall back to getUser
-        try {
-          const { data: { user }, error: userError } = await supabase.auth.getUser()
-          
-          if (userError) {
-            throw userError
-          }
-          
-          setIsAuthenticated(!!user)
-          setLastError(null)
-          return
-        } catch (userError) {
-          // If both methods fail, assume not authenticated
-          console.warn('Authentication check failed:', userError)
-          setIsAuthenticated(false)
-          setLastError(userError instanceof Error ? userError : new Error(String(userError)))
-        }
-      }
+      // First use the network service's cached value for quick responses
+      const isUserAuthenticated = networkService.isUserAuthenticated()
+      setIsAuthenticated(isUserAuthenticated)
+      
+      // Then do a fresh check against Supabase
+      const freshAuthState = await networkService.checkAuthentication()
+      setIsAuthenticated(freshAuthState)
+      setLastError(null)
     } catch (error) {
       console.error('Error checking auth status:', error)
       setIsAuthenticated(false)
@@ -61,26 +39,15 @@ export function useAuthStatus() {
     // Initial check
     checkAuth()
     
-    // Set up focus listener
-    const handleFocus = () => {
-      checkAuth()
-    }
+    // Set up a listener with the network service for auth status changes
+    const removeListener = networkService.addAuthListener((status) => {
+      setIsAuthenticated(status)
+      setIsLoading(false)
+    })
     
-    // Set up storage listener for auth changes
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key?.includes('supabase.auth') || event.key === null) {
-        checkAuth()
-      }
-    }
-    
-    // Add event listeners
-    window.addEventListener('focus', handleFocus)
-    window.addEventListener('storage', handleStorageChange)
-    
-    // Clean up event listeners
+    // Clean up listener
     return () => {
-      window.removeEventListener('focus', handleFocus)
-      window.removeEventListener('storage', handleStorageChange)
+      removeListener()
     }
   }, [checkAuth])
   

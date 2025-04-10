@@ -2,7 +2,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { useNetworkStatus } from '@/hooks/use-network-status'
+import { useNetworkStatus } from '@/lib/network/network-service'
 import { cn } from '@/lib/utils'
 import { Wifi, WifiOff } from 'lucide-react'
 

@@ -14,12 +14,16 @@ export async function GET(request: NextRequest) {
     console.log('Callback params:', { 
       code: code ? 'exists' : 'missing', 
       type, 
-      next 
+      next,
+      fullUrl: request.url
     })
     
     if (!code) {
-      console.log('No code provided, redirecting to login')
-      return NextResponse.redirect(new URL('/login', request.url))
+      console.log('No code provided, redirecting to auth-error')
+      const errorUrl = new URL('/auth-error', request.url)
+      errorUrl.searchParams.set('error', 'missing_code')
+      errorUrl.searchParams.set('description', 'Authentication code is missing from the request')
+      return NextResponse.redirect(errorUrl)
     }
     
     // Use the new async createClient
@@ -29,14 +33,26 @@ export async function GET(request: NextRequest) {
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
     if (exchangeError) {
       console.error('Failed to exchange code for session:', exchangeError)
-      return NextResponse.redirect(new URL('/login?error=exchange', request.url))
+      const errorUrl = new URL('/auth-error', request.url)
+      errorUrl.searchParams.set('error', 'exchange_failed')
+      errorUrl.searchParams.set('code', exchangeError.status?.toString() || '')
+      errorUrl.searchParams.set('description', exchangeError.message)
+      return NextResponse.redirect(errorUrl)
+    }
+    
+    // For signup confirmation, bypass the middleware by adding a special parameter
+    if (type === 'signup_confirmation') {
+      console.log('Signup confirmation, redirecting to email-verified page')
+      
+      // Add a bypass parameter to avoid middleware redirects
+      return NextResponse.redirect(new URL('/email-verified?verified=true', request.url))
     }
     
     // Get authenticated user data
     const { data: { user } } = await supabase.auth.getUser()
     console.log('User authenticated:', user?.id)
     
-    // If user exists, check for or create a user record in the database
+    // For other flows, continue with existing logic
     if (user) {
       console.log('Checking if user exists in database')
       
@@ -65,21 +81,23 @@ export async function GET(request: NextRequest) {
             user_type: 'other'
           })
           
-          console.log('User profile created, redirecting to dashboard')
+          console.log('User profile created')
         } catch (error) {
           console.error('Failed to create user profile:', error)
         }
-        
-        // Redirect to dashboard
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+      
+      // If we have a 'next' parameter, prioritize it for redirection
+      if (next) {
+        console.log(`Redirecting to specified next path: ${next}`)
+        return NextResponse.redirect(new URL(next, request.url))
+      }
+      
+      // Otherwise, redirect based on role
+      if (existingUser?.role === 'admin') {
+        return NextResponse.redirect(new URL('/admin/dashboard', request.url))
       } else {
-        // Existing user - redirect based on role
-        console.log('Existing user found with role:', existingUser.role)
-        if (existingUser.role === 'admin') {
-          return NextResponse.redirect(new URL('/admin/dashboard', request.url))
-        } else {
-          return NextResponse.redirect(new URL('/dashboard', request.url))
-        }
+        return NextResponse.redirect(new URL('/dashboard', request.url))
       }
     }
     
@@ -87,6 +105,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   } catch (error) {
     console.error('Auth callback error:', error)
-    return NextResponse.redirect(new URL('/login?error=unexpected', request.url))
+    const errorUrl = new URL('/auth-error', request.url)
+    errorUrl.searchParams.set('error', 'unexpected')
+    errorUrl.searchParams.set('description', error instanceof Error ? error.message : 'An unexpected error occurred')
+    return NextResponse.redirect(errorUrl)
   }
 }

@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { IMAGE_CATEGORIES, type ImageCategory, type UploadDialogProps } from '@/types/images';
-import { getCategoryDescription, formatSize } from '@/utils/image-upload';
+import { getCategoryDescription, formatSize } from '@/lib/images/image-upload';
 import { useImageUpload } from '@/hooks/use-image-upload';
 
 export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps) {
