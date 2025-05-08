@@ -4,12 +4,15 @@ module.exports = {
       'next/core-web-vitals',
       'plugin:@typescript-eslint/recommended'
     ],
-    plugins: ['unused-imports'],
+    plugins: [
+      'unused-imports'
+    ],
     rules: {
       '@typescript-eslint/no-unused-vars': ['error', { 
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_'
       }],
+      '@next/next/no-img-element': 'warn',
       'unused-imports/no-unused-imports': 'error',
       'unused-imports/no-unused-vars': [
         'warn',
@@ -19,7 +22,6 @@ module.exports = {
           args: 'after-used', 
           argsIgnorePattern: '^_' 
         }
-      ],
-      '@next/next/no-img-element': 'warn' // Downgrade to warning if needed
+      ]
     }
   }
