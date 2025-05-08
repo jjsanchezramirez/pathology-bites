@@ -8,6 +8,39 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Grid pattern for the coming soon page */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Optional animation for the decorative elements */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.float-animation {
+  animation: float 6s ease-in-out infinite;
+}
+
+.float-animation-slow {
+  animation: float 8s ease-in-out infinite;
+}
+
+.float-animation-fast {
+  animation: float 4s ease-in-out infinite;
+}
+
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }

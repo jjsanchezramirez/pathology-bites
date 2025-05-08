@@ -1,7 +1,7 @@
 // src/app/(auth)/auth-error/page.tsx
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AlertTriangle } from "lucide-react"
 import Link from 'next/link'
@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button"
 import { AuthPageLayout } from '@/components/auth/ui/auth-page-layout'
 import { StatusCard } from '@/components/auth/ui/status-card'
 
-export default function AuthErrorPage() {
+// Separate component that uses useSearchParams
+function AuthErrorContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [error, setError] = useState({
@@ -65,33 +66,54 @@ export default function AuthErrorPage() {
   }, [searchParams])
 
   return (
-    <AuthPageLayout>
-      <StatusCard
-        title={error.title}
-        description={error.description}
-        icon={<AlertTriangle className="h-6 w-6" />}
-        content="If you're trying to sign up or reset your password, you can request a new link below."
-        footer={
-          <div className="flex flex-col gap-4 w-full">
-            {error.code === 'otp_expired' && (
-              <Button 
-                onClick={() => router.push('/forgot-password')}
-                className="w-full"
-              >
-                Request New Link
-              </Button>
-            )}
+    <StatusCard
+      title={error.title}
+      description={error.description}
+      icon={<AlertTriangle className="h-6 w-6" />}
+      content="If you're trying to sign up or reset your password, you can request a new link below."
+      footer={
+        <div className="flex flex-col gap-4 w-full">
+          {error.code === 'otp_expired' && (
             <Button 
-              variant={error.code === 'otp_expired' ? "outline" : "default"}
+              onClick={() => router.push('/forgot-password')}
               className="w-full"
-              asChild
             >
-              <Link href="/login">Back to Login</Link>
+              Request New Link
             </Button>
-          </div>
-        }
-        variant="error"
-      />
+          )}
+          <Button 
+            variant={error.code === 'otp_expired' ? "outline" : "default"}
+            className="w-full"
+            asChild
+          >
+            <Link href="/login">Back to Login</Link>
+          </Button>
+        </div>
+      }
+      variant="error"
+    />
+  )
+}
+
+// Loading fallback component
+function AuthErrorLoading() {
+  return (
+    <StatusCard
+      title="Loading..."
+      description="Please wait while we process your request."
+      icon={<AlertTriangle className="h-6 w-6" />}
+      variant="default"
+    />
+  )
+}
+
+// Main page component with Suspense
+export default function AuthErrorPage() {
+  return (
+    <AuthPageLayout>
+      <Suspense fallback={<AuthErrorLoading />}>
+        <AuthErrorContent />
+      </Suspense>
     </AuthPageLayout>
   )
 }

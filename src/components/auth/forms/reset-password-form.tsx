@@ -1,4 +1,4 @@
-// src/components/auth/reset-password-form.tsx
+// src/components/auth/forms/reset-password-form.tsx
 "use client"
 
 import { useForm } from "react-hook-form"
@@ -66,6 +66,7 @@ export function ResetPasswordForm({
         <div className="grid gap-4">
           <FormField
             id="password"
+            name="password" // Add name property
             label="New Password"
             type="password"
             autoComplete="new-password"
@@ -77,6 +78,7 @@ export function ResetPasswordForm({
           
           <FormField
             id="confirmPassword"
+            name="confirmPassword" // Add name property
             label="Confirm Password"
             type="password"
             autoComplete="new-password"

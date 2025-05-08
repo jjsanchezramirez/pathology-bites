@@ -3,16 +3,18 @@ import { ReactNode } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { UseFormRegister, RegisterOptions, FieldValues, Path } from "react-hook-form"
 
-interface FormFieldProps {
+interface FormFieldProps<TFieldValues extends FieldValues = FieldValues> {
   id: string;
+  name: Path<TFieldValues>; // Separate name for type-safe form registration
   label: string;
   type?: string;
   placeholder?: string;
   error?: string;
   disabled?: boolean;
-  register?: any; // React Hook Form register function
-  registerOptions?: any; // React Hook Form register options
+  register?: UseFormRegister<TFieldValues>;
+  registerOptions?: RegisterOptions<TFieldValues, Path<TFieldValues>>;
   className?: string;
   required?: boolean;
   autoComplete?: string;
@@ -20,8 +22,9 @@ interface FormFieldProps {
   children?: ReactNode;
 }
 
-export function FormField({
+export function FormField<TFieldValues extends FieldValues = FieldValues>({
   id,
+  name,
   label,
   type = "text",
   placeholder,
@@ -34,14 +37,14 @@ export function FormField({
   autoComplete,
   rightElement,
   children,
-}: FormFieldProps) {
+}: FormFieldProps<TFieldValues>) {
   // Generate ID for ARIA attributes
   const labelId = `${id}-label`;
   const errorId = error ? `${id}-error` : undefined;
   
   // Field registration properties
   const registrationProps = register 
-    ? register(id, registerOptions) 
+    ? register(name, registerOptions) 
     : {};
 
   return (

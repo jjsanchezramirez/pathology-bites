@@ -396,9 +396,6 @@ export function useAuth() {
       // Get user directly from getUser() as recommended by Supabase
       const { data: { user } } = await supabase.auth.getUser()
       
-      // Only check session for session properties if needed
-      const { data: { session } } = await supabase.auth.getSession()
-      
       return {
         isAuthenticated: !!user, // Use presence of user to determine authentication
         user: user || null

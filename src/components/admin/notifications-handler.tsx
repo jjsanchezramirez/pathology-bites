@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useRouter } from 'next/navigation'
 import { Bell, Loader2, AlertCircle, Info, ChevronDown, Flag, CheckCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
@@ -30,8 +29,7 @@ export function NotificationsHandler() {
   const [filter, setFilter] = useState<'all' | 'inquiries' | 'reports'>('all')
   const supabase = createClientComponentClient()
   const { toast } = useToast()
-  const [limit, setLimit] = useState(10) // Default limit of 10 notifications
-  const router = useRouter()
+  const limit = 10 // Default limit of 10 notifications
   const { isAuthenticated, isLoading: authLoading } = useAuthStatus()
   const isOnline = useNetworkStatus()
 

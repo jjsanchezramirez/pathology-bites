@@ -115,6 +115,7 @@ export function LoginForm({
           <div className="grid gap-6">
             <FormField
               id="email"
+              name="email" // Add name property
               label="Email"
               type="email"
               placeholder="name@example.com"
@@ -127,6 +128,7 @@ export function LoginForm({
             
             <FormField
               id="password"
+              name="password" // Add name property
               label="Password"
               type="password"
               autoComplete="current-password"

@@ -100,13 +100,6 @@ class NetworkAuthMonitor {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const response = await fetch(this.pingUrl, {
-        method: 'HEAD',
-        mode: 'no-cors',
-        cache: 'no-store',
-        signal: controller.signal
-      });
-
       clearTimeout(timeoutId);
       const wasOffline = !this.hasConnectivity;
       this.hasConnectivity = true;
@@ -130,16 +123,16 @@ class NetworkAuthMonitor {
     if (!this.hasConnectivity) {
       return; // Don't try to check auth when offline
     }
-
+  
     try {
       const supabase = createClient();
       
       // First try getSession which is more reliable
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (sessionError) {
-          throw sessionError;
+        if (error) {
+          throw error;
         }
         
         const wasUnauthenticated = !this.isAuthenticated;
@@ -151,13 +144,13 @@ class NetworkAuthMonitor {
         }
         
         return;
-      } catch (sessionError) {
+      } catch {  // Remove the parameter entirely
         // If getSession fails, try getUser as fallback
         try {
-          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          const { data: { user }, error } = await supabase.auth.getUser();
           
-          if (userError) {
-            throw userError;
+          if (error) {
+            throw error;
           }
           
           const wasUnauthenticated = !this.isAuthenticated;
@@ -169,7 +162,7 @@ class NetworkAuthMonitor {
           }
           
           return;
-        } catch (userError) {
+        } catch {  // Remove the parameter entirely
           // Both methods failed, assume not authenticated
           if (this.isAuthenticated) {
             this.isAuthenticated = false;

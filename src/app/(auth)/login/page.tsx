@@ -33,6 +33,11 @@ export default function LoginPage() {
         try {
           const { data, error } = await supabase.auth.getSession()
           
+          if (error) {
+            console.log('Session error:', error)
+            return
+          }
+                    
           if (data.session) {
             console.log("User is logged in, redirecting to dashboard")
             router.push('/dashboard')

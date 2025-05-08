@@ -110,6 +110,7 @@ export function SignupForm({
           <div className="grid grid-cols-2 gap-4">
             <FormField
               id="firstName"
+              name="firstName" // Add name property
               label="First Name"
               placeholder="John"
               error={errors.firstName?.message}
@@ -119,6 +120,7 @@ export function SignupForm({
             />
             <FormField
               id="lastName"
+              name="lastName" // Add name property
               label="Last Name"
               placeholder="Doe"
               error={errors.lastName?.message}
@@ -130,6 +132,7 @@ export function SignupForm({
           
           <FormField
             id="email"
+            name="email" // Add name property
             label="Email"
             type="email"
             placeholder="name@example.com"
@@ -142,6 +145,7 @@ export function SignupForm({
           
           <FormField
             id="userType"
+            name="userType" // Add name property
             label="What best describes you?"
             error={errors.userType?.message}
             required
@@ -171,6 +175,7 @@ export function SignupForm({
           
           <FormField
             id="password"
+            name="password" // Add name property
             label="Password"
             type="password"
             autoComplete="new-password"
@@ -182,6 +187,7 @@ export function SignupForm({
           
           <FormField
             id="confirmPassword"
+            name="confirmPassword" // Add name property
             label="Confirm Password"
             type="password"
             autoComplete="new-password"

@@ -12,12 +12,35 @@ interface GoogleSignInProps {
   onSignInEnd?: () => void
 }
 
+interface GoogleCredentialResponse {
+  credential: string;
+  select_by: string;
+  client_id?: string;
+}
+
+interface GoogleInitializeConfig {
+  client_id: string;
+  callback: string;
+  auto_select: boolean;
+  cancel_on_tap_outside: boolean;
+}
+
+interface GoogleButtonOptions {
+  type: 'standard' | 'icon';
+  theme: 'outline' | 'filled_blue' | 'filled_black';
+  size: 'large' | 'medium' | 'small';
+  text: 'signin_with' | 'signup_with' | 'continue_with' | 'signin';
+  shape: 'rectangular' | 'pill' | 'circle' | 'square';
+  logo_alignment: 'left' | 'center';
+  width?: number;
+}
+
 export function GoogleSignIn({ onSignInStart, onSignInEnd }: GoogleSignInProps) {
   const router = useRouter()
   const { toast } = useToast()
 
   // Handle the Google credential response
-  const handleCredentialResponse = useCallback(async (response: any) => {
+  const handleCredentialResponse = useCallback(async (response: GoogleCredentialResponse) => {
     try {
       onSignInStart?.()
       console.log("Google authentication successful, verifying with Supabase...")
@@ -100,11 +123,11 @@ export function GoogleSignIn({ onSignInStart, onSignInEnd }: GoogleSignInProps) 
         onLoad={() => {
           // Initialize Google Sign-In after the script loads
           window.google?.accounts.id.initialize({
-            client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+            client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',  // Add fallback empty string
             callback: 'handleCredentialResponse',
             auto_select: false,
             cancel_on_tap_outside: true,
-          })
+          })          
           
           // Display the Google Sign-In button
           window.google?.accounts.id.renderButton(
@@ -134,12 +157,12 @@ declare global {
     google?: {
       accounts: {
         id: {
-          initialize: (config: any) => void
-          renderButton: (element: HTMLElement, options: any) => void
-          prompt: () => void
+          initialize: (config: GoogleInitializeConfig) => void;
+          renderButton: (element: HTMLElement, options: GoogleButtonOptions) => void;
+          prompt: () => void;
         }
       }
     }
-    handleCredentialResponse: (response: any) => void
+    handleCredentialResponse?: (response: GoogleCredentialResponse) => void; // Make this optional with ?
   }
 }

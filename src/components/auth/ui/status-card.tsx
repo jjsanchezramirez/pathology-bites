@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils"
 
 interface StatusCardProps {
   title: string;
-  description: string;
+  description: ReactNode; // Changed from string to ReactNode
   icon: ReactNode;
-  content?: string;
+  content?: ReactNode; // Changed from string to ReactNode
   footer?: ReactNode;
   variant?: "default" | "success" | "error" | "warning" | "info";
   className?: string;
@@ -55,9 +55,9 @@ export function StatusCard({
       </CardHeader>
       {content && (
         <CardContent className="text-center">
-          <p className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground">
             {content}
-          </p>
+          </div>
         </CardContent>
       )}
       {footer && (

@@ -75,7 +75,7 @@ class NetworkMonitor {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const response = await fetch(this.pingUrl, {
+      await fetch(this.pingUrl, {
         method: 'HEAD',
         mode: 'no-cors',
         cache: 'no-store',

@@ -1,4 +1,4 @@
-// src/utils/supabase/middleware.ts
+// src/lib/supabase/middleware.ts
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
@@ -6,6 +6,48 @@ export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
     request,
   })
+  
+  // Check for coming soon mode via environment variable
+  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
+  
+  // Paths that should be accessible even during coming soon mode
+  const allowedPaths = [
+    '/coming-soon',
+    '/login', 
+    '/signup',
+    '/forgot-password', 
+    '/reset-password', 
+    '/verify-email', 
+    '/check-email', 
+    '/email-verified',
+    '/auth-error',
+    '/api/',
+    '/_next',
+    '/favicon.ico',
+    '/icons'
+  ]
+  
+  // Check if we should bypass coming soon mode
+  const bypassParam = request.nextUrl.searchParams.get('bypass')
+  const hasAdminAccess = bypassParam === 'true'
+  
+  // Get the current path
+  const path = request.nextUrl.pathname
+  
+  // Special handling for site-wide coming soon mode
+  if (isComingSoonMode) {
+    // Skip coming soon mode for certain paths or if bypass parameter is present
+    const shouldSkip = allowedPaths.some(allowedPath => 
+      path.startsWith(allowedPath)
+    ) || hasAdminAccess
+    
+    if (!shouldSkip && path !== '/coming-soon') {
+      // Redirect to coming soon page
+      return NextResponse.rewrite(new URL('/coming-soon', request.url))
+    }
+  }
+  
+  // Continue with existing auth logic below
   
   // Check for auth errors in the URL hash
   const url = request.nextUrl.clone()
@@ -36,7 +78,7 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({
             request,
           })
@@ -57,6 +99,7 @@ export async function updateSession(request: NextRequest) {
   const publicRoutes = [
     '/login', 
     '/signup', 
+    '/coming-soon',
     '/forgot-password', 
     '/reset-password', 
     '/verify-email', 
@@ -68,7 +111,6 @@ export async function updateSession(request: NextRequest) {
     '/debug'  // Keep debug page accessible
   ]
   
-  const path = request.nextUrl.pathname
   const isAuthRoute = authRoutes.some(route => path.startsWith(route))
   const isAdminRoute = adminRoutes.some(route => path.startsWith(route))
   const isPublicRoute = publicRoutes.some(route => path === route || path.startsWith(route))

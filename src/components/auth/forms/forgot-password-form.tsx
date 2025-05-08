@@ -64,6 +64,7 @@ export function ForgotPasswordForm({
         <div className="grid gap-4">
           <FormField
             id="email"
+            name="email" // Add the name property with the same value as id
             label="Email"
             type="email"
             placeholder="name@example.com"
