@@ -3,7 +3,7 @@ import { ConditionalThemeProvider } from '@/components/theme/conditional-theme-p
 import { Toaster } from "@/components/ui/toaster"
 import { ConnectionStatus } from "@/components/network/connection-status"
 import { cn } from '@/lib/utils'
-import '@/styles/globals.css'
+import "@/styles/globals.css"
 
 export const metadata = {
   title: 'Pathology Bites',

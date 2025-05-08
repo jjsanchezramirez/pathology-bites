@@ -127,7 +127,7 @@ export default function DemoQuestion() {
                   p-2 rounded-md text-left border text-sm transition-all duration-500
                   transform ${showContent ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}
                   ${!isAnswered ? 'hover:border-primary/50 hover:bg-primary/5' : ''}
-                  ${isSelected ? 'border-primary' : 'border-border'}
+                  ${isSelected ? 'border-primary' : 'border'}
                   ${showCorrect ? 'bg-green-50 border-green-500 dark:bg-green-950/30' : ''}
                   ${showIncorrect ? 'bg-red-50 border-red-500 dark:bg-red-950/30' : ''}
                 `}

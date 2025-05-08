@@ -13,7 +13,7 @@ export function AuthDivider({
   return (
     <div className={cn("relative text-center text-sm", className)}>
       <div className="absolute inset-0 flex items-center">
-        <div className="w-full border-t border-border" />
+        <div className="w-full border-t border" />
       </div>
       <div className="relative z-10">
         <span className="bg-card px-2 text-muted-foreground">
