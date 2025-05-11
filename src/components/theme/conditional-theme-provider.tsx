@@ -1,12 +1,14 @@
+// src/components/theme/conditional-theme-provider.tsx
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import type { ThemeProviderProps } from 'next-themes'
 
 export function ConditionalThemeProvider({ children, ...props }: ThemeProviderProps) {
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
   
   // Check if the current route is an admin or dashboard route where theming is allowed
   const isThemedRoute = pathname.startsWith('/admin') || pathname.startsWith('/dashboard')
@@ -18,13 +20,24 @@ export function ConditionalThemeProvider({ children, ...props }: ThemeProviderPr
     forcedTheme: isThemedRoute ? undefined : 'light'
   }
   
-  // Optional: Clean up any dark theme remnants if not on a themed route
+  // Set isClient state once mounted
   useEffect(() => {
-    if (!isThemedRoute) {
+    setMounted(true)
+  }, [])
+  
+  // Apply light theme to DOM for public routes
+  useEffect(() => {
+    if (!isThemedRoute && mounted) {
       // This is a public page - ensure it's in light mode
       document.documentElement.classList.remove('dark')
+      document.documentElement.style.colorScheme = 'light'
+      
+      // Reset any persistent local storage theme for public pages
+      if (localStorage.getItem('theme') === 'dark') {
+        localStorage.setItem('theme', 'light')
+      }
     }
-  }, [isThemedRoute])
+  }, [isThemedRoute, mounted, pathname])
 
   // Always use ThemeProvider but with conditional forcedTheme
   return <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>

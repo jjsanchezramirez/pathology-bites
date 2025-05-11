@@ -1,27 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'htsnkuudinrcgfqlqmpi.supabase.co',
-        pathname: '/storage/v1/object/public/images/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.pathologyoutlines.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.captodayonline.com',
-      },
-    ],
-  },
-  experimental: {
-    serverActions: {
-      enabled: true
-    }
-  }
-}
+  reactStrictMode: true,
+  // Next.js 15 no longer needs swcMinify option, it's removed
+};
 
-module.exports = nextConfig
+// Use CommonJS syntax for Node.js compatibility
+module.exports = nextConfig;
