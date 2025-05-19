@@ -24,7 +24,7 @@ export function AuthPageLayout({
     <div className="flex min-h-screen flex-col">
       {/* Background patterns */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.08),transparent_25%),radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.08),transparent_25%),linear-gradient(to_bottom,rgba(56,189,248,0.05),transparent)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-[0.15]" />
+      <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] opacity-[0.15]" />
       
       {/* Content container */}
       <div className="relative flex flex-col items-center justify-center min-h-screen p-6">
@@ -32,7 +32,7 @@ export function AuthPageLayout({
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 justify-center hover:opacity-80 transition-opacity">
             <Microscope className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               Pathology Bites
             </span>
           </Link>

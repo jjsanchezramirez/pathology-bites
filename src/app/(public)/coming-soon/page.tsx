@@ -47,10 +47,10 @@ export default function ComingSoonPage() {
       {/* Hero/Coming Soon Section - Full Screen */}
       <section className="relative min-h-screen flex flex-col items-center justify-center py-24">
         {/* Background Gradients */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent animate-gradient" />
+        <div className="absolute inset-0 bg-linear-to-b from-primary/5 via-transparent to-transparent animate-gradient" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.12),transparent_25%)] animate-gradient" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.13),transparent_25%)] animate-gradient" />
-        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-[0.15]" />
+        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] opacity-[0.15]" />
         
         {/* Main Content */}
         <div className="container mx-auto px-6 max-w-6xl z-10">
@@ -59,7 +59,7 @@ export default function ComingSoonPage() {
             <div className="w-full lg:w-3/5 space-y-6 text-center lg:text-left">
               <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold">
                 Our website is{" "}
-                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent animate-gradient">
+                <span className="bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent animate-gradient">
                   under construction
                 </span>
               </h1>
@@ -72,7 +72,7 @@ export default function ComingSoonPage() {
               {/* Subscription Form */}
               <div className="mt-8">
                 <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto lg:mx-0">
-                  <div className="flex items-center rounded-full bg-white p-2 pl-4 shadow-sm border border-gray-100 flex-grow">
+                  <div className="flex items-center rounded-full bg-white p-2 pl-4 shadow-xs border border-gray-100 grow">
                     <span className="sr-only">
                       <Label htmlFor="email-input">Email address</Label>
                     </span>
@@ -93,7 +93,7 @@ export default function ComingSoonPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm flex-grow"
+                      className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm grow"
                       aria-label="Email address"
                     />
                     <Button 
@@ -129,7 +129,7 @@ export default function ComingSoonPage() {
 
       {/* Preview Section */}
       <section id="preview-section" className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary/5 to-transparent" />
         <div className="container mx-auto px-4 relative">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl font-bold mb-4">
@@ -146,7 +146,7 @@ export default function ComingSoonPage() {
 
       {/* Features Section */}
       <section className="relative py-24">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-b from-primary/5 to-transparent" />
         <div className="container mx-auto px-4 relative">
           <h2 className="text-center text-4xl font-bold mb-16">
             Transform Your Learning Experience
@@ -173,7 +173,7 @@ export default function ComingSoonPage() {
 
       {/* CTA Section */}
       <section className="bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-tr from-primary-foreground/10 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-tr from-primary-foreground/10 to-transparent" />
         <div className="container mx-auto px-4 py-24 relative">
           <div className="mx-auto max-w-3xl space-y-6 text-center">
             <h2 className="text-3xl font-bold text-white sm:text-4xl">

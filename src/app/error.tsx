@@ -95,7 +95,7 @@ export default function ErrorPage({
         >
           <h1 
             id="error-headline"
-            className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent"
+            className="text-4xl font-bold bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent"
           >
             {headline}
           </h1>

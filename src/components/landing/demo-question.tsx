@@ -216,7 +216,7 @@ export default function DemoQuestion() {
                   <ul className="space-y-1">
                     {currentQuestion.references.map((ref, index) => (
                       <li key={index} className="flex items-start gap-1">
-                        <ExternalLink className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                        <ExternalLink className="w-3 h-3 mt-0.5 shrink-0" />
                         <span className="break-words">
                           {ref}
                         </span>

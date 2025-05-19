@@ -143,7 +143,7 @@ export default function ContactPage() {
       {/* Hero Section */}
       <section className="relative py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.08),transparent_25%),radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.08),transparent_25%),linear-gradient(to_bottom,rgba(56,189,248,0.05),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-[0.15]" />
+        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] opacity-[0.15]" />
         
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="flex items-center justify-between gap-8">
@@ -305,7 +305,7 @@ export default function ContactPage() {
 
       {/* Community Section */}
       <section className="relative py-20">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/5" />
+        <div className="absolute inset-0 bg-linear-to-b from-transparent to-primary/5" />
         <div className="container px-4 max-w-3xl mx-auto text-center relative">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Our Discord</h2>
           <p className="text-xl text-muted-foreground mb-8">

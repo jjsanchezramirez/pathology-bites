@@ -95,7 +95,7 @@ export default function NotFoundPage() {
         >
           <h1 
             id="not-found-headline"
-            className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent"
+            className="text-4xl font-bold bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent"
           >
             {randomContent.headline}
           </h1>

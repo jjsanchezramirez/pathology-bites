@@ -9,7 +9,7 @@ export default function PerformancePage() {
         </p>
         
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xs">
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Overall Score</h3>
               <p className="text-3xl font-semibold">78%</p>
@@ -17,7 +17,7 @@ export default function PerformancePage() {
             </div>
           </div>
   
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xs">
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Questions Completed</h3>
               <p className="text-3xl font-semibold">245</p>
@@ -25,7 +25,7 @@ export default function PerformancePage() {
             </div>
           </div>
   
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xs">
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Study Time</h3>
               <p className="text-3xl font-semibold">18.5h</p>
@@ -34,7 +34,7 @@ export default function PerformancePage() {
           </div>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xs">
           <h3 className="text-lg font-medium mb-4">Performance by Category</h3>
           <div className="space-y-4">
             {/* Sample category performance bars */}
@@ -62,7 +62,7 @@ export default function PerformancePage() {
         </div>
         
         <div className="grid gap-6 md:grid-cols-2">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xs">
             <h3 className="text-lg font-medium mb-4">Recent Activity</h3>
             <div className="space-y-3">
               {[
@@ -84,7 +84,7 @@ export default function PerformancePage() {
             </div>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xs">
             <h3 className="text-lg font-medium mb-4">Recommended Focus Areas</h3>
             <div className="space-y-3">
               {[
@@ -93,7 +93,7 @@ export default function PerformancePage() {
                 { area: "Cytopathology", reason: "Not started yet" }
               ].map((item, index) => (
                 <div key={index} className="flex items-start gap-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md">
-                  <div className="w-2 h-2 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                  <div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0"></div>
                   <div>
                     <p className="font-medium text-sm">{item.area}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{item.reason}</p>

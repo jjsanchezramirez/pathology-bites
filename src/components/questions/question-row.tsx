@@ -154,7 +154,7 @@ export default function QuestionRow({ question, categoryPaths, onDelete }: Quest
                             className="object-cover"
                             sizes="(max-width: 768px) 50vw, 33vw"
                           />
-                          <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                          <div className="absolute bottom-0 left-0 right-0 p-2 bg-linear-to-t from-black/60 to-transparent">
                             <p className="text-white text-sm truncate">
                               {image.description}
                             </p>

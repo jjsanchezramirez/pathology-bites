@@ -20,7 +20,7 @@ export function AdminLayoutClient({
         <AdminHeader onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
 
         <main className="flex-1 overflow-auto relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-b from-primary/5 via-transparent to-transparent" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.13),transparent_25%)]" />
           <div className="relative p-6">
             {children}

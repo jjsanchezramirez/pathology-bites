@@ -23,7 +23,7 @@ export function FeatureCard({
   return (
     <div className={cn(
       "group flex flex-col items-center text-center p-6",
-      "bg-white/50 backdrop-blur-sm rounded-lg shadow-sm",
+      "bg-white/50 backdrop-blur-xs rounded-lg shadow-xs",
       "hover:shadow-md transition-all duration-300 hover:scale-105",
       className
     )}>

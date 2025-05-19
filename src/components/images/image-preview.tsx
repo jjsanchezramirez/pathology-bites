@@ -166,7 +166,7 @@ export function ImagePreview({
       {isPreviewVisible && (
         <div 
           ref={previewRef}
-          className="fixed z-[100] rounded-xl shadow-lg bg-white/5 backdrop-blur-sm"
+          className="fixed z-100 rounded-xl shadow-lg bg-white/5 backdrop-blur-xs"
           style={{
             top: position.top,
             left: position.left,
@@ -199,7 +199,7 @@ export function ImagePreview({
       {/* Full Size Dialog */}
       <Dialog open={isFullSizeVisible} onOpenChange={setIsFullSizeVisible}>
         <DialogContent
-          className="p-0 border-0 bg-transparent overflow-hidden [&>*]:p-0 max-w-none"
+          className="p-0 border-0 bg-transparent overflow-hidden *:p-0 max-w-none"
           style={{
             width: "fit-content",
             margin: 0,

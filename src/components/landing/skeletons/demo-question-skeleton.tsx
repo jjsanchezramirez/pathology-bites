@@ -33,8 +33,8 @@ const QuestionSkeleton = () => {
               key={index}
               className="p-2 rounded-md border border-muted flex items-center gap-2"
             >
-              <div className="w-5 h-5 rounded-full bg-muted flex-shrink-0" />
-              <div className="h-4 bg-muted rounded w-3/4 flex-grow" />
+              <div className="w-5 h-5 rounded-full bg-muted shrink-0" />
+              <div className="h-4 bg-muted rounded w-3/4 grow" />
             </div>
           ))}
         </div>

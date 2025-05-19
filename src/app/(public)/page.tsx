@@ -14,23 +14,23 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative flex min-h-[calc(100vh-3.5rem)] items-center justify-center overflow-hidden">
         {/* Background Gradients */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent animate-gradient" />
+        <div className="absolute inset-0 bg-linear-to-b from-primary/5 via-transparent to-transparent animate-gradient" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.12),transparent_25%)] animate-gradient" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.13),transparent_25%)] animate-gradient" />
-        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-[0.15]" />
+        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] opacity-[0.15]" />
         
         {/* Content Container */}
         <div className="container px-4 sm:px-6 lg:px-8 relative flex justify-center">
           <div className="relative max-w-4xl space-y-8 text-center">
             <h1 className="font-heading text-4xl font-bold sm:text-5xl md:text-6xl lg:text-7xl animate-fade-in">
               Master Pathology with{" "}
-              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent animate-gradient">
+              <span className="bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent animate-gradient">
                 Bite-Sized Learning
               </span>
             </h1>
 
             <div className="space-y-8 animate-fade-in opacity-0" style={{ animationDelay: '0.7s' }}>
-              <p className="mx-auto max-w-[42rem] text-xl text-muted-foreground">
+              <p className="mx-auto max-w-2xl text-xl text-muted-foreground">
                 Elevate your diagnostic expertise with AI-powered case studies and personalized learning paths.
               </p>
               <div className="flex flex-wrap justify-center gap-4 pt-4">
@@ -52,7 +52,7 @@ export default function LandingPage() {
 
       {/* Features Section */}
       <section className="relative py-24">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-b from-primary/5 to-transparent" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <h2 className="text-center text-4xl font-bold mb-16">
             Transform Your Learning Experience
@@ -79,7 +79,7 @@ export default function LandingPage() {
 
       {/* Demo Question Section */}
       <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary/5 to-transparent" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl font-bold mb-4">
@@ -95,7 +95,7 @@ export default function LandingPage() {
 
       {/* CTA Section */}
       <section className="bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-tr from-primary-foreground/10 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-tr from-primary-foreground/10 to-transparent" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-24 relative">
           <div className="mx-auto max-w-3xl space-y-6 text-center">
             <h2 className="text-3xl font-bold text-white sm:text-4xl">

@@ -1,16 +1,42 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-/* Grid pattern for the coming soon page */
-.bg-grid-pattern {
-  background-image: 
-    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-  background-size: 24px 24px;
+@config '../../tailwind.config.ts';
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
 }
 
-/* Define CSS variables in base layer */
+/* Add any common component styles */
+@utility floating {
+  /* Use your animation utilities in component classes */
+  @apply animate-float;
+}
+
+@layer utilities {
+  /* Grid pattern for the coming soon page */
+  .bg-grid-pattern {
+    background-image:
+      linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Define CSS variables in base layer */
+}
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -74,13 +100,5 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-  }
-}
-
-/* Add any common component styles */
-@layer components {
-  /* Use your animation utilities in component classes */
-  .floating {
-    @apply animate-float;
   }
 }

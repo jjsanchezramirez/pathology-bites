@@ -57,11 +57,11 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
     <aside 
       className={`${
         isCollapsed ? 'w-16' : 'w-64'
-      } bg-slate-900 text-slate-100 dark:bg-slate-800/95 flex flex-col flex-shrink-0 transition-all duration-300`}
+      } bg-slate-900 text-slate-100 dark:bg-slate-800/95 flex flex-col shrink-0 transition-all duration-300`}
     >
       {/* Logo Section */}
       <div className="h-16 flex items-center px-6 border-b border-slate-700/50 dark:border-slate-600/50">
-        <Microscope className="h-6 w-6 flex-shrink-0" />
+        <Microscope className="h-6 w-6 shrink-0" />
         {!isCollapsed && (
           <h1 className="font-bold text-lg ml-3 whitespace-nowrap">Pathology Bites</h1>
         )}

@@ -8,7 +8,7 @@ export default function QuizDetailsPage() {
           This is a placeholder for the quiz details page.
         </p>
         
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xs">
           <h2 className="text-xl font-semibold mb-4">Quiz Summary</h2>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="p-4 border rounded-md">

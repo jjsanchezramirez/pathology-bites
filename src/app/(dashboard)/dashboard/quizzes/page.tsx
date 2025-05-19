@@ -24,7 +24,7 @@ export default function QuizzesPage() {
           ].map((quiz) => (
             <div 
               key={quiz.id} 
-              className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xs border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
             >
               <h3 className="text-lg font-medium mb-2">{quiz.title}</h3>
               <div className="flex justify-between text-sm text-muted-foreground mb-3">
