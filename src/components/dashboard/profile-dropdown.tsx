@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { supabase } from "@/lib/supabase/client"
+import { createClient } from '@/lib/supabase/client'
 import { useToast } from "@/hooks/use-toast"
 import ProfileAvatar from "@/components/dashboard/profile-avatar"
 
@@ -33,6 +33,8 @@ export function ProfileDropdown() {
   useEffect(() => {
     const getUser = async () => {
       try {
+        // Use createClient() function instead of global supabase variable
+        const supabase = createClient()
         const { data: { user }, error } = await supabase.auth.getUser()
         
         if (error) {
@@ -78,6 +80,7 @@ export function ProfileDropdown() {
   const handleLogout = async () => {
     try {
       setIsLoading(true)
+      const supabase = createClient()
       const { error } = await supabase.auth.signOut()
       
       if (error) {

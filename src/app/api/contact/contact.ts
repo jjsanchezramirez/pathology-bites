@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -121,6 +121,7 @@ ${data.inquiry}
 }
 
 export async function submitContactForm(formData: ContactFormData) {
+  const supabase = createClient()
   console.log('Starting form submission...')
   
   try {

@@ -116,7 +116,7 @@ export function useAuth() {
       const isDevelopment = process.env.NODE_ENV === 'development';
       const baseUrl = isDevelopment 
         ? 'http://localhost:3000'
-        : process.env.NEXT_PUBLIC_URL || 'https://pathology-bites-qbank-pathology-bites.vercel.app';
+        : process.env.NEXT_PUBLIC_SITE_URL || 'https://pathology-bites-qbank-pathology-bites.vercel.app';
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -166,10 +166,10 @@ export function useAuth() {
             last_name: values.lastName,
             user_type: values.userType,
           },
-          // Make sure type=signup_confirmation is included
-          emailRedirectTo: `${window.location.origin}/api/auth/callback?type=signup_confirmation&next=/email-verified`
+          // More explicit redirect handling - note the changed format
+          emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/email-verified`
         },
-      })  
+      }) 
       
       if (error) {
         toast({

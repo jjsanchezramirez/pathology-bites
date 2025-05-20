@@ -113,7 +113,7 @@ export function useAuth() {
       const isDevelopment = process.env.NODE_ENV === 'development';
       const baseUrl = isDevelopment 
         ? 'http://localhost:3000'
-        : process.env.NEXT_PUBLIC_URL || 'https://pathology-bites-qbank-pathology-bites.vercel.app';
+        : process.env.NEXT_PUBLIC_SITE_URL || 'https://pathology-bites-qbank-pathology-bites.vercel.app';
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

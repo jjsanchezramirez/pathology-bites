@@ -1,74 +1,49 @@
-// src/lib/supabase/middleware.ts
+// src/lib/supabase/middleware.ts - Enhanced Auth Flow
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  // Get the current path and query parameters
+  const path = request.nextUrl.pathname
+  const searchParams = request.nextUrl.searchParams
+  console.log(`Middleware processing: ${path}`)
+  
+  // Create a default response
   let response = NextResponse.next({
     request,
   })
   
-  // Check for coming soon mode via environment variable
-  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
+  // CRITICAL: IMMEDIATELY BYPASS FOR CALLBACK AND VERIFICATION ENDPOINTS
+  if (path.startsWith('/api/auth/callback') || path.includes('verify')) {
+    console.log(`Auth callback/verification accessed: ${path} - bypassing middleware`)
+    return response
+  }
   
-  // Paths that should be accessible even during coming soon mode
-  const allowedPaths = [
-    '/coming-soon',
-    '/login', 
+  // CRITICAL: SPECIAL HANDLING FOR AUTH PAGES
+  const authPages = [
+    '/login',
     '/signup',
-    '/forgot-password', 
-    '/reset-password', 
-    '/verify-email', 
-    '/check-email', 
+    '/forgot-password',
+    '/reset-password',
+    '/verify-email',
+    '/check-email',
     '/email-verified',
     '/auth-error',
-    '/api/',
-    '/_next',
-    '/favicon.ico',
-    '/icons'
+    '/debug',
+    '/debug/auth',
   ]
   
-  // Check if we should bypass coming soon mode
-  const bypassParam = request.nextUrl.searchParams.get('bypass')
-  const hasAdminAccess = bypassParam === 'true'
-  
-  // Get the current path
-  const path = request.nextUrl.pathname
-  
-  // Special handling for site-wide coming soon mode
-  if (isComingSoonMode) {
-    // Skip coming soon mode for certain paths or if bypass parameter is present
-    const shouldSkip = allowedPaths.some(allowedPath => 
-      path.startsWith(allowedPath)
-    ) || hasAdminAccess
-    
-    if (!shouldSkip && path !== '/coming-soon') {
-      // Redirect to coming soon page
-      return NextResponse.rewrite(new URL('/coming-soon', request.url))
-    }
+  // Also bypass middleware for static assets and API routes
+  if (authPages.includes(path) || 
+      path.startsWith('/api/') || 
+      path.startsWith('/_next/') || 
+      path.includes('.') ||
+      path === '/favicon.ico') {
+    console.log(`Auth/API/Static resource accessed: ${path} - allowing direct access`)
+    return response
   }
   
-  // Continue with existing auth logic below
-  
-  // Check for auth errors in the URL hash
-  const url = request.nextUrl.clone()
-  const hash = url.hash
-  
-  // If we have auth errors in the hash, redirect to our error page
-  if (hash && hash.includes('error=') && hash.includes('error_code=')) {
-    console.log('Detected auth error in hash, redirecting to auth-error page')
-    
-    // Extract the error info from the hash
-    const hashParams = new URLSearchParams(hash.substring(1))
-    
-    // Create a proper URL with query params instead of hash
-    const errorUrl = new URL('/auth-error', request.url)
-    errorUrl.searchParams.set('error', hashParams.get('error') || '')
-    errorUrl.searchParams.set('code', hashParams.get('error_code') || '')
-    errorUrl.searchParams.set('description', hashParams.get('error_description') || '')
-    
-    return NextResponse.redirect(errorUrl)
-  }
-  
+  // Create Supabase client for auth check with improved cookie handling
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -78,108 +53,110 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          response = NextResponse.next({
-            request,
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // Update both the request cookies and response cookies
+            request.cookies.set({ name, value, ...options })
+            response = NextResponse.next({ request })
+            response.cookies.set({ name, value, ...options })
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          )
         },
       },
     }
   )
   
-  // Get authenticated user data - IMPORTANT: don't remove this
+  // SECURITY IMPROVEMENT: Use getUser instead of getSession
   const { data: { user } } = await supabase.auth.getUser()
   
-  // Define protected routes - Similar to what you had before
-  const authRoutes = ['/dashboard', '/profile', '/settings']
-  const adminRoutes = ['/admin']
-  const publicRoutes = [
-    '/login', 
-    '/signup', 
-    '/coming-soon',
-    '/forgot-password', 
-    '/reset-password', 
-    '/verify-email', 
-    '/check-email', 
-    '/email-verified',
-    '/auth-error',
-    '/api/auth/callback',
-    '/api/auth/verify-email',
-    '/debug'  // Keep debug page accessible
-  ]
-  
-  const isAuthRoute = authRoutes.some(route => path.startsWith(route))
-  const isAdminRoute = adminRoutes.some(route => path.startsWith(route))
-  const isPublicRoute = publicRoutes.some(route => path === route || path.startsWith(route))
-  
-  // Special case for email verification flow
-  const isEmailVerificationFlow = 
-    path === '/email-verified' || 
-    (path === '/api/auth/callback' && request.nextUrl.searchParams.get('type') === 'signup_confirmation') ||
-    path === '/api/auth/verify-email' ||
-    (path === '/email-verified' && request.nextUrl.searchParams.get('verified') === 'true')
-  
-  // IMPORTANT: Always allow access to email verification flow, even for authenticated users
-  if (isEmailVerificationFlow) {
-    return response
+  // Process auth errors from URL query params (after redirects)
+  if (searchParams.has('error') && searchParams.has('description')) {
+    // Already on the auth error page or being redirected there, let it process
+    if (path !== '/auth-error') {
+      console.log('Auth error params detected, redirecting to auth-error page')
+      const errorUrl = new URL('/auth-error', request.url)
+      // Copy all query parameters to preserve error details
+      searchParams.forEach((value, key) => {
+        errorUrl.searchParams.set(key, value)
+      })
+      return NextResponse.redirect(errorUrl)
+    }
   }
   
-  // If we have a user
-  if (user) {
-    // Check if they're attempting to access a public route (login/signup)
-    // But exclude the email verification flow which we already handled above
-    if (isPublicRoute && !isEmailVerificationFlow) {
-      try {
-        // Check user role from database
-        const { data: userData } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', user.id)
-          .single()
-
-        if (userData?.role === 'admin') {
-          // Redirect admins to admin dashboard
-          const redirectUrl = new URL('/admin/dashboard', request.url)
-          return NextResponse.redirect(redirectUrl)
-        } else {
-          // Redirect regular users to user dashboard
-          const redirectUrl = new URL('/dashboard', request.url)
-          return NextResponse.redirect(redirectUrl)
-        }
-      } catch (error) {
-        console.error('Error fetching user role:', error)
-        const redirectUrl = new URL('/dashboard', request.url)
-        return NextResponse.redirect(redirectUrl)
-      }
-    }
+  // Check for auth errors in the URL hash (Supabase-specific)
+  const url = request.nextUrl.clone()
+  const hash = url.hash
+  
+  // Handle auth errors from hash fragments
+  if (hash && hash.includes('error=') && hash.includes('error_code=')) {
+    console.log('Detected auth error in hash, redirecting to auth-error page')
     
-    // If user is trying to access admin routes but isn't an admin
-    if (isAdminRoute) {
-      try {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', user.id)
-          .single()
-
-        if (userData?.role !== 'admin') {
-          const redirectUrl = new URL('/dashboard', request.url)
-          return NextResponse.redirect(redirectUrl)
-        }
-      } catch (error) {
-        console.error('Error fetching user role:', error)
-        const redirectUrl = new URL('/dashboard', request.url)
-        return NextResponse.redirect(redirectUrl)
-      }
+    const hashParams = new URLSearchParams(hash.substring(1))
+    
+    const errorUrl = new URL('/auth-error', request.url)
+    errorUrl.searchParams.set('error', hashParams.get('error') || '')
+    errorUrl.searchParams.set('code', hashParams.get('error_code') || '')
+    errorUrl.searchParams.set('description', hashParams.get('error_description') || '')
+    
+    return NextResponse.redirect(errorUrl)
+  }
+  
+  // Check for coming soon mode via environment variable
+  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
+  
+  // Determine user role for admin check
+  let isAdmin = false
+  if (user) {
+    try {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      
+      isAdmin = userData?.role === 'admin'
+    } catch (error) {
+      console.error('Error checking admin status:', error)
     }
-  } else if (!user && (isAuthRoute || isAdminRoute)) {
-    // If no user is logged in and they're trying to access protected routes
+  }
+  
+  // Check if we should bypass coming soon mode
+  const bypassParam = searchParams.get('bypass')
+  const hasAdminAccess = bypassParam === 'true' || isAdmin
+  
+  // Process coming soon mode redirects with improved logic
+  if (isComingSoonMode && 
+      !user && // Authenticated users can bypass
+      !hasAdminAccess && // Admins can bypass 
+      path !== '/coming-soon' && // Don't redirect if already on coming soon page
+      !path.startsWith('/api/') && // Don't redirect API routes
+      !path.includes('.')) { // Don't redirect static files
+    console.log(`Coming soon mode active, redirecting ${path} to /coming-soon`)
+    return NextResponse.rewrite(new URL('/coming-soon', request.url))
+  }
+  
+  // Define protected routes
+  const authRoutes = ['/dashboard', '/profile', '/settings']
+  const adminRoutes = ['/admin']
+  
+  // Simple path matching
+  const isAuthRoute = authRoutes.some(route => path.startsWith(route))
+  const isAdminRoute = adminRoutes.some(route => path.startsWith(route))
+  
+  // If user is not logged in and trying to access protected routes
+  if (!user && (isAuthRoute || isAdminRoute)) {
+    console.log(`Unauthenticated access to protected route ${path}, redirecting to login`)
+    // Preserve the original URL to redirect back after login
     const redirectUrl = new URL('/login', request.url)
+    redirectUrl.searchParams.set('redirect', path)
+    return NextResponse.redirect(redirectUrl)
+  }
+  
+  // If user is trying to access admin routes but isn't an admin
+  if (user && isAdminRoute && !isAdmin) {
+    console.log(`User ${user.id} attempted to access admin route without admin role`)
+    const redirectUrl = new URL('/dashboard', request.url)
     return NextResponse.redirect(redirectUrl)
   }
 
+  console.log(`Middleware completed for ${path}`)
   return response
 }

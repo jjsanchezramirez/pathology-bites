@@ -1,6 +1,6 @@
 // src/app/api/auth/callback/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,26 +26,76 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(errorUrl)
     }
     
-    // Use the new async createClient
-    const supabase = await createClient()
+    // Create a response object to handle cookies
+    let response = NextResponse.next()
     
-    // Exchange code for session
-    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-    if (exchangeError) {
-      console.error('Failed to exchange code for session:', exchangeError)
+    // Create the Supabase client with improved cookie handling
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              request.cookies.set({
+                name,
+                value,
+                ...options
+              })
+              response.cookies.set({
+                name,
+                value,
+                ...options
+              })
+            })
+          },
+        },
+      }
+    )
+    
+    // Exchange code for session with better error handling
+    try {
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+      
+      if (exchangeError) {
+        console.error('Failed to exchange code for session:', exchangeError)
+        
+        // Improved handling for PKCE errors
+        if (exchangeError.message.includes('code challenge') || 
+            exchangeError.message.includes('code verifier')) {
+          const errorUrl = new URL('/auth-error', request.url)
+          errorUrl.searchParams.set('error', 'exchange_failed')
+          errorUrl.searchParams.set('code', exchangeError.status?.toString() || '400')
+          errorUrl.searchParams.set('description', 'Verification link is invalid or has already been used. Please request a new verification link.')
+          return NextResponse.redirect(errorUrl)
+        }
+        
+        // Generic error handling
+        const errorUrl = new URL('/auth-error', request.url)
+        errorUrl.searchParams.set('error', 'exchange_failed')
+        errorUrl.searchParams.set('code', exchangeError.status?.toString() || '')
+        errorUrl.searchParams.set('description', exchangeError.message)
+        return NextResponse.redirect(errorUrl)
+      }
+    } catch (exchangeError) {
+      console.error('Exception during code exchange:', exchangeError)
       const errorUrl = new URL('/auth-error', request.url)
       errorUrl.searchParams.set('error', 'exchange_failed')
-      errorUrl.searchParams.set('code', exchangeError.status?.toString() || '')
-      errorUrl.searchParams.set('description', exchangeError.message)
+      errorUrl.searchParams.set('description', exchangeError instanceof Error ? exchangeError.message : 'Failed to process authentication')
       return NextResponse.redirect(errorUrl)
     }
     
-    // For signup confirmation, bypass the middleware by adding a special parameter
+    // For signup confirmation, redirect to verified page
     if (type === 'signup_confirmation') {
       console.log('Signup confirmation, redirecting to email-verified page')
       
-      // Add a bypass parameter to avoid middleware redirects
-      return NextResponse.redirect(new URL('/email-verified?verified=true', request.url))
+      // Create redirect response and preserve cookies
+      response = NextResponse.redirect(new URL('/email-verified?verified=true', request.url))
+      
+      return response
     }
     
     // Get authenticated user data
@@ -90,19 +140,32 @@ export async function GET(request: NextRequest) {
       // If we have a 'next' parameter, prioritize it for redirection
       if (next) {
         console.log(`Redirecting to specified next path: ${next}`)
-        return NextResponse.redirect(new URL(next, request.url))
+        response = NextResponse.redirect(new URL(next, request.url))
+        return response
       }
       
-      // Otherwise, redirect based on role
+      // For coming soon mode, add a bypass parameter to allow access
+      const comingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
+      const redirectParams = comingSoonMode ? '?bypass=true' : ''
+      
+      // Redirect based on role
+      let redirectUrl;
       if (existingUser?.role === 'admin') {
-        return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+        redirectUrl = new URL(`/admin/dashboard${redirectParams}`, request.url)
       } else {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+        redirectUrl = new URL(`/dashboard${redirectParams}`, request.url)
       }
+      
+      // Create the redirect response
+      response = NextResponse.redirect(redirectUrl)
+      
+      return response
     }
     
     // Default fallback
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    response = NextResponse.redirect(new URL('/dashboard', request.url))
+    return response
+    
   } catch (error) {
     console.error('Auth callback error:', error)
     const errorUrl = new URL('/auth-error', request.url)
