@@ -5,13 +5,15 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import type { Database } from '@/types/supabase'
 
+// Updated schema to match the database structure
 const questionSchema = z.object({
-  body: z.string().min(10, 'Question must be at least 10 characters'),
-  explanation: z.string().min(10, 'Explanation must be at least 10 characters'),
+  // Use field names that match the database
+  title: z.string().min(1, 'Title is required'),
+  stem: z.string().min(10, 'Question must be at least 10 characters'),
+  teaching_point: z.string().min(10, 'Teaching point must be at least 10 characters'),
   difficulty: z.enum(['easy', 'medium', 'hard']),
-  yield: z.enum(['low', 'medium', 'high']),
-  categories: z.array(z.string()).min(1, 'Select at least one category'),
-  reference_text: z.string().optional(),
+  question_references: z.string().optional(),
+  // Note: created_by and status will be added in the route handler
 })
 
 export async function POST(request: Request) {
@@ -28,12 +30,12 @@ export async function POST(request: Request) {
     if (userError) throw userError;
     if (!user) throw new Error('User is not authenticated');
 
-    // Insert the question
+    // Insert the question with the correct field mapping
     const { data, error } = await supabase
       .from('questions')
       .insert({
         ...validatedData,
-        created_by: user.id, // Now TypeScript knows user is not null
+        created_by: user.id,
         status: 'draft'
       })
       .select()
@@ -80,6 +82,7 @@ export async function GET(request: Request) {
       query = query.eq('difficulty', difficulty)
     }
 
+    // Note: 'yield' is missing from our database type, check if it exists in your database
     const yield_value = searchParams.get('yield')
     if (yield_value && yield_value !== 'ALL') {
       query = query.eq('yield', yield_value)
@@ -87,7 +90,7 @@ export async function GET(request: Request) {
 
     const search = searchParams.get('search')
     if (search) {
-      query = query.ilike('body', `%${search}%`)
+      query = query.ilike('stem', `%${search}%`)
     }
 
     const { data, error } = await query

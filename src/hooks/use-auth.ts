@@ -16,6 +16,7 @@ export function useAuth() {
     setIsLoading(true)
     try {
       const supabase = createClient()
+      
       const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -47,11 +48,23 @@ export function useAuth() {
           
           router.refresh()
           
-          // Redirect based on role
-          if (userData?.role === 'admin') {
-            router.push('/admin/dashboard')
+          // Check for a stored redirect path from sessionStorage
+          let redirectPath
+          if (typeof window !== 'undefined') {
+            redirectPath = sessionStorage.getItem('authRedirectPath')
+            sessionStorage.removeItem('authRedirectPath')
+          }
+          
+          // If we have a redirect path, use it. Otherwise use role-based redirection
+          if (redirectPath) {
+            router.push(redirectPath)
           } else {
-            router.push('/dashboard')
+            // Redirect based on role
+            if (userData?.role === 'admin') {
+              router.push('/admin/dashboard')
+            } else {
+              router.push('/dashboard')
+            }
           }
           return true
         } catch (error) {
@@ -109,16 +122,30 @@ export function useAuth() {
     try {
       const supabase = createClient();
       
+      // Get the stored redirect path, if any
+      let redirectPath
+      if (typeof window !== 'undefined') {
+        redirectPath = sessionStorage.getItem('authRedirectPath')
+      }
+      
       // Determine the current environment
       const isDevelopment = process.env.NODE_ENV === 'development';
       const baseUrl = isDevelopment 
         ? 'http://localhost:3000'
-        : process.env.NEXT_PUBLIC_SITE_URL || 'https://pathology-bites-qbank-pathology-bites.vercel.app';
+        : process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pathologybites.com';
+      
+      // Build the redirect URL with the redirect parameter if we have one
+      let redirectTo = `${baseUrl}/api/auth/callback`;
+      if (redirectPath) {
+        redirectTo += `?redirect=${encodeURIComponent(redirectPath)}`;
+      }
+      
+      console.log('Google OAuth redirect URL:', redirectTo);
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${baseUrl}/api/auth/callback`,
+          redirectTo: redirectTo,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -169,7 +196,7 @@ export function useAuth() {
             last_name: values.lastName,
             user_type: values.userType,
           },
-          emailRedirectTo: `${window.location.origin}/api/auth/callback?type=signup_confirmation&next=/email-verified`
+          emailRedirectTo: `${window.location.origin}/api/auth/callback`
         },
       })
       
@@ -215,7 +242,7 @@ export function useAuth() {
     try {
       const supabase = createClient()
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/api/auth/callback?type=recovery`,
+        redirectTo: `${window.location.origin}/api/auth/callback`,
       })
       
       if (error) {
@@ -348,7 +375,7 @@ export function useAuth() {
         type: 'signup',
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/api/auth/callback?type=signup_confirmation&next=/email-verified`
+          emailRedirectTo: `${window.location.origin}/api/auth/callback`
         }
       })
       
@@ -386,9 +413,6 @@ export function useAuth() {
   /**
    * Check if user is authenticated
    */
-/**
- * Check if user is authenticated
- */
   const checkAuth = useCallback(async () => {
     try {
       const supabase = createClient()
@@ -396,16 +420,21 @@ export function useAuth() {
       // Get user directly from getUser() as recommended by Supabase
       const { data: { user } } = await supabase.auth.getUser()
       
+      // Only check session for session properties if needed
+      const { data: { session } } = await supabase.auth.getSession()
+      
       return {
         isAuthenticated: !!user, // Use presence of user to determine authentication
-        user: user || null
+        user: user || null,
+        session: session || null
       }
     } catch (error) {
       // Silently ignore Auth Session Missing errors
       console.error('Check auth error:', error)
       return {
         isAuthenticated: false,
-        user: null
+        user: null,
+        session: null
       }
     }
   }, [])

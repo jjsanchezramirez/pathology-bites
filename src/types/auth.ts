@@ -1,25 +1,32 @@
 // src/types/auth.ts
-export interface UserSession {
-  id: string
-  email: string
-  role: 'user' | 'admin'
-  user_type: 'student' | 'resident' | 'fellow' | 'attending' | 'other'
-  first_name?: string
-  last_name?: string
+import type { User, Session } from '@supabase/supabase-js';
+
+export interface SignupFormData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  userType: string;
 }
 
-export interface AuthFormData {
-  email: string
-  password: string
+export interface AuthState {
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  user: User | null;
+  session: Session | null;
+  error: Error | null;
 }
 
-export interface SignupFormData extends AuthFormData {
-  firstName: string
-  lastName: string
-  userType: 'student' | 'resident' | 'fellow' | 'attending' | 'other'
-}
-
-export interface ResetPasswordFormData {
-  password: string
-  confirmPassword: string
+export interface AuthService {
+  login: (email: string, password: string) => Promise<boolean>;
+  loginWithGoogle: () => Promise<boolean>;
+  signup: (values: SignupFormData) => Promise<boolean>;
+  resetPassword: (email: string) => Promise<boolean>;
+  updatePassword: (password: string) => Promise<boolean>;
+  logout: () => Promise<boolean>;
+  resendVerification: (email: string) => Promise<boolean>;
+  checkAuth: () => Promise<{ isAuthenticated: boolean; user: User | null; session: Session | null }>;
+  getUserRole: () => Promise<string | null>;
+  isLoading: boolean;
+  isConnected?: boolean;
 }

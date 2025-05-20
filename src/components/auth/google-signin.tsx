@@ -121,27 +121,52 @@ export function GoogleSignIn({ onSignInStart, onSignInEnd }: GoogleSignInProps) 
         src="https://accounts.google.com/gsi/client"
         strategy="afterInteractive"
         onLoad={() => {
-          // Initialize Google Sign-In after the script loads
-          window.google?.accounts.id.initialize({
-            client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',  // Add fallback empty string
-            callback: 'handleCredentialResponse',
-            auto_select: false,
-            cancel_on_tap_outside: true,
-          })          
+          // Log client ID for debugging
+          console.log("Using Google Client ID:", process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'not set')
           
-          // Display the Google Sign-In button
-          window.google?.accounts.id.renderButton(
-            document.getElementById('google-signin-button')!,
-            { 
-              type: 'standard',
-              theme: 'outline',
-              size: 'large',
-              text: 'signin_with',
-              shape: 'rectangular',
-              logo_alignment: 'left',
-              width: 280
+          // Initialize Google Sign-In after the script loads
+          if (window.google?.accounts?.id) {
+            try {
+              window.google.accounts.id.initialize({
+                client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+                callback: 'handleCredentialResponse',
+                auto_select: false,
+                cancel_on_tap_outside: true,
+              })          
+              
+              // Display the Google Sign-In button
+              const buttonElement = document.getElementById('google-signin-button');
+              if (buttonElement) {
+                window.google.accounts.id.renderButton(
+                  buttonElement,
+                  { 
+                    type: 'standard',
+                    theme: 'outline',
+                    size: 'large',
+                    text: 'signin_with',
+                    shape: 'rectangular',
+                    logo_alignment: 'left',
+                    width: 280
+                  }
+                )
+                console.log("Google Sign-In button rendered");
+                
+                // Prompt the user to log in, good for auto-displaying the Google UI
+                if (window.google?.accounts?.id?.prompt) {
+                  setTimeout(() => {
+                    window.google?.accounts?.id?.prompt();
+                    console.log("Google Sign-In prompt displayed");
+                  }, 500);
+                }
+              } else {
+                console.error("Google Sign-In button element not found");
+              }
+            } catch (error) {
+              console.error("Error initializing Google Sign-In:", error);
             }
-          )
+          } else {
+            console.error("Google accounts API not available");
+          }
         }}
       />
       

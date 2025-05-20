@@ -31,6 +31,7 @@ export async function updateSession(request: NextRequest) {
     '/auth-error',
     '/debug',
     '/debug/auth',
+    '/debug/auth/test',
   ]
   
   // Also bypass middleware for static assets and API routes
@@ -146,7 +147,9 @@ export async function updateSession(request: NextRequest) {
     console.log(`Unauthenticated access to protected route ${path}, redirecting to login`)
     // Preserve the original URL to redirect back after login
     const redirectUrl = new URL('/login', request.url)
-    redirectUrl.searchParams.set('redirect', path)
+    // Remove any trailing question marks from the path
+    const cleanPath = path.replace(/\?$/, '')
+    redirectUrl.searchParams.set('redirect', cleanPath)
     return NextResponse.redirect(redirectUrl)
   }
   

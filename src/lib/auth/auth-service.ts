@@ -113,19 +113,14 @@ export function useAuth() {
       const supabase = createClient();
       
       // Determine the current environment
-      const isDevelopment = process.env.NODE_ENV === 'development';
-      const baseUrl = isDevelopment 
-        ? 'http://localhost:3000'
-        : process.env.NEXT_PUBLIC_SITE_URL || 'https://pathology-bites-qbank-pathology-bites.vercel.app';
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pathologybites.com';
+
+      console.log('Google OAuth redirect URL:', `${baseUrl}/api/auth/callback`);
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${baseUrl}/api/auth/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
+          redirectTo: `${baseUrl}/api/auth/callback`
         },
       });
       
@@ -166,8 +161,8 @@ export function useAuth() {
             last_name: values.lastName,
             user_type: values.userType,
           },
-          // More explicit redirect handling - note the changed format
-          emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/email-verified`
+          // Simplified format for email verification redirect
+          emailRedirectTo: `${window.location.origin}/api/auth/callback`
         },
       }) 
       
@@ -213,7 +208,7 @@ export function useAuth() {
     try {
       const supabase = createClient()
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/api/auth/callback?type=recovery`,
+        redirectTo: `${window.location.origin}/api/auth/callback`,
       })
       
       if (error) {
@@ -346,7 +341,7 @@ export function useAuth() {
         type: 'signup',
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/api/auth/callback?type=signup_confirmation&next=/email-verified`
+          emailRedirectTo: `${window.location.origin}/api/auth/callback`
         }
       })
       

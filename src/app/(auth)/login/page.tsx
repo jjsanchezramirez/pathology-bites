@@ -18,6 +18,12 @@ function LoginPageContent() {
   const isOnline = useNetworkStatus()
   const [isLoading, setIsLoading] = useState(true)
 
+  // Get redirect parameter from URL
+  const redirectPath = searchParams.get('redirect')
+  
+  // Clean up the redirect path to avoid any issues
+  const cleanRedirectPath = redirectPath ? redirectPath.replace(/\?$/, '') : undefined
+
   // Use the auth hook for authentication logic
   const { login, loginWithGoogle } = useAuth()
   
@@ -61,13 +67,19 @@ function LoginPageContent() {
               
               // Only redirect if not in coming soon mode or has bypass/admin access
               if (!isComingSoonMode || hasAdminAccess || isAdmin) {
-                console.log("User is logged in, redirecting to dashboard")
+                console.log("User is logged in, redirecting to dashboard or redirect path")
                 
-                // If admin, redirect to admin dashboard
-                if (isAdmin) {
-                  router.push('/admin/dashboard')
+                // Handle redirect parameter if present
+                if (cleanRedirectPath) {
+                  console.log(`Redirecting to: ${cleanRedirectPath}`)
+                  router.push(cleanRedirectPath)
                 } else {
-                  router.push('/dashboard')
+                  // If admin, redirect to admin dashboard
+                  if (isAdmin) {
+                    router.push('/admin/dashboard')
+                  } else {
+                    router.push('/dashboard')
+                  }
                 }
               } else {
                 // In coming soon mode and not admin/bypass, stay on login page
@@ -93,7 +105,7 @@ function LoginPageContent() {
     }
     
     checkSession()
-  }, [router, isOnline, searchParams])
+  }, [router, isOnline, searchParams, cleanRedirectPath])
 
   const handleEmailSignIn = async (email: string, password: string) => {
     if (!isOnline) {
@@ -104,7 +116,13 @@ function LoginPageContent() {
       return
     }
 
-    await login(email, password)
+    const result = await login(email, password)
+    
+    // If login was successful and we have a redirect path, handle it here
+    // This is a fallback in case the effect doesn't catch it
+    if (result && cleanRedirectPath) {
+      router.push(cleanRedirectPath)
+    }
   }
 
   const handleGoogleSignIn = async () => {
@@ -114,6 +132,13 @@ function LoginPageContent() {
         description: "You appear to be offline. Please check your internet connection."
       })
       return
+    }
+    
+    // For Google OAuth, store the redirect path in sessionStorage
+    if (cleanRedirectPath) {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('authRedirectPath', cleanRedirectPath)
+      }
     }
     
     await loginWithGoogle()
