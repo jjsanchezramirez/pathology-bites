@@ -122,30 +122,16 @@ export function useAuth() {
     try {
       const supabase = createClient();
       
-      // Get the stored redirect path, if any
-      let redirectPath
-      if (typeof window !== 'undefined') {
-        redirectPath = sessionStorage.getItem('authRedirectPath')
-      }
+      // Get the current domain - no manual building
+      const redirectTo = `${window.location.origin}/api/auth/callback`;
       
-      // Determine the current environment
-      const isDevelopment = process.env.NODE_ENV === 'development';
-      const baseUrl = isDevelopment 
-        ? 'http://localhost:3000'
-        : process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pathologybites.com';
-      
-      // Build the redirect URL with the redirect parameter if we have one
-      let redirectTo = `${baseUrl}/api/auth/callback`;
-      if (redirectPath) {
-        redirectTo += `?redirect=${encodeURIComponent(redirectPath)}`;
-      }
-      
+      // Add console logging to debug
       console.log('Google OAuth redirect URL:', redirectTo);
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectTo,
+          redirectTo,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -153,14 +139,7 @@ export function useAuth() {
         },
       });
       
-      if (error) {
-        toast({
-          variant: "destructive",
-          description: error.message
-        });
-        return false;
-      }
-      
+      if (error) throw error;
       return true;
     } catch (error) {
       console.error('Google sign-in error:', error);

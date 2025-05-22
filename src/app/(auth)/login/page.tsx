@@ -1,3 +1,4 @@
+// src/app/(auth)/login/page.tsx
 "use client"
 
 import { Suspense, useEffect, useState } from 'react'
@@ -9,6 +10,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { LoadingSpinner } from '@/components/common/loading-spinner'
 import { createClient } from '@/lib/supabase/client'
+import { AuthDebug } from '@/components/auth/auth-debug'
 
 // Create a client component that uses searchParams
 function LoginPageContent() {
@@ -17,95 +19,78 @@ function LoginPageContent() {
   const { toast } = useToast()
   const isOnline = useNetworkStatus()
   const [isLoading, setIsLoading] = useState(true)
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   // Get redirect parameter from URL
   const redirectPath = searchParams.get('redirect')
-  
-  // Clean up the redirect path to avoid any issues
   const cleanRedirectPath = redirectPath ? redirectPath.replace(/\?$/, '') : undefined
 
   // Use the auth hook for authentication logic
   const { login, loginWithGoogle } = useAuth()
   
-  // Check session on mount
+  // Check if user is already authenticated and redirect if so
   useEffect(() => {
-    const checkSession = async () => {
+    const checkAuthAndRedirect = async () => {
       try {
-        // Always set loading to false if offline
         if (!isOnline) {
           setIsLoading(false)
           return
         }
         
         const supabase = createClient()
-        try {
-          const { data, error } = await supabase.auth.getSession()
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.log('Session check error:', error)
+          setIsLoading(false)
+          return
+        }
+        
+        // If user is authenticated, redirect them
+        if (session?.user) {
+          console.log("User already authenticated, redirecting...")
+          setIsRedirecting(true)
           
-          if (error) {
-            console.log('Session error:', error)
-            setIsLoading(false)
+          try {
+            // Check user role for proper redirect
+            const { data: userData } = await supabase
+              .from('users')
+              .select('role')
+              .eq('id', session.user.id)
+              .single()
+            
+            const isAdmin = userData?.role === 'admin'
+            
+            // Determine redirect destination
+            let destination = '/dashboard'
+            if (cleanRedirectPath) {
+              destination = cleanRedirectPath
+            } else if (isAdmin) {
+              destination = '/admin/dashboard'
+            }
+            
+            console.log(`Redirecting authenticated user to: ${destination}`)
+            router.push(destination)
+            return // Don't set loading to false, we're redirecting
+          } catch (roleError) {
+            console.error('Error checking user role:', roleError)
+            // Default redirect on role check failure
+            router.push(cleanRedirectPath || '/dashboard')
             return
           }
-          
-          // IMPORTANT: Check for coming soon mode from environment
-          const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
-          
-          if (data.session) {
-            // Check if we should redirect or not
-            const bypassParam = searchParams.get('bypass')
-            const hasAdminAccess = bypassParam === 'true'
-            
-            // Check user role to determine redirect
-            try {
-              const { data: userData } = await supabase
-                .from('users')
-                .select('role')
-                .eq('id', data.session.user.id)
-                .single()
-              
-              const isAdmin = userData?.role === 'admin'
-              
-              // Only redirect if not in coming soon mode or has bypass/admin access
-              if (!isComingSoonMode || hasAdminAccess || isAdmin) {
-                console.log("User is logged in, redirecting to dashboard or redirect path")
-                
-                // Handle redirect parameter if present
-                if (cleanRedirectPath) {
-                  console.log(`Redirecting to: ${cleanRedirectPath}`)
-                  router.push(cleanRedirectPath)
-                } else {
-                  // If admin, redirect to admin dashboard
-                  if (isAdmin) {
-                    router.push('/admin/dashboard')
-                  } else {
-                    router.push('/dashboard')
-                  }
-                }
-              } else {
-                // In coming soon mode and not admin/bypass, stay on login page
-                console.log("Coming soon mode active, not redirecting")
-                setIsLoading(false)
-              }
-            } catch (error) {
-              console.error('Error checking user role:', error)
-              setIsLoading(false)
-            }
-          } else {
-            // No session, just show the login form
-            setIsLoading(false)
-          }
-        } catch (error) {
-          console.log('Auth error:', error)
-          setIsLoading(false)
         }
+        
+        // No session, show login form
+        setIsLoading(false)
+        
       } catch (error) {
-        console.error('Unexpected error:', error)
+        console.error('Auth check error:', error)
         setIsLoading(false)
       }
     }
     
-    checkSession()
-  }, [router, isOnline, searchParams, cleanRedirectPath])
+    checkAuthAndRedirect()
+  }, [router, isOnline, cleanRedirectPath])
 
   const handleEmailSignIn = async (email: string, password: string) => {
     if (!isOnline) {
@@ -116,13 +101,8 @@ function LoginPageContent() {
       return
     }
 
-    const result = await login(email, password)
-    
-    // If login was successful and we have a redirect path, handle it here
-    // This is a fallback in case the effect doesn't catch it
-    if (result && cleanRedirectPath) {
-      router.push(cleanRedirectPath)
-    }
+    // The useAuth hook will handle redirection based on role and redirect param
+    await login(email, password)
   }
 
   const handleGoogleSignIn = async () => {
@@ -134,20 +114,22 @@ function LoginPageContent() {
       return
     }
     
-    // For Google OAuth, store the redirect path in sessionStorage
-    if (cleanRedirectPath) {
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('authRedirectPath', cleanRedirectPath)
-      }
+    // Store redirect path for after OAuth callback
+    if (cleanRedirectPath && typeof window !== 'undefined') {
+      sessionStorage.setItem('authRedirectPath', cleanRedirectPath)
     }
     
     await loginWithGoogle()
   }
 
-  if (isLoading) {
+  // Show loading while checking auth or redirecting
+  if (isLoading || isRedirecting) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <LoadingSpinner size="md" text="Loading..." />
+        <LoadingSpinner 
+          size="md" 
+          text={isRedirecting ? "Redirecting..." : "Loading..."} 
+        />
       </div>
     )
   }
@@ -157,13 +139,13 @@ function LoginPageContent() {
       <LoginForm 
         onSubmit={handleEmailSignIn}
         onGoogleSignIn={handleGoogleSignIn}
-        isLoading={isLoading}
       />
+      {process.env.NODE_ENV !== 'production' && <AuthDebug />}
     </AuthPageLayout>
   )
 }
 
-// This is the main component that will be exported
+// Main component with Suspense wrapper
 export default function LoginPage() {
   return (
     <Suspense fallback={
