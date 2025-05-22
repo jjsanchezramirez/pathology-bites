@@ -25,9 +25,36 @@ export async function GET(request: NextRequest) {
       fullUrl: request.url
     })
     
-    // PRIORITY: Handle errors first - this should catch your expired link case
+    // Enhanced error handling for cross-device and expired links
     if (error) {
       console.log(`Auth error received: ${error} (${errorCode})`)
+      
+      // Handle email verification errors specifically
+      const isEmailVerificationError = error === 'access_denied' && 
+        (errorCode === 'otp_expired' || 
+         errorDescription?.includes('expired') ||
+         errorDescription?.includes('invalid'))
+
+      if (isEmailVerificationError) {
+        console.log('Email verification error detected')
+        
+        // Check if this might be an already-verified email
+        if (errorDescription?.includes('invalid') || errorDescription?.includes('expired')) {
+          console.log('Possible already-verified email, redirecting to already-verified page')
+          const alreadyVerifiedUrl = new URL('/email-already-verified', requestUrl.origin)
+          return NextResponse.redirect(alreadyVerifiedUrl, { status: 307 })
+        }
+        
+        const errorUrl = new URL('/auth-error', requestUrl.origin)
+        errorUrl.searchParams.set('error', error)
+        errorUrl.searchParams.set('description', errorDescription || 'Email verification link has expired')
+        if (errorCode) {
+          errorUrl.searchParams.set('error_code', errorCode)
+        }
+        return NextResponse.redirect(errorUrl, { status: 307 })
+      }
+
+      // Handle other errors normally
       const errorUrl = new URL('/auth-error', requestUrl.origin)
       errorUrl.searchParams.set('error', error)
       errorUrl.searchParams.set('description', errorDescription || 'Authentication failed')
@@ -79,6 +106,21 @@ export async function GET(request: NextRequest) {
     
     if (exchangeError) {
       console.error('Failed to exchange code for session:', exchangeError)
+      
+      // For cross-device or PKCE errors, the email might still be verified
+      // Let's just redirect to email-verified page and let it handle the flow
+      if (exchangeError.message?.includes('code challenge') || 
+          exchangeError.message?.includes('code verifier') ||
+          exchangeError.code === 'bad_code_verifier' ||
+          exchangeError.code === 'validation_failed') {
+        
+        console.log('PKCE error detected - likely cross-device verification. Redirecting to email-verified page.')
+        const emailVerifiedUrl = new URL('/email-verified', requestUrl.origin)
+        emailVerifiedUrl.searchParams.set('cross_device', 'true')
+        return NextResponse.redirect(emailVerifiedUrl, { status: 307 })
+      }
+      
+      // Handle other exchange errors
       const errorUrl = new URL('/auth-error', requestUrl.origin)
       errorUrl.searchParams.set('error', 'exchange_failed')
       errorUrl.searchParams.set('description', exchangeError.message)

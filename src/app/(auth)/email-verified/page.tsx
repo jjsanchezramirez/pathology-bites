@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check } from "lucide-react"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { AuthPageLayout } from '@/components/auth/ui/auth-page-layout'
@@ -38,7 +37,6 @@ export default function EmailVerifiedPage() {
       <StatusCard
         title="Email verified!"
         description="Your email has been successfully verified"
-        icon={<Check className="h-6 w-6" />}
         content="Thank you for verifying your email. Your account is now activated and ready to use."
         footer={
           <Button asChild>

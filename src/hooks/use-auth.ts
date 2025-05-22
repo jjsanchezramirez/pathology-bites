@@ -187,10 +187,15 @@ export function useAuth() {
         return false
       }
       
-      // Store email for resend functionality
+      // Store email for resend functionality - THIS IS KEY
       if (typeof window !== 'undefined') {
         localStorage.setItem('pendingVerificationEmail', values.email)
+        console.log('Stored email for verification:', values.email)
       }
+      
+      toast({
+        description: "Account created! Please check your email to verify your account.",
+      })
       
       router.push('/verify-email')
       return true
@@ -350,6 +355,10 @@ export function useAuth() {
     setIsLoading(true)
     try {
       const supabase = createClient()
+      
+      console.log('Attempting to resend verification for:', email)
+      
+      // Use the standard resend approach
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
@@ -359,16 +368,31 @@ export function useAuth() {
       })
       
       if (error) {
-        toast({
-          variant: "destructive",
-          description: error.message
-        })
+        // Handle specific error cases
+        if (error.message.includes('rate limit')) {
+          toast({
+            variant: "destructive",
+            description: "Please wait a moment before requesting another verification email.",
+          })
+        } else if (error.message.includes('already confirmed')) {
+          toast({
+            description: "Your email is already verified. You can now log in.",
+          })
+          router.push('/login')
+        } else {
+          throw error
+        }
         return false
       }
       
       toast({
-        description: "Verification email has been resent. Please check your inbox.",
+        description: "Verification email has been sent. Please check your inbox.",
       })
+      
+      // Update stored email for future resends
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('pendingVerificationEmail', email)
+      }
       
       return true
     } catch (error) {
@@ -387,7 +411,7 @@ export function useAuth() {
     } finally {
       setIsLoading(false)
     }
-  }, [toast])
+  }, [toast, router])
   
   /**
    * Check if user is authenticated

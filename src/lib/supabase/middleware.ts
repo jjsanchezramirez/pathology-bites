@@ -16,14 +16,15 @@ export async function updateSession(request: NextRequest) {
     
     // CRITICAL: SPECIAL HANDLING FOR AUTH PAGES
     const authPages = [
-      '/login',
-      '/signup',
-      '/forgot-password',
-      '/reset-password',
-      '/verify-email',
-      '/check-email',
-      '/email-verified',
       '/auth-error',
+      '/check-email',
+      '/email-already-verified',
+      '/email-verified',
+      '/forgot-password',
+      '/login',
+      '/reset-password',
+      '/signup',
+      '/verify-email',
       '/debug',
       '/debug/auth',
       '/debug/auth/test',
@@ -71,8 +72,8 @@ export async function updateSession(request: NextRequest) {
       }
     )
     
-    // Get user session
-    const { data } = await supabase.auth.getSession()
+    // Get user session - Use getUser() for security instead of getSession()
+    const { data: { user } } = await supabase.auth.getUser()
     
     // Log all cookies for debugging
     const authCookies = request.cookies.getAll().filter(
@@ -81,8 +82,8 @@ export async function updateSession(request: NextRequest) {
     
     // Debug output to check cookie state
     console.log("Auth check result:", {
-      hasSession: !!data.session,
-      userId: data.session?.user?.id || 'none',
+      hasSession: !!user,
+      userId: user?.id || 'none',
       cookies: authCookies.map(c => c.name).join(', '),
       cookieCount: authCookies.length
     })
@@ -104,12 +105,12 @@ export async function updateSession(request: NextRequest) {
     
     // Determine user role for admin check
     let isAdmin = false
-    if (data.session?.user) {
+    if (user) {
       try {
         const { data: userData } = await supabase
           .from('users')
           .select('role')
-          .eq('id', data.session.user.id)
+          .eq('id', user.id)
           .single()
         
         isAdmin = userData?.role === 'admin'
@@ -124,7 +125,7 @@ export async function updateSession(request: NextRequest) {
     
     // Process coming soon mode redirects
     if (isComingSoonMode && 
-        !data.session?.user && 
+        !user && 
         !hasAdminAccess && 
         path !== '/coming-soon' && 
         !path.startsWith('/api/') && 
@@ -142,7 +143,7 @@ export async function updateSession(request: NextRequest) {
     const isAdminRoute = adminRoutes.some(route => path.startsWith(route))
     
     // Auth-required route protection
-    if (!data.session?.user && (isAuthRoute || isAdminRoute)) {
+    if (!user && (isAuthRoute || isAdminRoute)) {
       console.log(`Unauthenticated access to protected route ${path}, redirecting to login`)
       const redirectUrl = new URL('/login', request.url)
       const cleanPath = path.replace(/\?$/, '')
@@ -155,8 +156,8 @@ export async function updateSession(request: NextRequest) {
     }
     
     // Admin route protection
-    if (data.session?.user && isAdminRoute && !isAdmin) {
-      console.log(`User ${data.session.user.id} attempted to access admin route without admin role`)
+    if (user && isAdminRoute && !isAdmin) {
+      console.log(`User ${user.id} attempted to access admin route without admin role`)
       const redirectUrl = new URL('/dashboard', request.url)
       return NextResponse.redirect(redirectUrl)
     }

@@ -23,7 +23,21 @@ function LoginPageContent() {
 
   // Get redirect parameter from URL
   const redirectPath = searchParams.get('redirect')
+  const message = searchParams.get('message')
   const cleanRedirectPath = redirectPath ? redirectPath.replace(/\?$/, '') : undefined
+
+  // Show helpful messages
+  useEffect(() => {
+    if (message === 'cross_device_detected') {
+      toast({
+        description: "Verification link was from different device. Please try logging in or sign up again."
+      })
+    } else if (message === 'cross_device_verified') {
+      toast({
+        description: "Your email was verified! Please log in to access your account."
+      })
+    }
+  }, [message, toast])
 
   // Use the auth hook for authentication logic
   const { login, loginWithGoogle } = useAuth()

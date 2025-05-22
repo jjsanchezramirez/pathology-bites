@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils"
 interface AuthCardProps {
   title: string;
   description?: string;
-  icon?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
   className?: string;
@@ -18,7 +17,6 @@ interface AuthCardProps {
 export function AuthCard({
   title,
   description,
-  icon,
   children,
   footer,
   className,
@@ -29,11 +27,6 @@ export function AuthCard({
     <div className={cn("flex flex-col gap-6", className)}>
       <Card>
         <CardHeader className="text-center">
-          {icon && (
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              {icon}
-            </div>
-          )}
           <CardTitle className="text-xl">{title}</CardTitle>
           {description && <CardDescription>{description}</CardDescription>}
         </CardHeader>

@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/use-auth'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
-import { Icons } from "@/components/theme/icons"
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { useToast } from '@/hooks/use-toast'
 import { AuthPageLayout } from '@/components/auth/ui/auth-page-layout'
@@ -69,7 +68,6 @@ export default function VerifyEmailPage() {
             </span>
           </>
         }
-        icon={<Icons.mail className="h-6 w-6" />}
         content="Please check your email and click the verification link to activate your account. If you don't see the email, check your spam folder."
         footer={
           <div className="flex flex-col gap-4 w-full">
