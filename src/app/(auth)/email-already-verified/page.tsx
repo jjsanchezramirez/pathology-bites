@@ -1,13 +1,28 @@
 // src/app/(auth)/email-already-verified/page.tsx
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AuthPageLayout } from '@/components/auth/ui/auth-page-layout'
 
 export default function EmailAlreadyVerifiedPage() {
+  const [countdown, setCountdown] = useState(5)
   const router = useRouter()
+
+  // Automatic redirect countdown
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (countdown > 1) {
+        setCountdown(countdown - 1)
+      } else {
+        router.push('/login')
+      }
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [countdown, router])
 
   return (
     <AuthPageLayout>
@@ -34,7 +49,7 @@ export default function EmailAlreadyVerifiedPage() {
               onClick={() => router.push('/login')}
               className="w-full bg-green-600 hover:bg-green-700"
             >
-              Go to Login
+              Go to Login ({countdown})
             </Button>
             
             <Button 

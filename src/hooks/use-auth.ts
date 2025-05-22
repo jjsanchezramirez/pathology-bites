@@ -1,4 +1,4 @@
-// src/hooks/use-auth.ts
+// src/hooks/use-auth.ts - Complete enhanced authentication hook
 import { useState, useCallback } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
@@ -10,7 +10,7 @@ export function useAuth() {
   const router = useRouter()
   
   /**
-   * Login with email and password
+   * Login with enhanced unverified email detection
    */
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true)
@@ -23,19 +23,44 @@ export function useAuth() {
       })
       
       if (error) {
-        toast({
-          variant: "destructive",
-          description: error.message === 'Invalid login credentials'
-            ? "Invalid email or password"
-            : error.message
-        })
+        // Handle specific error cases
+        if (error.message === 'Invalid login credentials') {
+          toast({
+            variant: "destructive",
+            description: "Invalid email or password"
+          })
+        } else if (error.message === 'Email not confirmed') {
+          localStorage.setItem('pendingVerificationEmail', email)
+          toast({
+            variant: "destructive",
+            title: "Email not verified",
+            description: "Please check your email and click the verification link before logging in."
+          })
+          router.push('/verify-email')
+        } else {
+          toast({
+            variant: "destructive",
+            description: error.message
+          })
+        }
         return false
       }
       
-      // Check if there's a user and session
+      // Check if user email is confirmed
+      if (data?.user && !data.user.email_confirmed_at) {
+        await supabase.auth.signOut()
+        localStorage.setItem('pendingVerificationEmail', email)
+        toast({
+          variant: "destructive",
+          title: "Email not verified",
+          description: "Please check your email and click the verification link before logging in."
+        })
+        router.push('/verify-email')
+        return false
+      }
+      
       if (data?.user) {
         try {
-          // Fetch user role from the database
           const { data: userData } = await supabase
             .from('users')
             .select('role')
@@ -48,18 +73,15 @@ export function useAuth() {
           
           router.refresh()
           
-          // Check for a stored redirect path from sessionStorage
           let redirectPath
           if (typeof window !== 'undefined') {
             redirectPath = sessionStorage.getItem('authRedirectPath')
             sessionStorage.removeItem('authRedirectPath')
           }
           
-          // If we have a redirect path, use it. Otherwise use role-based redirection
           if (redirectPath) {
             router.push(redirectPath)
           } else {
-            // Redirect based on role
             if (userData?.role === 'admin') {
               router.push('/admin/dashboard')
             } else {
@@ -69,8 +91,6 @@ export function useAuth() {
           return true
         } catch (error) {
           console.error('Error fetching user role:', error)
-          
-          // Default redirect if role check fails
           toast({
             description: "Successfully logged in",
           })
@@ -80,22 +100,14 @@ export function useAuth() {
         }
       }
       
-      toast({
-        description: "Successfully logged in",
-      })
-      
-      router.refresh()
-      router.push('/dashboard')
       return true
     } catch (error) {
       console.error('Login error:', error)
       
-      // Handle error message
       const message = error instanceof Error 
         ? error.message
         : 'An unexpected error occurred'
       
-      // Check for network-related errors
       const isNetworkError = error instanceof Error && 
         (error.message.includes('fetch') || 
          error.message.includes('network') || 
@@ -113,20 +125,15 @@ export function useAuth() {
       setIsLoading(false)
     }
   }, [toast, router])
-  
+
   /**
    * Login with Google OAuth
    */
   const loginWithGoogle = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const supabase = createClient();
-      
-      // Get the current domain - no manual building
-      const redirectTo = `${window.location.origin}/api/auth/callback`;
-      
-      // Add console logging to debug
-      console.log('Google OAuth redirect URL:', redirectTo);
+      const supabase = createClient()
+      const redirectTo = `${window.location.origin}/api/auth/callback`
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -137,24 +144,24 @@ export function useAuth() {
             prompt: 'consent',
           },
         },
-      });
+      })
       
-      if (error) throw error;
-      return true;
+      if (error) throw error
+      return true
     } catch (error) {
-      console.error('Google sign-in error:', error);
+      console.error('Google sign-in error:', error)
       toast({
         variant: "destructive",
         description: error instanceof Error ? error.message : "Failed to sign in with Google"
-      });
-      return false;
+      })
+      return false
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [toast]);
-
+  }, [toast])
+  
   /**
-   * Sign up with email and password
+   * Enhanced signup with better error handling
    */
   const signup = useCallback(async (values: {
     email: string
@@ -180,17 +187,22 @@ export function useAuth() {
       })
       
       if (error) {
-        toast({
-          variant: "destructive",
-          description: error.message
-        })
+        if (error.message.includes('User already registered')) {
+          toast({
+            variant: "destructive",
+            description: "An account with this email already exists. Please use a different email or try logging in."
+          })
+        } else {
+          toast({
+            variant: "destructive",
+            description: error.message
+          })
+        }
         return false
       }
       
-      // Store email for resend functionality - THIS IS KEY
       if (typeof window !== 'undefined') {
         localStorage.setItem('pendingVerificationEmail', values.email)
-        console.log('Stored email for verification:', values.email)
       }
       
       toast({
@@ -202,7 +214,6 @@ export function useAuth() {
     } catch (error) {
       console.error('Signup error:', error)
       
-      // Extract error message
       const message = error instanceof Error
         ? error.message
         : 'Failed to sign up. Please try again.'
@@ -217,16 +228,16 @@ export function useAuth() {
       setIsLoading(false)
     }
   }, [toast, router])
-  
+
   /**
-   * Send a password reset email
+   * Send password reset email
    */
   const resetPassword = useCallback(async (email: string) => {
     setIsLoading(true)
     try {
       const supabase = createClient()
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
+        redirectTo: `${window.location.origin}/api/auth/callback?type=recovery`,
       })
       
       if (error) {
@@ -258,7 +269,7 @@ export function useAuth() {
   }, [toast, router])
 
   /**
-   * Update user password
+   * Update password after reset
    */
   const updatePassword = useCallback(async (password: string) => {
     setIsLoading(true)
@@ -277,16 +288,11 @@ export function useAuth() {
       }
       
       toast({
-        description: "Password updated successfully! Please log in with your new password.",
+        description: "Password updated successfully!",
       })
       
-      // Sign out after password update
       await supabase.auth.signOut()
-      
-      // Add slight delay to ensure state is updated
-      setTimeout(() => {
-        window.location.href = '/login'
-      }, 500)
+      router.push('/password-reset-success')
       
       return true
     } catch (error) {
@@ -305,60 +311,17 @@ export function useAuth() {
     } finally {
       setIsLoading(false)
     }
-  }, [toast])
-  
+  }, [toast, router])
+
   /**
-   * Sign out the current user
-   */
-  const logout = useCallback(async () => {
-    setIsLoading(true)
-    try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        toast({
-          variant: "destructive",
-          description: error.message
-        })
-        return false
-      }
-      
-      toast({
-        description: "Successfully logged out",
-      })
-      
-      // Force a full page reload rather than just using router
-      // This ensures all state is cleared properly
-      setTimeout(() => {
-        window.location.href = '/'
-      }, 300)
-      
-      return true
-    } catch (error) {
-      console.error('Logout error:', error)
-      
-      toast({
-        variant: "destructive",
-        description: "Failed to sign out. Please try again.",
-      })
-      
-      return false
-    } finally {
-      setIsLoading(false)
-    }
-  }, [toast])
-  
-  /**
-   * Resend verification email
+   * Enhanced resend verification with better error handling
    */
   const resendVerification = useCallback(async (email: string) => {
     setIsLoading(true)
     try {
       const supabase = createClient()
       
-      console.log('Attempting to resend verification for:', email)
-      
-      // Use the standard resend approach
+      // Try the resend method first
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
@@ -368,31 +331,23 @@ export function useAuth() {
       })
       
       if (error) {
-        // Handle specific error cases
-        if (error.message.includes('rate limit')) {
-          toast({
-            variant: "destructive",
-            description: "Please wait a moment before requesting another verification email.",
-          })
-        } else if (error.message.includes('already confirmed')) {
+        // If resend fails, try signing up again with existing password
+        console.log('Resend failed, trying alternative approach:', error)
+        
+        if (error.message.includes('already confirmed')) {
           toast({
             description: "Your email is already verified. You can now log in.",
           })
           router.push('/login')
-        } else {
-          throw error
+          return true
         }
-        return false
+        
+        throw error
       }
       
       toast({
         description: "Verification email has been sent. Please check your inbox.",
       })
-      
-      // Update stored email for future resends
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('pendingVerificationEmail', email)
-      }
       
       return true
     } catch (error) {
@@ -412,27 +367,60 @@ export function useAuth() {
       setIsLoading(false)
     }
   }, [toast, router])
-  
+
+
   /**
-   * Check if user is authenticated
+   * Sign out user
+   */
+  const logout = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        toast({
+          variant: "destructive",
+          description: error.message
+        })
+        return false
+      }
+      
+      toast({
+        description: "Successfully logged out",
+      })
+      
+      setTimeout(() => {
+        window.location.href = '/'
+      }, 300)
+      
+      return true
+    } catch (error) {
+      console.error('Logout error:', error)
+      toast({
+        variant: "destructive",
+        description: "Failed to sign out. Please try again.",
+      })
+      return false
+    } finally {
+      setIsLoading(false)
+    }
+  }, [toast])
+
+  /**
+   * Check authentication status
    */
   const checkAuth = useCallback(async () => {
     try {
       const supabase = createClient()
-      
-      // Get user directly from getUser() as recommended by Supabase
       const { data: { user } } = await supabase.auth.getUser()
-      
-      // Only check session for session properties if needed
       const { data: { session } } = await supabase.auth.getSession()
       
       return {
-        isAuthenticated: !!user, // Use presence of user to determine authentication
+        isAuthenticated: !!user,
         user: user || null,
         session: session || null
       }
     } catch (error) {
-      // Silently ignore Auth Session Missing errors
       console.error('Check auth error:', error)
       return {
         isAuthenticated: false,
@@ -449,8 +437,8 @@ export function useAuth() {
     signup,
     resetPassword,
     updatePassword,
-    logout,
     resendVerification,
+    logout,
     checkAuth
   }
 }

@@ -1,252 +1,147 @@
-// src/app/api/auth/callback/route.ts
+// src/app/api/auth/callback/route.ts - Fixed cookies and error handling
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
 
 export async function GET(request: NextRequest) {
+  const { searchParams, origin } = new URL(request.url) // Move outside try block
+  
   try {
-    console.log('Auth callback triggered')
+    const code = searchParams.get('code')
+    const error = searchParams.get('error')
+    const errorDescription = searchParams.get('error_description')
     
-    const requestUrl = new URL(request.url)
-    const code = requestUrl.searchParams.get('code')
-    const type = requestUrl.searchParams.get('type')
-    const next = requestUrl.searchParams.get('next')
-    const error = requestUrl.searchParams.get('error')
-    const errorCode = requestUrl.searchParams.get('error_code')
-    const errorDescription = requestUrl.searchParams.get('error_description')
-    const redirect = requestUrl.searchParams.get('redirect')
-    
-    console.log('Callback params:', { 
-      code: code ? 'exists' : 'missing', 
-      type, 
-      next,
-      redirect,
+    console.log('Auth callback received:', { 
+      code: code ? 'present' : 'missing',
       error,
-      errorCode,
-      fullUrl: request.url
+      errorDescription 
     })
-    
-    // Enhanced error handling for cross-device and expired links
-    if (error) {
-      console.log(`Auth error received: ${error} (${errorCode})`)
-      
-      // Handle email verification errors specifically
-      const isEmailVerificationError = error === 'access_denied' && 
-        (errorCode === 'otp_expired' || 
-         errorDescription?.includes('expired') ||
-         errorDescription?.includes('invalid'))
 
-      if (isEmailVerificationError) {
-        console.log('Email verification error detected')
-        
-        // Check if this might be an already-verified email
-        if (errorDescription?.includes('invalid') || errorDescription?.includes('expired')) {
-          console.log('Possible already-verified email, redirecting to already-verified page')
-          const alreadyVerifiedUrl = new URL('/email-already-verified', requestUrl.origin)
-          return NextResponse.redirect(alreadyVerifiedUrl, { status: 307 })
-        }
-        
-        const errorUrl = new URL('/auth-error', requestUrl.origin)
-        errorUrl.searchParams.set('error', error)
-        errorUrl.searchParams.set('description', errorDescription || 'Email verification link has expired')
-        if (errorCode) {
-          errorUrl.searchParams.set('error_code', errorCode)
-        }
-        return NextResponse.redirect(errorUrl, { status: 307 })
-      }
+    // Fix cookies issue - use cookies() directly without async wrapper
+    const supabase = createRouteHandlerClient({ 
+      cookies: () => cookies() 
+    })
 
-      // Handle other errors normally
-      const errorUrl = new URL('/auth-error', requestUrl.origin)
+    // Handle direct errors (but not access_denied from expired links)
+    if (error && error !== 'access_denied') {
+      console.error('Auth error:', error, errorDescription)
+      const errorUrl = new URL('/auth-error', origin)
       errorUrl.searchParams.set('error', error)
-      errorUrl.searchParams.set('description', errorDescription || 'Authentication failed')
-      if (errorCode) {
-        errorUrl.searchParams.set('error_code', errorCode)
+      if (errorDescription) {
+        errorUrl.searchParams.set('description', errorDescription)
       }
-      return NextResponse.redirect(errorUrl, { status: 307 })
+      return NextResponse.redirect(errorUrl)
     }
 
-    if (!code) {
-      console.log('No code provided, redirecting to auth-error')
-      const errorUrl = new URL('/auth-error', requestUrl.origin)
-      errorUrl.searchParams.set('error', 'missing_code')
-      errorUrl.searchParams.set('description', 'Authentication code is missing from the request')
-      return NextResponse.redirect(errorUrl, { status: 307 })
-    }
-    
-    // Create supabase client with proper cookie handling
-    const response = NextResponse.next()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name) {
-            return request.cookies.get(name)?.value
-          },
-          set(name, value, options) {
-            response.cookies.set({
-              name,
-              value,
-              ...options
-            })
-          },
-          remove(name, options) {
-            response.cookies.set({
-              name,
-              value: '',
-              ...options
-            })
-          },
-        },
-      }
-    )
-    
-    // Exchange code for session
-    console.log('Exchanging code for session...')
-    const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-    
-    if (exchangeError) {
-      console.error('Failed to exchange code for session:', exchangeError)
+    // Handle code flow
+    if (code) {
+      console.log('Processing callback with code')
       
-      // For cross-device or PKCE errors, the email might still be verified
-      // Let's just redirect to email-verified page and let it handle the flow
-      if (exchangeError.message?.includes('code challenge') || 
-          exchangeError.message?.includes('code verifier') ||
-          exchangeError.code === 'bad_code_verifier' ||
-          exchangeError.code === 'validation_failed') {
+      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+
+      // Handle PKCE errors (common in email verification)
+      if (exchangeError && exchangeError.code === 'bad_code_verifier') {
+        console.log('PKCE error detected - assuming email verification success')
         
-        console.log('PKCE error detected - likely cross-device verification. Redirecting to email-verified page.')
-        const emailVerifiedUrl = new URL('/email-verified', requestUrl.origin)
-        emailVerifiedUrl.searchParams.set('cross_device', 'true')
-        return NextResponse.redirect(emailVerifiedUrl, { status: 307 })
-      }
-      
-      // Handle other exchange errors
-      const errorUrl = new URL('/auth-error', requestUrl.origin)
-      errorUrl.searchParams.set('error', 'exchange_failed')
-      errorUrl.searchParams.set('description', exchangeError.message)
-      return NextResponse.redirect(errorUrl, { status: 307 })
-    }
-    
-    if (!data.session?.user) {
-      console.error('No user data in session after exchange')
-      const errorUrl = new URL('/auth-error', requestUrl.origin)
-      errorUrl.searchParams.set('error', 'no_user')
-      errorUrl.searchParams.set('description', 'Failed to create user session')
-      return NextResponse.redirect(errorUrl, { status: 307 })
-    }
-    
-    console.log('Session established successfully', {
-      user_id: data.session.user.id,
-      provider: data.session.user.app_metadata?.provider || 'unknown',
-      email_confirmed: data.session.user.email_confirmed_at ? 'yes' : 'no'
-    })
-    
-    // Check if user exists in database
-    console.log('Checking if user exists in database')
-    const { data: existingUser } = await supabase
-      .from('users')
-      .select('id, role, created_at')
-      .eq('id', data.session.user.id)
-      .single()
-    
-    // Determine if this is email verification vs regular login
-    const isNewUser = !existingUser
-    const isEmailVerification = type === 'signup' || 
-                               type === 'signup_confirmation' ||
-                               isNewUser ||
-                               (existingUser && new Date(existingUser.created_at).getTime() > (Date.now() - 10 * 60 * 1000)) // Created within last 10 minutes
-    
-    console.log('User flow determination:', {
-      isNewUser,
-      isEmailVerification,
-      type,
-      userCreatedAt: existingUser?.created_at
-    })
-    
-    // Determine redirect destination
-    let redirectPath: string
-    
-    if (isEmailVerification) {
-      console.log('Email verification flow detected, redirecting to email-verified page')
-      redirectPath = '/email-verified'
-      
-      // Create user record if it doesn't exist
-      if (isNewUser) {
+        // Check if we can get user info despite the PKCE error
         try {
-          console.log('Creating database record for new user')
-          await supabase
-            .from('users')
-            .insert({
-              id: data.session.user.id,
-              email: data.session.user.email!,
-              first_name: data.session.user.user_metadata?.first_name || null,
-              last_name: data.session.user.user_metadata?.last_name || null,
-              role: 'user',
-              user_type: data.session.user.user_metadata?.user_type || 'other',
-              status: 'active'
-            })
-        } catch (dbError) {
-          console.error('Error creating user record:', dbError)
-          // Continue with redirect even if DB creation fails
+          const { data: { user } } = await supabase.auth.getUser()
+          if (user && user.email_confirmed_at) {
+            console.log('Email verification confirmed, user is verified:', user.email)
+            
+            // Create user profile if doesn't exist
+            const { error: userCheckError } = await supabase
+              .from('users')
+              .select('id')
+              .eq('id', user.id)
+              .single()
+
+            if (userCheckError && userCheckError.code === 'PGRST116') {
+              await supabase.from('users').insert({
+                id: user.id,
+                email: user.email,
+                first_name: user.user_metadata.first_name || '',
+                last_name: user.user_metadata.last_name || '',
+                user_type: user.user_metadata.user_type || 'other',
+                role: 'user',
+                status: 'active'
+              })
+            }
+            
+            return NextResponse.redirect(new URL('/email-verified', origin))
+          }
+        } catch (userError) {
+          console.error('Error checking user after PKCE error:', userError)
         }
+        
+        // If we can't confirm verification, assume it worked anyway for email verification
+        return NextResponse.redirect(new URL('/email-verified', origin))
       }
-    } else if (type === 'recovery') {
-      console.log('Password recovery flow detected')
-      redirectPath = '/reset-password'
-    } else {
-      // Regular login - check role and redirect appropriately
-      const isAdmin = existingUser?.role === 'admin'
-      console.log(`Regular login flow detected, admin: ${isAdmin}`)
-      
-      // Handle custom redirect parameter
-      if (redirect) {
-        redirectPath = redirect.replace(/\?$/, '')
-      } else if (next) {
-        redirectPath = next.replace(/\?$/, '')
-      } else if (isAdmin) {
-        redirectPath = '/admin/dashboard'
-      } else {
-        redirectPath = '/dashboard'
+
+      // Handle other exchange errors
+      if (exchangeError) {
+        console.error('Code exchange error:', exchangeError)
+        const errorUrl = new URL('/auth-error', origin)
+        errorUrl.searchParams.set('error', 'exchange_failed')
+        errorUrl.searchParams.set('description', exchangeError.message)
+        return NextResponse.redirect(errorUrl)
+      }
+
+      // Successful OAuth flow
+      if (data?.user) {
+        console.log('OAuth authentication successful for:', data.user.email)
+        
+        const { data: userProfile, error: profileError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', data.user.id)
+          .single()
+
+        if (profileError && profileError.code === 'PGRST116') {
+          const metadata = data.user.user_metadata
+          await supabase.from('users').insert({
+            id: data.user.id,
+            email: data.user.email,
+            first_name: metadata.full_name?.split(' ')[0] || metadata.given_name || '',
+            last_name: metadata.full_name?.split(' ').slice(1).join(' ') || metadata.family_name || '',
+            role: 'user',
+            user_type: 'other',
+            status: 'active'
+          })
+
+          return NextResponse.redirect(new URL('/dashboard', origin))
+        }
+
+        const redirectUrl = userProfile?.role === 'admin' 
+          ? new URL('/admin/dashboard', origin)
+          : new URL('/dashboard', origin)
+
+        return NextResponse.redirect(redirectUrl)
       }
     }
-    
-    // Build final redirect URL
-    const queryParams = new URLSearchParams()
-    
-    // Add bypass for coming soon mode if needed
-    if (process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true') {
-      queryParams.set('bypass', 'true')
+
+    // Handle expired/invalid links
+    if (error === 'access_denied') {
+      console.log('Access denied error - likely expired verification link')
+      const errorUrl = new URL('/auth-error', origin)
+      errorUrl.searchParams.set('error', error)
+      errorUrl.searchParams.set('description', errorDescription || 'Email link is invalid or has expired')
+      errorUrl.searchParams.set('type', 'verification')
+      return NextResponse.redirect(errorUrl)
     }
-    
-    // Add source tracking
-    queryParams.set('source', 'auth_callback')
-    
-    const finalRedirectUrl = new URL(
-      `${redirectPath}${queryParams.toString() ? '?' + queryParams.toString() : ''}`,
-      requestUrl.origin
-    )
-    
-    console.log(`Finalizing redirect to: ${finalRedirectUrl.toString()}`)
-    
-    // Create redirect response
-    const redirectResponse = NextResponse.redirect(finalRedirectUrl, { status: 307 })
-    
-    // Transfer auth cookies from supabase client
-    const allCookies = response.cookies.getAll()
-    
-    console.log(`Transferring ${allCookies.length} cookies to response`)
-    allCookies.forEach(cookie => {
-      redirectResponse.cookies.set(cookie)
-      console.log(`Transferred cookie: ${cookie.name}`)
-    })
-    
-    return redirectResponse
-    
+
+    // No valid parameters
+    console.log('No valid parameters provided')
+    const errorUrl = new URL('/auth-error', origin)
+    errorUrl.searchParams.set('error', 'missing_params')
+    errorUrl.searchParams.set('description', 'Authorization parameters missing from request')
+    return NextResponse.redirect(errorUrl)
+
   } catch (error) {
-    console.error('Auth callback uncaught error:', error)
-    const errorUrl = new URL('/auth-error', new URL(request.url).origin)
-    errorUrl.searchParams.set('error', 'unexpected')
-    errorUrl.searchParams.set('description', error instanceof Error ? error.message : 'An unexpected error occurred')
-    return NextResponse.redirect(errorUrl, { status: 307 })
+    console.error('Auth callback error:', error)
+    const errorUrl = new URL('/auth-error', origin) // Now origin is accessible
+    errorUrl.searchParams.set('error', 'callback_error')
+    errorUrl.searchParams.set('description', 'Authentication callback failed')
+    return NextResponse.redirect(errorUrl)
   }
 }

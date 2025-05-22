@@ -1,4 +1,4 @@
-// src/components/auth/signup-form.tsx
+// src/components/auth/forms/signup-form.tsx
 "use client"
 
 import { useState } from 'react'
@@ -12,11 +12,15 @@ import { FormButton } from "@/components/auth/ui/form-button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { SignupFormData } from '@/types/auth'
 
-// Form schema definition
+// Enhanced form schema with proper password validation
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Please confirm your password"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   userType: z.enum(["student", "resident", "fellow", "attending", "other"], {
@@ -41,10 +45,8 @@ export function SignupForm({
 }: SignupFormProps) {
   const [loading, setLoading] = useState(false)
   
-  // Compute the overall loading state
   const isSubmitting = isLoading || loading
 
-  // Initialize form with useForm hook
   const {
     register,
     handleSubmit,
@@ -63,17 +65,14 @@ export function SignupForm({
     },
   })
 
-  // Watch userType to update it when select changes
   const userType = watch("userType")
 
-  // Form submission handler
   async function handleFormSubmit(values: z.infer<typeof formSchema>) {
     if (!onSubmit) return
     
     try {
       setLoading(true)
       
-      // Create the signup data object
       const signupData: SignupFormData = {
         email: values.email,
         password: values.password,
@@ -90,7 +89,6 @@ export function SignupForm({
     }
   }
 
-  // Handle user type selection
   function handleUserTypeChange(value: string) {
     if (value === "student" || value === "resident" || value === "fellow" || value === "attending" || value === "other") {
       setValue("userType", value, { shouldValidate: true })
@@ -110,7 +108,7 @@ export function SignupForm({
           <div className="grid grid-cols-2 gap-4">
             <FormField
               id="firstName"
-              name="firstName" // Add name property
+              name="firstName"
               label="First Name"
               placeholder="John"
               error={errors.firstName?.message}
@@ -120,7 +118,7 @@ export function SignupForm({
             />
             <FormField
               id="lastName"
-              name="lastName" // Add name property
+              name="lastName"
               label="Last Name"
               placeholder="Doe"
               error={errors.lastName?.message}
@@ -132,7 +130,7 @@ export function SignupForm({
           
           <FormField
             id="email"
-            name="email" // Add name property
+            name="email"
             label="Email"
             type="email"
             placeholder="name@example.com"
@@ -145,7 +143,7 @@ export function SignupForm({
           
           <FormField
             id="userType"
-            name="userType" // Add name property
+            name="userType"
             label="What best describes you?"
             error={errors.userType?.message}
             required
@@ -175,7 +173,7 @@ export function SignupForm({
           
           <FormField
             id="password"
-            name="password" // Add name property
+            name="password"
             label="Password"
             type="password"
             autoComplete="new-password"
@@ -187,7 +185,7 @@ export function SignupForm({
           
           <FormField
             id="confirmPassword"
-            name="confirmPassword" // Add name property
+            name="confirmPassword"
             label="Confirm Password"
             type="password"
             autoComplete="new-password"
@@ -196,6 +194,16 @@ export function SignupForm({
             required
             disabled={isSubmitting}
           />
+          
+          <div className="text-sm text-muted-foreground">
+            <p>Password must:</p>
+            <ul className="list-disc list-inside space-y-1 pl-4 mt-1">
+              <li>Be at least 8 characters long</li>
+              <li>Include at least one uppercase letter</li>
+              <li>Include at least one lowercase letter</li>
+              <li>Include at least one number</li>
+            </ul>
+          </div>
           
           <FormButton 
             type="submit" 
