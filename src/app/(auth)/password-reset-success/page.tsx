@@ -1,5 +1,5 @@
-// src/app/(auth)/password-reset-success/page.tsx - New success page
-"use client"
+// app/(auth)/password-reset-success/page.tsx
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'

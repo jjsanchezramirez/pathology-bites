@@ -1,28 +1,26 @@
-// src/components/auth/form-field.tsx
+// src/components/auth/ui/form-field.tsx
 import { ReactNode } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import { UseFormRegister, RegisterOptions, FieldValues, Path } from "react-hook-form"
 
-interface FormFieldProps<TFieldValues extends FieldValues = FieldValues> {
+interface FormFieldProps {
   id: string;
-  name: Path<TFieldValues>; // Separate name for type-safe form registration
+  name: string;
   label: string;
   type?: string;
   placeholder?: string;
   error?: string;
   disabled?: boolean;
-  register?: UseFormRegister<TFieldValues>;
-  registerOptions?: RegisterOptions<TFieldValues, Path<TFieldValues>>;
   className?: string;
   required?: boolean;
   autoComplete?: string;
   rightElement?: ReactNode;
   children?: ReactNode;
+  defaultValue?: string;
 }
 
-export function FormField<TFieldValues extends FieldValues = FieldValues>({
+export function FormField({
   id,
   name,
   label,
@@ -30,22 +28,16 @@ export function FormField<TFieldValues extends FieldValues = FieldValues>({
   placeholder,
   error,
   disabled = false,
-  register,
-  registerOptions = {},
   className,
   required = false,
   autoComplete,
   rightElement,
   children,
-}: FormFieldProps<TFieldValues>) {
+  defaultValue,
+}: FormFieldProps) {
   // Generate ID for ARIA attributes
   const labelId = `${id}-label`;
   const errorId = error ? `${id}-error` : undefined;
-  
-  // Field registration properties
-  const registrationProps = register 
-    ? register(name, registerOptions) 
-    : {};
 
   return (
     <div className={cn("grid gap-2", className)}>
@@ -64,14 +56,16 @@ export function FormField<TFieldValues extends FieldValues = FieldValues>({
       {children || (
         <Input
           id={id}
+          name={name}
           type={type}
           placeholder={placeholder}
           disabled={disabled}
           autoComplete={autoComplete}
+          required={required}
+          defaultValue={defaultValue}
           aria-invalid={!!error}
           aria-describedby={errorId}
           aria-labelledby={labelId}
-          {...registrationProps}
         />
       )}
       

@@ -1,173 +1,112 @@
 // src/app/(auth)/login/page.tsx
-"use client"
-
-import { Suspense, useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { LoginForm } from '@/components/auth/forms/login-form'
+import { Suspense } from 'react'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { login } from '@/lib/auth/actions'
 import { AuthPageLayout } from '@/components/auth/ui/auth-page-layout'
-import { useNetworkStatus } from '@/hooks/use-network-status'
-import { useAuth } from '@/hooks/use-auth'
-import { useToast } from '@/hooks/use-toast'
-import { LoadingSpinner } from '@/components/common/loading-spinner'
-import { createClient } from '@/lib/supabase/client'
-import { AuthDebug } from '@/components/auth/auth-debug'
+import { AuthCard } from '@/components/auth/ui/auth-card'
+import { FormField } from '@/components/auth/ui/form-field'
+import { FormButton } from '@/components/auth/ui/form-button'
+import { GoogleSignInButton } from '@/components/auth/google-sign-in-button'
+import { AuthDivider } from '@/components/auth/ui/auth-divider'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
-// Create a client component that uses searchParams
-function LoginPageContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { toast } = useToast()
-  const isOnline = useNetworkStatus()
-  const [isLoading, setIsLoading] = useState(true)
-  const [isRedirecting, setIsRedirecting] = useState(false)
+interface LoginPageProps {
+  searchParams: Promise<{ error?: string; message?: string; redirect?: string }>
+}
 
-  // Get redirect parameter from URL
-  const redirectPath = searchParams.get('redirect')
-  const message = searchParams.get('message')
-  const cleanRedirectPath = redirectPath ? redirectPath.replace(/\?$/, '') : undefined
-
-  // Show helpful messages
-  useEffect(() => {
-    if (message === 'cross_device_detected') {
-      toast({
-        description: "Verification link was from different device. Please try logging in or sign up again."
-      })
-    } else if (message === 'cross_device_verified') {
-      toast({
-        description: "Your email was verified! Please log in to access your account."
-      })
-    }
-  }, [message, toast])
-
-  // Use the auth hook for authentication logic
-  const { login, loginWithGoogle } = useAuth()
+async function LoginForm({ searchParams }: LoginPageProps) {
+  // Await searchParams for Next.js 15
+  const params = await searchParams
   
-  // Check if user is already authenticated and redirect if so
-  useEffect(() => {
-    const checkAuthAndRedirect = async () => {
-      try {
-        if (!isOnline) {
-          setIsLoading(false)
-          return
-        }
-        
-        const supabase = createClient()
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        if (error) {
-          console.log('Session check error:', error)
-          setIsLoading(false)
-          return
-        }
-        
-        // If user is authenticated, redirect them
-        if (session?.user) {
-          console.log("User already authenticated, redirecting...")
-          setIsRedirecting(true)
-          
-          try {
-            // Check user role for proper redirect
-            const { data: userData } = await supabase
-              .from('users')
-              .select('role')
-              .eq('id', session.user.id)
-              .single()
-            
-            const isAdmin = userData?.role === 'admin'
-            
-            // Determine redirect destination
-            let destination = '/dashboard'
-            if (cleanRedirectPath) {
-              destination = cleanRedirectPath
-            } else if (isAdmin) {
-              destination = '/admin/dashboard'
-            }
-            
-            console.log(`Redirecting authenticated user to: ${destination}`)
-            router.push(destination)
-            return // Don't set loading to false, we're redirecting
-          } catch (roleError) {
-            console.error('Error checking user role:', roleError)
-            // Default redirect on role check failure
-            router.push(cleanRedirectPath || '/dashboard')
-            return
-          }
-        }
-        
-        // No session, show login form
-        setIsLoading(false)
-        
-      } catch (error) {
-        console.error('Auth check error:', error)
-        setIsLoading(false)
-      }
-    }
-    
-    checkAuthAndRedirect()
-  }, [router, isOnline, cleanRedirectPath])
-
-  const handleEmailSignIn = async (email: string, password: string) => {
-    if (!isOnline) {
-      toast({
-        variant: "destructive",
-        description: "You appear to be offline. Please check your internet connection."
-      })
-      return
-    }
-
-    // The useAuth hook will handle redirection based on role and redirect param
-    await login(email, password)
-  }
-
-  const handleGoogleSignIn = async () => {
-    if (!isOnline) {
-      toast({
-        variant: "destructive",
-        description: "You appear to be offline. Please check your internet connection."
-      })
-      return
-    }
-    
-    // Store redirect path for after OAuth callback
-    if (cleanRedirectPath && typeof window !== 'undefined') {
-      sessionStorage.setItem('authRedirectPath', cleanRedirectPath)
-    }
-    
-    await loginWithGoogle()
-  }
-
-  // Show loading while checking auth or redirecting
-  if (isLoading || isRedirecting) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <LoadingSpinner 
-          size="md" 
-          text={isRedirecting ? "Redirecting..." : "Loading..."} 
-        />
-      </div>
-    )
+  // Check if user is already authenticated
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (user) {
+    const redirectPath = params.redirect || '/dashboard'
+    redirect(redirectPath)
   }
 
   return (
-    <AuthPageLayout maxWidth="sm">
-      <LoginForm 
-        onSubmit={handleEmailSignIn}
-        onGoogleSignIn={handleGoogleSignIn}
-      />
-      {process.env.NODE_ENV !== 'production' && <AuthDebug />}
-    </AuthPageLayout>
+    <AuthCard
+      title="Welcome back"
+      description="Login with Google or your email account"
+      showPrivacyFooter
+    >
+      {params.error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{params.error}</AlertDescription>
+        </Alert>
+      )}
+      
+      {params.message && (
+        <Alert className="mb-4">
+          <AlertDescription>{params.message}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="space-y-6">
+        <GoogleSignInButton />
+        
+        <AuthDivider text="Or continue with" />
+        
+        <form action={login} className="space-y-4">
+          <input type="hidden" name="redirect" value={params.redirect || ''} />
+          
+          <FormField
+            id="email"
+            name="email"
+            label="Email"
+            type="email"
+            placeholder="name@example.com"
+            autoComplete="email"
+            required
+          />
+          
+          <FormField
+            id="password"
+            name="password"
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            required
+            rightElement={
+              <Link
+                href="/forgot-password"
+                className="text-sm text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
+              >
+                Forgot?
+              </Link>
+            }
+          />
+          
+          <FormButton type="submit" fullWidth>
+            Login
+          </FormButton>
+        </form>
+        
+        <div className="text-center text-sm text-muted-foreground">
+          Don't have an account?{" "}
+          <Link 
+            href="/signup" 
+            className="text-foreground underline underline-offset-4 hover:text-primary"
+          >
+            Sign up
+          </Link>
+        </div>
+      </div>
+    </AuthCard>
   )
 }
 
-// Main component with Suspense wrapper
-export default function LoginPage() {
+export default function LoginPage(props: LoginPageProps) {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center">
-        <LoadingSpinner size="md" text="Loading..." />
-      </div>
-    }>
-      <LoginPageContent />
-    </Suspense>
+    <AuthPageLayout maxWidth="sm">
+      <Suspense fallback={<div>Loading...</div>}>
+        <LoginForm {...props} />
+      </Suspense>
+    </AuthPageLayout>
   )
 }

@@ -1,106 +1,62 @@
-// src/app/(auth)/reset-password/page.tsx
-"use client"
-
-import { useState, useEffect } from 'react'
-import { ResetPasswordForm } from '@/components/auth/forms/reset-password-form'
-import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useAuth } from '@/hooks/use-auth'
-import { useToast } from '@/hooks/use-toast'
-import { useNetworkStatus } from '@/hooks/use-network-status'
+// app/(auth)/reset-password/page.tsx
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { resetPassword } from '@/lib/auth/actions'
 import { AuthPageLayout } from '@/components/auth/ui/auth-page-layout'
-import { LoadingSpinner } from '@/components/common/loading-spinner'
-import { Icons } from '@/components/theme/icons'
+import { AuthCard } from '@/components/auth/ui/auth-card'
+import { FormField } from '@/components/auth/ui/form-field'
+import { FormButton } from '@/components/auth/ui/form-button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
-export default function ResetPasswordPage() {
-  const [isValid, setIsValid] = useState<boolean | null>(null)
-  const router = useRouter()
-  const supabase = createClientComponentClient()
-  const { updatePassword, isLoading } = useAuth()
-  const { toast } = useToast()
-  const isOnline = useNetworkStatus()
+interface ResetPasswordPageProps {
+  searchParams: { error?: string }
+}
 
-  // Check if reset token is valid
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession()
-        
-        if (error) {
-          throw error
-        }
-        
-        // If no session or not in recovery mode, redirect to login
-        if (!data.session || !data.session.user?.email_confirmed_at) {
-          setIsValid(false)
-          
-          // Give time for state to update
-          setTimeout(() => {
-            toast({
-              variant: "destructive",
-              title: "Invalid or expired link",
-              description: "Please request a new password reset link."
-            })
-            router.push('/forgot-password')
-          }, 300)
-          return
-        }
-        
-        setIsValid(true)
-      } catch (error) {
-        console.error("Session check error:", error)
-        setIsValid(false)
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to validate reset link. Please try again."
-        })
-      }
-    }
-    
-    checkSession()
-  }, [router, supabase, toast])
+export default async function ResetPasswordPage({ searchParams }: ResetPasswordPageProps) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  const handleUpdatePassword = async (password: string) => {
-    // Check if online first
-    if (!isOnline) {
-      toast({
-        variant: "destructive",
-        title: "Network Error",
-        description: "You appear to be offline. Please check your internet connection and try again."
-      })
-      return
-    }
-
-    // Use the updatePassword function from the hook
-    await updatePassword(password)
-  }
-
-  if (isValid === null) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center">
-        <LoadingSpinner size="md" text="Verifying your reset link..." />
-      </div>
-    )
-  }
-
-  if (isValid === false) {
-    // Will be redirected via the useEffect
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center">
-        <Icons.error className="h-8 w-8 text-destructive" />
-        <p className="mt-2 text-muted-foreground">Invalid or expired reset link.</p>
-        <p className="text-muted-foreground">Redirecting...</p>
-      </div>
-    )
+  if (!user) {
+    redirect('/login?error=Invalid or expired reset link')
   }
 
   return (
     <AuthPageLayout maxWidth="sm">
-      <ResetPasswordForm 
-        onSubmit={handleUpdatePassword}
-        isLoading={isLoading}
-      />
+      <AuthCard
+        title="Create new password"
+        description="Enter a new strong password for your account"
+      >
+        {searchParams.error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{searchParams.error}</AlertDescription>
+          </Alert>
+        )}
+
+        <form action={resetPassword} className="space-y-6">
+          <FormField
+            id="password"
+            name="password"
+            label="New Password"
+            type="password"
+            autoComplete="new-password"
+            required
+          />
+          
+          <div className="text-sm text-muted-foreground">
+            <p>Password must:</p>
+            <ul className="list-disc list-inside space-y-1 pl-4 mt-1">
+              <li>Be at least 8 characters long</li>
+              <li>Include at least one uppercase letter</li>
+              <li>Include at least one lowercase letter</li>
+              <li>Include at least one number</li>
+            </ul>
+          </div>
+          
+          <FormButton type="submit" fullWidth>
+            Update Password
+          </FormButton>
+        </form>
+      </AuthCard>
     </AuthPageLayout>
   )
 }

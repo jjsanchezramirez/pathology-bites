@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { AuthStatus } from "./auth-status"
 
 const navigation = [
   {
@@ -100,6 +101,9 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
           })}
         </div>
       </nav>
+
+      {/* Auth Status at Bottom */}
+      <AuthStatus isCollapsed={isCollapsed} />
     </aside>
   )
 }

@@ -1,5 +1,5 @@
-// src/app/(auth)/email-verified/page.tsx
-"use client"
+// app/(auth)/email-verified/page.tsx
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -12,7 +12,6 @@ export default function EmailVerifiedPage() {
   const [countdown, setCountdown] = useState(5)
   const router = useRouter()
 
-  // Automatic redirect countdown
   useEffect(() => {
     const timer = setTimeout(() => {
       if (countdown > 1) {
@@ -24,13 +23,6 @@ export default function EmailVerifiedPage() {
 
     return () => clearTimeout(timer)
   }, [countdown, router])
-
-  // Clear localStorage when page loads
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('pendingVerificationEmail')
-    }
-  }, [])
 
   return (
     <AuthPageLayout>

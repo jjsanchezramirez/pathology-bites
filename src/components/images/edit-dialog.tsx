@@ -1,39 +1,49 @@
-import { useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+// src/components/images/edit-dialog.tsx
+'use client'
+
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { updateImage } from '@/lib/images/images';
+import { ImageData, IMAGE_CATEGORIES, ImageCategory } from '@/types/images';
+import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Loader2, Trash2 } from 'lucide-react';
-import { useImageEdit } from '@/hooks/use-image-edit';
-import { IMAGE_CATEGORIES, type ImageData, ImageCategory } from '@/types/images';
-import Image from 'next/image';
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { ImagePreview } from './image-preview';
+import { Loader2 } from 'lucide-react';
 
-interface EditDialogProps {
+const editImageSchema = z.object({
+  description: z.string().min(1, 'Description is required').max(500, 'Description too long'),
+  alt_text: z.string().min(1, 'Alt text is required').max(200, 'Alt text too long'),
+  category: z.enum(['gross', 'microscopic', 'diagram', 'other']),
+});
+
+type EditImageFormData = z.infer<typeof editImageSchema>;
+
+interface EditImageDialogProps {
   image: ImageData | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -45,228 +55,174 @@ export function EditImageDialog({
   open, 
   onOpenChange, 
   onSave 
-}: EditDialogProps) {
-  const {
-    formData,
-    setFormData,
-    isLoading,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
-    handleUpdateImage,
-    handleDeleteImage,
-    initializeForm,
-    resetState
-  } = useImageEdit({ onSuccess: onSave });
+}: EditImageDialogProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
-  // Debug logging: track mount/unmount
-  useEffect(() => {
-    console.log("EditImageDialog mounted");
-    return () => {
-      console.log("EditImageDialog unmounted");
-      // Force cleanup on unmount
-      resetState();
-      // Remove any potential focus traps or overlay classes.
-      document.body.classList.remove('dialog-open');
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-      }
-    };
-  }, [resetState]);
+  const form = useForm<EditImageFormData>({
+    resolver: zodResolver(editImageSchema),
+    defaultValues: {
+      description: '',
+      alt_text: '',
+      category: 'other',
+    },
+  });
 
-  // Initialize form on open; force cleanup when closed.
-  useEffect(() => {
-    if (open) {
-      console.log("Dialog opened, initializing form");
-      initializeForm(image);
-      // If your dialog library adds a body class for modals, add it here:
-      document.body.classList.add('dialog-open');
-    } else {
-      console.log("Dialog closed, cleaning up");
-      resetState();
-      document.body.classList.remove('dialog-open');
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-      }
-    }
-  }, [open, image, initializeForm, resetState]);
+  const initializeForm = useCallback((image: ImageData | null) => {
+    const newFormData = image ? {
+      description: image.description,
+      alt_text: image.alt_text,
+      category: image.category as ImageCategory
+    } : initialFormState;
+    
+    form.reset(newFormData);
+  }, [form]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (image) {
-      await handleUpdateImage(image.id);
+  const onSubmit = async (data: EditImageFormData) => {
+    if (!image) return;
+
+    setIsSubmitting(true);
+    try {
+      await updateImage(image.id, data);
+      toast({
+        title: 'Success',
+        description: 'Image updated successfully',
+      });
+      onSave();
       onOpenChange(false);
+    } catch (error) {
+      console.error('Failed to update image:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to update image',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (image) {
-      await handleDeleteImage(image.id, image.storage_path);
-      onOpenChange(false);
+  const handleOpenChange = (open: boolean) => {
+    if (!isSubmitting) {
+      onOpenChange(open);
+      if (!open) {
+        form.reset();
+      }
     }
   };
+
+  if (!image) return null;
 
   return (
-    <Dialog 
-      open={open} 
-      onOpenChange={(openState) => {
-        console.log("Dialog open state changed:", openState);
-        onOpenChange(openState);
-        if (!openState) {
-          // Extra cleanup when dialog is closed.
-          resetState();
-          document.body.classList.remove('dialog-open');
-          if (document.activeElement instanceof HTMLElement) {
-            document.activeElement.blur();
-          }
-        }
-      }}
-    >
-      <DialogContent className="sm:max-w-xl">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit Image</DialogTitle>
-          <DialogDescription>Update the image details and category</DialogDescription>
         </DialogHeader>
 
-        {image ? (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Image Preview */}
-            <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted flex items-center justify-center">
-              <Image
-                src={image.url}
-                alt={formData.alt_text || image.alt_text}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-contain"
-                priority
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Image Preview */}
+          <div className="space-y-4">
+            <ImagePreview
+              src={image.url}
+              alt={image.alt_text}
+              size="lg"
+              className="w-full h-48"
+              showFullSize={false}
+            />
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p><strong>File Type:</strong> {image.file_type}</p>
+              <p><strong>Created:</strong> {new Date(image.created_at).toLocaleDateString()}</p>
+              {image.source_ref && (
+                <p><strong>Source:</strong> {image.source_ref}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Edit Form */}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="alt_text"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Alt Text</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Descriptive text for screen readers"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => {
-                  setFormData({
-                    ...formData,
-                    description: e.target.value
-                  });
-                }}
-                placeholder="Enter a detailed description of the image"
-                className="resize-none"
-                rows={3}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Detailed description of the image"
+                        className="min-h-24"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            {/* Alt Text */}
-            <div className="space-y-2">
-              <Label htmlFor="alt_text">Alt Text</Label>
-              <Input
-                id="alt_text"
-                value={formData.alt_text}
-                onChange={(e) => {
-                  setFormData({
-                    ...formData,
-                    alt_text: e.target.value
-                  });
-                }}
-                placeholder="Enter alternative text for screen readers"
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(IMAGE_CATEGORIES).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            {/* Category */}
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <Select
-                value={formData.category}
-                onValueChange={(value) => {
-                  setFormData({
-                    ...formData,
-                    category: value as ImageCategory
-                  });
-                }}
-              >
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(IMAGE_CATEGORIES).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <DialogFooter className="gap-2 sm:gap-0">
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => setIsDeleteDialogOpen(true)}
-                disabled={isLoading}
-                className="w-full sm:w-auto"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </Button>
-              <div className="flex gap-2 w-full sm:w-auto">
+              <div className="flex justify-end gap-2 pt-4">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  disabled={isLoading}
-                  className="flex-1 sm:flex-none"
+                  onClick={() => handleOpenChange(false)}
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1 sm:flex-none min-w-[80px]"
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    'Save'
-                  )}
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Save Changes
                 </Button>
               </div>
-            </DialogFooter>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            <p>No image selected.</p>
-            <Button onClick={() => onOpenChange(false)}>Close</Button>
-          </div>
-        )}
+            </form>
+          </Form>
+        </div>
       </DialogContent>
-
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Image</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this image? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isLoading}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                'Delete'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </Dialog>
   );
 }

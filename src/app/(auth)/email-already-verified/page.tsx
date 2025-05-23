@@ -1,4 +1,4 @@
-// src/app/(auth)/email-already-verified/page.tsx
+// app/(auth)/email-already-verified/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -11,7 +11,6 @@ export default function EmailAlreadyVerifiedPage() {
   const [countdown, setCountdown] = useState(5)
   const router = useRouter()
 
-  // Automatic redirect countdown
   useEffect(() => {
     const timer = setTimeout(() => {
       if (countdown > 1) {

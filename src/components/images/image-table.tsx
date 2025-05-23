@@ -1,7 +1,7 @@
+// src/components/images/images-table.tsx
 "use client"
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useState, useCallback, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,8 +21,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ImagePreview } from './image-preview';
-import { EditImageDialog } from '@/components/images/edit-dialog';
+import { EditImageDialog } from './edit-dialog';
 import { UploadDialog } from './upload-dialog';
+import { fetchImages, deleteImage } from '@/lib/images/images';
 import { 
   ImageData, 
   ImageCategory, 
@@ -65,9 +66,10 @@ function TableControls({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {Object.entries(IMAGE_CATEGORIES).map(([value, label]) => (
-              <SelectItem key={value} value={value as ImageCategory}>{label}</SelectItem>
-            ))}
+            <SelectItem value="microscopic">Microscopic</SelectItem>
+            <SelectItem value="figure">Figure</SelectItem>
+            <SelectItem value="table">Table</SelectItem>
+            <SelectItem value="gross">Gross</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -169,46 +171,26 @@ export function ImagesTable() {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Memoize the supabase client so it's not recreated on every render.
-  const supabase = useMemo(() => createClientComponentClient(), []);
   const { toast } = useToast();
 
   const loadImages = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      // Count query
-      const countQuery = supabase
-        .from('images')
-        .select('*', { count: 'exact', head: true });
-      // Data query
-      const dataQuery = supabase
-        .from('images')
-        .select('*');
+      const result = await fetchImages({
+        page,
+        pageSize: PAGE_SIZE,
+        searchTerm: searchTerm || undefined,
+        category: categoryFilter === 'all' ? undefined : categoryFilter,
+      });
 
-      // Apply filters
-      if (searchTerm) {
-        countQuery.ilike('alt_text', `%${searchTerm}%`);
-        dataQuery.ilike('alt_text', `%${searchTerm}%`);
-      }
-      if (categoryFilter !== 'all') {
-        countQuery.eq('category', categoryFilter);
-        dataQuery.eq('category', categoryFilter);
+      if (result.error) {
+        throw new Error(result.error);
       }
 
-      const { count, error: countError } = await countQuery;
-      if (countError) throw countError;
-
-      const totalCount = count || 0;
-      setTotalItems(totalCount);
-      setTotalPages(Math.ceil(totalCount / PAGE_SIZE));
-
-      const { data, error: dataError } = await dataQuery
-        .order('created_at', { ascending: false })
-        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-      if (dataError) throw dataError;
-
-      setImages(data || []);
+      setImages(result.data);
+      setTotalItems(result.total);
+      setTotalPages(Math.ceil(result.total / PAGE_SIZE));
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to load images';
       setError(message);
@@ -220,7 +202,7 @@ export function ImagesTable() {
     } finally {
       setLoading(false);
     }
-  }, [supabase, searchTerm, categoryFilter, page, toast]);
+  }, [searchTerm, categoryFilter, page, toast]);
 
   useEffect(() => {
     loadImages();
@@ -228,32 +210,37 @@ export function ImagesTable() {
 
   const handleDelete = useCallback(async (image: ImageData) => {
     if (!confirm('Are you sure you want to delete this image?')) return;
+    
     try {
-      const { error: storageError } = await supabase.storage
-        .from('images')
-        .remove([image.storage_path]);
-      if (storageError) throw storageError;
-
-      const { error: dbError } = await supabase
-        .from('images')
-        .delete()
-        .eq('id', image.id);
-      if (dbError) throw dbError;
-
+      await deleteImage(image.storage_path, image.id);
+      
       toast({
         title: "Success",
         description: "Image deleted successfully",
       });
-      loadImages();
+      
+      // Remove the deleted image from the local state
+      setImages(prev => prev.filter(img => img.id !== image.id));
+      setTotalItems(prev => prev - 1);
+      
+      // If this was the last image on the current page and we're not on page 0,
+      // go back one page
+      if (images.length === 1 && page > 0) {
+        setPage(prev => prev - 1);
+      } else {
+        // Otherwise, reload the current page
+        loadImages();
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to delete image';
+      console.error('Delete error:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: message,
       });
     }
-  }, [supabase, toast, loadImages]);
+  }, [images.length, page, toast, loadImages]);
 
   const handleSearch = useCallback((term: string) => {
     setSearchTerm(term);
@@ -265,7 +252,19 @@ export function ImagesTable() {
     setPage(0);
   }, []);
 
-  if (error) {
+  const handleEditSave = useCallback(() => {
+    setShowEditDialog(false);
+    setSelectedImage(null);
+    loadImages();
+  }, [loadImages]);
+
+  const handleUploadComplete = useCallback(() => {
+    setShowUploadDialog(false);
+    setPage(0); // Go to first page to see newly uploaded images
+    loadImages();
+  }, [loadImages]);
+
+  if (error && !loading) {
     return (
       <div className="text-center p-8 text-destructive">
         <p>{error}</p>
@@ -290,6 +289,7 @@ export function ImagesTable() {
           <TableHeader className="bg-muted/50">
             <TableRow>
               <TableHead className="w-24">Preview</TableHead>
+              <TableHead>Alt Text</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Category</TableHead>
               <TableHead className="w-32">Created</TableHead>
@@ -299,14 +299,17 @@ export function ImagesTable() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : images.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                  No images found
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  {searchTerm || categoryFilter !== 'all' 
+                    ? 'No images found matching your filters' 
+                    : 'No images uploaded yet'
+                  }
                 </TableCell>
               </TableRow>
             ) : (
@@ -319,13 +322,20 @@ export function ImagesTable() {
                       size="sm"
                     />
                   </TableCell>
+                  <TableCell className="max-w-48">
+                    <p className="line-clamp-2 text-sm font-medium">{image.alt_text}</p>
+                  </TableCell>
                   <TableCell className="max-w-xl">
-                    <p className="line-clamp-2">{image.description}</p>
+                    <p className="line-clamp-2 text-sm text-muted-foreground">
+                      {image.description || 'No description'}
+                    </p>
                   </TableCell>
                   <TableCell>
-                    {IMAGE_CATEGORIES[image.category]}
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary">
+                      {IMAGE_CATEGORIES[image.category as ImageCategory] || image.category}
+                    </span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
                     {new Date(image.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
@@ -345,33 +355,29 @@ export function ImagesTable() {
         </Table>
       </div>
 
-      <TablePagination
-        currentPage={page}
-        totalPages={totalPages}
-        onPageChange={setPage}
-        totalItems={totalItems}
-      />
+      {totalPages > 1 && (
+        <TablePagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          totalItems={totalItems}
+        />
+      )}
 
-      {/* Conditionally render the edit dialog */}
-      {showEditDialog && (
+      {/* Dialogs */}
+      {showEditDialog && selectedImage && (
         <EditImageDialog
           image={selectedImage}
           open={showEditDialog}
           onOpenChange={setShowEditDialog}
-          onSave={() => {
-            loadImages();
-            setShowEditDialog(false);
-          }}
+          onSave={handleEditSave}
         />
       )}
 
       <UploadDialog
         open={showUploadDialog}
         onOpenChange={setShowUploadDialog}
-        onUpload={() => {
-          loadImages();
-          setShowUploadDialog(false);
-        }}
+        onUpload={handleUploadComplete}
       />
     </div>
   );

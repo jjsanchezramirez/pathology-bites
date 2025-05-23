@@ -1,3 +1,4 @@
+// src/components/theme/conditional-theme-provider.tsx
 'use client'
 
 import { useEffect } from 'react'

@@ -1,172 +1,100 @@
-// src/lib/supabase/middleware.ts
+// lib/supabase/middleware.ts
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
-  try {
-    const path = request.nextUrl.pathname
-    const searchParams = request.nextUrl.searchParams
-    console.log(`Middleware processing: ${path}`)
-    
-    // CRITICAL: IMMEDIATELY BYPASS FOR CALLBACK AND VERIFICATION ENDPOINTS
-    if (path.startsWith('/api/auth/callback') || path.includes('verify')) {
-      console.log(`Auth callback/verification accessed: ${path} - bypassing middleware`)
-      return NextResponse.next()
-    }
-    
-    // CRITICAL: SPECIAL HANDLING FOR AUTH PAGES
-    const authPages = [
-      '/auth-error',
-      '/check-email',
-      '/email-already-verified',
-      '/email-verified',
-      '/forgot-password',
-      '/login',
-      '/reset-password',
-      '/signup',
-      '/verify-email',
-      '/debug',
-      '/debug/auth',
-      '/debug/auth/test',
-    ]
-    
-    // Also bypass middleware for static assets and API routes
-    if (authPages.includes(path) || 
-        path.startsWith('/api/') || 
-        path.startsWith('/_next/') || 
-        path.includes('.') ||
-        path === '/favicon.ico') {
-      console.log(`Auth/API/Static resource accessed: ${path} - allowing direct access`)
-      return NextResponse.next()
-    }
-    
-    // Initialize response - FIXED: use const instead of let
-    const response = NextResponse.next()
-    
-    // Create Supabase client
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name) {
-            return request.cookies.get(name)?.value
-          },
-          set(name, value, options) {
-            // CRITICAL: Only set cookies on the response
-            response.cookies.set({
-              name,
-              value,
-              ...options,
-            })
-          },
-          remove(name, options) {
-            // CRITICAL: Only remove cookies from the response
-            response.cookies.set({
-              name,
-              value: '',
-              ...options,
-            })
-          },
-        },
-      }
-    )
-    
-    // Get user session - Use getUser() for security instead of getSession()
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    // Log all cookies for debugging
-    const authCookies = request.cookies.getAll().filter(
-      cookie => cookie.name.startsWith('sb-') || cookie.name.includes('supabase')
-    )
-    
-    // Debug output to check cookie state
-    console.log("Auth check result:", {
-      hasSession: !!user,
-      userId: user?.id || 'none',
-      cookies: authCookies.map(c => c.name).join(', '),
-      cookieCount: authCookies.length
-    })
-    
-    // Process auth errors from URL query params
-    if (searchParams.has('error') && searchParams.has('description')) {
-      if (path !== '/auth-error') {
-        console.log('Auth error params detected, redirecting to auth-error page')
-        const errorUrl = new URL('/auth-error', request.url)
-        searchParams.forEach((value, key) => {
-          errorUrl.searchParams.set(key, value)
-        })
-        return NextResponse.redirect(errorUrl)
-      }
-    }
-    
-    // Check for coming soon mode
-    const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
-    
-    // Determine user role for admin check
-    let isAdmin = false
-    if (user) {
-      try {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', user.id)
-          .single()
-        
-        isAdmin = userData?.role === 'admin'
-      } catch (error) {
-        console.error('Error checking admin status:', error)
-      }
-    }
-    
-    // Check bypass flags
-    const bypassParam = searchParams.get('bypass')
-    const hasAdminAccess = bypassParam === 'true' || isAdmin
-    
-    // Process coming soon mode redirects
-    if (isComingSoonMode && 
-        !user && 
-        !hasAdminAccess && 
-        path !== '/coming-soon' && 
-        !path.startsWith('/api/') && 
-        !path.includes('.')) {
-      console.log(`Coming soon mode active, redirecting ${path} to /coming-soon`)
-      return NextResponse.rewrite(new URL('/coming-soon', request.url))
-    }
-    
-    // Define protected routes
-    const authRoutes = ['/dashboard', '/profile', '/settings']
-    const adminRoutes = ['/admin']
-    
-    // Route matching
-    const isAuthRoute = authRoutes.some(route => path.startsWith(route))
-    const isAdminRoute = adminRoutes.some(route => path.startsWith(route))
-    
-    // Auth-required route protection
-    if (!user && (isAuthRoute || isAdminRoute)) {
-      console.log(`Unauthenticated access to protected route ${path}, redirecting to login`)
-      const redirectUrl = new URL('/login', request.url)
-      const cleanPath = path.replace(/\?$/, '')
-      redirectUrl.searchParams.set('redirect', cleanPath)
-      
-      // Debug output
-      console.log(`Redirecting to login with: ${redirectUrl.toString()}`)
-      
-      return NextResponse.redirect(redirectUrl)
-    }
-    
-    // Admin route protection
-    if (user && isAdminRoute && !isAdmin) {
-      console.log(`User ${user.id} attempted to access admin route without admin role`)
-      const redirectUrl = new URL('/dashboard', request.url)
-      return NextResponse.redirect(redirectUrl)
-    }
-    
-    console.log(`Middleware completed for ${path}`)
-    return response
-  } catch (error) {
-    console.error('Middleware error:', error)
-    // Fall through to next handler when there's an error
+  // CRITICAL: Immediately return for all API routes to avoid interference
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    console.log('API route detected, bypassing middleware:', request.nextUrl.pathname)
     return NextResponse.next()
   }
+
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  // IMPORTANT: DO NOT REMOVE auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // Define auth pages that don't require authentication
+  const authPages = [
+    '/login',
+    '/signup', 
+    '/forgot-password',
+    '/reset-password',
+    '/verify-email',
+    '/check-email',
+    '/auth-error',
+    '/email-verified',
+    '/email-already-verified',
+    '/password-reset-success',
+    '/auth/confirm' // Add this line to allow the auth confirm route
+  ]
+
+  const isAuthPage = authPages.some(page => 
+    request.nextUrl.pathname.startsWith(page)
+  )
+
+  // Allow access to auth pages, static files, and root
+  if (isAuthPage || 
+      request.nextUrl.pathname.startsWith('/_next/') ||
+      request.nextUrl.pathname.includes('.') ||
+      request.nextUrl.pathname === '/') {
+    return supabaseResponse
+  }
+
+  // Redirect unauthenticated users to login for protected routes
+  if (!user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('redirect', request.nextUrl.pathname)
+    return NextResponse.redirect(url)
+  }
+
+  // Check user role for admin routes
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    try {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      
+      if (userData?.role !== 'admin') {
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
+      }
+    } catch (error) {
+      console.error('Error checking admin role:', error)
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
+  }
+
+  return supabaseResponse
 }
