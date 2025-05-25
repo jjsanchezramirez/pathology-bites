@@ -6,6 +6,8 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, Plus, ClipboardList, BarChart2 } from "lucide-react"
 
+import { SidebarAuthStatus } from "../admin/sidebar-auth-status"
+
 interface SidebarProps {
   isOpen: boolean
 }
@@ -64,6 +66,11 @@ export function Sidebar({}: SidebarProps) {
           )
         })}
       </nav>
+
+      {/* Auth Status at Bottom */}
+      <div className="flex-shrink-0">
+        <SidebarAuthStatus />
+      </div>
     </div>
   )
 }

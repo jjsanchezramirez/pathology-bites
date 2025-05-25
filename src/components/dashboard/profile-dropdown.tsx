@@ -1,172 +1,154 @@
 // src/components/dashboard/profile-dropdown.tsx
-"use client"
+'use client'
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import type { User } from "@supabase/auth-helpers-nextjs"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { User } from '@supabase/supabase-js' // Add this import
+import { User as UserIcon, LogOut, Settings, Shield } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { createClient } from '@/lib/supabase/client'
-import { useToast } from "@/hooks/use-toast"
-import ProfileAvatar from "@/components/dashboard/profile-avatar"
+} from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
-interface UserDisplayInfo {
-  displayName: string
-  email: string
-  avatarUrl?: string | null
+interface UserProfile {
+  id: string
+  email: string | null
+  role: string
+  first_name: string | null
+  last_name: string | null
 }
 
 export function ProfileDropdown() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  
+  const [user, setUser] = useState<User | null>(null) // Fix the typing here
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const supabase = createClient()
+
   useEffect(() => {
     const getUser = async () => {
       try {
-        // Use createClient() function instead of global supabase variable
-        const supabase = createClient()
-        const { data: { user }, error } = await supabase.auth.getUser()
-        
-        if (error) {
-          throw error
-        }
-        
+        const { data: { user } } = await supabase.auth.getUser()
         setUser(user)
+
+        if (user) {
+          const { data: profile } = await supabase
+            .from('users')
+            .select('id, email, role, first_name, last_name')
+            .eq('id', user.id)
+            .single()
+
+          setUserProfile(profile)
+        }
       } catch (error) {
         console.error('Error fetching user:', error)
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load user profile",
-        })
       } finally {
-        setIsLoading(false)
+        setLoading(false)
       }
     }
-    
+
     getUser()
-  }, [toast])
 
-  const getUserDisplayInfo = (user: User | null): UserDisplayInfo => {
-    if (!user) {
-      return {
-        displayName: 'Guest',
-        email: 'guest@example.com',
-        avatarUrl: null
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_OUT') {
+          setUser(null)
+          setUserProfile(null)
+        } else if (session?.user) {
+          setUser(session.user)
+        }
       }
-    }
+    )
 
-    const name = user.user_metadata?.first_name 
-      ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`
-      : user.email?.split('@')[0] || 'User'
+    return () => subscription.unsubscribe()
+  }, [supabase])
 
-    return {
-      displayName: name,
-      email: user.email || 'No email provided',
-      avatarUrl: user.user_metadata?.avatar_url
-    }
-  }
-
-  const handleLogout = async () => {
+  const handleSignOut = async () => {
     try {
-      setIsLoading(true)
-      const supabase = createClient()
-      const { error } = await supabase.auth.signOut()
-      
-      if (error) {
-        throw error
-      }
-      
-      router.push('/login')
-      toast({
-        title: "Success",
-        description: "Successfully logged out",
-      })
+      await supabase.auth.signOut()
+      window.location.href = '/login'
     } catch (error) {
-      console.error('Error signing out:', error)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to log out. Please try again.",
-      })
-    } finally {
-      setIsLoading(false)
+      console.error('Sign out error:', error)
     }
   }
 
-  const handleNavigation = (path: string) => {
-    try {
-      router.push(path)
-    } catch (error) {
-      console.error('Navigation error:', error)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to navigate. Please try again.",
-      })
+  const getInitials = () => {
+    if (userProfile?.first_name && userProfile?.last_name) {
+      return `${userProfile.first_name[0]}${userProfile.last_name[0]}`.toUpperCase()
     }
+    if (user?.email) {
+      return user.email[0].toUpperCase()
+    }
+    return 'U'
   }
 
-  const userInfo = getUserDisplayInfo(user)
+  const getDisplayName = () => {
+    if (userProfile?.first_name) {
+      return `${userProfile.first_name} ${userProfile.last_name || ''}`.trim()
+    }
+    return user?.email?.split('@')[0] || 'User'
+  }
+
+  if (!user || loading) {
+    return (
+      <Button variant="ghost" size="icon" disabled>
+        <UserIcon className="h-5 w-5" />
+      </Button>
+    )
+  }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          className="relative h-10 w-10 rounded-full"
-          disabled={isLoading}
-        >
-          <ProfileAvatar
-            url={userInfo.avatarUrl}
-            name={userInfo.displayName}
-            className="h-10 w-10"
-          />
+        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+          <Avatar className="h-9 w-9">
+            <AvatarFallback className="text-sm">
+              {getInitials()}
+            </AvatarFallback>
+          </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {userInfo.displayName}
+              {getDisplayName()}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
-              {userInfo.email}
+              {user.email}
             </p>
+            {userProfile?.role && (
+              <div className="flex items-center gap-1 pt-1">
+                <Shield className="h-3 w-3" />
+                <span className="text-xs text-muted-foreground capitalize">
+                  {userProfile.role}
+                </span>
+              </div>
+            )}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem 
-            className="cursor-pointer"
-            onClick={() => handleNavigation('/dashboard/profile')}
-          >
-            Profile
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            className="cursor-pointer"
-            onClick={() => handleNavigation('/dashboard/settings')}
-          >
-            Settings
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
+        <DropdownMenuItem asChild>
+          <a href="/dashboard" className="cursor-pointer">
+            <UserIcon className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </a>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <a href="/settings" className="cursor-pointer">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </a>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
-          className="text-red-600 cursor-pointer focus:text-red-600" 
-          onClick={handleLogout}
-          disabled={isLoading}
-        >
-          {isLoading ? 'Logging out...' : 'Log out'}
+        <DropdownMenuItem onClick={handleSignOut}>
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

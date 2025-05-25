@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { AuthStatus } from "./auth-status"
+import { SidebarAuthStatus } from "./sidebar-auth-status"
 
 const navigation = [
   {
@@ -56,12 +56,12 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
 
   return (
     <aside 
-      className={`${
+      className={`fixed left-0 top-0 bottom-0 z-50 ${
         isCollapsed ? 'w-16' : 'w-64'
-      } bg-slate-900 text-slate-100 dark:bg-slate-800/95 flex flex-col shrink-0 transition-all duration-300`}
+      } bg-slate-900 text-slate-100 dark:bg-slate-800/95 flex flex-col transition-all duration-300 border-r border-slate-700/50`}
     >
       {/* Logo Section */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-700/50 dark:border-slate-600/50">
+      <div className="h-16 flex items-center px-6 border-b border-slate-700/50 dark:border-slate-600/50 flex-shrink-0">
         <Microscope className="h-6 w-6 shrink-0" />
         {!isCollapsed && (
           <h1 className="font-bold text-lg ml-3 whitespace-nowrap">Pathology Bites</h1>
@@ -69,7 +69,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4">
+      <nav className="flex-1 py-4 overflow-y-auto">
         <div className="space-y-1 px-3">
           {navigation.map((item) => {
             const isActive = pathname === item.href
@@ -79,22 +79,18 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
                 key={item.name}
                 href={item.href}
                 className={`flex h-10 rounded-lg text-sm font-medium 
-                  transition-colors duration-200 relative
+                  transition-colors duration-200 relative items-center
                   ${isActive 
                     ? 'bg-slate-800 text-slate-100 dark:bg-slate-700 dark:text-white' 
                     : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100 dark:text-slate-200 dark:hover:bg-slate-700/50 dark:hover:text-white'
                   }`}
                 title={isCollapsed ? item.name : undefined}
               >
-                <div className={`
-                  absolute left-3 top-1/2 -translate-y-1/2
-                  flex items-center
-                  ${isCollapsed ? 'w-5 justify-center' : ''}
-                `}>
+                <div className="flex items-center justify-center w-10 flex-shrink-0">
                   <item.icon className="h-5 w-5" />
                 </div>
                 {!isCollapsed && (
-                  <span className="truncate pl-10 py-2.5">{item.name}</span>
+                  <span className="truncate">{item.name}</span>
                 )}
               </Link>
             )
@@ -103,7 +99,9 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
       </nav>
 
       {/* Auth Status at Bottom */}
-      <AuthStatus isCollapsed={isCollapsed} />
+      <div className="flex-shrink-0">
+        <SidebarAuthStatus isCollapsed={isCollapsed} />
+      </div>
     </aside>
   )
 }

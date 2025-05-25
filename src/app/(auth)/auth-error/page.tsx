@@ -10,7 +10,6 @@ interface AuthErrorPageProps {
 
 export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps) {
   const params = await searchParams
-  const error = params.error
   const description = params.description
 
   return (

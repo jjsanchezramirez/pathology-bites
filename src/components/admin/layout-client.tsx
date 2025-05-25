@@ -13,15 +13,26 @@ export function AdminLayoutClient({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-screen overflow-hidden bg-background">
+      {/* Fixed Sidebar */}
       <AdminSidebar isCollapsed={isSidebarCollapsed} />
 
-      <div className="flex-1 flex flex-col">
+      {/* Main Content Area */}
+      <div 
+        className={`fixed top-0 right-0 bottom-0 flex flex-col transition-all duration-300 ${
+          isSidebarCollapsed ? 'left-16' : 'left-64'
+        }`}
+      >
+        {/* Fixed Header */}
         <AdminHeader onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
 
-        <main className="flex-1 overflow-auto relative">
-          <div className="absolute inset-0 bg-linear-to-b from-primary/5 via-transparent to-transparent" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.13),transparent_25%)]" />
+        {/* Scrollable Content */}
+        <main className="flex-1 overflow-auto bg-background">
+          {/* Background Effects */}
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.13),transparent_25%)] pointer-events-none" />
+          
+          {/* Content */}
           <div className="relative p-6">
             {children}
           </div>

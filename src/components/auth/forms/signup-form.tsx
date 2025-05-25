@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import Link from "next/link"
 import { AuthCard } from "@/components/auth/ui/auth-card"
-import { FormField } from "@/components/auth/ui/form-field"
 import { FormButton } from "@/components/auth/ui/form-button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { SignupFormData } from '@/types/auth'
@@ -105,50 +104,85 @@ export function SignupForm({
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="grid gap-6">
+          {/* First Name and Last Name */}
           <div className="grid grid-cols-2 gap-4">
-            <FormField
-              id="firstName"
-              name="firstName"
-              label="First Name"
-              placeholder="John"
-              error={errors.firstName?.message}
-              register={register}
-              required
-              disabled={isSubmitting}
-            />
-            <FormField
-              id="lastName"
-              name="lastName"
-              label="Last Name"
-              placeholder="Doe"
-              error={errors.lastName?.message}
-              register={register}
-              required
-              disabled={isSubmitting}
-            />
+            <div className="space-y-2">
+              <label 
+                htmlFor="firstName" 
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                First Name
+              </label>
+              <input
+                {...register("firstName")}
+                id="firstName"
+                type="text"
+                placeholder="John"
+                disabled={isSubmitting}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              {errors.firstName && (
+                <p className="text-sm font-medium text-destructive">
+                  {errors.firstName.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label 
+                htmlFor="lastName" 
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Last Name
+              </label>
+              <input
+                {...register("lastName")}
+                id="lastName"
+                type="text"
+                placeholder="Doe"
+                disabled={isSubmitting}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              {errors.lastName && (
+                <p className="text-sm font-medium text-destructive">
+                  {errors.lastName.message}
+                </p>
+              )}
+            </div>
           </div>
           
-          <FormField
-            id="email"
-            name="email"
-            label="Email"
-            type="email"
-            placeholder="name@example.com"
-            autoComplete="email"
-            error={errors.email?.message}
-            register={register}
-            required
-            disabled={isSubmitting}
-          />
+          {/* Email Field */}
+          <div className="space-y-2">
+            <label 
+              htmlFor="email" 
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Email
+            </label>
+            <input
+              {...register("email")}
+              id="email"
+              type="email"
+              placeholder="name@example.com"
+              autoComplete="email"
+              disabled={isSubmitting}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            {errors.email && (
+              <p className="text-sm font-medium text-destructive">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
           
-          <FormField
-            id="userType"
-            name="userType"
-            label="What best describes you?"
-            error={errors.userType?.message}
-            required
-            disabled={isSubmitting}
-          >
+          {/* User Type Field */}
+          <div className="space-y-2">
+            <label 
+              htmlFor="userType" 
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              What best describes you?
+            </label>
             <Select 
               value={userType} 
               onValueChange={handleUserTypeChange}
@@ -169,32 +203,60 @@ export function SignupForm({
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
-          </FormField>
+            {errors.userType && (
+              <p className="text-sm font-medium text-destructive" id="userType-error">
+                {errors.userType.message}
+              </p>
+            )}
+          </div>
           
-          <FormField
-            id="password"
-            name="password"
-            label="Password"
-            type="password"
-            autoComplete="new-password"
-            error={errors.password?.message}
-            register={register}
-            required
-            disabled={isSubmitting}
-          />
+          {/* Password Field */}
+          <div className="space-y-2">
+            <label 
+              htmlFor="password" 
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Password
+            </label>
+            <input
+              {...register("password")}
+              id="password"
+              type="password"
+              autoComplete="new-password"
+              disabled={isSubmitting}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            {errors.password && (
+              <p className="text-sm font-medium text-destructive">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
           
-          <FormField
-            id="confirmPassword"
-            name="confirmPassword"
-            label="Confirm Password"
-            type="password"
-            autoComplete="new-password"
-            error={errors.confirmPassword?.message}
-            register={register}
-            required
-            disabled={isSubmitting}
-          />
+          {/* Confirm Password Field */}
+          <div className="space-y-2">
+            <label 
+              htmlFor="confirmPassword" 
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Confirm Password
+            </label>
+            <input
+              {...register("confirmPassword")}
+              id="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              disabled={isSubmitting}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            {errors.confirmPassword && (
+              <p className="text-sm font-medium text-destructive">
+                {errors.confirmPassword.message}
+              </p>
+            )}
+          </div>
           
+          {/* Password Requirements */}
           <div className="text-sm text-muted-foreground">
             <p>Password must:</p>
             <ul className="list-disc list-inside space-y-1 pl-4 mt-1">

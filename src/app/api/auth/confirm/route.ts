@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         if (user) {
           console.log('Creating user profile for:', user.email)
           
-          const { data: userData, error: profileError } = await supabase
+          const { error: profileError } = await supabase
             .from('users')
             .select('id')
             .eq('id', user.id)

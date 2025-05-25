@@ -18,7 +18,14 @@ export interface UseImagesReturn {
   refetch: () => Promise<void>;
   deleteImageById: (imagePath: string, imageId: string) => Promise<void>;
   updateImageById: (imageId: string, data: { description: string; alt_text: string; category: string }) => Promise<void>;
-  uploadNewImage: (file: File, metadata: any) => Promise<ImageData>;
+  uploadNewImage: (file: File, metadata: {
+    description: string;
+    alt_text: string;
+    category: string;
+    file_type: string;
+    created_by: string;
+    source_ref?: string;
+  }) => Promise<ImageData>;
   getImage: (imageId: string) => Promise<ImageData | null>;
 }
 

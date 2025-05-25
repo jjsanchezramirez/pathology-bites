@@ -1,7 +1,8 @@
+// src/hooks/use-image-edit.ts
 import { useState, useCallback } from 'react';
 import { useToast } from './use-toast';
 import { deleteImage, updateImage } from '@/lib/images/images';
-import type { ImageData, ImageFormData } from '@/types/images';
+import type { ImageData, ImageFormData, ImageCategory } from '@/types/images';
 
 interface UseImageEditOptions {
   onSuccess?: () => void;
@@ -78,10 +79,10 @@ export function useImageEdit({ onSuccess }: UseImageEditOptions = {}) {
   }, [onSuccess, toast, updateState]);
 
   const initializeForm = useCallback((image: ImageData | null) => {
-    const newFormData = image ? {
+    const newFormData: ImageFormData = image ? {
       description: image.description,
       alt_text: image.alt_text,
-      category: image.category
+      category: image.category as ImageCategory // Cast to proper type
     } : initialFormState;
     
     updateState({ formData: newFormData });

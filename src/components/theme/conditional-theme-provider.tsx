@@ -9,24 +9,41 @@ import type { ThemeProviderProps } from 'next-themes'
 export function ConditionalThemeProvider({ children, ...props }: ThemeProviderProps) {
   const pathname = usePathname()
   
-  // Check if the current route is an admin or dashboard route where theming is allowed
-  const isThemedRoute = pathname.startsWith('/admin') || pathname.startsWith('/dashboard')
+  // Define which routes allow theming
+  const themedRoutes = ['/admin', '/dashboard']
+  const isThemedRoute = themedRoutes.some(route => pathname.startsWith(route))
   
-  // Use forcedTheme for non-themed routes to always render in light mode
-  const themeProps = {
+  // Theme configuration
+  const themeProps: ThemeProviderProps = {
+    attribute: 'class',
+    defaultTheme: 'system',
+    enableSystem: true,
+    disableTransitionOnChange: false,
+    storageKey: 'pathology-bites-theme',
     ...props,
-    // If not on a themed route, force light theme regardless of user preference
+    // Force light theme on public routes
     forcedTheme: isThemedRoute ? undefined : 'light'
   }
   
-  // Optional: Clean up any dark theme remnants if not on a themed route
+  // Clean up theme classes on route changes
   useEffect(() => {
+    const html = document.documentElement
+    
     if (!isThemedRoute) {
-      // This is a public page - ensure it's in light mode
-      document.documentElement.classList.remove('dark')
+      // Force light mode on public pages
+      html.classList.remove('dark')
+      html.classList.add('light')
+      // Optional: Add a data attribute to identify forced theme state
+      html.setAttribute('data-theme-forced', 'true')
+    } else {
+      // Remove forced theme indicator on themed routes
+      html.removeAttribute('data-theme-forced')
     }
-  }, [isThemedRoute])
+  }, [isThemedRoute, pathname])
 
-  // Always use ThemeProvider but with conditional forcedTheme
-  return <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
+  return (
+    <NextThemesProvider {...themeProps}>
+      {children}
+    </NextThemesProvider>
+  )
 }

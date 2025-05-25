@@ -14,7 +14,7 @@ interface HeaderProps {
 
 export function AdminHeader({ onToggleSidebar }: HeaderProps) {
   return (
-    <header className="h-16 border-b bg-background flex items-center px-4 gap-4">
+    <header className="h-16 border-b bg-background/95 backdrop-blur-sm flex items-center px-4 gap-4 flex-shrink-0 z-40">
       {/* Sidebar Toggle */}
       <Button 
         variant="ghost" 

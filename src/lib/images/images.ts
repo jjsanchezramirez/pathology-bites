@@ -1,13 +1,13 @@
 // src/lib/images/images.ts
 import { type Database } from '@/types/supabase';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/client';
 
 export type ImageData = Database['public']['Tables']['images']['Row'];
 export type ImageInsert = Database['public']['Tables']['images']['Insert'];
 export type ImageUpdate = Database['public']['Tables']['images']['Update'];
 
 export async function deleteImage(imagePath: string, imageId: string) {
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createClient(); // Remove <Database>
 
   try {
     // First, delete the file from storage
@@ -42,7 +42,7 @@ export async function updateImage(
   imageId: string, 
   data: { description: string; alt_text: string; category: string }
 ) {
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createClient(); // Remove <Database>
   
   try {
     const { error } = await supabase
@@ -69,7 +69,7 @@ export async function fetchImages(params: {
   category?: string;
 }) {
   const { page, pageSize, searchTerm, category } = params;
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createClient(); // Remove <Database>
 
   try {
     // Build the base query for counting
@@ -132,7 +132,7 @@ export async function fetchImages(params: {
 }
 
 export async function uploadImage(
-  file: File,
+  file: File, 
   metadata: {
     description: string;
     alt_text: string;
@@ -142,7 +142,7 @@ export async function uploadImage(
     source_ref?: string;
   }
 ): Promise<ImageData> {
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createClient(); // Remove <Database>
 
   try {
     // Generate unique filename
@@ -151,7 +151,7 @@ export async function uploadImage(
     const filePath = `${fileName}`;
 
     // Upload file to storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('images')
       .upload(filePath, file);
 
@@ -196,7 +196,7 @@ export async function uploadImage(
 }
 
 export async function getImageById(imageId: string): Promise<ImageData | null> {
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createClient(); // Remove <Database>
 
   try {
     const { data, error } = await supabase

@@ -1,4 +1,4 @@
-// src/components/auth/forgot-password-form.tsx
+// src/components/auth/forms/forgot-password-form.tsx
 "use client"
 
 import { useForm } from "react-hook-form"
@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import Link from "next/link"
 import { AuthCard } from "@/components/auth/ui/auth-card"
-import { FormField } from "@/components/auth/ui/form-field"
 import { FormButton } from "@/components/auth/ui/form-button"
 
 // Form schema definition
@@ -62,18 +61,28 @@ export function ForgotPasswordForm({
     >
       <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
         <div className="grid gap-4">
-          <FormField
-            id="email"
-            name="email" // Add the name property with the same value as id
-            label="Email"
-            type="email"
-            placeholder="name@example.com"
-            autoComplete="email"
-            error={errors.email?.message}
-            register={register}
-            required
-            disabled={isLoading}
-          />
+          <div className="space-y-2">
+            <label 
+              htmlFor="email" 
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Email
+            </label>
+            <input
+              {...register("email")}
+              id="email"
+              type="email"
+              placeholder="name@example.com"
+              autoComplete="email"
+              disabled={isLoading}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            {errors.email && (
+              <p className="text-sm font-medium text-destructive">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
           
           <FormButton 
             type="submit" 

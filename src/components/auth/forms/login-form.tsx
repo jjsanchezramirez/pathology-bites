@@ -1,4 +1,4 @@
-// src/components/auth/login-form.tsx
+// src/components/auth/forms/login-form.tsx
 "use client"
 
 import { useState } from 'react'
@@ -8,7 +8,6 @@ import * as z from "zod"
 import Link from "next/link"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AuthCard } from "@/components/auth/ui/auth-card"
-import { FormField } from "@/components/auth/ui/form-field"
 import { FormButton } from "@/components/auth/ui/form-button"
 import { SocialButton } from "@/components/auth/ui/social-button"
 import { AuthDivider } from "@/components/auth/ui/auth-divider"
@@ -113,30 +112,39 @@ export function LoginForm({
           <AuthDivider text="Or continue with" />
           
           <div className="grid gap-6">
-            <FormField
-              id="email"
-              name="email" // Add name property
-              label="Email"
-              type="email"
-              placeholder="name@example.com"
-              autoComplete="email"
-              error={errors.email?.message}
-              register={register}
-              required
-              disabled={loading}
-            />
+            {/* Email Field */}
+            <div className="space-y-2">
+              <label 
+                htmlFor="email" 
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Email
+              </label>
+              <input
+                {...register("email")}
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                autoComplete="email"
+                disabled={loading}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              {errors.email && (
+                <p className="text-sm font-medium text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
             
-            <FormField
-              id="password"
-              name="password" // Add name property
-              label="Password"
-              type="password"
-              autoComplete="current-password"
-              error={errors.password?.message}
-              register={register}
-              required
-              disabled={loading}
-              rightElement={
+            {/* Password Field */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label 
+                  htmlFor="password" 
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Password
+                </label>
                 <Link
                   href="/forgot-password"
                   className="text-sm text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
@@ -144,8 +152,21 @@ export function LoginForm({
                 >
                   Forgot?
                 </Link>
-              }
-            />
+              </div>
+              <input
+                {...register("password")}
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                disabled={loading}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              {errors.password && (
+                <p className="text-sm font-medium text-destructive">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
             
             <FormButton 
               type="submit" 

@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { updateImage } from '@/lib/images/images';
-import { ImageData, IMAGE_CATEGORIES, ImageCategory } from '@/types/images';
+import { ImageData, IMAGE_CATEGORIES } from '@/types/images';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -38,7 +38,7 @@ import { Loader2 } from 'lucide-react';
 const editImageSchema = z.object({
   description: z.string().min(1, 'Description is required').max(500, 'Description too long'),
   alt_text: z.string().min(1, 'Alt text is required').max(200, 'Alt text too long'),
-  category: z.enum(['gross', 'microscopic', 'diagram', 'other']),
+  category: z.enum(['gross', 'microscopic', 'figure', 'table']), // Updated to match IMAGE_CATEGORIES
 });
 
 type EditImageFormData = z.infer<typeof editImageSchema>;
@@ -64,19 +64,20 @@ export function EditImageDialog({
     defaultValues: {
       description: '',
       alt_text: '',
-      category: 'other',
+      category: 'microscopic',
     },
   });
 
-  const initializeForm = useCallback((image: ImageData | null) => {
-    const newFormData = image ? {
-      description: image.description,
-      alt_text: image.alt_text,
-      category: image.category as ImageCategory
-    } : initialFormState;
-    
-    form.reset(newFormData);
-  }, [form]);
+  // Initialize form when image changes
+  useEffect(() => {
+    if (image && open) {
+      form.reset({
+        description: image.description || '',
+        alt_text: image.alt_text || '',
+        category: image.category as 'gross' | 'microscopic' | 'figure' | 'table',
+      });
+    }
+  }, [image, open, form]);
 
   const onSubmit = async (data: EditImageFormData) => {
     if (!image) return;
@@ -128,7 +129,6 @@ export function EditImageDialog({
               alt={image.alt_text}
               size="lg"
               className="w-full h-48"
-              showFullSize={false}
             />
             <div className="text-sm text-muted-foreground space-y-1">
               <p><strong>File Type:</strong> {image.file_type}</p>

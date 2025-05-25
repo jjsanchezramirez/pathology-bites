@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/client';
 import { useToast } from './use-toast';
 import { FileProgress, ImageCategory } from '@/types/images';
 import { compressImage, cleanFileName, formatImageName } from '@/lib/images/image-upload';
@@ -16,7 +16,7 @@ export function useImageUpload({
   const [isUploading, setIsUploading] = useState(false);
   const [fileProgress, setFileProgress] = useState<FileProgress[]>([]);
   
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
   const { toast } = useToast();
 
   const updateFileProgress = useCallback((

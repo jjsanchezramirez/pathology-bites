@@ -1,4 +1,4 @@
-// app/(auth)/reset-password/page.tsx
+// src/app/(auth)/reset-password/page.tsx
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { resetPassword } from '@/lib/auth/actions'
@@ -9,10 +9,12 @@ import { FormButton } from '@/components/auth/ui/form-button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface ResetPasswordPageProps {
-  searchParams: { error?: string }
+  searchParams: Promise<{ error?: string }> // Make this Promise-based
 }
 
 export default async function ResetPasswordPage({ searchParams }: ResetPasswordPageProps) {
+  const { error } = await searchParams; // Await the searchParams
+  
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -26,9 +28,9 @@ export default async function ResetPasswordPage({ searchParams }: ResetPasswordP
         title="Create new password"
         description="Enter a new strong password for your account"
       >
-        {searchParams.error && (
+        {error && ( // Use the awaited error variable
           <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{searchParams.error}</AlertDescription>
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 

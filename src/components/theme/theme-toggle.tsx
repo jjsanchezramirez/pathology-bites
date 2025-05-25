@@ -1,42 +1,54 @@
 // src/components/theme/theme-toggle.tsx
-"use client"
+'use client'
 
-import * as React from "react"
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
-import { Button } from "@/components/ui/button"
+import { Moon, Sun } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { usePathname } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { useEffect, useState } from 'react'
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = React.useState(false)
-  
-  // Only show the toggle after component has mounted to avoid hydration mismatch
-  React.useEffect(() => {
+  const { theme, setTheme, forcedTheme } = useTheme()
+  const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
     setMounted(true)
   }, [])
 
+  // Check if theming is allowed on current route
+  const themedRoutes = ['/admin', '/dashboard']
+  const isThemedRoute = themedRoutes.some(route => pathname.startsWith(route))
+  
+  // Don't render until mounted to prevent hydration mismatch
   if (!mounted) {
-    // Return a placeholder with the same dimensions to avoid layout shift
     return (
-      <Button
-        variant="ghost"
-        size="icon"
-        aria-label="Toggle theme"
-      >
-        <Sun className="h-4 w-4" />
+      <Button variant="ghost" size="icon" className="hover:bg-primary/10" disabled>
+        <div className="h-5 w-5" />
       </Button>
     )
   }
+
+  // Don't show toggle on non-themed routes (since theme is forced)
+  if (!isThemedRoute || forcedTheme) {
+    return null
+  }
+
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      className="hover:bg-primary/10"
+      title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
-      <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      {isDark ? (
+        <Moon size={20} className="transition-all" />
+      ) : (
+        <Sun size={20} className="transition-all" />
+      )}
     </Button>
   )
 }
