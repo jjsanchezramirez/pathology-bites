@@ -3,8 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { User } from '@supabase/supabase-js' // Add this import
-import { User as UserIcon, LogOut, Settings, Shield } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { User, Settings, LogOut, RefreshCw } from 'lucide-react'
+import { useAuthStatus } from '@/hooks/use-auth-status'
 
 interface UserProfile {
   id: string
@@ -25,79 +25,125 @@ interface UserProfile {
 }
 
 export function ProfileDropdown() {
-  const [user, setUser] = useState<User | null>(null) // Fix the typing here
+  const { user, isLoading, isAuthenticated, error, refreshAuth, isHydrated } = useAuthStatus()
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [profileLoading, setProfileLoading] = useState(false)
+
   const supabase = createClient()
 
+  // Load user profile
   useEffect(() => {
-    const getUser = async () => {
+    let mounted = true
+
+    const loadProfile = async () => {
+      if (!user || !isAuthenticated) {
+        setUserProfile(null)
+        return
+      }
+
       try {
-        const { data: { user } } = await supabase.auth.getUser()
-        setUser(user)
+        setProfileLoading(true)
 
-        if (user) {
-          const { data: profile } = await supabase
-            .from('users')
-            .select('id, email, role, first_name, last_name')
-            .eq('id', user.id)
-            .single()
+        const { data: profile, error: profileError } = await supabase
+          .from('users')
+          .select('id, email, role, first_name, last_name')
+          .eq('id', user.id)
+          .single()
 
+        if (!mounted) return
+
+        if (profileError) {
+          console.error('Profile error:', profileError)
+          setUserProfile(null)
+        } else {
           setUserProfile(profile)
         }
-      } catch (error) {
-        console.error('Error fetching user:', error)
+      } catch (err) {
+        if (!mounted) return
+        console.error('Profile fetch error:', err)
+        setUserProfile(null)
       } finally {
-        setLoading(false)
+        if (mounted) {
+          setProfileLoading(false)
+        }
       }
     }
 
-    getUser()
+    loadProfile()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_OUT') {
-          setUser(null)
-          setUserProfile(null)
-        } else if (session?.user) {
-          setUser(session.user)
-        }
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [supabase])
+    return () => {
+      mounted = false
+    }
+  }, [user, isAuthenticated, supabase])
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut()
-      window.location.href = '/login'
-    } catch (error) {
-      console.error('Sign out error:', error)
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Sign out error:', error)
+      }
+    } catch (err) {
+      console.error('Sign out error:', err)
     }
-  }
-
-  const getInitials = () => {
-    if (userProfile?.first_name && userProfile?.last_name) {
-      return `${userProfile.first_name[0]}${userProfile.last_name[0]}`.toUpperCase()
-    }
-    if (user?.email) {
-      return user.email[0].toUpperCase()
-    }
-    return 'U'
   }
 
   const getDisplayName = () => {
-    if (userProfile?.first_name) {
+    if (!isHydrated) return 'Loading...'
+    if (!user) return 'Guest'
+    if (profileLoading) return 'Loading...'
+    if (!userProfile) return user.email?.split('@')[0] || 'User'
+    if (userProfile.first_name) {
       return `${userProfile.first_name} ${userProfile.last_name || ''}`.trim()
     }
-    return user?.email?.split('@')[0] || 'User'
+    return user.email?.split('@')[0] || 'User'
   }
 
-  if (!user || loading) {
+  const getInitials = () => {
+    if (!isHydrated || !user) return 'G'
+    if (profileLoading) return '•'
+    if (!userProfile) return user.email?.[0]?.toUpperCase() || 'U'
+    if (userProfile.first_name) {
+      const first = userProfile.first_name[0]?.toUpperCase() || ''
+      const last = userProfile.last_name?.[0]?.toUpperCase() || ''
+      return first + last
+    }
+    return user.email?.[0]?.toUpperCase() || 'U'
+  }
+
+  // Don't render if not hydrated yet to prevent flickering
+  if (!isHydrated) {
     return (
-      <Button variant="ghost" size="icon" disabled>
-        <UserIcon className="h-5 w-5" />
+      <Button variant="ghost" size="sm" disabled>
+        <RefreshCw className="h-4 w-4 animate-spin" />
+      </Button>
+    )
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Button variant="ghost" size="sm" disabled>
+        <RefreshCw className="h-4 w-4 animate-spin" />
+      </Button>
+    )
+  }
+
+  // Show error state with retry option
+  if (error) {
+    return (
+      <Button variant="ghost" size="sm" onClick={() => refreshAuth()}>
+        <User className="h-4 w-4" />
+      </Button>
+    )
+  }
+
+  // Show login button if not authenticated
+  if (!isAuthenticated || !user) {
+    return (
+      <Button variant="ghost" size="sm" asChild>
+        <a href="/login">
+          <User className="h-4 w-4" />
+        </a>
       </Button>
     )
   }
@@ -105,9 +151,9 @@ export function ProfileDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="text-sm">
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="text-xs">
               {getInitials()}
             </AvatarFallback>
           </Avatar>
@@ -122,30 +168,39 @@ export function ProfileDropdown() {
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}
             </p>
-            {userProfile?.role && (
-              <div className="flex items-center gap-1 pt-1">
-                <Shield className="h-3 w-3" />
-                <span className="text-xs text-muted-foreground capitalize">
-                  {userProfile.role}
-                </span>
-              </div>
+            {userProfile && (
+              <p className="text-xs leading-none text-muted-foreground capitalize">
+                {userProfile.role}
+              </p>
             )}
           </div>
         </DropdownMenuLabel>
+        
         <DropdownMenuSeparator />
+        
         <DropdownMenuItem asChild>
-          <a href="/dashboard" className="cursor-pointer">
-            <UserIcon className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+          <a href="/dashboard">
+            <User className="mr-2 h-4 w-4" />
+            <span>Dashboard</span>
           </a>
         </DropdownMenuItem>
+        
         <DropdownMenuItem asChild>
-          <a href="/settings" className="cursor-pointer">
+          <a href="/dashboard/settings">
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
           </a>
         </DropdownMenuItem>
+        
         <DropdownMenuSeparator />
+        
+        {(profileLoading || isLoading) && (
+          <DropdownMenuItem disabled>
+            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+            <span>Loading...</span>
+          </DropdownMenuItem>
+        )}
+        
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>

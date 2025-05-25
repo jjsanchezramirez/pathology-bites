@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { ConnectionStatus } from "@/components/network/connection-status"
 import { cn } from '@/lib/utils'
 import "@/styles/globals.css"
+import { AuthProvider } from '@/components/auth/auth-provider'
 
 export const metadata = {
   title: 'Pathology Bites',
@@ -27,7 +28,9 @@ export default async function RootLayout({
       <body className={cn('min-h-screen bg-background font-sans antialiased')}>
         <ConditionalThemeProvider attribute="class" defaultTheme="light">
           <div className="relative flex min-h-screen flex-col">
-            {children}
+            <AuthProvider>
+              <div>{children}</div>
+            </AuthProvider>
           </div>
           <Toaster />
           <ConnectionStatus />

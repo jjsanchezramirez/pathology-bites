@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { User } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
 import { 
   DropdownMenu,
@@ -21,7 +20,7 @@ import {
   ShieldAlert,
   ShieldCheck
 } from 'lucide-react'
-import { useCallback } from 'react';
+import { useAuthStatus } from '@/hooks/use-auth-status'
 
 interface UserProfile {
   id: string
@@ -36,85 +35,88 @@ interface SidebarAuthStatusProps {
 }
 
 export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProps) {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, isLoading, isAuthenticated, error, refreshAuth, isHydrated } = useAuthStatus()
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [profileLoading, setProfileLoading] = useState(false)
 
   const supabase = createClient()
 
-  const checkAuthStatus = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      
-      if (userError) {
-        setError(userError.message)
-        setUser(null)
+  // Load user profile when user changes
+  useEffect(() => {
+    let mounted = true
+
+    const loadProfile = async () => {
+      if (!user || !isAuthenticated) {
         setUserProfile(null)
         return
       }
 
-      setUser(user)
+      try {
+        setProfileLoading(true)
 
-      if (user) {
         const { data: profile, error: profileError } = await supabase
           .from('users')
           .select('id, email, role, first_name, last_name')
           .eq('id', user.id)
           .single()
 
+        if (!mounted) return
+
         if (profileError) {
-          setError(`Profile error: ${profileError.message}`)
+          console.error('Profile error:', profileError)
           setUserProfile(null)
         } else {
           setUserProfile(profile)
         }
-      } else {
+      } catch (err) {
+        if (!mounted) return
+        console.error('Profile fetch error:', err)
         setUserProfile(null)
+      } finally {
+        if (mounted) {
+          setProfileLoading(false)
+        }
       }
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-    } finally {
-      setLoading(false)
     }
-  }, [supabase]);
+
+    loadProfile()
+
+    return () => {
+      mounted = false
+    }
+  }, [user, isAuthenticated, supabase])
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut()
-      window.location.href = '/login'
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Sign out error:', error)
+      }
     } catch (err) {
       console.error('Sign out error:', err)
     }
   }
 
-  useEffect(() => {
-    checkAuthStatus()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session ? 'session exists' : 'no session')
-        await checkAuthStatus()
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [checkAuthStatus, supabase.auth])
-
   const getStatusIcon = () => {
-    if (loading) return <RefreshCw className="h-4 w-4 animate-spin" />
-    if (error) return <ShieldAlert className="h-4 w-4 text-red-400" />
-    if (user && userProfile?.role === 'admin') return <ShieldCheck className="h-4 w-4 text-green-400" />
-    if (user) return <Shield className="h-4 w-4 text-yellow-400" />
+    if (!isHydrated || isLoading || profileLoading) {
+      return <RefreshCw className="h-4 w-4 animate-spin" />
+    }
+    if (error) {
+      return <ShieldAlert className="h-4 w-4 text-red-400" />
+    }
+    if (user && userProfile?.role === 'admin') {
+      return <ShieldCheck className="h-4 w-4 text-green-400" />
+    }
+    if (user) {
+      return <Shield className="h-4 w-4 text-blue-400" />
+    }
     return <ShieldAlert className="h-4 w-4 text-red-400" />
   }
 
   const getDisplayName = () => {
+    if (!isHydrated) return 'Loading...'
     if (!user) return 'Not logged in'
+    if (profileLoading) return 'Loading profile...'
     if (!userProfile) return user.email?.split('@')[0] || 'Unknown'
     if (userProfile.first_name) {
       return `${userProfile.first_name} ${userProfile.last_name || ''}`.trim()
@@ -123,7 +125,9 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
   }
 
   const getStatusText = () => {
-    if (loading) return 'Checking...'
+    if (!isHydrated) return 'Initializing...'
+    if (isLoading) return 'Checking...'
+    if (profileLoading) return 'Loading...'
     if (error) return 'Auth Error'
     if (user && userProfile?.role === 'admin') return 'Admin'
     if (user && userProfile) return userProfile.role
@@ -131,9 +135,20 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
     return 'Not logged in'
   }
 
-  // Collapsed view - just icon
+  // Don't render until hydrated
+  if (!isHydrated) {
+    return (
+      <div className="p-3 border-t border-slate-700/50">
+        <div className="w-full h-10 flex items-center justify-center">
+          <RefreshCw className="h-4 w-4 animate-spin text-slate-400" />
+        </div>
+      </div>
+    )
+  }
+
+  // Collapsed view
   if (isCollapsed) {
-    if (!user) {
+    if (!isAuthenticated || !user) {
       return (
         <div className="p-3">
           <Button 
@@ -179,14 +194,14 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
               <>
                 <DropdownMenuSeparator />
                 <div className="px-2 py-1.5 text-sm text-red-600">
-                  <strong>Error:</strong> {error}
+                  <strong>Error:</strong> {error.message}
                 </div>
               </>
             )}
             
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={checkAuthStatus} disabled={loading}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <DropdownMenuItem onClick={refreshAuth} disabled={isLoading}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh Status
             </DropdownMenuItem>
             
@@ -200,8 +215,8 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
     )
   }
 
-  // Expanded view - full info
-  if (!user) {
+  // Expanded view
+  if (!isAuthenticated || !user) {
     return (
       <div className="p-3 border-t border-slate-700/50">
         <Button 
@@ -265,14 +280,14 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
             <>
               <DropdownMenuSeparator />
               <div className="px-2 py-1.5 text-sm text-red-600">
-                <strong>Error:</strong> {error}
+                <strong>Error:</strong> {error.message}
               </div>
             </>
           )}
           
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={checkAuthStatus} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <DropdownMenuItem onClick={refreshAuth} disabled={isLoading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh Status
           </DropdownMenuItem>
           
