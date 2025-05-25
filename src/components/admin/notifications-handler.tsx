@@ -1,9 +1,7 @@
 // src/components/admin/notifications-handler.tsx
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { User } from '@supabase/supabase-js' // Add this import
+import React, { useState, useEffect } from 'react'
 import { Bell, Loader2, AlertCircle, Info, ChevronDown, Flag, CheckCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
@@ -12,9 +10,10 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { useNetworkStatus } from '@/hooks/use-network-status'
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useAuthStatus } from '@/hooks/use-auth-status'
 
-// Simplified notification types without complex imports
+// Simplified notification types
 interface BaseNotification {
   id: string;
   type: string;
@@ -33,91 +32,93 @@ export function NotificationsHandler() {
   const [loading, setLoading] = useState(true)
   const [hasMore, setHasMore] = useState(false)
   const [filter, setFilter] = useState<'all' | 'inquiries' | 'reports'>('all')
-  const [user, setUser] = useState<User | null>(null) // Fix this line - add proper typing
-  const supabase = createClient()
+  
+  const { user, isAuthenticated, isHydrated } = useAuthStatus()
   const { toast } = useToast()
-  const isOnline = useNetworkStatus()
 
-  // Check auth status
-  const checkAuth = useCallback(async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      return !!user
-    } catch (error) {
-      console.error('Auth check failed:', error)
-      return false
-    }
-  }, [supabase])
-
-  // Load notifications - simplified version
-  const loadNotifications = useCallback(async (loadMore = false) => {
-    if (!isOnline) return
-    
-    const isAuthenticated = await checkAuth()
-    if (!isAuthenticated) return
-    
-    try {
-      setLoading(true)
-      
-      // For now, create mock notifications since we don't have the full notification system
-      const mockNotifications: BaseNotification[] = [
-        {
-          id: '1',
-          type: 'inquiry',
-          title: 'New General Inquiry',
-          description: 'User has submitted a general inquiry',
-          created_at: new Date().toISOString(),
-          read: false,
-          metadata: { status: 'pending' }
-        },
-        {
-          id: '2',
-          type: 'report',
-          title: 'Question Report',
-          description: 'User reported an issue with a question',
-          created_at: new Date(Date.now() - 3600000).toISOString(),
-          read: true,
-          metadata: { status: 'resolved' }
-        }
-      ]
-      
-      // Apply filter
-      let filteredNotifications = mockNotifications
-      if (filter === 'inquiries') {
-        filteredNotifications = mockNotifications.filter(n => n.type === 'inquiry')
-      } else if (filter === 'reports') {
-        filteredNotifications = mockNotifications.filter(n => n.type === 'report')
-      }
-      
-      if (loadMore) {
-        setNotifications(prev => [...prev, ...filteredNotifications])
-      } else {
-        setNotifications(filteredNotifications)
-      }
-      
-      setHasMore(false) // No pagination for mock data
-      
-    } catch (error) {
-      console.error("Error loading notifications:", error)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load notifications."
-      })
-    } finally {
-      setLoading(false)
-    }
-  }, [filter, toast, isOnline, checkAuth])
-
-  // Initialize notifications
+  // Load notifications when user changes
   useEffect(() => {
+    let mounted = true
+
+    const loadNotifications = async () => {
+      if (!isAuthenticated || !user) {
+        setNotifications([])
+        setLoading(false)
+        return
+      }
+      
+      try {
+        setLoading(true)
+        
+        // Create mock notifications since we don't have the full notification system
+        const mockNotifications: BaseNotification[] = [
+          {
+            id: '1',
+            type: 'inquiry',
+            title: 'New General Inquiry',
+            description: 'User has submitted a general inquiry',
+            created_at: new Date().toISOString(),
+            read: false,
+            metadata: { status: 'pending' }
+          },
+          {
+            id: '2',
+            type: 'report',
+            title: 'Question Report',
+            description: 'User reported an issue with a question',
+            created_at: new Date(Date.now() - 3600000).toISOString(),
+            read: true,
+            metadata: { status: 'resolved' }
+          },
+          {
+            id: '3',
+            type: 'inquiry',
+            title: 'Content Request',
+            description: 'Request for new pathology content',
+            created_at: new Date(Date.now() - 7200000).toISOString(),
+            read: false,
+            metadata: { status: 'in_progress' }
+          }
+        ]
+        
+        // Apply filter
+        let filteredNotifications = mockNotifications
+        if (filter === 'inquiries') {
+          filteredNotifications = mockNotifications.filter(n => n.type === 'inquiry')
+        } else if (filter === 'reports') {
+          filteredNotifications = mockNotifications.filter(n => n.type === 'report')
+        }
+        
+        if (!mounted) return
+        
+        setNotifications(filteredNotifications)
+        setHasMore(false) // No pagination for mock data
+        
+      } catch (error) {
+        if (!mounted) return
+        console.error("Error loading notifications:", error)
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load notifications."
+        })
+      } finally {
+        if (mounted) {
+          setLoading(false)
+        }
+      }
+    }
+
     loadNotifications()
-  }, [filter, loadNotifications])
+
+    return () => {
+      mounted = false
+    }
+  }, [user, isAuthenticated, filter, toast])
 
   // Mark notification as read
   const markAsRead = async (notification: BaseNotification) => {
-    if (!isOnline || !user) return
+    if (!isAuthenticated || !user) return
     
     try {
       // Update local state
@@ -129,6 +130,13 @@ export function NotificationsHandler() {
     } catch (error) {
       console.error('Error marking notification as read:', error)
     }
+  }
+
+  // Mark all as read
+  const markAllAsRead = () => {
+    setNotifications(prev =>
+      prev.map(n => ({ ...n, read: true }))
+    )
   }
 
   const getNotificationIcon = (notification: BaseNotification) => {
@@ -165,8 +173,8 @@ export function NotificationsHandler() {
 
   const unreadCount = notifications.filter(n => !n.read).length
 
-  // Don't render if not authenticated or offline
-  if (!user || !isOnline) {
+  // Don't render if not hydrated or authenticated
+  if (!isHydrated || !isAuthenticated || !user) {
     return null
   }
 
@@ -198,42 +206,19 @@ export function NotificationsHandler() {
                 variant="ghost"
                 size="sm"
                 className="text-xs h-7"
-                onClick={() => {
-                  notifications
-                    .filter(n => !n.read)
-                    .forEach(n => markAsRead(n))
-                }}
+                onClick={markAllAsRead}
               >
                 Mark all as read
               </Button>
             )}
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant={filter === 'all' ? 'secondary' : 'ghost'}
-              size="sm"
-              className="h-7"
-              onClick={() => setFilter('all')}
-            >
-              All
-            </Button>
-            <Button
-              variant={filter === 'inquiries' ? 'secondary' : 'ghost'}
-              size="sm"
-              className="h-7"
-              onClick={() => setFilter('inquiries')}
-            >
-              Inquiries
-            </Button>
-            <Button
-              variant={filter === 'reports' ? 'secondary' : 'ghost'}
-              size="sm"
-              className="h-7"
-              onClick={() => setFilter('reports')}
-            >
-              Reports
-            </Button>
-          </div>
+          <Tabs value={filter} onValueChange={(value) => setFilter(value as typeof filter)}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="inquiries">Inquiries</TabsTrigger>
+              <TabsTrigger value="reports">Reports</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto">
@@ -246,7 +231,7 @@ export function NotificationsHandler() {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`px-4 py-3 hover:bg-muted/50 cursor-pointer ${
+                  className={`px-4 py-3 hover:bg-muted/50 cursor-pointer border-b last:border-b-0 ${
                     !notification.read ? 'bg-muted/30' : ''
                   }`}
                   onClick={() => markAsRead(notification)}
@@ -269,7 +254,7 @@ export function NotificationsHandler() {
                           {(notification.metadata.status || 'pending').replace('_', ' ')}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {new Date(notification.created_at).toLocaleString()}
+                          {new Date(notification.created_at).toLocaleDateString()}
                         </span>
                       </div>
                     </div>
@@ -283,7 +268,6 @@ export function NotificationsHandler() {
                     variant="ghost"
                     size="sm"
                     className="w-full h-8"
-                    onClick={() => loadNotifications(true)}
                     disabled={loading}
                   >
                     {loading ? (
