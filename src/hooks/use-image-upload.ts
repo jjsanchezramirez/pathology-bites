@@ -9,23 +9,23 @@ interface UseImageUploadOptions {
   maxSizeBytes?: number;
 }
 
-export function useImageUpload({ 
-  onUploadComplete, 
+export function useImageUpload({
+  onUploadComplete,
   maxSizeBytes = 1024 * 1024 // 1MB
 }: UseImageUploadOptions = {}) {
   const [isUploading, setIsUploading] = useState(false);
   const [fileProgress, setFileProgress] = useState<FileProgress[]>([]);
-  
+
   const supabase = createClient();
   const { toast } = useToast();
 
   const updateFileProgress = useCallback((
-    fileName: string, 
+    fileName: string,
     updates: Partial<FileProgress>
   ) => {
-    setFileProgress(prev => 
-      prev.map(file => 
-        file.fileName === fileName 
+    setFileProgress(prev =>
+      prev.map(file =>
+        file.fileName === fileName
           ? { ...file, ...updates }
           : file
       )
@@ -37,7 +37,7 @@ export function useImageUpload({
   }, []);
 
   const uploadFiles = useCallback(async (
-    files: File[], 
+    files: File[],
     category: ImageCategory,
     sourceRef?: string
   ) => {
@@ -79,12 +79,12 @@ export function useImageUpload({
           }
 
           let fileToUpload = file;
-          
+
           // Compress if needed
           if (file.size > maxSizeBytes) {
             updateFileProgress(file.name, { status: 'compressing', progress: 20 });
             fileToUpload = await compressImage(file, maxSizeBytes);
-            
+
             if (fileToUpload.size > maxSizeBytes) {
               throw new Error(
                 `${file.name} is still too large after compression. Please try a smaller image.`
@@ -131,10 +131,8 @@ export function useImageUpload({
               alt_text: formatImageName(fileToUpload.name),
               category,
               file_type: fileToUpload.type,
-              // Only store sourceRef if provided, otherwise null
-              source_ref: (category === 'figure' || category === 'table')
-                ? (sourceRef?.trim() || null)
-                : null,
+              // Store sourceRef if provided for any category, otherwise null
+              source_ref: sourceRef?.trim() || null,
               created_by: user.id
             });
 
@@ -151,23 +149,23 @@ export function useImageUpload({
           const reduction = file.size === fileToUpload.size
             ? "0"
             : ((file.size - fileToUpload.size) / file.size * 100).toFixed(1);
-            
+
           toast({
             title: "Success",
-            description: reduction === "0" 
+            description: reduction === "0"
               ? `Uploaded ${file.name}`
               : `Uploaded ${file.name} (${reduction}% size reduction)`
           });
 
         } catch (error) {
           updateFileProgress(file.name, { status: 'error', progress: 0 });
-          
+
           toast({
             variant: "destructive",
             title: "Upload Error",
             description: error instanceof Error ? error.message : `Failed to upload ${file.name}`
           });
-          
+
           continue; // Continue with next file
         }
       }

@@ -17,7 +17,7 @@ export interface UseImagesReturn {
   error: string | null;
   refetch: () => Promise<void>;
   deleteImageById: (imagePath: string, imageId: string) => Promise<void>;
-  updateImageById: (imageId: string, data: { description: string; alt_text: string; category: string }) => Promise<void>;
+  updateImageById: (imageId: string, data: { description: string; alt_text: string; category: string; source_ref?: string }) => Promise<void>;
   uploadNewImage: (file: File, metadata: {
     description: string;
     alt_text: string;
@@ -86,14 +86,14 @@ export function useImages(params: UseImagesParams = {}): UseImagesReturn {
   }, []);
 
   const updateImageById = useCallback(async (
-    imageId: string, 
+    imageId: string,
     data: { description: string; alt_text: string; category: string }
   ) => {
     try {
       await updateImage(imageId, data);
       // Update the image in local state
-      setImages(prev => prev.map(img => 
-        img.id === imageId 
+      setImages(prev => prev.map(img =>
+        img.id === imageId
           ? { ...img, ...data }
           : img
       ));

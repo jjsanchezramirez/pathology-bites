@@ -8,7 +8,7 @@ export type ImageUpdate = Database['public']['Tables']['images']['Update'];
 // Updated to match actual database categories
 export const IMAGE_CATEGORIES = {
   microscopic: 'Microscopic',
-  figure: 'Figure', 
+  figure: 'Figure',
   table: 'Table',
   gross: 'Gross'
 } as const;
@@ -45,6 +45,7 @@ export interface ImageFormData {
   description: string;
   alt_text: string;
   category: ImageCategory;
+  source_ref?: string;
 }
 
 // Props for the images table
