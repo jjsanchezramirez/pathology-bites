@@ -86,7 +86,7 @@ export function useAuthStatus() {
       mounted = false
       subscription.unsubscribe()
     }
-  }, []) // Empty dependency array - only run once
+  }, [supabase.auth]) // Empty dependency array - only run once
 
   const refreshAuth = async () => {
     try {
