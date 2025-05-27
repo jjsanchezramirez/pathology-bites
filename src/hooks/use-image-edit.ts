@@ -11,7 +11,8 @@ interface UseImageEditOptions {
 const initialFormState: ImageFormData = {
   description: '',
   alt_text: '',
-  category: 'microscopic'
+  category: 'microscopic',
+  source_ref: ''
 };
 
 export function useImageEdit({ onSuccess }: UseImageEditOptions = {}) {
@@ -20,7 +21,7 @@ export function useImageEdit({ onSuccess }: UseImageEditOptions = {}) {
     isDeleteDialogOpen: false,
     formData: initialFormState
   });
-  
+
   const { toast } = useToast();
 
   const updateState = useCallback((updates: Partial<typeof state>) => {
@@ -31,7 +32,7 @@ export function useImageEdit({ onSuccess }: UseImageEditOptions = {}) {
     updateState({ isLoading: true });
     try {
       await updateImage(imageId, state.formData);
-      
+
       toast({
         title: "Success",
         description: "Image updated successfully"
@@ -71,9 +72,9 @@ export function useImageEdit({ onSuccess }: UseImageEditOptions = {}) {
       });
       throw error;
     } finally {
-      updateState({ 
-        isLoading: false, 
-        isDeleteDialogOpen: false 
+      updateState({
+        isLoading: false,
+        isDeleteDialogOpen: false
       });
     }
   }, [onSuccess, toast, updateState]);
@@ -84,7 +85,7 @@ export function useImageEdit({ onSuccess }: UseImageEditOptions = {}) {
       alt_text: image.alt_text,
       category: image.category as ImageCategory // Cast to proper type
     } : initialFormState;
-    
+
     updateState({ formData: newFormData });
   }, [updateState]);
 

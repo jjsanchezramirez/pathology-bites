@@ -1,4 +1,6 @@
 // src/types/supabase.ts
+import { QuestionSetSourceDetails } from './question-sets';
+
 export type Json =
   | string
   | number
@@ -136,6 +138,7 @@ export interface Database {
           status: string
           created_by: string
           version: number
+          question_set_id: string | null
           created_at: string
           updated_at: string
         }
@@ -149,6 +152,7 @@ export interface Database {
           status?: string
           created_by: string
           version?: number
+          question_set_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -162,12 +166,62 @@ export interface Database {
           status?: string
           created_by?: string
           version?: number
+          question_set_id?: string | null
           created_at?: string
           updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "questions_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_question_set_id_fkey"
+            columns: ["question_set_id"]
+            referencedRelation: "question_sets"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      question_sets: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          source_type: string
+          source_details: QuestionSetSourceDetails
+          is_active: boolean
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          source_type: string
+          source_details?: QuestionSetSourceDetails
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          source_type?: string
+          source_details?: QuestionSetSourceDetails
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_sets_created_by_fkey"
             columns: ["created_by"]
             referencedRelation: "users"
             referencedColumns: ["id"]

@@ -26,11 +26,11 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
   const [selectedCategory, setSelectedCategory] = useState<ImageCategory>('microscopic');
   const [sourceRef, setSourceRef] = useState('');
 
-  const { 
-    isUploading, 
-    fileProgress, 
-    uploadFiles, 
-    resetProgress 
+  const {
+    isUploading,
+    fileProgress,
+    uploadFiles,
+    resetProgress
   } = useImageUpload({
     onUploadComplete: onUpload
   });
@@ -80,9 +80,7 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
 
   const handleCategoryChange = useCallback((value: string) => {
     setSelectedCategory(value as ImageCategory);
-    if (!['figure', 'table'].includes(value)) {
-      setSourceRef('');
-    }
+    // Keep source ref for all categories now
   }, []);
 
   return (
@@ -99,7 +97,7 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
           {/* Category Selection */}
           <div className="space-y-2">
             <Label>Image Category</Label>
-            <Select 
+            <Select
               value={selectedCategory}
               onValueChange={handleCategoryChange}
             >
@@ -119,21 +117,19 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
             </p>
           </div>
 
-          {/* Source Reference Input - Only shown for figures and tables */}
-          {(selectedCategory === 'figure' || selectedCategory === 'table') && (
-            <div className="space-y-2">
-              <Label htmlFor="sourceRef">
-                Source Reference (optional)
-              </Label>
-              <Input
-                id="sourceRef"
-                value={sourceRef}
-                onChange={(e) => setSourceRef(e.target.value)}
-                placeholder={`Enter source reference for this ${selectedCategory.toLowerCase()}`}
-                className="w-full"
-              />
-            </div>
-          )}
+          {/* Source Reference Input - Available for all image types */}
+          <div className="space-y-2">
+            <Label htmlFor="sourceRef">
+              Source (Optional)
+            </Label>
+            <Input
+              id="sourceRef"
+              value={sourceRef}
+              onChange={(e) => setSourceRef(e.target.value)}
+              placeholder="Source reference or attribution"
+              className="w-full"
+            />
+          </div>
 
           {/* Upload Area */}
           <div
@@ -142,19 +138,19 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={`
-              relative flex flex-col items-center justify-center w-full h-32 
-              border-2 border-dashed rounded-lg cursor-pointer 
+              relative flex flex-col items-center justify-center w-full h-32
+              border-2 border-dashed rounded-lg cursor-pointer
               transition-colors duration-200
-              ${isDragging 
-                ? 'border-primary bg-primary/5' 
+              ${isDragging
+                ? 'border-primary bg-primary/5'
                 : 'border-muted hover:bg-muted/50'
               }
             `}
           >
-            <input 
-              type="file" 
+            <input
+              type="file"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              multiple 
+              multiple
               accept="image/*"
               onChange={handleFileChange}
               disabled={isUploading}
@@ -166,7 +162,7 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
                 <>
                   <ImageIcon className="h-8 w-8 mb-2 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
-                    {isDragging 
+                    {isDragging
                       ? 'Drop images here'
                       : 'Drag & drop images or click to select'}
                   </p>
@@ -186,13 +182,13 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
                   <div className="flex justify-between text-sm">
                     <span className="font-medium truncate">{file.fileName}</span>
                     <span className="text-muted-foreground">
-                      {file.compressedSize 
+                      {file.compressedSize
                         ? `${formatSize(file.originalSize)} → ${formatSize(file.compressedSize)}`
                         : formatSize(file.originalSize)}
                     </span>
                   </div>
-                  <Progress 
-                    value={file.progress} 
+                  <Progress
+                    value={file.progress}
                     className="h-2"
                   />
                   <div className="flex justify-between text-xs text-muted-foreground">

@@ -37,8 +37,9 @@ import { Loader2 } from 'lucide-react';
 
 const editImageSchema = z.object({
   description: z.string().min(1, 'Description is required').max(500, 'Description too long'),
-  alt_text: z.string().min(1, 'Alt text is required').max(200, 'Alt text too long'),
+  alt_text: z.string().min(1, 'Name is required').max(200, 'Name too long'),
   category: z.enum(['gross', 'microscopic', 'figure', 'table']), // Updated to match IMAGE_CATEGORIES
+  source_ref: z.string().max(200, 'Source too long').optional(),
 });
 
 type EditImageFormData = z.infer<typeof editImageSchema>;
@@ -50,11 +51,11 @@ interface EditImageDialogProps {
   onSave: () => void;
 }
 
-export function EditImageDialog({ 
-  image, 
-  open, 
-  onOpenChange, 
-  onSave 
+export function EditImageDialog({
+  image,
+  open,
+  onOpenChange,
+  onSave
 }: EditImageDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -65,6 +66,7 @@ export function EditImageDialog({
       description: '',
       alt_text: '',
       category: 'microscopic',
+      source_ref: '',
     },
   });
 
@@ -75,6 +77,7 @@ export function EditImageDialog({
         description: image.description || '',
         alt_text: image.alt_text || '',
         category: image.category as 'gross' | 'microscopic' | 'figure' | 'table',
+        source_ref: image.source_ref || '',
       });
     }
   }, [image, open, form]);
@@ -147,10 +150,10 @@ export function EditImageDialog({
                 name="alt_text"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Alt Text</FormLabel>
+                    <FormLabel>Name</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Descriptive text for screen readers"
+                        placeholder="Image name or title"
                         {...field}
                       />
                     </FormControl>
@@ -200,6 +203,23 @@ export function EditImageDialog({
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="source_ref"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Source (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Source reference or attribution"
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

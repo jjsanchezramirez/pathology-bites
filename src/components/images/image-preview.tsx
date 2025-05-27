@@ -18,13 +18,13 @@ interface ImagePreviewProps {
 }
 
 const sizeClasses = {
-  sm: 'w-16 h-16',
-  md: 'w-24 h-24',
-  lg: 'w-32 h-32'
+  sm: 'w-16 h-16 md:w-20 md:h-20',
+  md: 'w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28',
+  lg: 'w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36'
 };
 
-export function ImagePreview({ 
-  src, 
+export function ImagePreview({
+  src,
   alt,
   className,
   size = 'sm'
@@ -39,27 +39,30 @@ export function ImagePreview({
 
   const calculatePosition = useCallback(() => {
     if (!containerRef.current || !previewRef.current) return null;
-  
+
     const containerRect = containerRef.current.getBoundingClientRect();
     const previewRect = previewRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-  
-    let left = containerRect.right + 16;
-    let top = containerRect.top; // Using viewport-relative value
-  
+
+    // Use responsive spacing based on viewport size
+    const spacing = Math.max(16, viewportWidth * 0.02); // 2% of viewport width, minimum 16px
+
+    let left = containerRect.right + spacing;
+    let top = containerRect.top;
+
     // If preview would go off right edge, shift to the left
-    if (left + previewRect.width > viewportWidth - 16) {
-      left = Math.max(16, containerRect.left - previewRect.width - 16);
+    if (left + previewRect.width > viewportWidth - spacing) {
+      left = Math.max(spacing, containerRect.left - previewRect.width - spacing);
     }
-  
+
     // Ensure preview stays within vertical bounds relative to viewport
-    const maxTop = viewportHeight - previewRect.height - 16;
-    const minTop = 16;
+    const maxTop = viewportHeight - previewRect.height - spacing;
+    const minTop = spacing;
     top = Math.min(Math.max(top, minTop), maxTop);
-  
+
     return { top, left };
-  }, []);  
+  }, []);
 
   const updatePosition = useCallback(() => {
     const newPosition = calculatePosition();
@@ -72,7 +75,7 @@ export function ImagePreview({
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
     }
-    
+
     showTimeoutRef.current = setTimeout(() => {
       setIsPreviewVisible(true);
       requestAnimationFrame(() => {
@@ -85,7 +88,7 @@ export function ImagePreview({
     if (showTimeoutRef.current) {
       clearTimeout(showTimeoutRef.current);
     }
-    
+
     hideTimeoutRef.current = setTimeout(() => {
       setIsPreviewVisible(false);
     }, 100);
@@ -105,7 +108,7 @@ export function ImagePreview({
     // Add event listeners
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize, { passive: true });
-    
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
@@ -127,7 +130,7 @@ export function ImagePreview({
   return (
     <>
       {/* Thumbnail */}
-      <div 
+      <div
         ref={containerRef}
         className={cn(
           "relative rounded-md overflow-hidden bg-muted cursor-zoom-in",
@@ -164,7 +167,7 @@ export function ImagePreview({
 
       {/* Preview Layer */}
       {isPreviewVisible && (
-        <div 
+        <div
           ref={previewRef}
           className="fixed z-100 rounded-xl shadow-lg bg-white/5 backdrop-blur-xs"
           style={{
@@ -176,22 +179,29 @@ export function ImagePreview({
         >
           <style jsx>{`
             @keyframes preview-fade-in {
-              from { 
+              from {
                 opacity: 0;
                 transform: translateY(8px);
               }
-              to { 
+              to {
                 opacity: 1;
                 transform: translateY(0);
               }
             }
           `}</style>
-          <Image 
-            src={src} 
+          <Image
+            src={src}
             alt={alt}
-            width={300}
-            height={300}
-            className="max-w-[300px] max-h-[300px] w-auto h-auto object-contain rounded-xl"
+            width={0}
+            height={0}
+            sizes="(max-width: 768px) 50vw, 25vw"
+            className="max-w-[50vw] max-h-[50vh] md:max-w-[25vw] md:max-h-[25vh] w-auto h-auto object-contain rounded-xl"
+            style={{
+              width: 'auto',
+              height: 'auto',
+              maxWidth: '50vw',
+              maxHeight: '50vh',
+            }}
           />
         </div>
       )}
@@ -199,27 +209,26 @@ export function ImagePreview({
       {/* Full Size Dialog */}
       <Dialog open={isFullSizeVisible} onOpenChange={setIsFullSizeVisible}>
         <DialogContent
-          className="p-0 border-0 bg-transparent overflow-hidden *:p-0 max-w-none"
-          style={{
-            width: "fit-content",
-            margin: 0,
-            position: "fixed",
-            left: "50%",
-            top: "50%",
-            transform: "translate(-50%, -50%)",
-          }}
+          className="p-0 border-0 bg-transparent overflow-hidden max-w-none w-fit h-fit flex items-center justify-center"
         >
           {/* Hidden Title for Accessibility */}
           <VisuallyHidden>
             <DialogTitle>{alt}</DialogTitle>
           </VisuallyHidden>
 
-          <Image 
-            src={src} 
+          <Image
+            src={src}
             alt={alt}
-            width={800}
-            height={800}
+            width={0}
+            height={0}
+            sizes="90vw"
             className="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain rounded-xl"
+            style={{
+              width: 'auto',
+              height: 'auto',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+            }}
           />
         </DialogContent>
       </Dialog>

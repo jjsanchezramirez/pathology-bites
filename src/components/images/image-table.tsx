@@ -24,11 +24,11 @@ import { ImagePreview } from './image-preview';
 import { EditImageDialog } from './edit-dialog';
 import { UploadDialog } from './upload-dialog';
 import { fetchImages, deleteImage } from '@/lib/images/images';
-import { 
-  ImageData, 
-  ImageCategory, 
-  IMAGE_CATEGORIES, 
-  PAGE_SIZE 
+import {
+  ImageData,
+  ImageCategory,
+  IMAGE_CATEGORIES,
+  PAGE_SIZE
 } from '@/types/images';
 
 // Define the valid category values type
@@ -57,7 +57,7 @@ function TableControls({
             className="pl-8"
           />
         </div>
-        <Select 
+        <Select
           value={categoryFilter}
           onValueChange={(value: CategoryFilterType) => onCategoryChange(value)}
         >
@@ -73,7 +73,7 @@ function TableControls({
           </SelectContent>
         </Select>
       </div>
-      <Button 
+      <Button
         onClick={onUpload}
         className="bg-primary hover:bg-primary/90"
       >
@@ -124,11 +124,11 @@ function TablePagination({
 }
 
 // Table Row Actions component
-function RowActions({ 
-  image, 
-  onEdit, 
-  onDelete 
-}: { 
+function RowActions({
+  image,
+  onEdit,
+  onDelete
+}: {
   image: ImageData;
   onEdit: (image: ImageData) => void;
   onDelete: (image: ImageData) => void;
@@ -210,19 +210,19 @@ export function ImagesTable() {
 
   const handleDelete = useCallback(async (image: ImageData) => {
     if (!confirm('Are you sure you want to delete this image?')) return;
-    
+
     try {
       await deleteImage(image.storage_path, image.id);
-      
+
       toast({
         title: "Success",
         description: "Image deleted successfully",
       });
-      
+
       // Remove the deleted image from the local state
       setImages(prev => prev.filter(img => img.id !== image.id));
       setTotalItems(prev => prev - 1);
-      
+
       // If this was the last image on the current page and we're not on page 0,
       // go back one page
       if (images.length === 1 && page > 0) {
@@ -289,7 +289,7 @@ export function ImagesTable() {
           <TableHeader className="bg-muted/50">
             <TableRow>
               <TableHead className="w-24">Preview</TableHead>
-              <TableHead>Alt Text</TableHead>
+              <TableHead>Name</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Category</TableHead>
               <TableHead className="w-32">Created</TableHead>
@@ -306,8 +306,8 @@ export function ImagesTable() {
             ) : images.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  {searchTerm || categoryFilter !== 'all' 
-                    ? 'No images found matching your filters' 
+                  {searchTerm || categoryFilter !== 'all'
+                    ? 'No images found matching your filters'
                     : 'No images uploaded yet'
                   }
                 </TableCell>

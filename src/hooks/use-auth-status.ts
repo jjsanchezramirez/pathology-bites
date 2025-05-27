@@ -22,14 +22,14 @@ export function useAuthStatus() {
       try {
         // Wait for hydration
         if (typeof window === 'undefined') return
-        
+
         setIsHydrated(true)
         setIsLoading(true)
         setError(null)
 
         // Get current session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        
+
         if (!mounted) return
 
         if (sessionError) {
@@ -66,7 +66,7 @@ export function useAuthStatus() {
         if (!mounted) return
 
         console.log('Auth state changed:', event, newSession ? 'has session' : 'no session')
-        
+
         setSession(newSession)
         setUser(newSession?.user ?? null)
         setIsAuthenticated(!!(newSession?.user))
@@ -86,15 +86,15 @@ export function useAuthStatus() {
       mounted = false
       subscription.unsubscribe()
     }
-  }, []) // Empty dependency array - only run once
+  }, [supabase.auth]) // Empty dependency array - only run once
 
   const refreshAuth = async () => {
     try {
       setIsLoading(true)
       setError(null)
-      
+
       const { data: { session }, error } = await supabase.auth.refreshSession()
-      
+
       if (error) {
         console.error('Refresh error:', error)
         setError(error)
@@ -128,7 +128,7 @@ export const useAuthRobust = useAuthStatus
 
 export function useAuth() {
   const { user, session, isAuthenticated, isLoading, error } = useAuthStatus()
-  
+
   return {
     user,
     session,

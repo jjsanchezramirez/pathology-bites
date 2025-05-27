@@ -39,11 +39,11 @@ export async function deleteImage(imagePath: string, imageId: string) {
 }
 
 export async function updateImage(
-  imageId: string, 
-  data: { description: string; alt_text: string; category: string }
+  imageId: string,
+  data: { description: string; alt_text: string; category: string; source_ref?: string }
 ) {
   const supabase = createClient(); // Remove <Database>
-  
+
   try {
     const { error } = await supabase
       .from('images')
@@ -132,7 +132,7 @@ export async function fetchImages(params: {
 }
 
 export async function uploadImage(
-  file: File, 
+  file: File,
   metadata: {
     description: string;
     alt_text: string;

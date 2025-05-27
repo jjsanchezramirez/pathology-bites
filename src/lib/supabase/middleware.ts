@@ -42,7 +42,7 @@ export async function updateSession(request: NextRequest) {
   // Define auth pages that don't require authentication
   const authPages = [
     '/login',
-    '/signup', 
+    '/signup',
     '/forgot-password',
     '/reset-password',
     '/verify-email',
@@ -54,12 +54,12 @@ export async function updateSession(request: NextRequest) {
     '/auth/confirm' // Add this line to allow the auth confirm route
   ]
 
-  const isAuthPage = authPages.some(page => 
+  const isAuthPage = authPages.some(page =>
     request.nextUrl.pathname.startsWith(page)
   )
 
   // Allow access to auth pages, static files, and root
-  if (isAuthPage || 
+  if (isAuthPage ||
       request.nextUrl.pathname.startsWith('/_next/') ||
       request.nextUrl.pathname.includes('.') ||
       request.nextUrl.pathname === '/') {
@@ -77,13 +77,36 @@ export async function updateSession(request: NextRequest) {
   // Check user role for admin routes
   if (request.nextUrl.pathname.startsWith('/admin')) {
     try {
-      const { data: userData } = await supabase
+      // First try to get role from user metadata
+      const userRole = user.user_metadata?.role || user.app_metadata?.role
+
+      if (userRole === 'admin') {
+        // User has admin role in metadata, allow access
+        console.log('Admin access granted via metadata')
+        return supabaseResponse
+      }
+
+      // Query users table to check role
+      const { data: userData, error: roleError } = await supabase
         .from('users')
         .select('role')
         .eq('id', user.id)
         .single()
-      
-      if (userData?.role !== 'admin') {
+
+      if (roleError) {
+        console.error('Role check error:', roleError)
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
+      }
+
+      if (userData?.role === 'admin') {
+        // User is admin in database, allow access
+        console.log('Admin access granted via database:', userData)
+        return supabaseResponse
+      } else {
+        // User is not admin, redirect to dashboard
+        console.log('User is not admin, redirecting. Role:', userData?.role)
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'
         return NextResponse.redirect(url)
