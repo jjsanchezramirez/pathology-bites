@@ -119,5 +119,39 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
+  // Redirect non-admin users from /dashboard to /admin/dashboard if they are admin
+  if (request.nextUrl.pathname === '/dashboard') {
+    try {
+      // First try to get role from user metadata
+      const userRole = user.user_metadata?.role || user.app_metadata?.role
+
+      if (userRole === 'admin') {
+        // User has admin role in metadata, redirect to admin dashboard
+        console.log('Redirecting admin user from dashboard to admin dashboard (metadata)')
+        const url = request.nextUrl.clone()
+        url.pathname = '/admin/dashboard'
+        return NextResponse.redirect(url)
+      }
+
+      // Query users table to check role
+      const { data: userData, error: roleError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      if (!roleError && userData?.role === 'admin') {
+        // User is admin in database, redirect to admin dashboard
+        console.log('Redirecting admin user from dashboard to admin dashboard (database)')
+        const url = request.nextUrl.clone()
+        url.pathname = '/admin/dashboard'
+        return NextResponse.redirect(url)
+      }
+    } catch (error) {
+      console.error('Error checking role for dashboard redirect:', error)
+      // Continue to regular dashboard on error
+    }
+  }
+
   return supabaseResponse
 }

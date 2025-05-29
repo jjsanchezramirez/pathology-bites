@@ -1,8 +1,8 @@
 // src/components/admin/notifications-handler.tsx
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Bell, Loader2, AlertCircle, Info, ChevronDown, Flag, CheckCircle } from 'lucide-react'
+import React, { useState } from 'react'
+import { Bell, Loader2, AlertCircle, Info, Flag, CheckCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,145 +12,61 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuthStatus } from '@/hooks/use-auth-status'
-
-// Simplified notification types
-interface BaseNotification {
-  id: string;
-  type: string;
-  title: string;
-  description: string;
-  created_at: string;
-  read: boolean;
-  metadata: {
-    status: string;
-    [key: string]: string | number | boolean | null;
-  };
-}
+import { useNotifications } from '@/hooks/use-notifications'
+import { NotificationWithSource } from '@/lib/notifications/service'
 
 export function NotificationsHandler() {
-  const [notifications, setNotifications] = useState<BaseNotification[]>([])
-  const [loading, setLoading] = useState(true)
-  const [hasMore, setHasMore] = useState(false)
-  const [filter, setFilter] = useState<'all' | 'inquiries' | 'reports'>('all')
-  
-  const { user, isAuthenticated, isHydrated } = useAuthStatus()
+  const [filter, setFilter] = useState<'all' | 'inquiry' | 'report'>('all')
+
+  const { isHydrated, isAuthenticated, user } = useAuthStatus()
   const { toast } = useToast()
 
-  // Load notifications when user changes
-  useEffect(() => {
-    let mounted = true
+  const {
+    notifications,
+    loading,
+    unreadCount,
+    markAsRead: markNotificationAsRead,
+    markAllAsRead: markAllNotificationsAsRead
+  } = useNotifications(filter)
 
-    const loadNotifications = async () => {
-      if (!isAuthenticated || !user) {
-        setNotifications([])
-        setLoading(false)
-        return
-      }
-      
-      try {
-        setLoading(true)
-        
-        // Create mock notifications since we don't have the full notification system
-        const mockNotifications: BaseNotification[] = [
-          {
-            id: '1',
-            type: 'inquiry',
-            title: 'New General Inquiry',
-            description: 'User has submitted a general inquiry',
-            created_at: new Date().toISOString(),
-            read: false,
-            metadata: { status: 'pending' }
-          },
-          {
-            id: '2',
-            type: 'report',
-            title: 'Question Report',
-            description: 'User reported an issue with a question',
-            created_at: new Date(Date.now() - 3600000).toISOString(),
-            read: true,
-            metadata: { status: 'resolved' }
-          },
-          {
-            id: '3',
-            type: 'inquiry',
-            title: 'Content Request',
-            description: 'Request for new pathology content',
-            created_at: new Date(Date.now() - 7200000).toISOString(),
-            read: false,
-            metadata: { status: 'in_progress' }
-          }
-        ]
-        
-        // Apply filter
-        let filteredNotifications = mockNotifications
-        if (filter === 'inquiries') {
-          filteredNotifications = mockNotifications.filter(n => n.type === 'inquiry')
-        } else if (filter === 'reports') {
-          filteredNotifications = mockNotifications.filter(n => n.type === 'report')
-        }
-        
-        if (!mounted) return
-        
-        setNotifications(filteredNotifications)
-        setHasMore(false) // No pagination for mock data
-        
-      } catch (error) {
-        if (!mounted) return
-        console.error("Error loading notifications:", error)
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load notifications."
-        })
-      } finally {
-        if (mounted) {
-          setLoading(false)
-        }
-      }
-    }
-
-    loadNotifications()
-
-    return () => {
-      mounted = false
-    }
-  }, [user, isAuthenticated, filter, toast])
-
-  // Mark notification as read
-  const markAsRead = async (notification: BaseNotification) => {
-    if (!isAuthenticated || !user) return
-    
+  // Mark notification as read with error handling
+  const markAsRead = async (notification: NotificationWithSource) => {
     try {
-      // Update local state
-      setNotifications(prev =>
-        prev.map(n =>
-          n.id === notification.id ? { ...n, read: true } : n
-        )
-      )
-    } catch (error) {
-      console.error('Error marking notification as read:', error)
+      await markNotificationAsRead(notification.id)
+    } catch (_error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to mark notification as read."
+      })
     }
   }
 
-  // Mark all as read
-  const markAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(n => ({ ...n, read: true }))
-    )
+  // Mark all as read with error handling
+  const markAllAsRead = async () => {
+    try {
+      await markAllNotificationsAsRead()
+    } catch (_error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to mark all notifications as read."
+      })
+    }
   }
 
-  const getNotificationIcon = (notification: BaseNotification) => {
-    if (notification.type === 'report') {
-      return notification.metadata.status === 'resolved' ? 
+  const getNotificationIcon = (notification: NotificationWithSource) => {
+    if (notification.source_type === 'report') {
+      return notification.status === 'resolved' ?
         <CheckCircle className="h-4 w-4 text-green-500" /> :
         <Flag className="h-4 w-4 text-red-500" />
     }
-    
-    if (notification.metadata.status === 'resolved') {
+
+    if (notification.status === 'resolved') {
       return <CheckCircle className="h-4 w-4 text-green-500" />
     }
-    
-    return notification.type === 'inquiry' ?
+
+    return notification.source_type === 'inquiry' ?
       <Info className="h-4 w-4 text-blue-500" /> :
       <AlertCircle className="h-4 w-4 text-yellow-500" />
   }
@@ -171,8 +87,6 @@ export function NotificationsHandler() {
     }
   }
 
-  const unreadCount = notifications.filter(n => !n.read).length
-
   // Don't render if not hydrated or authenticated
   if (!isHydrated || !isAuthenticated || !user) {
     return null
@@ -181,8 +95,8 @@ export function NotificationsHandler() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="icon"
           className="relative rounded-full"
         >
@@ -194,8 +108,8 @@ export function NotificationsHandler() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="end" 
+      <DropdownMenuContent
+        align="end"
         className="w-[400px] max-h-[85vh]"
       >
         <div className="px-2 py-3 border-b">
@@ -215,8 +129,8 @@ export function NotificationsHandler() {
           <Tabs value={filter} onValueChange={(value) => setFilter(value as typeof filter)}>
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="inquiries">Inquiries</TabsTrigger>
-              <TabsTrigger value="reports">Reports</TabsTrigger>
+              <TabsTrigger value="inquiry">Inquiries</TabsTrigger>
+              <TabsTrigger value="report">Reports</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -249,9 +163,9 @@ export function NotificationsHandler() {
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          getStatusBadgeColor(notification.metadata.status)
+                          getStatusBadgeColor(notification.status)
                         }`}>
-                          {(notification.metadata.status || 'pending').replace('_', ' ')}
+                          {(notification.status || 'pending').replace('_', ' ')}
                         </span>
                         <span className="text-xs text-muted-foreground">
                           {new Date(notification.created_at).toLocaleDateString()}
@@ -261,32 +175,12 @@ export function NotificationsHandler() {
                   </div>
                 </div>
               ))}
-              
-              {hasMore && (
-                <div className="p-2 text-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full h-8"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        Load more
-                        <ChevronDown className="h-3 w-3" />
-                      </span>
-                    )}
-                  </Button>
-                </div>
-              )}
             </div>
           ) : (
             <div className="p-8 text-center text-sm text-muted-foreground">
-              {filter === 'all' 
+              {filter === 'all'
                 ? 'No notifications'
-                : filter === 'inquiries'
+                : filter === 'inquiry'
                   ? 'No inquiries'
                   : 'No reports'}
             </div>

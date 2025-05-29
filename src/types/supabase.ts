@@ -52,6 +52,147 @@ export interface Database {
           }
         ]
       }
+      categories: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          parent_id: string | null
+          level: number
+          color: string | null
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          parent_id?: string | null
+          level?: number
+          color?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          parent_id?: string | null
+          level?: number
+          color?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      tags: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          color: string | null
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          color?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          color?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      questions_tags: {
+        Row: {
+          id: string
+          question_id: string
+          tag_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          question_id: string
+          tag_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          question_id?: string
+          tag_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_tags_question_id_fkey"
+            columns: ["question_id"]
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      questions_categories: {
+        Row: {
+          id: string
+          question_id: string
+          category_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          question_id: string
+          category_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          question_id?: string
+          category_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_categories_question_id_fkey"
+            columns: ["question_id"]
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_categories_category_id_fkey"
+            columns: ["category_id"]
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       images: {
         Row: {
           id: string
@@ -100,7 +241,6 @@ export interface Database {
           organization: string | null
           email: string
           inquiry: string
-          status: string
           created_at: string
         }
         Insert: {
@@ -111,7 +251,6 @@ export interface Database {
           organization?: string | null
           email: string
           inquiry: string
-          status?: string
           created_at?: string
         }
         Update: {
@@ -122,7 +261,6 @@ export interface Database {
           organization?: string | null
           email?: string
           inquiry?: string
-          status?: string
           created_at?: string
         }
         Relationships: []
@@ -334,6 +472,89 @@ export interface Database {
           created_at?: string
         }
         Relationships: []
+      }
+      notification_states: {
+        Row: {
+          id: string
+          user_id: string
+          source_type: string
+          source_id: string
+          read: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          source_type: string
+          source_id: string
+          read?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          source_type?: string
+          source_id?: string
+          read?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_states_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      question_reports: {
+        Row: {
+          id: string
+          question_id: string
+          reported_by: string
+          report_type: string
+          description: string | null
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          question_id: string
+          reported_by: string
+          report_type: string
+          description?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          question_id?: string
+          reported_by?: string
+          report_type?: string
+          description?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_reports_question_id_fkey"
+            columns: ["question_id"]
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_reports_reported_by_fkey"
+            columns: ["reported_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

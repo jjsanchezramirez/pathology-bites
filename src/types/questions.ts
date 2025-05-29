@@ -1,11 +1,48 @@
 // src/types/questions.ts
 import { Database } from './supabase';
 import { QuestionSetData } from './question-sets';
+import { ImageData } from './images';
 
 // Database types
 export type QuestionData = Database['public']['Tables']['questions']['Row'];
 export type QuestionInsert = Database['public']['Tables']['questions']['Insert'];
 export type QuestionUpdate = Database['public']['Tables']['questions']['Update'];
+
+// Answer Options types
+export type AnswerOptionData = Database['public']['Tables']['answer_options']['Row'];
+export type AnswerOptionInsert = Database['public']['Tables']['answer_options']['Insert'];
+export type AnswerOptionUpdate = Database['public']['Tables']['answer_options']['Update'];
+
+// Question Images types
+export type QuestionImageData = Database['public']['Tables']['question_images']['Row'];
+export type QuestionImageInsert = Database['public']['Tables']['question_images']['Insert'];
+export type QuestionImageUpdate = Database['public']['Tables']['question_images']['Update'];
+
+// Additional types for tags and categories (not in current supabase.ts)
+export interface TagData {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface CategoryData {
+  id: string;
+  name: string;
+  description?: string;
+  parent_id?: string;
+  level: number;
+  created_at: string;
+}
+
+export interface QuestionTagData {
+  question_id: string;
+  tag_id: string;
+}
+
+export interface QuestionCategoryData {
+  question_id: string;
+  category_id: string;
+}
 
 // Type definitions
 export interface Category {
@@ -39,9 +76,48 @@ export interface Question {
   updated_at: string
 }
 
-// Enhanced question interface with question set data
+// Enhanced question interfaces
+export interface QuestionWithDetails extends QuestionData {
+  question_set?: QuestionSetData;
+  answer_options?: AnswerOptionData[];
+  question_images?: (QuestionImageData & { image?: ImageData })[];
+  tags?: TagData[];
+  categories?: CategoryData[];
+  created_by_name?: string;
+}
+
 export interface QuestionWithSet extends QuestionData {
   question_set?: QuestionSetData;
+}
+
+// Form data interfaces
+export interface AnswerOptionFormData {
+  id?: string;
+  text: string;
+  is_correct: boolean;
+  explanation?: string;
+  order_index: number;
+}
+
+export interface QuestionImageFormData {
+  id?: string;
+  image_id: string;
+  question_section: 'question' | 'explanation';
+  order_index: number;
+}
+
+export interface QuestionFormData {
+  title: string;
+  stem: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  teaching_point: string;
+  question_references?: string;
+  status: 'draft' | 'published' | 'archived';
+  question_set_id?: string;
+  answer_options: AnswerOptionFormData[];
+  question_images: QuestionImageFormData[];
+  tag_ids: string[];
+  category_ids: string[];
 }
 
 // Interface for question filters including question set

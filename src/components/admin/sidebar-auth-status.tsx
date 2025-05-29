@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -12,9 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { 
-  RefreshCw, 
-  LogOut, 
+import {
+  RefreshCw,
+  LogOut,
   ChevronUp,
   Shield,
   ShieldAlert,
@@ -89,11 +89,24 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
   const handleSignOut = async () => {
     try {
       const { error } = await supabase.auth.signOut()
+
       if (error) {
         console.error('Sign out error:', error)
+        throw error
       }
+
+      // Clear any local storage or cached data
+      if (typeof window !== 'undefined') {
+        localStorage.clear()
+        sessionStorage.clear()
+      }
+
+      // Force a hard refresh to clear all cached data and redirect to login
+      window.location.href = '/login'
     } catch (err) {
-      console.error('Sign out error:', err)
+      console.error('Error during sign out:', err)
+      // Still redirect to login even if there's an error
+      window.location.href = '/login'
     }
   }
 
@@ -151,9 +164,9 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
     if (!isAuthenticated || !user) {
       return (
         <div className="p-3">
-          <Button 
-            size="sm" 
-            variant="ghost" 
+          <Button
+            size="sm"
+            variant="ghost"
             className="w-full h-10 p-0 text-slate-300 hover:text-slate-100 hover:bg-slate-800"
             asChild
           >
@@ -169,9 +182,9 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
       <div className="p-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="w-full h-10 p-0 text-slate-300 hover:text-slate-100 hover:bg-slate-800"
               title={`${getDisplayName()} - ${getStatusText()}`}
             >
@@ -181,7 +194,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
           <DropdownMenuContent side="right" align="end" className="w-64 ml-2">
             <DropdownMenuLabel>Authentication Status</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            
+
             <div className="px-2 py-1.5 text-sm">
               <div><strong>Status:</strong> {getStatusText()}</div>
               <div><strong>Email:</strong> {user.email}</div>
@@ -189,7 +202,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
                 <div><strong>Role:</strong> {userProfile.role}</div>
               )}
             </div>
-            
+
             {error && (
               <>
                 <DropdownMenuSeparator />
@@ -198,13 +211,13 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
                 </div>
               </>
             )}
-            
+
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={refreshAuth} disabled={isLoading}>
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh Status
             </DropdownMenuItem>
-            
+
             <DropdownMenuItem onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
@@ -219,9 +232,9 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
   if (!isAuthenticated || !user) {
     return (
       <div className="p-3 border-t border-slate-700/50">
-        <Button 
-          size="sm" 
-          variant="ghost" 
+        <Button
+          size="sm"
+          variant="ghost"
           className="w-full justify-start text-slate-300 hover:text-slate-100 hover:bg-slate-800"
           asChild
         >
@@ -238,8 +251,8 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
     <div className="border-t border-slate-700/50">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full h-auto p-3 justify-between text-left text-slate-300 hover:text-slate-100 hover:bg-slate-800"
           >
             <div className="flex items-center min-w-0 flex-1">
@@ -259,7 +272,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
         <DropdownMenuContent side="top" align="end" className="w-64 mb-2">
           <DropdownMenuLabel>Authentication Details</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          
+
           <div className="px-2 py-1.5 text-sm space-y-1">
             <div><strong>Email:</strong> {user.email}</div>
             <div><strong>Status:</strong> {getStatusText()}</div>
@@ -275,7 +288,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
               ID: {user.id.substring(0, 8)}...
             </div>
           </div>
-          
+
           {error && (
             <>
               <DropdownMenuSeparator />
@@ -284,13 +297,13 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
               </div>
             </>
           )}
-          
+
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={refreshAuth} disabled={isLoading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh Status
           </DropdownMenuItem>
-          
+
           <DropdownMenuItem onClick={handleSignOut}>
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out

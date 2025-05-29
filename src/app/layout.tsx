@@ -5,6 +5,7 @@ import { ConnectionStatus } from "@/components/network/connection-status"
 import { cn } from '@/lib/utils'
 import "@/styles/globals.css"
 import { AuthProvider } from '@/components/auth/auth-provider'
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata = {
   title: 'Pathology Bites',
@@ -35,6 +36,7 @@ export default async function RootLayout({
           <Toaster />
           <ConnectionStatus />
         </ConditionalThemeProvider>
+        <Analytics/>
       </body>
     </html>
   )

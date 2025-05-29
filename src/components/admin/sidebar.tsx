@@ -1,14 +1,15 @@
 // src/components/admin/sidebar.tsx
 'use client'
 
-import { 
-  LayoutDashboard, 
-  Users, 
+import {
+  LayoutDashboard,
+  Users,
   FileQuestion,
   BarChart,
   Image,
   Settings,
-  Microscope
+  Microscope,
+  Tags
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -24,6 +25,11 @@ const navigation = [
     name: "Questions",
     href: "/admin/questions",
     icon: FileQuestion
+  },
+  {
+    name: "Question Management",
+    href: "/admin/question-management",
+    icon: Tags
   },
   {
     name: "Users",
@@ -55,7 +61,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
   const pathname = usePathname()
 
   return (
-    <aside 
+    <aside
       className={`fixed left-0 top-0 bottom-0 z-50 ${
         isCollapsed ? 'w-16' : 'w-64'
       } bg-slate-900 text-slate-100 dark:bg-slate-800/95 flex flex-col transition-all duration-300 border-r border-slate-700/50`}
@@ -73,15 +79,15 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
         <div className="space-y-1 px-3">
           {navigation.map((item) => {
             const isActive = pathname === item.href
-            
+
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex h-10 rounded-lg text-sm font-medium 
+                className={`flex h-10 rounded-lg text-sm font-medium
                   transition-colors duration-200 relative items-center
-                  ${isActive 
-                    ? 'bg-slate-800 text-slate-100 dark:bg-slate-700 dark:text-white' 
+                  ${isActive
+                    ? 'bg-slate-800 text-slate-100 dark:bg-slate-700 dark:text-white'
                     : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100 dark:text-slate-200 dark:hover:bg-slate-700/50 dark:hover:text-white'
                   }`}
                 title={isCollapsed ? item.name : undefined}

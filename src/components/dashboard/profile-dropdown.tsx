@@ -79,11 +79,24 @@ export function ProfileDropdown() {
   const handleSignOut = async () => {
     try {
       const { error } = await supabase.auth.signOut()
+
       if (error) {
         console.error('Sign out error:', error)
+        throw error
       }
+
+      // Clear any local storage or cached data
+      if (typeof window !== 'undefined') {
+        localStorage.clear()
+        sessionStorage.clear()
+      }
+
+      // Force a hard refresh to clear all cached data and redirect to login
+      window.location.href = '/login'
     } catch (err) {
-      console.error('Sign out error:', err)
+      console.error('Error during sign out:', err)
+      // Still redirect to login even if there's an error
+      window.location.href = '/login'
     }
   }
 
@@ -175,32 +188,32 @@ export function ProfileDropdown() {
             )}
           </div>
         </DropdownMenuLabel>
-        
+
         <DropdownMenuSeparator />
-        
+
         <DropdownMenuItem asChild>
           <a href="/dashboard">
             <User className="mr-2 h-4 w-4" />
             <span>Dashboard</span>
           </a>
         </DropdownMenuItem>
-        
+
         <DropdownMenuItem asChild>
           <a href="/dashboard/settings">
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
           </a>
         </DropdownMenuItem>
-        
+
         <DropdownMenuSeparator />
-        
+
         {(profileLoading || isLoading) && (
           <DropdownMenuItem disabled>
             <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
             <span>Loading...</span>
           </DropdownMenuItem>
         )}
-        
+
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>

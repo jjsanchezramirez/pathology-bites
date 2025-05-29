@@ -1,11 +1,100 @@
 // src/app/(admin)/admin/dashboard/page.tsx
 import { Metadata } from "next"
+import { Suspense } from "react"
+import { dashboardService } from "@/lib/dashboard/service"
+import { StatsCards } from "@/components/admin/dashboard/stats-cards"
+import { RecentActivityCard } from "@/components/admin/dashboard/recent-activity"
+import { QuickActionsCard } from "@/components/admin/dashboard/quick-actions"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileQuestion, Users, Image as ImageIcon, TrendingUp } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export const metadata: Metadata = {
   title: "Admin Dashboard - Pathology Bites",
   description: "Administrative dashboard overview",
+}
+
+// Loading components
+function StatsLoading() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Card key={i}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-4" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-8 w-16 mb-2" />
+            <Skeleton className="h-3 w-32" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  )
+}
+
+function ActivityLoading() {
+  return (
+    <Card className="col-span-4">
+      <CardHeader>
+        <CardTitle>Recent Activity</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-start space-x-4 p-3">
+              <Skeleton className="h-4 w-4 mt-1" />
+              <div className="flex-1">
+                <Skeleton className="h-4 w-48 mb-2" />
+                <Skeleton className="h-3 w-64" />
+              </div>
+              <Skeleton className="h-3 w-12" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function ActionsLoading() {
+  return (
+    <Card className="col-span-3">
+      <CardHeader>
+        <CardTitle>Quick Actions</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center justify-between p-3">
+              <div className="flex-1">
+                <Skeleton className="h-4 w-32 mb-2" />
+                <Skeleton className="h-3 w-48" />
+              </div>
+              <Skeleton className="h-4 w-4" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// Data fetching components
+async function DashboardStats() {
+  const stats = await dashboardService.getDashboardStats()
+  return <StatsCards stats={stats} />
+}
+
+async function DashboardActivity() {
+  const activities = await dashboardService.getRecentActivity()
+  return <RecentActivityCard activities={activities} />
+}
+
+async function DashboardActions() {
+  const stats = await dashboardService.getDashboardStats()
+  const actions = dashboardService.getQuickActions(stats)
+  return <QuickActionsCard actions={actions} />
 }
 
 export default function AdminDashboardPage() {
@@ -18,97 +107,18 @@ export default function AdminDashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Questions</CardTitle>
-            <FileQuestion className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">2,350</div>
-            <p className="text-xs text-muted-foreground">
-              +180 from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1,284</div>
-            <p className="text-xs text-muted-foreground">
-              +10% from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Image Library</CardTitle>
-            <ImageIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">4,832</div>
-            <p className="text-xs text-muted-foreground">
-              +240 new images
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">76%</div>
-            <p className="text-xs text-muted-foreground">
-              +2.4% from last month
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <Suspense fallback={<StatsLoading />}>
+        <DashboardStats />
+      </Suspense>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Activity items would go here - simplified for example */}
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium">New question submitted</p>
-                  <p className="text-sm text-muted-foreground">
-                    Dr. Smith added a new question on liver pathology
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <Suspense fallback={<ActivityLoading />}>
+          <DashboardActivity />
+        </Suspense>
 
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium">Review pending questions</p>
-                  <p className="text-sm text-muted-foreground">
-                    12 questions awaiting review
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <Suspense fallback={<ActionsLoading />}>
+          <DashboardActions />
+        </Suspense>
       </div>
     </div>
   )
