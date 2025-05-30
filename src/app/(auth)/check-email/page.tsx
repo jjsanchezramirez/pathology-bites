@@ -1,8 +1,8 @@
 // app/(auth)/check-email/page.tsx
 import Link from 'next/link'
-import { Button } from "@/components/ui/button"
-import { AuthPageLayout } from '@/components/auth/ui/auth-page-layout'
-import { StatusCard } from '@/components/auth/ui/status-card'
+import { Button } from "@/shared/components/ui/button"
+import { AuthPageLayout } from '@/features/auth/components/ui/auth-page-layout'
+import { StatusCard } from '@/features/auth/components/ui/status-card'
 
 export default function CheckEmailPage() {
   return (

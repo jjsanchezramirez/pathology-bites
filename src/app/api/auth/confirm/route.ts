@@ -1,7 +1,7 @@
 // src/app/api/auth/confirm/route.ts
 import { type EmailOtpType } from '@supabase/supabase-js'
 import { type NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/shared/services/server'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)

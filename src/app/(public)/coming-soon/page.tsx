@@ -2,16 +2,16 @@
 'use client'
 
 import { ChevronDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useToast } from '@/hooks/use-toast'
-import DemoQuestion from "@/components/landing/demo-question"
-import { ScrollToTopButton } from "@/components/landing/scroll-to-top"
-import { FeatureCard } from "@/components/landing/feature-card"
+import { Button } from "@/shared/components/ui/button"
+import { Input } from "@/shared/components/ui/input"
+import { Label } from "@/shared/components/ui/label"
+import { useToast } from '@/shared/hooks/use-toast'
+import DemoQuestion from "@/shared/components/common/demo-question"
+import { ScrollToTopButton } from "@/shared/components/common/scroll-to-top"
+import { FeatureCard } from "@/shared/components/common/feature-card"
 import { BookOpenIcon, BarChartIcon, TestTube2Icon } from "lucide-react"
-import { CountdownTimer } from "@/components/landing/countdown-timer"
-import { useEmailSubscription } from "@/hooks/use-email-subscription"
+import { CountdownTimer } from "@/shared/components/common/countdown-timer"
+import { useEmailSubscription } from "@/shared/hooks/use-email-subscription"
 
 export default function ComingSoonPage() {
   const { toast } = useToast()

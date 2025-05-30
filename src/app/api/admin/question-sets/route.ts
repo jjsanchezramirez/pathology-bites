@@ -1,7 +1,6 @@
 // src/app/api/admin/question-sets/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createServiceClient } from '@/lib/supabase/service'
+import { createClient } from '@/shared/services/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,9 +13,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user is admin
-    const serviceSupabase = createServiceClient()
 
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -33,7 +31,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
 
     // Build query
-    let query = serviceSupabase
+    let query = supabase
       .from('question_sets')
       .select(`
         *,
@@ -59,7 +57,7 @@ export async function GET(request: NextRequest) {
     // Get question counts for each set
     const setsWithCounts = await Promise.all(
       (data || []).map(async (set) => {
-        const { count: questionCount } = await serviceSupabase
+        const { count: questionCount } = await supabase
           .from('questions')
           .select('*', { count: 'exact', head: true })
           .eq('question_set_id', set.id)
@@ -98,9 +96,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user is admin
-    const serviceSupabase = createServiceClient()
 
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -122,7 +119,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create question set with service role to bypass RLS
-    const { data, error } = await serviceSupabase
+    const { data, error } = await supabase
       .from('question_sets')
       .insert({
         name: name.trim(),
@@ -164,9 +161,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Check if user is admin
-    const serviceSupabase = createServiceClient()
 
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -184,7 +180,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update question set with service role to bypass RLS
-    const { data, error } = await serviceSupabase
+    const { data, error } = await supabase
       .from('question_sets')
       .update(updates)
       .eq('id', setId)
@@ -217,9 +213,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check if user is admin
-    const serviceSupabase = createServiceClient()
 
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -237,7 +232,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check if set has questions
-    const { data: questions } = await serviceSupabase
+    const { data: questions } = await supabase
       .from('questions')
       .select('id')
       .eq('question_set_id', setId)
@@ -249,7 +244,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete the question set
-    const { error } = await serviceSupabase
+    const { error } = await supabase
       .from('question_sets')
       .delete()
       .eq('id', setId)

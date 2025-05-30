@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { QuestionForm } from '@/components/questions/question-form';
-import { Button } from '@/components/ui/button';
+import { QuestionForm } from '@/features/questions/components/question-form';
+import { Button } from '@/shared/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 

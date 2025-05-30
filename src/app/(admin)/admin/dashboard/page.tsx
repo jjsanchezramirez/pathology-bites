@@ -1,12 +1,12 @@
 // src/app/(admin)/admin/dashboard/page.tsx
 import { Metadata } from "next"
 import { Suspense } from "react"
-import { dashboardService } from "@/lib/dashboard/service"
-import { StatsCards } from "@/components/admin/dashboard/stats-cards"
-import { RecentActivityCard } from "@/components/admin/dashboard/recent-activity"
-import { QuickActionsCard } from "@/components/admin/dashboard/quick-actions"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { dashboardService } from "@/features/dashboard/services/service"
+import { StatsCards } from "@/shared/components/layout/dashboard/stats-cards"
+import { RecentActivityCard } from "@/shared/components/layout/dashboard/recent-activity"
+import { QuickActionsCard } from "@/shared/components/layout/dashboard/quick-actions"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
+import { Skeleton } from "@/shared/components/ui/skeleton"
 
 export const metadata: Metadata = {
   title: "Admin Dashboard - Pathology Bites",

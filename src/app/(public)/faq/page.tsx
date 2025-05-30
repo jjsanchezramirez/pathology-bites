@@ -1,16 +1,16 @@
 // src/app/faq/page.tsx
 'use client'
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
-import { Card } from "@/components/ui/card"
-import FloatingCharacter from "@/components/landing/dr-albright"
+import { Card } from "@/shared/components/ui/card"
+import FloatingCharacter from "@/shared/components/common/dr-albright"
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/shared/components/ui/accordion"
 
 export default function FAQPage() {
   return (

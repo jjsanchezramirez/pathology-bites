@@ -1,7 +1,7 @@
 // src/app/(admin)/admin/question-management/page.tsx
 import { Metadata } from 'next'
-import { QuestionManagementTable } from '@/components/question-management/question-management-table'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { QuestionManagementTable } from '@/features/questions/components/question-management-table'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
 
 export const metadata: Metadata = {
   title: 'Question Management - Admin Dashboard',

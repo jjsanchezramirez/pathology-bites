@@ -1,10 +1,10 @@
 // src/app/terms/page.tsx
 'use client'
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
-import { Card } from "@/components/ui/card"
-import FloatingCharacter from "@/components/landing/dr-albright"
+import { Card } from "@/shared/components/ui/card"
+import FloatingCharacter from "@/shared/components/common/dr-albright"
 
 export default function TermsPage() {
   return (

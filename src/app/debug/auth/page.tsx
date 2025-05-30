@@ -1,6 +1,6 @@
 // src/app/debug-auth/page.tsx
-import { createClient } from '@/lib/supabase/server'
-import { SessionDebugComponent } from '@/components/debug/session-debug'
+import { createClient } from '@/shared/services/server'
+import { SessionDebugComponent } from '@/shared/components/common/session-debug'
 
 export default async function DebugAuthPage() {
   // Server-side auth check

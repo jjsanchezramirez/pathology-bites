@@ -2,15 +2,15 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import FloatingCharacter from "@/components/landing/dr-albright"
-import { useToast } from "@/hooks/use-toast"
-import { Icons } from "@/components/theme/icons"
+import { Button } from "@/shared/components/ui/button"
+import { Card } from "@/shared/components/ui/card"
+import { Label } from "@/shared/components/ui/label"
+import { Input } from "@/shared/components/ui/input"
+import { Textarea } from "@/shared/components/ui/textarea"
+import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group"
+import FloatingCharacter from "@/shared/components/common/dr-albright"
+import { useToast } from "@/shared/hooks/use-toast"
+import { Icons } from "@/shared/components/common/icons"
 import { submitContactForm } from '@/app/api/contact/contact'
 
 type FormData = {

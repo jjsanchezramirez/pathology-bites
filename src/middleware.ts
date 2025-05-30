@@ -1,6 +1,6 @@
 // middleware.ts
 import { type NextRequest } from 'next/server'
-import { updateSession } from '@/lib/supabase/middleware'
+import { updateSession } from '@/shared/services/middleware'
 
 export async function middleware(request: NextRequest) {
   // Skip middleware for static files and API routes

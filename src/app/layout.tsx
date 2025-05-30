@@ -1,10 +1,10 @@
 // src/app/layout.tsx
-import { ConditionalThemeProvider } from '@/components/theme/conditional-theme-provider'
-import { Toaster } from "@/components/ui/toaster"
-import { ConnectionStatus } from "@/components/network/connection-status"
-import { cn } from '@/lib/utils'
+import { ConditionalThemeProvider } from '@/shared/components/common/conditional-theme-provider'
+import { Toaster } from "@/shared/components/ui/toaster"
+import { ConnectionStatus } from "@/shared/components/common/connection-status"
+import { cn } from '@/shared/utils'
 import "@/styles/globals.css"
-import { AuthProvider } from '@/components/auth/auth-provider'
+import { AuthProvider } from '@/features/auth/components/auth-provider'
 import { Analytics } from "@vercel/analytics/next"
 
 export const metadata = {

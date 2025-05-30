@@ -1,7 +1,6 @@
 // src/app/api/admin/tags/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createServiceClient } from '@/lib/supabase/service'
+import { createClient } from '@/shared/services/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,9 +13,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user is admin
-    const serviceSupabase = createServiceClient()
 
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -33,7 +31,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
 
     // Build query
-    let query = serviceSupabase
+    let query = supabase
       .from('tags')
       .select('*', { count: 'exact' })
 
@@ -56,7 +54,7 @@ export async function GET(request: NextRequest) {
     // Get question counts for each tag
     const tagsWithCounts = await Promise.all(
       (data || []).map(async (tag) => {
-        const { count: questionCount } = await serviceSupabase
+        const { count: questionCount } = await supabase
           .from('questions_tags')
           .select('*', { count: 'exact', head: true })
           .eq('tag_id', tag.id)
@@ -95,9 +93,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user is admin
-    const serviceSupabase = createServiceClient()
 
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -115,7 +112,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create tag with service role to bypass RLS
-    const { data, error } = await serviceSupabase
+    const { data, error } = await supabase
       .from('tags')
       .insert({ name: name.trim() })
       .select()
@@ -150,9 +147,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Check if user is admin
-    const serviceSupabase = createServiceClient()
 
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -170,7 +166,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update tag with service role to bypass RLS
-    const { data, error } = await serviceSupabase
+    const { data, error } = await supabase
       .from('tags')
       .update({ name: name.trim() })
       .eq('id', tagId)
@@ -206,9 +202,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check if user is admin
-    const serviceSupabase = createServiceClient()
 
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -226,7 +221,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // First delete all questions_tags relationships
-    const { error: relationError } = await serviceSupabase
+    const { error: relationError } = await supabase
       .from('questions_tags')
       .delete()
       .eq('tag_id', tagId)
@@ -236,7 +231,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Then delete the tag
-    const { error } = await serviceSupabase
+    const { error } = await supabase
       .from('tags')
       .delete()
       .eq('id', tagId)

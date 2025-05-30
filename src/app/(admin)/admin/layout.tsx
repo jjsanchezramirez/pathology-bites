@@ -1,6 +1,6 @@
 // src/app/(admin)/layout.tsx
 import { Metadata } from "next"
-import { AdminLayoutClient } from "@/components/admin/layout-client"
+import { AdminLayoutClient } from "@/shared/components/layout/layout-client"
 
 export const metadata: Metadata = {
   title: "Admin Dashboard - Pathology Bites",

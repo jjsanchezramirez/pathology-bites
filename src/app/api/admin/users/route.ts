@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createServiceClient } from '@/lib/supabase/service'
+import { createClient } from '@/shared/services/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,9 +13,8 @@ export async function GET(request: NextRequest) {
 
     // Check if user is admin by querying their role in the database
     // We'll use a direct query with service role to bypass RLS
-    const serviceSupabase = createServiceClient()
 
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -35,12 +33,12 @@ export async function GET(request: NextRequest) {
     const statusFilter = searchParams.get('status') || 'all'
 
     // Build query for counting
-    let countQuery = serviceSupabase
+    let countQuery = supabase
       .from('users')
       .select('*', { count: 'exact', head: true })
 
     // Build query for data
-    let dataQuery = serviceSupabase
+    let dataQuery = supabase
       .from('users')
       .select('*')
 
@@ -109,9 +107,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Check if user is admin
-    const serviceSupabase = createServiceClient()
 
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -129,7 +126,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update user with service role to bypass RLS
-    const { data, error } = await serviceSupabase
+    const { data, error } = await supabase
       .from('users')
       .update(updates)
       .eq('id', userId)

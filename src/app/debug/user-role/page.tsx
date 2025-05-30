@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { useAuthStatus } from '@/hooks/use-auth-status'
-import { Database } from '@/types/supabase'
+import { createClient } from '@/shared/services/client'
+import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { Database } from '@/shared/types/supabase'
 
 type UserData = Database['public']['Tables']['users']['Row']
 

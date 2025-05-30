@@ -78,26 +78,31 @@ pathology-bites/
 │   │   ├── (auth)/        # Authentication routes
 │   │   ├── (dashboard)/   # User dashboard routes
 │   │   ├── (public)/      # Public-facing routes
-│   │   ├── api/           # API endpoints
-│   ├── components/        # React components
-│   │   ├── admin/         # Admin interface components
-│   │   ├── auth/          # Authentication components
-│   │   ├── dashboard/     # Dashboard components
-│   │   ├── images/        # Image-related components
-│   │   ├── landing/       # Landing page components
-│   │   ├── layout/        # Layout components
-│   │   ├── questions/     # Question-related components
-│   │   ├── ui/            # Base UI components (shadcn/ui)
-│   ├── hooks/             # Custom React hooks
-│   ├── lib/               # Utility functions
-│   │   ├── auth/          # Authentication utilities
-│   │   ├── images/        # Image processing utilities
-│   │   ├── network/       # Network status utilities
-│   │   ├── supabase/      # Supabase client utilities
-│   ├── styles/            # Global CSS
-│   ├── types/             # TypeScript type definitions
-├── postcss.config.js      # PostCSS configuration
-├── tailwind.config.ts     # Tailwind CSS configuration
+│   │   └── api/           # API endpoints
+│   ├── features/           # Feature modules
+│   │   ├── auth/          # Authentication feature
+│   │   │   ├── components/# Auth-specific components
+│   │   │   ├── hooks/     # Auth-specific hooks
+│   │   │   ├── services/  # Auth API calls
+│   │   │   ├── types/     # Auth types
+│   │   │   └── index.ts   # Feature exports
+│   │   ├── questions/     # Questions feature
+│   │   ├── images/        # Image management feature
+│   │   ├── users/         # User management feature
+│   │   └── dashboard/     # Dashboard feature
+│   ├── shared/            # Shared across features
+│   │   ├── components/    # Reusable UI components
+│   │   │   ├── ui/       # Base UI components (shadcn/ui)
+│   │   │   ├── layout/   # Layout components
+│   │   │   └── common/   # Common components
+│   │   ├── hooks/        # Shared hooks
+│   │   ├── services/     # Shared services
+│   │   ├── types/        # Shared types
+│   │   ├── utils/        # Utility functions
+│   │   └── constants/    # App constants
+│   └── styles/           # Global CSS
+├── postcss.config.js     # PostCSS configuration
+├── tailwind.config.ts    # Tailwind CSS configuration
 └── ... (other config files)
 ```
 

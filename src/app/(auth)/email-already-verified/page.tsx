@@ -3,9 +3,9 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AuthPageLayout } from '@/components/auth/ui/auth-page-layout'
+import { Button } from '@/shared/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { AuthPageLayout } from '@/features/auth/components/ui/auth-page-layout'
 
 export default function EmailAlreadyVerifiedPage() {
   const [countdown, setCountdown] = useState(5)

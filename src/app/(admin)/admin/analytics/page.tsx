@@ -1,6 +1,6 @@
 // src/app/(admin)/admin/analytics/page.tsx
 import { Metadata } from "next"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Activity, UserCheck, FileText, Clock } from "lucide-react"
 
 export const metadata: Metadata = {

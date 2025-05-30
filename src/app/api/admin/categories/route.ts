@@ -1,7 +1,6 @@
 // src/app/api/admin/categories/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createServiceClient } from '@/lib/supabase/service'
+import { createClient } from '@/shared/services/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,9 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user is admin
-    const serviceSupabase = createServiceClient()
-
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -33,7 +30,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
 
     // Build query
-    let query = serviceSupabase
+    let query = supabase
       .from('categories')
       .select(`
         *,
@@ -59,7 +56,7 @@ export async function GET(request: NextRequest) {
     // Get question counts for each category
     const categoriesWithCounts = await Promise.all(
       (data || []).map(async (category) => {
-        const { count: questionCount } = await serviceSupabase
+        const { count: questionCount } = await supabase
           .from('questions_categories')
           .select('*', { count: 'exact', head: true })
           .eq('category_id', category.id)
@@ -99,9 +96,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user is admin
-    const serviceSupabase = createServiceClient()
 
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -121,7 +117,7 @@ export async function POST(request: NextRequest) {
     // Calculate level based on parent
     let level = 1
     if (parentId) {
-      const { data: parentData } = await serviceSupabase
+      const { data: parentData } = await supabase
         .from('categories')
         .select('level')
         .eq('id', parentId)
@@ -133,7 +129,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create category with service role to bypass RLS
-    const { data, error } = await serviceSupabase
+    const { data, error } = await supabase
       .from('categories')
       .insert({
         name: name.trim(),
@@ -174,9 +170,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Check if user is admin
-    const serviceSupabase = createServiceClient()
 
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -196,7 +191,7 @@ export async function PATCH(request: NextRequest) {
     // Calculate level based on parent
     let level = 1
     if (parentId) {
-      const { data: parentData } = await serviceSupabase
+      const { data: parentData } = await supabase
         .from('categories')
         .select('level')
         .eq('id', parentId)
@@ -208,7 +203,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update category with service role to bypass RLS
-    const { data, error } = await serviceSupabase
+    const { data, error } = await supabase
       .from('categories')
       .update({
         name: name.trim(),
@@ -250,9 +245,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check if user is admin
-    const serviceSupabase = createServiceClient()
 
-    const { data: userData, error: userError } = await serviceSupabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -270,7 +264,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check if category has children
-    const { data: children } = await serviceSupabase
+    const { data: children } = await supabase
       .from('categories')
       .select('id')
       .eq('parent_id', categoryId)
@@ -282,7 +276,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // First delete all questions_categories relationships
-    const { error: relationError } = await serviceSupabase
+    const { error: relationError } = await supabase
       .from('questions_categories')
       .delete()
       .eq('category_id', categoryId)
@@ -292,7 +286,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Then delete the category
-    const { error } = await serviceSupabase
+    const { error } = await supabase
       .from('categories')
       .delete()
       .eq('id', categoryId)

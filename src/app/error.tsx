@@ -11,8 +11,8 @@
 "use client";
 
 import { useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import FloatingCharacter from "@/components/landing/dr-albright";
+import { Button } from "@/shared/components/ui/button";
+import FloatingCharacter from "@/shared/components/common/dr-albright";
 
 const ERROR_CONTENT = {
   headlines: [

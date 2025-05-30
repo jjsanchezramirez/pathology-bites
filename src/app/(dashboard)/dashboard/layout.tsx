@@ -1,5 +1,5 @@
 // src/app/(dashboard)/layout.tsx
-import { DashboardLayout } from '@/components/dashboard/dashboard-layout'
+import { DashboardLayout } from '@/features/dashboard/components/dashboard-layout'
 
 export default function DashboardLayoutWrapper({
   children,

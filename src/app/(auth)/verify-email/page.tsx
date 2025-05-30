@@ -1,11 +1,11 @@
 // app/(auth)/verify-email/page.tsx
 import Link from 'next/link'
-import { resendVerification } from '@/lib/auth/actions'
-import { AuthPageLayout } from '@/components/auth/ui/auth-page-layout'
-import { StatusCard } from '@/components/auth/ui/status-card'
-import { FormButton } from '@/components/auth/ui/form-button'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { resendVerification } from '@/features/auth/services/actions'
+import { AuthPageLayout } from '@/features/auth/components/ui/auth-page-layout'
+import { StatusCard } from '@/features/auth/components/ui/status-card'
+import { FormButton } from '@/features/auth/components/ui/form-button'
+import { Button } from '@/shared/components/ui/button'
+import { Alert, AlertDescription } from '@/shared/components/ui/alert'
 
 interface VerifyEmailPageProps {
   searchParams: Promise<{ email?: string; error?: string; message?: string }>

@@ -1,12 +1,12 @@
 // src/app/(admin)/admin/images/page.tsx
-import { ImagesTable } from '@/components/images/image-table'
+import { ImagesTable } from '@/features/images/components/image-table'
 import { 
   Card, 
   CardContent, 
   CardDescription, 
   CardHeader, 
   CardTitle 
-} from "@/components/ui/card"
+} from "@/shared/components/ui/card"
 
 export default function ImagesPage() {
   return (

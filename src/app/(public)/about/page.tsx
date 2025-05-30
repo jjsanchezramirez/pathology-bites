@@ -1,7 +1,7 @@
 // src/app/about/page.tsx
 'use client'
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
 import { 
   MicroscopeIcon, 
@@ -11,8 +11,8 @@ import {
   GlobeIcon,
   LightbulbIcon
 } from "lucide-react"
-import FloatingCharacter from "@/components/landing/dr-albright"
-import { FeatureCard } from "@/components/landing/feature-card"
+import FloatingCharacter from "@/shared/components/common/dr-albright"
+import { FeatureCard } from "@/shared/components/common/feature-card"
 
 export default function AboutPage() {
   return (

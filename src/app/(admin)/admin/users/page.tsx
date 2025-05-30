@@ -1,7 +1,7 @@
 // src/app/(admin)/admin/users/page.tsx
 import { Metadata } from 'next'
-import { UsersTable } from '@/components/users/users-table'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { UsersTable } from '@/features/users/components/users-table'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
 
 export const metadata: Metadata = {
   title: 'Users - Admin Dashboard',

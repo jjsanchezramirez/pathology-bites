@@ -4,9 +4,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Button } from "@/components/ui/button"
-import { AuthPageLayout } from '@/components/auth/ui/auth-page-layout'
-import { StatusCard } from '@/components/auth/ui/status-card'
+import { Button } from "@/shared/components/ui/button"
+import { AuthPageLayout } from '@/features/auth/components/ui/auth-page-layout'
+import { StatusCard } from '@/features/auth/components/ui/status-card'
 
 export default function PasswordResetSuccessPage() {
   const [countdown, setCountdown] = useState(5)

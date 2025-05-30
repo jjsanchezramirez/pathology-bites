@@ -1,8 +1,8 @@
 // src/app/(admin)/admin/page.tsx
 import { Metadata } from "next"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/components/ui/card"
+import { Button } from "@/shared/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
 import { FileQuestion, Users, Image as ImageIcon, TrendingUp, AlertCircle, CheckCircle2, Clock, ArrowRight } from "lucide-react"
 import Link from "next/link"
 

@@ -1,12 +1,12 @@
 // src/app/page.tsx
 'use client'
 
-import { FeatureCard } from "@/components/landing/feature-card"
-import { ScrollToTopButton } from "@/components/landing/scroll-to-top"
-import { Button } from "@/components/ui/button"
+import { FeatureCard } from "@/shared/components/common/feature-card"
+import { ScrollToTopButton } from "@/shared/components/common/scroll-to-top"
+import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
 import { BookOpenIcon, BarChartIcon, TestTube2Icon } from "lucide-react"
-import DemoQuestion from "@/components/landing/demo-question"
+import DemoQuestion from "@/shared/components/common/demo-question"
 
 export default function LandingPage() {
   return (

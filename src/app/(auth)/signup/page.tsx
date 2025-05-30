@@ -1,14 +1,14 @@
 // src/app/(auth)/signup/page.tsx
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { signup } from '@/lib/auth/actions'
-import { AuthPageLayout } from '@/components/auth/ui/auth-page-layout'
-import { AuthCard } from '@/components/auth/ui/auth-card'
-import { FormField } from '@/components/auth/ui/form-field'
-import { FormButton } from '@/components/auth/ui/form-button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { createClient } from '@/shared/services/server'
+import { signup } from '@/features/auth/services/actions'
+import { AuthPageLayout } from '@/features/auth/components/ui/auth-page-layout'
+import { AuthCard } from '@/features/auth/components/ui/auth-card'
+import { FormField } from '@/features/auth/components/ui/form-field'
+import { FormButton } from '@/features/auth/components/ui/form-button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
+import { Alert, AlertDescription } from '@/shared/components/ui/alert'
 
 interface SignupPageProps {
   searchParams: Promise<{ error?: string }>

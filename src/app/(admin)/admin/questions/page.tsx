@@ -1,13 +1,13 @@
 // src/app/(admin)/admin/questions/page.tsx
 import { Metadata } from 'next'
-import { QuestionsTable } from '@/components/questions/questions-table'
+import { QuestionsTable } from '@/features/questions/components/questions-table'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle
-} from "@/components/ui/card"
+} from "@/shared/components/ui/card"
 
 export const metadata: Metadata = {
   title: 'Questions - Admin Dashboard',
