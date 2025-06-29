@@ -1,9 +1,12 @@
 // src/lib/supabase/client.ts
 import { createBrowserClient } from '@supabase/ssr'
+import { validateClientEnv } from '@/shared/utils/env-validation'
 
 export function createClient() {
+  const config = validateClientEnv()
+
   return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    config.url,
+    config.anonKey
   )
 }

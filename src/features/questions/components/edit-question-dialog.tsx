@@ -46,6 +46,114 @@ import { SimpleTagsSelector } from './simple-tags-selector';
 import { CategoriesDropdown } from './categories-dropdown';
 import { AnswerOptionFormData, QuestionImageFormData } from '@/features/questions/types/questions';
 
+// Helper functions for updating related question data
+async function updateAnswerOptions(questionId: string, answerOptions: any[]) {
+  const { createClient } = await import('@/shared/services/client');
+  const supabase = createClient();
+
+  // Delete existing answer options
+  await supabase
+    .from('answer_options')
+    .delete()
+    .eq('question_id', questionId);
+
+  // Insert new answer options
+  if (answerOptions.length > 0) {
+    const optionsToInsert = answerOptions
+      .filter(option => option.text.trim() !== '')
+      .map((option, index) => ({
+        question_id: questionId,
+        text: option.text.trim(),
+        is_correct: option.is_correct,
+        explanation: option.explanation || null,
+        order_index: index
+      }));
+
+    if (optionsToInsert.length > 0) {
+      const { error } = await supabase
+        .from('answer_options')
+        .insert(optionsToInsert);
+
+      if (error) throw error;
+    }
+  }
+}
+
+async function updateQuestionImages(questionId: string, questionImages: any[]) {
+  const { createClient } = await import('@/shared/services/client');
+  const supabase = createClient();
+
+  // Delete existing question images
+  await supabase
+    .from('question_images')
+    .delete()
+    .eq('question_id', questionId);
+
+  // Insert new question images
+  if (questionImages.length > 0) {
+    const imagesToInsert = questionImages.map((img, index) => ({
+      question_id: questionId,
+      image_id: img.id,
+      question_section: img.section || 'question',
+      order_index: index
+    }));
+
+    const { error } = await supabase
+      .from('question_images')
+      .insert(imagesToInsert);
+
+    if (error) throw error;
+  }
+}
+
+async function updateQuestionTags(questionId: string, tagIds: string[]) {
+  const { createClient } = await import('@/shared/services/client');
+  const supabase = createClient();
+
+  // Delete existing question tags
+  await supabase
+    .from('question_tags')
+    .delete()
+    .eq('question_id', questionId);
+
+  // Insert new question tags
+  if (tagIds.length > 0) {
+    const tagsToInsert = tagIds.map(tagId => ({
+      question_id: questionId,
+      tag_id: tagId
+    }));
+
+    const { error } = await supabase
+      .from('question_tags')
+      .insert(tagsToInsert);
+
+    if (error) throw error;
+  }
+}
+
+async function updateQuestionCategories(questionId: string, categoryId: string) {
+  const { createClient } = await import('@/shared/services/client');
+  const supabase = createClient();
+
+  // Delete existing question categories
+  await supabase
+    .from('question_categories')
+    .delete()
+    .eq('question_id', questionId);
+
+  // Insert new question category (only one category per question)
+  if (categoryId) {
+    const { error } = await supabase
+      .from('question_categories')
+      .insert({
+        question_id: questionId,
+        category_id: categoryId
+      });
+
+    if (error) throw error;
+  }
+}
+
 const editQuestionSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
   stem: z.string().min(10, 'Question stem must be at least 10 characters').max(2000, 'Question stem too long'),
@@ -140,17 +248,50 @@ export function EditQuestionDialog({
         question_set_id: question.question_set_id || 'none',
       });
 
-      // TODO: Load existing answer options, images, tags, and categories for this question
-      setAnswerOptions([
-        { text: '', is_correct: true, explanation: '', order_index: 0 },
-        { text: '', is_correct: false, explanation: '', order_index: 1 },
-        { text: '', is_correct: false, explanation: '', order_index: 2 },
-        { text: '', is_correct: false, explanation: '', order_index: 3 },
-        { text: '', is_correct: false, explanation: '', order_index: 4 }
-      ]);
-      setQuestionImages([]);
-      setSelectedTagIds([]);
-      setSelectedCategoryId('');
+      // Load existing answer options
+      if (question.answer_options && question.answer_options.length > 0) {
+        const sortedOptions = [...question.answer_options].sort((a, b) => a.order_index - b.order_index);
+        setAnswerOptions(sortedOptions.map(option => ({
+          text: option.text,
+          is_correct: option.is_correct,
+          explanation: option.explanation || '',
+          order_index: option.order_index
+        })));
+      } else {
+        // Default empty options if none exist
+        setAnswerOptions([
+          { text: '', is_correct: true, explanation: '', order_index: 0 },
+          { text: '', is_correct: false, explanation: '', order_index: 1 },
+          { text: '', is_correct: false, explanation: '', order_index: 2 },
+          { text: '', is_correct: false, explanation: '', order_index: 3 },
+          { text: '', is_correct: false, explanation: '', order_index: 4 }
+        ]);
+      }
+
+      // Load existing images
+      if (question.question_images && question.question_images.length > 0) {
+        setQuestionImages(question.question_images.map(qi => ({
+          image_id: qi.image?.id || '',
+          question_section: (qi.question_section === 'explanation' ? 'explanation' : 'stem') as 'stem' | 'explanation',
+          order_index: qi.order_index || 0
+        })));
+      } else {
+        setQuestionImages([]);
+      }
+
+      // Load existing tags
+      if (question.tags && question.tags.length > 0) {
+        setSelectedTagIds(question.tags.map(tag => tag.id));
+      } else {
+        setSelectedTagIds([]);
+      }
+
+      // Load existing categories
+      if (question.categories && question.categories.length > 0) {
+        setSelectedCategoryId(question.categories[0].id);
+      } else {
+        setSelectedCategoryId('');
+      }
       setHasUnsavedChanges(false);
     }
   }, [question, open, form]);
@@ -226,8 +367,17 @@ export function EditQuestionDialog({
 
       await updateQuestion(question.id, updateData);
 
-      // TODO: Handle updating answer options, images, tags, and categories
-      // This would require additional API calls to update related records
+      // Update answer options
+      await updateAnswerOptions(question.id, answerOptions);
+
+      // Update question images
+      await updateQuestionImages(question.id, questionImages);
+
+      // Update question tags
+      await updateQuestionTags(question.id, selectedTagIds);
+
+      // Update question categories
+      await updateQuestionCategories(question.id, selectedCategoryId);
 
       toast.success('Question updated successfully');
 

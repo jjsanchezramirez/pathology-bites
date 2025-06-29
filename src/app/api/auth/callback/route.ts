@@ -1,8 +1,11 @@
 // src/app/api/auth/callback/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { withRateLimit, authRateLimiter } from '@/shared/utils/api-rate-limiter'
 
-export async function GET(request: NextRequest) {
+const rateLimitedHandler = withRateLimit(authRateLimiter)
+
+export const GET = rateLimitedHandler(async function(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   
@@ -46,4 +49,4 @@ export async function GET(request: NextRequest) {
 
   // Return the user to an error page with instructions
   return NextResponse.redirect(`${origin}/auth-error?error=oauth_error&description=Failed to authenticate with OAuth provider`)
-}
+})
