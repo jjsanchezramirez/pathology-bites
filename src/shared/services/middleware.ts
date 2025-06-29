@@ -2,6 +2,13 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Cache for user role lookups to prevent race conditions
+const roleCache = new Map<string, { role: string; timestamp: number }>()
+const ROLE_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+
+// Request tracking to prevent concurrent processing of same user
+const processingRequests = new Set<string>()
+
 export async function updateSession(request: NextRequest) {
   // CRITICAL: Immediately return for all API routes to avoid interference
   if (request.nextUrl.pathname.startsWith('/api/')) {
@@ -9,35 +16,46 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.next()
   }
 
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  // Create a unique request identifier to prevent race conditions
+  const requestId = `${request.nextUrl.pathname}-${Date.now()}-${Math.random()}`
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
+  try {
 
-  // IMPORTANT: DO NOT REMOVE auth.getUser()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    let supabaseResponse = NextResponse.next({
+      request,
+    })
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+            supabaseResponse = NextResponse.next({
+              request,
+            })
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            )
+          },
+        },
+      }
+    )
+
+    // IMPORTANT: DO NOT REMOVE auth.getUser()
+    // Add timeout to prevent hanging requests
+    const userPromise = supabase.auth.getUser()
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Auth timeout')), 5000)
+    )
+
+    const {
+      data: { user },
+    } = await Promise.race([userPromise, timeoutPromise]) as any
 
   // Define auth pages that don't require authentication
   const authPages = [
@@ -75,50 +93,20 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Check user role for admin routes
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    try {
-      // First try to get role from user metadata
-      const userRole = user.user_metadata?.role || user.app_metadata?.role
+    // Check user role for admin routes
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+      const userRole = await getUserRoleWithCache(user.id, user, supabase)
 
       if (userRole === 'admin' || userRole === 'reviewer') {
-        // User has admin or reviewer role in metadata, allow access
-        console.log('Admin/Reviewer access granted via metadata')
-        return supabaseResponse
-      }
-
-      // Query users table to check role
-      const { data: userData, error: roleError } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-      if (roleError) {
-        console.error('Role check error:', roleError)
-        const url = request.nextUrl.clone()
-        url.pathname = '/dashboard'
-        return NextResponse.redirect(url)
-      }
-
-      if (userData?.role === 'admin' || userData?.role === 'reviewer') {
-        // User is admin or reviewer in database, allow access
-        console.log('Admin/Reviewer access granted via database:', userData)
+        console.log('Admin/Reviewer access granted:', userRole)
         return supabaseResponse
       } else {
-        // User is not admin or reviewer, redirect to dashboard
-        console.log('User is not admin or reviewer, redirecting. Role:', userData?.role)
+        console.log('User is not admin or reviewer, redirecting. Role:', userRole)
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'
         return NextResponse.redirect(url)
       }
-    } catch (error) {
-      console.error('Error checking admin/reviewer role:', error)
-      const url = request.nextUrl.clone()
-      url.pathname = '/dashboard'
-      return NextResponse.redirect(url)
     }
-  }
 
   // Redirect non-admin/reviewer users from /dashboard to /admin/dashboard if they are admin or reviewer
   if (request.nextUrl.pathname === '/dashboard') {
@@ -154,5 +142,102 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  return supabaseResponse
+    return supabaseResponse
+  } catch (error) {
+    console.error('Middleware error:', error)
+
+    // For auth timeouts or errors, allow the request to proceed
+    // but log the issue for monitoring
+    if (error instanceof Error && error.message === 'Auth timeout') {
+      console.warn('Auth timeout in middleware, allowing request to proceed')
+    }
+
+    // Return a basic response to prevent middleware from blocking the app
+    return NextResponse.next({
+      request,
+    })
+  }
+}
+
+// Helper function to get user role with caching to prevent race conditions
+async function getUserRoleWithCache(userId: string, user: any, supabase: any): Promise<string> {
+  // Check cache first
+  const cached = roleCache.get(userId)
+  if (cached && Date.now() - cached.timestamp < ROLE_CACHE_TTL) {
+    return cached.role
+  }
+
+  // Prevent concurrent requests for the same user
+  const requestKey = `role-${userId}`
+  if (processingRequests.has(requestKey)) {
+    // Wait a bit and try cache again
+    await new Promise(resolve => setTimeout(resolve, 100))
+    const retryCache = roleCache.get(userId)
+    if (retryCache) {
+      return retryCache.role
+    }
+    // Fallback to 'user' if still processing
+    return 'user'
+  }
+
+  try {
+    processingRequests.add(requestKey)
+
+    // First try to get role from user metadata (faster)
+    const metadataRole = user.user_metadata?.role || user.app_metadata?.role
+    if (metadataRole === 'admin' || metadataRole === 'reviewer') {
+      // Cache and return metadata role
+      roleCache.set(userId, {
+        role: metadataRole,
+        timestamp: Date.now()
+      })
+      return metadataRole
+    }
+
+    // Query users table to check role with timeout
+    const rolePromise = supabase
+      .from('users')
+      .select('role')
+      .eq('id', userId)
+      .single()
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Role query timeout')), 3000)
+    )
+
+    const { data: userData, error: roleError } = await Promise.race([
+      rolePromise,
+      timeoutPromise
+    ]) as any
+
+    if (roleError) {
+      console.error('Role check error:', roleError)
+      return 'user' // Default to user role on error
+    }
+
+    const role = userData?.role || 'user'
+
+    // Cache the result
+    roleCache.set(userId, {
+      role,
+      timestamp: Date.now()
+    })
+
+    // Clean up old cache entries periodically
+    if (roleCache.size > 1000) {
+      const now = Date.now()
+      for (const [key, value] of roleCache.entries()) {
+        if (now - value.timestamp > ROLE_CACHE_TTL) {
+          roleCache.delete(key)
+        }
+      }
+    }
+
+    return role
+  } catch (error) {
+    console.error('Error getting user role:', error)
+    return 'user' // Default to user role on error
+  } finally {
+    processingRequests.delete(requestKey)
+  }
 }

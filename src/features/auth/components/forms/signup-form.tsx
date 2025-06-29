@@ -13,6 +13,7 @@ import { FormField } from "@/features/auth/components/ui/form-field"
 import { FormButton } from "@/features/auth/components/ui/form-button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select"
 import { createClient } from '@/shared/services/client'
+import { useCSRFToken } from '@/features/auth/hooks/use-csrf-token'
 
 // Enhanced form schema with proper password validation
 const formSchema = z.object({
@@ -39,6 +40,7 @@ export function SignupForm() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  const { getToken, addTokenToFormData } = useCSRFToken()
 
   const {
     register,

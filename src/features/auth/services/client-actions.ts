@@ -4,6 +4,7 @@
 import { createClient } from '@/shared/services/client'
 import { useRouter } from 'next/navigation'
 import { useCallback } from 'react'
+import { retryManager, authErrorHandler } from '@/features/auth/utils/error-handling'
 
 export function useAuthActions() {
   const router = useRouter()
@@ -34,22 +35,25 @@ export function useAuthActions() {
   }, [supabase.auth])
 
   const refreshSession = useCallback(async () => {
-    try {
-      const { data: { session }, error } = await supabase.auth.refreshSession()
+    return await retryManager.executeWithRetry(
+      async () => {
+        const { data: { session }, error } = await supabase.auth.refreshSession()
 
-      if (error) {
-        console.error('Session refresh error:', error)
-        throw error
+        if (error) {
+          throw error
+        }
+
+        // Trigger a router refresh to sync server state
+        router.refresh()
+
+        return session
+      },
+      {
+        maxRetries: 3,
+        baseDelay: 1000,
+        operationId: 'refresh-session-client'
       }
-
-      // Trigger a router refresh to sync server state
-      router.refresh()
-
-      return session
-    } catch (error) {
-      console.error('Error refreshing session:', error)
-      throw error
-    }
+    )
   }, [supabase.auth, router])
 
   const getSession = useCallback(async () => {

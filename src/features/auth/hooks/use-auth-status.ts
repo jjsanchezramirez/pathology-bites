@@ -4,14 +4,17 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/shared/services/client'
 import { User, Session } from '@supabase/supabase-js'
+import { sessionSecurity } from '@/features/auth/utils/session-security'
+import { authErrorHandler, retryManager, AuthError } from '@/features/auth/utils/error-handling'
 
 export function useAuthStatus() {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
+  const [error, setError] = useState<AuthError | null>(null)
   const [isHydrated, setIsHydrated] = useState(false)
+  const [securityRisk, setSecurityRisk] = useState<'low' | 'medium' | 'high'>('low')
 
   const supabase = createClient()
 
@@ -34,7 +37,8 @@ export function useAuthStatus() {
 
         if (sessionError) {
           console.error('Session error:', sessionError)
-          setError(sessionError)
+          const authError = authErrorHandler.categorizeError(sessionError)
+          setError(authError)
           setSession(null)
           setUser(null)
           setIsAuthenticated(false)
@@ -43,11 +47,29 @@ export function useAuthStatus() {
           setUser(session?.user ?? null)
           setIsAuthenticated(!!(session?.user))
           setError(null)
+
+          // Validate session security if user is authenticated
+          if (session?.user) {
+            const validation = sessionSecurity.validateSession()
+            setSecurityRisk(validation.risk)
+
+            if (!validation.isValid) {
+              console.warn('Session security validation failed:', validation.issues)
+              // Optionally force re-authentication for high-risk sessions
+              if (validation.risk === 'high') {
+                const securityError = authErrorHandler.categorizeError(
+                  new Error('Session security validation failed')
+                )
+                setError(securityError)
+              }
+            }
+          }
         }
       } catch (err) {
         if (!mounted) return
         console.error('Auth initialization error:', err)
-        setError(err instanceof Error ? err : new Error('Auth failed'))
+        const authError = authErrorHandler.categorizeError(err)
+        setError(authError)
         setSession(null)
         setUser(null)
         setIsAuthenticated(false)
@@ -78,6 +100,12 @@ export function useAuthStatus() {
           setSession(null)
           setUser(null)
           setIsAuthenticated(false)
+          setSecurityRisk('low')
+          sessionSecurity.clearSession()
+        } else if (newSession?.user) {
+          // Validate session security on auth state changes
+          const validation = sessionSecurity.validateSession()
+          setSecurityRisk(validation.risk)
         }
       }
     )
@@ -90,22 +118,31 @@ export function useAuthStatus() {
 
   const refreshAuth = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      await retryManager.executeWithRetry(
+        async () => {
+          setIsLoading(true)
+          setError(null)
 
-      const { data: { session }, error } = await supabase.auth.refreshSession()
+          const { data: { session }, error } = await supabase.auth.refreshSession()
 
-      if (error) {
-        console.error('Refresh error:', error)
-        setError(error)
-      } else {
-        setSession(session)
-        setUser(session?.user ?? null)
-        setIsAuthenticated(!!(session?.user))
-      }
+          if (error) {
+            throw error
+          }
+
+          setSession(session)
+          setUser(session?.user ?? null)
+          setIsAuthenticated(!!(session?.user))
+        },
+        {
+          maxRetries: 3,
+          baseDelay: 1000,
+          operationId: 'refresh-auth'
+        }
+      )
     } catch (err) {
       console.error('Refresh session error:', err)
-      setError(err instanceof Error ? err : new Error('Refresh failed'))
+      const authError = authErrorHandler.categorizeError(err)
+      setError(authError)
     } finally {
       setIsLoading(false)
     }
@@ -118,22 +155,14 @@ export function useAuthStatus() {
     isAuthenticated,
     error,
     isHydrated,
+    securityRisk,
     refreshAuth,
     retry: refreshAuth
   }
 }
 
-// Backward compatibility exports
+// Primary auth hook - this is the main interface for auth state
+export const useAuth = useAuthStatus
+
+// Backward compatibility exports (deprecated - use useAuth instead)
 export const useAuthRobust = useAuthStatus
-
-export function useAuth() {
-  const { user, session, isAuthenticated, isLoading, error } = useAuthStatus()
-
-  return {
-    user,
-    session,
-    isAuthenticated,
-    isLoading,
-    error
-  }
-}

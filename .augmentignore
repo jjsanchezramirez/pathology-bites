@@ -2,8 +2,10 @@
 # This file specifies which files and directories should be excluded from Augment's context engine
 
 # Environment files - Contains sensitive information like API keys, database URLs, etc.
-#.env
-#.env.local
+.env
+.env.example
+.env.local
+.env.production
 #.env.development.local
 #.env.test.local
 #.env.production.local

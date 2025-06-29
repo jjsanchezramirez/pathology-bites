@@ -21,10 +21,11 @@
 }
 
 /* Add any common component styles */
+/* Temporarily commented out - causing Tailwind compilation issues
 @utility floating {
-  /* Use your animation utilities in component classes */
   @apply animate-float;
 }
+*/
 
 @layer utilities {
   /* Grid pattern for the coming soon page */

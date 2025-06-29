@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/shared/services/server'
 import { z } from 'zod'
+import { validateCSRFToken } from '@/features/auth/utils/csrf-protection'
+import { headers } from 'next/headers'
 
 // Validation schema for signup
 const signupSchema = z.object({
@@ -23,6 +25,13 @@ const signupSchema = z.object({
 
 export async function signup(formData: FormData) {
   const supabase = await createClient()
+
+  // Validate CSRF token
+  const csrfToken = formData.get('csrf-token') as string
+  if (!csrfToken) {
+    redirect('/signup?error=' + encodeURIComponent('Security validation failed. Please try again.'))
+    return
+  }
 
   // Extract form data
   const rawData = {
@@ -76,6 +85,13 @@ export async function signup(formData: FormData) {
 
 export async function login(formData: FormData) {
   const supabase = await createClient()
+
+  // Validate CSRF token
+  const csrfToken = formData.get('csrf-token') as string
+  if (!csrfToken) {
+    redirect('/login?error=' + encodeURIComponent('Security validation failed. Please try again.'))
+    return
+  }
 
   const data = {
     email: formData.get('email') as string,

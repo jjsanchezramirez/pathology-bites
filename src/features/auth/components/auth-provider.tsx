@@ -1,15 +1,21 @@
 // src/components/auth/auth-provider.tsx
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { createClient } from '@/shared/services/client'
+import { createContext, useContext } from 'react'
 import { User, Session } from '@supabase/supabase-js'
+import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { AuthError } from '@/features/auth/utils/error-handling'
 
 interface AuthContextType {
   user: User | null
   session: Session | null
   isLoading: boolean
   isAuthenticated: boolean
+  error: AuthError | null
+  isHydrated: boolean
+  securityRisk: 'low' | 'medium' | 'high'
+  refreshAuth: () => Promise<void>
+  retry: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -17,61 +23,27 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   isLoading: true,
   isAuthenticated: false,
+  error: null,
+  isHydrated: false,
+  securityRisk: 'low',
+  refreshAuth: async () => {},
+  retry: async () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  const supabase = createClient()
-
-  useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        if (error) {
-          console.error('Error getting initial session:', error)
-        }
-        
-        setSession(session)
-        setUser(session?.user ?? null)
-      } catch (error) {
-        console.error('Error in getInitialSession:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    getInitialSession()
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session ? 'session exists' : 'no session')
-      
-      setSession(session)
-      setUser(session?.user ?? null)
-      setIsLoading(false)
-
-      // Handle sign out
-      if (event === 'SIGNED_OUT') {
-        setSession(null)
-        setUser(null)
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  // Use the consolidated auth hook internally
+  const authState = useAuthStatus()
 
   const value: AuthContextType = {
-    user,
-    session,
-    isLoading,
-    isAuthenticated: !!session && !!user,
+    user: authState.user,
+    session: authState.session,
+    isLoading: authState.isLoading,
+    isAuthenticated: authState.isAuthenticated,
+    error: authState.error,
+    isHydrated: authState.isHydrated,
+    securityRisk: authState.securityRisk,
+    refreshAuth: authState.refreshAuth,
+    retry: authState.retry,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

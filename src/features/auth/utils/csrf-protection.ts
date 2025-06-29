@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { NextRequest } from 'next/server'
+import { useState, useCallback } from 'react'
 
 // CSRF token configuration
 const CSRF_TOKEN_NAME = 'csrf-token'
@@ -109,29 +110,7 @@ export function createCSRFErrorResponse(): Response {
   )
 }
 
-// React hook for CSRF token management
-export function useCSRFToken() {
-  // This would be implemented on the client side
-  // For now, we'll provide the structure
-  return {
-    token: null as string | null,
-    getToken: async (): Promise<string> => {
-      // Fetch token from server
-      const response = await fetch('/api/csrf-token')
-      const data = await response.json()
-      return data.token
-    },
-    addTokenToFormData: (formData: FormData, token: string) => {
-      formData.append('csrf-token', token)
-    },
-    addTokenToHeaders: (headers: HeadersInit, token: string): HeadersInit => {
-      return {
-        ...headers,
-        [CSRF_HEADER_NAME]: token
-      }
-    }
-  }
-}
+// Note: Client-side CSRF hook moved to src/features/auth/hooks/use-csrf-token.ts
 
 // Server action wrapper with CSRF protection
 export function withCSRFProtection<T extends any[], R>(

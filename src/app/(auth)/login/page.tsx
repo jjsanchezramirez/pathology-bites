@@ -11,6 +11,7 @@ import { FormButton } from '@/features/auth/components/ui/form-button'
 import { GoogleSignInButton } from '@/features/auth/components/google-sign-in-button'
 import { AuthDivider } from '@/features/auth/components/ui/auth-divider'
 import { Alert, AlertDescription } from '@/shared/components/ui/alert'
+import { CSRFForm } from '@/features/auth/components/ui/csrf-form'
 import { LoadingSpinner } from '@/shared/components/common/loading-spinner'
 
 interface LoginPageProps {
@@ -53,7 +54,7 @@ async function LoginForm({ searchParams }: LoginPageProps) {
         
         <AuthDivider text="Or continue with" />
         
-        <form action={login} className="space-y-4">
+        <CSRFForm action={login} className="space-y-4">
           <input type="hidden" name="redirect" value={params.redirect || ''} />
           
           <FormField
@@ -86,7 +87,7 @@ async function LoginForm({ searchParams }: LoginPageProps) {
           <FormButton type="submit" fullWidth>
             Login
           </FormButton>
-        </form>
+        </CSRFForm>
         
         <div className="text-center text-sm text-muted-foreground">
           Don't have an account?{" "}
