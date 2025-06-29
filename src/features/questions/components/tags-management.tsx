@@ -3,7 +3,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/shared/services/client'
-import { useToast } from '@/shared/hooks/use-toast'
+import { toast } from 'sonner'
 import {
   Table,
   TableBody,
@@ -67,7 +67,6 @@ export function TagsManagement() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const supabase = createClient()
-  const { toast } = useToast()
 
   const loadTags = useCallback(async () => {
     setLoading(true)
@@ -93,15 +92,11 @@ export function TagsManagement() {
       setTotalPages(data.totalPages || 0)
     } catch (error) {
       console.error('Error loading tags:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to load tags'
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to load tags')
     } finally {
       setLoading(false)
     }
-  }, [searchTerm, page, toast])
+  }, [searchTerm, page])
 
   const handleDelete = async () => {
     if (!selectedTag) return
@@ -123,21 +118,14 @@ export function TagsManagement() {
         throw new Error(errorData.error || 'Failed to delete tag')
       }
 
-      toast({
-        title: 'Success',
-        description: 'Tag deleted successfully'
-      })
+      toast.success('Tag deleted successfully')
 
       setShowDeleteDialog(false)
       setSelectedTag(null)
       loadTags()
     } catch (error) {
       console.error('Error deleting tag:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete tag'
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to delete tag')
     } finally {
       setIsDeleting(false)
     }

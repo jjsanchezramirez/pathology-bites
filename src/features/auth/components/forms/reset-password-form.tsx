@@ -1,19 +1,26 @@
-// src/components/auth/forms/reset-password-form.tsx
+// src/features/auth/components/forms/reset-password-form.tsx
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import Link from "next/link"
-import { Alert, AlertDescription } from "@/shared/components/ui/alert"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { AuthCard } from "@/features/auth/components/ui/auth-card"
+import { FormField } from "@/features/auth/components/ui/form-field"
 import { FormButton } from "@/features/auth/components/ui/form-button"
+import { createClient } from '@/shared/services/client'
 
-// Form schema definition
+// Enhanced form schema with proper password validation
 const formSchema = z.object({
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -24,27 +31,30 @@ type FormData = z.infer<typeof formSchema>
 
 interface ResetPasswordFormProps {
   className?: string
-  onSubmit?: (password: string) => Promise<void>
-  isLoading?: boolean
+  initialError?: string
 }
 
 export function ResetPasswordForm({
   className,
-  onSubmit,
-  isLoading: parentLoading = false,
+  initialError,
   ...props
 }: ResetPasswordFormProps) {
-  const [formLoading, setFormLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  
-  // Compute the overall loading state
-  const loading = parentLoading || formLoading
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
+
+  // Show initial error as toast
+  useEffect(() => {
+    if (initialError) {
+      toast.error(initialError)
+    }
+  }, [initialError])
 
   // Initialize form with useForm hook
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitted },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,18 +64,26 @@ export function ResetPasswordForm({
   })
 
   // Form submission handler
-  async function onFormSubmit(values: FormData) {
-    if (!onSubmit) return
-    
+  async function onSubmit(values: FormData) {
     try {
-      setError(null)
-      setFormLoading(true)
-      await onSubmit(values.password)
+      setLoading(true)
+
+      const { error } = await supabase.auth.updateUser({
+        password: values.password
+      })
+
+      if (error) {
+        toast.error(error.message)
+        return
+      }
+
+      // Success - redirect to success page
+      router.push('/password-reset-success')
     } catch (error) {
-      console.error("Form submission error:", error)
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred')
+      console.error("Reset password error:", error)
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
-      setFormLoading(false)
+      setLoading(false)
     }
   }
 
@@ -81,81 +99,47 @@ export function ResetPasswordForm({
       }
       {...props}
     >
-      {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      
-      <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
-        <div className="grid gap-4">
-          {/* Password Field */}
-          <div className="space-y-2">
-            <label 
-              htmlFor="password" 
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              New Password
-            </label>
-            <input
-              {...register("password")}
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              disabled={loading}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-            {errors.password && (
-              <p className="text-sm font-medium text-destructive">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Password Field */}
+        <FormField
+          id="password"
+          label="New Password"
+          type="password"
+          autoComplete="new-password"
+          error={isSubmitted ? errors.password?.message : undefined}
+          disabled={loading}
+          {...register("password")}
+        />
 
-          {/* Confirm Password Field */}
-          <div className="space-y-2">
-            <label 
-              htmlFor="confirmPassword" 
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Confirm Password
-            </label>
-            <input
-              {...register("confirmPassword")}
-              id="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              disabled={loading}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-            {errors.confirmPassword && (
-              <p className="text-sm font-medium text-destructive">
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
+        {/* Confirm Password Field */}
+        <FormField
+          id="confirmPassword"
+          label="Confirm Password"
+          type="password"
+          autoComplete="new-password"
+          error={isSubmitted ? errors.confirmPassword?.message : undefined}
+          disabled={loading}
+          {...register("confirmPassword")}
+        />
 
-          {/* Password Requirements */}
-          <div className="text-sm text-muted-foreground">
-            <p>Password must:</p>
-            <ul className="list-disc list-inside space-y-1 pl-4 mt-1">
-              <li>Be at least 8 characters long</li>
-              <li>Include at least one uppercase letter</li>
-              <li>Include at least one lowercase letter</li>
-              <li>Include at least one number</li>
-            </ul>
-          </div>
-          
-          <FormButton 
-            type="submit" 
-            fullWidth
-            isLoading={formLoading}
-            loadingText="Updating password..."
-            disabled={loading}
-          >
-            Update Password
-          </FormButton>
+        {/* Password Requirements */}
+        <div className="text-sm text-muted-foreground">
+          <p>Password must:</p>
+          <ul className="list-disc list-inside space-y-1 pl-4 mt-1">
+            <li>Be at least 8 characters long</li>
+            <li>Include at least one uppercase letter</li>
+            <li>Include at least one lowercase letter</li>
+            <li>Include at least one number</li>
+          </ul>
         </div>
+
+        <FormButton
+          type="submit"
+          fullWidth
+          disabled={loading}
+        >
+          {loading ? "Updating password..." : "Update Password"}
+        </FormButton>
       </form>
     </AuthCard>
   )

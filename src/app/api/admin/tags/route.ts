@@ -9,18 +9,24 @@ export async function GET(request: NextRequest) {
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
+      console.error('Authentication error:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Check if user is admin
-
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
       .single()
 
-    if (userError || userData?.role !== 'admin') {
+    if (userError) {
+      console.error('User lookup error:', userError)
+      return NextResponse.json({ error: 'User lookup failed' }, { status: 500 })
+    }
+
+    if (userData?.role !== 'admin') {
+      console.error('User is not admin:', userData?.role)
       return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
     }
 
@@ -55,7 +61,7 @@ export async function GET(request: NextRequest) {
     const tagsWithCounts = await Promise.all(
       (data || []).map(async (tag) => {
         const { count: questionCount } = await supabase
-          .from('questions_tags')
+          .from('question_tags')
           .select('*', { count: 'exact', head: true })
           .eq('tag_id', tag.id)
 
@@ -220,9 +226,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Tag ID is required' }, { status: 400 })
     }
 
-    // First delete all questions_tags relationships
+    // First delete all question_tags relationships
     const { error: relationError } = await supabase
-      .from('questions_tags')
+      .from('question_tags')
       .delete()
       .eq('tag_id', tagId)
 

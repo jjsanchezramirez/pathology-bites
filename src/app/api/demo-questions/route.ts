@@ -37,7 +37,6 @@ interface QuestionData {
   question_images: QuestionImageData[];
 }
 
-// Define interfaces for the processed response data
 interface QuestionImage {
   url: string;
   alt: string;
@@ -68,265 +67,256 @@ export async function GET(request: Request) {
     // Get URL to check for query parameters
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
-    
+
     // Initialize Supabase client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
+
     if (!supabaseUrl || !supabaseAnonKey) {
       return NextResponse.json(
         { error: 'Server configuration error' },
         { status: 500 }
       );
     }
-    
+
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    
-    // If ID is provided, fetch a specific question
+
+    // If ID is provided, fetch a specific demo question
     if (id) {
-      // Try to fetch from demo_questions view first
-      const { data, error } = await supabase
+      // Query demo_questions table to get the question_id, then fetch full question data
+      const { data: demoData, error: demoError } = await supabase
         .from('demo_questions')
-        .select('*')
+        .select('question_id')
         .eq('id', id)
+        .eq('is_active', true)
         .single();
-      
-      if (error) {
-        // If view doesn't exist, try direct query to questions table
-        const { data: directData, error: directError } = await supabase
-          .from('questions')
-          .select(`
-            id,
-            title,
-            stem,
-            teaching_point,
-            question_references,
-            status,
-            difficulty,
-            answer_options(
-              id,
-              text,
-              is_correct,
-              explanation
-            ),
-            question_images(
-              id,
-              image_id,
-              question_section,
-              order_index,
-              image:images(
-                id,
-                url,
-                alt_text,
-                description
-              )
-            )
-          `)
-          .eq('id', id)
-          .eq('status', 'published')
-          .single();
-        
-        if (directError || !directData) {
-          console.error('Error fetching question:', directError);
-          return NextResponse.json(
-            { error: 'Demo question not found' },
-            { status: 404 }
-          );
-        }
-        
-        try {
-          const typedData = directData as unknown as QuestionData;
-          
-          // Process the direct data to match expected format
-          const stemImages: QuestionImage[] = typedData.question_images
-            .filter((img: QuestionImageData) => img.question_section === 'stem')
-            .sort((a: QuestionImageData, b: QuestionImageData) => a.order_index - b.order_index)
-            .map((img: QuestionImageData) => ({
-              url: img.image?.[0]?.url || '',
-              alt: img.image?.[0]?.alt_text || '',
-              caption: img.image?.[0]?.description || ''
-            }));
-          
-          // Get explanation image
-          const explanationImages: QuestionImage[] = typedData.question_images
-            .filter((img: QuestionImageData) => img.question_section === 'explanation')
-            .sort((a: QuestionImageData, b: QuestionImageData) => a.order_index - b.order_index)
-            .map((img: QuestionImageData) => ({
-              url: img.image?.[0]?.url || '',
-              alt: img.image?.[0]?.alt_text || '',
-              caption: img.image?.[0]?.description || ''
-            }));
-          
-          const explanationImage: QuestionImage | null = explanationImages.length > 0 ? explanationImages[0] : null;
-          
-          // Process options
-          const options: QuestionOption[] = typedData.answer_options.map((opt: AnswerOptionData) => ({
-            id: opt.id || '',
-            text: opt.text || '',
-            correct: !!opt.is_correct,
-            explanation: opt.explanation || null
-          }));
-          
-          // Build incorrect explanations object
-          const incorrectExplanations: Record<string, string> = {};
-          typedData.answer_options.forEach((opt: AnswerOptionData) => {
-            if (!opt.is_correct && opt.explanation) {
-              incorrectExplanations[opt.id] = opt.explanation;
-            }
-          });
-          
-          // Parse references
-          const references: string[] = typedData.question_references ? 
-            typedData.question_references.split('\n').filter((r: string) => r.trim() !== '') : 
-            [];
-          
-          const processedQuestion: ProcessedQuestion = {
-            id: typedData.id || '',
-            title: typedData.title || '',
-            body: typedData.stem || '',
-            teachingPoint: typedData.teaching_point || '',
-            images: stemImages,
-            options: options,
-            incorrectExplanations: incorrectExplanations,
-            references: references,
-            comparativeImage: explanationImage
-          };
-          
-          return NextResponse.json(processedQuestion, { status: 200 });
-        } catch (processingError) {
-          console.error('Error processing question data:', processingError);
-          return NextResponse.json(
-            { error: 'Error processing question data' },
-            { status: 500 }
-          );
-        }
+
+      if (demoError || !demoData) {
+        console.error('Error fetching demo question:', demoError);
+        return NextResponse.json(
+          { error: 'Demo question not found' },
+          { status: 404 }
+        );
       }
-      
-      return NextResponse.json(data, { status: 200 });
-    } 
+
+      // Fetch the full question data
+      const { data: questionData, error: questionError } = await supabase
+        .from('questions')
+        .select(`
+          id,
+          title,
+          stem,
+          teaching_point,
+          question_references,
+          status,
+          difficulty
+        `)
+        .eq('id', demoData.question_id)
+        .eq('status', 'published')
+        .single();
+
+      if (questionError || !questionData) {
+        console.error('Error fetching question data:', questionError);
+        return NextResponse.json(
+          { error: 'Question data not found' },
+          { status: 404 }
+        );
+      }
+
+      // Fetch answer options separately
+      const { data: answerOptions, error: optionsError } = await supabase
+        .from('answer_options')
+        .select('id, text, is_correct, explanation')
+        .eq('question_id', demoData.question_id)
+        .order('order_index');
+
+      // Fetch question images with a simpler query
+      const { data: questionImages, error: imagesError } = await supabase
+        .from('question_images')
+        .select('image_id, question_section, order_index')
+        .eq('question_id', demoData.question_id)
+        .order('order_index');
+
+      // Fetch image details separately
+      let imageDetails: any[] = [];
+      if (questionImages && questionImages.length > 0) {
+        const imageIds = questionImages.map((qi: any) => qi.image_id);
+        const { data: images, error: imageError } = await supabase
+          .from('images')
+          .select('id, url, alt_text, description')
+          .in('id', imageIds);
+        imageDetails = images || [];
+      }
+
+      try {
+        // Process the question data to match expected format
+        const stemImages = questionImages
+          ?.filter((qi: any) => qi.question_section === 'stem')
+          ?.sort((a: any, b: any) => a.order_index - b.order_index)
+          ?.map((qi: any) => {
+            const imageDetail = imageDetails.find((img: any) => img.id === qi.image_id);
+            return {
+              url: imageDetail?.url || '',
+              caption: imageDetail?.description || '',
+              alt: imageDetail?.alt_text || 'Question image'
+            };
+          }) || [];
+
+        const explanationImageData = questionImages
+          ?.find((qi: any) => qi.question_section === 'explanation');
+        const explanationImageDetail = explanationImageData ?
+          imageDetails.find((img: any) => img.id === explanationImageData.image_id) : null;
+
+        const processedQuestion = {
+          id: questionData.id,
+          title: questionData.title,
+          body: questionData.stem,
+          images: stemImages,
+          options: answerOptions?.map((option: any) => ({
+            id: option.id,
+            text: option.text,
+            correct: option.is_correct,
+            explanation: option.explanation
+          })) || [],
+          teachingPoint: questionData.teaching_point,
+          incorrectExplanations: answerOptions?.reduce((acc: Record<string, string>, option: any) => {
+            if (!option.is_correct && option.explanation) {
+              acc[option.id] = option.explanation;
+            }
+            return acc;
+          }, {}) || {},
+          references: questionData.question_references ? [questionData.question_references] : [],
+          comparativeImage: explanationImageDetail ? {
+            url: explanationImageDetail.url || '',
+            caption: explanationImageDetail.description || '',
+            alt: explanationImageDetail.alt_text || 'Comparative image'
+          } : undefined
+        };
+
+        return NextResponse.json(processedQuestion, { status: 200 });
+      } catch (processingError) {
+        console.error('Error processing question data:', processingError);
+        return NextResponse.json(
+          { error: 'Error processing question data' },
+          { status: 500 }
+        );
+      }
+    }
     // If no ID is provided, return a random demo question
     else {
-      // Try to fetch from demo_questions view first
-      const { data, error } = await supabase
+      // Get all active demo questions
+      const { data: demoQuestions, error: demoError } = await supabase
         .from('demo_questions')
-        .select('*')
-        .eq('status', 'published')
-        .limit(10);  // Get a small set to choose from randomly
-      
-      if (error || !data || data.length === 0) {
-        // If view doesn't exist or no data, try direct query to questions table
-        const { data: directData, error: directError } = await supabase
-          .from('questions')
-          .select(`
-            id,
-            title,
-            stem,
-            teaching_point,
-            question_references,
-            status,
-            difficulty,
-            answer_options(
-              id,
-              text,
-              is_correct,
-              explanation
-            ),
-            question_images(
-              id,
-              image_id,
-              question_section,
-              order_index,
-              image:images(
-                id,
-                url,
-                alt_text,
-                description
-              )
-            )
-          `)
-          .eq('status', 'published')
-          .limit(10);  // Get a small set to choose from randomly
-        
-        if (directError || !directData || directData.length === 0) {
-          return NextResponse.json(
-            { error: 'No demo questions available' },
-            { status: 404 }
-          );
-        }
-        
-        try {
-          // Select a random question from the results
-          const randomIndex = Math.floor(Math.random() * directData.length);
-          const randomQuestion = directData[randomIndex] as unknown as QuestionData;
-          
-          // Process the direct data to match expected format (same as above)
-          const stemImages: QuestionImage[] = randomQuestion.question_images
-            .filter((img: QuestionImageData) => img.question_section === 'stem')
-            .sort((a: QuestionImageData, b: QuestionImageData) => a.order_index - b.order_index)
-            .map((img: QuestionImageData) => ({
-              url: img.image?.[0]?.url || '',
-              alt: img.image?.[0]?.alt_text || '',
-              caption: img.image?.[0]?.description || ''
-            }));
-          
-          // Get explanation image
-          const explanationImages: QuestionImage[] = randomQuestion.question_images
-            .filter((img: QuestionImageData) => img.question_section === 'explanation')
-            .sort((a: QuestionImageData, b: QuestionImageData) => a.order_index - b.order_index)
-            .map((img: QuestionImageData) => ({
-              url: img.image?.[0]?.url || '',
-              alt: img.image?.[0]?.alt_text || '',
-              caption: img.image?.[0]?.description || ''
-            }));
-          
-          const explanationImage: QuestionImage | null = explanationImages.length > 0 ? explanationImages[0] : null;
-          
-          // Process options
-          const options: QuestionOption[] = randomQuestion.answer_options.map((opt: AnswerOptionData) => ({
-            id: opt.id || '',
-            text: opt.text || '',
-            correct: !!opt.is_correct,
-            explanation: opt.explanation || null
-          }));
-          
-          // Build incorrect explanations object
-          const incorrectExplanations: Record<string, string> = {};
-          randomQuestion.answer_options.forEach((opt: AnswerOptionData) => {
-            if (!opt.is_correct && opt.explanation) {
-              incorrectExplanations[opt.id] = opt.explanation;
-            }
-          });
-          
-          // Parse references
-          const references: string[] = randomQuestion.question_references ? 
-            randomQuestion.question_references.split('\n').filter((r: string) => r.trim() !== '') : 
-            [];
-          
-          const processedQuestion: ProcessedQuestion = {
-            id: randomQuestion.id || '',
-            title: randomQuestion.title || '',
-            body: randomQuestion.stem || '',
-            teachingPoint: randomQuestion.teaching_point || '',
-            images: stemImages,
-            options: options,
-            incorrectExplanations: incorrectExplanations,
-            references: references,
-            comparativeImage: explanationImage
-          };
-          
-          return NextResponse.json(processedQuestion, { status: 200 });
-        } catch (processingError) {
-          console.error('Error processing random question data:', processingError);
-          return NextResponse.json(
-            { error: 'Error processing question data' },
-            { status: 500 }
-          );
-        }
+        .select('id, question_id, display_order')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (demoError || !demoQuestions || demoQuestions.length === 0) {
+        console.error('Error fetching demo questions:', demoError);
+        return NextResponse.json(
+          { error: 'No demo questions available. Please add questions to the demo_questions table.' },
+          { status: 404 }
+        );
       }
-      
-      // Select a random question from the results
-      const randomIndex = Math.floor(Math.random() * data.length);
-      return NextResponse.json(data[randomIndex], { status: 200 });
+
+      // Select a random demo question
+      const randomIndex = Math.floor(Math.random() * demoQuestions.length);
+      const selectedDemo = demoQuestions[randomIndex];
+
+      // Fetch the basic question data
+      const { data: questionData, error: questionError } = await supabase
+        .from('questions')
+        .select('id, title, stem, teaching_point, question_references, status, difficulty')
+        .eq('id', selectedDemo.question_id)
+        .eq('status', 'published')
+        .single();
+
+      if (questionError || !questionData) {
+        console.error('Error fetching question data:', questionError);
+        return NextResponse.json(
+          { error: 'Question data not found' },
+          { status: 404 }
+        );
+      }
+
+      // Fetch answer options separately
+      const { data: answerOptions, error: optionsError } = await supabase
+        .from('answer_options')
+        .select('id, text, is_correct, explanation')
+        .eq('question_id', selectedDemo.question_id)
+        .order('order_index');
+
+      // Fetch question images with a simpler query
+      const { data: questionImages, error: imagesError } = await supabase
+        .from('question_images')
+        .select('image_id, question_section, order_index')
+        .eq('question_id', selectedDemo.question_id)
+        .order('order_index');
+
+      // Fetch image details separately
+      let imageDetails: any[] = [];
+      if (questionImages && questionImages.length > 0) {
+        const imageIds = questionImages.map((qi: any) => qi.image_id);
+        const { data: images } = await supabase
+          .from('images')
+          .select('id, url, alt_text, description')
+          .in('id', imageIds);
+        imageDetails = images || [];
+      }
+
+      try {
+        // Process the question data to match expected format
+        const stemImages = questionImages
+          ?.filter((qi: any) => qi.question_section === 'stem')
+          ?.sort((a: any, b: any) => a.order_index - b.order_index)
+          ?.map((qi: any) => {
+            const imageDetail = imageDetails.find((img: any) => img.id === qi.image_id);
+            return {
+              url: imageDetail?.url || '',
+              caption: imageDetail?.description || '',
+              alt: imageDetail?.alt_text || 'Question image'
+            };
+          }) || [];
+
+        const explanationImageData = questionImages
+          ?.find((qi: any) => qi.question_section === 'explanation');
+        const explanationImageDetail = explanationImageData ?
+          imageDetails.find((img: any) => img.id === explanationImageData.image_id) : null;
+
+        const processedQuestion = {
+          id: questionData.id,
+          title: questionData.title,
+          body: questionData.stem,
+          images: stemImages,
+          options: answerOptions?.map((option: any) => ({
+            id: option.id,
+            text: option.text,
+            correct: option.is_correct,
+            explanation: option.explanation
+          })) || [],
+          teachingPoint: questionData.teaching_point,
+          incorrectExplanations: answerOptions?.reduce((acc: Record<string, string>, option: any) => {
+            if (!option.is_correct && option.explanation) {
+              acc[option.id] = option.explanation;
+            }
+            return acc;
+          }, {}) || {},
+          references: questionData.question_references ? [questionData.question_references] : [],
+          comparativeImage: explanationImageDetail ? {
+            url: explanationImageDetail.url || '',
+            caption: explanationImageDetail.description || '',
+            alt: explanationImageDetail.alt_text || 'Comparative image'
+          } : undefined
+        };
+
+        return NextResponse.json(processedQuestion, { status: 200 });
+      } catch (processingError) {
+        console.error('Error processing question data:', processingError);
+        return NextResponse.json(
+          { error: 'Error processing question data' },
+          { status: 500 }
+        );
+      }
     }
   } catch (error) {
     console.error('Unexpected error in demo question API:', error);

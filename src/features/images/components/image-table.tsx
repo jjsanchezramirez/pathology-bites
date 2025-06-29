@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { useToast } from "@/shared/hooks/use-toast";
+import { toast } from 'sonner';
 import { Search, Loader2, Upload, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import {
   Select,
@@ -171,8 +171,6 @@ export function ImagesTable() {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { toast } = useToast();
-
   const loadImages = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -194,15 +192,11 @@ export function ImagesTable() {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to load images';
       setError(message);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: message,
-      });
+      toast.error(message);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, categoryFilter, page, toast]);
+  }, [searchTerm, categoryFilter, page]);
 
   useEffect(() => {
     loadImages();
@@ -214,10 +208,7 @@ export function ImagesTable() {
     try {
       await deleteImage(image.storage_path, image.id);
 
-      toast({
-        title: "Success",
-        description: "Image deleted successfully",
-      });
+      toast.success("Image deleted successfully");
 
       // Remove the deleted image from the local state
       setImages(prev => prev.filter(img => img.id !== image.id));
@@ -234,13 +225,9 @@ export function ImagesTable() {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to delete image';
       console.error('Delete error:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: message,
-      });
+      toast.error(message);
     }
-  }, [images.length, page, toast, loadImages]);
+  }, [images.length, page, loadImages]);
 
   const handleSearch = useCallback((term: string) => {
     setSearchTerm(term);

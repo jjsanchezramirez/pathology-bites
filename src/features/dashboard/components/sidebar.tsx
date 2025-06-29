@@ -25,12 +25,12 @@ const navItems = [
   },
   {
     title: "My Quizzes",
-    href: "/dashboard/quiz/history",
+    href: "/dashboard/quizzes",
     icon: ClipboardList,
   },
   {
-    title: "Statistics",
-    href: "/dashboard/statistics",
+    title: "Performance",
+    href: "/dashboard/performance",
     icon: BarChart2,
   },
 ]
@@ -68,7 +68,7 @@ export function Sidebar({}: SidebarProps) {
       </nav>
 
       {/* Auth Status at Bottom */}
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <SidebarAuthStatus />
       </div>
     </div>

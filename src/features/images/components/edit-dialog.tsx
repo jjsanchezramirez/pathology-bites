@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { updateImage } from '@/features/images/services/images';
 import { ImageData, IMAGE_CATEGORIES } from '@/features/images/types/images';
-import { useToast } from '@/shared/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -58,7 +58,7 @@ export function EditImageDialog({
   onSave
 }: EditImageDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+
 
   const form = useForm<EditImageFormData>({
     resolver: zodResolver(editImageSchema),
@@ -88,19 +88,12 @@ export function EditImageDialog({
     setIsSubmitting(true);
     try {
       await updateImage(image.id, data);
-      toast({
-        title: 'Success',
-        description: 'Image updated successfully',
-      });
+      toast.success('Image updated successfully');
       onSave();
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to update image:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update image',
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to update image');
     } finally {
       setIsSubmitting(false);
     }

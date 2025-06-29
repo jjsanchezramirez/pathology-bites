@@ -9,7 +9,7 @@ import { Input } from "@/shared/components/ui/input"
 import { Textarea } from "@/shared/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group"
 import FloatingCharacter from "@/shared/components/common/dr-albright"
-import { useToast } from "@/shared/hooks/use-toast"
+import { toast } from 'sonner'
 import { Icons } from "@/shared/components/common/icons"
 import { submitContactForm } from '@/app/api/contact/contact'
 
@@ -34,7 +34,6 @@ interface ZodIssue {
 }
 
 export default function ContactPage() {
-  const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
   const [formData, setFormData] = useState<FormData>({
@@ -57,11 +56,7 @@ export default function ContactPage() {
       console.log('Submission result:', result)
 
       if (result.success) {
-        toast({
-          title: "Message Sent",
-          description: "Thanks for reaching out! We'll get back to you soon.",
-          duration: 5000,
-        })
+        toast.success("Thanks for reaching out! We'll get back to you soon.")
 
         // Reset form
         setFormData({
@@ -83,31 +78,16 @@ export default function ContactPage() {
             newErrors[path as keyof FormData] = error.message
           })
           setErrors(newErrors)
-          
-          toast({
-            title: "Validation Error",
-            description: "Please check the form for errors.",
-            variant: "destructive",
-            duration: 5000,
-          })
+
+          toast.error("Please check the form for errors.")
         } else {
-          toast({
-            title: "Error",
-            description: result.error || 'Something went wrong. Please try again.',
-            variant: "destructive",
-            duration: 5000,
-          })
+          toast.error(result.error || 'Something went wrong. Please try again.')
         }
         console.error('Submission error:', result)
       }
     } catch (error) {
       console.error('Form submission error:', error)
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-        duration: 5000,
-      })
+      toast.error("Something went wrong. Please try again.")
     } finally {
       setIsSubmitting(false)
     }

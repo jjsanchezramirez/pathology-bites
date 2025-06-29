@@ -1,6 +1,23 @@
 // src/types/supabase.ts
 import { QuestionSetSourceDetails } from '@/features/questions/types/question-sets';
 
+// Define the quiz configuration type
+export interface QuizConfig {
+  mode: 'tutor' | 'timed' | 'untimed' | 'practice' | 'review';
+  questionCount: number;
+  timeLimit?: number;
+  timePerQuestion?: number;
+  difficulty?: 'easy' | 'medium' | 'hard' | 'mixed';
+  categories?: string[];
+  tags?: string[];
+  questionSets?: string[];
+  shuffleQuestions?: boolean;
+  shuffleAnswers?: boolean;
+  showExplanations?: boolean;
+  allowReview?: boolean;
+  showProgress?: boolean;
+}
+
 export type Json =
   | string
   | number
@@ -277,6 +294,11 @@ export interface Database {
           created_by: string
           version: number
           question_set_id: string | null
+          reviewed_by: string | null
+          reviewed_at: string | null
+          flagged_by: string | null
+          flagged_at: string | null
+          flag_reason: string | null
           created_at: string
           updated_at: string
         }
@@ -291,6 +313,11 @@ export interface Database {
           created_by: string
           version?: number
           question_set_id?: string | null
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          flagged_by?: string | null
+          flagged_at?: string | null
+          flag_reason?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -305,6 +332,11 @@ export interface Database {
           created_by?: string
           version?: number
           question_set_id?: string | null
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          flagged_by?: string | null
+          flagged_at?: string | null
+          flag_reason?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -510,6 +542,150 @@ export interface Database {
           }
         ]
       }
+      question_reviews: {
+        Row: {
+          id: string
+          question_id: string
+          reviewer_id: string
+          action: string
+          feedback: string | null
+          changes_made: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          question_id: string
+          reviewer_id: string
+          action: string
+          feedback?: string | null
+          changes_made?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          question_id?: string
+          reviewer_id?: string
+          action?: string
+          feedback?: string | null
+          changes_made?: Json | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_reviews_question_id_fkey"
+            columns: ["question_id"]
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      question_versions: {
+        Row: {
+          id: string
+          question_id: string
+          version_number: number
+          content: Json
+          created_by: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          question_id: string
+          version_number: number
+          content: Json
+          created_by: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          question_id?: string
+          version_number?: number
+          content?: Json
+          created_by?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_versions_question_id_fkey"
+            columns: ["question_id"]
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_versions_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      question_flags: {
+        Row: {
+          id: string
+          question_id: string
+          flagged_by: string
+          flag_type: string
+          description: string
+          status: string
+          resolved_by: string | null
+          resolved_at: string | null
+          resolution_notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          question_id: string
+          flagged_by: string
+          flag_type: string
+          description: string
+          status?: string
+          resolved_by?: string | null
+          resolved_at?: string | null
+          resolution_notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          question_id?: string
+          flagged_by?: string
+          flag_type?: string
+          description?: string
+          status?: string
+          resolved_by?: string | null
+          resolved_at?: string | null
+          resolution_notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_flags_question_id_fkey"
+            columns: ["question_id"]
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_flags_flagged_by_fkey"
+            columns: ["flagged_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_flags_resolved_by_fkey"
+            columns: ["resolved_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       question_reports: {
         Row: {
           id: string
@@ -552,6 +728,159 @@ export interface Database {
             foreignKeyName: "question_reports_reported_by_fkey"
             columns: ["reported_by"]
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      demo_questions: {
+        Row: {
+          id: string
+          question_id: string
+          is_active: boolean
+          display_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          question_id: string
+          is_active?: boolean
+          display_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          question_id?: string
+          is_active?: boolean
+          display_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_questions_question_id_fkey"
+            columns: ["question_id"]
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      quiz_sessions: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          config: QuizConfig
+          questions: string[]
+          current_question_index: number
+          status: string
+          started_at: string | null
+          completed_at: string | null
+          total_time_spent: number | null
+          score: number | null
+          correct_answers: number | null
+          total_questions: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          config: QuizConfig
+          questions: string[]
+          current_question_index?: number
+          status?: string
+          started_at?: string | null
+          completed_at?: string | null
+          total_time_spent?: number | null
+          score?: number | null
+          correct_answers?: number | null
+          total_questions: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          config?: QuizConfig
+          questions?: string[]
+          current_question_index?: number
+          status?: string
+          started_at?: string | null
+          completed_at?: string | null
+          total_time_spent?: number | null
+          score?: number | null
+          correct_answers?: number | null
+          total_questions?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_sessions_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      quiz_attempts: {
+        Row: {
+          id: string
+          quiz_session_id: string
+          question_id: string
+          selected_answer_id: string | null
+          is_correct: boolean | null
+          time_spent: number | null
+          attempted_at: string
+          reviewed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          quiz_session_id: string
+          question_id: string
+          selected_answer_id?: string | null
+          is_correct?: boolean | null
+          time_spent?: number | null
+          attempted_at?: string
+          reviewed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          quiz_session_id?: string
+          question_id?: string
+          selected_answer_id?: string | null
+          is_correct?: boolean | null
+          time_spent?: number | null
+          attempted_at?: string
+          reviewed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_quiz_session_id_fkey"
+            columns: ["quiz_session_id"]
+            referencedRelation: "quiz_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_question_id_fkey"
+            columns: ["question_id"]
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_selected_answer_id_fkey"
+            columns: ["selected_answer_id"]
+            referencedRelation: "answer_options"
             referencedColumns: ["id"]
           }
         ]

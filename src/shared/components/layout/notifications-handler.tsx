@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react'
 import { Bell, Loader2, AlertCircle, Info, Flag, CheckCircle } from 'lucide-react'
-import { useToast } from '@/shared/hooks/use-toast'
+import { toast } from 'sonner'
 import { Button } from '@/shared/components/ui/button'
 import {
   DropdownMenu,
@@ -19,7 +19,6 @@ export function NotificationsHandler() {
   const [filter, setFilter] = useState<'all' | 'inquiry' | 'report'>('all')
 
   const { isHydrated, isAuthenticated, user } = useAuthStatus()
-  const { toast } = useToast()
 
   const {
     notifications,
@@ -34,11 +33,7 @@ export function NotificationsHandler() {
     try {
       await markNotificationAsRead(notification.id)
     } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to mark notification as read."
-      })
+      toast.error("Failed to mark notification as read.")
     }
   }
 
@@ -47,11 +42,7 @@ export function NotificationsHandler() {
     try {
       await markAllNotificationsAsRead()
     } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to mark all notifications as read."
-      })
+      toast.error("Failed to mark all notifications as read.")
     }
   }
 

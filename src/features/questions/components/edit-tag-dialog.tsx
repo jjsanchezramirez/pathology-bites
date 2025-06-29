@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useToast } from '@/shared/hooks/use-toast'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -34,7 +34,7 @@ export function EditTagDialog({ open, onOpenChange, onSuccess, tag }: EditTagDia
   const [name, setName] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
 
-  const { toast } = useToast()
+
 
   // Update form when tag changes
   useEffect(() => {
@@ -47,20 +47,12 @@ export function EditTagDialog({ open, onOpenChange, onSuccess, tag }: EditTagDia
     e.preventDefault()
     
     if (!name.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Tag name is required'
-      })
+      toast.error('Tag name is required')
       return
     }
 
     if (!tag) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'No tag selected for editing'
-      })
+      toast.error('No tag selected for editing')
       return
     }
 
@@ -82,19 +74,12 @@ export function EditTagDialog({ open, onOpenChange, onSuccess, tag }: EditTagDia
         throw new Error(errorData.error || 'Failed to update tag')
       }
 
-      toast({
-        title: 'Success',
-        description: 'Tag updated successfully'
-      })
+      toast.success('Tag updated successfully')
 
       onSuccess()
     } catch (error) {
       console.error('Error updating tag:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update tag'
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to update tag')
     } finally {
       setIsUpdating(false)
     }

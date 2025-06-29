@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
+      console.error('Categories API - Authentication error:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -19,7 +20,13 @@ export async function GET(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (userError || userData?.role !== 'admin') {
+    if (userError) {
+      console.error('Categories API - User lookup error:', userError)
+      return NextResponse.json({ error: 'User lookup failed' }, { status: 500 })
+    }
+
+    if (userData?.role !== 'admin') {
+      console.error('Categories API - User is not admin:', userData?.role)
       return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
     }
 
@@ -34,7 +41,7 @@ export async function GET(request: NextRequest) {
       .from('categories')
       .select(`
         *,
-        parent:parent_id(name)
+        parent:parent_id(name, short_form, color)
       `, { count: 'exact' })
 
     if (search) {
@@ -57,14 +64,16 @@ export async function GET(request: NextRequest) {
     const categoriesWithCounts = await Promise.all(
       (data || []).map(async (category) => {
         const { count: questionCount } = await supabase
-          .from('questions_categories')
+          .from('question_categories')
           .select('*', { count: 'exact', head: true })
           .eq('category_id', category.id)
 
         return {
           ...category,
           question_count: questionCount || 0,
-          parent_name: category.parent?.name
+          parent_name: category.parent?.name,
+          parent_short_form: category.parent?.short_form,
+          parent_color: category.parent?.color
         }
       })
     )
@@ -275,9 +284,9 @@ export async function DELETE(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // First delete all questions_categories relationships
+    // First delete all question_categories relationships
     const { error: relationError } = await supabase
-      .from('questions_categories')
+      .from('question_categories')
       .delete()
       .eq('category_id', categoryId)
 

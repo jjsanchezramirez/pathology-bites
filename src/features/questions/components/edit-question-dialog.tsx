@@ -1,7 +1,7 @@
 // src/components/questions/edit-question-dialog.tsx
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,6 +13,16 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/shared/components/ui/alert-dialog";
+import {
   Form,
   FormControl,
   FormField,
@@ -20,24 +30,21 @@ import {
   FormLabel,
   FormMessage,
 } from "@/shared/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
-import { useToast } from "@/shared/hooks/use-toast";
+import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { useQuestions } from '@/features/questions/hooks/use-questions';
 import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
-import { fetchImages } from '@/features/images/services/images';
-import { ImageData } from '@/features/images/types/images';
-import { ImagePreview } from '@/features/images/components/image-preview';
+import { useAuthStatus } from '@/features/auth/hooks/use-auth-status';
+import { CompactAnswerOptions } from './compact-answer-options';
+import { ImageAttachment } from './image-attachment';
+import { SimpleTagsSelector } from './simple-tags-selector';
+import { CategoriesDropdown } from './categories-dropdown';
+import { AnswerOptionFormData, QuestionImageFormData } from '@/features/questions/types/questions';
 
 const editQuestionSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
@@ -45,7 +52,7 @@ const editQuestionSchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']),
   teaching_point: z.string().min(10, 'Teaching point must be at least 10 characters').max(1000, 'Teaching point too long'),
   question_references: z.string().max(500, 'References too long').optional(),
-  status: z.enum(['draft', 'published', 'archived']),
+  status: z.enum(['draft', 'under_review', 'approved_with_edits', 'rejected', 'published', 'flagged', 'archived']),
   question_set_id: z.string(),
 });
 
@@ -65,19 +72,24 @@ export function EditQuestionDialog({
   onSave
 }: EditQuestionDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  // Image selection state
-  const [availableImages, setAvailableImages] = useState<ImageData[]>([]);
-  const [imagesLoading, setImagesLoading] = useState(false);
-  const [imageSearchTerm, setImageSearchTerm] = useState('');
-  const [imageCategoryFilter, setImageCategoryFilter] = useState('all');
-  const [imagePage, setImagePage] = useState(0);
-  const [totalImages, setTotalImages] = useState(0);
-
-  const { toast } = useToast();
+  // Enhanced form state - Default to 5 answer options
+  const [answerOptions, setAnswerOptions] = useState<AnswerOptionFormData[]>([
+    { text: '', is_correct: true, explanation: '', order_index: 0 },
+    { text: '', is_correct: false, explanation: '', order_index: 1 },
+    { text: '', is_correct: false, explanation: '', order_index: 2 },
+    { text: '', is_correct: false, explanation: '', order_index: 3 },
+    { text: '', is_correct: false, explanation: '', order_index: 4 }
+  ]);
+  const [questionImages, setQuestionImages] = useState<QuestionImageFormData[]>([]);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const { updateQuestion } = useQuestions();
   const { questionSets } = useQuestionSets();
+  const { user } = useAuthStatus();
 
   const form = useForm<EditQuestionFormData>({
     resolver: zodResolver(editQuestionSchema),
@@ -92,60 +104,28 @@ export function EditQuestionDialog({
     },
   });
 
-  // Load images function
-  const loadImages = useCallback(async () => {
-    setImagesLoading(true);
-    try {
-      const result = await fetchImages({
-        page: imagePage,
-        pageSize: 12,
-        searchTerm: imageSearchTerm || undefined,
-        category: imageCategoryFilter === 'all' ? undefined : imageCategoryFilter,
-      });
-
-      if (result.error) {
-        throw new Error(result.error);
+  // Track form changes
+  useEffect(() => {
+    const subscription = form.watch((_, { type }) => {
+      if (type === 'change') {
+        setHasUnsavedChanges(true);
       }
-
-      setAvailableImages(result.data);
-      setTotalImages(result.total);
-    } catch (error) {
-      console.error('Failed to load images:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to load images',
-      });
-    } finally {
-      setImagesLoading(false);
-    }
-  }, [imagePage, imageSearchTerm, imageCategoryFilter, toast]);
-
-  // Image selection handlers
-  const handleImageToggle = (imageId: string) => {
-    setSelectedImages(prev => {
-      if (prev.includes(imageId)) {
-        return prev.filter(id => id !== imageId);
-      } else if (prev.length < 10) { // Max 10 images
-        return [...prev, imageId];
-      }
-      return prev;
     });
-  };
+    return () => subscription.unsubscribe();
+  }, [form]);
 
-  const handleRemoveImage = (imageId: string) => {
-    setSelectedImages(prev => prev.filter(id => id !== imageId));
-  };
+  // Track changes in other form fields
+  useEffect(() => {
+    const hasChanges =
+      answerOptions.some(option => option.text.trim() !== '' || option.explanation?.trim() !== '') ||
+      questionImages.length > 0 ||
+      selectedTagIds.length > 0 ||
+      selectedCategoryId !== '';
 
-  const handleImageSearch = (term: string) => {
-    setImageSearchTerm(term);
-    setImagePage(0);
-  };
-
-  const handleImageCategoryChange = (category: string) => {
-    setImageCategoryFilter(category);
-    setImagePage(0);
-  };
+    if (hasChanges) {
+      setHasUnsavedChanges(true);
+    }
+  }, [answerOptions, questionImages, selectedTagIds, selectedCategoryId]);
 
   // Initialize form when question changes
   useEffect(() => {
@@ -160,28 +140,80 @@ export function EditQuestionDialog({
         question_set_id: question.question_set_id || 'none',
       });
 
-      // TODO: Load existing images for this question
-      setSelectedImages([]);
-
-      // Load images when dialog opens
-      loadImages();
-    } else if (!open) {
-      // Reset image state when dialog closes
-      setImageSearchTerm('');
-      setImageCategoryFilter('all');
-      setImagePage(0);
+      // TODO: Load existing answer options, images, tags, and categories for this question
+      setAnswerOptions([
+        { text: '', is_correct: true, explanation: '', order_index: 0 },
+        { text: '', is_correct: false, explanation: '', order_index: 1 },
+        { text: '', is_correct: false, explanation: '', order_index: 2 },
+        { text: '', is_correct: false, explanation: '', order_index: 3 },
+        { text: '', is_correct: false, explanation: '', order_index: 4 }
+      ]);
+      setQuestionImages([]);
+      setSelectedTagIds([]);
+      setSelectedCategoryId('');
+      setHasUnsavedChanges(false);
     }
-  }, [question, open, form, loadImages]);
+  }, [question, open, form]);
 
-  // Reload images when search/filter changes
+  // Reset form when dialog opens/closes
   useEffect(() => {
-    if (open) {
-      loadImages();
+    if (!open) {
+      setHasAttemptedSubmit(false);
+      setHasUnsavedChanges(false);
     }
-  }, [open, loadImages]);
+  }, [open]);
+
+  // Validation function for answer options
+  const validateAnswerOptions = (): Record<string, string> => {
+    const errors: Record<string, string> = {};
+
+    console.log('🔍 Validating answer options:', answerOptions);
+
+    if (answerOptions.length < 2) {
+      errors.options = 'At least 2 answer options are required';
+      console.log('❌ Not enough options:', answerOptions.length);
+      return errors;
+    }
+
+    const correctAnswers = answerOptions.filter(opt => opt.is_correct);
+    console.log('✅ Correct answers found:', correctAnswers.length);
+    if (correctAnswers.length !== 1) {
+      errors.options = 'Exactly one correct answer must be selected';
+      console.log('❌ Wrong number of correct answers:', correctAnswers.length);
+    }
+
+    answerOptions.forEach((option, index) => {
+      console.log(`🔍 Checking option ${index}:`, { text: option.text, is_correct: option.is_correct, explanation: option.explanation });
+      if (!option.text.trim()) {
+        errors[`option_${index}_text`] = 'Option text is required';
+        console.log(`❌ Option ${index} missing text`);
+      }
+      if (!option.is_correct && !option.explanation?.trim()) {
+        errors[`option_${index}_explanation`] = 'Explanation is required for incorrect answers';
+        console.log(`❌ Option ${index} missing explanation`);
+      }
+    });
+
+    console.log('🔍 Validation errors:', errors);
+    return errors;
+  };
 
   const onSubmit = async (data: EditQuestionFormData) => {
     if (!question) return;
+
+    setHasAttemptedSubmit(true);
+
+    if (!user) {
+      toast.error('You must be logged in to update questions');
+      return;
+    }
+
+    // Validate answer options
+    const optionErrors = validateAnswerOptions();
+    if (Object.keys(optionErrors).length > 0) {
+      toast.error('Please fix the answer options errors');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -194,55 +226,90 @@ export function EditQuestionDialog({
 
       await updateQuestion(question.id, updateData);
 
-      // TODO: Handle image associations if selectedImages changed
-      // This would require additional API calls to update question_images records
+      // TODO: Handle updating answer options, images, tags, and categories
+      // This would require additional API calls to update related records
 
-      toast({
-        title: 'Success',
-        description: 'Question updated successfully',
-      });
+      toast.success('Question updated successfully');
 
+      // Reset form state
+      setHasUnsavedChanges(false);
       onSave();
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to update question:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update question',
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to update question');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const resetFormState = () => {
+    setHasAttemptedSubmit(false);
+    setHasUnsavedChanges(false);
+    form.reset();
+    setAnswerOptions([
+      { text: '', is_correct: true, explanation: '', order_index: 0 },
+      { text: '', is_correct: false, explanation: '', order_index: 1 },
+      { text: '', is_correct: false, explanation: '', order_index: 2 },
+      { text: '', is_correct: false, explanation: '', order_index: 3 },
+      { text: '', is_correct: false, explanation: '', order_index: 4 }
+    ]);
+    setQuestionImages([]);
+    setSelectedTagIds([]);
+    setSelectedCategoryId('');
+  };
+
   const handleOpenChange = (open: boolean) => {
     if (!isSubmitting) {
-      onOpenChange(open);
-      if (!open) {
-        form.reset();
-        setSelectedImages([]);
+      if (!open && hasUnsavedChanges) {
+        // Show confirmation dialog if there are unsaved changes
+        setShowConfirmDialog(true);
+        return; // Don't close the main dialog yet
+      } else {
+        if (!open) {
+          resetFormState();
+        }
+        onOpenChange(open);
       }
     }
+  };
+
+  const handleConfirmClose = () => {
+    setShowConfirmDialog(false);
+    resetFormState();
+    // Use setTimeout to ensure the confirmation dialog closes first
+    setTimeout(() => {
+      onOpenChange(false);
+    }, 0);
+  };
+
+  const handleCancelClose = () => {
+    setShowConfirmDialog(false);
   };
 
   if (!question) return null;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-[min(85vw,1400px)] sm:max-w-[min(85vw,1400px)] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Question</DialogTitle>
           <DialogDescription>
-            Update the question details. You can modify images and change the question set association.
+            Update the question details. You can modify answer options, images, tags, and categories.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left Column */}
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Section 1: Basic Information */}
+            <div className="space-y-6">
+              <div className="border-b pb-4">
+                <h3 className="text-lg font-semibold text-foreground">1. Basic Information</h3>
+                <p className="text-sm text-muted-foreground">Update the question details and metadata</p>
+              </div>
+
               <div className="space-y-4">
+                {/* Title - Full Width */}
                 <FormField
                   control={form.control}
                   name="title"
@@ -260,6 +327,7 @@ export function EditQuestionDialog({
                   )}
                 />
 
+                {/* Question Stem - Full Width */}
                 <FormField
                   control={form.control}
                   name="stem"
@@ -278,64 +346,24 @@ export function EditQuestionDialog({
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="teaching_point"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Teaching Point</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enter the teaching point or explanation..."
-                          className="min-h-[100px]"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="question_references"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>References (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enter references or citations..."
-                          className="min-h-[80px]"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Right Column */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                {/* Metadata Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   <FormField
                     control={form.control}
                     name="difficulty"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Difficulty</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select difficulty" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="easy">Easy</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="hard">Hard</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <select
+                            {...field}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                          </select>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -347,203 +375,147 @@ export function EditQuestionDialog({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="draft">Draft</SelectItem>
-                            <SelectItem value="published">Published</SelectItem>
-                            <SelectItem value="archived">Archived</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <select
+                            {...field}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <option value="draft">Draft</option>
+                            <option value="under_review">Under Review</option>
+                            <option value="approved_with_edits">Approved with Edits</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="published">Published</option>
+                            <option value="flagged">Flagged</option>
+                            <option value="archived">Archived</option>
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="question_set_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Question Set</FormLabel>
+                        <FormControl>
+                          <select
+                            {...field}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <option value="none">No question set</option>
+                            {questionSets.map((set) => (
+                              <option key={set.id} value={set.id}>
+                                {set.name}
+                              </option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Categories */}
+                  <CategoriesDropdown
+                    selectedCategoryId={selectedCategoryId}
+                    onCategoryChange={setSelectedCategoryId}
+                  />
+                </div>
+
+                {/* Tags Section - Moved below and made more horizontal */}
+                <div className="space-y-3">
+                  <SimpleTagsSelector
+                    selectedTagIds={selectedTagIds}
+                    onTagsChange={setSelectedTagIds}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Answer Options and Content */}
+            <div className="space-y-6">
+              <div className="border-b pb-4">
+                <h3 className="text-lg font-semibold text-foreground">2. Answer Options & Content</h3>
+                <p className="text-sm text-muted-foreground">Update answer choices, explanations, and teaching points</p>
+              </div>
+
+              <div className="space-y-6">
+                {/* Answer Options - Full Width */}
+                <CompactAnswerOptions
+                  options={answerOptions}
+                  onChange={setAnswerOptions}
+                  errors={hasAttemptedSubmit ? validateAnswerOptions() : undefined}
+                />
+
+                {/* Teaching Point and References - Side by Side */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="teaching_point"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Teaching Point</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Enter the teaching point or explanation..."
+                            className="min-h-[120px]"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="question_references"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>References (Optional)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Enter references or citations..."
+                            className="min-h-[120px]"
+                            {...field}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-
-                <FormField
-                  control={form.control}
-                  name="question_set_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Question Set (Optional)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select question set" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">No question set</SelectItem>
-                          {questionSets.map((set) => (
-                            <SelectItem key={set.id} value={set.id}>
-                              {set.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Image Selection */}
-                <div className="space-y-3">
-                  <label className="text-sm font-medium">Images (Optional)</label>
-
-                  {/* Selected Images Display */}
-                  {selectedImages.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground">
-                        Selected Images ({selectedImages.length}/10)
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedImages.map((imageId) => {
-                          const image = availableImages.find(img => img.id === imageId);
-                          if (!image) return null;
-                          return (
-                            <div key={imageId} className="relative group">
-                              <div className="w-12 h-12 rounded border overflow-hidden">
-                                <ImagePreview
-                                  src={image.url}
-                                  alt={image.alt_text}
-                                  size="sm"
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <button
-                                type="button"
-                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => handleRemoveImage(imageId)}
-                              >
-                                ×
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Image Search and Filter */}
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Search images..."
-                        value={imageSearchTerm}
-                        onChange={(e) => handleImageSearch(e.target.value)}
-                        className="flex-1"
-                      />
-                      <Select value={imageCategoryFilter} onValueChange={handleImageCategoryChange}>
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All</SelectItem>
-                          <SelectItem value="gross">Gross</SelectItem>
-                          <SelectItem value="microscopic">Microscopic</SelectItem>
-                          <SelectItem value="figure">Figure</SelectItem>
-                          <SelectItem value="table">Table</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {/* Available Images Grid */}
-                  <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
-                    {imagesLoading ? (
-                      <div className="flex justify-center items-center h-20">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span className="ml-2 text-sm text-muted-foreground">Loading images...</span>
-                      </div>
-                    ) : availableImages.length === 0 ? (
-                      <div className="text-center text-sm text-muted-foreground py-4">
-                        No images found
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-6 gap-2">
-                        {availableImages.map((image) => {
-                          const isSelected = selectedImages.includes(image.id);
-                          const canSelect = !isSelected && selectedImages.length < 10;
-
-                          return (
-                            <div
-                              key={image.id}
-                              className={`relative cursor-pointer rounded border-2 transition-all ${
-                                isSelected
-                                  ? 'border-primary bg-primary/10'
-                                  : canSelect
-                                    ? 'border-border hover:border-primary/50'
-                                    : 'border-border opacity-50 cursor-not-allowed'
-                              }`}
-                              onClick={() => canSelect || isSelected ? handleImageToggle(image.id) : undefined}
-                            >
-                              <div className="aspect-square rounded overflow-hidden">
-                                <ImagePreview
-                                  src={image.url}
-                                  alt={image.alt_text}
-                                  size="sm"
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              {isSelected && (
-                                <div className="absolute top-0 right-0 bg-primary text-primary-foreground rounded-full w-4 h-4 text-xs flex items-center justify-center">
-                                  ✓
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {/* Pagination */}
-                    {totalImages > 12 && (
-                      <div className="flex justify-center gap-2 mt-3 pt-2 border-t">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setImagePage(p => Math.max(0, p - 1))}
-                          disabled={imagePage === 0}
-                        >
-                          Previous
-                        </Button>
-                        <span className="text-xs text-muted-foreground self-center">
-                          Page {imagePage + 1} of {Math.ceil(totalImages / 12)}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setImagePage(p => p + 1)}
-                          disabled={(imagePage + 1) * 12 >= totalImages}
-                        >
-                          Next
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Question Info */}
-                <div className="text-sm text-muted-foreground space-y-1 pt-4 border-t">
-                  <p><strong>Created:</strong> {new Date(question.created_at).toLocaleDateString()}</p>
-                  <p><strong>Last Updated:</strong> {new Date(question.updated_at).toLocaleDateString()}</p>
-                  <p><strong>Version:</strong> {question.version}</p>
-                </div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t">
+            {/* Section 3: Images */}
+            <div className="space-y-6">
+              <div className="border-b pb-4">
+                <h3 className="text-lg font-semibold text-foreground">3. Images</h3>
+                <p className="text-sm text-muted-foreground">Update images to support your question and explanations</p>
+              </div>
+
+              <ImageAttachment
+                selectedImages={questionImages}
+                onSelectionChange={setQuestionImages}
+              />
+            </div>
+
+            {/* Question Info */}
+            <div className="text-sm text-muted-foreground space-y-1 pt-4 border-t">
+              <p><strong>Created:</strong> {new Date(question.created_at).toLocaleDateString()}</p>
+              <p><strong>Last Updated:</strong> {new Date(question.updated_at).toLocaleDateString()}</p>
+              <p><strong>Version:</strong> {question.version}</p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-6 border-t">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => handleOpenChange(false)}
                 disabled={isSubmitting}
               >
                 Cancel
@@ -556,6 +528,26 @@ export function EditQuestionDialog({
           </form>
         </Form>
       </DialogContent>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved changes. Are you sure you want to close this dialog? All changes will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelClose}>
+              Keep Editing
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmClose}>
+              Discard Changes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

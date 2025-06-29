@@ -7,8 +7,16 @@ import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
 import { BookOpenIcon, BarChartIcon, TestTube2Icon } from "lucide-react"
 import DemoQuestion from "@/shared/components/common/demo-question"
+import ComingSoonPage from "./coming-soon/page"
 
 export default function LandingPage() {
+  // Check if coming soon mode is enabled
+  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
+
+  // If coming soon mode is enabled, show the coming soon page
+  if (isComingSoonMode) {
+    return <ComingSoonPage />
+  }
   return (
     <>
       {/* Hero Section */}

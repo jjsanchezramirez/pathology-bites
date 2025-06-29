@@ -3,7 +3,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/shared/services/client'
-import { useToast } from '@/shared/hooks/use-toast'
+import { toast } from 'sonner'
 import {
   Table,
   TableBody,
@@ -55,6 +55,9 @@ interface Category {
   created_at: string
   question_count?: number
   parent_name?: string
+  parent_short_form?: string
+  parent_color?: string
+  short_form?: string
 }
 
 const PAGE_SIZE = 10
@@ -73,7 +76,6 @@ export function CategoriesManagement() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const supabase = createClient()
-  const { toast } = useToast()
 
   // Function to organize categories hierarchically
   const organizeHierarchically = useCallback((categories: Category[]): Category[] => {
@@ -160,15 +162,11 @@ export function CategoriesManagement() {
       }
     } catch (error) {
       console.error('Error loading categories:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to load categories'
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to load categories')
     } finally {
       setLoading(false)
     }
-  }, [searchTerm, page, toast, organizeHierarchically])
+  }, [searchTerm, page, organizeHierarchically])
 
   const handleDelete = async () => {
     if (!selectedCategory) return
@@ -190,21 +188,14 @@ export function CategoriesManagement() {
         throw new Error(errorData.error || 'Failed to delete category')
       }
 
-      toast({
-        title: 'Success',
-        description: 'Category deleted successfully'
-      })
+      toast.success('Category deleted successfully')
 
       setShowDeleteDialog(false)
       setSelectedCategory(null)
       loadCategories()
     } catch (error) {
       console.error('Error deleting category:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete category'
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to delete category')
     } finally {
       setIsDeleting(false)
     }
@@ -222,23 +213,8 @@ export function CategoriesManagement() {
   }
 
   const renderCategoryName = (category: Category) => {
-    const indentLevel = category.level - 1
-    const indentSpacing = indentLevel * 8 // Reduced from 20px to 8px per level
-
     return (
-      <div className="flex items-center" style={{ paddingLeft: `${indentSpacing}px` }}>
-        {category.level > 1 && (
-          <div className="flex items-center mr-1 text-muted-foreground text-xs">
-            {'> '.repeat(category.level - 1)}
-          </div>
-        )}
-        {category.color && (
-          <div
-            className="w-3 h-3 rounded-full mr-2 border border-gray-300"
-            style={{ backgroundColor: category.color }}
-            title={`Category color: ${category.color}`}
-          />
-        )}
+      <div className="flex items-center">
         <span className="font-medium">{category.name}</span>
       </div>
     )
@@ -295,6 +271,7 @@ export function CategoriesManagement() {
           <TableHeader className="bg-muted/50">
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Short Form</TableHead>
               <TableHead>Parent</TableHead>
               <TableHead>Questions</TableHead>
               <TableHead>Created</TableHead>
@@ -304,13 +281,13 @@ export function CategoriesManagement() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : categories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                   {searchTerm ? 'No categories found matching your search' : 'No categories found'}
                 </TableCell>
               </TableRow>
@@ -321,7 +298,34 @@ export function CategoriesManagement() {
                     {renderCategoryName(category)}
                   </TableCell>
                   <TableCell>
-                    {category.parent_name ? (
+                    {category.short_form ? (
+                      <Badge
+                        variant="outline"
+                        style={{
+                          backgroundColor: category.color ? `${category.color}20` : undefined,
+                          borderColor: category.color || undefined,
+                          color: category.color || undefined
+                        }}
+                      >
+                        {category.short_form}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {category.parent_short_form ? (
+                      <Badge
+                        variant="outline"
+                        style={{
+                          backgroundColor: category.parent_color ? `${category.parent_color}20` : undefined,
+                          borderColor: category.parent_color || undefined,
+                          color: category.parent_color || undefined
+                        }}
+                      >
+                        {category.parent_short_form}
+                      </Badge>
+                    ) : category.parent_name ? (
                       <Badge variant="outline">{category.parent_name}</Badge>
                     ) : (
                       <span className="text-muted-foreground">-</span>

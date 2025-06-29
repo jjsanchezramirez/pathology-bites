@@ -4,15 +4,47 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/shared/services/server'
+import { z } from 'zod'
+
+// Validation schema for signup
+const signupSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  userType: z.enum(["student", "resident", "fellow", "attending", "other"], {
+    invalid_type_error: "Please select your role",
+  }),
+})
 
 export async function signup(formData: FormData) {
   const supabase = await createClient()
 
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
-  const firstName = formData.get('firstName') as string
-  const lastName = formData.get('lastName') as string
-  const userType = formData.get('userType') as string
+  // Extract form data
+  const rawData = {
+    email: formData.get('email') as string,
+    password: formData.get('password') as string,
+    firstName: formData.get('firstName') as string,
+    lastName: formData.get('lastName') as string,
+    userType: formData.get('userType') as string,
+  }
+
+  // Validate the data
+  const validation = signupSchema.safeParse(rawData)
+
+  if (!validation.success) {
+    // Collect all validation errors
+    const errors = validation.error.errors.map(err => err.message)
+    const errorMessage = errors.join('. ')
+    redirect('/signup?error=' + encodeURIComponent(errorMessage))
+    return
+  }
+
+  const { email, password, firstName, lastName, userType } = validation.data
 
   // Use environment variable for redirect URL
   const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/confirm`
@@ -59,11 +91,14 @@ export async function login(formData: FormData) {
     
     if (error.message === 'Invalid login credentials') {
       redirect(`/login?error=Invalid email or password${redirectParam}`)
+      return
     }
     if (error.message === 'Email not confirmed') {
       redirect('/verify-email?email=' + encodeURIComponent(data.email))
+      return
     }
     redirect(`/login?error=${encodeURIComponent(error.message)}${redirectParam}`)
+    return
   }
 
   revalidatePath('/', 'layout')
@@ -95,7 +130,7 @@ export async function login(formData: FormData) {
   }
   
   // Redirect based on role
-  if (userRole === 'admin') {
+  if (userRole === 'admin' || userRole === 'reviewer') {
     console.log('Redirecting to admin dashboard') // Debug log
     redirect('/admin/dashboard')
   } else {

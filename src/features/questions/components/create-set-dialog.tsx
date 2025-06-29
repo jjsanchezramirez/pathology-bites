@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/shared/services/client'
-import { useToast } from '@/shared/hooks/use-toast'
+import { toast } from 'sonner'
 import { useAuth } from '@/features/auth/hooks/use-auth-status'
 import {
   Dialog,
@@ -49,36 +49,23 @@ export function CreateSetDialog({ open, onOpenChange, onSuccess }: CreateSetDial
   const [isCreating, setIsCreating] = useState(false)
 
   const supabase = createClient()
-  const { toast } = useToast()
   const { user } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!name.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Question set name is required'
-      })
+      toast.error('Question set name is required')
       return
     }
 
     if (!sourceType) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Source type is required'
-      })
+      toast.error('Source type is required')
       return
     }
 
     if (!user) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'You must be logged in to create a question set'
-      })
+      toast.error('You must be logged in to create a question set')
       return
     }
 
@@ -102,10 +89,7 @@ export function CreateSetDialog({ open, onOpenChange, onSuccess }: CreateSetDial
         throw new Error(errorData.error || 'Failed to create question set')
       }
 
-      toast({
-        title: 'Success',
-        description: 'Question set created successfully'
-      })
+      toast.success('Question set created successfully')
 
       setName('')
       setDescription('')
@@ -114,11 +98,7 @@ export function CreateSetDialog({ open, onOpenChange, onSuccess }: CreateSetDial
       onSuccess()
     } catch (error) {
       console.error('Error creating question set:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create question set'
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to create question set')
     } finally {
       setIsCreating(false)
     }

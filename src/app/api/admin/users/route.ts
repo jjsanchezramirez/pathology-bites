@@ -137,6 +137,26 @@ export async function PATCH(request: NextRequest) {
       throw error
     }
 
+    // If role was updated, also update the user's auth metadata
+    if (updates.role) {
+      try {
+        const { error: authError } = await supabase.auth.admin.updateUserById(
+          userId,
+          {
+            app_metadata: { role: updates.role }
+          }
+        )
+
+        if (authError) {
+          console.error('Error updating auth metadata:', authError)
+          // Don't fail the request if auth metadata update fails
+        }
+      } catch (authUpdateError) {
+        console.error('Error updating user auth metadata:', authUpdateError)
+        // Don't fail the request if auth metadata update fails
+      }
+    }
+
     return NextResponse.json({ user: data })
 
   } catch (error) {

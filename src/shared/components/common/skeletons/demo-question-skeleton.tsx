@@ -6,7 +6,7 @@ import { Card, CardHeader, CardContent } from "@/shared/components/ui/card";
 
 const QuestionSkeleton = () => {
   return (
-    <Card className="w-full max-w-4xl mx-auto animate-pulse">
+    <Card className="w-full max-w-4xl mx-auto animate-pulse" data-testid="question-skeleton">
       <CardHeader className="py-2">
         <div className="h-6 w-48 bg-muted rounded-lg" />
       </CardHeader>

@@ -51,6 +51,13 @@ export function StatsCards({ stats }: StatsCardsProps) {
       description: `${stats.unreadInquiries} need attention`,
       icon: MessageSquare,
       trend: stats.unreadInquiries > 5 ? "warning" : "neutral"
+    },
+    {
+      title: "Question Reports",
+      value: stats.questionReports.toLocaleString(),
+      description: `${stats.pendingReports} pending review`,
+      icon: AlertCircle,
+      trend: stats.pendingReports > 0 ? "warning" : "neutral"
     }
   ]
 
@@ -79,7 +86,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {cards.map((card, index) => (
         <Card key={index}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

@@ -1,6 +1,6 @@
 // src/hooks/use-image-edit.ts
 import { useState, useCallback } from 'react';
-import { useToast } from '@/shared/hooks/use-toast';
+import { toast } from 'sonner';
 import { deleteImage, updateImage } from '@/features/images/services/images';
 import type { ImageData, ImageFormData, ImageCategory } from '@/features/images/types/images';
 
@@ -22,7 +22,7 @@ export function useImageEdit({ onSuccess }: UseImageEditOptions = {}) {
     formData: initialFormState
   });
 
-  const { toast } = useToast();
+
 
   const updateState = useCallback((updates: Partial<typeof state>) => {
     setState(prev => ({ ...prev, ...updates }));
@@ -33,43 +33,29 @@ export function useImageEdit({ onSuccess }: UseImageEditOptions = {}) {
     try {
       await updateImage(imageId, state.formData);
 
-      toast({
-        title: "Success",
-        description: "Image updated successfully"
-      });
+      toast.success("Image updated successfully");
 
       onSuccess?.();
     } catch (error) {
       console.error('Error updating image:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update image"
-      });
+      toast.error("Failed to update image");
       throw error;
     } finally {
       updateState({ isLoading: false });
     }
-  }, [state.formData, onSuccess, toast, updateState]);
+  }, [state.formData, onSuccess, updateState]);
 
   const handleDeleteImage = useCallback(async (imageId: string, imagePath: string) => {
     updateState({ isLoading: true });
     try {
       await deleteImage(imagePath, imageId);
 
-      toast({
-        title: "Success",
-        description: "Image deleted successfully"
-      });
+      toast.success("Image deleted successfully");
 
       onSuccess?.();
     } catch (error) {
       console.error('Error deleting image:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to delete image"
-      });
+      toast.error("Failed to delete image");
       throw error;
     } finally {
       updateState({
@@ -77,7 +63,7 @@ export function useImageEdit({ onSuccess }: UseImageEditOptions = {}) {
         isDeleteDialogOpen: false
       });
     }
-  }, [onSuccess, toast, updateState]);
+  }, [onSuccess, updateState]);
 
   const initializeForm = useCallback((image: ImageData | null) => {
     const newFormData: ImageFormData = image ? {

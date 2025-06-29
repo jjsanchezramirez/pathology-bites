@@ -1,6 +1,10 @@
 // Barrel export for dashboard components
 export * from './dashboard-layout'
+export * from './dashboard-layout-client'
+export * from './dashboard-sidebar'
+export * from './dashboard-header'
 export * from './header'
 export * from './profile-avatar'
 export * from './profile-dropdown'
 export * from './sidebar'
+export * from './sidebar-connection-status'

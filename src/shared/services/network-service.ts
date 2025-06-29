@@ -19,7 +19,7 @@ class NetworkService {
   private pingIntervalId?: NodeJS.Timeout;
   private authCheckIntervalId?: NodeJS.Timeout;
   private reconnectAttempts: number = 0;
-  private pingUrl: string = 'https://1.1.1.1';
+  private pingUrl: string = '/api/health'; // Use internal health check instead
 
   private constructor() {
     if (typeof window !== 'undefined') {
@@ -67,7 +67,8 @@ class NetworkService {
     }
   };
 
-  private startPeriodicChecks(pingInterval: number = 30000, authInterval: number = 60000): void {
+  private startPeriodicChecks(pingInterval: number = 120000, authInterval: number = 300000): void {
+    // Much less aggressive - check connectivity every 2 minutes, auth every 5 minutes
     this.pingIntervalId = setInterval(() => {
       this.checkConnectivity();
     }, pingInterval);
@@ -87,6 +88,7 @@ class NetworkService {
   }
 
   private async checkConnectivity(): Promise<void> {
+    // If browser says we're offline, trust it
     if (!this.isOnline) {
       this.hasConnectivity = false;
       this.notifyListeners();
@@ -95,31 +97,43 @@ class NetworkService {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // Longer timeout
 
-      await fetch(this.pingUrl, {
+      // Try to ping our own API first (more reliable than external)
+      const response = await fetch(this.pingUrl, {
         method: 'HEAD',
-        mode: 'no-cors',
         cache: 'no-store',
         signal: controller.signal
       });
 
       clearTimeout(timeoutId);
-      const wasOffline = !this.hasConnectivity;
-      this.hasConnectivity = true;
-      this.reconnectAttempts = 0;
 
-      if (wasOffline) {
-        console.log('Network connectivity restored');
-        this.notifyListeners();
-        // Also check auth status when connectivity is restored
-        this.checkAuthStatus();
+      // If health endpoint doesn't exist (404), we're still online
+      if (response.ok || response.status === 404) {
+        const wasOffline = !this.hasConnectivity;
+        this.hasConnectivity = true;
+        this.reconnectAttempts = 0;
+
+        if (wasOffline) {
+          console.log('Network connectivity restored');
+          this.notifyListeners();
+          // Also check auth status when connectivity is restored
+          this.checkAuthStatus();
+        }
+      } else {
+        throw new Error(`Health check failed with status: ${response.status}`);
       }
     } catch (error) {
+      // Only mark as offline after multiple failures to avoid false positives
       this.reconnectAttempts++;
-      this.hasConnectivity = false;
-      console.warn(`Connectivity check failed (attempt ${this.reconnectAttempts}):`, error);
-      this.notifyListeners();
+
+      if (this.reconnectAttempts >= 3) {
+        this.hasConnectivity = false;
+        console.warn(`Connectivity check failed after ${this.reconnectAttempts} attempts:`, error);
+        this.notifyListeners();
+      } else {
+        console.log(`Connectivity check failed (attempt ${this.reconnectAttempts}/3), retrying...`);
+      }
     }
   }
 

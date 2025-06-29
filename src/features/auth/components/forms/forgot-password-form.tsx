@@ -1,12 +1,17 @@
-// src/components/auth/forms/forgot-password-form.tsx
+// src/features/auth/components/forms/forgot-password-form.tsx
 "use client"
 
+import { useState, useEffect } from 'react'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { AuthCard } from "@/features/auth/components/ui/auth-card"
+import { FormField } from "@/features/auth/components/ui/form-field"
 import { FormButton } from "@/features/auth/components/ui/form-button"
+import { createClient } from '@/shared/services/client'
 
 // Form schema definition
 const formSchema = z.object({
@@ -18,21 +23,30 @@ type FormData = z.infer<typeof formSchema>
 
 interface ForgotPasswordFormProps {
   className?: string
-  onSubmit?: (email: string) => Promise<void>
-  isLoading?: boolean
+  initialError?: string
 }
 
 export function ForgotPasswordForm({
   className,
-  onSubmit,
-  isLoading = false,
+  initialError,
   ...props
 }: ForgotPasswordFormProps) {
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
+
+  // Show initial error as toast
+  useEffect(() => {
+    if (initialError) {
+      toast.error(initialError)
+    }
+  }, [initialError])
+
   // Initialize form with useForm hook
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitted },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -41,9 +55,29 @@ export function ForgotPasswordForm({
   })
 
   // Form submission handler
-  async function onFormSubmit(values: FormData) {
-    if (onSubmit) {
-      await onSubmit(values.email)
+  async function onSubmit(values: FormData) {
+    try {
+      setLoading(true)
+
+      // Use environment variable for redirect URL
+      const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/confirm?type=recovery&next=/reset-password`
+
+      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
+        redirectTo: redirectTo,
+      })
+
+      if (error) {
+        toast.error(error.message)
+        return
+      }
+
+      // Success - redirect to check email page
+      router.push('/check-email')
+    } catch (error) {
+      console.error("Forgot password error:", error)
+      toast.error("An unexpected error occurred. Please try again.")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -59,40 +93,25 @@ export function ForgotPasswordForm({
       }
       {...props}
     >
-      <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
-        <div className="grid gap-4">
-          <div className="space-y-2">
-            <label 
-              htmlFor="email" 
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Email
-            </label>
-            <input
-              {...register("email")}
-              id="email"
-              type="email"
-              placeholder="name@example.com"
-              autoComplete="email"
-              disabled={isLoading}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-            {errors.email && (
-              <p className="text-sm font-medium text-destructive">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
-          
-          <FormButton 
-            type="submit" 
-            fullWidth
-            isLoading={isLoading}
-            loadingText="Sending..."
-          >
-            Send reset link
-          </FormButton>
-        </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          id="email"
+          label="Email"
+          type="email"
+          placeholder="name@example.com"
+          autoComplete="email"
+          error={isSubmitted ? errors.email?.message : undefined}
+          disabled={loading}
+          {...register("email")}
+        />
+
+        <FormButton
+          type="submit"
+          fullWidth
+          disabled={loading}
+        >
+          {loading ? "Sending reset link..." : "Send reset link"}
+        </FormButton>
       </form>
     </AuthCard>
   )

@@ -1,0 +1,55 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/shared/services/server';
+
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+
+    // Check if user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user is admin
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (userError || userData?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
+    }
+
+    const { questionCategories } = await request.json();
+
+    if (!questionCategories || !Array.isArray(questionCategories)) {
+      return NextResponse.json(
+        { error: 'Invalid question categories data' },
+        { status: 400 }
+      );
+    }
+
+    // Insert question categories
+    const { data, error } = await supabase
+      .from('question_categories')
+      .insert(questionCategories);
+
+    if (error) {
+      console.error('Error creating question categories:', error);
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ data });
+  } catch (error) {
+    console.error('Error in question-categories API:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

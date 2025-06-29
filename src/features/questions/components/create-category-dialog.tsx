@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/shared/services/client'
-import { useToast } from '@/shared/hooks/use-toast'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -61,7 +61,6 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
   const [loadingCategories, setLoadingCategories] = useState(false)
 
   const supabase = createClient()
-  const { toast } = useToast()
 
   const loadCategories = async () => {
     setLoadingCategories(true)
@@ -86,11 +85,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
     e.preventDefault()
 
     if (!name.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Category name is required'
-      })
+      toast.error('Category name is required')
       return
     }
 
@@ -114,10 +109,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
         throw new Error(errorData.error || 'Failed to create category')
       }
 
-      toast({
-        title: 'Success',
-        description: 'Category created successfully'
-      })
+      toast.success('Category created successfully')
 
       setName('')
       setDescription('')
@@ -126,11 +118,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
       onSuccess()
     } catch (error) {
       console.error('Error creating category:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create category'
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to create category')
     } finally {
       setIsCreating(false)
     }

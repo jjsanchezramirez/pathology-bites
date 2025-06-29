@@ -1,7 +1,7 @@
 // src/hooks/use-questions.ts
 import { useState, useCallback } from 'react';
 import { createClient } from '@/shared/services/client';
-import { useToast } from '@/shared/hooks/use-toast';
+import { toast } from 'sonner';
 import { QuestionData, QuestionInsert, QuestionUpdate, QuestionWithDetails } from '@/features/questions/types/questions';
 import { QuestionSetData } from '@/features/questions/types/question-sets';
 
@@ -41,7 +41,6 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
   const [error, setError] = useState<string | null>(null);
 
   const supabase = createClient();
-  const { toast } = useToast();
 
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
@@ -56,7 +55,8 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
           question_set:question_sets(
             id,
             name,
-            source_type
+            source_type,
+            short_form
           ),
           created_by_user:users!questions_created_by_fkey(
             first_name,
@@ -97,29 +97,56 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         throw new Error(fetchError.message);
       }
 
+      // Fetch categories for all questions
+      const questionIds = (data || []).map(q => q.id);
+      let categoriesData: any[] = [];
+
+      if (questionIds.length > 0) {
+        const { data: categoriesResult } = await supabase
+          .from('question_categories')
+          .select(`
+            question_id,
+            categories!inner(
+              id,
+              name,
+              color,
+              level,
+              parent_id,
+              short_form
+            )
+          `)
+          .in('question_id', questionIds);
+
+        categoriesData = categoriesResult || [];
+      }
+
       // Transform the data
-      const transformedQuestions: QuestionWithDetails[] = (data || []).map(question => ({
-        ...question,
-        created_by_name: question.created_by_user
-          ? `${question.created_by_user.first_name || ''} ${question.created_by_user.last_name || ''}`.trim()
-          : 'Unknown',
-        image_count: question.question_images?.[0]?.count || 0
-      }));
+      const transformedQuestions: QuestionWithDetails[] = (data || []).map(question => {
+        const questionCategories = categoriesData
+          .filter(qc => qc.question_id === question.id)
+          .map(qc => qc.categories)
+          .filter(Boolean);
+
+        return {
+          ...question,
+          created_by_name: question.created_by_user
+            ? `${question.created_by_user.first_name || ''} ${question.created_by_user.last_name || ''}`.trim()
+            : 'Unknown',
+          image_count: question.question_images?.[0]?.count || 0,
+          categories: questionCategories
+        };
+      });
 
       setQuestions(transformedQuestions);
       setTotal(count || 0);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch questions';
       setError(message);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: message,
-      });
+      toast.error(message);
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, searchTerm, difficulty, status, questionSetId, supabase, toast]);
+  }, [page, pageSize, searchTerm, difficulty, status, questionSetId, supabase]);
 
   const deleteQuestion = useCallback(async (questionId: string) => {
     try {
@@ -132,23 +159,16 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         throw new Error(error.message);
       }
 
-      toast({
-        title: 'Success',
-        description: 'Question deleted successfully',
-      });
+      toast.success('Question deleted successfully');
 
       // Refetch questions
       await fetchQuestions();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to delete question';
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: message,
-      });
+      toast.error(message);
       throw err;
     }
-  }, [supabase, toast, fetchQuestions]);
+  }, [supabase, fetchQuestions]);
 
   const updateQuestion = useCallback(async (questionId: string, data: QuestionUpdate) => {
     try {
@@ -161,23 +181,16 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         throw new Error(error.message);
       }
 
-      toast({
-        title: 'Success',
-        description: 'Question updated successfully',
-      });
+      toast.success('Question updated successfully');
 
       // Refetch questions
       await fetchQuestions();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update question';
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: message,
-      });
+      toast.error(message);
       throw err;
     }
-  }, [supabase, toast, fetchQuestions]);
+  }, [supabase, fetchQuestions]);
 
   const createQuestion = useCallback(async (data: QuestionInsert): Promise<QuestionData> => {
     try {
@@ -191,10 +204,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         throw new Error(error.message);
       }
 
-      toast({
-        title: 'Success',
-        description: 'Question created successfully',
-      });
+      toast.success('Question created successfully');
 
       // Refetch questions
       await fetchQuestions();
@@ -202,14 +212,10 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
       return newQuestion;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create question';
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: message,
-      });
+      toast.error(message);
       throw err;
     }
-  }, [supabase, toast, fetchQuestions]);
+  }, [supabase, fetchQuestions]);
 
   return {
     questions,

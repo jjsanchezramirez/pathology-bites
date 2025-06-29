@@ -1,0 +1,37 @@
+{
+  "title": "Myocardial Infarction Diagnosis",
+  "stem": "A 65-year-old male presents to the emergency department with severe chest pain that started 2 hours ago. The pain is described as crushing and radiates to his left arm. His ECG shows ST-segment elevation in leads II, III, and aVF. What is the most likely diagnosis?",
+  "difficulty": "medium",
+  "teaching_point": "ST-segment elevation in leads II, III, and aVF indicates an inferior wall myocardial infarction, typically caused by occlusion of the right coronary artery. This pattern is characteristic and helps localize the area of myocardial damage.",
+  "question_references": "Braunwald's Heart Disease: A Textbook of Cardiovascular Medicine, 12th Edition, Chapter 52",
+  "status": "draft",
+  "answer_options": [
+    {
+      "text": "Anterior wall myocardial infarction",
+      "is_correct": false,
+      "explanation": "Anterior wall MI would show ST elevation in leads V1-V6, not in the inferior leads II, III, and aVF.",
+      "order_index": 0
+    },
+    {
+      "text": "Inferior wall myocardial infarction",
+      "is_correct": true,
+      "explanation": "Correct! ST elevation in leads II, III, and aVF is characteristic of inferior wall myocardial infarction, typically due to right coronary artery occlusion.",
+      "order_index": 1
+    },
+    {
+      "text": "Lateral wall myocardial infarction",
+      "is_correct": false,
+      "explanation": "Lateral wall MI would show changes in leads I, aVL, V5, and V6, not in the inferior leads.",
+      "order_index": 2
+    },
+    {
+      "text": "Unstable angina",
+      "is_correct": false,
+      "explanation": "Unstable angina typically does not show ST-segment elevation. The presence of ST elevation indicates STEMI (ST-elevation myocardial infarction).",
+      "order_index": 3
+    }
+  ],
+  "question_images": [],
+  "tag_ids": [],
+  "category_ids": []
+}

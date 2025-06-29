@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useToast } from '@/shared/hooks/use-toast'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -65,8 +65,6 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
   const [categories, setCategories] = useState<Category[]>([])
   const [loadingCategories, setLoadingCategories] = useState(false)
 
-  const { toast } = useToast()
-
   const loadCategories = async () => {
     setLoadingCategories(true)
     try {
@@ -107,20 +105,12 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
     e.preventDefault()
 
     if (!name.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Category name is required'
-      })
+      toast.error('Category name is required')
       return
     }
 
     if (!category) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'No category selected for editing'
-      })
+      toast.error('No category selected for editing')
       return
     }
 
@@ -145,19 +135,12 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
         throw new Error(errorData.error || 'Failed to update category')
       }
 
-      toast({
-        title: 'Success',
-        description: 'Category updated successfully'
-      })
+      toast.success('Category updated successfully')
 
       onSuccess()
     } catch (error) {
       console.error('Error updating category:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update category'
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to update category')
     } finally {
       setIsUpdating(false)
     }

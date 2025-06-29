@@ -51,6 +51,7 @@ export async function updateSession(request: NextRequest) {
     '/email-verified',
     '/email-already-verified',
     '/password-reset-success',
+    '/link-expired', // Add link expired page
     '/auth/confirm' // Add this line to allow the auth confirm route
   ]
 
@@ -80,9 +81,9 @@ export async function updateSession(request: NextRequest) {
       // First try to get role from user metadata
       const userRole = user.user_metadata?.role || user.app_metadata?.role
 
-      if (userRole === 'admin') {
-        // User has admin role in metadata, allow access
-        console.log('Admin access granted via metadata')
+      if (userRole === 'admin' || userRole === 'reviewer') {
+        // User has admin or reviewer role in metadata, allow access
+        console.log('Admin/Reviewer access granted via metadata')
         return supabaseResponse
       }
 
@@ -100,34 +101,34 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url)
       }
 
-      if (userData?.role === 'admin') {
-        // User is admin in database, allow access
-        console.log('Admin access granted via database:', userData)
+      if (userData?.role === 'admin' || userData?.role === 'reviewer') {
+        // User is admin or reviewer in database, allow access
+        console.log('Admin/Reviewer access granted via database:', userData)
         return supabaseResponse
       } else {
-        // User is not admin, redirect to dashboard
-        console.log('User is not admin, redirecting. Role:', userData?.role)
+        // User is not admin or reviewer, redirect to dashboard
+        console.log('User is not admin or reviewer, redirecting. Role:', userData?.role)
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'
         return NextResponse.redirect(url)
       }
     } catch (error) {
-      console.error('Error checking admin role:', error)
+      console.error('Error checking admin/reviewer role:', error)
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
     }
   }
 
-  // Redirect non-admin users from /dashboard to /admin/dashboard if they are admin
+  // Redirect non-admin/reviewer users from /dashboard to /admin/dashboard if they are admin or reviewer
   if (request.nextUrl.pathname === '/dashboard') {
     try {
       // First try to get role from user metadata
       const userRole = user.user_metadata?.role || user.app_metadata?.role
 
-      if (userRole === 'admin') {
-        // User has admin role in metadata, redirect to admin dashboard
-        console.log('Redirecting admin user from dashboard to admin dashboard (metadata)')
+      if (userRole === 'admin' || userRole === 'reviewer') {
+        // User has admin or reviewer role in metadata, redirect to admin dashboard
+        console.log('Redirecting admin/reviewer user from dashboard to admin dashboard (metadata)')
         const url = request.nextUrl.clone()
         url.pathname = '/admin/dashboard'
         return NextResponse.redirect(url)
@@ -140,9 +141,9 @@ export async function updateSession(request: NextRequest) {
         .eq('id', user.id)
         .single()
 
-      if (!roleError && userData?.role === 'admin') {
-        // User is admin in database, redirect to admin dashboard
-        console.log('Redirecting admin user from dashboard to admin dashboard (database)')
+      if (!roleError && (userData?.role === 'admin' || userData?.role === 'reviewer')) {
+        // User is admin or reviewer in database, redirect to admin dashboard
+        console.log('Redirecting admin/reviewer user from dashboard to admin dashboard (database)')
         const url = request.nextUrl.clone()
         url.pathname = '/admin/dashboard'
         return NextResponse.redirect(url)

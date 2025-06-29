@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useToast } from '@/shared/hooks/use-toast'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -58,8 +58,6 @@ export function EditSetDialog({ open, onOpenChange, onSuccess, questionSet }: Ed
   const [isActive, setIsActive] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
 
-  const { toast } = useToast()
-
   // Update form when questionSet changes
   useEffect(() => {
     if (questionSet && open) {
@@ -74,29 +72,17 @@ export function EditSetDialog({ open, onOpenChange, onSuccess, questionSet }: Ed
     e.preventDefault()
     
     if (!name.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Question set name is required'
-      })
+      toast.error('Question set name is required')
       return
     }
 
     if (!sourceType) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Source type is required'
-      })
+      toast.error('Source type is required')
       return
     }
 
     if (!questionSet) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'No question set selected for editing'
-      })
+      toast.error('No question set selected for editing')
       return
     }
 
@@ -123,19 +109,12 @@ export function EditSetDialog({ open, onOpenChange, onSuccess, questionSet }: Ed
         throw new Error(errorData.error || 'Failed to update question set')
       }
 
-      toast({
-        title: 'Success',
-        description: 'Question set updated successfully'
-      })
+      toast.success('Question set updated successfully')
 
       onSuccess()
     } catch (error) {
       console.error('Error updating question set:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update question set'
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to update question set')
     } finally {
       setIsUpdating(false)
     }

@@ -13,12 +13,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip"
-import { 
-  Question, 
-  Category, 
-  DIFFICULTY_CONFIG, 
-  YIELD_CONFIG 
+import {
+  Question,
+  Category,
+  DIFFICULTY_CONFIG,
+  YIELD_CONFIG
 } from '@/features/questions/types/questions'
+import { getCategoryDisplayName } from '@/features/questions/utils/display-helpers'
 
 interface QuestionRowProps {
   question: Question
@@ -97,8 +98,11 @@ export default function QuestionRow({ question, categoryPaths, onDelete }: Quest
               <TooltipProvider key={category.id}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                      {category.name}
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-1.5 py-0"
+                    >
+                      {getCategoryDisplayName(category)}
                     </Badge>
                   </TooltipTrigger>
                   <TooltipContent>

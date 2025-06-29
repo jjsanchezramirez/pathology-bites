@@ -15,6 +15,7 @@ import { Plus, X, Tag, FolderTree } from 'lucide-react';
 import { useTags } from '@/features/questions/hooks/use-tags';
 import { useCategories } from '@/features/questions/hooks/use-categories';
 import { TagData, CategoryData } from '@/features/questions/types/questions';
+import { getCategoryDisplayName } from '@/features/questions/utils/display-helpers';
 
 interface TagsCategoriesSelectorProps {
   selectedTagIds: string[];
@@ -231,8 +232,12 @@ export function TagsCategoriesSelector({
         {selectedCategories.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {selectedCategories.map((category) => (
-              <Badge key={category.id} variant="outline" className="flex items-center gap-1">
-                {category.name}
+              <Badge
+                key={category.id}
+                variant="outline"
+                className="flex items-center gap-1"
+              >
+                {getCategoryDisplayName(category)}
                 <button
                   type="button"
                   onClick={() => handleCategoryToggle(category.id)}

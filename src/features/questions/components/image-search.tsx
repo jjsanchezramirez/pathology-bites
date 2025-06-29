@@ -21,7 +21,7 @@ import { QuestionImageFormData } from '@/features/questions/types/questions';
 interface ImageSearchProps {
   selectedImages: QuestionImageFormData[];
   onSelectionChange: (images: QuestionImageFormData[]) => void;
-  section: 'question' | 'explanation';
+  section: 'stem' | 'explanation';
   maxImages?: number;
   title: string;
 }
@@ -75,7 +75,7 @@ export function ImageSearch({
 
   const handleImageToggle = (imageId: string) => {
     const isSelected = sectionImages.some(img => img.image_id === imageId);
-    
+
     if (isSelected) {
       // Remove image
       const updatedImages = selectedImages.filter(
@@ -157,8 +157,8 @@ export function ImageSearch({
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <Badge 
-                      variant="secondary" 
+                    <Badge
+                      variant="secondary"
                       className="absolute -top-2 -left-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
                     >
                       {imageData.order_index + 1}
@@ -220,18 +220,18 @@ export function ImageSearch({
                 {availableImages.map((image) => {
                   const isSelected = sectionImages.some(img => img.image_id === image.id);
                   const canSelect = !isSelected && sectionImages.length < maxImages;
-                  
+
                   return (
                     <div
                       key={image.id}
                       className={`relative cursor-pointer rounded border-2 transition-all ${
-                        isSelected 
-                          ? 'border-primary bg-primary/10' 
-                          : canSelect 
-                            ? 'border-border hover:border-primary/50' 
+                        isSelected
+                          ? 'border-primary bg-primary/10'
+                          : canSelect
+                            ? 'border-border hover:border-primary/50'
                             : 'border-border opacity-50 cursor-not-allowed'
                       }`}
-                      onClick={() => canSelect || isSelected ? handleImageToggle(image.id) : undefined}
+                      onClick={() => (canSelect || isSelected) ? handleImageToggle(image.id) : undefined}
                       title={image.alt_text}
                     >
                       <div className="aspect-square rounded overflow-hidden">
@@ -252,7 +252,7 @@ export function ImageSearch({
                 })}
               </div>
             )}
-            
+
             {/* Pagination */}
             {totalImages > 12 && (
               <div className="flex justify-center gap-2 mt-4 pt-2 border-t">

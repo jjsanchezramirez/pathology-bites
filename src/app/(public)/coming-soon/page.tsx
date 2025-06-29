@@ -5,7 +5,7 @@ import { ChevronDown } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { Label } from "@/shared/components/ui/label"
-import { useToast } from '@/shared/hooks/use-toast'
+import { toast } from 'sonner'
 import DemoQuestion from "@/shared/components/common/demo-question"
 import { ScrollToTopButton } from "@/shared/components/common/scroll-to-top"
 import { FeatureCard } from "@/shared/components/common/feature-card"
@@ -14,7 +14,6 @@ import { CountdownTimer } from "@/shared/components/common/countdown-timer"
 import { useEmailSubscription } from "@/shared/hooks/use-email-subscription"
 
 export default function ComingSoonPage() {
-  const { toast } = useToast()
   const {
     email,
     setEmail,
@@ -22,16 +21,11 @@ export default function ComingSoonPage() {
     handleSubmit
   } = useEmailSubscription({
     onSuccess: () => {
-      toast({
-        description: "Thanks for subscribing! We'll notify you when we launch."
-      })
+      toast.success("Thanks for subscribing! We'll notify you when we launch.")
       setEmail('')
     },
     onError: (error) => {
-      toast({
-        variant: "destructive",
-        description: error instanceof Error ? error.message : "Failed to subscribe. Please try again later."
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to subscribe. Please try again later.")
     }
   })
   

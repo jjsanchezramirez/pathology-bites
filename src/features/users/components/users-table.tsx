@@ -3,7 +3,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/shared/services/client'
-import { useToast } from '@/shared/hooks/use-toast'
+import { toast } from 'sonner'
 import {
   Table,
   TableBody,
@@ -65,6 +65,7 @@ const PAGE_SIZE = 10
 
 const roleConfig = {
   admin: { label: 'Admin', color: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300' },
+  reviewer: { label: 'Reviewer', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300' },
   user: { label: 'User', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300' },
 }
 
@@ -97,7 +98,6 @@ export function UsersTable() {
   const [isUpdating, setIsUpdating] = useState(false)
 
   const supabase = createClient()
-  const { toast } = useToast()
 
   const loadUsers = useCallback(async () => {
     setLoading(true)
@@ -125,15 +125,11 @@ export function UsersTable() {
       setTotalPages(data.totalPages || 0)
     } catch (error) {
       console.error('Error loading users:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to load users',
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to load users')
     } finally {
       setLoading(false)
     }
-  }, [searchTerm, roleFilter, statusFilter, page, toast])
+  }, [searchTerm, roleFilter, statusFilter, page])
 
   useEffect(() => {
     loadUsers()
@@ -163,19 +159,12 @@ export function UsersTable() {
         throw new Error(errorData.error || 'Failed to update user role')
       }
 
-      toast({
-        title: 'Success',
-        description: 'User role updated successfully',
-      })
+      toast.success('User role updated successfully')
 
       await loadUsers()
     } catch (error) {
       console.error('Error updating role:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update user role',
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to update user role')
     } finally {
       setIsUpdating(false)
       setShowRoleDialog(false)
@@ -202,19 +191,12 @@ export function UsersTable() {
         throw new Error(errorData.error || 'Failed to update user status')
       }
 
-      toast({
-        title: 'Success',
-        description: 'User status updated successfully',
-      })
+      toast.success('User status updated successfully')
 
       await loadUsers()
     } catch (error) {
       console.error('Error updating status:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update user status',
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to update user status')
     } finally {
       setIsUpdating(false)
       setShowStatusDialog(false)

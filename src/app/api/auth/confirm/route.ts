@@ -6,17 +6,59 @@ import { createClient } from '@/shared/services/server'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const token_hash = searchParams.get('token_hash')
+  const token = searchParams.get('token') // Add support for token parameter
+  const code = searchParams.get('code')
   const type = searchParams.get('type') as EmailOtpType | null
   const next = searchParams.get('next') ?? '/'
 
-  console.log('Auth confirm route called:', { token_hash: !!token_hash, type, next })
+  console.log('Auth confirm route called:', {
+    token_hash: !!token_hash,
+    token: !!token,
+    code: !!code,
+    type,
+    next
+  })
 
-  if (token_hash && type) {
+  // Handle code parameter (for password reset)
+  if (code && type === 'recovery') {
     const supabase = await createClient()
+
+    // Exchange the code for a session
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (!error) {
+      console.log('Code verification successful for password reset')
+      return NextResponse.redirect(`${origin}${next}`)
+    } else {
+      console.error('Code verification failed:', error)
+
+      // Handle expired password reset codes
+      if (error.message.includes('expired') || error.message.includes('invalid')) {
+        console.log('Password reset code expired, redirecting to link-expired page')
+        return NextResponse.redirect(`${origin}/link-expired?type=recovery`)
+      }
+
+      return NextResponse.redirect(
+        `${origin}/auth-error?error=verification_failed&description=${encodeURIComponent(error.message)}`
+      )
+    }
+  }
+
+  // Handle token_hash or token parameter
+  if ((token_hash || token) && type) {
+    const supabase = await createClient()
+
+    // Use token_hash if available, otherwise use token as token_hash
+    const verificationToken = token_hash || token
+
+    if (!verificationToken) {
+      console.error('No verification token found')
+      return NextResponse.redirect(`${origin}/auth-error?error=verification_failed&description=No verification token found`)
+    }
 
     const { error } = await supabase.auth.verifyOtp({
       type,
-      token_hash,
+      token_hash: verificationToken,
     })
 
     if (!error) {
@@ -65,27 +107,39 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}${next}`)
     } else {
       console.error('OTP verification failed:', error)
-      
-      // Check if the error is because the link was already used
-      if (error.code === 'otp_expired' && (type === 'signup' || type === 'email')) {
-        // Check if user is already verified
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        if (user && user.email_confirmed_at) {
-          console.log('User is already verified, redirecting to already-verified page')
-          return NextResponse.redirect(`${origin}/email-already-verified`)
+
+      // Handle expired or invalid links
+      if (error.code === 'otp_expired') {
+        if (type === 'recovery') {
+          console.log('Password reset link expired, redirecting to link-expired page')
+          return NextResponse.redirect(`${origin}/link-expired?type=recovery`)
+        } else if (type === 'signup' || type === 'email') {
+          // Check if user is already verified
+          const { data: { user } } = await supabase.auth.getUser()
+
+          if (user && user.email_confirmed_at) {
+            console.log('User is already verified, redirecting to already-verified page')
+            return NextResponse.redirect(`${origin}/email-already-verified`)
+          }
+
+          // If not verified, show expired link page
+          console.log('Email verification link expired, redirecting to link-expired page')
+          const emailParam = user?.email ? `&email=${encodeURIComponent(user.email)}` : ''
+          return NextResponse.redirect(`${origin}/link-expired?type=${type}${emailParam}`)
         }
-        
-        // If not verified, show expired link error
-        console.log('Link expired and user not verified, showing error')
-        return NextResponse.redirect(`${origin}/auth-error?error=expired_link&description=Verification link has expired. Please request a new one.`)
       }
+
+      // For other errors, redirect to generic auth error page
+      console.log('Other verification error, redirecting to auth-error page')
+      return NextResponse.redirect(
+        `${origin}/auth-error?error=verification_failed&description=${encodeURIComponent(error.message)}`
+      )
     }
   } else {
-    console.error('Missing token_hash or type')
+    console.error('Missing token_hash/token or type')
   }
 
   // redirect the user to an error page with instructions
   console.log('Redirecting to auth error page')
-  return NextResponse.redirect(`${origin}/auth-error?error=verification_failed&description=Failed to verify email`)
+  return NextResponse.redirect(`${origin}/auth-error?error=verification_failed&description=Missing verification parameters`)
 }

@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/shared/services/client';
 import { CategoryData } from '@/features/questions/types/questions';
-import { useToast } from '@/shared/hooks/use-toast';
+import { toast } from 'sonner';
 
 export interface UseCategoriesReturn {
   categories: CategoryData[];
@@ -18,7 +18,6 @@ export function useCategories(): UseCategoriesReturn {
   const [error, setError] = useState<string | null>(null);
 
   const supabase = createClient();
-  const { toast } = useToast();
 
   const fetchCategories = useCallback(async () => {
     setLoading(true);
@@ -78,10 +77,7 @@ export function useCategories(): UseCategoriesReturn {
         throw new Error(error.message);
       }
 
-      toast({
-        title: 'Success',
-        description: 'Category created successfully',
-      });
+      toast.success('Category created successfully');
 
       // Refetch categories
       await fetchCategories();
@@ -89,14 +85,10 @@ export function useCategories(): UseCategoriesReturn {
       return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create category';
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: message,
-      });
+      toast.error(message);
       throw err;
     }
-  }, [supabase, toast, fetchCategories]);
+  }, [supabase, fetchCategories]);
 
   useEffect(() => {
     fetchCategories();

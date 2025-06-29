@@ -1,14 +1,16 @@
 // src/app/(dashboard)/layout.tsx
-import { DashboardLayout } from '@/features/dashboard/components/dashboard-layout'
+import { Metadata } from "next"
+import { DashboardLayoutClient } from "@/features/dashboard/components/dashboard-layout-client"
+
+export const metadata: Metadata = {
+  title: "Dashboard - Pathology Bites",
+  description: "User dashboard for Pathology Bites learning platform",
+}
 
 export default function DashboardLayoutWrapper({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <DashboardLayout>
-      {children}
-    </DashboardLayout>
-  )
+  return <DashboardLayoutClient>{children}</DashboardLayoutClient>
 }

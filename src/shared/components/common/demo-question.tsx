@@ -8,6 +8,7 @@ import { Check, X, ExternalLink } from "lucide-react"
 import QuestionSkeleton from "./skeletons/demo-question-skeleton"
 import DemoQuestionError from "./demo-question-error"
 import { ImageCarousel } from "@/features/images/components/image-carousel"
+import { ImageDialog } from "@/shared/components/ui/image-dialog"
 import { useDemoQuestions } from "@/shared/hooks/use-demo-questions"
 
 export default function DemoQuestion() {
@@ -24,18 +25,20 @@ export default function DemoQuestion() {
       const contentTimer = setTimeout(() => {
         setShowContent(true);
       }, 100);
-      
+
       return () => clearTimeout(contentTimer);
     }
   }, [loading, currentQuestion]);
 
   // Reset state when changing questions
   useEffect(() => {
-    setSelectedOption(null);
-    setIsAnswered(false);
-    setShowContent(false);
-    setShowExplanation(false);
-  }, [currentQuestion]);
+    if (currentQuestion) {
+      setSelectedOption(null);
+      setIsAnswered(false);
+      setShowContent(false);
+      setShowExplanation(false);
+    }
+  }, [currentQuestion?.id]); // Use question ID to detect actual changes
 
   const handleOptionClick = (optionId: string) => {
     if (!isAnswered) {
@@ -47,39 +50,45 @@ export default function DemoQuestion() {
   };
 
   const resetQuestion = () => {
+    // First hide content with animation
     setShowContent(false);
     setShowExplanation(false);
+
+    // Reset all state
+    setSelectedOption(null);
+    setIsAnswered(false);
+
+    // Fetch new question after animation
     setTimeout(() => {
       refreshQuestion();
     }, 300);
   };
 
   // Helper to get a letter label for an option ID
-  const getOptionLabel = (optionId: string) => {
-    // Try to extract a letter from the ID if it's a UUID
+  const getOptionLabel = (optionId: string, index: number) => {
+    // For UUIDs or long IDs, use alphabetical labels based on index
     if (optionId.length > 10) {
-      // For UUIDs, use alphanumeric characters from the beginning
-      return optionId.replace(/-/g, '').charAt(0).toUpperCase();
+      return String.fromCharCode(65 + index); // A, B, C, D, etc.
     }
     // Otherwise just use the first character
     return optionId.toString().charAt(0).toUpperCase();
   };
 
   if (loading) return <QuestionSkeleton />;
-  
+
   if (error && !currentQuestion) {
     return <DemoQuestionError message={error} onRetry={refreshQuestion} />;
   }
-  
+
   if (!currentQuestion) {
-    return <DemoQuestionError 
-      message="No questions available at this time." 
-      onRetry={refreshQuestion} 
+    return <DemoQuestionError
+      message="No questions available at this time."
+      onRetry={refreshQuestion}
     />;
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full max-w-4xl mx-auto transition-all duration-300 ease-in-out">
       <CardHeader className="py-2">
         <CardTitle className={`text-lg transform transition-all duration-500 ${
           showContent ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
@@ -87,27 +96,22 @@ export default function DemoQuestion() {
           {currentQuestion.title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 transition-all duration-300 ease-in-out">
         <div className={`text-sm text-foreground/90 transform transition-all duration-500 delay-100 ${
           showContent ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
         }`}>
           {currentQuestion.body}
         </div>
 
-        {/* Image Carousel */}
+        {/* Images */}
         {currentQuestion.images && currentQuestion.images.length > 0 && (
           <div className={`transform transition-all duration-500 delay-200 ${
             showContent ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
           }`}>
-            <ImageCarousel 
-              images={currentQuestion.images} 
-              fillContainer={true}
+            <ImageCarousel
+              images={currentQuestion.images}
+              className="border rounded-lg"
             />
-            {currentQuestion.images[0]?.caption && (
-              <div className="mt-1 text-xs text-muted-foreground">
-                {currentQuestion.images[0].caption}
-              </div>
-            )}
           </div>
         )}
 
@@ -117,7 +121,7 @@ export default function DemoQuestion() {
             const showCorrect = isAnswered && option.correct;
             const showIncorrect = isAnswered && isSelected && !option.correct;
             // Calculate option letter label
-            const optionLabel = getOptionLabel(option.id);
+            const optionLabel = getOptionLabel(option.id, index);
 
             return (
               <button
@@ -172,10 +176,10 @@ export default function DemoQuestion() {
                 <div>
                   <h4 className="font-medium text-xs uppercase mb-1">Reference Chart</h4>
                   <div className="bg-white rounded-lg border overflow-hidden">
-                    <ImageCarousel 
-                      images={[currentQuestion.comparativeImage]} 
-                      className="m-0 max-w-full"
-                      fillContainer={false}
+                    <ImageDialog
+                      src={currentQuestion.comparativeImage.url}
+                      alt={currentQuestion.comparativeImage.alt}
+                      caption={currentQuestion.comparativeImage.caption}
                     />
                     {currentQuestion.comparativeImage.caption && (
                       <div className="p-2 text-xs text-muted-foreground">
@@ -187,7 +191,7 @@ export default function DemoQuestion() {
               )}
 
               {/* Incorrect Explanations */}
-              {currentQuestion.incorrectExplanations && 
+              {currentQuestion.incorrectExplanations &&
                Object.keys(currentQuestion.incorrectExplanations).length > 0 && (
                 <div>
                   <h4 className="font-medium text-xs uppercase mb-1">Incorrect Answer Explanations</h4>
@@ -201,7 +205,7 @@ export default function DemoQuestion() {
                       })
                       .map(([id, explanation]) => (
                         <div key={id} className="flex gap-2">
-                          <span className="font-medium">{getOptionLabel(id)}.</span>
+                          <span className="font-medium">{getOptionLabel(id, currentQuestion.options.findIndex(opt => opt.id === id))}.</span>
                           <span>{explanation}</span>
                         </div>
                       ))}
@@ -227,7 +231,8 @@ export default function DemoQuestion() {
               )}
 
               <div className="flex justify-end pt-2">
-                <Button 
+                <Button
+                  type="button"
                   onClick={resetQuestion}
                   variant="outline"
                   size="sm"

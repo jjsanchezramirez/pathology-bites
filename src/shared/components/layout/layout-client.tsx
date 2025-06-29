@@ -29,7 +29,7 @@ export function AdminLayoutClient({
         {/* Scrollable Content */}
         <main className="flex-1 overflow-auto bg-background">
           {/* Background Effects */}
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.13),transparent_25%)] pointer-events-none" />
           
           {/* Content */}

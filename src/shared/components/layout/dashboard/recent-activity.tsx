@@ -79,7 +79,7 @@ export function RecentActivityCard({ activities }: RecentActivityProps) {
           <div className="space-y-4">
             {activities.map((activity) => (
               <div key={activity.id} className="flex items-start space-x-4 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                <div className="flex-shrink-0 mt-1">
+                <div className="shrink-0 mt-1">
                   {getActivityIcon(activity.type)}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -96,7 +96,7 @@ export function RecentActivityCard({ activities }: RecentActivityProps) {
                     </p>
                   )}
                 </div>
-                <div className="flex-shrink-0 text-xs text-muted-foreground">
+                <div className="shrink-0 text-xs text-muted-foreground">
                   {formatTimestamp(activity.timestamp)}
                 </div>
               </div>

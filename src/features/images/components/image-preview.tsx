@@ -136,7 +136,8 @@ export function ImagePreview({
           "relative rounded-md overflow-hidden bg-muted cursor-zoom-in",
           "transition-all duration-200 ease-in-out",
           "hover:ring-2 hover:ring-primary/50",
-          sizeClasses[size],
+          // Only apply size classes if className doesn't contain sizing
+          !className?.includes('w-') && !className?.includes('h-') && !className?.includes('aspect-') ? sizeClasses[size] : '',
           className
         )}
         onMouseEnter={handleShowPreview}
@@ -209,27 +210,29 @@ export function ImagePreview({
       {/* Full Size Dialog */}
       <Dialog open={isFullSizeVisible} onOpenChange={setIsFullSizeVisible}>
         <DialogContent
-          className="p-0 border-0 bg-transparent overflow-hidden max-w-none w-fit h-fit flex items-center justify-center"
+          className="p-0 border-0 bg-black/95 overflow-auto max-w-none w-screen h-screen"
         >
           {/* Hidden Title for Accessibility */}
           <VisuallyHidden>
             <DialogTitle>{alt}</DialogTitle>
           </VisuallyHidden>
 
-          <Image
-            src={src}
-            alt={alt}
-            width={0}
-            height={0}
-            sizes="90vw"
-            className="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain rounded-xl"
-            style={{
-              width: 'auto',
-              height: 'auto',
-              maxWidth: '90vw',
-              maxHeight: '90vh',
-            }}
-          />
+          <div className="min-w-full min-h-full flex items-start justify-center p-8">
+            <Image
+              src={src}
+              alt={alt}
+              width={0}
+              height={0}
+              sizes="100vw"
+              className="w-auto h-auto"
+              style={{
+                width: 'auto',
+                height: 'auto',
+                minWidth: 'auto',
+                minHeight: 'auto',
+              }}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </>

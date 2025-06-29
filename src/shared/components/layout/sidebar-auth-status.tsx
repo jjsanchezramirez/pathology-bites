@@ -266,7 +266,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
                 </div>
               </div>
             </div>
-            <ChevronUp className="h-4 w-4 ml-2 flex-shrink-0" />
+            <ChevronUp className="h-4 w-4 ml-2 shrink-0" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top" align="end" className="w-64 mb-2">

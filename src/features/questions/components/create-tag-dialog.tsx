@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/shared/services/client'
-import { useToast } from '@/shared/hooks/use-toast'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -28,17 +28,12 @@ export function CreateTagDialog({ open, onOpenChange, onSuccess }: CreateTagDial
   const [isCreating, setIsCreating] = useState(false)
 
   const supabase = createClient()
-  const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!name.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Tag name is required'
-      })
+      toast.error('Tag name is required')
       return
     }
 
@@ -59,20 +54,13 @@ export function CreateTagDialog({ open, onOpenChange, onSuccess }: CreateTagDial
         throw new Error(errorData.error || 'Failed to create tag')
       }
 
-      toast({
-        title: 'Success',
-        description: 'Tag created successfully'
-      })
+      toast.success('Tag created successfully')
 
       setName('')
       onSuccess()
     } catch (error) {
       console.error('Error creating tag:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create tag'
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to create tag')
     } finally {
       setIsCreating(false)
     }

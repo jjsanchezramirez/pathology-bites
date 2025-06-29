@@ -11,6 +11,7 @@ import { FormButton } from '@/features/auth/components/ui/form-button'
 import { GoogleSignInButton } from '@/features/auth/components/google-sign-in-button'
 import { AuthDivider } from '@/features/auth/components/ui/auth-divider'
 import { Alert, AlertDescription } from '@/shared/components/ui/alert'
+import { LoadingSpinner } from '@/shared/components/common/loading-spinner'
 
 interface LoginPageProps {
   searchParams: Promise<{ error?: string; message?: string; redirect?: string }>
@@ -101,10 +102,25 @@ async function LoginForm({ searchParams }: LoginPageProps) {
   )
 }
 
+// Loading component that matches the site's style
+function LoginPageLoading() {
+  return (
+    <AuthCard
+      title="Welcome back"
+      description="Login with Google or your email account"
+      showPrivacyFooter
+    >
+      <div className="py-8">
+        <LoadingSpinner size="lg" text="Loading login form..." />
+      </div>
+    </AuthCard>
+  )
+}
+
 export default function LoginPage(props: LoginPageProps) {
   return (
     <AuthPageLayout maxWidth="sm">
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<LoginPageLoading />}>
         <LoginForm {...props} />
       </Suspense>
     </AuthPageLayout>

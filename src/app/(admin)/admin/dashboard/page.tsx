@@ -5,6 +5,7 @@ import { dashboardService } from "@/features/dashboard/services/service"
 import { StatsCards } from "@/shared/components/layout/dashboard/stats-cards"
 import { RecentActivityCard } from "@/shared/components/layout/dashboard/recent-activity"
 import { QuickActionsCard } from "@/shared/components/layout/dashboard/quick-actions"
+import { SystemStatus } from "@/shared/components/layout/dashboard/system-status"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 
@@ -119,6 +120,17 @@ export default function AdminDashboardPage() {
         <Suspense fallback={<ActionsLoading />}>
           <DashboardActions />
         </Suspense>
+      </div>
+
+      {/* System Status */}
+      <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          {/* Placeholder for future dashboard widgets */}
+          <div className="h-32 rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center">
+            <p className="text-muted-foreground text-sm">Additional dashboard widgets coming soon</p>
+          </div>
+        </div>
+        <SystemStatus />
       </div>
     </div>
   )

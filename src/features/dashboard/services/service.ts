@@ -1,5 +1,5 @@
 // src/lib/dashboard/service.ts
-import { createClient } from '@/shared/services/client'
+import { createClient } from '@/shared/services/server'
 
 export interface DashboardStats {
   totalQuestions: number
@@ -10,6 +10,8 @@ export interface DashboardStats {
   activeUsers: number
   recentQuestions: number
   unreadInquiries: number
+  questionReports: number
+  pendingReports: number
 }
 
 export interface RecentActivity {
@@ -30,10 +32,14 @@ export interface QuickAction {
 }
 
 export class DashboardService {
-  private supabase = createClient()
+  private async getSupabaseClient() {
+    return await createClient()
+  }
 
   async getDashboardStats(): Promise<DashboardStats> {
     try {
+      const supabase = await this.getSupabaseClient()
+
       // Get all counts in parallel
       const [
         questionsResult,
@@ -41,27 +47,31 @@ export class DashboardService {
         imagesResult,
         inquiriesResult,
         pendingQuestionsResult,
-        activeUsersResult
+        activeUsersResult,
+        questionReportsResult,
+        pendingReportsResult
       ] = await Promise.all([
-        this.supabase.from('questions').select('*', { count: 'exact', head: true }),
-        this.supabase.from('users').select('*', { count: 'exact', head: true }),
-        this.supabase.from('images').select('*', { count: 'exact', head: true }),
-        this.supabase.from('inquiries').select('*', { count: 'exact', head: true }),
-        this.supabase.from('questions').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
-        this.supabase.from('users').select('*', { count: 'exact', head: true }).eq('status', 'active')
+        supabase.from('questions').select('*', { count: 'exact', head: true }),
+        supabase.from('users').select('*', { count: 'exact', head: true }),
+        supabase.from('images').select('*', { count: 'exact', head: true }),
+        supabase.from('inquiries').select('*', { count: 'exact', head: true }),
+        supabase.from('questions').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
+        supabase.from('users').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase.from('question_reports').select('*', { count: 'exact', head: true }),
+        supabase.from('question_reports').select('*', { count: 'exact', head: true }).eq('status', 'pending')
       ])
 
       // Get recent questions (last 30 days)
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-      const recentQuestionsResult = await this.supabase
+      const recentQuestionsResult = await supabase
         .from('questions')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', thirtyDaysAgo.toISOString())
 
       // Get unread inquiries (assuming we want to count all inquiries as potentially unread)
-      const unreadInquiriesResult = await this.supabase
+      const unreadInquiriesResult = await supabase
         .from('inquiries')
         .select('*', { count: 'exact', head: true })
 
@@ -73,7 +83,9 @@ export class DashboardService {
         pendingQuestions: pendingQuestionsResult.count || 0,
         activeUsers: activeUsersResult.count || 0,
         recentQuestions: recentQuestionsResult.count || 0,
-        unreadInquiries: unreadInquiriesResult.count || 0
+        unreadInquiries: unreadInquiriesResult.count || 0,
+        questionReports: questionReportsResult.count || 0,
+        pendingReports: pendingReportsResult.count || 0
       }
     } catch (error) {
       console.error('Error fetching dashboard stats:', error)
@@ -86,17 +98,20 @@ export class DashboardService {
         pendingQuestions: 0,
         activeUsers: 0,
         recentQuestions: 0,
-        unreadInquiries: 0
+        unreadInquiries: 0,
+        questionReports: 0,
+        pendingReports: 0
       }
     }
   }
 
   async getRecentActivity(): Promise<RecentActivity[]> {
     try {
+      const supabase = await this.getSupabaseClient()
       const activities: RecentActivity[] = []
 
       // Get recent questions
-      const { data: recentQuestions } = await this.supabase
+      const { data: recentQuestions } = await supabase
         .from('questions')
         .select('id, title, created_at, created_by')
         .order('created_at', { ascending: false })
@@ -116,7 +131,7 @@ export class DashboardService {
       }
 
       // Get recent inquiries
-      const { data: recentInquiries } = await this.supabase
+      const { data: recentInquiries } = await supabase
         .from('inquiries')
         .select('id, first_name, last_name, request_type, created_at')
         .order('created_at', { ascending: false })
@@ -135,7 +150,7 @@ export class DashboardService {
       }
 
       // Get recent users
-      const { data: recentUsers } = await this.supabase
+      const { data: recentUsers } = await supabase
         .from('users')
         .select('id, first_name, last_name, email, created_at')
         .order('created_at', { ascending: false })
@@ -167,10 +182,10 @@ export class DashboardService {
   getQuickActions(stats: DashboardStats): QuickAction[] {
     return [
       {
-        title: 'Review Pending Questions',
+        title: 'Review Draft Questions',
         description: `${stats.pendingQuestions} questions awaiting review`,
         count: stats.pendingQuestions,
-        href: '/admin/questions?status=draft',
+        href: '/admin/questions/review',
         urgent: stats.pendingQuestions > 0
       },
       {
@@ -179,6 +194,13 @@ export class DashboardService {
         count: stats.unreadInquiries,
         href: '/admin/inquiries',
         urgent: stats.unreadInquiries > 5
+      },
+      {
+        title: 'Question Reports',
+        description: `${stats.pendingReports} reports pending review`,
+        count: stats.pendingReports,
+        href: '/admin/inquiries',
+        urgent: stats.pendingReports > 0
       },
       {
         title: 'Add New Question',

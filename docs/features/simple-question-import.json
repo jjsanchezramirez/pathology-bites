@@ -1,0 +1,34 @@
+{
+  "title": "Basic Anatomy Question",
+  "stem": "Which of the following structures is responsible for pumping blood throughout the body?",
+  "difficulty": "easy",
+  "teaching_point": "The heart is a muscular organ that acts as a pump to circulate blood throughout the cardiovascular system. It has four chambers and uses rhythmic contractions to maintain blood flow.",
+  "question_references": "Gray's Anatomy, 42nd Edition, Chapter 18",
+  "status": "draft",
+  "answer_options": [
+    {
+      "text": "Liver",
+      "is_correct": false,
+      "explanation": "The liver is responsible for metabolism and detoxification, not blood circulation.",
+      "order_index": 0
+    },
+    {
+      "text": "Heart",
+      "is_correct": true,
+      "explanation": "Correct! The heart is the central pump of the cardiovascular system, responsible for circulating blood throughout the body.",
+      "order_index": 1
+    },
+    {
+      "text": "Lungs",
+      "is_correct": false,
+      "explanation": "The lungs are responsible for gas exchange (oxygen and carbon dioxide), not pumping blood.",
+      "order_index": 2
+    },
+    {
+      "text": "Kidneys",
+      "is_correct": false,
+      "explanation": "The kidneys filter blood and produce urine, but they do not pump blood.",
+      "order_index": 3
+    }
+  ]
+}

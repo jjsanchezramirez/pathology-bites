@@ -9,7 +9,10 @@ import {
   Image,
   Settings,
   Microscope,
-  Tags
+  Tags,
+  MessageSquare,
+  ClipboardCheck,
+  ClipboardList
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -17,8 +20,8 @@ import { SidebarAuthStatus } from "./sidebar-auth-status"
 
 const navigation = [
   {
-    name: "Overview",
-    href: "/admin",
+    name: "Dashboard",
+    href: "/admin/dashboard",
     icon: LayoutDashboard
   },
   {
@@ -27,9 +30,24 @@ const navigation = [
     icon: FileQuestion
   },
   {
+    name: "Review Drafts",
+    href: "/admin/questions/review",
+    icon: ClipboardCheck
+  },
+  {
+    name: "Review Queue",
+    href: "/admin/questions/review-queue",
+    icon: ClipboardList
+  },
+  {
     name: "Question Management",
     href: "/admin/question-management",
     icon: Tags
+  },
+  {
+    name: "Inquiries",
+    href: "/admin/inquiries",
+    icon: MessageSquare
   },
   {
     name: "Users",
@@ -67,7 +85,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
       } bg-slate-900 text-slate-100 dark:bg-slate-800/95 flex flex-col transition-all duration-300 border-r border-slate-700/50`}
     >
       {/* Logo Section */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-700/50 dark:border-slate-600/50 flex-shrink-0">
+      <div className="h-16 flex items-center px-6 border-b border-slate-700/50 dark:border-slate-600/50 shrink-0">
         <Microscope className="h-6 w-6 shrink-0" />
         {!isCollapsed && (
           <h1 className="font-bold text-lg ml-3 whitespace-nowrap">Pathology Bites</h1>
@@ -92,7 +110,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
                   }`}
                 title={isCollapsed ? item.name : undefined}
               >
-                <div className="flex items-center justify-center w-10 flex-shrink-0">
+                <div className="flex items-center justify-center w-10 shrink-0">
                   <item.icon className="h-5 w-5" />
                 </div>
                 {!isCollapsed && (
@@ -105,7 +123,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
       </nav>
 
       {/* Auth Status at Bottom */}
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <SidebarAuthStatus isCollapsed={isCollapsed} />
       </div>
     </aside>

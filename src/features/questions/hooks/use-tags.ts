@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/shared/services/client';
 import { TagData } from '@/features/questions/types/questions';
-import { useToast } from '@/shared/hooks/use-toast';
+import { toast } from 'sonner';
 
 export interface UseTagsReturn {
   tags: TagData[];
@@ -18,7 +18,6 @@ export function useTags(): UseTagsReturn {
   const [error, setError] = useState<string | null>(null);
 
   const supabase = createClient();
-  const { toast } = useToast();
 
   const fetchTags = useCallback(async () => {
     setLoading(true);
@@ -55,10 +54,7 @@ export function useTags(): UseTagsReturn {
         throw new Error(error.message);
       }
 
-      toast({
-        title: 'Success',
-        description: 'Tag created successfully',
-      });
+      toast.success('Tag created successfully');
 
       // Refetch tags
       await fetchTags();
@@ -66,14 +62,10 @@ export function useTags(): UseTagsReturn {
       return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create tag';
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: message,
-      });
+      toast.error(message);
       throw err;
     }
-  }, [supabase, toast, fetchTags]);
+  }, [supabase, fetchTags]);
 
   useEffect(() => {
     fetchTags();

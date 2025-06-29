@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { createClient } from '@/shared/services/client';
-import { useToast } from '@/shared/hooks/use-toast';
+import { toast } from 'sonner';
 import { FileProgress, ImageCategory } from '@/features/images/types/images';
 import { compressImage, cleanFileName, formatImageName } from '@/features/images/services/image-upload';
 
@@ -17,7 +17,6 @@ export function useImageUpload({
   const [fileProgress, setFileProgress] = useState<FileProgress[]>([]);
 
   const supabase = createClient();
-  const { toast } = useToast();
 
   const updateFileProgress = useCallback((
     fileName: string,
@@ -150,21 +149,14 @@ export function useImageUpload({
             ? "0"
             : ((file.size - fileToUpload.size) / file.size * 100).toFixed(1);
 
-          toast({
-            title: "Success",
-            description: reduction === "0"
-              ? `Uploaded ${file.name}`
-              : `Uploaded ${file.name} (${reduction}% size reduction)`
-          });
+          toast.success(reduction === "0"
+            ? `Uploaded ${file.name}`
+            : `Uploaded ${file.name} (${reduction}% size reduction)`);
 
         } catch (error) {
           updateFileProgress(file.name, { status: 'error', progress: 0 });
 
-          toast({
-            variant: "destructive",
-            title: "Upload Error",
-            description: error instanceof Error ? error.message : `Failed to upload ${file.name}`
-          });
+          toast.error(error instanceof Error ? error.message : `Failed to upload ${file.name}`);
 
           continue; // Continue with next file
         }
@@ -173,15 +165,11 @@ export function useImageUpload({
       onUploadComplete?.();
     } catch (error) {
       console.error('Upload error:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to upload images"
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to upload images");
     } finally {
       setIsUploading(false);
     }
-  }, [maxSizeBytes, onUploadComplete, supabase, toast, updateFileProgress]);
+  }, [maxSizeBytes, onUploadComplete, supabase, updateFileProgress]);
 
   return {
     isUploading,

@@ -2,14 +2,14 @@
 # This file specifies which files and directories should be excluded from Augment's context engine
 
 # Environment files - Contains sensitive information like API keys, database URLs, etc.
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.example
-.env.template
-.env.*
+#.env
+#.env.local
+#.env.development.local
+#.env.test.local
+#.env.production.local
+#.env.example
+#.env.template
+#.env.*
 
 # Dependencies
 node_modules/
@@ -136,8 +136,8 @@ supabase/logs/
 .eslintcache
 .node_repl_history
 .yarn-integrity
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.vercel
+#.env.local
+#.env.development.local
+#.env.test.local
+#.env.production.local
+#.vercel

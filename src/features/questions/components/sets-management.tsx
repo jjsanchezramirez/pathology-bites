@@ -3,7 +3,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/shared/services/client'
-import { useToast } from '@/shared/hooks/use-toast'
+import { toast } from 'sonner'
 import {
   Table,
   TableBody,
@@ -45,6 +45,7 @@ import {
 import { format } from 'date-fns'
 import { CreateSetDialog } from './create-set-dialog'
 import { EditSetDialog } from './edit-set-dialog'
+import { getQuestionSetDisplayName } from '@/features/questions/utils/display-helpers'
 
 interface QuestionSet {
   id: string
@@ -60,11 +61,11 @@ interface QuestionSet {
 const PAGE_SIZE = 10
 
 const sourceTypeConfig = {
-  'ai': { label: 'AI', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300' },
-  'web': { label: 'Web', color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' },
-  'book': { label: 'Book', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300' },
-  'handwritten': { label: 'Handwritten', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300' },
-  'other': { label: 'Other', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300' }
+  'AI-Generated': { label: 'AI', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300' },
+  'Web Resource': { label: 'Web', color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' },
+  'Textbook': { label: 'Book', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300' },
+  'Expert-Authored': { label: 'Expert', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300' },
+  'Other': { label: 'Other', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300' }
 }
 
 export function SetsManagement() {
@@ -81,7 +82,6 @@ export function SetsManagement() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const supabase = createClient()
-  const { toast } = useToast()
 
   const loadSets = useCallback(async () => {
     setLoading(true)
@@ -107,15 +107,11 @@ export function SetsManagement() {
       setTotalPages(data.totalPages || 0)
     } catch (error) {
       console.error('Error loading question sets:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to load question sets'
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to load question sets')
     } finally {
       setLoading(false)
     }
-  }, [searchTerm, page, toast])
+  }, [searchTerm, page])
 
   const handleDelete = async () => {
     if (!selectedSet) return
@@ -137,21 +133,14 @@ export function SetsManagement() {
         throw new Error(errorData.error || 'Failed to delete question set')
       }
 
-      toast({
-        title: 'Success',
-        description: 'Question set deleted successfully'
-      })
+      toast.success('Question set deleted successfully')
 
       setShowDeleteDialog(false)
       setSelectedSet(null)
       loadSets()
     } catch (error) {
       console.error('Error deleting question set:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete question set'
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to delete question set')
     } finally {
       setIsDeleting(false)
     }
@@ -186,19 +175,12 @@ export function SetsManagement() {
         throw new Error(errorData.error || 'Failed to update question set status')
       }
 
-      toast({
-        title: 'Success',
-        description: `Question set ${set.is_active ? 'deactivated' : 'activated'} successfully`
-      })
+      toast.success(`Question set ${set.is_active ? 'deactivated' : 'activated'} successfully`)
 
       loadSets()
     } catch (error) {
       console.error('Error updating question set status:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to update question set status'
-      })
+      toast.error('Failed to update question set status')
     }
   }
 
@@ -289,7 +271,7 @@ export function SetsManagement() {
                   <TableCell>
                     <Badge
                       variant="outline"
-                      className={sourceTypeConfig[set.source_type as keyof typeof sourceTypeConfig]?.color || sourceTypeConfig.other.color}
+                      className={sourceTypeConfig[set.source_type as keyof typeof sourceTypeConfig]?.color || sourceTypeConfig.Other.color}
                     >
                       {sourceTypeConfig[set.source_type as keyof typeof sourceTypeConfig]?.label || set.source_type}
                     </Badge>

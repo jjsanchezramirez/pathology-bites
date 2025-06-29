@@ -1,6 +1,6 @@
 // src/app/layout.tsx
 import { ConditionalThemeProvider } from '@/shared/components/common/conditional-theme-provider'
-import { Toaster } from "@/shared/components/ui/toaster"
+import { Toaster as SonnerToaster } from "@/shared/components/ui/sonner"
 import { ConnectionStatus } from "@/shared/components/common/connection-status"
 import { cn } from '@/shared/utils'
 import "@/styles/globals.css"
@@ -33,7 +33,7 @@ export default async function RootLayout({
               <div>{children}</div>
             </AuthProvider>
           </div>
-          <Toaster />
+          <SonnerToaster />
           <ConnectionStatus />
         </ConditionalThemeProvider>
         <Analytics/>

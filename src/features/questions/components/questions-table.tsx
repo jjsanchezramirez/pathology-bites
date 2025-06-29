@@ -6,8 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { useToast } from "@/shared/hooks/use-toast";
-import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon } from 'lucide-react';
+import { toast } from 'sonner';
+import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, FileText, Flag } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -36,6 +36,9 @@ import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
 import { CreateQuestionDialog } from './create-question-dialog';
 import { EditQuestionDialog } from './edit-question-dialog';
+import { ImportQuestionDialog } from './import-question-dialog';
+import { QuestionFlagDialog } from './question-flag-dialog';
+import { getQuestionSetDisplayName, getCategoryDisplayName } from '@/features/questions/utils/display-helpers';
 
 const PAGE_SIZE = 10;
 
@@ -46,12 +49,8 @@ const DIFFICULTY_CONFIG = {
   hard: { label: 'Hard', color: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300' },
 } as const;
 
-// Status configuration
-const STATUS_CONFIG = {
-  draft: { label: 'Draft', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300' },
-  published: { label: 'Published', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300' },
-  archived: { label: 'Archived', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300' },
-} as const;
+// Import the status configuration from types
+import { STATUS_CONFIG } from '@/features/questions/types/questions'
 
 // Table Controls component
 function TableControls({
@@ -60,6 +59,7 @@ function TableControls({
   onStatusChange,
   onQuestionSetChange,
   onCreateNew,
+  onImportJson,
   difficultyFilter,
   statusFilter,
   questionSetFilter,
@@ -70,6 +70,7 @@ function TableControls({
   onStatusChange: (status: string) => void;
   onQuestionSetChange: (questionSetId: string) => void;
   onCreateNew: () => void;
+  onImportJson: () => void;
   difficultyFilter: string;
   statusFilter: string;
   questionSetFilter: string;
@@ -104,7 +105,11 @@ function TableControls({
           <SelectContent>
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="under_review">Under Review</SelectItem>
+            <SelectItem value="approved_with_edits">Approved with Edits</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
             <SelectItem value="published">Published</SelectItem>
+            <SelectItem value="flagged">Flagged</SelectItem>
             <SelectItem value="archived">Archived</SelectItem>
           </SelectContent>
         </Select>
@@ -122,10 +127,25 @@ function TableControls({
           </SelectContent>
         </Select>
       </div>
-      <Button onClick={onCreateNew}>
-        <Plus className="h-4 w-4 mr-2" />
-        Add Question
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Question
+            <ChevronDown className="h-4 w-4 ml-2" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={onCreateNew}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Question
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onImportJson}>
+            <FileText className="h-4 w-4 mr-2" />
+            Import from JSON
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
@@ -173,11 +193,13 @@ function TablePagination({
 function RowActions({
   question,
   onEdit,
-  onDelete
+  onDelete,
+  onFlag
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
   onDelete: (question: QuestionWithDetails) => void;
+  onFlag?: (question: QuestionWithDetails) => void;
 }) {
   return (
     <DropdownMenu>
@@ -192,6 +214,12 @@ function RowActions({
           <Edit className="h-4 w-4 mr-2" />
           Edit
         </DropdownMenuItem>
+        {question.status === 'published' && onFlag && (
+          <DropdownMenuItem onClick={() => onFlag(question)}>
+            <Flag className="h-4 w-4 mr-2" />
+            Flag for Review
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           className="text-red-600"
           onClick={() => onDelete(question)}
@@ -212,11 +240,12 @@ export function QuestionsTable() {
   const [page, setPage] = useState(0);
   const [selectedQuestion, setSelectedQuestion] = useState<QuestionWithDetails | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [questionToDelete, setQuestionToDelete] = useState<QuestionWithDetails | null>(null);
-
-  const { toast } = useToast();
+  const [questionToFlag, setQuestionToFlag] = useState<QuestionWithDetails | null>(null);
 
   // Fetch questions with current filters
   const {
@@ -270,6 +299,11 @@ export function QuestionsTable() {
     setShowDeleteDialog(true);
   }, []);
 
+  const handleFlag = useCallback((question: QuestionWithDetails) => {
+    setQuestionToFlag(question);
+    setShowFlagDialog(true);
+  }, []);
+
   const handleConfirmDelete = useCallback(async () => {
     if (!questionToDelete) return;
 
@@ -287,9 +321,20 @@ export function QuestionsTable() {
     refetch();
   }, [refetch]);
 
+  const handleImportSave = useCallback(() => {
+    setShowImportDialog(false);
+    refetch();
+  }, [refetch]);
+
   const handleEditSave = useCallback(() => {
     setShowEditDialog(false);
     setSelectedQuestion(null);
+    refetch();
+  }, [refetch]);
+
+  const handleFlagSave = useCallback(() => {
+    setShowFlagDialog(false);
+    setQuestionToFlag(null);
     refetch();
   }, [refetch]);
 
@@ -317,6 +362,7 @@ export function QuestionsTable() {
         onStatusChange={handleStatusChange}
         onQuestionSetChange={handleQuestionSetChange}
         onCreateNew={() => setShowCreateDialog(true)}
+        onImportJson={() => setShowImportDialog(true)}
         difficultyFilter={difficultyFilter}
         statusFilter={statusFilter}
         questionSetFilter={questionSetFilter}
@@ -330,6 +376,7 @@ export function QuestionsTable() {
               <TableHead>Title</TableHead>
               <TableHead>Difficulty</TableHead>
               <TableHead>Question Set</TableHead>
+              <TableHead>Category</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Images</TableHead>
               <TableHead className="w-32">Created</TableHead>
@@ -339,13 +386,13 @@ export function QuestionsTable() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={8} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : questions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                   {searchTerm || difficultyFilter !== 'all' || statusFilter !== 'all' || questionSetFilter !== 'all'
                     ? 'No questions found matching your filters'
                     : 'No questions created yet'
@@ -365,8 +412,30 @@ export function QuestionsTable() {
                   </TableCell>
                   <TableCell className="max-w-xs">
                     <p className="line-clamp-1 text-sm">
-                      {question.question_set?.name || 'No set assigned'}
+                      {question.question_set ? getQuestionSetDisplayName(question.question_set) : 'No set assigned'}
                     </p>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1 max-w-[150px]">
+                      {question.categories && question.categories.length > 0 ? (
+                        question.categories.slice(0, 2).map((category) => (
+                          <Badge
+                            key={category.id}
+                            variant="outline"
+                            className="text-[10px] px-1.5 py-0"
+                          >
+                            {getCategoryDisplayName(category)}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span className="text-xs text-muted-foreground">No category</span>
+                      )}
+                      {question.categories && question.categories.length > 2 && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          +{question.categories.length - 2}
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Badge className={STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.color}>
@@ -387,6 +456,7 @@ export function QuestionsTable() {
                       question={question}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
+                      onFlag={handleFlag}
                     />
                   </TableCell>
                 </TableRow>
@@ -412,6 +482,12 @@ export function QuestionsTable() {
         onSave={handleCreateSave}
       />
 
+      <ImportQuestionDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onSave={handleImportSave}
+      />
+
       {showEditDialog && selectedQuestion && (
         <EditQuestionDialog
           question={selectedQuestion}
@@ -420,6 +496,14 @@ export function QuestionsTable() {
           onSave={handleEditSave}
         />
       )}
+
+      {/* Flag Dialog */}
+      <QuestionFlagDialog
+        question={questionToFlag}
+        open={showFlagDialog}
+        onOpenChange={setShowFlagDialog}
+        onFlagComplete={handleFlagSave}
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
