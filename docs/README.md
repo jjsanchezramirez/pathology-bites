@@ -6,6 +6,8 @@ Welcome to the Pathology Bites documentation! This directory contains comprehens
 
 ### 🛠️ Development
 - **[Developer Setup Guide](development/DEVELOPER_SETUP.md)** - Complete guide for setting up your development environment
+- **[Security Guide](development/SECURITY_GUIDE.md)** - Security measures, environment validation, and rate limiting
+- **[Database Performance Guide](development/DATABASE_PERFORMANCE.md)** - Database optimization, indexes, and monitoring
 - **[Testing Guide](#testing)** - Information about Jest (unit tests) and Playwright (E2E tests)
 
 ### 🎯 Project Management
@@ -15,6 +17,7 @@ Welcome to the Pathology Bites documentation! This directory contains comprehens
 ### ✨ Features
 - **[Question Review Workflow](features/QUESTION_REVIEW_WORKFLOW.md)** - How the question approval process works
 - **[JSON Import Feature](features/question-json-import.md)** - Bulk question import documentation
+- **[API Documentation](features/api-documentation.md)** - Complete API reference with examples
 - **[Sample Import Data](features/)** - Example JSON files for testing imports
 
 ## 🧪 Testing
