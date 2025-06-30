@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@config '../../tailwind.config.ts';
 
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
@@ -21,11 +21,10 @@
 }
 
 /* Add any common component styles */
-/* Temporarily commented out - causing Tailwind compilation issues
 @utility floating {
+  /* Use your animation utilities in component classes */
   @apply animate-float;
 }
-*/
 
 @layer utilities {
   /* Grid pattern for the coming soon page */

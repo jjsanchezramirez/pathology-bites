@@ -8,6 +8,7 @@ Welcome to the Pathology Bites documentation! This directory contains comprehens
 - **[Developer Setup Guide](development/DEVELOPER_SETUP.md)** - Complete guide for setting up your development environment
 - **[Security Guide](development/SECURITY_GUIDE.md)** - Security measures, environment validation, and rate limiting
 - **[Database Performance Guide](development/DATABASE_PERFORMANCE.md)** - Database optimization, indexes, and monitoring
+- **[Debugging Methodology](development/DEBUGGING_METHODOLOGY.md)** - Proper debugging process and git history investigation
 - **[Testing Guide](#testing)** - Information about Jest (unit tests) and Playwright (E2E tests)
 
 ### 🎯 Project Management
