@@ -73,6 +73,12 @@ export async function updateSession(request: NextRequest) {
     '/auth/confirm' // Add this line to allow the auth confirm route
   ]
 
+  // In Coming Soon mode, block signup pages unless bypass is enabled
+  const signupPages = ['/signup', '/verify-email', '/check-email', '/email-verified', '/email-already-verified']
+  const isSignupPage = signupPages.some(page =>
+    request.nextUrl.pathname.startsWith(page)
+  )
+
   const isAuthPage = authPages.some(page =>
     request.nextUrl.pathname.startsWith(page)
   )
@@ -94,9 +100,29 @@ export async function updateSession(request: NextRequest) {
     '/terms'
   ]
 
+  // Define protected routes that require authentication
+  const protectedRoutes = [
+    '/dashboard',
+    '/admin',
+    '/quiz',
+    '/profile',
+    '/settings'
+  ]
+
   const isPublicRoute = publicRoutes.some(route =>
     request.nextUrl.pathname === route || request.nextUrl.pathname.startsWith(route + '/')
   )
+
+  const isProtectedRoute = protectedRoutes.some(route =>
+    request.nextUrl.pathname.startsWith(route)
+  )
+
+  // In Coming Soon mode, block signup pages unless bypass is enabled
+  if (isComingSoonMode && isSignupPage && bypassParam !== 'true') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
 
   // Allow access to auth pages, static files, and public routes
   if (isAuthPage ||
@@ -107,12 +133,18 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse
   }
 
-  // Redirect unauthenticated users to login for protected routes
-  if (!user) {
+  // For protected routes, redirect unauthenticated users to login
+  if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirect', request.nextUrl.pathname)
     return NextResponse.redirect(url)
+  }
+
+  // For all other routes (including unknown routes), let them pass through
+  // This allows Next.js to handle 404 pages properly
+  if (!isProtectedRoute) {
+    return supabaseResponse
   }
 
     // Check user role for admin routes

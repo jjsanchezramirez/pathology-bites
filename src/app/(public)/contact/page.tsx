@@ -296,7 +296,7 @@ export default function ContactPage() {
             size="lg" 
             className="bg-[#5865F2] hover:bg-[#4752C4] transform hover:scale-105 
                       transition-all duration-300 ease-in-out"
-            onClick={() => window.open('YOUR_DISCORD_INVITE_LINK', '_blank')}
+            onClick={() => window.open('https://discord.gg/PNFvwVbW', '_blank')}
           >
             <Icons.discord className="h-5 w-5 mr-2" />
             Join Discord Server

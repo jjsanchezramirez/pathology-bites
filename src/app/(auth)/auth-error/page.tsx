@@ -12,6 +12,9 @@ export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps
   const params = await searchParams
   const description = params.description
 
+  // Check if coming soon mode is enabled
+  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
+
   return (
     <AuthPageLayout>
       <StatusCard
@@ -29,10 +32,12 @@ export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps
             <Button asChild className="w-full">
               <Link href="/login">Back to Login</Link>
             </Button>
-            
-            <Button variant="outline" asChild className="w-full">
-              <Link href="/signup">Create New Account</Link>
-            </Button>
+
+            {!isComingSoonMode && (
+              <Button variant="outline" asChild className="w-full">
+                <Link href="/signup">Create New Account</Link>
+              </Button>
+            )}
           </div>
         }
         variant="error"

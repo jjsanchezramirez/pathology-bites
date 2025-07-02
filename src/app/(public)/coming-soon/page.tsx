@@ -12,6 +12,7 @@ import { FeatureCard } from "@/shared/components/common/feature-card"
 import { BookOpenIcon, BarChartIcon, TestTube2Icon } from "lucide-react"
 import { CountdownTimer } from "@/shared/components/common/countdown-timer"
 import { useEmailSubscription } from "@/shared/hooks/use-email-subscription"
+import Link from "next/link"
 
 export default function ComingSoonPage() {
   const {
@@ -118,6 +119,50 @@ export default function ComingSoonPage() {
             <p className="text-sm text-center text-muted-foreground mb-2">See a preview of the site</p>
             <ChevronDown className="h-6 w-6 text-primary mx-auto animate-bounce" />
           </button>
+        </div>
+      </section>
+
+      {/* Navigation Section */}
+      <section className="relative py-16 border-t bg-background/50">
+        <div className="container mx-auto px-4 max-w-4xl text-center">
+          <h2 className="text-2xl font-bold mb-8">Learn More About Pathology Bites</h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <Link
+              href="/about"
+              className="p-4 rounded-lg border bg-card hover:bg-accent transition-colors text-center group"
+            >
+              <div className="font-medium group-hover:text-primary transition-colors">About</div>
+              <div className="text-sm text-muted-foreground mt-1">Our mission</div>
+            </Link>
+            <Link
+              href="/contact"
+              className="p-4 rounded-lg border bg-card hover:bg-accent transition-colors text-center group"
+            >
+              <div className="font-medium group-hover:text-primary transition-colors">Contact</div>
+              <div className="text-sm text-muted-foreground mt-1">Get in touch</div>
+            </Link>
+            <Link
+              href="/faq"
+              className="p-4 rounded-lg border bg-card hover:bg-accent transition-colors text-center group"
+            >
+              <div className="font-medium group-hover:text-primary transition-colors">FAQ</div>
+              <div className="text-sm text-muted-foreground mt-1">Common questions</div>
+            </Link>
+            <Link
+              href="/terms"
+              className="p-4 rounded-lg border bg-card hover:bg-accent transition-colors text-center group"
+            >
+              <div className="font-medium group-hover:text-primary transition-colors">Terms</div>
+              <div className="text-sm text-muted-foreground mt-1">Terms of service</div>
+            </Link>
+            <Link
+              href="/privacy"
+              className="p-4 rounded-lg border bg-card hover:bg-accent transition-colors text-center group"
+            >
+              <div className="font-medium group-hover:text-primary transition-colors">Privacy</div>
+              <div className="text-sm text-muted-foreground mt-1">Privacy policy</div>
+            </Link>
+          </div>
         </div>
       </section>
 

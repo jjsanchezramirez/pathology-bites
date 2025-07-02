@@ -21,20 +21,23 @@ interface LoginPageProps {
 async function LoginForm({ searchParams }: LoginPageProps) {
   // Await searchParams for Next.js 15
   const params = await searchParams
-  
+
   // Check if user is already authenticated
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (user) {
     const redirectPath = params.redirect || '/dashboard'
     redirect(redirectPath)
   }
 
+  // Check if coming soon mode is enabled
+  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
+
   return (
     <AuthCard
-      title="Welcome back"
-      description="Login with Google or your email account"
+      title={isComingSoonMode ? "Admin Login" : "Welcome back"}
+      description={isComingSoonMode ? "Admin access to Pathology Bites" : "Login with Google or your email account"}
       showPrivacyFooter
     >
       {params.error && (
@@ -88,16 +91,18 @@ async function LoginForm({ searchParams }: LoginPageProps) {
             Login
           </FormButton>
         </CSRFForm>
-        
-        <div className="text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Link 
-            href="/signup" 
-            className="text-foreground underline underline-offset-4 hover:text-primary"
-          >
-            Sign up
-          </Link>
-        </div>
+
+        {!isComingSoonMode && (
+          <div className="text-center text-sm text-muted-foreground">
+            Don't have an account?{" "}
+            <Link
+              href="/signup"
+              className="text-foreground underline underline-offset-4 hover:text-primary"
+            >
+              Sign up
+            </Link>
+          </div>
+        )}
       </div>
     </AuthCard>
   )
@@ -105,10 +110,13 @@ async function LoginForm({ searchParams }: LoginPageProps) {
 
 // Loading component that matches the site's style
 function LoginPageLoading() {
+  // Check if coming soon mode is enabled
+  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
+
   return (
     <AuthCard
-      title="Welcome back"
-      description="Login with Google or your email account"
+      title={isComingSoonMode ? "Admin Login" : "Welcome back"}
+      description={isComingSoonMode ? "Admin access to Pathology Bites" : "Login with Google or your email account"}
       showPrivacyFooter
     >
       <div className="py-8">

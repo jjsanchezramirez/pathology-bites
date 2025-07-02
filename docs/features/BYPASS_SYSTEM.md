@@ -4,6 +4,15 @@
 
 The bypass system allows authorized users to access all features of the application even when `NEXT_PUBLIC_COMING_SOON_MODE=true` is enabled.
 
+## Coming Soon Mode Features
+
+When Coming Soon mode is enabled:
+- **Public pages are accessible**: FAQ, Terms, Privacy, About, Contact pages can be accessed without bypass
+- **Auth pages modified**: Login shows "Admin Login", Sign up buttons are hidden
+- **Sign up blocked**: All signup-related pages redirect to login unless bypass is enabled
+- **Navigation added**: Coming Soon page includes links to all public pages
+- **Discord link updated**: All Discord links use the public invite: https://discord.gg/PNFvwVbW
+
 ## How It Works
 
 ### Environment Variable
@@ -38,22 +47,34 @@ http://localhost:3000/bypass
 
 ### Always Available (No Bypass Needed)
 - `/bypass` - Bypass control panel
-- `/login` - Authentication pages
-- `/signup` - Registration pages
+- `/login` - Authentication pages (shows "Admin Login" in Coming Soon mode)
+- `/forgot-password` - Password reset pages
+- `/auth-error` - Authentication error pages
 - `/api/*` - API endpoints
 
-### Public Routes (Available with Bypass)
-- `/` - Main landing page
-- `/demo-comparison` - Component comparison page
+### Public Routes (Available in Coming Soon Mode)
 - `/about` - About page
 - `/contact` - Contact page
 - `/faq` - FAQ page
 - `/privacy` - Privacy policy
 - `/terms` - Terms of service
 
-### Protected Routes (Require Authentication + Bypass)
+### Blocked in Coming Soon Mode (Require Bypass)
+- `/` - Main landing page (shows Coming Soon page instead)
+- `/signup` - Registration pages (redirects to login)
+- `/verify-email` - Email verification pages
+- `/demo-comparison` - Component comparison page
+
+### Protected Routes (Require Authentication)
 - `/admin/*` - Admin dashboard and features
 - `/dashboard` - User dashboard
+- `/quiz/*` - Quiz functionality
+- `/profile/*` - User profile pages
+- `/settings/*` - User settings pages
+
+### Error Handling
+- **404 Pages**: Unknown routes properly display the custom 404 page instead of redirecting to login
+- **Middleware Logic**: Only specific protected routes require authentication; all other routes pass through normally
 
 ## Usage Examples
 
