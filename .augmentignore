@@ -1,39 +1,43 @@
-# Augment Ignore File
-# This file specifies which files and directories should be excluded from Augment's context engine
+# ==============================================================================
+# PATHOLOGY BITES - AUGMENT IGNORE CONFIGURATION
+# ==============================================================================
+# Excludes files from Augment's context engine for better performance and security
+# Documentation: https://docs.augmentcode.com/ignore-files
 
-# Environment files - Contains sensitive information like API keys, database URLs, etc.
+# ==============================================================================
+# ENVIRONMENT & SECRETS (Security)
+# ==============================================================================
+# Keep .env.example for reference, exclude actual secrets
 .env
-.env.example
 .env.local
-.env.production
-#.env.development.local
-#.env.test.local
-#.env.production.local
-#.env.example
-#.env.template
-#.env.*
+.env.development.local
+.env.test.local
+.env.production.local
+secrets/
+*.pem
+*.key
+*.crt
+*.cert
 
-# Dependencies
+# ==============================================================================
+# DEPENDENCIES & PACKAGES (Performance)
+# ==============================================================================
 node_modules/
 .pnp
 .pnp.*
 .yarn/
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 .npm/
 .pnpm-store/
 
-# Build outputs
+# ==============================================================================
+# BUILD OUTPUTS & CACHE (Performance)
+# ==============================================================================
 .next/
 out/
 build/
 dist/
 .vercel/
 .turbo/
-
-# Cache directories
 .cache/
 .parcel-cache/
 .eslintcache
@@ -41,28 +45,32 @@ dist/
 *.tsbuildinfo
 next-env.d.ts
 
-# Testing
+# ==============================================================================
+# TESTING & COVERAGE (Performance)
+# ==============================================================================
 coverage/
 .nyc_output/
 .jest/
 test-results/
 playwright-report/
 
-# Logs
+# ==============================================================================
+# LOGS & DEBUGGING (Performance)
+# ==============================================================================
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 lerna-debug.log*
-
-# Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
 
-# OS generated files
+# ==============================================================================
+# OPERATING SYSTEM FILES (Noise Reduction)
+# ==============================================================================
 .DS_Store
 .DS_Store?
 ._*
@@ -72,42 +80,39 @@ ehthumbs.db
 Thumbs.db
 desktop.ini
 
-# Editor directories and files
+# ==============================================================================
+# IDE & EDITOR FILES (Noise Reduction)
+# ==============================================================================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Temporary files
+# ==============================================================================
+# TEMPORARY & BACKUP FILES (Noise Reduction)
+# ==============================================================================
 *.tmp
 *.temp
 .tmp/
 .temp/
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Backup files
 *.backup
 *.bak
 *.orig
 
-# Certificate files
-*.pem
-*.key
-*.crt
-*.cert
-
-# Archive files
+# ==============================================================================
+# ARCHIVES & BINARIES (Performance)
+# ==============================================================================
 *.zip
 *.tar.gz
 *.rar
 *.7z
+*.tgz
 
-# Large media files (optional - uncomment if you want to exclude)
+# ==============================================================================
+# LARGE MEDIA FILES (Optional - Performance)
+# ==============================================================================
+# Uncomment if you have large media files that slow down context loading
 # *.mp4
 # *.avi
 # *.mov
@@ -116,30 +121,36 @@ desktop.ini
 # *.webm
 # *.mkv
 
-# Documentation that might be auto-generated
+# ==============================================================================
+# AUTO-GENERATED DOCUMENTATION (Noise Reduction)
+# ==============================================================================
 docs/api/
 docs/build/
 storybook-static/
 
-# Package manager lock files (optional - uncomment if you want to exclude)
+# ==============================================================================
+# PACKAGE MANAGER FILES (Optional)
+# ==============================================================================
+# Uncomment if you want to exclude lock files from context
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
 
-# Supabase local development files
+# ==============================================================================
+# DATABASE & EXTERNAL SERVICES (Performance)
+# ==============================================================================
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Supabase local development
 supabase/.branches/
 supabase/.temp/
 supabase/logs/
 
-# Misc
-*.tgz
-*.tar.gz
-.npm
-.eslintcache
+# ==============================================================================
+# MISCELLANEOUS (Cleanup)
+# ==============================================================================
 .node_repl_history
 .yarn-integrity
-#.env.local
-#.env.development.local
-#.env.test.local
-#.env.production.local
-#.vercel

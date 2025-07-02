@@ -127,14 +127,14 @@ export class AuthErrorHandler {
           userMessage: 'Too many attempts. Please wait a moment and try again.',
           technicalDetails: { supabaseError: error }
         }
-      } else if (message.includes('network') || message.includes('fetch')) {
+      } else if (message.includes('network') || message.includes('fetch failed') || message.includes('fetch')) {
         authError = {
           type: AuthErrorType.NETWORK_ERROR,
           message: 'Network error',
           originalError: error,
           retryable: true,
           severity: 'medium',
-          userMessage: 'Network connection issue. Please check your internet and try again.',
+          userMessage: 'Unable to connect to the server. Please check your internet connection and try again.',
           technicalDetails: { networkError: error }
         }
       } else if (message.includes('csrf') || message.includes('security validation failed')) {

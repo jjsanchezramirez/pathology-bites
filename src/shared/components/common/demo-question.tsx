@@ -1,14 +1,14 @@
 // src/components/landing/demo-question.tsx
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/shared/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Check, X, ExternalLink } from "lucide-react"
 import QuestionSkeleton from "./skeletons/demo-question-skeleton"
 import DemoQuestionError from "./demo-question-error"
 import { ImageCarousel } from "@/features/images/components/image-carousel"
-import { ImageDialog } from "@/shared/components/ui/image-dialog"
+import { ImprovedImageDialog } from "./improved-image-dialog"
 import { useDemoQuestions } from "@/shared/hooks/use-demo-questions"
 
 export default function DemoQuestion() {
@@ -17,6 +17,8 @@ export default function DemoQuestion() {
   const [isAnswered, setIsAnswered] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Effect to handle animation timing after data loads
   useEffect(() => {
@@ -50,6 +52,8 @@ export default function DemoQuestion() {
   };
 
   const resetQuestion = () => {
+    setIsTransitioning(true);
+
     // First hide content with animation
     setShowContent(false);
     setShowExplanation(false);
@@ -61,6 +65,7 @@ export default function DemoQuestion() {
     // Fetch new question after animation
     setTimeout(() => {
       refreshQuestion();
+      setIsTransitioning(false);
     }, 300);
   };
 
@@ -88,15 +93,22 @@ export default function DemoQuestion() {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto transition-all duration-300 ease-in-out">
-      <CardHeader className="py-2">
-        <CardTitle className={`text-lg transform transition-all duration-500 ${
-          showContent ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-        }`}>
-          {currentQuestion.title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4 transition-all duration-300 ease-in-out">
+    <div
+      ref={containerRef}
+      className={`w-full max-w-4xl mx-auto transition-all duration-300 ease-in-out ${
+        isTransitioning ? 'opacity-50' : 'opacity-100'
+      }`}
+      style={{ minHeight: '600px' }} // Consistent minimum height
+    >
+      <Card className="h-full">
+        <CardHeader className="py-2">
+          <CardTitle className={`text-lg transform transition-all duration-500 ${
+            showContent ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+          }`}>
+            {currentQuestion.title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 transition-all duration-300 ease-in-out">
         <div className={`text-sm text-foreground/90 transform transition-all duration-500 delay-100 ${
           showContent ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
         }`}>
@@ -108,10 +120,20 @@ export default function DemoQuestion() {
           <div className={`transform transition-all duration-500 delay-200 ${
             showContent ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
           }`}>
-            <ImageCarousel
-              images={currentQuestion.images}
-              className="border rounded-lg"
-            />
+            {currentQuestion.images.length === 1 ? (
+              <ImprovedImageDialog
+                src={currentQuestion.images[0].url}
+                alt={currentQuestion.images[0].alt}
+                caption={currentQuestion.images[0].caption}
+                className="border rounded-lg"
+                aspectRatio="16/10"
+              />
+            ) : (
+              <ImageCarousel
+                images={currentQuestion.images}
+                className="border rounded-lg"
+              />
+            )}
           </div>
         )}
 
@@ -176,11 +198,14 @@ export default function DemoQuestion() {
                 <div>
                   <h4 className="font-medium text-xs uppercase mb-1">Reference Chart</h4>
                   <div className="bg-white rounded-lg border overflow-hidden">
-                    <ImageDialog
-                      src={currentQuestion.comparativeImage.url}
-                      alt={currentQuestion.comparativeImage.alt}
-                      caption={currentQuestion.comparativeImage.caption}
-                    />
+                    <div className="relative" style={{ aspectRatio: '16/10' }}>
+                      <img
+                        src={currentQuestion.comparativeImage.url}
+                        alt={currentQuestion.comparativeImage.alt}
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                      />
+                    </div>
                     {currentQuestion.comparativeImage.caption && (
                       <div className="p-2 text-xs text-muted-foreground">
                         {currentQuestion.comparativeImage.caption}
@@ -244,7 +269,8 @@ export default function DemoQuestion() {
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

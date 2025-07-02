@@ -1,9 +1,8 @@
 'use client'
 
-import { useState } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/shared/components/ui/dialog"
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
+import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
+import { ChevronLeft, ChevronRight, X } from "lucide-react"
 
 interface ImageProps {
   url: string
@@ -36,6 +35,28 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
   const openModal = () => setShowModal(true)
   const closeModal = () => setShowModal(false)
 
+  // Keyboard navigation for fullscreen
+  useEffect(() => {
+    if (!showModal) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'Escape':
+          setShowModal(false)
+          break
+        case 'ArrowLeft':
+          if (hasMultiple) prevImage()
+          break
+        case 'ArrowRight':
+          if (hasMultiple) nextImage()
+          break
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showModal, hasMultiple])
+
   return (
     <>
       {/* Carousel */}
@@ -43,12 +64,13 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
         {/* Main image */}
         <div
           className="relative cursor-pointer rounded-lg overflow-hidden bg-muted group"
+          style={{ aspectRatio: '16/10' }}
           onClick={openModal}
         >
           <img
             src={currentImage.url}
             alt={currentImage.alt}
-            className="w-full h-auto object-contain hover:opacity-90 transition-opacity"
+            className="w-full h-full object-contain hover:opacity-90 transition-opacity"
           />
 
           {/* Navigation arrows */}
@@ -78,15 +100,17 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
           )}
         </div>
 
-        {/* Dots */}
+        {/* Dots positioned on top of image */}
         {hasMultiple && (
-          <div className="flex justify-center mt-3 gap-2">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/20 backdrop-blur-sm rounded-full px-3 py-2">
             {images.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  index === currentIndex ? 'bg-primary w-4' : 'bg-gray-300 hover:bg-gray-400'
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
+                  index === currentIndex
+                    ? 'bg-white scale-125'
+                    : 'bg-white/60 hover:bg-white/80 hover:scale-110'
                 }`}
                 aria-label={`View image ${index + 1}`}
               />
@@ -94,65 +118,62 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
           </div>
         )}
 
-        {/* Caption */}
-        {currentImage.caption && (
-          <p className="mt-2 text-sm text-muted-foreground">{currentImage.caption}</p>
-        )}
+
       </div>
 
-      {/* Modal using proper Dialog component */}
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="p-0 border-0 bg-transparent overflow-hidden max-w-[90vw] max-h-[90vh] w-auto h-auto">
-          <VisuallyHidden>
-            <DialogTitle>{currentImage.alt}</DialogTitle>
-            <DialogDescription>Image viewer for {currentImage.alt}</DialogDescription>
-          </VisuallyHidden>
-
-          {/* Full screen dark blurred background */}
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm -z-10" />
-
-          <div className="relative flex items-center justify-center">
-            {/* Main image - larger size */}
+      {/* Beautiful modal with subtle blur background */}
+      {showModal && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-8"
+          onClick={() => setShowModal(false)}
+        >
+          {/* Image container - slightly smaller than fullscreen */}
+          <div className="relative max-w-[90vw] max-h-[90vh] bg-white/5 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
             <img
               src={currentImage.url}
               alt={currentImage.alt}
-              className="max-w-[85vw] max-h-[85vh] w-auto h-auto object-contain"
+              className="w-full h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
             />
 
-            {/* Navigation controls positioned relative to image */}
-            {hasMultiple && (
-              <>
-                <button
-                  onClick={prevImage}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white p-3 rounded-full transition-colors"
-                  aria-label="Previous image"
-                >
-                  <ChevronLeft size={24} />
-                </button>
-                <button
-                  onClick={nextImage}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white p-3 rounded-full transition-colors"
-                  aria-label="Next image"
-                >
-                  <ChevronRight size={24} />
-                </button>
-
-                {/* Counter */}
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full">
-                  {currentIndex + 1} of {images.length}
-                </div>
-              </>
-            )}
-
-            {/* Caption positioned at bottom of image */}
-            {currentImage.caption && (
-              <div className="absolute bottom-4 left-4 right-4 bg-black/70 text-white p-4 rounded-lg">
-                {currentImage.caption}
-              </div>
-            )}
+            {/* Close button */}
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-white/20 shadow-lg z-10"
+              aria-label="Close image"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
+
+          {/* Navigation controls (only if multiple images) */}
+          {hasMultiple && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-white/20 shadow-lg z-10"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+
+              <button
+                onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-white/20 shadow-lg z-10"
+                aria-label="Next image"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+
+              {/* Image counter */}
+              <div className="absolute top-4 left-4 bg-white/15 text-white text-sm px-3 py-1.5 rounded-full border border-white/20 shadow-lg z-10">
+                {currentIndex + 1} / {images.length}
+              </div>
+            </>
+          )}
+        </div>,
+        document.body
+      )}
     </>
   )
 }

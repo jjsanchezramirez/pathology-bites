@@ -31,13 +31,15 @@ export function useDemoQuestions() {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const fetchNewQuestion = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/demo-questions');
+      // Use current index for sequential ordering
+      const response = await fetch(`/api/demo-questions?index=${currentIndex}`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch demo question: ${response.status}`);
@@ -47,6 +49,10 @@ export function useDemoQuestions() {
 
       if (data && data.id) {
         setCurrentQuestion(data);
+        // Update current index for next question
+        if (data._metadata?.nextIndex !== undefined) {
+          setCurrentIndex(data._metadata.nextIndex);
+        }
         // Add to questions array if not already present
         setQuestions(prev => {
           const exists = prev.some(q => q.id === data.id);
@@ -127,6 +133,7 @@ export function useDemoQuestions() {
   };
 
   const refreshQuestion = () => {
+    // Move to next question in sequence
     fetchNewQuestion();
   };
 

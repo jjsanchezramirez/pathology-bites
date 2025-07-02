@@ -101,9 +101,11 @@ class RateLimiter {
 
 // Pre-configured rate limiters for different auth actions
 export const loginRateLimiter = new RateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  maxAttempts: 5, // 5 attempts per 15 minutes
-  blockDurationMs: 30 * 60 * 1000 // Block for 30 minutes
+  windowMs: (parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MINUTES || '15') * 60 * 1000),
+  maxAttempts: parseInt(process.env.AUTH_RATE_LIMIT_ATTEMPTS || '5'),
+  blockDurationMs: process.env.NODE_ENV === 'development'
+    ? (parseInt(process.env.AUTH_RATE_LIMIT_BLOCK_MINUTES_DEV || '2') * 60 * 1000)
+    : (parseInt(process.env.AUTH_RATE_LIMIT_BLOCK_MINUTES_PROD || '10') * 60 * 1000)
 })
 
 export const signupRateLimiter = new RateLimiter({

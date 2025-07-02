@@ -7,6 +7,7 @@ import { createClient } from '@/shared/services/server'
 import { z } from 'zod'
 import { validateCSRFToken } from '@/features/auth/utils/csrf-protection'
 import { headers } from 'next/headers'
+import { loginRateLimiter, getClientIP } from '@/features/auth/utils/rate-limiter'
 
 // Validation schema for signup
 const signupSchema = z.object({
@@ -86,6 +87,25 @@ export async function signup(formData: FormData) {
 export async function login(formData: FormData) {
   const supabase = await createClient()
 
+  // Get client IP for rate limiting
+  const headersList = await headers()
+  const forwarded = headersList.get('x-forwarded-for')
+  const realIP = headersList.get('x-real-ip')
+  const clientIP = forwarded?.split(',')[0] || realIP || 'unknown'
+
+  // Check rate limiting
+  const rateLimitResult = loginRateLimiter.checkLimit(clientIP, 'login')
+  const currentAttempts = loginRateLimiter.getAttempts(clientIP, 'login')
+
+  console.log(`Login attempt from IP ${clientIP}: ${currentAttempts}/5 attempts`)
+
+  if (!rateLimitResult.allowed) {
+    const retryAfterMinutes = Math.ceil((rateLimitResult.retryAfter || 0) / (1000 * 60))
+    console.log(`Rate limit exceeded for IP ${clientIP}. Retry after: ${retryAfterMinutes} minutes`)
+    redirect('/login?error=' + encodeURIComponent(`Too many login attempts. Please try again in ${retryAfterMinutes} minutes.`))
+    return
+  }
+
   // Validate CSRF token
   const csrfToken = formData.get('csrf-token') as string
   if (!csrfToken) {
@@ -97,7 +117,7 @@ export async function login(formData: FormData) {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
   }
-  
+
   const redirectPath = formData.get('redirect') as string
 
   const { error, data: authData } = await supabase.auth.signInWithPassword(data)

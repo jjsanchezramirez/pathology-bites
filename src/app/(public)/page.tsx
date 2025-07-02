@@ -1,6 +1,7 @@
 // src/app/page.tsx
 'use client'
 
+import { useEffect, useState } from 'react'
 import { FeatureCard } from "@/shared/components/common/feature-card"
 import { ScrollToTopButton } from "@/shared/components/common/scroll-to-top"
 import { Button } from "@/shared/components/ui/button"
@@ -10,11 +11,29 @@ import DemoQuestion from "@/shared/components/common/demo-question"
 import ComingSoonPage from "./coming-soon/page"
 
 export default function LandingPage() {
+  const [bypassEnabled, setBypassEnabled] = useState(false)
+
   // Check if coming soon mode is enabled
   const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
 
-  // If coming soon mode is enabled, show the coming soon page
-  if (isComingSoonMode) {
+  // Check for bypass on mount
+  useEffect(() => {
+    // Check URL parameter
+    const urlParams = new URLSearchParams(window.location.search)
+    const bypassParam = urlParams.get('bypass')
+
+    // Check localStorage for persistent bypass
+    const storedBypass = localStorage.getItem('pathology-bites-bypass')
+
+    if (bypassParam === 'true' || storedBypass === 'true') {
+      setBypassEnabled(true)
+      // Store bypass in localStorage for future visits
+      localStorage.setItem('pathology-bites-bypass', 'true')
+    }
+  }, [])
+
+  // If coming soon mode is enabled and no bypass, show the coming soon page
+  if (isComingSoonMode && !bypassEnabled) {
     return <ComingSoonPage />
   }
   return (

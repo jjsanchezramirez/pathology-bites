@@ -204,7 +204,7 @@ export async function GET(request: Request) {
     }
     // If no ID is provided, return a random demo question
     else {
-      // Get all active demo questions
+      // Get all active demo questions ordered by display_order
       const { data: demoQuestions, error: demoError } = await supabase
         .from('demo_questions')
         .select('id, question_id, display_order')
@@ -219,9 +219,14 @@ export async function GET(request: Request) {
         );
       }
 
-      // Select a random demo question
-      const randomIndex = Math.floor(Math.random() * demoQuestions.length);
-      const selectedDemo = demoQuestions[randomIndex];
+      // Use sequential ordering instead of random selection
+      // Get current index from query parameter or default to 0
+      const currentIndex = parseInt(url.searchParams.get('index') || '0');
+      const selectedIndex = currentIndex % demoQuestions.length;
+      const selectedDemo = demoQuestions[selectedIndex];
+
+      // Include next index in response for client to track
+      const nextIndex = (selectedIndex + 1) % demoQuestions.length;
 
       // Fetch the basic question data
       const { data: questionData, error: questionError } = await supabase
@@ -306,7 +311,13 @@ export async function GET(request: Request) {
             url: explanationImageDetail.url || '',
             caption: explanationImageDetail.description || '',
             alt: explanationImageDetail.alt_text || 'Comparative image'
-          } : undefined
+          } : undefined,
+          // Include metadata for sequential ordering
+          _metadata: {
+            currentIndex: selectedIndex,
+            nextIndex: nextIndex,
+            totalQuestions: demoQuestions.length
+          }
         };
 
         return NextResponse.json(processedQuestion, { status: 200 });

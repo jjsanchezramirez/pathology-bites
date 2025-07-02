@@ -29,6 +29,8 @@ export interface QuickAction {
   count?: number
   href: string
   urgent?: boolean
+  permission?: string
+  adminOnly?: boolean
 }
 
 export class DashboardService {
@@ -186,43 +188,55 @@ export class DashboardService {
         description: `${stats.pendingQuestions} questions awaiting review`,
         count: stats.pendingQuestions,
         href: '/admin/questions/review',
-        urgent: stats.pendingQuestions > 0
+        urgent: stats.pendingQuestions > 0,
+        permission: 'questions.review'
+      },
+      {
+        title: 'Review Queue',
+        description: `${stats.pendingReports} flagged questions to review`,
+        count: stats.pendingReports,
+        href: '/admin/questions/review-queue',
+        urgent: stats.pendingReports > 0,
+        permission: 'questions.review'
       },
       {
         title: 'Manage Inquiries',
         description: `${stats.unreadInquiries} inquiries to review`,
         count: stats.unreadInquiries,
         href: '/admin/inquiries',
-        urgent: stats.unreadInquiries > 5
-      },
-      {
-        title: 'Question Reports',
-        description: `${stats.pendingReports} reports pending review`,
-        count: stats.pendingReports,
-        href: '/admin/inquiries',
-        urgent: stats.pendingReports > 0
+        urgent: stats.unreadInquiries > 5,
+        permission: 'inquiries.manage',
+        adminOnly: true
       },
       {
         title: 'Add New Question',
         description: 'Create a new pathology question',
-        href: '/admin/questions/new'
+        href: '/admin/questions/create',
+        permission: 'questions.create',
+        adminOnly: true
       },
       {
         title: 'Manage Images',
         description: `${stats.totalImages} images in library`,
         count: stats.totalImages,
-        href: '/admin/images'
+        href: '/admin/images',
+        permission: 'images.manage',
+        adminOnly: true
       },
       {
         title: 'User Management',
         description: `${stats.activeUsers} active users`,
         count: stats.activeUsers,
-        href: '/admin/users'
+        href: '/admin/users',
+        permission: 'users.manage',
+        adminOnly: true
       },
       {
         title: 'Question Management',
         description: 'Manage categories, tags, and sets',
-        href: '/admin/question-management'
+        href: '/admin/question-management',
+        permission: 'categories.manage',
+        adminOnly: true
       }
     ]
   }

@@ -63,7 +63,7 @@ describe('AuthErrorHandler', () => {
       expect(authError.type).toBe(AuthErrorType.NETWORK_ERROR)
       expect(authError.retryable).toBe(true)
       expect(authError.severity).toBe('medium')
-      expect(authError.userMessage).toBe('Network connection issue. Please check your internet and try again.')
+      expect(authError.userMessage).toBe('Unable to connect to the server. Please check your internet connection and try again.')
     })
 
     it('should categorize CSRF errors correctly', () => {

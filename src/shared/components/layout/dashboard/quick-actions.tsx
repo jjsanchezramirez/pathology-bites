@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/admin/dashboard/quick-actions.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Badge } from "@/shared/components/ui/badge"
@@ -8,12 +10,22 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { QuickAction } from "@/features/dashboard/services/service"
+import { useUserRole } from "@/shared/hooks/use-user-role"
 
 interface QuickActionsProps {
   actions: QuickAction[]
 }
 
 export function QuickActionsCard({ actions }: QuickActionsProps) {
+  const { isAdmin, canAccess } = useUserRole()
+
+  // Filter actions based on user permissions
+  const filteredActions = actions.filter(action => {
+    if (action.adminOnly && !isAdmin) return false
+    if (action.permission && !canAccess(action.permission)) return false
+    return true
+  })
+
   return (
     <Card className="col-span-3">
       <CardHeader>
@@ -24,7 +36,7 @@ export function QuickActionsCard({ actions }: QuickActionsProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {actions.map((action, index) => (
+          {filteredActions.map((action, index) => (
             <Link key={index} href={action.href}>
               <div className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer group">
                 <div className="flex-1">

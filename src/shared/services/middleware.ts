@@ -77,11 +77,33 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith(page)
   )
 
-  // Allow access to auth pages, static files, and root
+  // Check for bypass parameter in URL
+  const bypassParam = request.nextUrl.searchParams.get('bypass')
+  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
+
+  // Define public routes that don't require authentication
+  const publicRoutes = [
+    '/',
+    '/coming-soon',
+    '/bypass',
+    '/demo-comparison',
+    '/about',
+    '/contact',
+    '/faq',
+    '/privacy',
+    '/terms'
+  ]
+
+  const isPublicRoute = publicRoutes.some(route =>
+    request.nextUrl.pathname === route || request.nextUrl.pathname.startsWith(route + '/')
+  )
+
+  // Allow access to auth pages, static files, and public routes
   if (isAuthPage ||
       request.nextUrl.pathname.startsWith('/_next/') ||
       request.nextUrl.pathname.includes('.') ||
-      request.nextUrl.pathname === '/') {
+      isPublicRoute ||
+      (isComingSoonMode && bypassParam === 'true')) {
     return supabaseResponse
   }
 

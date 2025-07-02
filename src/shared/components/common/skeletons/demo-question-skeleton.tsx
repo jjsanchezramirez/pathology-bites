@@ -6,11 +6,16 @@ import { Card, CardHeader, CardContent } from "@/shared/components/ui/card";
 
 const QuestionSkeleton = () => {
   return (
-    <Card className="w-full max-w-4xl mx-auto animate-pulse" data-testid="question-skeleton">
-      <CardHeader className="py-2">
-        <div className="h-6 w-48 bg-muted rounded-lg" />
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div
+      className="w-full max-w-4xl mx-auto"
+      style={{ minHeight: '600px' }}
+      data-testid="question-skeleton"
+    >
+      <Card className="h-full animate-pulse">
+        <CardHeader className="py-2">
+          <div className="h-6 w-48 bg-muted rounded-lg" />
+        </CardHeader>
+        <CardContent className="space-y-4">
         {/* Question text skeleton */}
         <div className="space-y-2">
           <div className="h-4 bg-muted rounded-lg w-3/4" />
@@ -20,7 +25,7 @@ const QuestionSkeleton = () => {
         </div>
 
         {/* Image placeholder skeleton */}
-        <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+        <div className="relative w-full border rounded-lg" style={{ aspectRatio: '16/10' }}>
           <div className="absolute inset-0 bg-muted rounded-lg w-full h-full" />
         </div>
         
@@ -38,8 +43,9 @@ const QuestionSkeleton = () => {
             </div>
           ))}
         </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
