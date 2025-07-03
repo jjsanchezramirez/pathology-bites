@@ -167,3 +167,70 @@ export async function PATCH(request: NextRequest) {
     )
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const supabase = await createClient()
+
+    // Check if user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check if user is admin
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (userError || userData?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { userId } = body
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Missing userId' }, { status: 400 })
+    }
+
+    // Prevent admin from deleting themselves
+    if (userId === user.id) {
+      return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 })
+    }
+
+    // Delete user from database first
+    const { error: dbError } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId)
+
+    if (dbError) {
+      throw dbError
+    }
+
+    // Delete user from auth
+    try {
+      const { error: authDeleteError } = await supabase.auth.admin.deleteUser(userId)
+
+      if (authDeleteError) {
+        console.error('Error deleting user from auth:', authDeleteError)
+        // Don't fail the request if auth deletion fails, as the user is already deleted from the database
+      }
+    } catch (authDeleteError) {
+      console.error('Error deleting user from auth:', authDeleteError)
+      // Don't fail the request if auth deletion fails
+    }
+
+    return NextResponse.json({ success: true })
+
+  } catch (error) {
+    console.error('Error deleting user:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
