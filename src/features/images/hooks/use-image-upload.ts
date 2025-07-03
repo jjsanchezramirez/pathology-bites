@@ -81,7 +81,7 @@ export function useImageUpload({
           let fileToUpload = file;
 
           // Get image dimensions before compression
-          updateFileProgress(file.name, { status: 'processing', progress: 10 });
+          updateFileProgress(file.name, { status: 'compressing', progress: 10 });
           const dimensions = await getImageDimensions(file);
 
           // Compress if needed

@@ -152,7 +152,7 @@ export function ImageSearch({
                     <div className="w-16 h-16 rounded border overflow-hidden">
                       <ImagePreview
                         src={image.url}
-                        alt={image.alt_text}
+                        alt={image.alt_text || ''}
                         size="sm"
                         className="w-full h-full object-cover"
                       />
@@ -232,12 +232,12 @@ export function ImageSearch({
                             : 'border-border opacity-50 cursor-not-allowed'
                       }`}
                       onClick={() => (canSelect || isSelected) ? handleImageToggle(image.id) : undefined}
-                      title={image.alt_text}
+                      title={image.alt_text || ''}
                     >
                       <div className="aspect-square rounded overflow-hidden">
                         <ImagePreview
                           src={image.url}
-                          alt={image.alt_text}
+                          alt={image.alt_text || ''}
                           size="sm"
                           className="w-full h-full object-cover"
                         />

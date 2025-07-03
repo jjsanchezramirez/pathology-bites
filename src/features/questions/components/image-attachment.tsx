@@ -211,7 +211,7 @@ export function ImageAttachment({
               >
                 <ImagePreview
                   src={image.url}
-                  alt={image.alt_text}
+                  alt={image.alt_text || ''}
                   size="md"
                   className="aspect-square w-full h-full rounded-lg border-2 border-border overflow-hidden"
                 />
@@ -234,8 +234,8 @@ export function ImageAttachment({
                   <GripVertical className="h-4 w-4 text-white drop-shadow-lg" />
                 </div>
                 <div className="mt-2">
-                  <p className="text-xs text-muted-foreground truncate" title={image.alt_text}>
-                    {image.alt_text}
+                  <p className="text-xs text-muted-foreground truncate" title={image.alt_text || ''}>
+                    {image.alt_text || 'No description'}
                   </p>
                 </div>
               </div>
@@ -358,11 +358,11 @@ export function ImageAttachment({
                           : 'border-border opacity-50 cursor-not-allowed'
                     }`}
                     onClick={() => (canSelectInActiveTab || isSelected) ? handleImageToggle(image.id, activeTab as 'stem' | 'explanation') : undefined}
-                    title={image.alt_text}
+                    title={image.alt_text || ''}
                   >
                     <SimpleImagePreview
                       src={image.url}
-                      alt={image.alt_text}
+                      alt={image.alt_text || ''}
                       className="aspect-square w-full h-full"
                     />
                     {isSelected && (

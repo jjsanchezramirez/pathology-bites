@@ -80,12 +80,12 @@ export function ReviewQueueTable() {
       const transformedQuestions: QuestionWithReviewDetails[] = data.map(q => {
         // Get the most recent reviewer from reviews
         const latestReview = q.reviews && q.reviews.length > 0 ?
-          q.reviews.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] :
+          q.reviews.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] :
           null;
 
         // Get the most recent flagger from flags
         const latestFlag = q.flags && q.flags.length > 0 ?
-          q.flags.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] :
+          q.flags.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] :
           null;
 
         return {

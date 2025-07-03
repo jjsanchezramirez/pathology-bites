@@ -72,7 +72,7 @@ export function useImages(params: UseImagesParams = {}): UseImagesReturn {
     }
   }, [page, pageSize, searchTerm, category]);
 
-  const deleteImageById = useCallback(async (imagePath: string, imageId: string) => {
+  const deleteImageById = useCallback(async (imagePath: string | null, imageId: string) => {
     try {
       await deleteImage(imagePath, imageId);
       // Remove the deleted image from local state

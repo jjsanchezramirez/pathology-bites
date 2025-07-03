@@ -120,7 +120,7 @@ export function EditImageDialog({
             <div className="rounded-lg overflow-hidden">
               <img
                 src={image.url}
-                alt={image.alt_text}
+                alt={image.alt_text || ''}
                 className="w-full h-64 object-contain bg-muted/20"
               />
             </div>

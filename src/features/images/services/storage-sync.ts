@@ -61,7 +61,8 @@ export async function syncFileSizesFromStorage(): Promise<SyncResult> {
     success: true,
     updated: 0,
     errors: [],
-    skipped: 0
+    skipped: 0,
+    totalProcessed: 0
   };
 
   try {
@@ -134,6 +135,8 @@ export async function syncFileSizesFromStorage(): Promise<SyncResult> {
     if (result.errors.length > 0) {
       result.success = false;
     }
+
+    result.totalProcessed = result.updated + result.skipped + result.errors.length;
 
     console.log(`Sync complete: ${result.updated} updated, ${result.skipped} skipped, ${result.errors.length} errors`);
     return result;

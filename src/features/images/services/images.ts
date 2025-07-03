@@ -2,21 +2,23 @@
 import { createClient } from '@/shared/services/client';
 import type { ImageData } from '@/features/images/types/images';
 
-export async function deleteImage(imagePath: string, imageId: string) {
+export async function deleteImage(imagePath: string | null, imageId: string) {
   const supabase = createClient(); // Remove <Database>
 
   try {
-    // First, delete the file from storage
-    const { error: storageError } = await supabase.storage
-      .from('images')
-      .remove([imagePath]);
+    // Only delete from storage if imagePath exists (not for external images)
+    if (imagePath) {
+      const { error: storageError } = await supabase.storage
+        .from('images')
+        .remove([imagePath]);
 
-    if (storageError) {
-      console.error('Storage deletion error:', storageError);
-      throw new Error(`Failed to delete image from storage: ${storageError.message}`);
+      if (storageError) {
+        console.error('Storage deletion error:', storageError);
+        throw new Error(`Failed to delete image from storage: ${storageError.message}`);
+      }
     }
 
-    // Then, delete the database record
+    // Delete the database record
     const { error: dbError } = await supabase
       .from('images')
       .delete()

@@ -45,7 +45,7 @@ export function useImageEdit({ onSuccess }: UseImageEditOptions = {}) {
     }
   }, [state.formData, onSuccess, updateState]);
 
-  const handleDeleteImage = useCallback(async (imageId: string, imagePath: string) => {
+  const handleDeleteImage = useCallback(async (imageId: string, imagePath: string | null) => {
     updateState({ isLoading: true });
     try {
       await deleteImage(imagePath, imageId);
@@ -67,9 +67,10 @@ export function useImageEdit({ onSuccess }: UseImageEditOptions = {}) {
 
   const initializeForm = useCallback((image: ImageData | null) => {
     const newFormData: ImageFormData = image ? {
-      description: image.description,
-      alt_text: image.alt_text,
-      category: image.category as ImageCategory // Cast to proper type
+      description: image.description || '',
+      alt_text: image.alt_text || '',
+      category: image.category as ImageCategory, // Cast to proper type
+      source_ref: image.source_ref || ''
     } : initialFormState;
 
     updateState({ formData: newFormData });

@@ -127,11 +127,7 @@ export default function QuizSessionPage() {
       created_by: "expert-1",
       version: 1,
       question_set_id: "set-1",
-      reviewed_by: null,
-      reviewed_at: null,
-      flagged_by: null,
-      flagged_at: null,
-      flag_reason: null,
+      category_id: "cat-1",
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
       answer_options: [

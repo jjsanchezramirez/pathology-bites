@@ -26,7 +26,7 @@ import { UploadDialog } from './upload-dialog';
 import { DeleteImageDialog } from './delete-image-dialog';
 import { fetchImages, deleteImage } from '@/features/images/services/images';
 import { getImageUsageStats, getStorageStats, ImageUsageStats } from '@/features/images/services/image-analytics';
-import { formatFileSize } from '@/features/images/services/image-upload';
+import { formatSize } from '@/features/images/services/image-upload';
 import {
   ImageData,
   ImageCategory,
@@ -389,9 +389,13 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
                     <TableCell>
                       <div className="flex items-center gap-1">
                         {stats?.is_orphaned ? (
-                          <AlertTriangle className="h-4 w-4 text-orange-500" title="Not used in any questions" />
+                          <div title="Not used in any questions">
+                            <AlertTriangle className="h-4 w-4 text-orange-500" />
+                          </div>
                         ) : (
-                          <CheckCircle className="h-4 w-4 text-green-500" title={`Used in ${stats?.usage_count || 0} question(s)`} />
+                          <div title={`Used in ${stats?.usage_count || 0} question(s)`}>
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          </div>
                         )}
                         <span className="text-xs text-muted-foreground">
                           {stats?.usage_count || 0}
