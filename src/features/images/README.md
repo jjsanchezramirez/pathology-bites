@@ -31,10 +31,11 @@ src/features/images/
 ## 🎯 Key Features
 
 ### Storage Management
-- **Real-time statistics**: Total images, storage used, unused images
-- **Storage limits**: 1GB Supabase free tier monitoring
+- **Real-time statistics**: Total images, storage used, unused images (uploaded only)
+- **Storage limits**: 1GB Supabase free tier monitoring (excludes external images)
 - **Auto-compression**: Images >1MB automatically compressed
 - **Cleanup tools**: Batch deletion of unused images
+- **External exclusion**: All analytics exclude external images from calculations
 
 ### Image Operations
 - **Upload**: Single/multiple files with drag & drop
@@ -138,13 +139,43 @@ usage.forEach(img => {
 });
 ```
 
+## 🔗 External Image Handling
+
+### Image Types
+The system handles two distinct types of images:
+
+#### Uploaded Images
+- Stored in Supabase storage bucket
+- Count toward 1GB storage limit
+- Included in all analytics and statistics
+- Can be managed (edit, delete, cleanup)
+- Categories: microscopic, gross, figure, table
+
+#### External Images
+- URL references only (PathOutlines images)
+- Do not use Supabase storage
+- **Excluded from all analytics and statistics**
+- Read-only (cannot be managed)
+- Category: always 'external'
+
+### Analytics Exclusion
+All database views and analytics exclude external images:
+
+```sql
+-- Standard filter used across all views
+WHERE category != 'external'
+```
+
+This ensures accurate storage calculations and prevents external images from affecting cleanup operations.
+
 ## 📊 Database Integration
 
 ### Views Used
-- `v_image_usage_stats` - Complete image data with usage analytics
-- `v_storage_stats` - Storage utilization summary  
-- `v_orphaned_images` - Unused images for cleanup
-- `v_image_usage_by_category` - Category-based analytics
+- `v_image_usage_stats` - Complete image data with usage analytics (excludes external)
+- `v_storage_stats` - Storage utilization summary (excludes external)
+- `v_orphaned_images` - Unused images for cleanup (excludes external)
+- `v_image_usage_by_category` - Category-based analytics (excludes external)
+- `v_dashboard_stats` - Dashboard statistics (excludes external)
 
 ### Search Implementation
 ```sql

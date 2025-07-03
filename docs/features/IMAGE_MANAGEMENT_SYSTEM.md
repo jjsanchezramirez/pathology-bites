@@ -61,7 +61,7 @@ The Image Management System provides comprehensive functionality for uploading, 
 - **Table**: Statistical data and classification systems
 
 ### Special Categories
-- **External**: PathOutlines images (URL only, not uploaded)
+- **External**: PathOutlines images (URL only, not uploaded, excluded from analytics)
 - **Unused**: Filter to show orphaned images
 
 ## 🔍 Search & Filtering
@@ -81,9 +81,10 @@ The Image Management System provides comprehensive functionality for uploading, 
 ## 💾 Storage Management
 
 ### Storage Limits
-- **Supabase Free Tier**: 1GB total storage
+- **Supabase Free Tier**: 1GB total storage (uploaded images only)
 - **Auto-compression**: Reduces file sizes automatically
-- **Usage monitoring**: Real-time tracking vs limits
+- **Usage monitoring**: Real-time tracking vs limits (excludes external images)
+- **External images**: URL references only, do not count toward storage limits
 
 ### Cleanup Operations
 - **Unused detection**: Automatic identification
@@ -110,13 +111,54 @@ const handleImageChange = () => {
 onImageChange?.(); // Called after upload/delete/edit
 ```
 
+## 🔗 External Image Handling
+
+### External vs Uploaded Images
+The system distinguishes between two types of images:
+
+#### **Uploaded Images**
+- **Storage**: Stored in Supabase storage bucket
+- **Management**: Full CRUD operations available
+- **Analytics**: Included in all storage statistics
+- **Cleanup**: Can be detected as orphaned and cleaned up
+- **Categories**: Microscopic, Gross, Figure, Table
+
+#### **External Images**
+- **Storage**: URL references only (PathOutlines images)
+- **Management**: Read-only, cannot be edited or deleted
+- **Analytics**: **Excluded from all storage statistics**
+- **Cleanup**: Cannot be orphaned (always have external references)
+- **Category**: Always marked as 'external'
+
+### Analytics Exclusion
+All storage analytics and statistics **exclude external images**:
+
+```sql
+-- All analytics views use this filter
+WHERE category != 'external'
+```
+
+**Views that exclude external images:**
+- `v_storage_stats` - Storage utilization summary
+- `v_dashboard_stats` - Dashboard statistics
+- `v_image_usage_stats` - Image usage analytics
+- `v_orphaned_images` - Cleanup candidates
+- `v_image_usage_by_category` - Category breakdown
+
+**Why external images are excluded:**
+- They don't use Supabase storage (no impact on 1GB limit)
+- They can't be managed (no upload/delete operations)
+- They can't be orphaned (always referenced externally)
+- Including them would skew storage calculations
+
 ## 🛡️ Data Integrity
 
 ### Usage Tracking
-- **Real-time calculation**: Via database views
-- **Orphaned detection**: Images not in any questions
+- **Real-time calculation**: Via database views (uploaded images only)
+- **Orphaned detection**: Images not in any questions (excludes external)
 - **Usage counts**: Number of questions using each image
 - **Question references**: Array of question IDs
+- **External exclusion**: All analytics exclude external images from calculations
 
 ### Cleanup Safety
 - **Confirmation dialogs**: Multiple warnings
