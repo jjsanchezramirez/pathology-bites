@@ -1,7 +1,6 @@
 // src/components/images/image-preview.tsx
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialog";
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/shared/utils';
 import Image from 'next/image';
 
@@ -207,34 +206,37 @@ export function ImagePreview({
         </div>
       )}
 
-      {/* Full Size Dialog */}
-      <Dialog open={isFullSizeVisible} onOpenChange={setIsFullSizeVisible}>
-        <DialogContent
-          className="p-0 border-0 bg-black/95 overflow-auto max-w-none w-screen h-screen"
+      {/* Full Size Modal - True fullscreen with Portal */}
+      {isFullSizeVisible && typeof document !== 'undefined' && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] bg-black/20 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setIsFullSizeVisible(false)}
         >
-          {/* Hidden Title for Accessibility */}
-          <VisuallyHidden>
-            <DialogTitle>{alt}</DialogTitle>
-          </VisuallyHidden>
+          {/* Image container */}
+          <div className="relative max-w-[95vw] max-h-[95vh] w-full h-full flex items-center justify-center">
+            <div className="relative">
+              <img
+                src={src}
+                alt={alt}
+                className="max-w-full max-h-full w-auto h-auto object-contain rounded-lg shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
 
-          <div className="min-w-full min-h-full flex items-start justify-center p-8">
-            <Image
-              src={src}
-              alt={alt}
-              width={0}
-              height={0}
-              sizes="100vw"
-              className="w-auto h-auto"
-              style={{
-                width: 'auto',
-                height: 'auto',
-                minWidth: 'auto',
-                minHeight: 'auto',
-              }}
-            />
+              {/* Close button positioned on image */}
+              <button
+                onClick={() => setIsFullSizeVisible(false)}
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-gray-800 transition-all duration-200 hover:scale-110 shadow-lg border border-gray-200"
+                aria-label="Close image"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>,
+        document.body
+      )}
     </>
   );
 }

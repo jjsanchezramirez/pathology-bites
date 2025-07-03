@@ -181,38 +181,50 @@ export interface Database {
         Row: {
           id: string
           url: string
-          storage_path: string
-          description: string
-          alt_text: string
+          storage_path: string | null
+          description: string | null
+          alt_text: string | null
           category: string
-          file_type: string
+          file_type: string | null
           source_ref: string | null
-          created_by: string
+          created_by: string | null
           created_at: string
+          search_vector: unknown | null
+          file_size_bytes: number | null
+          width: number | null
+          height: number | null
         }
         Insert: {
           id?: string
           url: string
-          storage_path: string
-          description: string
-          alt_text: string
+          storage_path?: string | null
+          description?: string | null
+          alt_text?: string | null
           category: string
-          file_type: string
+          file_type?: string | null
           source_ref?: string | null
-          created_by: string
+          created_by?: string | null
           created_at?: string
+          search_vector?: unknown | null
+          file_size_bytes?: number | null
+          width?: number | null
+          height?: number | null
         }
         Update: {
           id?: string
           url?: string
-          storage_path?: string
-          description?: string
-          alt_text?: string
+          storage_path?: string | null
+          description?: string | null
+          alt_text?: string | null
           category?: string
-          file_type?: string
+          file_type?: string | null
           source_ref?: string | null
-          created_by?: string
+          created_by?: string | null
           created_at?: string
+          search_vector?: unknown | null
+          file_size_bytes?: number | null
+          width?: number | null
+          height?: number | null
         }
         Relationships: []
       }
@@ -903,7 +915,85 @@ export interface Database {
       }
     }
     Views: {
-      [_ in never]: never
+      v_image_usage_stats: {
+        Row: {
+          id: string
+          url: string
+          alt_text: string | null
+          description: string | null
+          category: string
+          file_size_bytes: number | null
+          width: number | null
+          height: number | null
+          created_at: string
+          created_by: string | null
+          source_ref: string | null
+          usage_count: number
+          is_orphaned: boolean
+          question_ids: string[]
+        }
+        Relationships: []
+      }
+      v_storage_stats: {
+        Row: {
+          total_images: number
+          total_size_bytes: number
+          microscopic_count: number
+          gross_count: number
+          figure_count: number
+          table_count: number
+          microscopic_size_bytes: number
+          gross_size_bytes: number
+          figure_size_bytes: number
+          table_size_bytes: number
+          orphaned_count: number
+          orphaned_size_bytes: number
+        }
+        Relationships: []
+      }
+      v_orphaned_images: {
+        Row: {
+          id: string
+          url: string
+          alt_text: string | null
+          description: string | null
+          category: string
+          file_size_bytes: number | null
+          storage_path: string | null
+          created_at: string
+        }
+        Relationships: []
+      }
+      v_image_usage_by_category: {
+        Row: {
+          category: string
+          total_images: number
+          used_images: number
+          orphaned_images: number
+          total_size_bytes: number
+          avg_size_bytes: number
+          usage_percentage: number
+        }
+        Relationships: []
+      }
+      v_dashboard_stats: {
+        Row: {
+          published_questions: number
+          draft_questions: number
+          flagged_questions: number
+          recent_questions: number
+          total_users: number
+          recent_users: number
+          total_images: number
+          total_quiz_sessions: number
+          recent_quiz_sessions: number
+          total_inquiries: number
+          question_reports: number
+          pending_reports: number
+          last_updated: string
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never

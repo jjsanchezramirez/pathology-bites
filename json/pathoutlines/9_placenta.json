@@ -1,0 +1,168 @@
+{
+  "section": 9,
+  "title": "The Placenta",
+  "items": [
+    {
+      "number": 1,
+      "title": "Normal Anatomy and Histology",
+      "designation": "C",
+      "line": 1058
+    },
+    {
+      "number": 2,
+      "title": "Physiologic Changes, Metabolic Conditions & Trauma/Infarct",
+      "designation": "C",
+      "line": 1059
+    },
+    {
+      "number": 3,
+      "title": "Umbilical Cord Abnormalities",
+      "line": 1060,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Blood vessel abnormalities",
+          "designation": "C",
+          "line": 1061
+        },
+        {
+          "letter": "b",
+          "title": "Funisitis",
+          "designation": "C",
+          "line": 1062
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Fetal Membrane Abnormalities",
+      "line": 1063,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Amnion nodosum",
+          "designation": "C",
+          "line": 1064
+        },
+        {
+          "letter": "b",
+          "title": "Chorioamnionitis",
+          "designation": "C",
+          "line": 1065
+        },
+        {
+          "letter": "c",
+          "title": "Other fetal membrane abnormalities",
+          "designation": "C",
+          "line": 1066
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "title": "Placental Disc Abnormalities",
+      "line": 1067,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Abruption",
+          "designation": "C",
+          "line": 1068
+        },
+        {
+          "letter": "b",
+          "title": "Infarcts",
+          "designation": "C",
+          "line": 1069
+        },
+        {
+          "letter": "c",
+          "title": "Intervillous thrombi",
+          "designation": "C",
+          "line": 1070
+        },
+        {
+          "letter": "d",
+          "title": "Maternal floor infarction",
+          "designation": "C",
+          "line": 1071
+        },
+        {
+          "letter": "e",
+          "title": "Placenta accreta",
+          "designation": "C",
+          "line": 1072
+        },
+        {
+          "letter": "f",
+          "title": "Villitis and intervillositis",
+          "designation": "AR",
+          "line": 1073
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Eclampsia and atherosis",
+      "designation": "C",
+      "line": 1074
+    },
+    {
+      "number": 7,
+      "title": "Multiple pregnancy",
+      "designation": "C",
+      "line": 1075
+    },
+    {
+      "number": 8,
+      "title": "Chorangioma",
+      "designation": "C",
+      "line": 1076
+    },
+    {
+      "number": 9,
+      "title": "Fetal thrombotic vasculopathy (hemorrhagic endovasculitis)",
+      "designation": "AR",
+      "line": 1077
+    },
+    {
+      "number": 10,
+      "title": "Gestational Trophoblastic Disease",
+      "line": 1078,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Hydatidiform mole",
+          "designation": "C",
+          "line": 1079
+        },
+        {
+          "letter": "b",
+          "title": "Choriocarcinoma",
+          "designation": "C",
+          "line": 1080
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "title": "Exaggerated placental site",
+      "designation": "AR",
+      "line": 1081,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Placental site trophoblastic tumor",
+          "designation": "F",
+          "line": 1082
+        },
+        {
+          "letter": "b",
+          "title": "Epithelioid trophoblastic tumor",
+          "designation": "F",
+          "line": 1083
+        }
+      ]
+    }
+  ]
+}

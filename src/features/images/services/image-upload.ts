@@ -45,6 +45,22 @@ export const cleanFileName = (filename: string): string => {
   return `${name}.${ext}`;
 };
 
+// Get image dimensions
+export const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({
+        width: img.naturalWidth,
+        height: img.naturalHeight
+      });
+      URL.revokeObjectURL(img.src); // Clean up
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+};
+
 // Compress image with incremental quality reduction
 export const compressImage = (file: File, maxSizeBytes = 1000000): Promise<File> => {
   return new Promise((resolve, reject) => {

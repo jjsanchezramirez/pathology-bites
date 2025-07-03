@@ -1,0 +1,416 @@
+{
+  "section": 1,
+  "title": "Breast",
+  "items": [
+    {
+      "number": 1,
+      "title": "Normal Anatomy and Histology",
+      "designation": "C",
+      "line": 76
+    },
+    {
+      "number": 2,
+      "title": "Physiologic Changes, Metabolic Conditions & Trauma/Infarct",
+      "designation": "C",
+      "line": 77
+    },
+    {
+      "number": 3,
+      "title": "Congenital, Developmental, and Familial Conditions",
+      "line": 78,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Hamartoma",
+          "designation": "AR",
+          "line": 79
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Inflammatory Conditions, Infectious & Non-Infectious",
+      "line": 80,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Fat necrosis",
+          "designation": "C",
+          "line": 81
+        },
+        {
+          "letter": "b",
+          "title": "Silicone reaction",
+          "designation": "AR",
+          "line": 82
+        },
+        {
+          "letter": "c",
+          "title": "Granulomatous mastitis",
+          "designation": "AR",
+          "line": 83
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "title": "Diabetic mastopathy",
+      "designation": "AR",
+      "line": 84
+    },
+    {
+      "number": 6,
+      "title": "Neoplastic",
+      "line": 85,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Benign",
+          "line": 86
+        },
+        {
+          "letter": "b",
+          "title": "Apocrine Metaplasia",
+          "designation": "C",
+          "line": 87
+        },
+        {
+          "letter": "c",
+          "title": "Cysts",
+          "designation": "C",
+          "line": 88
+        },
+        {
+          "letter": "d",
+          "title": "Adenosis",
+          "designation": "C",
+          "line": 89,
+          "note": "(e.g., sclerosing adenosis, tubular adenosis, microglandular adenosis, columnar cell alteration)"
+        },
+        {
+          "letter": "e",
+          "title": "Radial Scar",
+          "designation": "C",
+          "line": 92
+        },
+        {
+          "letter": "f",
+          "title": "Epithelial Hyperplasia",
+          "designation": "C",
+          "line": 93
+        },
+        {
+          "letter": "g",
+          "title": "Usual ductal hyperplasia",
+          "designation": "C",
+          "line": 94
+        },
+        {
+          "letter": "h",
+          "title": "Lipoma",
+          "designation": "C",
+          "line": 95
+        },
+        {
+          "letter": "i",
+          "title": "Hemangioma",
+          "designation": "C",
+          "line": 96
+        },
+        {
+          "letter": "j",
+          "title": "Leiomyoma",
+          "designation": "C",
+          "line": 97
+        },
+        {
+          "letter": "k",
+          "title": "Fibroadenoma",
+          "designation": "C",
+          "line": 98
+        },
+        {
+          "letter": "l",
+          "title": "Lactating adenoma",
+          "designation": "C",
+          "line": 99
+        },
+        {
+          "letter": "m",
+          "title": "Intraductal papilloma",
+          "designation": "C",
+          "line": 100
+        },
+        {
+          "letter": "n",
+          "title": "Flat epithelial hyperplasia",
+          "designation": "AR",
+          "line": 101
+        },
+        {
+          "letter": "o",
+          "title": "Nipple adenoma",
+          "designation": "AR",
+          "line": 102
+        },
+        {
+          "letter": "p",
+          "title": "Syringomatous adenoma",
+          "designation": "AR",
+          "line": 103
+        },
+        {
+          "letter": "q",
+          "title": "Fibromatosis",
+          "designation": "AR",
+          "line": 104
+        },
+        {
+          "letter": "r",
+          "title": "Adenomyoepithelioma",
+          "designation": "AR",
+          "line": 105
+        },
+        {
+          "letter": "s",
+          "title": "Myofibroblastoma",
+          "designation": "AR",
+          "line": 106
+        },
+        {
+          "letter": "t",
+          "title": "Galactocele",
+          "designation": "AR",
+          "line": 107
+        },
+        {
+          "letter": "u",
+          "title": "Mucocele-like lesions",
+          "designation": "AR",
+          "line": 108
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "title": "Premalignant, Malignant, and Borderline",
+      "line": 109,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Ductal carcinoma in situ (DCIS)",
+          "designation": "C",
+          "line": 110
+        },
+        {
+          "letter": "b",
+          "title": "Invasive ductal carcinoma, NOS",
+          "designation": "C",
+          "line": 111
+        },
+        {
+          "letter": "c",
+          "title": "Lobular carcinoma in situ (LCIS)",
+          "designation": "C",
+          "line": 112
+        },
+        {
+          "letter": "d",
+          "title": "Invasive lobular carcinoma",
+          "designation": "C",
+          "line": 113
+        },
+        {
+          "letter": "e",
+          "title": "Atypical ductal hyperplasia",
+          "designation": "AR",
+          "line": 114
+        },
+        {
+          "letter": "f",
+          "title": "Atypical lobular hyperplasia",
+          "designation": "AR",
+          "line": 115
+        },
+        {
+          "letter": "g",
+          "title": "Tubular carcinoma",
+          "designation": "AR",
+          "line": 116
+        },
+        {
+          "letter": "h",
+          "title": "Mucinous carcinoma",
+          "designation": "AR",
+          "line": 117
+        },
+        {
+          "letter": "i",
+          "title": "Cribiform carcinoma",
+          "designation": "AR",
+          "line": 118
+        },
+        {
+          "letter": "j",
+          "title": "Invasive micropapillary carcinoma",
+          "designation": "AR",
+          "line": 119
+        },
+        {
+          "letter": "k",
+          "title": "Apocrine carcinoma",
+          "designation": "AR",
+          "line": 120
+        },
+        {
+          "letter": "l",
+          "title": "Basal-like carcinoma",
+          "designation": "AR",
+          "line": 121
+        },
+        {
+          "letter": "m",
+          "title": "Inflammatory carcinoma",
+          "designation": "AR",
+          "line": 122
+        },
+        {
+          "letter": "n",
+          "title": "Metastatic carcinoma involving the breast",
+          "designation": "AR",
+          "line": 123
+        },
+        {
+          "letter": "o",
+          "title": "Paget disease of the nipple",
+          "designation": "AR",
+          "line": 124
+        },
+        {
+          "letter": "p",
+          "title": "Angiosarcoma",
+          "designation": "AR",
+          "line": 125
+        },
+        {
+          "letter": "q",
+          "title": "Phyllodes tumor",
+          "designation": "AR",
+          "line": 126
+        },
+        {
+          "letter": "r",
+          "title": "Encapsulated papillary carcinoma",
+          "designation": "AR",
+          "line": 127
+        },
+        {
+          "letter": "s",
+          "title": "Solid papillary carcinoma",
+          "designation": "AR",
+          "line": 128
+        },
+        {
+          "letter": "t",
+          "title": "Adenoid cystic carcinoma",
+          "designation": "F",
+          "line": 129
+        },
+        {
+          "letter": "u",
+          "title": "Secretory carcinoma",
+          "designation": "F",
+          "line": 130
+        },
+        {
+          "letter": "v",
+          "title": "Metaplastic carcinoma",
+          "designation": "F",
+          "line": 131
+        },
+        {
+          "letter": "w",
+          "title": "Other uncommon carcinomas",
+          "designation": "F",
+          "line": 132
+        },
+        {
+          "letter": "x",
+          "title": "Radiation-induced sarcoma",
+          "designation": "F",
+          "line": 133
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "title": "Additional Topics",
+      "line": 135,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Assessment of axillary lymph nodes",
+          "designation": "C",
+          "line": 136
+        },
+        {
+          "letter": "b",
+          "title": "Biomarkers",
+          "designation": "C",
+          "line": 137
+        },
+        {
+          "letter": "c",
+          "title": "Gynecomastia",
+          "designation": "C",
+          "line": 138
+        },
+        {
+          "letter": "d",
+          "title": "Pseudoangiomatous Mesenchymal Hyperplasia",
+          "designation": "C",
+          "line": 139
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "title": "Male & transgender breast pathology",
+      "designation": "AR",
+      "line": 140,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Therapy induced changes",
+          "designation": "AR",
+          "line": 141
+        },
+        {
+          "letter": "b",
+          "title": "Collagenous spherulosis",
+          "designation": "AR",
+          "line": 142
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "title": "Hematopoietic lesions",
+      "line": 143,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Lymphoma",
+          "designation": "AR",
+          "line": 144
+        },
+        {
+          "letter": "b",
+          "title": "Rosai-Dorfman",
+          "designation": "F",
+          "line": 145
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,3534 @@
+{
+  "section": 13,
+  "title": "Dermatopathology Topics for Anatomic Pathology Residents",
+  "items": [
+    {
+      "number": 1,
+      "title": "Inflammatory Reaction Patterns",
+      "line": 2029,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Interface Dermatitis (Lichenoid Reaction Pattern)",
+          "line": 2030,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Pattern Recognition",
+              "designation": "C",
+              "line": 2031
+            },
+            {
+              "roman": "ii",
+              "title": "Lichen Planus",
+              "designation": "AR",
+              "line": 2032
+            },
+            {
+              "roman": "iii",
+              "title": "Lichen Planus-Like Keratosis (Benign Lichenoid Keratosis)",
+              "designation": "AR",
+              "line": 2033
+            },
+            {
+              "roman": "iv",
+              "title": "Lichenoid Drug Eruptions",
+              "designation": "AR",
+              "line": 2034
+            },
+            {
+              "roman": "v",
+              "title": "Erythema Multiforme",
+              "designation": "AR",
+              "line": 2035
+            },
+            {
+              "roman": "vi",
+              "title": "Toxic Epidermal Necrolysis/Stevens-Johnson Syndrome",
+              "designation": "AR",
+              "line": 2036
+            },
+            {
+              "roman": "vii",
+              "title": "Graft-versus-Host Disease",
+              "designation": "AR",
+              "line": 2037
+            },
+            {
+              "roman": "viii",
+              "title": "Lupus Erythematosus",
+              "line": 2038,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Discoid Lupus Erythematosus",
+                  "designation": "AR",
+                  "line": 2039
+                },
+                {
+                  "number": 2,
+                  "title": "Subacute Lupus Erythematosus",
+                  "designation": "AR",
+                  "line": 2040
+                },
+                {
+                  "number": 3,
+                  "title": "Hypertrophic Lupus Erythematosus",
+                  "designation": "AR",
+                  "line": 2041
+                },
+                {
+                  "number": 4,
+                  "title": "Acute Lupus Erythematosus",
+                  "designation": "F",
+                  "line": 2042
+                },
+                {
+                  "number": 5,
+                  "title": "Systemic Lupus Erythematosus",
+                  "designation": "F",
+                  "line": 2043
+                },
+                {
+                  "number": 6,
+                  "title": "Neonatal Lupus Erythematosus",
+                  "designation": "F",
+                  "line": 2044
+                },
+                {
+                  "number": 7,
+                  "title": "Bullous Lupus Erythematosus",
+                  "designation": "F",
+                  "line": 2045
+                },
+                {
+                  "number": 8,
+                  "title": "Tumid Lupus Erythematosus",
+                  "designation": "F",
+                  "line": 2046
+                },
+                {
+                  "number": 9,
+                  "title": "Lupus Panniculitis",
+                  "designation": "F",
+                  "line": 2047
+                }
+              ]
+            },
+            {
+              "roman": "ix",
+              "title": "Erythema Dyschromicum Perstans",
+              "designation": "F",
+              "line": 2048
+            },
+            {
+              "roman": "x",
+              "title": "Lichen Nitidus",
+              "designation": "F",
+              "line": 2049
+            },
+            {
+              "roman": "xi",
+              "title": "Lichen Striatus",
+              "designation": "F",
+              "line": 2050
+            },
+            {
+              "roman": "xii",
+              "title": "Fixed Drug Eruptions",
+              "designation": "F",
+              "line": 2051
+            },
+            {
+              "roman": "xiii",
+              "title": "Dermatomyositis",
+              "designation": "F",
+              "line": 2052
+            },
+            {
+              "roman": "xiv",
+              "title": "Pityriasis Lichenoides",
+              "designation": "F",
+              "line": 2053
+            },
+            {
+              "roman": "xv",
+              "title": "Poikilodermas",
+              "designation": "F",
+              "line": 2054,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Dyskeratosis Congenita",
+                  "designation": "F",
+                  "line": 2055
+                },
+                {
+                  "number": 2,
+                  "title": "Poikiloderma of Civatte",
+                  "designation": "F",
+                  "line": 2056
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Psoriasiform Reaction Pattern",
+          "line": 2057,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Pattern Recognition",
+              "designation": "C",
+              "line": 2058
+            },
+            {
+              "roman": "ii",
+              "title": "Psoriasis",
+              "designation": "AR",
+              "line": 2059
+            },
+            {
+              "roman": "iii",
+              "title": "Lichen Simplex Chronicus",
+              "designation": "AR",
+              "line": 2060
+            },
+            {
+              "roman": "iv",
+              "title": "Prurigo Nodularis",
+              "designation": "AR",
+              "line": 2061
+            },
+            {
+              "roman": "v",
+              "title": "Reactive Arthritis (Reiter Syndrome)",
+              "designation": "F",
+              "line": 2062
+            },
+            {
+              "roman": "vi",
+              "title": "Pityriasis Rubra Pilaris",
+              "designation": "F",
+              "line": 2063
+            }
+          ]
+        },
+        {
+          "letter": "c",
+          "title": "Spongiotic Reaction Pattern",
+          "line": 2064,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Pattern Recognition",
+              "designation": "C",
+              "line": 2065
+            },
+            {
+              "roman": "ii",
+              "title": "Allergic Contact Dermatitis",
+              "designation": "AR",
+              "line": 2066
+            },
+            {
+              "roman": "iii",
+              "title": "Stasis Dermatitis",
+              "designation": "AR",
+              "line": 2067
+            },
+            {
+              "roman": "iv",
+              "title": "Incontinentia Pigmenti",
+              "designation": "F",
+              "line": 2068
+            },
+            {
+              "roman": "v",
+              "title": "Pityriasis Rosea",
+              "designation": "F",
+              "line": 2069
+            },
+            {
+              "roman": "vi",
+              "title": "Irritant Contact Dermatitis",
+              "designation": "F",
+              "line": 2070
+            },
+            {
+              "roman": "vii",
+              "title": "Nummular Dermatitis",
+              "designation": "F",
+              "line": 2071
+            },
+            {
+              "roman": "viii",
+              "title": "Seborrheic Dermatitis",
+              "designation": "F",
+              "line": 2072
+            },
+            {
+              "roman": "ix",
+              "title": "Atopic Dermatitis",
+              "designation": "F",
+              "line": 2073
+            },
+            {
+              "roman": "x",
+              "title": "Id Reaction",
+              "designation": "F",
+              "line": 2074
+            },
+            {
+              "roman": "xi",
+              "title": "Pompholyx",
+              "designation": "F",
+              "line": 2075
+            },
+            {
+              "roman": "xii",
+              "title": "Juvenile Plantar Dermatosis",
+              "designation": "F",
+              "line": 2076
+            },
+            {
+              "roman": "xiii",
+              "title": "Papular Acrodermatitis of Childhood (Gianotti-Crosti Syndrome)",
+              "designation": "F",
+              "line": 2077
+            }
+          ]
+        },
+        {
+          "letter": "d",
+          "title": "Vesiculobullous Reaction Pattern",
+          "line": 2078,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Intracorneal / Subcorneal Blisters & Pustules",
+              "designation": "C",
+              "line": 2079,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Pemphigus Foliaceus",
+                  "designation": "AR",
+                  "line": 2080
+                },
+                {
+                  "number": 2,
+                  "title": "Pemphigus Erythematosus",
+                  "designation": "F",
+                  "line": 2081
+                },
+                {
+                  "number": 3,
+                  "title": "Subcorneal Pustular Dermatosis (Sneddon-Wilkinson)",
+                  "designation": "F",
+                  "line": 2082
+                },
+                {
+                  "number": 4,
+                  "title": "IgA Pemphigus",
+                  "designation": "F",
+                  "line": 2083
+                },
+                {
+                  "number": 5,
+                  "title": "Infantile Acropustulosis",
+                  "designation": "F",
+                  "line": 2084
+                },
+                {
+                  "number": 6,
+                  "title": "Erythema Toxicum Neonatorium",
+                  "designation": "F",
+                  "line": 2085
+                },
+                {
+                  "number": 7,
+                  "title": "Transient Neonatal Pustular Melanosis",
+                  "designation": "F",
+                  "line": 2086
+                },
+                {
+                  "number": 8,
+                  "title": "Acute Generalized Exanthematous Pustulosis",
+                  "designation": "F",
+                  "line": 2087
+                },
+                {
+                  "number": 9,
+                  "title": "Miliaria Crystallina",
+                  "designation": "F",
+                  "line": 2088
+                },
+                {
+                  "number": 10,
+                  "title": "Halogenoderma",
+                  "designation": "F",
+                  "line": 2089
+                }
+              ]
+            },
+            {
+              "roman": "ii",
+              "title": "Suprabasilar Blisters/Intraepidermal Blisters",
+              "designation": "C",
+              "line": 2090,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Acantholysis",
+                  "designation": "C",
+                  "line": 2091
+                },
+                {
+                  "number": 2,
+                  "title": "Acantholytic Dyskeratosis",
+                  "designation": "C",
+                  "line": 2092
+                },
+                {
+                  "number": 3,
+                  "title": "Pemphigus Vulgaris",
+                  "designation": "AR",
+                  "line": 2093
+                },
+                {
+                  "number": 4,
+                  "title": "Hailey-Hailey Disease",
+                  "designation": "AR",
+                  "line": 2094
+                },
+                {
+                  "number": 5,
+                  "title": "Darier Disease",
+                  "designation": "AR",
+                  "line": 2095
+                },
+                {
+                  "number": 6,
+                  "title": "Grover Disease",
+                  "designation": "AR",
+                  "line": 2096
+                },
+                {
+                  "number": 7,
+                  "title": "Pemphigus Vegetans",
+                  "designation": "F",
+                  "line": 2097
+                },
+                {
+                  "number": 8,
+                  "title": "Paraneoplastic Pemphigus",
+                  "designation": "F",
+                  "line": 2098
+                }
+              ]
+            },
+            {
+              "roman": "iii",
+              "title": "Subepidermal Blisters",
+              "designation": "C",
+              "line": 2099,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Bullous Pemphigoid",
+                  "designation": "AR",
+                  "line": 2100
+                },
+                {
+                  "number": 2,
+                  "title": "Dermatitis Herpetiformis",
+                  "designation": "AR",
+                  "line": 2101
+                },
+                {
+                  "number": 3,
+                  "title": "Epidermolysis Bullosa",
+                  "designation": "F",
+                  "line": 2102,
+                  "subitems": [
+                    {
+                      "letter": "a",
+                      "title": "Epidermolysis Bullosa Simplex",
+                      "designation": "F",
+                      "line": 2103
+                    },
+                    {
+                      "letter": "b",
+                      "title": "Junctional Epidermolysis Bullosa",
+                      "designation": "F",
+                      "line": 2104
+                    },
+                    {
+                      "letter": "c",
+                      "title": "Dystrophic Epidermolysis Bullosa",
+                      "designation": "F",
+                      "line": 2105
+                    }
+                  ]
+                },
+                {
+                  "number": 4,
+                  "title": "Epidermolysis Bullosa Acquistia",
+                  "designation": "F",
+                  "line": 2106
+                },
+                {
+                  "number": 5,
+                  "title": "Pemphigoid Gestationis",
+                  "designation": "F",
+                  "line": 2107
+                },
+                {
+                  "number": 6,
+                  "title": "Linear IgA Bullous Dermatosis",
+                  "designation": "F",
+                  "line": 2108
+                },
+                {
+                  "number": 7,
+                  "title": "Cicatricial Pemphigold",
+                  "designation": "F",
+                  "line": 2109
+                },
+                {
+                  "number": 8,
+                  "title": "Bullous Diabeticorum",
+                  "designation": "F",
+                  "line": 2110
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "letter": "e",
+          "title": "The Granulomatous Reaction Pattern, Non-Infectious",
+          "line": 2111,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Sarcoidal / Tuberculoid (Non-Infectious)",
+              "designation": "C",
+              "line": 2112,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Reactions to Foreign Materials",
+                  "designation": "C",
+                  "line": 2113
+                },
+                {
+                  "number": 2,
+                  "title": "Sarcoidosis",
+                  "designation": "AR",
+                  "line": 2114
+                },
+                {
+                  "number": 3,
+                  "title": "Melkersson-Rosenthal Syndrome (Cheilitis Granulomatosis)",
+                  "designation": "F",
+                  "line": 2115
+                },
+                {
+                  "number": 4,
+                  "title": "Cutaneous Crohn Disease",
+                  "designation": "F",
+                  "line": 2116
+                }
+              ]
+            },
+            {
+              "roman": "ii",
+              "title": "Necrobiotic Palisading Granulomas",
+              "designation": "C",
+              "line": 2117,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Granuloma Annulare",
+                  "designation": "AR",
+                  "line": 2118
+                },
+                {
+                  "number": 2,
+                  "title": "Necrobiosis Lipoidica",
+                  "designation": "AR",
+                  "line": 2119
+                },
+                {
+                  "number": 3,
+                  "title": "Rheumatoid Nodules",
+                  "designation": "AR",
+                  "line": 2120
+                },
+                {
+                  "number": 4,
+                  "title": "Neutrophilic and Palisaded Granulomatous Dermatitis",
+                  "designation": "F",
+                  "line": 2121
+                },
+                {
+                  "number": 5,
+                  "title": "Elastolytic Granuloma",
+                  "designation": "F",
+                  "line": 2122
+                },
+                {
+                  "number": 6,
+                  "title": "Necrobiotic Xanthogranuloma",
+                  "designation": "F",
+                  "line": 2123
+                }
+              ]
+            },
+            {
+              "roman": "iii",
+              "title": "Suppurative Granulomas",
+              "designation": "C",
+              "line": 2124,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Ruptured Cysts and Follicles",
+                  "designation": "C",
+                  "line": 2125
+                },
+                {
+                  "number": 2,
+                  "title": "Foreign Body Granulomas",
+                  "designation": "C",
+                  "line": 2126
+                }
+              ]
+            },
+            {
+              "roman": "iv",
+              "title": "Miscellaneous Granulomas",
+              "line": 2127,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Chalazion",
+                  "designation": "AR",
+                  "line": 2128
+                },
+                {
+                  "number": 2,
+                  "title": "Lupus Miliaris Disseminatus Faciei",
+                  "designation": "F",
+                  "line": 2129
+                },
+                {
+                  "number": 3,
+                  "title": "Interstitial Granulomatous Reaction",
+                  "designation": "F",
+                  "line": 2130
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "letter": "f",
+          "title": "The Vasculopathic Reaction Pattern",
+          "line": 2131,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "General Considerations / Pattern Recognition",
+              "designation": "C",
+              "line": 2132
+            },
+            {
+              "roman": "ii",
+              "title": "Non-Inflammatory Purpuras, including Solar Purpura",
+              "designation": "F",
+              "line": 2133
+            },
+            {
+              "roman": "iii",
+              "title": "Vascular Occlusive Diseases",
+              "designation": "C",
+              "line": 2134,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Disseminated Intravascular Coagulation",
+                  "designation": "AR",
+                  "line": 2135
+                },
+                {
+                  "number": 2,
+                  "title": "Cholesterol and Other Types of Embolism",
+                  "designation": "AR",
+                  "line": 2136
+                },
+                {
+                  "number": 3,
+                  "title": "Livedo Reticularis",
+                  "designation": "F",
+                  "line": 2137
+                },
+                {
+                  "number": 4,
+                  "title": "Protein C and Protein S Deficiencies",
+                  "designation": "F",
+                  "line": 2138
+                },
+                {
+                  "number": 5,
+                  "title": "Warfarin Necrosis",
+                  "designation": "F",
+                  "line": 2139
+                },
+                {
+                  "number": 6,
+                  "title": "Atrophie Blanche (Livedoid Vasculopathy)",
+                  "designation": "F",
+                  "line": 2140
+                },
+                {
+                  "number": 7,
+                  "title": "Thrombotic Thrombocytopenic Purpura",
+                  "designation": "F",
+                  "line": 2141
+                },
+                {
+                  "number": 8,
+                  "title": "Cryoglobulinemia, Monoclonal",
+                  "designation": "F",
+                  "line": 2142
+                },
+                {
+                  "number": 9,
+                  "title": "Antiphospholipid Syndrome",
+                  "designation": "F",
+                  "line": 2143
+                },
+                {
+                  "number": 10,
+                  "title": "Factor V Leiden Mutation",
+                  "designation": "F",
+                  "line": 2144
+                },
+                {
+                  "number": 11,
+                  "title": "Sneddon Syndrome",
+                  "designation": "F",
+                  "line": 2145
+                },
+                {
+                  "number": 12,
+                  "title": "Levamisole-Induced Vasculitis / Vasculopathy",
+                  "designation": "F",
+                  "line": 2146
+                }
+              ]
+            },
+            {
+              "roman": "iv",
+              "title": "Urticaria",
+              "designation": "AR",
+              "line": 2147
+            },
+            {
+              "roman": "v",
+              "title": "Acute & Chronic Vasculitis",
+              "line": 2148,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Leukocytoclastic (Hypersensitivity) Vasculitis",
+                  "designation": "AR",
+                  "line": 2149
+                },
+                {
+                  "number": 2,
+                  "title": "Henoch-Schönlein Purpura",
+                  "designation": "AR",
+                  "line": 2150
+                },
+                {
+                  "number": 3,
+                  "title": "Polyarteritis Nodosa",
+                  "designation": "AR",
+                  "line": 2151
+                },
+                {
+                  "number": 4,
+                  "title": "Urticarial Vasculitis",
+                  "designation": "F",
+                  "line": 2152
+                },
+                {
+                  "number": 5,
+                  "title": "Mixed Cryoglobulinemia",
+                  "designation": "F",
+                  "line": 2153
+                },
+                {
+                  "number": 6,
+                  "title": "Septic Vasculitis",
+                  "designation": "F",
+                  "line": 2154
+                },
+                {
+                  "number": 7,
+                  "title": "Erythema Elevatum Diutinum",
+                  "designation": "F",
+                  "line": 2155
+                },
+                {
+                  "number": 8,
+                  "title": "Granuloma Faciale",
+                  "designation": "F",
+                  "line": 2156
+                },
+                {
+                  "number": 9,
+                  "title": "Microscopic Polyangiitis (Polyarteritis)",
+                  "designation": "F",
+                  "line": 2157
+                },
+                {
+                  "number": 10,
+                  "title": "Superficial Thrombophlebitis",
+                  "designation": "F",
+                  "line": 2158
+                }
+              ]
+            },
+            {
+              "roman": "vi",
+              "title": "Neutrophilic Dermatoses",
+              "line": 2159,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Sweet Syndrome",
+                  "designation": "AR",
+                  "line": 2160
+                },
+                {
+                  "number": 2,
+                  "title": "Pyoderma Gangrenosum",
+                  "designation": "AR",
+                  "line": 2161
+                },
+                {
+                  "number": 3,
+                  "title": "Neutrophilic Dermatosis of the Hand (Pustular Vasculitis)",
+                  "designation": "F",
+                  "line": 2162
+                },
+                {
+                  "number": 4,
+                  "title": "Bowel-Associated Dermatosis-Arthritis Syndrome",
+                  "designation": "F",
+                  "line": 2163
+                },
+                {
+                  "number": 5,
+                  "title": "Rheumatoid Neutrophilic Dermatosis",
+                  "designation": "F",
+                  "line": 2164
+                },
+                {
+                  "number": 6,
+                  "title": "Behçet Disease",
+                  "designation": "F",
+                  "line": 2165
+                }
+              ]
+            },
+            {
+              "roman": "vii",
+              "title": "Lymphocytic Dermatoses",
+              "line": 2166,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Polymorphic Eruption of Pregnancy (PEP)",
+                  "designation": "F",
+                  "line": 2167
+                },
+                {
+                  "number": 2,
+                  "title": "Gyrate and Annular Erythemas",
+                  "designation": "F",
+                  "line": 2168
+                },
+                {
+                  "number": 3,
+                  "title": "Erythema Annulare Centrifugum",
+                  "designation": "F",
+                  "line": 2169
+                },
+                {
+                  "number": 4,
+                  "title": "Erythema Marginatum",
+                  "designation": "F",
+                  "line": 2170
+                },
+                {
+                  "number": 5,
+                  "title": "Pigmented Purpuric Dermatoses",
+                  "designation": "F",
+                  "line": 2171
+                }
+              ]
+            },
+            {
+              "roman": "viii",
+              "title": "Chronic Lymphocytic Vasculitis",
+              "line": 2172,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Malignant Atrophic Papulosis (Degos Disease)",
+                  "designation": "F",
+                  "line": 2173
+                },
+                {
+                  "number": 2,
+                  "title": "Perniosis",
+                  "designation": "F",
+                  "line": 2174
+                }
+              ]
+            },
+            {
+              "roman": "ix",
+              "title": "Vasculitis with Granulomatosis",
+              "designation": "C",
+              "line": 2175,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Granulomatosis with Polyangiitis",
+                  "designation": "AR",
+                  "line": 2176
+                },
+                {
+                  "number": 2,
+                  "title": "Lymphomatoid Granulomatosis",
+                  "designation": "AR",
+                  "line": 2177
+                },
+                {
+                  "number": 3,
+                  "title": "Eosinophilic Granulomatosis with Polyangiitis",
+                  "designation": "AR",
+                  "line": 2178
+                },
+                {
+                  "number": 4,
+                  "title": "Giant Cell (Temporal) Arteritis",
+                  "designation": "AR",
+                  "line": 2179
+                },
+                {
+                  "number": 5,
+                  "title": "Takayasu Arteritis",
+                  "designation": "AR",
+                  "line": 2180
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "title": "The Epidermis",
+      "line": 2182,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Disorders of Epidermal Maturation and Keratinization",
+          "line": 2183,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Porokeratosis and Variants",
+              "designation": "AR",
+              "line": 2184
+            },
+            {
+              "roman": "ii",
+              "title": "Acanthosis Nigricans",
+              "designation": "AR",
+              "line": 2185
+            },
+            {
+              "roman": "iii",
+              "title": "Ichthyoses",
+              "designation": "F",
+              "line": 2186,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Ichthyosis Vulgaris",
+                  "designation": "F",
+                  "line": 2187
+                },
+                {
+                  "number": 2,
+                  "title": "X-Linked Ichthyosis",
+                  "designation": "F",
+                  "line": 2188
+                },
+                {
+                  "number": 3,
+                  "title": "Lamellar Ichthyosis",
+                  "designation": "F",
+                  "line": 2189
+                },
+                {
+                  "number": 4,
+                  "title": "Epidermolytic Ichthyosis",
+                  "designation": "F",
+                  "line": 2190
+                },
+                {
+                  "number": 5,
+                  "title": "Harlequin Ichthyosis",
+                  "designation": "F",
+                  "line": 2191
+                },
+                {
+                  "number": 6,
+                  "title": "Acquired Ichthyosis",
+                  "designation": "F",
+                  "line": 2192
+                }
+              ]
+            },
+            {
+              "roman": "iv",
+              "title": "Palmoplantar Keratodermas",
+              "line": 2193,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Punctate Palmoplantar Keratoderma",
+                  "designation": "F",
+                  "line": 2194
+                },
+                {
+                  "number": 2,
+                  "title": "Acquired Keratoderma",
+                  "designation": "F",
+                  "line": 2195
+                },
+                {
+                  "number": 3,
+                  "title": "Pachyonychia Congenita",
+                  "designation": "F",
+                  "line": 2196
+                }
+              ]
+            },
+            {
+              "roman": "v",
+              "title": "Hyperkeratosis Lenticularis Perstans",
+              "designation": "F",
+              "line": 2197
+            },
+            {
+              "roman": "vi",
+              "title": "Xeroderma Pigmentosum",
+              "designation": "F",
+              "line": 2198
+            },
+            {
+              "roman": "vii",
+              "title": "Ectodermal Dysplasia",
+              "designation": "F",
+              "line": 2199,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Anhidrotic (Hypohidrotic) Ectodermal Dysplasia",
+                  "designation": "F",
+                  "line": 2200
+                },
+                {
+                  "number": 2,
+                  "title": "Hidrotic Ectodermal Dysplasia",
+                  "designation": "F",
+                  "line": 2201
+                }
+              ]
+            },
+            {
+              "roman": "viii",
+              "title": "Granular Parakeratosis",
+              "designation": "F",
+              "line": 2202
+            },
+            {
+              "roman": "ix",
+              "title": "Circumscribed Acral Hypokeratosis",
+              "designation": "F",
+              "line": 2203
+            },
+            {
+              "roman": "x",
+              "title": "White Sponge Nevus",
+              "designation": "F",
+              "line": 2204
+            },
+            {
+              "roman": "xi",
+              "title": "Confluent & Reticulated Papillomatosis",
+              "designation": "F",
+              "line": 2205
+            }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Disorders of Pigmentation",
+          "line": 2206,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Disorders Characterized by Hypopigmentation",
+              "line": 2207,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Vitiligo",
+                  "designation": "AR",
+                  "line": 2208
+                },
+                {
+                  "number": 2,
+                  "title": "Oculocutaneous Albinism",
+                  "designation": "F",
+                  "line": 2209
+                },
+                {
+                  "number": 3,
+                  "title": "Tuberous sclerosis (Ash Leaf Spots)",
+                  "designation": "F",
+                  "line": 2210
+                },
+                {
+                  "number": 4,
+                  "title": "Idiopathic Guttate Hypomelanosis",
+                  "designation": "F",
+                  "line": 2211
+                },
+                {
+                  "number": 5,
+                  "title": "Hypomelanosis of Ito",
+                  "designation": "F",
+                  "line": 2212
+                }
+              ]
+            },
+            {
+              "roman": "ii",
+              "title": "Disorders Characterized by Hyperpigmentation",
+              "line": 2213,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Postinflammatory Melanosis",
+                  "designation": "AR",
+                  "line": 2214
+                },
+                {
+                  "number": 2,
+                  "title": "Melasma",
+                  "designation": "F",
+                  "line": 2215
+                },
+                {
+                  "number": 3,
+                  "title": "Ephelis (Freckle)",
+                  "designation": "F",
+                  "line": 2216
+                },
+                {
+                  "number": 4,
+                  "title": "Café-au-lait Spots",
+                  "designation": "F",
+                  "line": 2217
+                },
+                {
+                  "number": 5,
+                  "title": "Laugier-Hunziker Syndrome",
+                  "designation": "F",
+                  "line": 2218
+                },
+                {
+                  "number": 6,
+                  "title": "Peutz-Jeghers Syndrome",
+                  "designation": "F",
+                  "line": 2219
+                },
+                {
+                  "number": 7,
+                  "title": "Becker Nevus",
+                  "designation": "F",
+                  "line": 2220
+                },
+                {
+                  "number": 8,
+                  "title": "Dowling-Degos Disease",
+                  "designation": "F",
+                  "line": 2221
+                },
+                {
+                  "number": 9,
+                  "title": "Notalgia Paresthetica",
+                  "designation": "F",
+                  "line": 2222
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "title": "The Dermis",
+      "line": 2224,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Disorders of Collagen",
+          "line": 2225,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Hypertrophic Scars and Keloids",
+              "designation": "C",
+              "line": 2226
+            },
+            {
+              "roman": "ii",
+              "title": "Morphea",
+              "designation": "AR",
+              "line": 2227
+            },
+            {
+              "roman": "iii",
+              "title": "Eosinophilic Fasciitis",
+              "designation": "AR",
+              "line": 2228
+            },
+            {
+              "roman": "iv",
+              "title": "Lichen Sclerosis et Atrophicus",
+              "designation": "AR",
+              "line": 2229
+            },
+            {
+              "roman": "v",
+              "title": "Radiation Dermatitis",
+              "designation": "AR",
+              "line": 2230
+            },
+            {
+              "roman": "vi",
+              "title": "Chondrodermatitis Nodularis Helicis",
+              "designation": "AR",
+              "line": 2231
+            },
+            {
+              "roman": "vii",
+              "title": "Scleroderma",
+              "designation": "F",
+              "line": 2232
+            },
+            {
+              "roman": "viii",
+              "title": "Mixed Connective Tissue Disease",
+              "designation": "F",
+              "line": 2233
+            },
+            {
+              "roman": "ix",
+              "title": "Atrophoderma",
+              "designation": "F",
+              "line": 2234
+            },
+            {
+              "roman": "x",
+              "title": "Sclerodermoid Disorders",
+              "designation": "F",
+              "line": 2235
+            },
+            {
+              "roman": "xi",
+              "title": "Sclerodermoid Graft-versus-Host Disease",
+              "designation": "F",
+              "line": 2236
+            },
+            {
+              "roman": "xii",
+              "title": "Chemical and Drug Related Disorders",
+              "designation": "F",
+              "line": 2237
+            },
+            {
+              "roman": "xiii",
+              "title": "Nephrogenic Systemic Fibrosis",
+              "designation": "F",
+              "line": 2238
+            },
+            {
+              "roman": "xiv",
+              "title": "Connective Tissue Nevi",
+              "designation": "F",
+              "line": 2239
+            },
+            {
+              "roman": "xv",
+              "title": "Weathering Nodules of the Ear",
+              "designation": "F",
+              "line": 2240
+            },
+            {
+              "roman": "xvi",
+              "title": "Aplasia Cutis Congentia",
+              "designation": "F",
+              "line": 2241
+            },
+            {
+              "roman": "xvii",
+              "title": "Focal Dermal Hypoplasia",
+              "designation": "F",
+              "line": 2242
+            },
+            {
+              "roman": "xviii",
+              "title": "Corticosteroid Atrophy",
+              "designation": "F",
+              "line": 2243
+            },
+            {
+              "roman": "xix",
+              "title": "Reactive Perforating Collagenosis",
+              "designation": "F",
+              "line": 2244
+            }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Disorders of Elastic Tissue",
+          "line": 2245,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Increased Elastic Tissue",
+              "line": 2246,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Solar Elastosis",
+                  "designation": "C",
+                  "line": 2247
+                },
+                {
+                  "number": 2,
+                  "title": "Elastofibroma",
+                  "designation": "AR",
+                  "line": 2248
+                },
+                {
+                  "number": 3,
+                  "title": "Elastoderma",
+                  "designation": "F",
+                  "line": 2249
+                },
+                {
+                  "number": 4,
+                  "title": "Elastoma",
+                  "designation": "F",
+                  "line": 2250
+                },
+                {
+                  "number": 5,
+                  "title": "Elastosis Perforans Serpiginosa",
+                  "designation": "F",
+                  "line": 2251
+                },
+                {
+                  "number": 6,
+                  "title": "Pseudoxanthoma Elasticum",
+                  "designation": "F",
+                  "line": 2252
+                },
+                {
+                  "number": 7,
+                  "title": "Nodular Elastosis with Cysts and Comedones (Favre-Racouche)",
+                  "designation": "F",
+                  "line": 2253
+                },
+                {
+                  "number": 8,
+                  "title": "Elastotic Nodules of the Ears",
+                  "designation": "F",
+                  "line": 2255
+                },
+                {
+                  "number": 9,
+                  "title": "Collagenous and Elastotic Plaques of the Hands",
+                  "designation": "F",
+                  "line": 2256
+                },
+                {
+                  "number": 10,
+                  "title": "Penicillamine Induced Alteration",
+                  "designation": "F",
+                  "line": 2257
+                }
+              ]
+            },
+            {
+              "roman": "ii",
+              "title": "Decreased Elastic Tissue",
+              "line": 2258,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "General Considerations",
+                  "line": 2259
+                },
+                {
+                  "number": 2,
+                  "title": "Anetoderma",
+                  "designation": "F",
+                  "line": 2260
+                },
+                {
+                  "number": 3,
+                  "title": "Cutis Laxa",
+                  "designation": "F",
+                  "line": 2261
+                },
+                {
+                  "number": 4,
+                  "title": "Mid-Dermal Elastolysis",
+                  "designation": "F",
+                  "line": 2262
+                },
+                {
+                  "number": 5,
+                  "title": "Acrokeratoelastoidosis",
+                  "designation": "F",
+                  "line": 2263
+                },
+                {
+                  "number": 6,
+                  "title": "PXE-like Papillary Dermal Elastolysis",
+                  "designation": "F",
+                  "line": 2264
+                },
+                {
+                  "number": 7,
+                  "title": "Nevus Anelasticus",
+                  "designation": "F",
+                  "line": 2265
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "letter": "c",
+          "title": "Cutaneous Mucinoses",
+          "line": 2266,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Pretibial Myxedema",
+              "designation": "AR",
+              "line": 2267
+            },
+            {
+              "roman": "ii",
+              "title": "Digital Mucous (Myxoid) Cyst",
+              "designation": "AR",
+              "line": 2268
+            },
+            {
+              "roman": "iii",
+              "title": "Mucocele of the Lip",
+              "designation": "AR",
+              "line": 2269
+            },
+            {
+              "roman": "iv",
+              "title": "Generalized Myxedema",
+              "designation": "F",
+              "line": 2270
+            },
+            {
+              "roman": "v",
+              "title": "Papular Mucinosis and Scleromyxedema",
+              "designation": "F",
+              "line": 2271
+            },
+            {
+              "roman": "vi",
+              "title": "Reticular Erythematous Mucinosis (REM)",
+              "designation": "F",
+              "line": 2272
+            },
+            {
+              "roman": "vii",
+              "title": "Scleredema",
+              "designation": "F",
+              "line": 2273
+            },
+            {
+              "roman": "viii",
+              "title": "Focal Mucinosis",
+              "designation": "F",
+              "line": 2274
+            },
+            {
+              "roman": "ix",
+              "title": "Follicular Mucinosis",
+              "designation": "F",
+              "line": 2275
+            }
+          ]
+        },
+        {
+          "letter": "d",
+          "title": "Cutaneous Deposits",
+          "line": 2276,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Calcinosis Cutis",
+              "designation": "C",
+              "line": 2277,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Idiopathic Scrotal Calcinosis",
+                  "designation": "AR",
+                  "line": 2278
+                },
+                {
+                  "number": 2,
+                  "title": "Tumoral Calcinosis",
+                  "designation": "AR",
+                  "line": 2279
+                },
+                {
+                  "number": 3,
+                  "title": "Dystrophic Calcification",
+                  "designation": "AR",
+                  "line": 2280
+                },
+                {
+                  "number": 4,
+                  "title": "Calciphylaxis",
+                  "designation": "AR",
+                  "line": 2281
+                },
+                {
+                  "number": 5,
+                  "title": "Subepidermal Calcified Nodule",
+                  "designation": "F",
+                  "line": 2282
+                },
+                {
+                  "number": 6,
+                  "title": "Metastatic Calcification",
+                  "designation": "F",
+                  "line": 2283
+                }
+              ]
+            },
+            {
+              "roman": "ii",
+              "title": "Cutaneous Ossification",
+              "designation": "C",
+              "line": 2284,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Osteoma Cutis",
+                  "designation": "AR",
+                  "line": 2285
+                },
+                {
+                  "number": 2,
+                  "title": "Multiple Osteomas",
+                  "designation": "F",
+                  "line": 2286
+                },
+                {
+                  "number": 3,
+                  "title": "Albright Hereditary Osteodystrophy",
+                  "designation": "F",
+                  "line": 2287
+                }
+              ]
+            },
+            {
+              "roman": "iii",
+              "title": "Hyaline Deposits",
+              "line": 2288,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Gout",
+                  "designation": "AR",
+                  "line": 2289
+                },
+                {
+                  "number": 2,
+                  "title": "Amyloidosis",
+                  "designation": "AR",
+                  "line": 2290,
+                  "subitems": [
+                    {
+                      "letter": "a",
+                      "title": "Systemic Amyloidosis",
+                      "designation": "F",
+                      "line": 2291
+                    },
+                    {
+                      "letter": "b",
+                      "title": "Lichen, Macular",
+                      "designation": "F",
+                      "line": 2292
+                    },
+                    {
+                      "letter": "c",
+                      "title": "Nodular Amyloidosis",
+                      "designation": "F",
+                      "line": 2293
+                    }
+                  ]
+                },
+                {
+                  "number": 3,
+                  "title": "Lipoid Proteinosis",
+                  "designation": "F",
+                  "line": 2294
+                },
+                {
+                  "number": 4,
+                  "title": "Waldenström Macroglobulinemia",
+                  "designation": "F",
+                  "line": 2295
+                },
+                {
+                  "number": 5,
+                  "title": "Colloid Milium and Colloid Degeneration",
+                  "designation": "F",
+                  "line": 2296
+                }
+              ]
+            },
+            {
+              "roman": "iv",
+              "title": "Pigment and Related Deposits",
+              "line": 2297,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Recognition of a Pigment/Deposit as Abnormal",
+                  "designation": "C",
+                  "line": 2298
+                },
+                {
+                  "number": 2,
+                  "title": "Tattoos",
+                  "designation": "AR",
+                  "line": 2299
+                },
+                {
+                  "number": 3,
+                  "title": "Monsel Solution",
+                  "designation": "AR",
+                  "line": 2300
+                },
+                {
+                  "number": 4,
+                  "title": "Aluminum Chloride",
+                  "designation": "AR",
+                  "line": 2301
+                },
+                {
+                  "number": 5,
+                  "title": "Ochronosis",
+                  "designation": "F",
+                  "line": 2302
+                },
+                {
+                  "number": 6,
+                  "title": "Silver Deposition (Argyria)",
+                  "designation": "F",
+                  "line": 2303
+                },
+                {
+                  "number": 7,
+                  "title": "Gold Deposition (Chrysiasis)",
+                  "designation": "F",
+                  "line": 2304
+                },
+                {
+                  "number": 8,
+                  "title": "Arsenic",
+                  "designation": "F",
+                  "line": 2305
+                },
+                {
+                  "number": 9,
+                  "title": "Aluminum",
+                  "designation": "F",
+                  "line": 2306
+                }
+              ]
+            },
+            {
+              "roman": "v",
+              "title": "Drug Deposits and Pigmentation",
+              "line": 2307,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Antimalarial Drugs",
+                  "designation": "F",
+                  "line": 2308
+                },
+                {
+                  "number": 2,
+                  "title": "Phenothiazines",
+                  "designation": "F",
+                  "line": 2309
+                },
+                {
+                  "number": 3,
+                  "title": "Tetracycline",
+                  "designation": "F",
+                  "line": 2310
+                },
+                {
+                  "number": 4,
+                  "title": "Minocycline",
+                  "designation": "F",
+                  "line": 2311
+                },
+                {
+                  "number": 5,
+                  "title": "Amiodarone",
+                  "designation": "F",
+                  "line": 2312
+                },
+                {
+                  "number": 6,
+                  "title": "Clofazimine",
+                  "designation": "F",
+                  "line": 2313
+                },
+                {
+                  "number": 7,
+                  "title": "Chemotherapeutic Agents",
+                  "designation": "F",
+                  "line": 2314
+                }
+              ]
+            },
+            {
+              "roman": "vi",
+              "title": "Miscellaneous Deposits",
+              "line": 2315,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Injected Fillers",
+                  "designation": "AR",
+                  "line": 2316
+                },
+                {
+                  "number": 2,
+                  "title": "Oxalate Crystals",
+                  "designation": "F",
+                  "line": 2317
+                },
+                {
+                  "number": 3,
+                  "title": "Myospherulosis",
+                  "designation": "F",
+                  "line": 2318
+                },
+                {
+                  "number": 4,
+                  "title": "Gelfoam",
+                  "designation": "F",
+                  "line": 2319
+                },
+                {
+                  "number": 5,
+                  "title": "Medication",
+                  "designation": "F",
+                  "line": 2320
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Normal Skin and Mucosa",
+      "line": 2322,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Normal Skin from Diverse Anatomic Sites",
+          "line": 2323,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Face, Acral, Mucosa, Trunk, Axillary, Genital, Scalp, and Eyelid/Conjunctiva.",
+              "designation": "C",
+              "line": 2324
+            }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Normal Microanatomy (e.g., Adnexal Structures, Nerve versus Muscle)",
+          "designation": "C",
+          "line": 2326
+        },
+        {
+          "letter": "c",
+          "title": "Incidental Findings",
+          "line": 2327,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Pagetoid Dyskeratosis",
+              "designation": "F",
+              "line": 2328
+            },
+            {
+              "roman": "ii",
+              "title": "Focal Acantholytic Dyskeratosis",
+              "designation": "F",
+              "line": 2329
+            },
+            {
+              "roman": "iii",
+              "title": "Epidermolytic Hyperkeratosis",
+              "designation": "F",
+              "line": 2330
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "title": "Artifacts",
+      "line": 2332,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Freeze, Electrocautery, Formalin Pigment, Floaters/Tissue Carry Over, Poor Fixation, Tissue Folding, Microtomy Artifact, and Crush Artifact",
+          "designation": "AR",
+          "line": 2333
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Diseases of Cutaneous Appendages",
+      "line": 2336,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Inflammatory Diseases of the Pilosebaceous Apparatus",
+          "line": 2337,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Acneform Lesions",
+              "designation": "AR",
+              "line": 2338
+            },
+            {
+              "roman": "ii",
+              "title": "Rosacea",
+              "designation": "AR",
+              "line": 2339
+            },
+            {
+              "roman": "iii",
+              "title": "Furuncle",
+              "designation": "AR",
+              "line": 2340
+            },
+            {
+              "roman": "iv",
+              "title": "Folliculitis (Acne) Keloidalis Nuchae",
+              "designation": "AR",
+              "line": 2341
+            },
+            {
+              "roman": "v",
+              "title": "Hidradenitis Suppurativa",
+              "designation": "AR",
+              "line": 2342
+            },
+            {
+              "roman": "vi",
+              "title": "Superficial Folliculitides (General Features)",
+              "designation": "AR",
+              "line": 2343,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Acne Necrotica",
+                  "designation": "F",
+                  "line": 2344
+                },
+                {
+                  "number": 2,
+                  "title": "Eosinophilic Folliculitis",
+                  "designation": "F",
+                  "line": 2345
+                },
+                {
+                  "number": 3,
+                  "title": "Infundibulofolliculitis",
+                  "designation": "F",
+                  "line": 2346
+                }
+              ]
+            },
+            {
+              "roman": "vii",
+              "title": "Eosinophilic (Pustular) Folliculitis",
+              "designation": "F",
+              "line": 2347
+            },
+            {
+              "roman": "viii",
+              "title": "Keratosis Pilaris",
+              "designation": "F",
+              "line": 2348
+            },
+            {
+              "roman": "ix",
+              "title": "Dissecting Cellulitis of the Scalp",
+              "designation": "F",
+              "line": 2349
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "title": "Cysts, Sinuses, and Pits",
+      "line": 2387,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Epidermal (Infundibular) Cyst",
+          "designation": "C",
+          "line": 2388,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Gardner Syndrome",
+              "designation": "F",
+              "line": 2389
+            }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Trichilemmal (Pilar, Isthmus-Catagen) Cyst",
+          "designation": "C",
+          "line": 2390
+        },
+        {
+          "letter": "c",
+          "title": "Proliferating Pilar Tumor",
+          "designation": "AR",
+          "line": 2391
+        },
+        {
+          "letter": "d",
+          "title": "Steatocystoma",
+          "designation": "AR",
+          "line": 2392
+        },
+        {
+          "letter": "e",
+          "title": "Developmental Cysts",
+          "line": 2393,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Bronchogenic Cysts",
+              "designation": "AR",
+              "line": 2394
+            },
+            {
+              "roman": "ii",
+              "title": "Branchial Cleft Cysts",
+              "designation": "AR",
+              "line": 2395
+            },
+            {
+              "roman": "iii",
+              "title": "Thyroglossal Duct Cysts",
+              "designation": "AR",
+              "line": 2396
+            },
+            {
+              "roman": "iv",
+              "title": "Thymic Cysts",
+              "designation": "AR",
+              "line": 2397
+            },
+            {
+              "roman": "v",
+              "title": "Median Raphe Cysts",
+              "designation": "AR",
+              "line": 2398
+            },
+            {
+              "roman": "vi",
+              "title": "Dermoid Cysts",
+              "designation": "AR",
+              "line": 2399
+            },
+            {
+              "roman": "vii",
+              "title": "Cutaneous Ciliated Cyst",
+              "designation": "F",
+              "line": 2400
+            },
+            {
+              "roman": "viii",
+              "title": "Cystic Teratoma",
+              "designation": "F",
+              "line": 2401
+            },
+            {
+              "roman": "ix",
+              "title": "Omphalomesenteric Duct Cyst",
+              "designation": "F",
+              "line": 2402
+            }
+          ]
+        },
+        {
+          "letter": "f",
+          "title": "Miscellaneous Cysts",
+          "line": 2403,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Pilonidal Cyst",
+              "designation": "AR",
+              "line": 2404
+            },
+            {
+              "roman": "ii",
+              "title": "Accessory Tragus",
+              "designation": "AR",
+              "line": 2405
+            },
+            {
+              "roman": "iii",
+              "title": "Ganglion Cyst/Metaplastic Synovial Cyst",
+              "designation": "AR",
+              "line": 2406
+            },
+            {
+              "roman": "iv",
+              "title": "Pseudocyst of the Auricle",
+              "designation": "F",
+              "line": 2407
+            }
+          ]
+        },
+        {
+          "letter": "g",
+          "title": "Onycholemmal Cyst",
+          "designation": "F",
+          "line": 2408
+        },
+        {
+          "letter": "h",
+          "title": "Vellus Hair Cyst",
+          "designation": "F",
+          "line": 2409
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "title": "Panniculitis",
+      "line": 2411,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Septal Panniculitis",
+          "designation": "AR",
+          "line": 2412,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Erythema Nodosum",
+              "designation": "AR",
+              "line": 2413
+            }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Lipodermatosclerosis",
+          "designation": "AR",
+          "line": 2414
+        },
+        {
+          "letter": "c",
+          "title": "Factitial Panniculitis",
+          "designation": "AR",
+          "line": 2415
+        },
+        {
+          "letter": "d",
+          "title": "Traumatic Fat Necrosis",
+          "designation": "AR",
+          "line": 2416
+        },
+        {
+          "letter": "e",
+          "title": "Encapsulated Fat Necrosis",
+          "designation": "AR",
+          "line": 2417
+        },
+        {
+          "letter": "f",
+          "title": "Lobular Panniculitis (General Features)",
+          "designation": "AR",
+          "line": 2418,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Erythema Induratum-Nodular Vasculitis",
+              "designation": "F",
+              "line": 2419
+            },
+            {
+              "roman": "ii",
+              "title": "Subcutaneous Fat Necrosis of the Newborn",
+              "designation": "F",
+              "line": 2420
+            },
+            {
+              "roman": "iii",
+              "title": "Sclerema Neonatorum",
+              "designation": "F",
+              "line": 2421
+            },
+            {
+              "roman": "iv",
+              "title": "Cold Panniculitis",
+              "designation": "F",
+              "line": 2422
+            },
+            {
+              "roman": "v",
+              "title": "Alpha-1-Antitrypsin Deficiency",
+              "designation": "F",
+              "line": 2423
+            },
+            {
+              "roman": "vi",
+              "title": "Pancreatic Panniculitis",
+              "designation": "F",
+              "line": 2424
+            },
+            {
+              "roman": "vii",
+              "title": "Connective Tissue Panniculitis",
+              "designation": "F",
+              "line": 2425
+            },
+            {
+              "roman": "viii",
+              "title": "Lupus Panniculitis",
+              "designation": "F",
+              "line": 2426
+            }
+          ]
+        },
+        {
+          "letter": "g",
+          "title": "Lipodystrophy Syndromes",
+          "designation": "F",
+          "line": 2427
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "title": "Metabolic and Storage Diseases",
+      "line": 2429,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Vitamin and Dietary Disturbances",
+          "line": 2430,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Scurvy",
+              "designation": "F",
+              "line": 2431
+            },
+            {
+              "roman": "ii",
+              "title": "Pellagra",
+              "designation": "F",
+              "line": 2432
+            },
+            {
+              "roman": "iii",
+              "title": "Necrolytic Erythemas",
+              "designation": "F",
+              "line": 2433
+            },
+            {
+              "roman": "iv",
+              "title": "Acrodermatitis Enteropathica",
+              "designation": "F",
+              "line": 2434
+            },
+            {
+              "roman": "v",
+              "title": "Glucagonoma Syndrome",
+              "designation": "F",
+              "line": 2435
+            },
+            {
+              "roman": "vi",
+              "title": "Necrolytic Acral Erythema",
+              "designation": "F",
+              "line": 2436
+            }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Porphyria",
+          "line": 2437,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Erythropoietic Protoporphyria",
+              "designation": "F",
+              "line": 2438
+            },
+            {
+              "roman": "ii",
+              "title": "Porphyria Cutanea Tarda",
+              "designation": "F",
+              "line": 2439
+            },
+            {
+              "roman": "iii",
+              "title": "Pseudoporphyria",
+              "designation": "F",
+              "line": 2440
+            }
+          ]
+        },
+        {
+          "letter": "c",
+          "title": "Reactions to Physical Agents",
+          "line": 2441,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Electrocautery",
+              "designation": "AR",
+              "line": 2442
+            },
+            {
+              "roman": "ii",
+              "title": "Cryotherapy Effects",
+              "designation": "AR",
+              "line": 2443
+            },
+            {
+              "roman": "iii",
+              "title": "Traumatic/Factitial",
+              "designation": "AR",
+              "line": 2444
+            },
+            {
+              "roman": "iv",
+              "title": "Friction Blisters",
+              "designation": "F",
+              "line": 2445
+            },
+            {
+              "roman": "v",
+              "title": "Thermal Burns",
+              "designation": "F",
+              "line": 2446
+            },
+            {
+              "roman": "vi",
+              "title": "Electrical Burns",
+              "designation": "F",
+              "line": 2447
+            },
+            {
+              "roman": "vii",
+              "title": "Frostbite",
+              "designation": "F",
+              "line": 2448
+            },
+            {
+              "roman": "viii",
+              "title": "Erythema Ab Igne",
+              "designation": "F",
+              "line": 2449
+            },
+            {
+              "roman": "ix",
+              "title": "Pressure Blister/Coma Blister",
+              "designation": "F",
+              "line": 2450
+            },
+            {
+              "roman": "x",
+              "title": "Suction Blister",
+              "designation": "F",
+              "line": 2451
+            }
+          ]
+        },
+        {
+          "letter": "d",
+          "title": "Reactions to Light",
+          "line": 2452,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Photoallergic",
+              "designation": "F",
+              "line": 2453
+            },
+            {
+              "roman": "ii",
+              "title": "Phototoxic",
+              "designation": "F",
+              "line": 2454
+            },
+            {
+              "roman": "iii",
+              "title": "Hydroa Vacciniforme",
+              "designation": "F",
+              "line": 2455
+            },
+            {
+              "roman": "iv",
+              "title": "Polymorphic Light Eruption",
+              "designation": "F",
+              "line": 2456
+            },
+            {
+              "roman": "v",
+              "title": "Actinic Prurigo",
+              "designation": "F",
+              "line": 2457
+            },
+            {
+              "roman": "vi",
+              "title": "Chronic Actinic Dermatitis",
+              "designation": "F",
+              "line": 2458
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "title": "Infections and Infestations",
+      "line": 2459,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Bacterial Infections",
+          "line": 2460,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Superficial Pyogenic Infections",
+              "line": 2461,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Impetigo",
+                  "designation": "AR",
+                  "line": 2462
+                },
+                {
+                  "number": 2,
+                  "title": "Staphylococcal \"Scalded Skin\" Syndrome (SSSS)",
+                  "designation": "AR",
+                  "line": 2463
+                },
+                {
+                  "number": 3,
+                  "title": "Toxic Shock Syndrome (Staphylococcal/Streptococcal)",
+                  "designation": "F",
+                  "line": 2464
+                },
+                {
+                  "number": 4,
+                  "title": "Ecthyma",
+                  "designation": "F",
+                  "line": 2465
+                },
+                {
+                  "number": 5,
+                  "title": "Erosive Pustular Dermatosis",
+                  "designation": "F",
+                  "line": 2466
+                }
+              ]
+            },
+            {
+              "roman": "ii",
+              "title": "Deep Pyogenic Infections (Cellulitis)",
+              "line": 2467,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Cellulitis",
+                  "designation": "AR",
+                  "line": 2468
+                },
+                {
+                  "number": 2,
+                  "title": "Necrotizing Fasciitis",
+                  "designation": "AR",
+                  "line": 2469
+                },
+                {
+                  "number": 3,
+                  "title": "Erysipelas",
+                  "designation": "F",
+                  "line": 2470
+                },
+                {
+                  "number": 4,
+                  "title": "Erysipeloid",
+                  "designation": "F",
+                  "line": 2471
+                },
+                {
+                  "number": 5,
+                  "title": "Pseudomonas Folliculitis",
+                  "designation": "F",
+                  "line": 2472
+                },
+                {
+                  "number": 6,
+                  "title": "Ecthyma Gangrenosum",
+                  "designation": "F",
+                  "line": 2473
+                }
+              ]
+            },
+            {
+              "roman": "iii",
+              "title": "Mycobacterial Infections (General Features)",
+              "designation": "AR",
+              "line": 2474,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Tuberculosis",
+                  "designation": "F",
+                  "line": 2475
+                },
+                {
+                  "number": 2,
+                  "title": "Leprosy",
+                  "designation": "F",
+                  "line": 2476
+                },
+                {
+                  "number": 3,
+                  "title": "Atypical Mycobacteria",
+                  "designation": "F",
+                  "line": 2477
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Fungi and Algae",
+          "line": 2507,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Superficial Filamentous Fungal Infections",
+              "line": 2508,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Dermatophytoses",
+                  "designation": "AR",
+                  "line": 2509
+                },
+                {
+                  "number": 2,
+                  "title": "Tinea Capitis",
+                  "designation": "AR",
+                  "line": 2510
+                },
+                {
+                  "number": 3,
+                  "title": "Majocchi Granuloma",
+                  "designation": "AR",
+                  "line": 2511
+                },
+                {
+                  "number": 4,
+                  "title": "Onychomycosis",
+                  "designation": "AR",
+                  "line": 2512
+                },
+                {
+                  "number": 5,
+                  "title": "Favus",
+                  "designation": "F",
+                  "line": 2513
+                }
+              ]
+            },
+            {
+              "roman": "ii",
+              "title": "Yeast Infections",
+              "line": 2514,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Candidiasis",
+                  "designation": "AR",
+                  "line": 2515
+                },
+                {
+                  "number": 2,
+                  "title": "Cryptococcosis",
+                  "designation": "AR",
+                  "line": 2516
+                },
+                {
+                  "number": 3,
+                  "title": "Pityriasis versicolor",
+                  "designation": "AR",
+                  "line": 2517
+                },
+                {
+                  "number": 4,
+                  "title": "Sporotrichosis",
+                  "designation": "F",
+                  "line": 2518
+                },
+                {
+                  "number": 5,
+                  "title": "Pityrosporum Folliculitis",
+                  "designation": "F",
+                  "line": 2519
+                },
+                {
+                  "number": 6,
+                  "title": "Trichosporonosis and White Piedra",
+                  "designation": "F",
+                  "line": 2520
+                }
+              ]
+            },
+            {
+              "roman": "iii",
+              "title": "Systemic Mycoses",
+              "line": 2521,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Blastomycosis",
+                  "designation": "AR",
+                  "line": 2522
+                },
+                {
+                  "number": 2,
+                  "title": "Coccidioidomycosis",
+                  "designation": "AR",
+                  "line": 2523
+                },
+                {
+                  "number": 3,
+                  "title": "Histoplasmosis",
+                  "designation": "AR",
+                  "line": 2524
+                },
+                {
+                  "number": 4,
+                  "title": "Paracoccidioidomycosis",
+                  "designation": "F",
+                  "line": 2525
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "letter": "c",
+          "title": "Viral Diseases",
+          "line": 2541,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Poxviridae",
+              "line": 2542,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Molluscum contagiosum",
+                  "designation": "C",
+                  "line": 2543
+                },
+                {
+                  "number": 2,
+                  "title": "Vaccinia",
+                  "designation": "F",
+                  "line": 2544
+                },
+                {
+                  "number": 3,
+                  "title": "Variola (Smallpox)",
+                  "designation": "F",
+                  "line": 2545
+                },
+                {
+                  "number": 4,
+                  "title": "Monkeypox",
+                  "designation": "F",
+                  "line": 2546
+                },
+                {
+                  "number": 5,
+                  "title": "Milker's Nodule",
+                  "designation": "F",
+                  "line": 2547
+                },
+                {
+                  "number": 6,
+                  "title": "Orf",
+                  "designation": "F",
+                  "line": 2548
+                }
+              ]
+            },
+            {
+              "roman": "ii",
+              "title": "Herpesviridae",
+              "line": 2549,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Herpes Simplex Virus",
+                  "designation": "C",
+                  "line": 2550
+                },
+                {
+                  "number": 2,
+                  "title": "Herpes Zoster Virus",
+                  "designation": "C",
+                  "line": 2551
+                },
+                {
+                  "number": 3,
+                  "title": "Cytomegalovirus",
+                  "designation": "AR",
+                  "line": 2552
+                },
+                {
+                  "number": 4,
+                  "title": "Eczema Herpeticum",
+                  "designation": "F",
+                  "line": 2553
+                },
+                {
+                  "number": 5,
+                  "title": "Epstein-Barr Virus / Mucocutaneous Ulcer",
+                  "designation": "F",
+                  "line": 2554
+                }
+              ]
+            },
+            {
+              "roman": "iii",
+              "title": "Papillomaviridae",
+              "line": 2555,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Verruca Vulgaris",
+                  "designation": "C",
+                  "line": 2556
+                },
+                {
+                  "number": 2,
+                  "title": "Condyloma acuminatum",
+                  "designation": "C",
+                  "line": 2557
+                },
+                {
+                  "number": 3,
+                  "title": "Palmoplantar Warts",
+                  "designation": "AR",
+                  "line": 2558
+                },
+                {
+                  "number": 4,
+                  "title": "Verruca Plana",
+                  "designation": "AR",
+                  "line": 2559
+                },
+                {
+                  "number": 5,
+                  "title": "Bowenoid Papulosis",
+                  "designation": "AR",
+                  "line": 2560
+                },
+                {
+                  "number": 6,
+                  "title": "Epidermodysplasia Verruciformis",
+                  "designation": "F",
+                  "line": 2561
+                },
+                {
+                  "number": 7,
+                  "title": "Focal Epithelial Hyperplasia",
+                  "designation": "F",
+                  "line": 2562
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "title": "Tumors",
+      "line": 2605,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Tumors of the Epidermis",
+          "line": 2606,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Benign",
+              "line": 2607,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Acanthomas",
+                  "line": 2608,
+                  "subitems": [
+                    {
+                      "letter": "a",
+                      "title": "Seborrheic Keratosis",
+                      "designation": "C",
+                      "line": 2609
+                    },
+                    {
+                      "letter": "b",
+                      "title": "Warty Dyskeratoma",
+                      "designation": "AR",
+                      "line": 2610
+                    },
+                    {
+                      "letter": "c",
+                      "title": "Epidermolytic Acanthoma",
+                      "designation": "F",
+                      "line": 2611
+                    },
+                    {
+                      "letter": "d",
+                      "title": "Acantholytic Acanthoma",
+                      "designation": "F",
+                      "line": 2612
+                    },
+                    {
+                      "letter": "e",
+                      "title": "Clear Cell Acanthoma",
+                      "designation": "F",
+                      "line": 2613
+                    },
+                    {
+                      "letter": "f",
+                      "title": "Large Cell Acanthoma",
+                      "designation": "F",
+                      "line": 2614
+                    }
+                  ]
+                },
+                {
+                  "number": 2,
+                  "title": "Epidermal Nevus",
+                  "designation": "AR",
+                  "line": 2615
+                },
+                {
+                  "number": 3,
+                  "title": "Clavus (Corn)/Callus",
+                  "designation": "AR",
+                  "line": 2616
+                }
+              ]
+            },
+            {
+              "roman": "ii",
+              "title": "Epidermal Dysplasias",
+              "line": 2622,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Actinic Keratosis",
+                  "designation": "C",
+                  "line": 2623
+                },
+                {
+                  "number": 2,
+                  "title": "Actinic Cheilitis",
+                  "designation": "F",
+                  "line": 2624
+                },
+                {
+                  "number": 3,
+                  "title": "Arsenical Keratosis",
+                  "designation": "F",
+                  "line": 2625
+                },
+                {
+                  "number": 4,
+                  "title": "PUVA Keratosis",
+                  "designation": "F",
+                  "line": 2626
+                }
+              ]
+            },
+            {
+              "roman": "iii",
+              "title": "Malignant Tumors",
+              "line": 2627,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Basal Cell Carcinoma",
+                  "line": 2628,
+                  "subitems": [
+                    {
+                      "letter": "a",
+                      "title": "Basal Cell Carcinoma, Nodular",
+                      "designation": "C",
+                      "line": 2629
+                    },
+                    {
+                      "letter": "b",
+                      "title": "Basal Cell Carcinoma, Superficial",
+                      "designation": "C",
+                      "line": 2630
+                    },
+                    {
+                      "letter": "c",
+                      "title": "Basal Cell Carcinoma, Infiltrative/Morpheaform",
+                      "designation": "AR",
+                      "line": 2631
+                    },
+                    {
+                      "letter": "d",
+                      "title": "Basal Cell Carcinoma, Micronodular",
+                      "designation": "AR",
+                      "line": 2632
+                    },
+                    {
+                      "letter": "e",
+                      "title": "Fibroepithelioma of Pinkus",
+                      "designation": "AR",
+                      "line": 2633
+                    },
+                    {
+                      "letter": "f",
+                      "title": "Basal Cell Carcinoma, Other Variants",
+                      "designation": "F",
+                      "line": 2634
+                    }
+                  ]
+                },
+                {
+                  "number": 2,
+                  "title": "Nevoid Basal Cell Carcinoma Syndrome",
+                  "designation": "F",
+                  "line": 2635
+                },
+                {
+                  "number": 3,
+                  "title": "Squamous Cell Carcinoma (SCC)",
+                  "line": 2636,
+                  "subitems": [
+                    {
+                      "letter": "a",
+                      "title": "Squamous Cell Carcinoma in situ/Bowen Disease",
+                      "designation": "C",
+                      "line": 2637
+                    },
+                    {
+                      "letter": "b",
+                      "title": "Keratoacanthoma",
+                      "designation": "C",
+                      "line": 2638
+                    },
+                    {
+                      "letter": "c",
+                      "title": "Conventional",
+                      "designation": "C",
+                      "line": 2639
+                    },
+                    {
+                      "letter": "d",
+                      "title": "Spindle-Cell/Sarcomatoid SCC",
+                      "designation": "AR",
+                      "line": 2640
+                    },
+                    {
+                      "letter": "e",
+                      "title": "Other Variants of Squamous Cell Carcinoma",
+                      "designation": "F",
+                      "line": 2641
+                    }
+                  ]
+                },
+                {
+                  "number": 4,
+                  "title": "Verrucous Carcinoma",
+                  "designation": "AR",
+                  "line": 2642
+                },
+                {
+                  "number": 5,
+                  "title": "Primary Mammary Paget Disease",
+                  "designation": "AR",
+                  "line": 2643
+                },
+                {
+                  "number": 6,
+                  "title": "Carcinosarcoma (Metaplastic Carcinoma)",
+                  "designation": "F",
+                  "line": 2644
+                },
+                {
+                  "number": 7,
+                  "title": "Lymphoeptihelioma-Like Carcinoma",
+                  "designation": "F",
+                  "line": 2645
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Lentigines, Nevi, and Melanomas",
+          "line": 2646,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Benign",
+              "line": 2647,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Lesions with Basal Hyperpigmentation and/or Melanocyte Proliferation",
+                  "designation": "C",
+                  "line": 2648
+                },
+                {
+                  "number": 2,
+                  "title": "Melanocytic Nevi",
+                  "line": 2655,
+                  "subitems": [
+                    {
+                      "letter": "a",
+                      "title": "Junctional, Compound, and Intradermal Nevi",
+                      "designation": "C",
+                      "line": 2656
+                    },
+                    {
+                      "letter": "b",
+                      "title": "Congenital Nevus",
+                      "designation": "C",
+                      "line": 2657
+                    },
+                    {
+                      "letter": "c",
+                      "title": "Blue Nevus",
+                      "designation": "C",
+                      "line": 2658
+                    },
+                    {
+                      "letter": "d",
+                      "title": "Recurrent Nevus",
+                      "designation": "AR",
+                      "line": 2659
+                    },
+                    {
+                      "letter": "e",
+                      "title": "Nevus on a Special Site",
+                      "designation": "AR",
+                      "line": 2660
+                    },
+                    {
+                      "letter": "f",
+                      "title": "Ancient Change",
+                      "designation": "AR",
+                      "line": 2661
+                    },
+                    {
+                      "letter": "g",
+                      "title": "Halo Nevus",
+                      "designation": "AR",
+                      "line": 2662
+                    },
+                    {
+                      "letter": "h",
+                      "title": "Spitz Nevus",
+                      "designation": "AR",
+                      "line": 2663
+                    },
+                    {
+                      "letter": "i",
+                      "title": "Pigmented Spindle-Cell Nevus",
+                      "designation": "AR",
+                      "line": 2664
+                    },
+                    {
+                      "letter": "j",
+                      "title": "Nodal Nevus",
+                      "designation": "AR",
+                      "line": 2665
+                    }
+                  ]
+                },
+                {
+                  "number": 4,
+                  "title": "Dysplastic (Atypical Nevus with Architectural Disorder)",
+                  "designation": "C",
+                  "line": 2674
+                }
+              ]
+            },
+            {
+              "roman": "iii",
+              "title": "Malignant Melanocytic Lesions",
+              "line": 2680,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Malignant Melanoma",
+                  "designation": "AR",
+                  "line": 2681,
+                  "subitems": [
+                    {
+                      "letter": "a",
+                      "title": "Superficial Spreading",
+                      "designation": "AR",
+                      "line": 2682
+                    },
+                    {
+                      "letter": "b",
+                      "title": "Lentigo Maligna",
+                      "designation": "AR",
+                      "line": 2683
+                    },
+                    {
+                      "letter": "c",
+                      "title": "Desmoplastic",
+                      "designation": "AR",
+                      "line": 2684
+                    },
+                    {
+                      "letter": "d",
+                      "title": "Nodular",
+                      "designation": "AR",
+                      "line": 2685
+                    },
+                    {
+                      "letter": "e",
+                      "title": "Metastatic Melanoma",
+                      "designation": "AR",
+                      "line": 2686
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 12,
+      "title": "Laboratory Techniques and Management",
+      "line": 3061,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Special Staining Procedures",
+          "line": 3062,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Immunohistochemical Stains",
+              "designation": "AR",
+              "line": 3063
+            },
+            {
+              "roman": "ii",
+              "title": "Chromogenic in situ hybridization",
+              "designation": "AR",
+              "line": 3064
+            },
+            {
+              "roman": "iii",
+              "title": "Histochemistry/Special Stains",
+              "designation": "AR",
+              "line": 3065
+            },
+            {
+              "roman": "iv",
+              "title": "Fluorescent Microscopy",
+              "designation": "AR",
+              "line": 3066
+            }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Other Techniques",
+          "line": 3067,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Plane Polarization",
+              "designation": "AR",
+              "line": 3068
+            },
+            {
+              "roman": "ii",
+              "title": "Fluorescence in situ Hybridization",
+              "designation": "AR",
+              "line": 3069
+            },
+            {
+              "roman": "iii",
+              "title": "T-cell/B-cell Gene Rearrangement",
+              "designation": "AR",
+              "line": 3070
+            },
+            {
+              "roman": "iv",
+              "title": "Electron Microscopy",
+              "designation": "F",
+              "line": 3071
+            }
+          ]
+        },
+        {
+          "letter": "c",
+          "title": "Laboratory Management",
+          "line": 3078,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Coding and Billing",
+              "designation": "AR",
+              "line": 3079
+            },
+            {
+              "roman": "ii",
+              "title": "CLIA and CAP Regulations",
+              "designation": "AR",
+              "line": 3080
+            },
+            {
+              "roman": "iii",
+              "title": "Slide and Block Retention",
+              "designation": "AR",
+              "line": 3081
+            },
+            {
+              "roman": "iv",
+              "title": "Quality Assurance Principles",
+              "designation": "AR",
+              "line": 3082
+            },
+            {
+              "roman": "v",
+              "title": "Quality Control",
+              "designation": "AR",
+              "line": 3083
+            },
+            {
+              "roman": "vi",
+              "title": "Root Cause Analysis",
+              "designation": "AR",
+              "line": 3084
+            },
+            {
+              "roman": "vii",
+              "title": "Appropriate Utilization",
+              "designation": "AR",
+              "line": 3085
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 13,
+      "title": "Clinical Pathologic Correlation",
+      "line": 3087,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Clinical Appearance of Common Skin Lesions",
+          "line": 3088,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Inflammatory",
+              "line": 3089,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Lichen Planus",
+                  "designation": "AR",
+                  "line": 3090
+                },
+                {
+                  "number": 2,
+                  "title": "Psoriasis",
+                  "designation": "AR",
+                  "line": 3091
+                },
+                {
+                  "number": 3,
+                  "title": "Allergic Contact Dermatitis",
+                  "designation": "AR",
+                  "line": 3092
+                },
+                {
+                  "number": 4,
+                  "title": "Bullous Pemphigoid",
+                  "designation": "AR",
+                  "line": 3093
+                },
+                {
+                  "number": 5,
+                  "title": "Pemphigus Vulgaris",
+                  "designation": "AR",
+                  "line": 3094
+                },
+                {
+                  "number": 6,
+                  "title": "Leukocytoclastic Vasculitis",
+                  "designation": "AR",
+                  "line": 3095
+                },
+                {
+                  "number": 7,
+                  "title": "Toxic Epidermal Necrolysis, Stevens-Johnson Syndrome, and Erythema Multiforme",
+                  "designation": "AR",
+                  "line": 3096
+                }
+              ]
+            },
+            {
+              "roman": "ii",
+              "title": "Infections",
+              "line": 3098,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Herpes Virus Infection",
+                  "designation": "AR",
+                  "line": 3099
+                },
+                {
+                  "number": 2,
+                  "title": "Molluscum contagiosum",
+                  "designation": "AR",
+                  "line": 3100
+                },
+                {
+                  "number": 3,
+                  "title": "Verruca Vulgaris",
+                  "designation": "AR",
+                  "line": 3101
+                },
+                {
+                  "number": 4,
+                  "title": "Condyloma",
+                  "designation": "AR",
+                  "line": 3102
+                },
+                {
+                  "number": 5,
+                  "title": "Tinea Corporis",
+                  "designation": "AR",
+                  "line": 3103
+                }
+              ]
+            },
+            {
+              "roman": "iii",
+              "title": "Neoplasms",
+              "line": 3104,
+              "subitems": [
+                {
+                  "number": 1,
+                  "title": "Basal Cell Carcinoma",
+                  "designation": "AR",
+                  "line": 3105
+                },
+                {
+                  "number": 2,
+                  "title": "Squamous Cell Carcinoma",
+                  "designation": "AR",
+                  "line": 3106
+                },
+                {
+                  "number": 3,
+                  "title": "Melanoma",
+                  "designation": "AR",
+                  "line": 3107
+                },
+                {
+                  "number": 4,
+                  "title": "Congenital Nevus",
+                  "designation": "AR",
+                  "line": 3108
+                },
+                {
+                  "number": 5,
+                  "title": "Seborrheic Keratosis",
+                  "designation": "AR",
+                  "line": 3109
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Dermoscopy",
+          "designation": "F",
+          "line": 3110
+        }
+      ]
+    },
+    {
+      "number": 14,
+      "title": "Diseases of the Nail Unit",
+      "line": 3112,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Inflammatory and Infectious",
+          "line": 3113,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Onychomycosis",
+              "designation": "AR",
+              "line": 3114
+            },
+            {
+              "roman": "ii",
+              "title": "Psoriasis",
+              "designation": "F",
+              "line": 3115
+            },
+            {
+              "roman": "iii",
+              "title": "Lichen Planus",
+              "designation": "F",
+              "line": 3116
+            }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Lesions and Tumors",
+          "line": 3117,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Subungual Hematoma (Talon Noir)",
+              "designation": "AR",
+              "line": 3118
+            },
+            {
+              "roman": "ii",
+              "title": "Nail Melanoma",
+              "designation": "F",
+              "line": 3119
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 15,
+      "title": "Diseases of the Mucosa (Oral, Ocular, & Anogenital)",
+      "line": 3134,
+      "subitems": [
+        {
+          "letter": "a",
+          "title": "Ocular",
+          "line": 3135,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Oncocytoma",
+              "designation": "F",
+              "line": 3136
+            },
+            {
+              "roman": "ii",
+              "title": "Congenital Nevus",
+              "designation": "F",
+              "line": 3137
+            },
+            {
+              "roman": "iii",
+              "title": "Congenital Primary Acquired Melanosis with/without Atypia",
+              "designation": "F",
+              "line": 3138
+            },
+            {
+              "roman": "iv",
+              "title": "Pinguecula/Pterygium",
+              "designation": "F",
+              "line": 3139
+            },
+            {
+              "roman": "v",
+              "title": "Conjunctival Papilloma",
+              "designation": "F",
+              "line": 3140
+            },
+            {
+              "roman": "vi",
+              "title": "Sebaceous Carcinoma In Situ",
+              "designation": "F",
+              "line": 3141
+            }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Anogenital",
+          "line": 3142,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Genital Melanosis",
+              "designation": "AR",
+              "line": 3143
+            },
+            {
+              "roman": "ii",
+              "title": "HPV-Dependent Squamous Dysplasia and Neoplasia",
+              "designation": "AR",
+              "line": 3144
+            },
+            {
+              "roman": "iii",
+              "title": "HPV-Independent Squamous Dysplasia and Neoplasia",
+              "designation": "AR",
+              "line": 3145
+            }
+          ]
+        },
+        {
+          "letter": "c",
+          "title": "Oral",
+          "line": 3158,
+          "subitems": [
+            {
+              "roman": "i",
+              "title": "Oral Fibroma",
+              "designation": "AR",
+              "line": 3159
+            },
+            {
+              "roman": "ii",
+              "title": "Actinic Cheilitis",
+              "designation": "AR",
+              "line": 3160
+            },
+            {
+              "roman": "iii",
+              "title": "White Sponge Nevus",
+              "designation": "F",
+              "line": 3161
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

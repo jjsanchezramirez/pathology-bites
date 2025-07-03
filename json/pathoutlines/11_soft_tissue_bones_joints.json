@@ -1,0 +1,616 @@
+{
+  "section": 11,
+  "title": "Soft Tissue, Bones, and Joints",
+  "subsections": [
+    {
+      "letter": "A",
+      "title": "Soft Tissue",
+      "line": 1181,
+      "items": [
+        {
+          "number": 1,
+          "title": "Normal Anatomy and Histology",
+          "designation": "C",
+          "line": 1182
+        },
+        {
+          "number": 2,
+          "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+          "designation": "C",
+          "line": 1183,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Reactive lesions simulating sarcomas",
+              "designation": "AR",
+              "line": 1184
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "title": "Congenital, Developmental, and Familial Conditions",
+          "designation": "AR",
+          "line": 1185,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Fibromatosis",
+              "designation": "C",
+              "line": 1186
+            },
+            {
+              "letter": "b",
+              "title": "Fibrous tumors of infancy/childhood",
+              "designation": "AR",
+              "line": 1187
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "title": "Inflammatory Conditions, Infectious and Non-Infectious",
+          "line": 1188
+        },
+        {
+          "number": 5,
+          "title": "Neoplastic",
+          "line": 1189,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Benign",
+              "line": 1190,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Lipoma and variants",
+                  "designation": "C",
+                  "line": 1191
+                },
+                {
+                  "roman": "ii",
+                  "title": "Leiomyoma and variants",
+                  "designation": "C",
+                  "line": 1192
+                },
+                {
+                  "roman": "iii",
+                  "title": "Hemangioma and variants",
+                  "designation": "C",
+                  "line": 1193
+                },
+                {
+                  "roman": "iv",
+                  "title": "Lymphatic tumor",
+                  "designation": "C",
+                  "line": 1194
+                },
+                {
+                  "roman": "v",
+                  "title": "Benign tumors of the synovium",
+                  "designation": "C",
+                  "line": 1195
+                },
+                {
+                  "roman": "vi",
+                  "title": "Solitary fibrous tumor",
+                  "designation": "C",
+                  "line": 1196
+                },
+                {
+                  "roman": "vii",
+                  "title": "Benign fibrous/myofibroblastic lesions",
+                  "designation": "AR",
+                  "line": 1197
+                },
+                {
+                  "roman": "viii",
+                  "title": "Benign fibrohistiocytic tumors",
+                  "designation": "AR",
+                  "line": 1198
+                },
+                {
+                  "roman": "ix",
+                  "title": "Fibrohistiocytic tumors of intermediate malignancy",
+                  "designation": "AR",
+                  "line": 1199
+                },
+                {
+                  "roman": "x",
+                  "title": "Rhabdomyoma",
+                  "designation": "AR",
+                  "line": 1200
+                },
+                {
+                  "roman": "xi",
+                  "title": "Perivascular tumors",
+                  "designation": "AR",
+                  "line": 1201
+                },
+                {
+                  "roman": "xii",
+                  "title": "Benign cartilaginous tumors",
+                  "designation": "AR",
+                  "line": 1202
+                },
+                {
+                  "roman": "xiii",
+                  "title": "Benign osseous soft tissue tumors",
+                  "designation": "AR",
+                  "line": 1203
+                },
+                {
+                  "roman": "xiv",
+                  "title": "Benign soft tissue tumors of uncertain type",
+                  "designation": "F",
+                  "line": 1204
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 6,
+          "title": "Premalignant, Malignant, and Borderline",
+          "line": 1205,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Liposarcoma",
+              "designation": "C",
+              "line": 1206
+            },
+            {
+              "letter": "b",
+              "title": "Leiomyosarcoma",
+              "designation": "C",
+              "line": 1207
+            },
+            {
+              "letter": "c",
+              "title": "Synovial sarcoma",
+              "designation": "C",
+              "line": 1208
+            },
+            {
+              "letter": "d",
+              "title": "Ewing sarcoma",
+              "designation": "C",
+              "line": 1209
+            },
+            {
+              "letter": "e",
+              "title": "Pleomorphic undifferentiated sarcoma",
+              "designation": "C",
+              "line": 1210
+            },
+            {
+              "letter": "f",
+              "title": "Fibrosarcoma",
+              "designation": "AR",
+              "line": 1211
+            },
+            {
+              "letter": "g",
+              "title": "Rhabdomyosarcoma and variants",
+              "designation": "AR",
+              "line": 1212
+            },
+            {
+              "letter": "h",
+              "title": "Malignant vascular tumors, including Kaposi sarcoma",
+              "designation": "AR",
+              "line": 1213
+            },
+            {
+              "letter": "i",
+              "title": "Malignant cartilaginous soft tissue tumors",
+              "designation": "AR",
+              "line": 1214
+            },
+            {
+              "letter": "j",
+              "title": "Malignant osseous soft tissue tumors",
+              "designation": "AR",
+              "line": 1215
+            },
+            {
+              "letter": "k",
+              "title": "Alveolar soft parts sarcoma",
+              "designation": "AR",
+              "line": 1216
+            },
+            {
+              "letter": "l",
+              "title": "Epithelioid sarcoma",
+              "designation": "AR",
+              "line": 1217
+            },
+            {
+              "letter": "m",
+              "title": "Desmoplastic small round cell tumor",
+              "designation": "AR",
+              "line": 1218
+            },
+            {
+              "letter": "n",
+              "title": "Clear cell sarcoma",
+              "designation": "AR",
+              "line": 1219
+            },
+            {
+              "letter": "o",
+              "title": "Vascular tumors of intermediate malignancy",
+              "designation": "F",
+              "line": 1220
+            },
+            {
+              "letter": "p",
+              "title": "Benign soft tissue tumors of intermediate malignancy of uncertain type",
+              "designation": "F",
+              "line": 1221
+            },
+            {
+              "letter": "q",
+              "title": "Other malignant soft tissue tumors of uncertain differentiation",
+              "designation": "F",
+              "line": 1222
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "letter": "B",
+      "title": "Bones",
+      "line": 1224,
+      "items": [
+        {
+          "number": 1,
+          "title": "Normal Anatomy and Histology",
+          "designation": "C",
+          "line": 1225
+        },
+        {
+          "number": 2,
+          "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+          "designation": "C",
+          "line": 1226,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Paget Disease",
+              "designation": "C",
+              "line": 1227
+            },
+            {
+              "letter": "b",
+              "title": "Hyperparathyroidism",
+              "designation": "C",
+              "line": 1228
+            },
+            {
+              "letter": "c",
+              "title": "Osteoporosis",
+              "designation": "C",
+              "line": 1229
+            },
+            {
+              "letter": "d",
+              "title": "Fracture",
+              "designation": "C",
+              "line": 1230
+            },
+            {
+              "letter": "e",
+              "title": "Bone infarct",
+              "designation": "C",
+              "line": 1231
+            },
+            {
+              "letter": "f",
+              "title": "Fibrous dysplasia",
+              "designation": "C",
+              "line": 1232
+            },
+            {
+              "letter": "g",
+              "title": "Osteomalacia/Rickets",
+              "designation": "AR",
+              "line": 1233
+            },
+            {
+              "letter": "h",
+              "title": "Other Metabolic disorders",
+              "designation": "F",
+              "line": 1234
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "title": "Congenital, Developmental, and Familial Conditions",
+          "designation": "AR",
+          "line": 1235,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Osteogenesis imperfecta",
+              "designation": "AR",
+              "line": 1236
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "title": "Inflammatory Conditions, Infectious and Non-Infectious",
+          "line": 1237,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Osteomyelitis",
+              "designation": "C",
+              "line": 1238
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Neoplastic",
+          "line": 1239,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Benign",
+              "line": 1240,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Benign bone cysts",
+                  "designation": "C",
+                  "line": 1241
+                },
+                {
+                  "roman": "ii",
+                  "title": "Osteochondroma",
+                  "designation": "C",
+                  "line": 1242
+                },
+                {
+                  "roman": "iii",
+                  "title": "Enchondroma",
+                  "designation": "C",
+                  "line": 1243
+                },
+                {
+                  "roman": "iv",
+                  "title": "Giant cell Tumor",
+                  "designation": "C",
+                  "line": 1244
+                },
+                {
+                  "roman": "v",
+                  "title": "Hemangioma variants",
+                  "designation": "C",
+                  "line": 1245
+                },
+                {
+                  "roman": "vi",
+                  "title": "Chordoma",
+                  "designation": "C",
+                  "line": 1246
+                },
+                {
+                  "roman": "vii",
+                  "title": "Metastatic lesions to the bone",
+                  "designation": "C",
+                  "line": 1247
+                },
+                {
+                  "roman": "viii",
+                  "title": "Aneurysmal bone cyst",
+                  "designation": "AR",
+                  "line": 1248
+                },
+                {
+                  "roman": "ix",
+                  "title": "Adamantinoma",
+                  "designation": "AR",
+                  "line": 1249
+                },
+                {
+                  "roman": "x",
+                  "title": "Osteoid osteoma/osteoblastoma",
+                  "designation": "AR",
+                  "line": 1250
+                },
+                {
+                  "roman": "xi",
+                  "title": "Nonossifying fibroma",
+                  "designation": "AR",
+                  "line": 1251
+                },
+                {
+                  "roman": "xii",
+                  "title": "Desmoplastic fibroma",
+                  "designation": "F",
+                  "line": 1252
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 6,
+          "title": "Premalignant, Malignant, and Borderline",
+          "line": 1253,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Osteosarcoma",
+              "designation": "C",
+              "line": 1254
+            },
+            {
+              "letter": "b",
+              "title": "Chondrosarcoma",
+              "designation": "C",
+              "line": 1255
+            },
+            {
+              "letter": "c",
+              "title": "Ewing sarcoma",
+              "designation": "C",
+              "line": 1256
+            },
+            {
+              "letter": "d",
+              "title": "Myeloma",
+              "designation": "C",
+              "line": 1257
+            },
+            {
+              "letter": "e",
+              "title": "Lymphomas",
+              "designation": "AR",
+              "line": 1258
+            },
+            {
+              "letter": "f",
+              "title": "Angiosarcoma",
+              "designation": "AR",
+              "line": 1259
+            },
+            {
+              "letter": "g",
+              "title": "Chondroblastoma",
+              "designation": "AR",
+              "line": 1260
+            },
+            {
+              "letter": "h",
+              "title": "Other chondroid tumors of bone",
+              "designation": "AR",
+              "line": 1261
+            },
+            {
+              "letter": "i",
+              "title": "Pleomorphic undifferentiated sarcoma",
+              "designation": "AR",
+              "line": 1262
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "letter": "C",
+      "title": "Joints",
+      "line": 1265,
+      "items": [
+        {
+          "number": 1,
+          "title": "Normal Anatomy and Histology",
+          "designation": "C",
+          "line": 1266
+        },
+        {
+          "number": 2,
+          "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+          "designation": "C",
+          "line": 1267,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Osteonecrosis",
+              "designation": "C",
+              "line": 1268
+            },
+            {
+              "letter": "b",
+              "title": "Gout",
+              "designation": "C",
+              "line": 1269
+            },
+            {
+              "letter": "c",
+              "title": "Calcium pyrophosphate crystal deposition",
+              "designation": "C",
+              "line": 1270
+            },
+            {
+              "letter": "d",
+              "title": "Wear debris arthropathy",
+              "designation": "C",
+              "line": 1271
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "title": "Congenital, Developmental, and Familial Conditions",
+          "designation": "AR",
+          "line": 1272
+        },
+        {
+          "number": 4,
+          "title": "Inflammatory Conditions, Infectious and Non-Infectious",
+          "line": 1273,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Osteoarthritis",
+              "designation": "C",
+              "line": 1274
+            },
+            {
+              "letter": "b",
+              "title": "Septic arthritis, including tuberculosis",
+              "designation": "C",
+              "line": 1275
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Neoplastic",
+          "line": 1276,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Benign",
+              "line": 1277,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Ganglion cyst",
+                  "designation": "C",
+                  "line": 1278
+                },
+                {
+                  "roman": "ii",
+                  "title": "Tenosynovial giant cell tumor",
+                  "designation": "C",
+                  "line": 1279
+                },
+                {
+                  "roman": "iii",
+                  "title": "Synovial chrondromatosis",
+                  "designation": "C",
+                  "line": 1280
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 6,
+          "title": "Premalignant, Malignant, and Borderline",
+          "designation": "AR",
+          "line": 1281
+        }
+      ]
+    }
+  ]
+}

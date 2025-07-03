@@ -9,6 +9,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogOverlay,
+  DialogPortal,
 } from "@/shared/components/ui/dialog";
 import {
   Select,
@@ -25,6 +27,7 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
   const [isDragging, setIsDragging] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ImageCategory>('microscopic');
   const [sourceRef, setSourceRef] = useState('');
+  const [description, setDescription] = useState('');
 
   const {
     isUploading,
@@ -41,6 +44,7 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
       resetProgress();
       setIsDragging(false);
       setSourceRef('');
+      setDescription('');
       setSelectedCategory('microscopic');
     }
   }, [open, resetProgress]);
@@ -48,8 +52,8 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
   // Handle file input change
   const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    uploadFiles(files, selectedCategory, sourceRef);
-  }, [uploadFiles, selectedCategory, sourceRef]);
+    uploadFiles(files, selectedCategory, sourceRef, description);
+  }, [uploadFiles, selectedCategory, sourceRef, description]);
 
   // Handle drag and drop events
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -75,8 +79,8 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
     setIsDragging(false);
 
     const files = Array.from(e.dataTransfer.files);
-    uploadFiles(files, selectedCategory, sourceRef);
-  }, [uploadFiles, selectedCategory, sourceRef]);
+    uploadFiles(files, selectedCategory, sourceRef, description);
+  }, [uploadFiles, selectedCategory, sourceRef, description]);
 
   const handleCategoryChange = useCallback((value: string) => {
     setSelectedCategory(value as ImageCategory);
@@ -85,7 +89,13 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogPortal>
+        <DialogOverlay className="backdrop-blur-md bg-black/20" />
+        <DialogContent
+          className="!max-w-[600px] !w-[90vw] max-h-[90vh] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 bg-background"
+          style={{ maxWidth: '600px', width: '90vw' }}
+          showCloseButton={true}
+        >
         <DialogHeader>
           <DialogTitle>Upload Images</DialogTitle>
           <DialogDescription>
@@ -117,6 +127,20 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
             </p>
           </div>
 
+          {/* Image Description Input */}
+          <div className="space-y-2">
+            <Label htmlFor="description">
+              Image Description (Optional)
+            </Label>
+            <Input
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Brief description of the image content"
+              className="w-full"
+            />
+          </div>
+
           {/* Source Reference Input - Available for all image types */}
           <div className="space-y-2">
             <Label htmlFor="sourceRef">
@@ -138,7 +162,7 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={`
-              relative flex flex-col items-center justify-center w-full h-32
+              relative flex flex-col items-center justify-center w-full h-40
               border-2 border-dashed rounded-lg cursor-pointer
               transition-colors duration-200
               ${isDragging
@@ -200,7 +224,8 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
             </div>
           )}
         </div>
-      </DialogContent>
+        </DialogContent>
+      </DialogPortal>
     </Dialog>
   );
 }

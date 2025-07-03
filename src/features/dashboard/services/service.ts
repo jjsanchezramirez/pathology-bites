@@ -42,6 +42,31 @@ export class DashboardService {
     try {
       const supabase = await this.getSupabaseClient()
 
+      // Try to use the optimized view first, fallback to individual queries
+      const { data: viewData, error: viewError } = await supabase
+        .from('v_dashboard_stats')
+        .select('*')
+        .single();
+
+      if (!viewError && viewData) {
+        // Map view data to our interface
+        return {
+          totalQuestions: viewData.published_questions,
+          totalUsers: viewData.total_users,
+          totalImages: viewData.total_images,
+          totalInquiries: viewData.total_inquiries,
+          pendingQuestions: viewData.draft_questions,
+          activeUsers: viewData.recent_users, // Using recent_users as proxy for active
+          recentQuestions: viewData.recent_questions,
+          unreadInquiries: 0, // View doesn't track unread status
+          questionReports: viewData.question_reports,
+          pendingReports: viewData.pending_reports
+        };
+      }
+
+      // Fallback to individual queries if view fails
+      console.warn('Dashboard view failed, using individual queries:', viewError);
+
       // Get all counts in parallel
       const [
         questionsResult,

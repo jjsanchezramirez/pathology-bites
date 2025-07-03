@@ -1,0 +1,817 @@
+{
+  "section": 17,
+  "title": "Neuropathology Topics for Anatomic Pathology Residents",
+  "subsection": 11,
+  "subsection_title": "Neoplasms (continued)",
+  "starting_line": 4582,
+  "items": [
+    {
+      "letter": "i",
+      "title": "Tumors of the Cranial and Paraspinal Nerves",
+      "line": 4582,
+      "subitems": [
+        {
+          "roman": "i",
+          "title": "Schwannoma (Cellular and Plexiform Types)",
+          "designation": "AR",
+          "line": 4583
+        },
+        {
+          "roman": "ii",
+          "title": "Neurofibroma",
+          "line": 4584,
+          "subitems": [
+            {
+              "number": 1,
+              "title": "Plexiform Neurofibroma",
+              "designation": "AR",
+              "line": 4585
+            },
+            {
+              "number": 2,
+              "title": "Atypical Neurofibromatous Neoplasm of Uncertain Biologic Potential (ANNUBP)",
+              "designation": "AR",
+              "line": 4587
+            }
+          ]
+        },
+        {
+          "roman": "iii",
+          "title": "Ganglioneuroma",
+          "designation": "AR",
+          "line": 4588
+        },
+        {
+          "roman": "iv",
+          "title": "Malignant Peripheral Nerve Sheath Tumor (MPNST)",
+          "designation": "AR",
+          "line": 4589
+        },
+        {
+          "roman": "v",
+          "title": "Perineurioma",
+          "designation": "F",
+          "line": 4590
+        },
+        {
+          "roman": "vi",
+          "title": "Hybrid Nerve Sheath Tumors",
+          "designation": "F",
+          "line": 4591
+        },
+        {
+          "roman": "vii",
+          "title": "Epithelioid Malignant Peripheral Nerve Sheath Tumor",
+          "designation": "F",
+          "line": 4592
+        },
+        {
+          "roman": "viii",
+          "title": "MPNST with Divergent Mesenchymal and/or Epithelial Differentiation or Perineural Differentiation",
+          "designation": "F",
+          "line": 4594
+        }
+      ]
+    },
+    {
+      "letter": "j",
+      "title": "Meningothelial Tumors",
+      "line": 4595,
+      "subitems": [
+        {
+          "roman": "i",
+          "title": "Meningioma, NOS",
+          "designation": "AR",
+          "line": 4596
+        },
+        {
+          "roman": "ii",
+          "title": "Atypical Meningioma",
+          "designation": "AR",
+          "line": 4597
+        },
+        {
+          "roman": "iii",
+          "title": "Anaplastic Meningioma",
+          "designation": "AR",
+          "line": 4598
+        },
+        {
+          "roman": "iv",
+          "title": "Meningioma, Meningothelial Type",
+          "designation": "F",
+          "line": 4599
+        },
+        {
+          "roman": "v",
+          "title": "Meningioma, Fibrous (Fibroblastic)",
+          "designation": "F",
+          "line": 4600
+        },
+        {
+          "roman": "vi",
+          "title": "Meningioma, Transitional (Mixed)",
+          "designation": "F",
+          "line": 4601
+        },
+        {
+          "roman": "vii",
+          "title": "Meningioma, Psammomatous",
+          "designation": "F",
+          "line": 4602
+        },
+        {
+          "roman": "viii",
+          "title": "Meningioma, Angiomatous",
+          "designation": "F",
+          "line": 4603
+        },
+        {
+          "roman": "ix",
+          "title": "Meningioma, Microcystic",
+          "designation": "F",
+          "line": 4604
+        },
+        {
+          "roman": "x",
+          "title": "Meningioma, Secretory",
+          "designation": "F",
+          "line": 4605
+        },
+        {
+          "roman": "xi",
+          "title": "Meningioma, Lymphoplasmacyte-Rich",
+          "designation": "F",
+          "line": 4606
+        },
+        {
+          "roman": "xii",
+          "title": "Meningioma, Metaplastic",
+          "designation": "F",
+          "line": 4607
+        },
+        {
+          "roman": "xiii",
+          "title": "Meningioma, Clear Cell Type",
+          "designation": "F",
+          "line": 4608
+        },
+        {
+          "roman": "xiv",
+          "title": "Meningioma, Chordoid Type",
+          "designation": "F",
+          "line": 4609
+        },
+        {
+          "roman": "xv",
+          "title": "Meningioma, Papillary Type",
+          "designation": "F",
+          "line": 4610
+        },
+        {
+          "roman": "xvi",
+          "title": "Meningioma, Rhabdoid Type",
+          "designation": "F",
+          "line": 4611
+        },
+        {
+          "roman": "xvii",
+          "title": "Meningioma, Other Types",
+          "designation": "F",
+          "line": 4612
+        },
+        {
+          "roman": "xviii",
+          "title": "Meningoangiomatomatosis",
+          "designation": "F",
+          "line": 4613
+        }
+      ]
+    },
+    {
+      "letter": "k",
+      "title": "Mesenchymal (Non-Meningothelial) Tumors",
+      "line": 4614,
+      "subitems": [
+        {
+          "roman": "i",
+          "title": "Chordoma",
+          "designation": "AR",
+          "line": 4615
+        },
+        {
+          "roman": "ii",
+          "title": "Hemangioblastoma",
+          "designation": "AR",
+          "line": 4616
+        },
+        {
+          "roman": "iii",
+          "title": "Lipoma",
+          "designation": "F",
+          "line": 4617
+        },
+        {
+          "roman": "iv",
+          "title": "Solitary Fibrous Tumor",
+          "designation": "F",
+          "line": 4618
+        },
+        {
+          "roman": "v",
+          "title": "Chondrosarcoma",
+          "designation": "F",
+          "line": 4619
+        },
+        {
+          "roman": "vi",
+          "title": "Mesenchymal Chondrosarcoma",
+          "designation": "F",
+          "line": 4620
+        },
+        {
+          "roman": "vii",
+          "title": "Hemangioma",
+          "designation": "F",
+          "line": 4621
+        },
+        {
+          "roman": "viii",
+          "title": "Intracranial Mesenchymal Tumor FET::CREB Fusion-Positive",
+          "designation": "F",
+          "line": 4622
+        },
+        {
+          "roman": "ix",
+          "title": "CIC Rearranged Sarcoma",
+          "designation": "F",
+          "line": 4623
+        },
+        {
+          "roman": "x",
+          "title": "Primary Intracranial Sarcoma DICER1-Mutant",
+          "designation": "F",
+          "line": 4624
+        },
+        {
+          "roman": "xi",
+          "title": "Ewing Sarcoma",
+          "designation": "F",
+          "line": 4625
+        }
+      ]
+    },
+    {
+      "letter": "l",
+      "title": "Primary Melanocytic Tumors",
+      "line": 4626,
+      "subitems": [
+        {
+          "roman": "i",
+          "title": "Melanocytosis",
+          "designation": "F",
+          "line": 4627
+        },
+        {
+          "roman": "ii",
+          "title": "Melanocytoma",
+          "designation": "F",
+          "line": 4628
+        },
+        {
+          "roman": "iii",
+          "title": "Melanoma",
+          "designation": "F",
+          "line": 4629
+        },
+        {
+          "roman": "iv",
+          "title": "Melanomatosis",
+          "designation": "F",
+          "line": 4630
+        }
+      ]
+    },
+    {
+      "letter": "m",
+      "title": "Lymphoma and Hematopoietic Tumors of the Central Nervous System",
+      "line": 4631,
+      "subitems": [
+        {
+          "roman": "i",
+          "title": "Diffuse Large B-cell Lymphoma of the CNS",
+          "designation": "F",
+          "line": 4632
+        },
+        {
+          "roman": "ii",
+          "title": "Langerhans Histiocytosis",
+          "designation": "F",
+          "line": 4633
+        },
+        {
+          "roman": "iii",
+          "title": "Non-Langerhans Histiocytosis (Rosai-Dorfman)",
+          "designation": "F",
+          "line": 4634
+        },
+        {
+          "roman": "iv",
+          "title": "Immunodeficiency-Associated CNS Lymphomas",
+          "designation": "F",
+          "line": 4635
+        },
+        {
+          "roman": "v",
+          "title": "Intravascular Large B-cell Lymphoma",
+          "designation": "F",
+          "line": 4636
+        },
+        {
+          "roman": "vi",
+          "title": "MALT Lymphomas of the Dura",
+          "designation": "F",
+          "line": 4637
+        }
+      ]
+    },
+    {
+      "letter": "n",
+      "title": "Tumors of the Sellar Region",
+      "line": 4638,
+      "subitems": [
+        {
+          "roman": "i",
+          "title": "Rathke Cleft Cyst",
+          "designation": "AR",
+          "line": 4639
+        },
+        {
+          "roman": "ii",
+          "title": "Craniopharyngioma, Adamantinomatous Type",
+          "designation": "AR",
+          "line": 4640
+        },
+        {
+          "roman": "iii",
+          "title": "Craniopharyngioma, Papillary Type",
+          "designation": "AR",
+          "line": 4641
+        },
+        {
+          "roman": "iv",
+          "title": "Pituitary Adenoma/Pituitary Neuroendocrine Tumor (PitNET)",
+          "designation": "AR",
+          "line": 4642,
+          "subitems": [
+            {
+              "number": 1,
+              "title": "Densely Granulated Corticotroph Adenoma",
+              "designation": "F",
+              "line": 4643
+            },
+            {
+              "number": 2,
+              "title": "Sparsely Granulated Corticotroph Adenoma",
+              "designation": "F",
+              "line": 4644
+            },
+            {
+              "number": 3,
+              "title": "Crooke Cell Adenoma",
+              "designation": "F",
+              "line": 4645
+            },
+            {
+              "number": 4,
+              "title": "Densely Granulated Somatotroph Adenoma",
+              "designation": "F",
+              "line": 4646
+            },
+            {
+              "number": 5,
+              "title": "Sparsely Granulated Somatotroph Adenoma",
+              "designation": "F",
+              "line": 4647
+            },
+            {
+              "number": 6,
+              "title": "Mammosomatotroph Adenoma",
+              "designation": "F",
+              "line": 4648
+            },
+            {
+              "number": 7,
+              "title": "Mixed Somatotroph-Lactotroph Adenoma",
+              "designation": "F",
+              "line": 4649
+            },
+            {
+              "number": 8,
+              "title": "Sparsely Granulated Lactotroph Adenoma",
+              "designation": "F",
+              "line": 4650
+            },
+            {
+              "number": 9,
+              "title": "Densely Granulated Lactotroph Adenoma",
+              "designation": "F",
+              "line": 4651
+            },
+            {
+              "number": 10,
+              "title": "Acidophil Stem Cell Adenoma",
+              "designation": "F",
+              "line": 4652
+            },
+            {
+              "number": 11,
+              "title": "Thyrotroph Adenoma",
+              "designation": "F",
+              "line": 4653
+            },
+            {
+              "number": 12,
+              "title": "Gonadotroph Adenoma",
+              "designation": "F",
+              "line": 4654
+            },
+            {
+              "number": 13,
+              "title": "Null Cell Adenoma",
+              "designation": "F",
+              "line": 4655
+            },
+            {
+              "number": 14,
+              "title": "Plurihormonal PIT1-Positive Adenoma",
+              "designation": "F",
+              "line": 4656
+            }
+          ]
+        },
+        {
+          "roman": "v",
+          "title": "Pituitary Carcinoma/ Metastatic PitNET",
+          "designation": "F",
+          "line": 4657
+        },
+        {
+          "roman": "vi",
+          "title": "Pituitary Hyperplasia",
+          "designation": "F",
+          "line": 4658
+        },
+        {
+          "roman": "vii",
+          "title": "Hypothalamic Hamartoma",
+          "designation": "F",
+          "line": 4659
+        },
+        {
+          "roman": "viii",
+          "title": "Granular Cell Tumor",
+          "designation": "F",
+          "line": 4660
+        },
+        {
+          "roman": "ix",
+          "title": "Pituicytoma",
+          "designation": "F",
+          "line": 4661
+        },
+        {
+          "roman": "x",
+          "title": "Spindle Cell Oncocytoma",
+          "designation": "F",
+          "line": 4662
+        }
+      ]
+    },
+    {
+      "letter": "o",
+      "title": "Germ Cell Tumors",
+      "line": 4663,
+      "subitems": [
+        {
+          "roman": "i",
+          "title": "Germinoma",
+          "designation": "AR",
+          "line": 4664
+        },
+        {
+          "roman": "ii",
+          "title": "Embryonal Carcinoma",
+          "designation": "AR",
+          "line": 4665
+        },
+        {
+          "roman": "iii",
+          "title": "Yolk Sac Tumor",
+          "designation": "AR",
+          "line": 4666
+        },
+        {
+          "roman": "iv",
+          "title": "Choriocarcinoma",
+          "designation": "AR",
+          "line": 4667
+        },
+        {
+          "roman": "v",
+          "title": "Teratoma, Mature",
+          "designation": "AR",
+          "line": 4668
+        },
+        {
+          "roman": "vi",
+          "title": "Teratoma, Immature",
+          "designation": "AR",
+          "line": 4669
+        },
+        {
+          "roman": "vii",
+          "title": "Teratoma with Malignant Transformation",
+          "designation": "AR",
+          "line": 4670
+        },
+        {
+          "roman": "viii",
+          "title": "Malignant Mixed Germ Cell Tumor (Specify Components: Germinoma, Embryonal, etc.)",
+          "designation": "AR",
+          "line": 4672
+        }
+      ]
+    },
+    {
+      "letter": "p",
+      "title": "Cysts",
+      "line": 4673,
+      "subitems": [
+        {
+          "roman": "i",
+          "title": "Epidermoid and Dermoid Cysts",
+          "designation": "AR",
+          "line": 4674
+        },
+        {
+          "roman": "ii",
+          "title": "Colloid Cyst of the Third Ventricle",
+          "designation": "AR",
+          "line": 4675
+        },
+        {
+          "roman": "iii",
+          "title": "Endodermal/Enterogenous Cyst",
+          "designation": "AR",
+          "line": 4676
+        },
+        {
+          "roman": "iv",
+          "title": "Arachnoid Cyst",
+          "designation": "AR",
+          "line": 4677
+        },
+        {
+          "roman": "v",
+          "title": "Ependymal Cyst",
+          "designation": "F",
+          "line": 4678
+        },
+        {
+          "roman": "vi",
+          "title": "Pineal Cyst",
+          "designation": "F",
+          "line": 4679
+        }
+      ]
+    },
+    {
+      "letter": "q",
+      "title": "Metastatic Tumors",
+      "line": 4680,
+      "subitems": [
+        {
+          "roman": "i",
+          "title": "Neoplasms in Tissues Surrounding the CNS",
+          "designation": "AR",
+          "line": 4681
+        },
+        {
+          "roman": "ii",
+          "title": "Secondary Neoplasms in the Meninges",
+          "designation": "AR",
+          "line": 4682
+        },
+        {
+          "roman": "iii",
+          "title": "Secondary Neoplasms in the Brain and Spinal Cord",
+          "designation": "AR",
+          "line": 4683
+        }
+      ]
+    },
+    {
+      "letter": "r",
+      "title": "Paraneoplastic Disorders",
+      "line": 4684,
+      "subitems": [
+        {
+          "roman": "i",
+          "title": "Paraneoplastic Encephalomyelitis",
+          "designation": "F",
+          "line": 4685
+        },
+        {
+          "roman": "ii",
+          "title": "Paraneoplastic Cerebellar Degeneration",
+          "designation": "F",
+          "line": 4686
+        },
+        {
+          "roman": "iii",
+          "title": "Paraneoplastic Opsoclonus-Myoclonus-Ataxia",
+          "designation": "F",
+          "line": 4687
+        }
+      ]
+    },
+    {
+      "letter": "s",
+      "title": "Familial Tumor Predisposition Syndromes",
+      "line": 4688,
+      "subitems": [
+        {
+          "roman": "i",
+          "title": "Tuberous Sclerosis",
+          "designation": "AR",
+          "line": 4689
+        },
+        {
+          "roman": "ii",
+          "title": "Neurofibromatosis, Type 1 (NF1)",
+          "designation": "AR",
+          "line": 4690
+        },
+        {
+          "roman": "iii",
+          "title": "Neurofibromatosis, Type 2 (NF2)",
+          "designation": "AR",
+          "line": 4691
+        },
+        {
+          "roman": "iv",
+          "title": "von Hippel-Lindau Disease",
+          "designation": "AR",
+          "line": 4692
+        },
+        {
+          "roman": "v",
+          "title": "Li-Fraumini Syndrome",
+          "designation": "AR",
+          "line": 4693
+        },
+        {
+          "roman": "vi",
+          "title": "Cowden Disease",
+          "designation": "AR",
+          "line": 4694
+        },
+        {
+          "roman": "vii",
+          "title": "Lynch Syndrome",
+          "designation": "AR",
+          "line": 4695
+        },
+        {
+          "roman": "viii",
+          "title": "Nevoid Basal Carcinoma Syndrome",
+          "designation": "AR",
+          "line": 4696
+        },
+        {
+          "roman": "ix",
+          "title": "Rhabdoid Tumor Predisposition Syndrome",
+          "designation": "AR",
+          "line": 4697
+        },
+        {
+          "roman": "x",
+          "title": "Carney Complex",
+          "designation": "AR",
+          "line": 4698
+        },
+        {
+          "roman": "xi",
+          "title": "Familial Adenomatous Polyposis",
+          "designation": "AR",
+          "line": 4699
+        },
+        {
+          "roman": "xii",
+          "title": "DICER1 Syndrome",
+          "designation": "AR",
+          "line": 4700
+        },
+        {
+          "roman": "xiii",
+          "title": "Familial Retinoblastoma",
+          "designation": "AR",
+          "line": 4701
+        },
+        {
+          "roman": "xiv",
+          "title": "BAP1 Tumor Predisposition Syndrome",
+          "designation": "AR",
+          "line": 4702
+        },
+        {
+          "roman": "xv",
+          "title": "Constitutional Mismatch Repair Deficiency (CMMRD) Syndrome",
+          "designation": "F",
+          "line": 4703
+        },
+        {
+          "roman": "xvi",
+          "title": "Melanoma Astrocytoma Syndrome",
+          "designation": "F",
+          "line": 4704
+        },
+        {
+          "roman": "xvii",
+          "title": "Fanconi Anemia",
+          "designation": "F",
+          "line": 4705
+        },
+        {
+          "roman": "xviii",
+          "title": "ELP1 Medulloblastoma Syndrome",
+          "designation": "F",
+          "line": 4706
+        }
+      ]
+    },
+    {
+      "letter": "t",
+      "title": "Pediatric-Type Diffuse Low-Grade Gliomas",
+      "line": 4707,
+      "subitems": [
+        {
+          "roman": "i",
+          "title": "Diffuse Astrocytoma, MYB or MYB-1 altered",
+          "designation": "F",
+          "line": 4708
+        },
+        {
+          "roman": "ii",
+          "title": "Angiocentric Glioma",
+          "designation": "F",
+          "line": 4709
+        },
+        {
+          "roman": "iii",
+          "title": "Polymorphous Low-Grade Neuroepithelial Tumor of the Young",
+          "designation": "F",
+          "line": 4710
+        },
+        {
+          "roman": "iv",
+          "title": "Diffuse Low-Grade Glioma, MAPK Pathway Altered",
+          "designation": "F",
+          "line": 4711
+        }
+      ]
+    },
+    {
+      "letter": "u",
+      "title": "Pediatric-Type Diffuse High-Grade Gliomas",
+      "line": 4712,
+      "subitems": [
+        {
+          "roman": "i",
+          "title": "Diffuse Midline Glioma, H3 K27-Altered",
+          "designation": "F",
+          "line": 4713
+        },
+        {
+          "roman": "ii",
+          "title": "Diffuse Hemispheric Glioma, H3 G34-Mutant",
+          "designation": "F",
+          "line": 4714
+        },
+        {
+          "roman": "iii",
+          "title": "Diffuse Pediatric-Type High-Grade Glioma, H3-Wild Type and IDH-Wildtype",
+          "designation": "F",
+          "line": 4716
+        },
+        {
+          "roman": "iv",
+          "title": "Infant-Type Hemispheric Glioma",
+          "designation": "F",
+          "line": 4717
+        }
+      ]
+    }
+  ]
+}

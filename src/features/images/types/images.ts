@@ -10,7 +10,8 @@ export const IMAGE_CATEGORIES = {
   microscopic: 'Microscopic',
   figure: 'Figure',
   table: 'Table',
-  gross: 'Gross'
+  gross: 'Gross',
+  external: 'External'
 } as const;
 
 export type ImageCategory = keyof typeof IMAGE_CATEGORIES;

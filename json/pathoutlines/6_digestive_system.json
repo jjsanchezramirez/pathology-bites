@@ -1,0 +1,1429 @@
+{
+  "section": 6,
+  "title": "The Digestive System",
+  "subsections": [
+    {
+      "letter": "A",
+      "title": "The Gastrointestinal Tract",
+      "line": 566,
+      "sections": [
+        {
+          "title": "The Esophagus",
+          "line": 567,
+          "items": [
+            {
+              "number": 1,
+              "title": "Normal Anatomy and Histology",
+              "designation": "C",
+              "line": 568
+            },
+            {
+              "number": 2,
+              "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+              "designation": "C",
+              "line": 569,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Barrett esophagus, non-dysplasia (i.e., metaplasia)",
+                  "designation": "C",
+                  "line": 570
+                }
+              ]
+            },
+            {
+              "number": 3,
+              "title": "Congenital, Developmental, and Familial Conditions",
+              "designation": "AR",
+              "line": 571
+            },
+            {
+              "number": 4,
+              "title": "Inflammatory Conditions, Non-Infectious and Infectious",
+              "line": 572,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Reflux esophagitis",
+                  "designation": "C",
+                  "line": 573
+                },
+                {
+                  "letter": "b",
+                  "title": "Eosinophilic esophagitis",
+                  "designation": "C",
+                  "line": 574
+                },
+                {
+                  "letter": "c",
+                  "title": "Esophagitis dissecans superficialis",
+                  "designation": "AR",
+                  "line": 575
+                },
+                {
+                  "letter": "d",
+                  "title": "Other causes of esophagitis",
+                  "designation": "AR",
+                  "line": 576
+                },
+                {
+                  "letter": "e",
+                  "title": "Infections",
+                  "designation": "C",
+                  "line": 577
+                }
+              ]
+            },
+            {
+              "number": 5,
+              "title": "Neoplastic",
+              "line": 578,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Benign",
+                  "line": 579,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Squamous papilloma",
+                      "designation": "C",
+                      "line": 580
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Mesenchymal tumors",
+                      "designation": "C",
+                      "line": 581
+                    }
+                  ]
+                },
+                {
+                  "letter": "b",
+                  "title": "Premalignant, Malignant, and Borderline",
+                  "line": 582,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Squamous cell carcinoma",
+                      "designation": "C",
+                      "line": 583
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Adenocarcinoma",
+                      "designation": "C",
+                      "line": 584,
+                      "note": "- Barrett esophagus, dysplasia AR"
+                    }
+                  ]
+                },
+                {
+                  "letter": "c",
+                  "title": "Squamous dysplasia",
+                  "designation": "AR",
+                  "line": 586
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "The Stomach",
+          "line": 588,
+          "items": [
+            {
+              "number": 1,
+              "title": "Normal Anatomy and Histology",
+              "designation": "C",
+              "line": 589
+            },
+            {
+              "number": 2,
+              "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+              "designation": "C",
+              "line": 590
+            },
+            {
+              "number": 3,
+              "title": "Congenital, Developmental, and Familial Conditions",
+              "designation": "AR",
+              "line": 591,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Hamartomas",
+                  "designation": "AR",
+                  "line": 592
+                },
+                {
+                  "letter": "b",
+                  "title": "Zollinger-Ellison Syndrome",
+                  "designation": "AR",
+                  "line": 593
+                },
+                {
+                  "letter": "c",
+                  "title": "Menetrier Disease",
+                  "designation": "AR",
+                  "line": 594
+                }
+              ]
+            },
+            {
+              "number": 4,
+              "title": "Inflammatory Conditions, Non-Infectious & Infectious",
+              "line": 595,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Hemorrhagic erosive gastritis",
+                  "designation": "C",
+                  "line": 596
+                },
+                {
+                  "letter": "b",
+                  "title": "Autoimmune gastritis",
+                  "designation": "C",
+                  "line": 597
+                },
+                {
+                  "letter": "c",
+                  "title": "Lymphocytic gastritis",
+                  "designation": "C",
+                  "line": 598
+                },
+                {
+                  "letter": "d",
+                  "title": "Chemical gastritis",
+                  "designation": "C",
+                  "line": 599
+                },
+                {
+                  "letter": "e",
+                  "title": "Helicobacter gastritis",
+                  "designation": "C",
+                  "line": 600
+                },
+                {
+                  "letter": "f",
+                  "title": "Other causes of gastritis",
+                  "designation": "AR",
+                  "line": 601
+                },
+                {
+                  "letter": "g",
+                  "title": "Inflammatory fibroid polyp",
+                  "designation": "AR",
+                  "line": 602
+                },
+                {
+                  "letter": "h",
+                  "title": "Other polyps",
+                  "designation": "AR",
+                  "line": 603
+                }
+              ]
+            },
+            {
+              "number": 5,
+              "title": "Neoplastic",
+              "line": 604,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Benign",
+                  "line": 605,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Fundic gland polyp",
+                      "designation": "C",
+                      "line": 606
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Hyperplastic polyp",
+                      "designation": "C",
+                      "line": 607
+                    },
+                    {
+                      "roman": "iii",
+                      "title": "Adenoma",
+                      "designation": "AR",
+                      "line": 608
+                    }
+                  ]
+                },
+                {
+                  "letter": "b",
+                  "title": "Premalignant, Malignant, and Borderline",
+                  "line": 609,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Adenocarcinoma",
+                      "designation": "C",
+                      "line": 610
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Gastric dysplasia",
+                      "designation": "AR",
+                      "line": 611
+                    },
+                    {
+                      "roman": "iii",
+                      "title": "Neuroendocrine tumors",
+                      "designation": "AR",
+                      "line": 612
+                    },
+                    {
+                      "roman": "iv",
+                      "title": "Lymphomas",
+                      "designation": "AR",
+                      "line": 613
+                    },
+                    {
+                      "roman": "v",
+                      "title": "Gastrointestinal stromal tumors (GIST)",
+                      "designation": "AR",
+                      "line": 614
+                    },
+                    {
+                      "roman": "vi",
+                      "title": "Other mesenchymal tumors",
+                      "designation": "AR",
+                      "line": 615
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "The Small Intestine",
+          "line": 617,
+          "items": [
+            {
+              "number": 1,
+              "title": "Normal Anatomy and Histology",
+              "designation": "C",
+              "line": 618
+            },
+            {
+              "number": 2,
+              "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+              "designation": "C",
+              "line": 619
+            },
+            {
+              "number": 3,
+              "title": "Congenital, Developmental, and Familial Conditions",
+              "line": 620,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Small intestinal duplication cyst",
+                  "designation": "C",
+                  "line": 621
+                },
+                {
+                  "letter": "b",
+                  "title": "Meckel diverticulum",
+                  "designation": "C",
+                  "line": 622
+                },
+                {
+                  "letter": "c",
+                  "title": "Gastric heterotopia",
+                  "designation": "C",
+                  "line": 623
+                },
+                {
+                  "letter": "d",
+                  "title": "Ectopic pancreas",
+                  "designation": "C",
+                  "line": 624
+                },
+                {
+                  "letter": "e",
+                  "title": "Hamartomatous polyp",
+                  "designation": "AR",
+                  "line": 625
+                },
+                {
+                  "letter": "f",
+                  "title": "Autoimmune enteropathy",
+                  "designation": "F",
+                  "line": 626
+                }
+              ]
+            },
+            {
+              "number": 4,
+              "title": "Inflammatory Conditions, Non-Infectious & Infectious",
+              "line": 627,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Celiac disease and tropical sprue",
+                  "designation": "C",
+                  "line": 628
+                },
+                {
+                  "letter": "b",
+                  "title": "Peptic duodenitis / ulcer",
+                  "designation": "C",
+                  "line": 629
+                },
+                {
+                  "letter": "c",
+                  "title": "Crohn disease",
+                  "designation": "C",
+                  "line": 630
+                },
+                {
+                  "letter": "d",
+                  "title": "Necrotizing enterocolitis",
+                  "designation": "C",
+                  "line": 631
+                },
+                {
+                  "letter": "e",
+                  "title": "Pouchitis",
+                  "designation": "AR",
+                  "line": 632
+                },
+                {
+                  "letter": "f",
+                  "title": "Other non-neoplastic, non-infectious inflammatory conditions",
+                  "designation": "AR",
+                  "line": 633
+                },
+                {
+                  "letter": "g",
+                  "title": "Infectious",
+                  "designation": "AR",
+                  "line": 634
+                },
+                {
+                  "letter": "h",
+                  "title": "Whipple disease",
+                  "designation": "AR",
+                  "line": 635
+                }
+              ]
+            },
+            {
+              "number": 5,
+              "title": "Neoplastic",
+              "line": 636,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Benign",
+                  "line": 637,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Adenoma",
+                      "designation": "C",
+                      "line": 638
+                    }
+                  ]
+                },
+                {
+                  "letter": "b",
+                  "title": "Premalignant, Malignant, and Borderline",
+                  "line": 639,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Adenocarcinoma",
+                      "designation": "C",
+                      "line": 640
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Neuroendocrine tumors",
+                      "designation": "C",
+                      "line": 641
+                    },
+                    {
+                      "roman": "iii",
+                      "title": "Lymphomas",
+                      "designation": "AR",
+                      "line": 642
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "The Colon",
+          "line": 645,
+          "items": [
+            {
+              "number": 1,
+              "title": "Normal Anatomy and Histology",
+              "designation": "C",
+              "line": 646
+            },
+            {
+              "number": 2,
+              "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+              "designation": "C",
+              "line": 647,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Melanosis coli",
+                  "designation": "C",
+                  "line": 648
+                }
+              ]
+            },
+            {
+              "number": 3,
+              "title": "Congenital, Developmental, and Familial Conditions",
+              "designation": "AR",
+              "line": 649,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Hirschsprung disease",
+                  "designation": "C",
+                  "line": 650
+                },
+                {
+                  "letter": "b",
+                  "title": "Colonic duplication cysts",
+                  "designation": "C",
+                  "line": 651
+                },
+                {
+                  "letter": "c",
+                  "title": "Hamartomatous polyps",
+                  "designation": "AR",
+                  "line": 652
+                }
+              ]
+            },
+            {
+              "number": 4,
+              "title": "Familial Colorectal Cancer Syndromes",
+              "line": 653,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Familial adenomatous polyposis",
+                  "designation": "C",
+                  "line": 654
+                },
+                {
+                  "letter": "b",
+                  "title": "Lynch syndrome",
+                  "designation": "C",
+                  "line": 655
+                },
+                {
+                  "letter": "c",
+                  "title": "Other polyposis syndromes",
+                  "designation": "AR",
+                  "line": 656
+                }
+              ]
+            },
+            {
+              "number": 5,
+              "title": "Inflammatory Conditions, Non-Infectious & Infectious",
+              "line": 657,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Diverticular disease",
+                  "designation": "C",
+                  "line": 658
+                },
+                {
+                  "letter": "b",
+                  "title": "Idiopathic inflammatory bowel disease",
+                  "line": 659,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Ulcerative colitis",
+                      "designation": "C",
+                      "line": 660
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Crohn's disease",
+                      "designation": "C",
+                      "line": 661
+                    }
+                  ]
+                },
+                {
+                  "letter": "c",
+                  "title": "Pneumatosis coli",
+                  "designation": "C",
+                  "line": 662
+                },
+                {
+                  "letter": "d",
+                  "title": "Acute infectious colitis (acute self-limited colitis)",
+                  "designation": "C",
+                  "line": 663
+                },
+                {
+                  "letter": "e",
+                  "title": "Focal active colitis",
+                  "designation": "C",
+                  "line": 664
+                },
+                {
+                  "letter": "f",
+                  "title": "Pseudomembranous colitis (C. difficile colitis)",
+                  "designation": "C",
+                  "line": 665
+                },
+                {
+                  "letter": "g",
+                  "title": "Amebic colitis",
+                  "designation": "C",
+                  "line": 666
+                },
+                {
+                  "letter": "h",
+                  "title": "Medication-induced enterocolitis",
+                  "designation": "AR",
+                  "line": 667
+                },
+                {
+                  "letter": "i",
+                  "title": "Mucosal prolapse / solitary rectal ulcer",
+                  "designation": "AR",
+                  "line": 668
+                },
+                {
+                  "letter": "j",
+                  "title": "Other colonic infections",
+                  "designation": "AR",
+                  "line": 669
+                }
+              ]
+            },
+            {
+              "number": 6,
+              "title": "Neoplastic",
+              "line": 670,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Benign",
+                  "line": 671,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Tubular and Tubulovillous adenomas",
+                      "designation": "C",
+                      "line": 672
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Serrated polyps",
+                      "designation": "C",
+                      "line": 673
+                    }
+                  ]
+                },
+                {
+                  "letter": "b",
+                  "title": "Premalignant, Malignant, and Borderline",
+                  "line": 674,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Adenocarcinoma arising in an adenoma",
+                      "designation": "C",
+                      "line": 675
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Adenocarcinoma",
+                      "designation": "C",
+                      "line": 676
+                    },
+                    {
+                      "roman": "iii",
+                      "title": "Neuroendocrine tumors",
+                      "designation": "C",
+                      "line": 677
+                    },
+                    {
+                      "roman": "iv",
+                      "title": "Dysplasia and IBD-Related Adenocarcinoma",
+                      "designation": "AR",
+                      "line": 678
+                    },
+                    {
+                      "roman": "v",
+                      "title": "Mesenchymal tumors",
+                      "designation": "AR",
+                      "line": 679
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "The Appendix",
+          "line": 681,
+          "items": [
+            {
+              "number": 1,
+              "title": "Normal Anatomy and Histology",
+              "designation": "C",
+              "line": 682
+            },
+            {
+              "number": 2,
+              "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+              "designation": "C",
+              "line": 683
+            },
+            {
+              "number": 3,
+              "title": "Congenital, Developmental, and Familial Conditions",
+              "designation": "AR",
+              "line": 684
+            },
+            {
+              "number": 4,
+              "title": "Inflammatory Conditions, Non-Infectious & Infectious",
+              "line": 685,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Appendicitis",
+                  "designation": "C",
+                  "line": 686
+                },
+                {
+                  "letter": "b",
+                  "title": "Enterobius vermicularis",
+                  "designation": "C",
+                  "line": 687
+                }
+              ]
+            },
+            {
+              "number": 5,
+              "title": "Neoplastic",
+              "line": 688,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Benign",
+                  "line": 689,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Polyps",
+                      "designation": "C",
+                      "line": 690
+                    }
+                  ]
+                },
+                {
+                  "letter": "b",
+                  "title": "Premalignant, Malignant, and Borderline",
+                  "line": 691,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Neuroendocrine tumors",
+                      "designation": "C",
+                      "line": 692
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Mucinous neoplasms",
+                      "designation": "AR",
+                      "line": 693
+                    },
+                    {
+                      "roman": "iii",
+                      "title": "Adenocarcinoma",
+                      "designation": "AR",
+                      "line": 694
+                    },
+                    {
+                      "roman": "iv",
+                      "title": "Pseudomyxoma peritonei",
+                      "designation": "AR",
+                      "line": 695
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "The Anus",
+          "line": 697,
+          "items": [
+            {
+              "number": 1,
+              "title": "Normal Anatomy and Histology",
+              "designation": "C",
+              "line": 698
+            },
+            {
+              "number": 2,
+              "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+              "designation": "C",
+              "line": 699
+            },
+            {
+              "number": 3,
+              "title": "Congenital, Developmental, and Familial Conditions",
+              "designation": "AR",
+              "line": 700,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Tailgut cyst",
+                  "designation": "AR",
+                  "line": 701
+                }
+              ]
+            },
+            {
+              "number": 4,
+              "title": "Inflammatory Conditions, Non-Infectious & Infectious",
+              "line": 702,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Hemorrhoids",
+                  "designation": "C",
+                  "line": 703
+                },
+                {
+                  "letter": "b",
+                  "title": "Condyloma",
+                  "designation": "C",
+                  "line": 704
+                },
+                {
+                  "letter": "c",
+                  "title": "Other infections of the anal canal",
+                  "designation": "AR",
+                  "line": 705
+                }
+              ]
+            },
+            {
+              "number": 5,
+              "title": "Neoplastic",
+              "line": 706,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Premalignant, Malignant, and Borderline",
+                  "line": 707,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Squamous cell carcinoma",
+                      "designation": "C",
+                      "line": 708
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Anal intraepithelial neoplasia",
+                      "designation": "AR",
+                      "line": 709
+                    },
+                    {
+                      "roman": "iii",
+                      "title": "Paget Disease",
+                      "designation": "AR",
+                      "line": 710
+                    },
+                    {
+                      "roman": "iv",
+                      "title": "Anal Duct Carcinoma",
+                      "designation": "AR",
+                      "line": 711
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "letter": "B",
+      "title": "The Liver and Biliary Tract",
+      "line": 714,
+      "sections": [
+        {
+          "title": "The Liver",
+          "line": 715,
+          "items": [
+            {
+              "number": 1,
+              "title": "Normal Anatomy and Histology",
+              "designation": "C",
+              "line": 716
+            },
+            {
+              "number": 2,
+              "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+              "designation": "C",
+              "line": 717,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Vascular disorders of the Liver",
+                  "designation": "AR",
+                  "line": 718
+                },
+                {
+                  "letter": "b",
+                  "title": "Nodular regenerative hyperplasia",
+                  "designation": "AR",
+                  "line": 719
+                },
+                {
+                  "letter": "c",
+                  "title": "Macroregenerative nodules in cirrhosis",
+                  "designation": "AR",
+                  "line": 720
+                }
+              ]
+            },
+            {
+              "number": 3,
+              "title": "Congenital, Developmental, and Familial Conditions",
+              "designation": "AR",
+              "line": 721,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Bile duct hamartoma (Von Meyenburg complex)",
+                  "designation": "C",
+                  "line": 722
+                },
+                {
+                  "letter": "b",
+                  "title": "Hemochromatosis",
+                  "designation": "AR",
+                  "line": 723
+                },
+                {
+                  "letter": "c",
+                  "title": "Wilson Disease",
+                  "designation": "AR",
+                  "line": 724
+                },
+                {
+                  "letter": "d",
+                  "title": "Alpha-1-Antitrypsin Deficiency",
+                  "designation": "AR",
+                  "line": 725
+                },
+                {
+                  "letter": "e",
+                  "title": "Polycystic liver disease and congenital hepatic fibrosis",
+                  "designation": "AR",
+                  "line": 726
+                },
+                {
+                  "letter": "f",
+                  "title": "Other genetic metabolic conditions",
+                  "designation": "F",
+                  "line": 727
+                }
+              ]
+            },
+            {
+              "number": 4,
+              "title": "Inflammatory Conditions, Non-Infectious & Infectious",
+              "line": 728,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Steatohepatitis",
+                  "designation": "C",
+                  "line": 729
+                },
+                {
+                  "letter": "b",
+                  "title": "Alcoholic liver disease",
+                  "designation": "C",
+                  "line": 730
+                },
+                {
+                  "letter": "c",
+                  "title": "NASH (Non-alcoholic steatohepatitis)",
+                  "designation": "C",
+                  "line": 731
+                },
+                {
+                  "letter": "d",
+                  "title": "Cirrhosis",
+                  "designation": "C",
+                  "line": 732
+                },
+                {
+                  "letter": "e",
+                  "title": "Amebic abscess",
+                  "designation": "C",
+                  "line": 733
+                },
+                {
+                  "letter": "f",
+                  "title": "Pyogenic abscess",
+                  "designation": "C",
+                  "line": 734
+                },
+                {
+                  "letter": "g",
+                  "title": "Echinococcosis",
+                  "designation": "C",
+                  "line": 735
+                },
+                {
+                  "letter": "h",
+                  "title": "Primary sclerosing cholangitis",
+                  "designation": "AR",
+                  "line": 736
+                },
+                {
+                  "letter": "i",
+                  "title": "Transplant-associated Pathology",
+                  "line": 737,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "GVHD",
+                      "designation": "AR",
+                      "line": 738
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Rejection",
+                      "designation": "F",
+                      "line": 739
+                    }
+                  ]
+                },
+                {
+                  "letter": "j",
+                  "title": "Drug induced liver disease",
+                  "designation": "AR",
+                  "line": 740
+                },
+                {
+                  "letter": "k",
+                  "title": "Autoimmune hepatitis including overlap syndromes",
+                  "designation": "AR",
+                  "line": 741
+                },
+                {
+                  "letter": "l",
+                  "title": "Viral hepatitis (Hepatitis A, B, & C)",
+                  "designation": "AR",
+                  "line": 742
+                },
+                {
+                  "letter": "m",
+                  "title": "EBV, CMV, and Herpes hepatitis",
+                  "designation": "AR",
+                  "line": 743
+                },
+                {
+                  "letter": "n",
+                  "title": "Bacterial, fungal, and parasitic liver disease",
+                  "designation": "AR",
+                  "line": 744
+                },
+                {
+                  "letter": "o",
+                  "title": "Other bacterial, fungal, and parasitic liver disease",
+                  "designation": "AR",
+                  "line": 745
+                }
+              ]
+            },
+            {
+              "number": 5,
+              "title": "Neoplastic",
+              "line": 746,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Benign",
+                  "line": 747,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Solitary (Simple) cyst",
+                      "designation": "C",
+                      "line": 748
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Focal nodular hyperplasia",
+                      "designation": "C",
+                      "line": 749
+                    }
+                  ]
+                },
+                {
+                  "letter": "b",
+                  "title": "Hemangioma",
+                  "designation": "C",
+                  "line": 750
+                },
+                {
+                  "letter": "c",
+                  "title": "Benign cystic neoplasms",
+                  "designation": "AR",
+                  "line": 751,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Hepatocellular adenoma",
+                      "designation": "AR",
+                      "line": 752
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Angiomyolipoma",
+                      "designation": "AR",
+                      "line": 753
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "number": 6,
+              "title": "Premalignant, Malignant, and Borderline",
+              "line": 754,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Hepatocellular carcinoma",
+                  "designation": "AR",
+                  "line": 755,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Fibrolamellar hepatocellular carcinoma",
+                      "designation": "AR",
+                      "line": 756
+                    }
+                  ]
+                },
+                {
+                  "letter": "b",
+                  "title": "Hepatoblastoma",
+                  "designation": "AR",
+                  "line": 757
+                },
+                {
+                  "letter": "c",
+                  "title": "Cholangiocarcinoma",
+                  "designation": "AR",
+                  "line": 758
+                },
+                {
+                  "letter": "d",
+                  "title": "Malignant cystic neoplasms",
+                  "designation": "AR",
+                  "line": 759
+                },
+                {
+                  "letter": "e",
+                  "title": "Lymphoma/Leukemia",
+                  "designation": "AR",
+                  "line": 760
+                },
+                {
+                  "letter": "f",
+                  "title": "Metastases to the Liver",
+                  "designation": "AR",
+                  "line": 761
+                },
+                {
+                  "letter": "g",
+                  "title": "Epithelioid hemangioendothelioma",
+                  "designation": "F",
+                  "line": 762
+                },
+                {
+                  "letter": "h",
+                  "title": "Other mesenchymal tumors of the liver",
+                  "designation": "F",
+                  "line": 763
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "The Gallbladder and Associated Ducts",
+          "line": 766,
+          "items": [
+            {
+              "number": 1,
+              "title": "Normal Anatomy and Histology",
+              "designation": "C",
+              "line": 767
+            },
+            {
+              "number": 2,
+              "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+              "designation": "C",
+              "line": 768
+            },
+            {
+              "number": 3,
+              "title": "Congenital, Developmental, and Familial Conditions",
+              "designation": "AR",
+              "line": 769
+            },
+            {
+              "number": 4,
+              "title": "Inflammatory Conditions, Non-Infectious and Infectious",
+              "line": 770,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Cholecystitis and cholelithiasis",
+                  "designation": "C",
+                  "line": 771
+                },
+                {
+                  "letter": "b",
+                  "title": "Sclerosing cholangitis",
+                  "designation": "AR",
+                  "line": 772
+                },
+                {
+                  "letter": "c",
+                  "title": "Large Duct Obstruction",
+                  "designation": "AR",
+                  "line": 773
+                },
+                {
+                  "letter": "d",
+                  "title": "Primary biliary cholangitis",
+                  "designation": "AR",
+                  "line": 774
+                }
+              ]
+            },
+            {
+              "number": 5,
+              "title": "Neoplastic",
+              "line": 775,
+              "subitems": [
+                {
+                  "letter": "a",
+                  "title": "Benign",
+                  "line": 776,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Polyps and adenomas",
+                      "designation": "AR",
+                      "line": 777
+                    }
+                  ]
+                },
+                {
+                  "letter": "b",
+                  "title": "Premalignant, Malignant, and Borderline",
+                  "line": 778,
+                  "subitems": [
+                    {
+                      "roman": "i",
+                      "title": "Adenocarcinoma of the gallbladder and bile ducts",
+                      "designation": "C",
+                      "line": 779
+                    },
+                    {
+                      "roman": "ii",
+                      "title": "Neuroendocrine tumors",
+                      "designation": "C",
+                      "line": 780
+                    },
+                    {
+                      "roman": "iii",
+                      "title": "Dysplasia",
+                      "designation": "AR",
+                      "line": 781
+                    },
+                    {
+                      "roman": "iv",
+                      "title": "Cholangiocarcinoma",
+                      "designation": "AR",
+                      "line": 782
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "letter": "C",
+      "title": "The Pancreas",
+      "line": 784,
+      "items": [
+        {
+          "number": 1,
+          "title": "Normal Anatomy and Histology",
+          "designation": "C",
+          "line": 785
+        },
+        {
+          "number": 2,
+          "title": "Physiologic Changes, Metabolic Conditions & Trauma/Infarct",
+          "designation": "C",
+          "line": 786
+        },
+        {
+          "number": 3,
+          "title": "Congenital, Developmental, and Familial Conditions",
+          "designation": "AR",
+          "line": 787
+        },
+        {
+          "number": 4,
+          "title": "Inflammatory Conditions, Non-Infectious & Infectious",
+          "line": 788,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Acute and chronic pancreatitis",
+              "designation": "C",
+              "line": 789
+            },
+            {
+              "letter": "b",
+              "title": "Pseudocyst",
+              "designation": "C",
+              "line": 790
+            },
+            {
+              "letter": "c",
+              "title": "Autoimmune pancreatitis",
+              "designation": "AR",
+              "line": 791
+            },
+            {
+              "letter": "d",
+              "title": "Infections",
+              "designation": "AR",
+              "line": 792
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Neoplastic",
+          "line": 793,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Benign",
+              "line": 794,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Serous cystadenoma",
+                  "designation": "C",
+                  "line": 795
+                }
+              ]
+            },
+            {
+              "letter": "b",
+              "title": "Premalignant, Malignant, and Borderline",
+              "line": 796,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Ductal adenocarcinoma",
+                  "designation": "C",
+                  "line": 797
+                },
+                {
+                  "roman": "ii",
+                  "title": "Mucinous cystic neoplasm",
+                  "designation": "AR",
+                  "line": 798
+                },
+                {
+                  "roman": "iii",
+                  "title": "Intraductal papillary mucinous neoplasia (PanIN)",
+                  "designation": "AR",
+                  "line": 799
+                },
+                {
+                  "roman": "iv",
+                  "title": "Acinar cell carcinoma",
+                  "designation": "AR",
+                  "line": 800
+                },
+                {
+                  "roman": "v",
+                  "title": "Pancreatoblastoma",
+                  "designation": "AR",
+                  "line": 801
+                },
+                {
+                  "roman": "vi",
+                  "title": "Solid pseudopapillary neoplasm",
+                  "designation": "AR",
+                  "line": 802
+                },
+                {
+                  "roman": "vii",
+                  "title": "Pancreatic neuroendocrine tumors",
+                  "designation": "AR",
+                  "line": 803
+                },
+                {
+                  "roman": "viii",
+                  "title": "Other malignancies of the pancreas",
+                  "designation": "F",
+                  "line": 804
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

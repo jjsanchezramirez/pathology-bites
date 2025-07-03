@@ -63,29 +63,61 @@ export async function fetchImages(params: {
   pageSize: number;
   searchTerm?: string;
   category?: string;
+  showUnusedOnly?: boolean;
 }) {
-  const { page, pageSize, searchTerm, category } = params;
+  const { page, pageSize, searchTerm, category, showUnusedOnly } = params;
   const supabase = createClient(); // Remove <Database>
 
   try {
+    // Choose the appropriate table/view based on filter
+    const tableName = showUnusedOnly ? 'v_orphaned_images' : 'images';
+
     // Build the base query for counting
     let countQuery = supabase
-      .from('images')
+      .from(tableName)
       .select('*', { count: 'exact', head: true });
 
     // Build the base query for data
     let dataQuery = supabase
-      .from('images')
+      .from(tableName)
       .select('*');
+
+    // Exclude external images from management table (only for regular images table)
+    if (!showUnusedOnly) {
+      countQuery = countQuery.neq('category', 'external');
+      dataQuery = dataQuery.neq('category', 'external');
+    }
 
     // Apply filters to both queries
     if (searchTerm && searchTerm.trim()) {
-      const searchPattern = `%${searchTerm.trim()}%`;
-      countQuery = countQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern}`);
-      dataQuery = dataQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern}`);
+      const cleanSearchTerm = searchTerm.trim();
+
+      // Smart search strategy: combine full-text search with partial matching
+      const words = cleanSearchTerm.split(/\s+/);
+      const searchPattern = `%${cleanSearchTerm}%`;
+
+      if (words.length === 1 && words[0].length >= 3) {
+        // Single word search: use prefix matching for better partial results
+        // This handles "castle" -> "castleman"
+        try {
+          const prefixQuery = `${words[0]}:*`;
+          countQuery = countQuery.textSearch('search_vector', prefixQuery);
+          dataQuery = dataQuery.textSearch('search_vector', prefixQuery);
+        } catch (error) {
+          // Fallback to ILIKE if prefix search fails
+          countQuery = countQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category.ilike.${searchPattern}`);
+          dataQuery = dataQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category.ilike.${searchPattern}`);
+        }
+      } else {
+        // Multi-word or short search: use ILIKE for maximum flexibility
+        // This handles "castleman d" -> "castleman disease" and short terms
+        countQuery = countQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category.ilike.${searchPattern}`);
+        dataQuery = dataQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category.ilike.${searchPattern}`);
+      }
     }
 
-    if (category && category !== 'all') {
+    // Apply category filter (only for regular images, not unused filter)
+    if (category && category !== 'all' && !showUnusedOnly) {
       countQuery = countQuery.eq('category', category);
       dataQuery = dataQuery.eq('category', category);
     }
@@ -214,5 +246,130 @@ export async function getImageById(imageId: string): Promise<ImageData | null> {
   } catch (error) {
     console.error('Get image by ID error:', error);
     throw error;
+  }
+}
+
+export async function createExternalImage(
+  url: string,
+  createdBy?: string
+): Promise<ImageData> {
+  const supabase = createClient();
+
+  try {
+    const { data: imageData, error: dbError } = await supabase
+      .from('images')
+      .insert({
+        url,
+        category: 'external',
+        created_by: createdBy || null,
+        // All other fields (storage_path, file_type, alt_text, description, source_ref) will be null
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Create external image error:', dbError);
+      throw new Error(`Failed to create external image: ${dbError.message}`);
+    }
+
+    return imageData;
+  } catch (error) {
+    console.error('Create external image error:', error);
+    throw error;
+  }
+}
+
+export async function createExternalImageIfNotExists(
+  url: string,
+  createdBy?: string
+): Promise<ImageData> {
+  const supabase = createClient();
+
+  try {
+    // First, check if an external image with this URL already exists
+    const { data: existingImage, error: selectError } = await supabase
+      .from('images')
+      .select('*')
+      .eq('url', url)
+      .eq('category', 'external')
+      .single();
+
+    if (selectError && selectError.code !== 'PGRST116') {
+      // Error other than "no rows returned"
+      throw selectError;
+    }
+
+    if (existingImage) {
+      // Image already exists, return it
+      return existingImage;
+    }
+
+    // Image doesn't exist, create it
+    return await createExternalImage(url, createdBy);
+  } catch (error) {
+    console.error('Create external image if not exists error:', error);
+    throw error;
+  }
+}
+
+export async function bulkDeleteImages(imageIds: string[]): Promise<{ success: boolean; deleted: number; errors: string[] }> {
+  const supabase = createClient();
+  const errors: string[] = [];
+  let deleted = 0;
+
+  try {
+    // Get image details for storage cleanup
+    const { data: images, error: fetchError } = await supabase
+      .from('images')
+      .select('id, storage_path')
+      .in('id', imageIds)
+      .neq('category', 'external'); // Don't try to delete storage for external images
+
+    if (fetchError) {
+      throw fetchError;
+    }
+
+    // Delete from storage first (for uploaded images)
+    const storagePaths = images
+      .filter(img => img.storage_path)
+      .map(img => img.storage_path);
+
+    if (storagePaths.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from('images')
+        .remove(storagePaths);
+
+      if (storageError) {
+        console.warn('Storage deletion error:', storageError);
+        // Continue with database deletion even if storage fails
+      }
+    }
+
+    // Delete from database
+    const { error: dbError } = await supabase
+      .from('images')
+      .delete()
+      .in('id', imageIds);
+
+    if (dbError) {
+      throw dbError;
+    }
+
+    deleted = imageIds.length;
+
+    return {
+      success: true,
+      deleted,
+      errors
+    };
+  } catch (error) {
+    console.error('Bulk delete images error:', error);
+    errors.push(error instanceof Error ? error.message : 'Unknown error');
+
+    return {
+      success: false,
+      deleted,
+      errors
+    };
   }
 }

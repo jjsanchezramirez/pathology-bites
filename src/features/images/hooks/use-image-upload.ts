@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { createClient } from '@/shared/services/client';
 import { toast } from 'sonner';
 import { FileProgress, ImageCategory } from '@/features/images/types/images';
-import { compressImage, cleanFileName, formatImageName } from '@/features/images/services/image-upload';
+import { compressImage, cleanFileName, formatImageName, getImageDimensions } from '@/features/images/services/image-upload';
 
 interface UseImageUploadOptions {
   onUploadComplete?: () => void;
@@ -38,7 +38,8 @@ export function useImageUpload({
   const uploadFiles = useCallback(async (
     files: File[],
     category: ImageCategory,
-    sourceRef?: string
+    sourceRef?: string,
+    description?: string
   ) => {
     if (files.length === 0) return;
 
@@ -78,6 +79,10 @@ export function useImageUpload({
           }
 
           let fileToUpload = file;
+
+          // Get image dimensions before compression
+          updateFileProgress(file.name, { status: 'processing', progress: 10 });
+          const dimensions = await getImageDimensions(file);
 
           // Compress if needed
           if (file.size > maxSizeBytes) {
@@ -120,16 +125,19 @@ export function useImageUpload({
 
           updateFileProgress(file.name, { progress: 80 });
 
-          // Insert database record
+          // Insert database record with metadata
           const { error: dbError } = await supabase
             .from('images')
             .insert({
               url: publicUrl,
               storage_path: storagePath,
-              description: formatImageName(fileToUpload.name),
+              description: description?.trim() || formatImageName(fileToUpload.name),
               alt_text: formatImageName(fileToUpload.name),
               category,
               file_type: fileToUpload.type,
+              file_size_bytes: fileToUpload.size,
+              width: dimensions.width,
+              height: dimensions.height,
               // Store sourceRef if provided for any category, otherwise null
               source_ref: sourceRef?.trim() || null,
               created_by: user.id

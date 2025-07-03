@@ -128,6 +128,30 @@ Individual question attempts within sessions.
 
 ## 🔍 **Content Management**
 
+### Images
+Images used in questions and content.
+
+**Table: `images`**
+- `id` (uuid, primary key)
+- `url` (text, required) - Public URL to the image
+- `storage_path` (text, nullable) - Path in storage bucket (null for external images)
+- `file_type` (text, nullable) - MIME type (null for external images)
+- `description` (text, nullable) - Image description
+- `alt_text` (text, nullable) - Alt text for accessibility (null for external images)
+- `category` (text, required) - microscopic, gross, figure, table, external
+- `source_ref` (text, nullable) - Reference or source information
+- `created_by` (uuid, nullable, foreign key to users)
+- `created_at` (timestamp)
+
+**Image Categories:**
+- `microscopic` - Microscopic pathology images (uploaded)
+- `gross` - Gross pathology images (uploaded)
+- `figure` - Diagrams, charts, illustrations (uploaded)
+- `table` - Tables and data presentations (uploaded)
+- `external` - External images from PathOutlines (URL only, not uploaded)
+
+**Note:** External images only require `id`, `url`, and `category`. All other fields are null.
+
 ### Question Images
 Images associated with questions.
 
@@ -242,3 +266,54 @@ Complete audit trail of question changes.
 - **Team Tier (100GB)**: Enterprise scale
 
 *See [Storage Capacity Analysis](../technical/STORAGE_CAPACITY_ANALYSIS.md) for detailed breakdown and optimization strategies.*
+
+## 📊 **Database Views**
+
+The database includes several optimized views for analytics and reporting. All views follow the `v_` naming convention for consistency.
+
+### **Naming Convention**
+- **Prefix**: All views use `v_` prefix (e.g., `v_dashboard_stats`)
+- **Purpose**: Clearly identifies views vs tables in database tools
+- **Consistency**: Standardized across all database objects
+
+### **Available Views**
+
+#### **`v_dashboard_stats`**
+Comprehensive dashboard statistics for admin interface.
+- Question counts by status (published, draft, flagged)
+- User statistics (total, recent)
+- Image and inquiry counts
+- Question reports and pending items
+- Real-time calculated data
+
+#### **`v_image_usage_stats`**
+Complete image metadata with usage analytics.
+- Image details (size, dimensions, category)
+- Usage count in questions
+- Orphaned status detection
+- Question IDs using each image
+
+#### **`v_storage_stats`**
+Storage utilization summary.
+- Total images and storage usage
+- Breakdown by category (microscopic, gross, figure, table)
+- Orphaned image statistics
+- Formatted size displays
+
+#### **`v_orphaned_images`**
+Images not used in any questions (for cleanup).
+- Image metadata for unused images
+- Storage paths for bulk deletion
+- Category and size information
+
+#### **`v_image_usage_by_category`**
+Analytics breakdown by image category.
+- Usage percentages by category
+- Average file sizes
+- Orphaned vs used image ratios
+
+### **Benefits of Views**
+- ✅ **Always accurate** - Real-time calculated data
+- ✅ **No sync issues** - No triggers or maintenance needed
+- ✅ **Performance optimized** - Indexed underlying tables
+- ✅ **Consistent naming** - Easy identification in tools

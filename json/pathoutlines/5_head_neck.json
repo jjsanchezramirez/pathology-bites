@@ -1,0 +1,807 @@
+{
+  "section": 5,
+  "title": "Head and Neck",
+  "subsections": [
+    {
+      "letter": "A",
+      "title": "Jaws, Oral Cavity, and Oropharynx",
+      "line": 428,
+      "items": [
+        {
+          "number": 1,
+          "title": "Normal Anatomy and Histology",
+          "designation": "C",
+          "line": 429
+        },
+        {
+          "number": 2,
+          "title": "Physiologic Changes, Metabolic Conditions & Trauma/Infarct",
+          "designation": "C",
+          "line": 430
+        },
+        {
+          "number": 3,
+          "title": "Congenital, Developmental, and Familial Conditions",
+          "designation": "AR",
+          "line": 431
+        },
+        {
+          "number": 4,
+          "title": "Inflammatory Conditions, Non-Infectious & Infectious",
+          "line": 432,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Pyogenic granuloma",
+              "designation": "C",
+              "line": 433
+            },
+            {
+              "letter": "b",
+              "title": "Infections of the Jaws & Oral Cavity",
+              "designation": "C",
+              "line": 434
+            },
+            {
+              "letter": "c",
+              "title": "Lichen planus",
+              "designation": "AR",
+              "line": 435
+            },
+            {
+              "letter": "d",
+              "title": "Peripheral giant cell granuloma",
+              "designation": "AR",
+              "line": 436
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Neoplastic",
+          "line": 438,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Benign",
+              "line": 439,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Fibrous dysplasia",
+                  "designation": "C",
+                  "line": 440
+                },
+                {
+                  "roman": "ii",
+                  "title": "Oral papilloma",
+                  "designation": "C",
+                  "line": 441
+                },
+                {
+                  "roman": "iii",
+                  "title": "Odontogenic cysts",
+                  "designation": "AR",
+                  "line": 442
+                },
+                {
+                  "roman": "iv",
+                  "title": "Central giant cell granuloma",
+                  "designation": "AR",
+                  "line": 443
+                }
+              ]
+            },
+            {
+              "letter": "b",
+              "title": "Premalignant, Malignant, and Borderline",
+              "line": 444,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Squamous cell carcinoma, HPV-associated",
+                  "designation": "C",
+                  "line": 445
+                },
+                {
+                  "roman": "ii",
+                  "title": "Squamous cell carcinoma, conventional",
+                  "designation": "C",
+                  "line": 446
+                },
+                {
+                  "roman": "iii",
+                  "title": "Squamous dysplasia",
+                  "designation": "AR",
+                  "line": 447
+                },
+                {
+                  "roman": "iv",
+                  "title": "Variants of squamous cell carcinoma",
+                  "designation": "AR",
+                  "line": 448
+                },
+                {
+                  "roman": "v",
+                  "title": "Granular cell tumor",
+                  "designation": "AR",
+                  "line": 449
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "letter": "B",
+      "title": "Salivary Glands",
+      "line": 451,
+      "items": [
+        {
+          "number": 1,
+          "title": "Normal Anatomy and Histology",
+          "designation": "C",
+          "line": 452
+        },
+        {
+          "number": 2,
+          "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+          "designation": "C",
+          "line": 453
+        },
+        {
+          "number": 3,
+          "title": "Congenital, Developmental, and Familial Conditions",
+          "designation": "AR",
+          "line": 454
+        },
+        {
+          "number": 4,
+          "title": "Inflammatory Conditions, Non-Infectious & Infectious",
+          "line": 455,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Necrotizing sialometaplasia",
+              "designation": "C",
+              "line": 456
+            },
+            {
+              "letter": "b",
+              "title": "Sjogren syndrome & minor salivary gland biopsy",
+              "designation": "AR",
+              "line": 457
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Neoplastic",
+          "line": 458,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Benign",
+              "line": 459,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Mucocele and ranula",
+                  "designation": "C",
+                  "line": 460
+                },
+                {
+                  "roman": "ii",
+                  "title": "Lymphoepithelial cyst",
+                  "designation": "C",
+                  "line": 461
+                },
+                {
+                  "roman": "iii",
+                  "title": "Pleomorphic adenoma & myoepithelioma",
+                  "designation": "C",
+                  "line": 462
+                },
+                {
+                  "roman": "iv",
+                  "title": "Warthin tumor",
+                  "designation": "C",
+                  "line": 463
+                },
+                {
+                  "roman": "v",
+                  "title": "Canalicular adenoma",
+                  "designation": "C",
+                  "line": 464
+                },
+                {
+                  "roman": "vi",
+                  "title": "Oncocytoma",
+                  "designation": "C",
+                  "line": 465
+                },
+                {
+                  "roman": "vii",
+                  "title": "Adenoid cystic carcinoma",
+                  "designation": "C",
+                  "line": 466
+                },
+                {
+                  "roman": "viii",
+                  "title": "Mucoepidermoid carcinoma",
+                  "designation": "C",
+                  "line": 467
+                },
+                {
+                  "roman": "ix",
+                  "title": "Basal cell adenoma",
+                  "designation": "AR",
+                  "line": 468
+                },
+                {
+                  "roman": "x",
+                  "title": "Benign lymphoepithelial lesion",
+                  "designation": "AR",
+                  "line": 469
+                },
+                {
+                  "roman": "xi",
+                  "title": "Acinic cell adenocarcinoma",
+                  "designation": "AR",
+                  "line": 470
+                },
+                {
+                  "roman": "xii",
+                  "title": "Polymorphous low-grade adenocarcinoma",
+                  "designation": "AR",
+                  "line": 471
+                },
+                {
+                  "roman": "xiii",
+                  "title": "Salivary duct carcinoma",
+                  "designation": "AR",
+                  "line": 472
+                },
+                {
+                  "roman": "xiv",
+                  "title": "Basal cell adenocarcinoma",
+                  "designation": "AR",
+                  "line": 473
+                },
+                {
+                  "roman": "xv",
+                  "title": "Lymphomas",
+                  "designation": "AR",
+                  "line": 474
+                },
+                {
+                  "roman": "xvi",
+                  "title": "Sebaceous adenoma & lymph adenoma",
+                  "designation": "F",
+                  "line": 475
+                },
+                {
+                  "roman": "xvii",
+                  "title": "Epithelial-myoepithelial carcinoma",
+                  "designation": "F",
+                  "line": 476
+                },
+                {
+                  "roman": "xviii",
+                  "title": "Lymphoepithelioma-like undifferentiated carcinoma",
+                  "designation": "F",
+                  "line": 477
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "letter": "C",
+      "title": "Nose, Paranasal Sinuses, and Nasopharynx",
+      "line": 479,
+      "items": [
+        {
+          "number": 1,
+          "title": "Normal Anatomy and Histology",
+          "designation": "C",
+          "line": 480
+        },
+        {
+          "number": 2,
+          "title": "Physiologic Changes, Metabolic Conditions & Trauma/Infarct",
+          "designation": "C",
+          "line": 481
+        },
+        {
+          "number": 3,
+          "title": "Congenital, Developmental, and Familial Conditions",
+          "designation": "AR",
+          "line": 482,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Respiratory epithelial adenomatoid hamartoma",
+              "designation": "AR",
+              "line": 483
+            },
+            {
+              "letter": "b",
+              "title": "Glial heterotopia",
+              "designation": "AR",
+              "line": 484
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "title": "Inflammatory Conditions, Non-Infectious & Infectious",
+          "line": 485,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Wegner granulomatosis",
+              "designation": "AR",
+              "line": 486
+            },
+            {
+              "letter": "b",
+              "title": "Infectious",
+              "designation": "C",
+              "line": 487
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Neoplastic",
+          "line": 488,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Benign",
+              "line": 489,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Nasal polyps",
+                  "designation": "C",
+                  "line": 490
+                },
+                {
+                  "roman": "ii",
+                  "title": "Squamous papilloma",
+                  "designation": "C",
+                  "line": 491
+                },
+                {
+                  "roman": "iii",
+                  "title": "Schneiderian papilloma",
+                  "designation": "C",
+                  "line": 492
+                },
+                {
+                  "roman": "iv",
+                  "title": "Angiofibroma",
+                  "designation": "C",
+                  "line": 493
+                },
+                {
+                  "roman": "v",
+                  "title": "Lobular capillary hemangioma (pyogenic granuloma)",
+                  "designation": "C",
+                  "line": 494
+                },
+                {
+                  "roman": "vi",
+                  "title": "Pituitary adenoma",
+                  "designation": "AR",
+                  "line": 495
+                }
+              ]
+            },
+            {
+              "letter": "b",
+              "title": "Premalignant, Malignant, and Borderline",
+              "line": 496,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Squamous cell carcinoma including lymphoepithelioma of nasopharynx",
+                  "designation": "AR",
+                  "line": 497
+                },
+                {
+                  "roman": "ii",
+                  "title": "Adenocarcinoma",
+                  "designation": "AR",
+                  "line": 499
+                },
+                {
+                  "roman": "iii",
+                  "title": "Neural, neuroectodermal, and neuroendocrine tumors including:",
+                  "line": 500,
+                  "subitems": [
+                    {
+                      "number": 1,
+                      "title": "Olfactory neuroblastoma",
+                      "designation": "AR",
+                      "line": 501
+                    },
+                    {
+                      "number": 2,
+                      "title": "Small cell undifferentiated carcinoma",
+                      "designation": "AR",
+                      "line": 502
+                    },
+                    {
+                      "number": 3,
+                      "title": "Sinonasal undifferentiated carcinoma",
+                      "designation": "AR",
+                      "line": 503
+                    },
+                    {
+                      "number": 4,
+                      "title": "Melanoma",
+                      "designation": "AR",
+                      "line": 504
+                    },
+                    {
+                      "number": 5,
+                      "title": "Paraganglioma",
+                      "designation": "AR",
+                      "line": 505
+                    }
+                  ]
+                },
+                {
+                  "roman": "iv",
+                  "title": "Craniopharyngioma",
+                  "designation": "AR",
+                  "line": 506
+                },
+                {
+                  "roman": "v",
+                  "title": "Lymphoma, including NK/T cell lymphoma",
+                  "designation": "AR",
+                  "line": 507
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "letter": "D",
+      "title": "Larynx",
+      "line": 509,
+      "items": [
+        {
+          "number": 1,
+          "title": "Normal Anatomy and Histology",
+          "designation": "C",
+          "line": 510
+        },
+        {
+          "number": 2,
+          "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+          "designation": "C",
+          "line": 511
+        },
+        {
+          "number": 3,
+          "title": "Congenital, Developmental, and Familial Conditions",
+          "designation": "AR",
+          "line": 512
+        },
+        {
+          "number": 4,
+          "title": "Inflammatory Conditions, Non-Infectious & Infectious",
+          "line": 513,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Contact ulcer",
+              "designation": "C",
+              "line": 514
+            },
+            {
+              "letter": "b",
+              "title": "Cysts",
+              "designation": "AR",
+              "line": 515
+            },
+            {
+              "letter": "c",
+              "title": "Infections",
+              "designation": "AR",
+              "line": 516
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Neoplastic",
+          "line": 517,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Benign",
+              "line": 518,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Vocal cord polyp and nodule",
+                  "designation": "C",
+                  "line": 519
+                },
+                {
+                  "roman": "ii",
+                  "title": "Squamous papilloma",
+                  "designation": "C",
+                  "line": 520
+                },
+                {
+                  "roman": "iii",
+                  "title": "Paraganglioma",
+                  "designation": "AR",
+                  "line": 521
+                },
+                {
+                  "roman": "iv",
+                  "title": "Nerve sheath tumors",
+                  "designation": "AR",
+                  "line": 522
+                }
+              ]
+            },
+            {
+              "letter": "b",
+              "title": "Premalignant, Malignant, and Borderline",
+              "line": 523,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Squamous dysplasia",
+                  "designation": "C",
+                  "line": 524
+                },
+                {
+                  "roman": "ii",
+                  "title": "Squamous cell carcinoma",
+                  "designation": "C",
+                  "line": 525
+                },
+                {
+                  "roman": "iii",
+                  "title": "Salivary gland tumors (as above)",
+                  "designation": "AR",
+                  "line": 526
+                },
+                {
+                  "roman": "iv",
+                  "title": "Neuroendocrine carcinoma",
+                  "designation": "AR",
+                  "line": 527
+                },
+                {
+                  "roman": "v",
+                  "title": "Melanoma",
+                  "designation": "AR",
+                  "line": 528
+                },
+                {
+                  "roman": "vi",
+                  "title": "Lymphomas/Leukemias",
+                  "designation": "AR",
+                  "line": 529
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "letter": "E",
+      "title": "Ear and Temporal Bone",
+      "line": 531,
+      "items": [
+        {
+          "number": 1,
+          "title": "Normal Anatomy and Histology",
+          "designation": "C",
+          "line": 532
+        },
+        {
+          "number": 2,
+          "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+          "designation": "C",
+          "line": 533,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Keloid",
+              "designation": "C",
+              "line": 534
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "title": "Congenital, Developmental, and Familial Conditions",
+          "designation": "AR",
+          "line": 535,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Branchial cleft anomalies",
+              "designation": "C",
+              "line": 536
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "title": "Inflammatory Conditions, Non-Infectious & Infectious",
+          "line": 537,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Cholesteatoma",
+              "designation": "C",
+              "line": 538
+            },
+            {
+              "letter": "b",
+              "title": "Infections",
+              "designation": "C",
+              "line": 539
+            },
+            {
+              "letter": "c",
+              "title": "Chondrodermatitis nodularis",
+              "designation": "AR",
+              "line": 540
+            },
+            {
+              "letter": "d",
+              "title": "Auricular pseudocyst",
+              "designation": "AR",
+              "line": 541
+            },
+            {
+              "letter": "e",
+              "title": "Kimura disease",
+              "designation": "F",
+              "line": 542
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Neoplastic",
+          "line": 543,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Benign",
+              "line": 544,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Otic (Aural) polyp",
+                  "designation": "C",
+                  "line": 545
+                },
+                {
+                  "roman": "ii",
+                  "title": "Paraganglioma, jugulotypanic",
+                  "designation": "AR",
+                  "line": 546
+                },
+                {
+                  "roman": "iii",
+                  "title": "Schwannoma",
+                  "designation": "AR",
+                  "line": 547
+                },
+                {
+                  "roman": "iv",
+                  "title": "Ceruminal gland adenoma",
+                  "designation": "F",
+                  "line": 548
+                },
+                {
+                  "roman": "v",
+                  "title": "Middle ear adenoma",
+                  "designation": "F",
+                  "line": 549
+                },
+                {
+                  "roman": "vi",
+                  "title": "Endolymphatic sac papillary tumor",
+                  "designation": "F",
+                  "line": 550
+                },
+                {
+                  "roman": "vii",
+                  "title": "Epithelioid hemangioma",
+                  "designation": "F",
+                  "line": 551
+                }
+              ]
+            },
+            {
+              "letter": "b",
+              "title": "Premalignant, Malignant, and Borderline",
+              "line": 552,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Squamous cell carcinoma",
+                  "designation": "C",
+                  "line": 553
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "letter": "F",
+      "title": "Eye and Ocular Adnexa",
+      "line": 555,
+      "items": [
+        {
+          "number": 1,
+          "title": "Normal Anatomy and Histology",
+          "designation": "C",
+          "line": 556
+        },
+        {
+          "number": 2,
+          "title": "Physiologic Changes, Metabolic Conditions, & Trauma/Infarct",
+          "designation": "C",
+          "line": 557
+        },
+        {
+          "number": 3,
+          "title": "Congenital, Developmental, and Familial Conditions",
+          "designation": "AR",
+          "line": 558
+        },
+        {
+          "number": 4,
+          "title": "Non-Neoplastic Disorders",
+          "designation": "F",
+          "line": 559
+        },
+        {
+          "number": 5,
+          "title": "Neoplastic",
+          "line": 560,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Benign",
+              "designation": "F",
+              "line": 561
+            },
+            {
+              "letter": "b",
+              "title": "Premalignant, Malignant, and Borderline",
+              "designation": "F",
+              "line": 562
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

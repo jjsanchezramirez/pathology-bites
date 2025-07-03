@@ -1,0 +1,552 @@
+{
+  "section": 10,
+  "title": "The Respiratory Tract, Pleura, and Mediastinum",
+  "subsections": [
+    {
+      "letter": "A",
+      "title": "The Respiratory Tract",
+      "line": 1088,
+      "items": [
+        {
+          "number": 1,
+          "title": "Normal Anatomy and Histology",
+          "designation": "C",
+          "line": 1089
+        },
+        {
+          "number": 2,
+          "title": "Physiologic Changes, Metabolic Conditions & Trauma/Infarct",
+          "designation": "C",
+          "line": 1090
+        },
+        {
+          "number": 3,
+          "title": "Congenital, Developmental, and Familial Conditions",
+          "designation": "AR",
+          "line": 1091,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Hamartoma",
+              "designation": "C",
+              "line": 1092
+            },
+            {
+              "letter": "b",
+              "title": "Congenital cystic lesion",
+              "designation": "AR",
+              "line": 1093
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "title": "Inflammatory Conditions, Non-Infectious and Infectious Causes",
+          "line": 1094,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Emphysema",
+              "designation": "C",
+              "line": 1095
+            },
+            {
+              "letter": "b",
+              "title": "Diffuse alveolar damage",
+              "designation": "C",
+              "line": 1096
+            },
+            {
+              "letter": "c",
+              "title": "Bronchiolitis obliterans with organizing pneumonia",
+              "designation": "C",
+              "line": 1097
+            },
+            {
+              "letter": "d",
+              "title": "Sarcoidosis",
+              "designation": "C",
+              "line": 1098
+            },
+            {
+              "letter": "e",
+              "title": "Pulmonary alveolar proteinosis",
+              "designation": "C",
+              "line": 1099
+            },
+            {
+              "letter": "f",
+              "title": "Hypersensitivity pneumonitis",
+              "designation": "AR",
+              "line": 1100
+            },
+            {
+              "letter": "g",
+              "title": "Eosinophilic pneumonia",
+              "designation": "AR",
+              "line": 1101
+            },
+            {
+              "letter": "h",
+              "title": "Interstitial Inflammatory Disease",
+              "line": 1102,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Usual interstitial pneumonia",
+                  "designation": "AR",
+                  "line": 1103
+                },
+                {
+                  "roman": "ii",
+                  "title": "Desquamative interstitial pneumonia",
+                  "designation": "AR",
+                  "line": 1104
+                },
+                {
+                  "roman": "iii",
+                  "title": "Nonspecific interstitial pneumonia",
+                  "designation": "AR",
+                  "line": 1105
+                }
+              ]
+            },
+            {
+              "letter": "i",
+              "title": "Infections",
+              "designation": "AR",
+              "line": 1106,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Allergic bronchopulmonary aspergillosis",
+                  "designation": "AR",
+                  "line": 1107
+                }
+              ]
+            },
+            {
+              "letter": "j",
+              "title": "Small airway disease",
+              "line": 1108,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Respiratory bronchiolitis",
+                  "designation": "C",
+                  "line": 1109
+                },
+                {
+                  "roman": "ii",
+                  "title": "Bronchiolocentric interstitial lung disease",
+                  "designation": "AR",
+                  "line": 1110
+                },
+                {
+                  "roman": "iii",
+                  "title": "Constrictive bronchiolitis",
+                  "designation": "F",
+                  "line": 1111
+                }
+              ]
+            },
+            {
+              "letter": "k",
+              "title": "Eosinophilic granuloma (Langerhans cell granulomatosis)",
+              "designation": "AR",
+              "line": 1112
+            },
+            {
+              "letter": "l",
+              "title": "Lymphocytic infiltrations",
+              "line": 1113,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Follicular bronchitis",
+                  "designation": "AR",
+                  "line": 1114
+                },
+                {
+                  "roman": "ii",
+                  "title": "Lymphoid interstitial pneumonia",
+                  "designation": "F",
+                  "line": 1115
+                }
+              ]
+            },
+            {
+              "letter": "m",
+              "title": "Wegener granulomatosis",
+              "designation": "AR",
+              "line": 1116
+            },
+            {
+              "letter": "n",
+              "title": "Pulmonary hypertension",
+              "designation": "AR",
+              "line": 1117
+            },
+            {
+              "letter": "o",
+              "title": "Mesothelioma",
+              "designation": "AR",
+              "line": 1118
+            },
+            {
+              "letter": "p",
+              "title": "Churg-Strauss",
+              "designation": "F",
+              "line": 1119
+            },
+            {
+              "letter": "q",
+              "title": "Polyarteritis nodosa",
+              "designation": "F",
+              "line": 1120
+            },
+            {
+              "letter": "r",
+              "title": "Pulmonary Transplant Pathology",
+              "designation": "F",
+              "line": 1121
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Neoplastic",
+          "line": 1122,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Benign",
+              "line": 1123,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Carcinoid tumorlet",
+                  "designation": "C",
+                  "line": 1124
+                },
+                {
+                  "roman": "ii",
+                  "title": "Meningothelial-like nodule",
+                  "designation": "C",
+                  "line": 1125
+                },
+                {
+                  "roman": "iii",
+                  "title": "Sclerosing pneumocytoma",
+                  "designation": "AR",
+                  "line": 1126
+                },
+                {
+                  "roman": "iv",
+                  "title": "PEComa",
+                  "designation": "AR",
+                  "line": 1127
+                },
+                {
+                  "roman": "v",
+                  "title": "Other benign neoplastic pulmonary tumors",
+                  "designation": "AR",
+                  "line": 1128
+                }
+              ]
+            },
+            {
+              "letter": "b",
+              "title": "Premalignant, Malignant, and Borderline",
+              "line": 1129,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Squamous cell carcinoma",
+                  "designation": "C",
+                  "line": 1130
+                },
+                {
+                  "roman": "ii",
+                  "title": "Adenocarcinoma",
+                  "designation": "C",
+                  "line": 1131
+                },
+                {
+                  "roman": "iii",
+                  "title": "Small cell carcinoma",
+                  "designation": "C",
+                  "line": 1132
+                },
+                {
+                  "roman": "iv",
+                  "title": "Carcinoid",
+                  "designation": "C",
+                  "line": 1133
+                },
+                {
+                  "roman": "v",
+                  "title": "Atypical Carcinoid",
+                  "designation": "C",
+                  "line": 1134
+                },
+                {
+                  "roman": "vi",
+                  "title": "Metastatic tumor, lung",
+                  "designation": "C",
+                  "line": 1135
+                },
+                {
+                  "roman": "vii",
+                  "title": "Large cell carcinoma (Other than neuroendocrine)",
+                  "designation": "AR",
+                  "line": 1136
+                },
+                {
+                  "roman": "viii",
+                  "title": "Sarcomatoid carcinoma",
+                  "designation": "AR",
+                  "line": 1137
+                },
+                {
+                  "roman": "ix",
+                  "title": "Lymphoepithlioma-like carcinoma",
+                  "designation": "AR",
+                  "line": 1138
+                },
+                {
+                  "roman": "x",
+                  "title": "Carcinosarcoma/pulmonary blastoma",
+                  "designation": "AR",
+                  "line": 1139
+                },
+                {
+                  "roman": "xi",
+                  "title": "Large cell neuroendocrine carcinoma",
+                  "designation": "AR",
+                  "line": 1140
+                },
+                {
+                  "roman": "xii",
+                  "title": "Lymphomas, including MALTomas and lymphomatoid granulomatosis",
+                  "designation": "AR",
+                  "line": 1141
+                },
+                {
+                  "roman": "xiii",
+                  "title": "Bronchial gland tumors",
+                  "designation": "F",
+                  "line": 1143
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "letter": "B",
+      "title": "The Pleura",
+      "line": 1145,
+      "items": [
+        {
+          "number": 1,
+          "title": "Normal Anatomy and Histology",
+          "designation": "C",
+          "line": 1146
+        },
+        {
+          "number": 2,
+          "title": "Physiologic Changes, Metabolic Conditions & Trauma/Infarct",
+          "designation": "C",
+          "line": 1147
+        },
+        {
+          "number": 3,
+          "title": "Congenital, Developmental, and Familial Conditions",
+          "designation": "AR",
+          "line": 1148
+        },
+        {
+          "number": 4,
+          "title": "Inflammatory Conditions, Infectious and Non-Infectious",
+          "line": 1149,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Pleuritis and pleural plaques",
+              "designation": "C",
+              "line": 1150
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Neoplastic",
+          "line": 1151,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Benign",
+              "line": 1152,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Solitary fibrous tumor",
+                  "designation": "C",
+                  "line": 1153
+                }
+              ]
+            },
+            {
+              "letter": "b",
+              "title": "Premalignant, Malignant, and Borderline",
+              "line": 1154,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Metastatic carcinoma to the pleura",
+                  "designation": "C",
+                  "line": 1155
+                },
+                {
+                  "roman": "ii",
+                  "title": "Mesothelioma",
+                  "designation": "AR",
+                  "line": 1156
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "letter": "C",
+      "title": "The Mediastinum",
+      "line": 1158,
+      "items": [
+        {
+          "number": 1,
+          "title": "Normal Anatomy and Histology",
+          "designation": "C",
+          "line": 1159
+        },
+        {
+          "number": 2,
+          "title": "Physiologic Changes, Metabolic Conditions & Trauma/Infarct",
+          "designation": "C",
+          "line": 1160,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Thymic hyperplasia",
+              "designation": "AR",
+              "line": 1161
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "title": "Congenital, Developmental, and Familial Conditions",
+          "designation": "AR",
+          "line": 1162
+        },
+        {
+          "number": 4,
+          "title": "Cysts (Other than thymic)",
+          "designation": "AR",
+          "line": 1163
+        },
+        {
+          "number": 5,
+          "title": "Inflammatory Conditions, Infectious and Non-Infectious",
+          "line": 1164,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Mediastinitis",
+              "designation": "AR",
+              "line": 1165
+            },
+            {
+              "letter": "b",
+              "title": "Immunodeficiency",
+              "designation": "AR",
+              "line": 1166
+            }
+          ]
+        },
+        {
+          "number": 6,
+          "title": "Neoplastic",
+          "line": 1167,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Benign",
+              "line": 1168
+            },
+            {
+              "letter": "b",
+              "title": "Paragangliomas",
+              "designation": "C",
+              "line": 1169,
+              "subitems": [
+                {
+                  "roman": "i",
+                  "title": "Thymoma, including myasthenia gravis",
+                  "designation": "AR",
+                  "line": 1170
+                },
+                {
+                  "roman": "ii",
+                  "title": "Neurogenic tumors",
+                  "designation": "AR",
+                  "line": 1171
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 7,
+          "title": "Premalignant, Malignant, and Borderline",
+          "line": 1172,
+          "subitems": [
+            {
+              "letter": "a",
+              "title": "Thymic carcinoma",
+              "designation": "AR",
+              "line": 1173
+            },
+            {
+              "letter": "b",
+              "title": "Neuroendocrine tumors",
+              "designation": "AR",
+              "line": 1174
+            },
+            {
+              "letter": "c",
+              "title": "Germ cell tumors",
+              "designation": "AR",
+              "line": 1175
+            },
+            {
+              "letter": "d",
+              "title": "Lymphomas",
+              "designation": "AR",
+              "line": 1176
+            },
+            {
+              "letter": "e",
+              "title": "Mesenchymal tumors of the mediastinum",
+              "designation": "AR",
+              "line": 1177
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { toast } from 'sonner';
-import { Search, Loader2, Upload, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Search, Loader2, Upload, MoreVertical, Edit, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -23,7 +23,10 @@ import {
 import { ImagePreview } from './image-preview';
 import { EditImageDialog } from './edit-dialog';
 import { UploadDialog } from './upload-dialog';
+import { DeleteImageDialog } from './delete-image-dialog';
 import { fetchImages, deleteImage } from '@/features/images/services/images';
+import { getImageUsageStats, getStorageStats, ImageUsageStats } from '@/features/images/services/image-analytics';
+import { formatFileSize } from '@/features/images/services/image-upload';
 import {
   ImageData,
   ImageCategory,
@@ -32,7 +35,23 @@ import {
 } from '@/features/images/types/images';
 
 // Define the valid category values type
-type CategoryFilterType = 'all' | ImageCategory;
+type CategoryFilterType = 'all' | 'unused' | ImageCategory;
+
+// Category color configurations
+const getCategoryColor = (category: ImageCategory): string => {
+  switch (category) {
+    case 'microscopic':
+      return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
+    case 'gross':
+      return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
+    case 'figure':
+      return 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300';
+    case 'table':
+      return 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300';
+    default:
+      return 'bg-secondary text-secondary-foreground';
+  }
+};
 
 // Table Header component with search and filters
 function TableControls({
@@ -66,6 +85,7 @@ function TableControls({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="unused">Unused Images</SelectItem>
             <SelectItem value="microscopic">Microscopic</SelectItem>
             <SelectItem value="figure">Figure</SelectItem>
             <SelectItem value="table">Table</SelectItem>
@@ -134,7 +154,7 @@ function RowActions({
   onDelete: (image: ImageData) => void;
 }) {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
           <span className="sr-only">Open menu</span>
@@ -158,8 +178,13 @@ function RowActions({
   );
 }
 
-export function ImagesTable() {
+interface ImagesTableProps {
+  onImageChange?: () => void;
+}
+
+export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
   const [images, setImages] = useState<ImageData[]>([]);
+  const [imageStats, setImageStats] = useState<ImageUsageStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>('all');
@@ -169,24 +194,33 @@ export function ImagesTable() {
   const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<ImageData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadImages = useCallback(async () => {
+    console.log('loadImages function called');
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchImages({
-        page,
-        pageSize: PAGE_SIZE,
-        searchTerm: searchTerm || undefined,
-        category: categoryFilter === 'all' ? undefined : categoryFilter,
-      });
+      // Load both regular images and analytics data
+      const [result, statsData] = await Promise.all([
+        fetchImages({
+          page,
+          pageSize: PAGE_SIZE,
+          searchTerm: searchTerm || undefined,
+          category: categoryFilter === 'all' || categoryFilter === 'unused' ? undefined : categoryFilter,
+          showUnusedOnly: categoryFilter === 'unused',
+        }),
+        getImageUsageStats()
+      ]);
 
       if (result.error) {
         throw new Error(result.error);
       }
 
       setImages(result.data);
+      setImageStats(statsData);
       setTotalItems(result.total);
       setTotalPages(Math.ceil(result.total / PAGE_SIZE));
     } catch (error) {
@@ -202,17 +236,28 @@ export function ImagesTable() {
     loadImages();
   }, [loadImages]);
 
-  const handleDelete = useCallback(async (image: ImageData) => {
-    if (!confirm('Are you sure you want to delete this image?')) return;
+  // Clear selected image when edit dialog closes (like upload dialog resets state)
+  useEffect(() => {
+    if (!showEditDialog) {
+      setSelectedImage(null);
+    }
+  }, [showEditDialog]);
 
-    try {
-      await deleteImage(image.storage_path, image.id);
 
-      toast.success("Image deleted successfully");
 
-      // Remove the deleted image from the local state
-      setImages(prev => prev.filter(img => img.id !== image.id));
+  const handleDelete = useCallback((image: ImageData) => {
+    setImageToDelete(image);
+    setShowDeleteDialog(true);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(() => {
+    // Remove the deleted image from the local state
+    if (imageToDelete) {
+      setImages(prev => prev.filter(img => img.id !== imageToDelete.id));
       setTotalItems(prev => prev - 1);
+
+      // Refresh storage stats
+      onImageChange?.();
 
       // If this was the last image on the current page and we're not on page 0,
       // go back one page
@@ -222,12 +267,8 @@ export function ImagesTable() {
         // Otherwise, reload the current page
         loadImages();
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to delete image';
-      console.error('Delete error:', error);
-      toast.error(message);
     }
-  }, [images.length, page, loadImages]);
+  }, [imageToDelete, images.length, page, loadImages, onImageChange]);
 
   const handleSearch = useCallback((term: string) => {
     setSearchTerm(term);
@@ -240,16 +281,24 @@ export function ImagesTable() {
   }, []);
 
   const handleEditSave = useCallback(() => {
-    setShowEditDialog(false);
-    setSelectedImage(null);
+    console.log('handleEditSave called - refreshing table');
+    // Just refresh the table, dialog closing is handled separately
     loadImages();
-  }, [loadImages]);
+
+    // Refresh storage stats (editing might change usage status)
+    onImageChange?.();
+  }, [loadImages, onImageChange]);
+
+
 
   const handleUploadComplete = useCallback(() => {
     setShowUploadDialog(false);
     setPage(0); // Go to first page to see newly uploaded images
     loadImages();
-  }, [loadImages]);
+
+    // Refresh storage stats
+    onImageChange?.();
+  }, [loadImages, onImageChange]);
 
   if (error && !loading) {
     return (
@@ -279,64 +328,92 @@ export function ImagesTable() {
               <TableHead>Name</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead className="w-32">Created</TableHead>
+              <TableHead className="w-24">Size</TableHead>
+              <TableHead className="w-28">Dimensions</TableHead>
+              <TableHead className="w-20">Usage</TableHead>
+              <TableHead className="w-32">Uploaded</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={9} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : images.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  {searchTerm || categoryFilter !== 'all'
+                <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
+                  {categoryFilter === 'unused'
+                    ? 'No unused images found'
+                    : searchTerm || categoryFilter !== 'all'
                     ? 'No images found matching your filters'
                     : 'No images uploaded yet'
                   }
                 </TableCell>
               </TableRow>
             ) : (
-              images.map((image) => (
-                <TableRow key={image.id}>
-                  <TableCell>
-                    <ImagePreview
-                      src={image.url}
-                      alt={image.alt_text}
-                      size="sm"
-                    />
-                  </TableCell>
-                  <TableCell className="max-w-48">
-                    <p className="line-clamp-2 text-sm font-medium">{image.alt_text}</p>
-                  </TableCell>
-                  <TableCell className="max-w-xl">
-                    <p className="line-clamp-2 text-sm text-muted-foreground">
-                      {image.description || 'No description'}
-                    </p>
-                  </TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary">
-                      {IMAGE_CATEGORIES[image.category as ImageCategory] || image.category}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {new Date(image.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <RowActions
-                      image={image}
-                      onEdit={(image) => {
-                        setSelectedImage(image);
-                        setShowEditDialog(true);
-                      }}
-                      onDelete={handleDelete}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))
+              images.map((image) => {
+                // Find the corresponding stats for this image
+                const stats = imageStats.find(stat => stat.id === image.id);
+
+                return (
+                  <TableRow key={image.id}>
+                    <TableCell>
+                      <ImagePreview
+                        src={image.url}
+                        alt={image.alt_text || 'Image'}
+                        size="sm"
+                      />
+                    </TableCell>
+                    <TableCell className="max-w-48">
+                      <p className="line-clamp-2 text-sm font-medium">{image.alt_text || 'Untitled Image'}</p>
+                    </TableCell>
+                    <TableCell className="max-w-xl">
+                      <p className="line-clamp-2 text-sm text-muted-foreground">
+                        {image.description || 'No description'}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(image.category as ImageCategory)}`}>
+                        {IMAGE_CATEGORIES[image.category as ImageCategory] || image.category}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {stats?.formatted_size || 'Unknown'}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {stats?.dimensions_text || 'Unknown'}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        {stats?.is_orphaned ? (
+                          <AlertTriangle className="h-4 w-4 text-orange-500" title="Not used in any questions" />
+                        ) : (
+                          <CheckCircle className="h-4 w-4 text-green-500" title={`Used in ${stats?.usage_count || 0} question(s)`} />
+                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {stats?.usage_count || 0}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {new Date(image.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <RowActions
+                        image={image}
+                        onEdit={(image) => {
+                          setSelectedImage(image);
+                          setShowEditDialog(true);
+                        }}
+                        onDelete={handleDelete}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -352,19 +429,24 @@ export function ImagesTable() {
       )}
 
       {/* Dialogs */}
-      {showEditDialog && selectedImage && (
-        <EditImageDialog
-          image={selectedImage}
-          open={showEditDialog}
-          onOpenChange={setShowEditDialog}
-          onSave={handleEditSave}
-        />
-      )}
+      <EditImageDialog
+        image={selectedImage}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSave={handleEditSave}
+      />
 
       <UploadDialog
         open={showUploadDialog}
         onOpenChange={setShowUploadDialog}
         onUpload={handleUploadComplete}
+      />
+
+      <DeleteImageDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        image={imageToDelete}
+        onSuccess={handleDeleteConfirm}
       />
     </div>
   );

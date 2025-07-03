@@ -2,9 +2,6 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { updateImage } from '@/features/images/services/images';
 import { ImageData, IMAGE_CATEGORIES } from '@/features/images/types/images';
 import { toast } from 'sonner';
@@ -13,15 +10,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogOverlay,
+  DialogPortal,
 } from '@/shared/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/shared/components/ui/form';
+import { Label } from '@/shared/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -32,17 +24,8 @@ import {
 import { Input } from '@/shared/components/ui/input';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Button } from '@/shared/components/ui/button';
-import { ImagePreview } from './image-preview';
+
 import { Loader2 } from 'lucide-react';
-
-const editImageSchema = z.object({
-  description: z.string().min(1, 'Description is required').max(500, 'Description too long'),
-  alt_text: z.string().min(1, 'Name is required').max(200, 'Name too long'),
-  category: z.enum(['gross', 'microscopic', 'figure', 'table']), // Updated to match IMAGE_CATEGORIES
-  source_ref: z.string().max(200, 'Source too long').optional(),
-});
-
-type EditImageFormData = z.infer<typeof editImageSchema>;
 
 interface EditImageDialogProps {
   image: ImageData | null;
@@ -58,39 +41,54 @@ export function EditImageDialog({
   onSave
 }: EditImageDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [description, setDescription] = useState('');
+  const [altText, setAltText] = useState('');
+  const [category, setCategory] = useState<'gross' | 'microscopic' | 'figure' | 'table'>('microscopic');
+  const [sourceRef, setSourceRef] = useState('');
 
-
-  const form = useForm<EditImageFormData>({
-    resolver: zodResolver(editImageSchema),
-    defaultValues: {
-      description: '',
-      alt_text: '',
-      category: 'microscopic',
-      source_ref: '',
-    },
-  });
-
-  // Initialize form when image changes
+  // Initialize state when image changes or dialog opens
   useEffect(() => {
     if (image && open) {
-      form.reset({
-        description: image.description || '',
-        alt_text: image.alt_text || '',
-        category: image.category as 'gross' | 'microscopic' | 'figure' | 'table',
-        source_ref: image.source_ref || '',
-      });
+      setDescription(image.description || '');
+      setAltText(image.alt_text || '');
+      setCategory(image.category as 'gross' | 'microscopic' | 'figure' | 'table');
+      setSourceRef(image.source_ref || '');
     }
-  }, [image, open, form]);
+  }, [image, open]);
 
-  const onSubmit = async (data: EditImageFormData) => {
-    if (!image) return;
+  // Reset state when dialog closes (like upload dialog)
+  useEffect(() => {
+    if (!open) {
+      setDescription('');
+      setAltText('');
+      setCategory('microscopic');
+      setSourceRef('');
+    }
+  }, [open]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!image || !altText.trim()) return;
 
     setIsSubmitting(true);
     try {
+      const data = {
+        description: description.trim(),
+        alt_text: altText.trim(),
+        category,
+        source_ref: sourceRef.trim() || undefined,
+      };
+
       await updateImage(image.id, data);
       toast.success('Image updated successfully');
-      onSave();
+
+      // Close dialog first
       onOpenChange(false);
+
+      // Then trigger refresh after a short delay
+      setTimeout(() => {
+        onSave();
+      }, 100);
     } catch (error) {
       console.error('Failed to update image:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to update image');
@@ -99,130 +97,103 @@ export function EditImageDialog({
     }
   };
 
-  const handleOpenChange = (open: boolean) => {
-    if (!isSubmitting) {
-      onOpenChange(open);
-      if (!open) {
-        form.reset();
-      }
-    }
-  };
+
 
   if (!image) return null;
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogPortal>
+        <DialogOverlay className="backdrop-blur-md bg-black/20" />
+        <DialogContent
+          className="!max-w-[1000px] !w-[85vw] max-h-[85vh] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 bg-background"
+          style={{ maxWidth: '1000px', width: '85vw' }}
+          showCloseButton={true}
+        >
         <DialogHeader>
           <DialogTitle>Edit Image</DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Image Preview */}
-          <div className="space-y-4">
-            <ImagePreview
-              src={image.url}
-              alt={image.alt_text}
-              size="lg"
-              className="w-full h-48"
-            />
-            <div className="text-sm text-muted-foreground space-y-1">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Image Preview - Takes 1/3 of space */}
+          <div className="space-y-3">
+            <div className="rounded-lg overflow-hidden">
+              <img
+                src={image.url}
+                alt={image.alt_text}
+                className="w-full h-64 object-contain bg-muted/20"
+              />
+            </div>
+            <div className="text-xs text-muted-foreground space-y-1 bg-muted/20 rounded-lg p-3">
+              <h4 className="font-medium text-foreground mb-1 text-sm">Image Details</h4>
               <p><strong>File Type:</strong> {image.file_type}</p>
-              <p><strong>Created:</strong> {new Date(image.created_at).toLocaleDateString()}</p>
-              {image.source_ref && (
-                <p><strong>Source:</strong> {image.source_ref}</p>
-              )}
+              <p><strong>Uploaded:</strong> {new Date(image.created_at).toLocaleDateString()}</p>
             </div>
           </div>
 
-          {/* Edit Form */}
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="alt_text"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Image name or title"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          {/* Edit Form - Takes 2/3 of space */}
+          <div className="lg:col-span-2 space-y-4">
+            <h4 className="font-medium text-foreground">Edit Image Information</h4>
+            <form onSubmit={handleSubmit} className="space-y-4">
 
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Detailed description of the image"
-                        className="min-h-24"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* First row - Name and Category */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="alt_text">Name</Label>
+                  <Input
+                    id="alt_text"
+                    value={altText}
+                    onChange={(e) => setAltText(e.target.value)}
+                    placeholder="Image name or title"
+                    required
+                  />
+                </div>
 
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {Object.entries(IMAGE_CATEGORIES).map(([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            {label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select value={category} onValueChange={(value) => setCategory(value as any)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(IMAGE_CATEGORIES).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-              <FormField
-                control={form.control}
-                name="source_ref"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Source (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Source reference or attribution"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Second row - Description (full width) */}
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Detailed description of the image"
+                  className="min-h-20"
+                />
+              </div>
+
+              {/* Third row - Source (full width) */}
+              <div className="space-y-2">
+                <Label htmlFor="source_ref">Source (Optional)</Label>
+                <Input
+                  id="source_ref"
+                  value={sourceRef}
+                  onChange={(e) => setSourceRef(e.target.value)}
+                  placeholder="Source reference or attribution"
+                />
+              </div>
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => handleOpenChange(false)}
+                  onClick={() => onOpenChange(false)}
                   disabled={isSubmitting}
                 >
                   Cancel
@@ -233,9 +204,10 @@ export function EditImageDialog({
                 </Button>
               </div>
             </form>
-          </Form>
+          </div>
         </div>
-      </DialogContent>
+        </DialogContent>
+      </DialogPortal>
     </Dialog>
   );
 }
