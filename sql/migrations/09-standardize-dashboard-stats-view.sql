@@ -20,8 +20,8 @@ WITH question_stats AS (
     COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '30 days') as recent_users
   FROM users
 ), other_stats AS (
-  SELECT 
-    (SELECT COUNT(*) FROM images) as total_images,
+  SELECT
+    (SELECT COUNT(*) FROM images WHERE category != 'external') as total_images,
     (SELECT COUNT(*) FROM quiz_sessions) as total_quiz_sessions,
     (SELECT COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') FROM quiz_sessions) as recent_quiz_sessions,
     (SELECT COUNT(*) FROM inquiries) as total_inquiries,
