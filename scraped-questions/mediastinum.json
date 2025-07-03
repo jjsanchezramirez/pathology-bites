@@ -1,0 +1,897 @@
+[
+  {
+    "title": "Question 1",
+    "stem": "Which of the following statements most correctly describes true thymic hyperplasia?",
+    "difficulty": "medium",
+    "teaching_point": "Expansion of the normal component of the thymic gland. Answers A and D are incorrect because effacement of normal thymic architecture and large lobules separated by fibrous bands are features of thymoma. reactive secondary follicles are features of thymic follicular hyperplasia. True thymic hyperplasia",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumtruethymichyperplasia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Effacement of normal thymic architecture",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Expansion of the normal component of the thymic gland. Answers A and D are incorrect because effacem...",
+        "order_index": 0
+      },
+      {
+        "text": "Expansion of the normal component of the thymic gland",
+        "is_correct": true,
+        "explanation": "Expansion of the normal component of the thymic gland. Answers A and D are incorrect because effacement of normal thymic architecture and large lobules separated by fibrous bands are features of thymoma. reactive secondary follicles are features of thymic follicular hyperplasia. True thymic hyperplasia",
+        "order_index": 1
+      },
+      {
+        "text": "Increased number of reactive secondary follicles",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Expansion of the normal component of the thymic gland. Answers A and D are incorrect because effacem...",
+        "order_index": 2
+      },
+      {
+        "text": "Large lobules separated by fibrous bands",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Expansion of the normal component of the thymic gland. Answers A and D are incorrect because effacem...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/mediastinumtruethymichyperplasiaBRQEsmaeili1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 2",
+    "stem": "Which type of thymoma can resemble the morphologic features of true thymic hyperplasia?",
+    "difficulty": "medium",
+    "teaching_point": "Type B1. Thymoma type B1 can closely resemble true thymic hyperplasia particularly in small biopsies; however, thymoma type B1 has larger lobules, thicker fibrous capsule and septa and predominance of cortical over medullary areas. There are no or very few Hassall corpuscles in type B1 thymoma in comparison to true thymic hyperplasia. Scattered large neoplastic epithelial cells (keratin+) obscured by a diffuse, small lymphocytic background are present. Answers A and B are incorrect because in type A and AB thymoma, bland oval / spindle shaped neoplastic cells would be present. Answers D and E are incorrect because type B2 and B3 thymoma show a greater number of neoplastic cells, which more clearly distinguishes them from true thymic hyperplasia. True thymic hyperplasia",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumtruethymichyperplasia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Type A",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Type B1. Thymoma type B1 can closely resemble true thymic hyperplasia particularly in small biopsies...",
+        "order_index": 0
+      },
+      {
+        "text": "Type AB",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Type B1. Thymoma type B1 can closely resemble true thymic hyperplasia particularly in small biopsies...",
+        "order_index": 1
+      },
+      {
+        "text": "Type B1",
+        "is_correct": true,
+        "explanation": "Type B1. Thymoma type B1 can closely resemble true thymic hyperplasia particularly in small biopsies; however, thymoma type B1 has larger lobules, thicker fibrous capsule and septa and predominance of cortical over medullary areas. There are no or very few Hassall corpuscles in type B1 thymoma in comparison to true thymic hyperplasia. Scattered large neoplastic epithelial cells (keratin+) obscured by a diffuse, small lymphocytic background are present. Answers A and B are incorrect because in type A and AB thymoma, bland oval / spindle shaped neoplastic cells would be present. Answers D and E are incorrect because type B2 and B3 thymoma show a greater number of neoplastic cells, which more clearly distinguishes them from true thymic hyperplasia. True thymic hyperplasia",
+        "order_index": 2
+      },
+      {
+        "text": "Type B2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Type B1. Thymoma type B1 can closely resemble true thymic hyperplasia particularly in small biopsies...",
+        "order_index": 3
+      },
+      {
+        "text": "Type B3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Type B1. Thymoma type B1 can closely resemble true thymic hyperplasia particularly in small biopsies...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "What is the neoplastic cell in this tumor?",
+    "difficulty": "medium",
+    "teaching_point": ". Epithelial cell. In thymomas, epithelial cells are the neoplastic cells. (B) Incorrect. A few scattered benign histiocytes might be present in these tumors. (C) Incorrect. Lymphocytes, which are predominantly thymocytes, are considered reactive. (D) Incorrect. Although classic Hodgkin lymphomas can exhibit a lobulated architecture, usually they do not have so sharply demarcated fibrous bands. Reed-Sternberg cells or Hodgkin cells are not identified. (E) Incorrect. Thymocytes are considered reactive in these tumors. Thymoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumthymoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Epithelial cell",
+        "is_correct": true,
+        "explanation": ". Epithelial cell. In thymomas, epithelial cells are the neoplastic cells. (B) Incorrect. A few scattered benign histiocytes might be present in these tumors. (C) Incorrect. Lymphocytes, which are predominantly thymocytes, are considered reactive. (D) Incorrect. Although classic Hodgkin lymphomas can exhibit a lobulated architecture, usually they do not have so sharply demarcated fibrous bands. Reed-Sternberg cells or Hodgkin cells are not identified. (E) Incorrect. Thymocytes are considered reactive in these tumors. Thymoma",
+        "order_index": 0
+      },
+      {
+        "text": "Histiocyte",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Epithelial cell. In thymomas, epithelial cells are the neoplastic cells. (B) Incorrect. A few scat...",
+        "order_index": 1
+      },
+      {
+        "text": "Lymphocyte",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Epithelial cell. In thymomas, epithelial cells are the neoplastic cells. (B) Incorrect. A few scat...",
+        "order_index": 2
+      },
+      {
+        "text": "Reed-Sternberg cell",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Epithelial cell. In thymomas, epithelial cells are the neoplastic cells. (B) Incorrect. A few scat...",
+        "order_index": 3
+      },
+      {
+        "text": "Thymocyte",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Epithelial cell. In thymomas, epithelial cells are the neoplastic cells. (B) Incorrect. A few scat...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/mediastinumthymomaRoden04a.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Thymoma",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "What is an important prognostic parameter in thymomas?",
+    "difficulty": "medium",
+    "teaching_point": ". Surgical resection margin. Complete resection is an important prognostic parameter in thymomas. (A) Incorrect. Cystic changes have no impact on prognosis. (B) Incorrect. Sex is not associated with prognosis. (C) Incorrect. The presence of fibrous bands is not associated with prognosis. (E) Incorrect. Thymic follicular hyperplasia in the background thymic gland has no prognostic implication. Thymoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumthymoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Association with a cyst",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Surgical resection margin. Complete resection is an important prognostic parameter in thymomas. (A...",
+        "order_index": 0
+      },
+      {
+        "text": "Male sex",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Surgical resection margin. Complete resection is an important prognostic parameter in thymomas. (A...",
+        "order_index": 1
+      },
+      {
+        "text": "Presence of fibrous bands",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Surgical resection margin. Complete resection is an important prognostic parameter in thymomas. (A...",
+        "order_index": 2
+      },
+      {
+        "text": "Surgical resection margin",
+        "is_correct": true,
+        "explanation": ". Surgical resection margin. Complete resection is an important prognostic parameter in thymomas. (A) Incorrect. Cystic changes have no impact on prognosis. (B) Incorrect. Sex is not associated with prognosis. (C) Incorrect. The presence of fibrous bands is not associated with prognosis. (E) Incorrect. Thymic follicular hyperplasia in the background thymic gland has no prognostic implication. Thymoma",
+        "order_index": 3
+      },
+      {
+        "text": "Thymic follicular hyperplasia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Surgical resection margin. Complete resection is an important prognostic parameter in thymomas. (A...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "A 37 year old man presented with shortness of breath and dull chest pain. He was found to have a 15 cm mass in the anterior mediastinum. Representative photomicrographs from the needle biopsy are shown below. What is the most likely molecular alteration in this tumor?",
+    "difficulty": "medium",
+    "teaching_point": "SS18::SSX1. t(X;18)(p11;q11) is characteristically seen in synovial sarcoma and leads to the fusion of SS18 (also known as SYT or SST) with one of the SSX genes. It can be detected by next generation sequencing, RT-PCR or FISH. SYT::SSX1 is the most common fusion in synovial sarcoma, present in 67% of cases. The tumors characterized by the other fusion genes listed would not be expected to show the cellular monomorphic spindle cell sarcoma observed in the photomicrograph. EWSR1::FLI occurs in Ewing sarcoma; FUS::DDIT3 is observed in myxoid liposarcoma; NAB2::STAT6 fusion characterizes solitary fibrous tumor; and WWTR::CAMTA fusion is present in epithelioid hemangioendothelioma. Synovial sarcoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumsynovial.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "EWSR1::FLI1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. SS18::SSX1. t(X;18)(p11;q11) is characteristically seen in synovial sarcoma and leads to the fusion ...",
+        "order_index": 0
+      },
+      {
+        "text": "FUS::DDIT3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. SS18::SSX1. t(X;18)(p11;q11) is characteristically seen in synovial sarcoma and leads to the fusion ...",
+        "order_index": 1
+      },
+      {
+        "text": "NAB2::STAT6",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. SS18::SSX1. t(X;18)(p11;q11) is characteristically seen in synovial sarcoma and leads to the fusion ...",
+        "order_index": 2
+      },
+      {
+        "text": "SS18::SSX1",
+        "is_correct": true,
+        "explanation": "SS18::SSX1. t(X;18)(p11;q11) is characteristically seen in synovial sarcoma and leads to the fusion of SS18 (also known as SYT or SST) with one of the SSX genes. It can be detected by next generation sequencing, RT-PCR or FISH. SYT::SSX1 is the most common fusion in synovial sarcoma, present in 67% of cases. The tumors characterized by the other fusion genes listed would not be expected to show the cellular monomorphic spindle cell sarcoma observed in the photomicrograph. EWSR1::FLI occurs in Ewing sarcoma; FUS::DDIT3 is observed in myxoid liposarcoma; NAB2::STAT6 fusion characterizes solitary fibrous tumor; and WWTR::CAMTA fusion is present in epithelioid hemangioendothelioma. Synovial sarcoma",
+        "order_index": 3
+      },
+      {
+        "text": "WWTR::CAMTA",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. SS18::SSX1. t(X;18)(p11;q11) is characteristically seen in synovial sarcoma and leads to the fusion ...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/mediastinumsynovialboland13.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/mediastinumsynovialboland14.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "Which of the following features essentially excludes a monophasic synovial sarcoma from the differential diagnosis in a mediastinal needle biopsy of a spindle cell tumor?",
+    "difficulty": "medium",
+    "teaching_point": "Marked nuclear pleomorphism. Monophasic synovial sarcomas are spindle cell sarcomas with striking nuclear monotony and generally should not show marked nuclear pleomorphism, even in poorly differentiated examples. The lack of keratin expression, especially on small biopsies, does not exclude the diagnosis if the correct morphology is observed and molecular confirmation could be considered in this context. Focal S100 expression can be observed in synovial sarcoma and in this setting, molecular analysis may be needed to differentiate it from malignant peripheral nerve sheath tumor. Poorly differentiated examples of synovial sarcoma can show small round blue cell morphology, often resembling Ewing sarcoma, which also may require molecular analysis since both entities can express CD99. Synovial sarcoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumsynovial.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Focal CD99 expression",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Marked nuclear pleomorphism. Monophasic synovial sarcomas are spindle cell sarcomas with striking nu...",
+        "order_index": 0
+      },
+      {
+        "text": "Focal S100 expression",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Marked nuclear pleomorphism. Monophasic synovial sarcomas are spindle cell sarcomas with striking nu...",
+        "order_index": 1
+      },
+      {
+        "text": "Lack of keratin expression",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Marked nuclear pleomorphism. Monophasic synovial sarcomas are spindle cell sarcomas with striking nu...",
+        "order_index": 2
+      },
+      {
+        "text": "Marked nuclear pleomorphism",
+        "is_correct": true,
+        "explanation": "Marked nuclear pleomorphism. Monophasic synovial sarcomas are spindle cell sarcomas with striking nuclear monotony and generally should not show marked nuclear pleomorphism, even in poorly differentiated examples. The lack of keratin expression, especially on small biopsies, does not exclude the diagnosis if the correct morphology is observed and molecular confirmation could be considered in this context. Focal S100 expression can be observed in synovial sarcoma and in this setting, molecular analysis may be needed to differentiate it from malignant peripheral nerve sheath tumor. Poorly differentiated examples of synovial sarcoma can show small round blue cell morphology, often resembling Ewing sarcoma, which also may require molecular analysis since both entities can express CD99. Synovial sarcoma",
+        "order_index": 3
+      },
+      {
+        "text": "Small round blue cell morphology",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Marked nuclear pleomorphism. Monophasic synovial sarcomas are spindle cell sarcomas with striking nu...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 8",
+    "stem": "A 62 year old man presented with a large thymic carcinoma directly invading pericardium and no metastatic spread. What is the pT category per the AJCC/TNM 8th edition?",
+    "difficulty": "medium",
+    "teaching_point": ". pT2 Staging-thymic tumors",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumthymomastaging.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "pT1a",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . pT2 Staging-thymic tumors",
+        "order_index": 0
+      },
+      {
+        "text": "pT1b",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . pT2 Staging-thymic tumors",
+        "order_index": 1
+      },
+      {
+        "text": "pT2",
+        "is_correct": true,
+        "explanation": ". pT2 Staging-thymic tumors",
+        "order_index": 2
+      },
+      {
+        "text": "pT3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . pT2 Staging-thymic tumors",
+        "order_index": 3
+      },
+      {
+        "text": "pT4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . pT2 Staging-thymic tumors",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 9",
+    "stem": "What is the major predictor of thymic carcinoma recurrence?",
+    "difficulty": "medium",
+    "teaching_point": ". Extent of local invasion. T category (local invasion) is a major predictor of recurrence while N and M categories significantly influence survival. Staging-thymic tumors",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumthymomastaging.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Distant metastasis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Extent of local invasion. T category (local invasion) is a major predictor of recurrence while N a...",
+        "order_index": 0
+      },
+      {
+        "text": "Extent of local invasion",
+        "is_correct": true,
+        "explanation": ". Extent of local invasion. T category (local invasion) is a major predictor of recurrence while N and M categories significantly influence survival. Staging-thymic tumors",
+        "order_index": 1
+      },
+      {
+        "text": "Histological type",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Extent of local invasion. T category (local invasion) is a major predictor of recurrence while N a...",
+        "order_index": 2
+      },
+      {
+        "text": "Nodal metastasis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Extent of local invasion. T category (local invasion) is a major predictor of recurrence while N a...",
+        "order_index": 3
+      },
+      {
+        "text": "Size of tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Extent of local invasion. T category (local invasion) is a major predictor of recurrence while N a...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 10",
+    "stem": "A 62 year old patient presented with a 9 cm anterior mediastinal mass (see image above). What would help differentiate this lesion from a metastasis from a head and neck lymphoepithelioma-like thymic carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": "Detailed clinical history. Immunohistochemistry and in situ hybridization in general are unhelpful in distinguishing lymphoepithelial carcinomas from different sites. Although a much lower percentage of lymphoepithelial carcinomas test positive for EBV compared to other primary sites, a significant proportion are still reported to express EBV. HPV ISH would not be helpful as it would be expected to be negative. The most useful way to separate these tumors is through a detailed clinical history, including thoracic and head and neck radiologic studies. Lymphoepithelial carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumLEL.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Detailed clinical history",
+        "is_correct": true,
+        "explanation": "Detailed clinical history. Immunohistochemistry and in situ hybridization in general are unhelpful in distinguishing lymphoepithelial carcinomas from different sites. Although a much lower percentage of lymphoepithelial carcinomas test positive for EBV compared to other primary sites, a significant proportion are still reported to express EBV. HPV ISH would not be helpful as it would be expected to be negative. The most useful way to separate these tumors is through a detailed clinical history, including thoracic and head and neck radiologic studies. Lymphoepithelial carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Immunohistochemistry for p63 and cytokeratins",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Detailed clinical history. Immunohistochemistry and in situ hybridization in general are unhelpful i...",
+        "order_index": 1
+      },
+      {
+        "text": "In situ hybridization for EBER",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Detailed clinical history. Immunohistochemistry and in situ hybridization in general are unhelpful i...",
+        "order_index": 2
+      },
+      {
+        "text": "In situ hybridization for HPV",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Detailed clinical history. Immunohistochemistry and in situ hybridization in general are unhelpful i...",
+        "order_index": 3
+      },
+      {
+        "text": "Next generation sequencing",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Detailed clinical history. Immunohistochemistry and in situ hybridization in general are unhelpful i...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/mediastinumLELsuster10.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 11",
+    "stem": "Which immunohistochemical stains would be most helpful in distinguishing a primary squamous cell thymic carcinoma from metastatic lesions from other primary sites?",
+    "difficulty": "medium",
+    "teaching_point": "CD5 and CD117 would be the most helpful in establishing thymic origin in this scenario. While primary lymphoepithelioma-like thymic carcinoma will express keratins, p16 and p63, so would poorly differentiated squamous cell carcinomas elsewhere in the body; however, few lesions outside the body would have CD5 and CD117 positivity. Lymphoepithelial carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumLEL.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CD5 and CD117",
+        "is_correct": true,
+        "explanation": "CD5 and CD117 would be the most helpful in establishing thymic origin in this scenario. While primary lymphoepithelioma-like thymic carcinoma will express keratins, p16 and p63, so would poorly differentiated squamous cell carcinomas elsewhere in the body; however, few lesions outside the body would have CD5 and CD117 positivity. Lymphoepithelial carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Cytokeratins",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. CD5 and CD117 would be the most helpful in establishing thymic origin in this scenario. While primar...",
+        "order_index": 1
+      },
+      {
+        "text": "p16",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. CD5 and CD117 would be the most helpful in establishing thymic origin in this scenario. While primar...",
+        "order_index": 2
+      },
+      {
+        "text": "p63",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. CD5 and CD117 would be the most helpful in establishing thymic origin in this scenario. While primar...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 12",
+    "stem": "A 35 year old man presented with signs and symptoms of superior vena cava syndrome. On radiology, a mass was found in the anterior mediastinum, pushing on to the great vessels. It was resected. The photomicrograph above shows the histologic features. The tumor stained with SALL4 and OCT3/4 and was negative for CD30. What is the most likely diagnosis in this case?",
+    "difficulty": "medium",
+    "teaching_point": "Seminoma. The microscopic image shows sheets of tumor cells with fibrous septa infiltrated by lymphocytes. The cells are round to polygonal, uniform epithelioid cells with round to oval nuclei and vesicular chromatin. These features plus the IHC pattern are typical for seminoma. The morphology is not typical for the other germ cell tumors. embryonal carcinoma is positive for CD30 in addition to the other 2 markers given. teratoma is negative for all 3 markers. yolk sac tumor shows only SALL4 positivity. Therefore, the correct answer is seminoma. Germ cell tumors",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumgermcell.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Embryonal carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Seminoma. The microscopic image shows sheets of tumor cells with fibrous septa infiltrated by lympho...",
+        "order_index": 0
+      },
+      {
+        "text": "Seminoma",
+        "is_correct": true,
+        "explanation": "Seminoma. The microscopic image shows sheets of tumor cells with fibrous septa infiltrated by lymphocytes. The cells are round to polygonal, uniform epithelioid cells with round to oval nuclei and vesicular chromatin. These features plus the IHC pattern are typical for seminoma. The morphology is not typical for the other germ cell tumors. embryonal carcinoma is positive for CD30 in addition to the other 2 markers given. teratoma is negative for all 3 markers. yolk sac tumor shows only SALL4 positivity. Therefore, the correct answer is seminoma. Germ cell tumors",
+        "order_index": 1
+      },
+      {
+        "text": "Teratoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Seminoma. The microscopic image shows sheets of tumor cells with fibrous septa infiltrated by lympho...",
+        "order_index": 2
+      },
+      {
+        "text": "Yolk sac tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Seminoma. The microscopic image shows sheets of tumor cells with fibrous septa infiltrated by lympho...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/mediastinumgermcellseminomamoeen01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 13",
+    "stem": "A 24 year old man presented with shortness of breath, cough and dysphagia. Radiological examination shows a well demarcated, multilocular cystic mediastinal mass with fat, bone and areas of calcification. On resection, microscopic examination shows cystic cavities lined by stratified squamous keratinized epithelium with adnexal structures underneath. Foci showing undifferentiated mesenchyme, primitive cartilage, neuroectodermal tissue and mature bone are also seen. What is the most likely diagnosis in this case?",
+    "difficulty": "medium",
+    "teaching_point": "Immature teratoma. The radiological findings of the presence of fat, bone and calcification are typical of teratoma. Based on the presence of immature cartilage, mesenchyme and neuroectodermal tissue on microscopy, this represents immature teratoma. a mature teratoma will not show any such immature components. embryonal carcinoma does not show derivatives of all 3 germ cell layers; neither do seminoma or yolk sac tumor. Embryonal carcinoma shows uniform population of large polygonal cells with nuclei showing prominent nucleoli, many mitoses and necrosis. seminoma shows cells divided by incomplete fibrous septae with lymphocytic sprinkling and cells having eosinophilic nucleoli. yolk sac tumor shows many growth patterns but characteristic endodermal sinus-like formations (also known as Schiller-Duval bodies) can be identified in most cases. Germ cell tumors",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumgermcell.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Embryonal carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Immature teratoma. The radiological findings of the presence of fat, bone and calcification are typi...",
+        "order_index": 0
+      },
+      {
+        "text": "Immature teratoma",
+        "is_correct": true,
+        "explanation": "Immature teratoma. The radiological findings of the presence of fat, bone and calcification are typical of teratoma. Based on the presence of immature cartilage, mesenchyme and neuroectodermal tissue on microscopy, this represents immature teratoma. a mature teratoma will not show any such immature components. embryonal carcinoma does not show derivatives of all 3 germ cell layers; neither do seminoma or yolk sac tumor. Embryonal carcinoma shows uniform population of large polygonal cells with nuclei showing prominent nucleoli, many mitoses and necrosis. seminoma shows cells divided by incomplete fibrous septae with lymphocytic sprinkling and cells having eosinophilic nucleoli. yolk sac tumor shows many growth patterns but characteristic endodermal sinus-like formations (also known as Schiller-Duval bodies) can be identified in most cases. Germ cell tumors",
+        "order_index": 1
+      },
+      {
+        "text": "Mature teratoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Immature teratoma. The radiological findings of the presence of fat, bone and calcification are typi...",
+        "order_index": 2
+      },
+      {
+        "text": "Seminoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Immature teratoma. The radiological findings of the presence of fat, bone and calcification are typi...",
+        "order_index": 3
+      },
+      {
+        "text": "Yolk sac tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Immature teratoma. The radiological findings of the presence of fat, bone and calcification are typi...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 14",
+    "stem": "A thymic biopsy is performed and the tumor is shown above. Which of the following is true regarding this thymic neoplasm?",
+    "difficulty": "medium",
+    "teaching_point": "Tumor cells are positive for pankeratin. This is a thymic carcinoid tumor, which would be expected to be positive for pankeratin. thymic carcinoids represent < 5% of thymic neoplasms. the diagnosis of carcinoid tumor can be established on small biopsy samples but definitive tumor classification as typical or atypical carcinoid should usually only be made on a resection specimen. Ki67 proliferation index is not currently one of the diagnostic criteria to differentiate typical and atypical thymic carcinoid tumors. Mediastinum - Carcinoid tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumcarcinoid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Ki67 proliferation index is required for the diagnosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Tumor cells are positive for pankeratin. This is a thymic carcinoid tumor, which would be expected t...",
+        "order_index": 0
+      },
+      {
+        "text": "They are the most common thymic neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Tumor cells are positive for pankeratin. This is a thymic carcinoid tumor, which would be expected t...",
+        "order_index": 1
+      },
+      {
+        "text": "Tumor cells are positive for pankeratin",
+        "is_correct": true,
+        "explanation": "Tumor cells are positive for pankeratin. This is a thymic carcinoid tumor, which would be expected to be positive for pankeratin. thymic carcinoids represent < 5% of thymic neoplasms. the diagnosis of carcinoid tumor can be established on small biopsy samples but definitive tumor classification as typical or atypical carcinoid should usually only be made on a resection specimen. Ki67 proliferation index is not currently one of the diagnostic criteria to differentiate typical and atypical thymic carcinoid tumors. Mediastinum - Carcinoid tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Tumor subclassification can reliably be made on cytologic evaluation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Tumor cells are positive for pankeratin. This is a thymic carcinoid tumor, which would be expected t...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/mediastinumcarcinoidBoland02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 15",
+    "stem": "Which of the following criteria supports a diagnosis of thymic large cell neuroendocrine carcinoma over thymic carcinoid tumor?",
+    "difficulty": "medium",
+    "teaching_point": "20 mitoses per 2 mm2. Per WHO criteria, thymic carcinoid tumors cannot exceed a mitotic count of 10 per 2 mm2. Answers C and D are incorrect because both atypical thymic carcinoids and large cell neuroendocrine carcinoma can have tumor necrosis and should express keratin. Ki67 proliferation index is not currently one of the diagnostic criteria to differentiate thymic neuroendocrine tumors but a very high proliferation index can be helpful in supporting a diagnosis of large cell neuroendocrine carcinoma or small cell carcinoma over a carcinoid tumor. Mediastinum - Carcinoid tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumcarcinoid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "20 mitoses per 2 mm2",
+        "is_correct": true,
+        "explanation": "20 mitoses per 2 mm2. Per WHO criteria, thymic carcinoid tumors cannot exceed a mitotic count of 10 per 2 mm2. Answers C and D are incorrect because both atypical thymic carcinoids and large cell neuroendocrine carcinoma can have tumor necrosis and should express keratin. Ki67 proliferation index is not currently one of the diagnostic criteria to differentiate thymic neuroendocrine tumors but a very high proliferation index can be helpful in supporting a diagnosis of large cell neuroendocrine carcinoma or small cell carcinoma over a carcinoid tumor. Mediastinum - Carcinoid tumor",
+        "order_index": 0
+      },
+      {
+        "text": "Ki67 proliferation index of 10%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 20 mitoses per 2 mm2. Per WHO criteria, thymic carcinoid tumors cannot exceed a mitotic count of 10 ...",
+        "order_index": 1
+      },
+      {
+        "text": "Negative keratin stain",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 20 mitoses per 2 mm2. Per WHO criteria, thymic carcinoid tumors cannot exceed a mitotic count of 10 ...",
+        "order_index": 2
+      },
+      {
+        "text": "Tumor necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 20 mitoses per 2 mm2. Per WHO criteria, thymic carcinoid tumors cannot exceed a mitotic count of 10 ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 16",
+    "stem": "A 1 month old girl presents with acute respiratory distress and failure to thrive. Imaging studies reveal a 3.5 cm cystic mediastinal mass compressing her trachea. The lesion is excised and shown above. Which of the following statements accurately describes this lesion?",
+    "difficulty": "medium",
+    "teaching_point": ". Congenital cyst arising from abnormal budding of the primitive ventral foregut. The lesion shown is a bronchogenic cyst. Teratomas are mature germ cell tumors derived from all 3 germ cell layers (answer D); branchial cleft cysts are derived from remnants of the second branchial apparatus (answer B); thyroglossal duct cysts are derived from the thyroglossal duct (answer C). Bronchogenic cyst",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumbronchogenic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Congenital cyst arising from abnormal budding of the primitive ventral foregut",
+        "is_correct": true,
+        "explanation": ". Congenital cyst arising from abnormal budding of the primitive ventral foregut. The lesion shown is a bronchogenic cyst. Teratomas are mature germ cell tumors derived from all 3 germ cell layers (answer D); branchial cleft cysts are derived from remnants of the second branchial apparatus (answer B); thyroglossal duct cysts are derived from the thyroglossal duct (answer C). Bronchogenic cyst",
+        "order_index": 0
+      },
+      {
+        "text": "Congenital cyst derived from remnants of the second branchial apparatus",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Congenital cyst arising from abnormal budding of the primitive ventral foregut. The lesion shown i...",
+        "order_index": 1
+      },
+      {
+        "text": "Congenital cyst derived from the thyroglossal duct",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Congenital cyst arising from abnormal budding of the primitive ventral foregut. The lesion shown i...",
+        "order_index": 2
+      },
+      {
+        "text": "Mature germ cell tumor derived from all 3 germ cell layers",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Congenital cyst arising from abnormal budding of the primitive ventral foregut. The lesion shown i...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/lungnontumorbronchogeniccyst_Briski11.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 17",
+    "stem": "Each of the following immunohistochemical markers may be positive in cystic teratomas of the mediastinum. Which is most reliably negative in bronchogenic cysts and therefore useful in the distinction between these 2 entities?",
+    "difficulty": "medium",
+    "teaching_point": ". CDX2. Based on one series of 22 bronchogenic cysts, CDX2 was negative in all 22 cases. The other listed immunohistochemical stains had varying levels of positivity in this cohort (from positivity with CK7 in 100% of cases to positivity with TTF1 in 18% of cases) (Am J Clin Pathol 2008;130:265). Bronchogenic cyst",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumbronchogenic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CDX2",
+        "is_correct": true,
+        "explanation": ". CDX2. Based on one series of 22 bronchogenic cysts, CDX2 was negative in all 22 cases. The other listed immunohistochemical stains had varying levels of positivity in this cohort (from positivity with CK7 in 100% of cases to positivity with TTF1 in 18% of cases) (Am J Clin Pathol 2008;130:265). Bronchogenic cyst",
+        "order_index": 0
+      },
+      {
+        "text": "Cytokeratin 7",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . CDX2. Based on one series of 22 bronchogenic cysts, CDX2 was negative in all 22 cases. The other l...",
+        "order_index": 1
+      },
+      {
+        "text": "Cytokeratin 20",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . CDX2. Based on one series of 22 bronchogenic cysts, CDX2 was negative in all 22 cases. The other l...",
+        "order_index": 2
+      },
+      {
+        "text": "TTF1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . CDX2. Based on one series of 22 bronchogenic cysts, CDX2 was negative in all 22 cases. The other l...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 18",
+    "stem": "Which anatomical compartment contains the aortic arch, brachiocephalic trunk, left common carotid and left subclavian arteries?",
+    "difficulty": "medium",
+    "teaching_point": "Superior mediastinum contains aortic arch, brachiocephalic trunk, left common carotid and left subclavian arteries as well as the esophagus, trachea, thymus, phrenic and vagus nerves. anterior mediastinum notably contains the internal thoracic arteries and transversus thoracis muscles. middle mediastinum contains the heart and ascending aorta but not the arch. posterior mediastinum contains the descending aorta and other structures that pass from the thorax into the abdomen. Mediastinum - Anatomy & thymus histology",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumgeneral.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Anterior mediastinum",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Superior mediastinum contains aortic arch, brachiocephalic trunk, left common carotid and left subcl...",
+        "order_index": 0
+      },
+      {
+        "text": "Middle mediastinum",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Superior mediastinum contains aortic arch, brachiocephalic trunk, left common carotid and left subcl...",
+        "order_index": 1
+      },
+      {
+        "text": "Posterior mediastinum",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Superior mediastinum contains aortic arch, brachiocephalic trunk, left common carotid and left subcl...",
+        "order_index": 2
+      },
+      {
+        "text": "Superior mediastinum",
+        "is_correct": true,
+        "explanation": "Superior mediastinum contains aortic arch, brachiocephalic trunk, left common carotid and left subclavian arteries as well as the esophagus, trachea, thymus, phrenic and vagus nerves. anterior mediastinum notably contains the internal thoracic arteries and transversus thoracis muscles. middle mediastinum contains the heart and ascending aorta but not the arch. posterior mediastinum contains the descending aorta and other structures that pass from the thorax into the abdomen. Mediastinum - Anatomy & thymus histology",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 19",
+    "stem": "The micro image shown above is in need of evaluation. Features that are present, both in the image and in adjacent areas, include a connective tissue capsule, cortex and medulla, efferent lymphatics (only) and concentrically arranged epithelial reticular cells within the medulla. What is the anatomical origin of this sample?",
+    "difficulty": "medium",
+    "teaching_point": "Thymus. The thymus is the only listed option that has numerous lymphocytes (shown in the image) in addition to all of the other listed features. Additionally, the concentrically arranged epithelial reticular cells (i.e., Hassall corpuscles) are unique to the medulla of the thymus. although lymph nodes have many of these features, including a cortex / medulla arrangement, they do not have Hassall corpuscles. spleen is histologically arranged as red pulp and white pulp, with nodules throughout the organ, not as a cortex and medulla. tonsils contain aggregates of lymphocytes but do not have many of the features listed. thyroid histomorphology would show simple columnar epithelium arranged in spheres around colloid rather than a parenchyma of lymphocytes. Mediastinum - Anatomy & thymus histology",
+    "question_references": "https://www.pathologyoutlines.com/topic/mediastinumgeneral.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Lymph node",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Thymus. The thymus is the only listed option that has numerous lymphocytes (shown in the image) in a...",
+        "order_index": 0
+      },
+      {
+        "text": "Spleen",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Thymus. The thymus is the only listed option that has numerous lymphocytes (shown in the image) in a...",
+        "order_index": 1
+      },
+      {
+        "text": "Thymus",
+        "is_correct": true,
+        "explanation": "Thymus. The thymus is the only listed option that has numerous lymphocytes (shown in the image) in addition to all of the other listed features. Additionally, the concentrically arranged epithelial reticular cells (i.e., Hassall corpuscles) are unique to the medulla of the thymus. although lymph nodes have many of these features, including a cortex / medulla arrangement, they do not have Hassall corpuscles. spleen is histologically arranged as red pulp and white pulp, with nodules throughout the organ, not as a cortex and medulla. tonsils contain aggregates of lymphocytes but do not have many of the features listed. thyroid histomorphology would show simple columnar epithelium arranged in spheres around colloid rather than a parenchyma of lymphocytes. Mediastinum - Anatomy & thymus histology",
+        "order_index": 2
+      },
+      {
+        "text": "Thyroid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Thymus. The thymus is the only listed option that has numerous lymphocytes (shown in the image) in a...",
+        "order_index": 3
+      },
+      {
+        "text": "Tonsil",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Thymus. The thymus is the only listed option that has numerous lymphocytes (shown in the image) in a...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/mediastinumgeneralMicroStringham7.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "mediastinum.html",
+      "category": "Anatomic Pathology > Thoracic",
+      "database_set": "Web"
+    }
+  }
+]

@@ -1,0 +1,1272 @@
+[
+  {
+    "title": "Question 2",
+    "stem": "The presence of which of the following histologic features in pheochromocytomas can be associated with von Hippel-Lindau syndrome?",
+    "difficulty": "medium",
+    "teaching_point": "Prominent stromal edema, clear cytoplasm and lipid degeneration in the tumor are usually asscociated with von Hippel-Lindau syndrome Paraganglioma",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalparaganglioma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Bizarre giant cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Prominent stromal edema, clear cytoplasm and lipid degeneration in the tumor are usually asscociated...",
+        "order_index": 0
+      },
+      {
+        "text": "Hyaline droplets / globules",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Prominent stromal edema, clear cytoplasm and lipid degeneration in the tumor are usually asscociated...",
+        "order_index": 1
+      },
+      {
+        "text": "Prominent stromal edema, clear cystoplasm and lipid degeneration",
+        "is_correct": true,
+        "explanation": "Prominent stromal edema, clear cytoplasm and lipid degeneration in the tumor are usually asscociated with von Hippel-Lindau syndrome Paraganglioma",
+        "order_index": 2
+      },
+      {
+        "text": "Stromal amyloid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Prominent stromal edema, clear cytoplasm and lipid degeneration in the tumor are usually asscociated...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenalparagangliomamicro_DelfinAsa17.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Missing Image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "The strongest genetic risk factor for the development of metastatic paraganglioma is",
+    "difficulty": "medium",
+    "teaching_point": "Presence of constitutional SDHB mutation is the strongest genetic risk factor for the development of metastasis Paraganglioma",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalparaganglioma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "NF1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Presence of constitutional SDHB mutation is the strongest genetic risk factor for the development of...",
+        "order_index": 0
+      },
+      {
+        "text": "RET oncogene",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Presence of constitutional SDHB mutation is the strongest genetic risk factor for the development of...",
+        "order_index": 1
+      },
+      {
+        "text": "SDHB mutations",
+        "is_correct": true,
+        "explanation": "Presence of constitutional SDHB mutation is the strongest genetic risk factor for the development of metastasis Paraganglioma",
+        "order_index": 2
+      },
+      {
+        "text": "THEM127 and VHL",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Presence of constitutional SDHB mutation is the strongest genetic risk factor for the development of...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "The image shown above is a Wright-Giemsa stained bone marrow aspirate smear from a 6 month old child who presented with a 5 cm abdominal mass. Which of the following answer choices, if present, would result in an improved prognosis for the patient?",
+    "difficulty": "medium",
+    "teaching_point": "The child is less than 1 year old. The bone marrow aspirate shows clusters of small, round, blue cells with smudged chromatin and nuclear molding; given the history of a child with an abdominal mass, this is consistent with metastatic neuroblastoma in the bone marrow. If the patient is less than 1 year old and has metastatic disease limited to skin, liver and bone marrow, the tumor would be staged as 4S, which has a good prognosis. In contrast, N-myc amplification and loss of chromosomes 1p and 11q are associated with a worse prognosis. Neuroblastoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalneuroblastoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "FISH shows loss of chromosome 1p",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. The child is less than 1 year old. The bone marrow aspirate shows clusters of small, round, blue cel...",
+        "order_index": 0
+      },
+      {
+        "text": "FISH shows loss of chromosome 11q",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. The child is less than 1 year old. The bone marrow aspirate shows clusters of small, round, blue cel...",
+        "order_index": 1
+      },
+      {
+        "text": "Molecular diagnostic testing shows N-myc amplification",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. The child is less than 1 year old. The bone marrow aspirate shows clusters of small, round, blue cel...",
+        "order_index": 2
+      },
+      {
+        "text": "The child is less than 1 year old",
+        "is_correct": true,
+        "explanation": "The child is less than 1 year old. The bone marrow aspirate shows clusters of small, round, blue cells with smudged chromatin and nuclear molding; given the history of a child with an abdominal mass, this is consistent with metastatic neuroblastoma in the bone marrow. If the patient is less than 1 year old and has metastatic disease limited to skin, liver and bone marrow, the tumor would be staged as 4S, which has a good prognosis. In contrast, N-myc amplification and loss of chromosomes 1p and 11q are associated with a worse prognosis. Neuroblastoma",
+        "order_index": 3
+      },
+      {
+        "text": "The child is male",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. The child is less than 1 year old. The bone marrow aspirate shows clusters of small, round, blue cel...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenalneuroblastomaBRQ01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 5",
+    "stem": "The biopsy shown was taken from a 5 cm incidental mass in the adrenal gland of a 56 year old woman with no clinical symptoms. Which of the following is the patient’s diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Myelolipoma Myelolipoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalmyelolipoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adrenal lipoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Myelolipoma Myelolipoma",
+        "order_index": 0
+      },
+      {
+        "text": "Angiomyolipoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Myelolipoma Myelolipoma",
+        "order_index": 1
+      },
+      {
+        "text": "Liposarcoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Myelolipoma Myelolipoma",
+        "order_index": 2
+      },
+      {
+        "text": "Myelolipoma",
+        "is_correct": true,
+        "explanation": "Myelolipoma Myelolipoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenalmyelolipomamicroIwenofu06.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "Which of the following are the microscopic features of adrenal myelolipoma?",
+    "difficulty": "medium",
+    "teaching_point": "Mature fat cells with trilineage hematopoiesis with markedly increased megakaryocytes. Mature adipocytes with atypical spindle cells embedded in fibrous stroma is associated with liposarcoma. Mature adipocytes with nuclear vacuolization is associated with lipoma. Sheets of myeloid blasts with effacement of normal architecture is associated with myeloid sarcoma. Myelolipoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalmyelolipoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Mature adipocytes with atypical spindle cells embedded in fibrous stroma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Mature fat cells with trilineage hematopoiesis with markedly increased megakaryocytes. Mature adipoc...",
+        "order_index": 0
+      },
+      {
+        "text": "Mature adipocytes with nuclear vacuolization",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Mature fat cells with trilineage hematopoiesis with markedly increased megakaryocytes. Mature adipoc...",
+        "order_index": 1
+      },
+      {
+        "text": "Mature fat cells with trilineage hematopoiesis with markedly increased megakaryocytes",
+        "is_correct": true,
+        "explanation": "Mature fat cells with trilineage hematopoiesis with markedly increased megakaryocytes. Mature adipocytes with atypical spindle cells embedded in fibrous stroma is associated with liposarcoma. Mature adipocytes with nuclear vacuolization is associated with lipoma. Sheets of myeloid blasts with effacement of normal architecture is associated with myeloid sarcoma. Myelolipoma",
+        "order_index": 2
+      },
+      {
+        "text": "Sheets of myeloid blasts with effacement of normal architecture",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Mature fat cells with trilineage hematopoiesis with markedly increased megakaryocytes. Mature adipoc...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "Which of the following differentiate adrenal medullary hyperplasia from pheochromocytoma?",
+    "difficulty": "medium",
+    "teaching_point": "Size. In clinical practice, adrenal medullary hyperplasia is defined as adrenal medullary proliferation with a size < 1 cm, while larger lesions are considered as pheochromocytoma. Hyperplasia-paraganglia",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalparagangliahyperplasia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cytological atypia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Size. In clinical practice, adrenal medullary hyperplasia is defined as adrenal medullary proliferat...",
+        "order_index": 0
+      },
+      {
+        "text": "Infiltrative border",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Size. In clinical practice, adrenal medullary hyperplasia is defined as adrenal medullary proliferat...",
+        "order_index": 1
+      },
+      {
+        "text": "Mitosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Size. In clinical practice, adrenal medullary hyperplasia is defined as adrenal medullary proliferat...",
+        "order_index": 2
+      },
+      {
+        "text": "Size",
+        "is_correct": true,
+        "explanation": "Size. In clinical practice, adrenal medullary hyperplasia is defined as adrenal medullary proliferation with a size < 1 cm, while larger lesions are considered as pheochromocytoma. Hyperplasia-paraganglia",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 8",
+    "stem": "An adrenalectomy is performed revealing a cyst with the lining that is seen above. Which is the best diagnosis for this lesion?",
+    "difficulty": "medium",
+    "teaching_point": ". Pseudocyst. No distinct lining is present, consistent with a pseudocyst. Careful evaluation of the lining is required because a flat, bland endothelial lining can be difficult to see. an endothelial lining will be present in an endothelial cyst. Epithelial and parasitic cysts are exceedingly rare. an epithelial lining will be present in an epithelial cyst. parasitic cysts usually have a thickened, striated cyst wall and calcified debris in the cyst contents. Adrenal cysts",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalcysts.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Endothelial cyst",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Pseudocyst. No distinct lining is present, consistent with a pseudocyst. Careful evaluation of the...",
+        "order_index": 0
+      },
+      {
+        "text": "Epithelial cyst",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Pseudocyst. No distinct lining is present, consistent with a pseudocyst. Careful evaluation of the...",
+        "order_index": 1
+      },
+      {
+        "text": "Parasitic cyst",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Pseudocyst. No distinct lining is present, consistent with a pseudocyst. Careful evaluation of the...",
+        "order_index": 2
+      },
+      {
+        "text": "Pseudocyst",
+        "is_correct": true,
+        "explanation": ". Pseudocyst. No distinct lining is present, consistent with a pseudocyst. Careful evaluation of the lining is required because a flat, bland endothelial lining can be difficult to see. an endothelial lining will be present in an endothelial cyst. Epithelial and parasitic cysts are exceedingly rare. an epithelial lining will be present in an epithelial cyst. parasitic cysts usually have a thickened, striated cyst wall and calcified debris in the cyst contents. Adrenal cysts",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenalcystsBRQ1Zynger1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 9",
+    "stem": "An adrenalectomy is performed, which revealed a parasitic cyst with the contents seen above. Which of the following is the most common cause of adrenal parasitic cysts with the histologic features seen in the image?",
+    "difficulty": "medium",
+    "teaching_point": ". Echinococcus. Parasitic cysts in adrenalectomy specimens are exceedingly rare. The most common cause of an adrenal parasitic cyst is Echinococcus. A striated thick cyst wall with cyst contents containing calcified scolices and debris are the characteristic histologic findings. Answer B, C, D and E are incorrect because these are not the most common causes of adrenal parasitic cysts. Adrenal cysts",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalcysts.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Echinococcus",
+        "is_correct": true,
+        "explanation": ". Echinococcus. Parasitic cysts in adrenalectomy specimens are exceedingly rare. The most common cause of an adrenal parasitic cyst is Echinococcus. A striated thick cyst wall with cyst contents containing calcified scolices and debris are the characteristic histologic findings. Answer B, C, D and E are incorrect because these are not the most common causes of adrenal parasitic cysts. Adrenal cysts",
+        "order_index": 0
+      },
+      {
+        "text": "Leishmania",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Echinococcus. Parasitic cysts in adrenalectomy specimens are exceedingly rare. The most common cau...",
+        "order_index": 1
+      },
+      {
+        "text": "Strongyloides",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Echinococcus. Parasitic cysts in adrenalectomy specimens are exceedingly rare. The most common cau...",
+        "order_index": 2
+      },
+      {
+        "text": "Taenia solium",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Echinococcus. Parasitic cysts in adrenalectomy specimens are exceedingly rare. The most common cau...",
+        "order_index": 3
+      },
+      {
+        "text": "Toxoplasma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Echinococcus. Parasitic cysts in adrenalectomy specimens are exceedingly rare. The most common cau...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenalcystsparasiticGellert03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 10",
+    "stem": "A 68 year old woman presented with right sided back pain and weight loss. Abdominal ultrasonography and computed tomography (CT) showed the presence of a 12 cm heterogeneous adrenal mass. It was biopsied, showing biphasic morphology with large epithelioid polygonal cells and haphazardly arranged spindle cells. Which statement about this adrenal cortical tumor is accurate?",
+    "difficulty": "medium",
+    "teaching_point": "This is a case of sarcomatoid ACC, an extremely rare malignant tumor with biphasic epithelioid and mesenchymal differentiation. The carcinomatous component is strongly positive for inhibin, MelanA, calretinin and SF1, thus supporting an adrenocortical origin. However, the sarcomatoid component often has a partial or complete loss of adrenocortical markers. Fortunately, > 80% of sarcomatoid ACC has both carcinomatous and sarcomatoid components (A). Functional sarcomatoid ACCs with hormone overproduction are documented in only 11% of cases (B). Compared to conventional ACC, the sarcomatoid variant has a more advanced age at presentation, predominately nonfunctional tumors, predilection of the right side, larger tumor size, higher rate of distant metastases and shorter median survival (C). 75 - 80% of patients with sarcomatoid ACC develop metastases or recurrence within 4 months and have an overall dismal prognosis (E). Adrenal cortical carcinoma, sarcomatoid variant",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenocorticalcarcinomacarcinosarcoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Pure sarcomatoid morphology is more common than biphasic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. This is a case of sarcomatoid ACC, an extremely rare malignant tumor with biphasic epithelioid and m...",
+        "order_index": 0
+      },
+      {
+        "text": "Hormonal production is typically abnormal",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. This is a case of sarcomatoid ACC, an extremely rare malignant tumor with biphasic epithelioid and m...",
+        "order_index": 1
+      },
+      {
+        "text": "Clinical presentation and prognosis are similar to conventional adrenocortical carcinoma (ACC)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. This is a case of sarcomatoid ACC, an extremely rare malignant tumor with biphasic epithelioid and m...",
+        "order_index": 2
+      },
+      {
+        "text": "Adrenocortical immunomarkers are often lost in sarcomatoid areas",
+        "is_correct": true,
+        "explanation": "This is a case of sarcomatoid ACC, an extremely rare malignant tumor with biphasic epithelioid and mesenchymal differentiation. The carcinomatous component is strongly positive for inhibin, MelanA, calretinin and SF1, thus supporting an adrenocortical origin. However, the sarcomatoid component often has a partial or complete loss of adrenocortical markers. Fortunately, > 80% of sarcomatoid ACC has both carcinomatous and sarcomatoid components (A). Functional sarcomatoid ACCs with hormone overproduction are documented in only 11% of cases (B). Compared to conventional ACC, the sarcomatoid variant has a more advanced age at presentation, predominately nonfunctional tumors, predilection of the right side, larger tumor size, higher rate of distant metastases and shorter median survival (C). 75 - 80% of patients with sarcomatoid ACC develop metastases or recurrence within 4 months and have an overall dismal prognosis (E). Adrenal cortical carcinoma, sarcomatoid variant",
+        "order_index": 3
+      },
+      {
+        "text": "Risk of metastatic disease and recurrence is low",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. This is a case of sarcomatoid ACC, an extremely rare malignant tumor with biphasic epithelioid and m...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenocorticalcarcinomacarcinosarcomatretiakova01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 11",
+    "stem": "Which of the following features is characteristic for myxoid variant of adrenocortical carcinoma (ACC), shown in the picture?",
+    "difficulty": "medium",
+    "teaching_point": "Should be distinguished from metastatic mucin producing carcinoma. Myxoid variant of adrenocortical carcinoma (ACC) is characterized by the presence of extracellular myxoid component. In some cases, tumors exhibit striking resemblance with myxoid tumors, adenoid cystic and other mucin producing carcinomas, which have to be ruled out in the right clinical context. there is a substantial overlap in immunohistochemical, molecular and genomic profiles of myxoid and conventional ACC variants. myxoid ACC is less common than conventional or oncocytic variants of ACC with only ~50 cases reported to date. compared with conventional ACC, myxoid variant has more aggressive clinical behavior with higher rate of tumor recurrence, metastases and shorter overall survival. myxoid extracellular matrix is variably abundant from 5 - 90% of tumor volume. Adrenal cortical carcinoma - Myxoid variant",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenocorticalcarcinomamyxoid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Has unique immunohistochemical, molecular and genomic profiles",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Should be distinguished from metastatic mucin producing carcinoma. Myxoid variant of adrenocortical ...",
+        "order_index": 0
+      },
+      {
+        "text": "More common than other variants of ACC",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Should be distinguished from metastatic mucin producing carcinoma. Myxoid variant of adrenocortical ...",
+        "order_index": 1
+      },
+      {
+        "text": "More indolent than conventional ACC",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Should be distinguished from metastatic mucin producing carcinoma. Myxoid variant of adrenocortical ...",
+        "order_index": 2
+      },
+      {
+        "text": "Must have ≥ 50% extracellular mucinous component",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Should be distinguished from metastatic mucin producing carcinoma. Myxoid variant of adrenocortical ...",
+        "order_index": 3
+      },
+      {
+        "text": "Should be distinguished from metastatic mucin producing carcinoma",
+        "is_correct": true,
+        "explanation": "Should be distinguished from metastatic mucin producing carcinoma. Myxoid variant of adrenocortical carcinoma (ACC) is characterized by the presence of extracellular myxoid component. In some cases, tumors exhibit striking resemblance with myxoid tumors, adenoid cystic and other mucin producing carcinomas, which have to be ruled out in the right clinical context. there is a substantial overlap in immunohistochemical, molecular and genomic profiles of myxoid and conventional ACC variants. myxoid ACC is less common than conventional or oncocytic variants of ACC with only ~50 cases reported to date. compared with conventional ACC, myxoid variant has more aggressive clinical behavior with higher rate of tumor recurrence, metastases and shorter overall survival. myxoid extracellular matrix is variably abundant from 5 - 90% of tumor volume. Adrenal cortical carcinoma - Myxoid variant",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenocorticalcarcinomamyxoidTretiakova09.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 12",
+    "stem": "Ectopic adrenal tissue is shown in the image above, identified in the renal hilum area in a 40 year old man as an incidental finding in a nephrectomy specimen. Which is the most useful diagnostic immunohistochemical marker to confirm the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "SF1. Adrenal rests are generally composed of both clear adrenocortical cells and compact ones. However, the zonation is frequently blurred and only composed of either clear or compact cells. Nests of adrenal cortical cells are, in general, immunohistochemically positive for SF1, MelanA and inhibin A at both eutopic and ectopic sites. Ectopic adrenal tissue",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalaccessoryadrenaltissue.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CD20",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. SF1. Adrenal rests are generally composed of both clear adrenocortical cells and compact ones. Howev...",
+        "order_index": 0
+      },
+      {
+        "text": "CDX2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. SF1. Adrenal rests are generally composed of both clear adrenocortical cells and compact ones. Howev...",
+        "order_index": 1
+      },
+      {
+        "text": "SF1",
+        "is_correct": true,
+        "explanation": "SF1. Adrenal rests are generally composed of both clear adrenocortical cells and compact ones. However, the zonation is frequently blurred and only composed of either clear or compact cells. Nests of adrenal cortical cells are, in general, immunohistochemically positive for SF1, MelanA and inhibin A at both eutopic and ectopic sites. Ectopic adrenal tissue",
+        "order_index": 2
+      },
+      {
+        "text": "Vimentin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. SF1. Adrenal rests are generally composed of both clear adrenocortical cells and compact ones. Howev...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenalaccessoryadrenaltissueYamaz4.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 13",
+    "stem": "A 39 year old woman presents to clinic with persistent feelings of uncontrollable anxiety and reported weight gain. Upon examination she appears to have a fatty hump that is developing between her shoulders and several purple stretch marks on her abdomen. Her laboratory report shows elevated serum cortisol. Which cell type shown in the micro image above is most likely responsible for the increased serum cortisol seen in her laboratory report?",
+    "difficulty": "medium",
+    "teaching_point": "Option C in the micro image labels cells of the zona fasciculata, which secrete glucocorticoids (i.e., cortisol) and may account for the serum hypercortisolism and clinical features described in this patient. Further workup could determine primary or secondary causes (e.g., Cushing disease). it is labeling the connective tissue capsule. these are cells of the zona glomerulosa, which secrete aldosterone. these are cells of the zona reticularis, which secrete androgens; these cells do secrete some glucocorticoids, however, the majority is secreted by the zona fasciculata. Anatomy & histology-adrenal cortex, medulla & paraganglia",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalglandcortex.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "A",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Option C in the micro image labels cells of the zona fasciculata, which secrete glucocorticoids (i.e...",
+        "order_index": 0
+      },
+      {
+        "text": "B",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Option C in the micro image labels cells of the zona fasciculata, which secrete glucocorticoids (i.e...",
+        "order_index": 1
+      },
+      {
+        "text": "C",
+        "is_correct": true,
+        "explanation": "Option C in the micro image labels cells of the zona fasciculata, which secrete glucocorticoids (i.e., cortisol) and may account for the serum hypercortisolism and clinical features described in this patient. Further workup could determine primary or secondary causes (e.g., Cushing disease). it is labeling the connective tissue capsule. these are cells of the zona glomerulosa, which secrete aldosterone. these are cells of the zona reticularis, which secrete androgens; these cells do secrete some glucocorticoids, however, the majority is secreted by the zona fasciculata. Anatomy & histology-adrenal cortex, medulla & paraganglia",
+        "order_index": 2
+      },
+      {
+        "text": "D",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Option C in the micro image labels cells of the zona fasciculata, which secrete glucocorticoids (i.e...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenalglandcortexstringham08.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 14",
+    "stem": "A 59 year old patient has been referred to nephrology for suspected primary aldosteronism. They are experiencing peripheral fluid retention, high blood pressure and laboratory studies indicate mild hypokalemia. Radiological examination reveals a small tumor within the adrenal gland that is later determined to be benign. Which layer of adrenal gland was likely the location of tumor?",
+    "difficulty": "medium",
+    "teaching_point": "Zona glomerulosa. Cells of zona glomerulosa are responsible for secretion of mineralocorticoids (i.e., aldosterone). A benign tumor within this layer of adrenal cortex could produce excess aldosterone and cause symptoms such as high blood pressure, fluid retention and hypokalemia. a tumor within the adrenal medulla (i.e., pheochromocytoma) would affect catecholamine production. although a tumor might extend into the subcapsular space, it would likely affect the most superficial layer of cortex. a tumor within the zona fasciculata would affect glucocorticoid production. a tumor within the zona reticularis would affect androgens, such as DHEA-S. Anatomy & histology-adrenal cortex, medulla & paraganglia",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalglandcortex.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adrenal medulla",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Zona glomerulosa. Cells of zona glomerulosa are responsible for secretion of mineralocorticoids (i.e...",
+        "order_index": 0
+      },
+      {
+        "text": "Subcapsular lymphoid space",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Zona glomerulosa. Cells of zona glomerulosa are responsible for secretion of mineralocorticoids (i.e...",
+        "order_index": 1
+      },
+      {
+        "text": "Zona fasciculata",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Zona glomerulosa. Cells of zona glomerulosa are responsible for secretion of mineralocorticoids (i.e...",
+        "order_index": 2
+      },
+      {
+        "text": "Zona glomerulosa",
+        "is_correct": true,
+        "explanation": "Zona glomerulosa. Cells of zona glomerulosa are responsible for secretion of mineralocorticoids (i.e., aldosterone). A benign tumor within this layer of adrenal cortex could produce excess aldosterone and cause symptoms such as high blood pressure, fluid retention and hypokalemia. a tumor within the adrenal medulla (i.e., pheochromocytoma) would affect catecholamine production. although a tumor might extend into the subcapsular space, it would likely affect the most superficial layer of cortex. a tumor within the zona fasciculata would affect glucocorticoid production. a tumor within the zona reticularis would affect androgens, such as DHEA-S. Anatomy & histology-adrenal cortex, medulla & paraganglia",
+        "order_index": 3
+      },
+      {
+        "text": "Zona reticularis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Zona glomerulosa. Cells of zona glomerulosa are responsible for secretion of mineralocorticoids (i.e...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 15",
+    "stem": "A 42 year old man presents for evaluation of right renal stones and is incidentally found to have a 4 cm mass in the left adrenal gland. Laboratory studies are within normal limits and he reports no symptoms other than right flank pain consistent with his known diagnosis. Adrenalectomy is performed and the pathology report subsequently confirms adenomatoid tumor of the adrenal gland (shown above). Positivity for which of the following immunostains (shown above) likely confirmed the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "CK5/6. Adenomatoid tumor is of mesothelial origin and as such expresses CK5/6. Adrenal cortical lesions express MelanA and inhibin, while vascular lesions express CD31 and CD34. Adenomatoid tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenaladenomatoid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CD31",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. CK5/6. Adenomatoid tumor is of mesothelial origin and as such expresses CK5/6. Adrenal cortical lesi...",
+        "order_index": 0
+      },
+      {
+        "text": "CD34",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. CK5/6. Adenomatoid tumor is of mesothelial origin and as such expresses CK5/6. Adrenal cortical lesi...",
+        "order_index": 1
+      },
+      {
+        "text": "CK5/6",
+        "is_correct": true,
+        "explanation": "CK5/6. Adenomatoid tumor is of mesothelial origin and as such expresses CK5/6. Adrenal cortical lesions express MelanA and inhibin, while vascular lesions express CD31 and CD34. Adenomatoid tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Inhibin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. CK5/6. Adenomatoid tumor is of mesothelial origin and as such expresses CK5/6. Adrenal cortical lesi...",
+        "order_index": 3
+      },
+      {
+        "text": "MelanA",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. CK5/6. Adenomatoid tumor is of mesothelial origin and as such expresses CK5/6. Adrenal cortical lesi...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenaladenomatoidzynger14.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenaladenomatoidzynger15.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 16",
+    "stem": "A 47 year old woman presents to a clinic complaining of abdominal distention and constipation. Imaging studies reveal a low fat heterogeneous enhancing 14 cm mass in the left adrenal gland with central necrosis. An adrenalectomy was done and representative morphologic picture of pure oncocytic neoplasm is shown in the photo. Which one of the listed criteria will be sufficient for the diagnosis of adrenal cortical carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": ". Venous invasion. Oncocytic adrenocortical tumors should be diagnosed using modified scoring Lin-Weiss-Bisceglia (LWB) system. Presence of 1 major criteria indicates malignancy, minor criteria indicates uncertain malignant potential (borderline) and the absence of all major and minor criteria indicates benign. From all listed answers, only venous invasion belongs to major criteria and would quality this tumor as adrenocortical carcinoma. (Hum Pathol 2011;42:489, Adv Anat Pathol 2014;21:151) Oncocytic variant",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenocorticalcarcinomaoncocytic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Capsular invasion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Venous invasion. Oncocytic adrenocortical tumors should be diagnosed using modified scoring Lin-We...",
+        "order_index": 0
+      },
+      {
+        "text": "Presence of necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Venous invasion. Oncocytic adrenocortical tumors should be diagnosed using modified scoring Lin-We...",
+        "order_index": 1
+      },
+      {
+        "text": "Sinusoidal invasion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Venous invasion. Oncocytic adrenocortical tumors should be diagnosed using modified scoring Lin-We...",
+        "order_index": 2
+      },
+      {
+        "text": "Tumor weight 350 g",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Venous invasion. Oncocytic adrenocortical tumors should be diagnosed using modified scoring Lin-We...",
+        "order_index": 3
+      },
+      {
+        "text": "Venous invasion",
+        "is_correct": true,
+        "explanation": ". Venous invasion. Oncocytic adrenocortical tumors should be diagnosed using modified scoring Lin-Weiss-Bisceglia (LWB) system. Presence of 1 major criteria indicates malignancy, minor criteria indicates uncertain malignant potential (borderline) and the absence of all major and minor criteria indicates benign. From all listed answers, only venous invasion belongs to major criteria and would quality this tumor as adrenocortical carcinoma. (Hum Pathol 2011;42:489, Adv Anat Pathol 2014;21:151) Oncocytic variant",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenocorticalcarcinomaoncocyticTretiakova06.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Oncocytic variant",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 17",
+    "stem": "When comparing to conventional adrenal cortical carcinoma (ACC), which statement is accurate in characterizing oncocytic ACC variant?",
+    "difficulty": "medium",
+    "teaching_point": ". Difficult to distinguish from benign oncocytic tumors on imaging. Because all oncocytic tumors are lipid poor, CT, MRI or PET imaging are unable to distinguish benign from malignant lesions regardless of size, attenuation or handling of the contrast agent. Answers A and C are incorrect, because oncocytic ACC, despite larger size at presentation and aggressive morphologic appearance, tends to be lower stage, less frequently metastasizes and seems to represent more indolent variant of ACC with delayed recurrence and improved survival. Answers B and E are false since patient population and therapy approaches are similar for both conventional and oncocytic ACC. (Surgery 2019;166:524, Asia Ocean J Nucl Med Biol 2018;6:179, Turk Patoloji Derg 2015;31:98, Biomedicines 2021;9:175) Oncocytic variant",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenocorticalcarcinomaoncocytic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Typically smaller at presentation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Difficult to distinguish from benign oncocytic tumors on imaging. Because all oncocytic tumors are...",
+        "order_index": 0
+      },
+      {
+        "text": "Affects male patients more often",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Difficult to distinguish from benign oncocytic tumors on imaging. Because all oncocytic tumors are...",
+        "order_index": 1
+      },
+      {
+        "text": "More aggressive with higher metastatic rate and shorter survival",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Difficult to distinguish from benign oncocytic tumors on imaging. Because all oncocytic tumors are...",
+        "order_index": 2
+      },
+      {
+        "text": "Difficult to distinguish from benign oncocytic tumors on imaging",
+        "is_correct": true,
+        "explanation": ". Difficult to distinguish from benign oncocytic tumors on imaging. Because all oncocytic tumors are lipid poor, CT, MRI or PET imaging are unable to distinguish benign from malignant lesions regardless of size, attenuation or handling of the contrast agent. Answers A and C are incorrect, because oncocytic ACC, despite larger size at presentation and aggressive morphologic appearance, tends to be lower stage, less frequently metastasizes and seems to represent more indolent variant of ACC with delayed recurrence and improved survival. Answers B and E are false since patient population and therapy approaches are similar for both conventional and oncocytic ACC. (Surgery 2019;166:524, Asia Ocean J Nucl Med Biol 2018;6:179, Turk Patoloji Derg 2015;31:98, Biomedicines 2021;9:175) Oncocytic variant",
+        "order_index": 3
+      },
+      {
+        "text": "Requires different therapy approach",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Difficult to distinguish from benign oncocytic tumors on imaging. Because all oncocytic tumors are...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 18",
+    "stem": "What is the pT classification for a pheochromocytoma that is 1.8 cm and is confined to the adrenal gland?",
+    "difficulty": "medium",
+    "teaching_point": "pT1. Pheochromocytoma < 5 cm that is confined to the adrenal is pT1. Staging-pheochromocytoma and paraganglioma",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalpheostaging.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "pT1",
+        "is_correct": true,
+        "explanation": "pT1. Pheochromocytoma < 5 cm that is confined to the adrenal is pT1. Staging-pheochromocytoma and paraganglioma",
+        "order_index": 0
+      },
+      {
+        "text": "pT2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. pT1. Pheochromocytoma < 5 cm that is confined to the adrenal is pT1. Staging-pheochromocytoma and pa...",
+        "order_index": 1
+      },
+      {
+        "text": "pT3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. pT1. Pheochromocytoma < 5 cm that is confined to the adrenal is pT1. Staging-pheochromocytoma and pa...",
+        "order_index": 2
+      },
+      {
+        "text": "pT4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. pT1. Pheochromocytoma < 5 cm that is confined to the adrenal is pT1. Staging-pheochromocytoma and pa...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenalpheostagingzynger8.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 19",
+    "stem": "A 39 year old woman presents with an incidentally detected adrenal mass that is resected, revealing the histology above. Which is the correct diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Ganglioneuroma. The histology slide shows scattered mature ganglion cells in a background of bland stroma diagnostic for ganglioneuroma. ganglion cells are present and large bland adrenal cortical cells are not present. immature neuroblasts would be seen. neuroblastomas show small round blue cells with minimal cytoplasm that are not present. ganglion cells are present and nests of basophilic granular cells are not seen. Ganglioneuroma",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalganglioneuroma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adrenal cortical adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Ganglioneuroma. The histology slide shows scattered mature ganglion cells in a background of bland...",
+        "order_index": 0
+      },
+      {
+        "text": "Ganglioneuroblastoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Ganglioneuroma. The histology slide shows scattered mature ganglion cells in a background of bland...",
+        "order_index": 1
+      },
+      {
+        "text": "Ganglioneuroma",
+        "is_correct": true,
+        "explanation": ". Ganglioneuroma. The histology slide shows scattered mature ganglion cells in a background of bland stroma diagnostic for ganglioneuroma. ganglion cells are present and large bland adrenal cortical cells are not present. immature neuroblasts would be seen. neuroblastomas show small round blue cells with minimal cytoplasm that are not present. ganglion cells are present and nests of basophilic granular cells are not seen. Ganglioneuroma",
+        "order_index": 2
+      },
+      {
+        "text": "Neuroblastoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Ganglioneuroma. The histology slide shows scattered mature ganglion cells in a background of bland...",
+        "order_index": 3
+      },
+      {
+        "text": "Pheochromocytoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Ganglioneuroma. The histology slide shows scattered mature ganglion cells in a background of bland...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenalganglioneuromaBRQ01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 20",
+    "stem": "For a pheochromocytoma, which of the following tumor characteristics is needed in order to establish the pT category of the tumor?",
+    "difficulty": "medium",
+    "teaching_point": "Size. Tumor parameters that determine the pT category for pheochromocytoma are tumor size (< 5 cm versus ≥ 5 cm) and tumor extent (organ confined versus extra-adrenal invasion). Other parameters can be associated with risk of aggressive behavior but are not used to determine the pT category. Features to report-pheochromocytoma / paraganglioma",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalparagangliomareport.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cellularity",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Size. Tumor parameters that determine the pT category for pheochromocytoma are tumor size (< 5 cm ve...",
+        "order_index": 0
+      },
+      {
+        "text": "Mitotic rate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Size. Tumor parameters that determine the pT category for pheochromocytoma are tumor size (< 5 cm ve...",
+        "order_index": 1
+      },
+      {
+        "text": "Presence of necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Size. Tumor parameters that determine the pT category for pheochromocytoma are tumor size (< 5 cm ve...",
+        "order_index": 2
+      },
+      {
+        "text": "Size",
+        "is_correct": true,
+        "explanation": "Size. Tumor parameters that determine the pT category for pheochromocytoma are tumor size (< 5 cm versus ≥ 5 cm) and tumor extent (organ confined versus extra-adrenal invasion). Other parameters can be associated with risk of aggressive behavior but are not used to determine the pT category. Features to report-pheochromocytoma / paraganglioma",
+        "order_index": 3
+      },
+      {
+        "text": "Weight",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Size. Tumor parameters that determine the pT category for pheochromocytoma are tumor size (< 5 cm ve...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenalpheostagingzynger1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 21",
+    "stem": "A 54 year old woman presents to clinic complaining of recent onset of hot flashes, headaches, weight gain and muscle weakness. On exam, she has hypertension, acne, facial plethora and mild abdominal distension. A noncontrast CT of the abdomen reveals a heterogeneous enhancing 9.3 cm mass in the left adrenal gland. An adrenalectomy was done and is shown in the photo. Which of the gross features will be most predictive of a malignant diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Areas of necrosis. Macroscopically, adrenal cortical carcinomas (ACC) tend to be large, lobulated, yellow masses with heterogeneous cut surface and fibrous capsule; however, in organ confined disease, only the presence of confluent necrosis would be consistent with either borderline or malignant tumor. Further microscopic examination will be essential to further substantiate ACC diagnosis with overtly malignant features (diffuse architecture with loss of reticulin continuity, high mitotic activity, atypical mitoses or lymphovascular invasion). Adrenal cortical carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenocorticalcarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Areas of necrosis",
+        "is_correct": true,
+        "explanation": ". Areas of necrosis. Macroscopically, adrenal cortical carcinomas (ACC) tend to be large, lobulated, yellow masses with heterogeneous cut surface and fibrous capsule; however, in organ confined disease, only the presence of confluent necrosis would be consistent with either borderline or malignant tumor. Further microscopic examination will be essential to further substantiate ACC diagnosis with overtly malignant features (diffuse architecture with loss of reticulin continuity, high mitotic activity, atypical mitoses or lymphovascular invasion). Adrenal cortical carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Fibrous capsule",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Areas of necrosis. Macroscopically, adrenal cortical carcinomas (ACC) tend to be large, lobulated,...",
+        "order_index": 1
+      },
+      {
+        "text": "Size (9.3 cm)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Areas of necrosis. Macroscopically, adrenal cortical carcinomas (ACC) tend to be large, lobulated,...",
+        "order_index": 2
+      },
+      {
+        "text": "Tan-yellow color",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Areas of necrosis. Macroscopically, adrenal cortical carcinomas (ACC) tend to be large, lobulated,...",
+        "order_index": 3
+      },
+      {
+        "text": "Weight 205 g",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Areas of necrosis. Macroscopically, adrenal cortical carcinomas (ACC) tend to be large, lobulated,...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenalstagingzynger02crop.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 22",
+    "stem": "Which stains should be performed for precise characterization and prognostication of this adrenal of this tumor?",
+    "difficulty": "medium",
+    "teaching_point": ". SF1, reticulin stain, Ki67. This is an adrenal cortical carcinoma. The clinical presentation and image are suggestive of functional (cortisol producing) adrenocortical tumor. Expression of SF1 will confirm adrenocortical origin. Reticulin will be useful to highlight disrupted reticulin framework supporting malignant diagnosis of adrenal cortical carcinoma (ACC). Adrenal cortical carcinomas can be stratified in prognostic groups based on mitotic activity and proliferation index by Ki67. Chromogranin, synaptophysin and CD56 could be useful in distinguishing pheochromocytoma from an adrenocortical tumor. AE1 / AE3, CK7 and TTF1 expression will be consistent with metastatic lung cancer. PAX8, CAIX and TFE3 expression panel will be helpful to confirm and classify renal cell carcinoma. MelanA, inhibin and calretinin are expressed in benign and malignant adrenocortical tumors, thus not ideal for precise diagnosis and prognostication of this neoplasm. Adrenal cortical carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenocorticalcarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "AE1 / AE3, CK7, TTF1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . SF1, reticulin stain, Ki67. This is an adrenal cortical carcinoma. The clinical presentation and i...",
+        "order_index": 0
+      },
+      {
+        "text": "Chromogranin, synaptophysin, CD56",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . SF1, reticulin stain, Ki67. This is an adrenal cortical carcinoma. The clinical presentation and i...",
+        "order_index": 1
+      },
+      {
+        "text": "MelanA, inhibin, calretinin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . SF1, reticulin stain, Ki67. This is an adrenal cortical carcinoma. The clinical presentation and i...",
+        "order_index": 2
+      },
+      {
+        "text": "PAX8, CAIX, TFE3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . SF1, reticulin stain, Ki67. This is an adrenal cortical carcinoma. The clinical presentation and i...",
+        "order_index": 3
+      },
+      {
+        "text": "SF1, reticulin, Ki67",
+        "is_correct": true,
+        "explanation": ". SF1, reticulin stain, Ki67. This is an adrenal cortical carcinoma. The clinical presentation and image are suggestive of functional (cortisol producing) adrenocortical tumor. Expression of SF1 will confirm adrenocortical origin. Reticulin will be useful to highlight disrupted reticulin framework supporting malignant diagnosis of adrenal cortical carcinoma (ACC). Adrenal cortical carcinomas can be stratified in prognostic groups based on mitotic activity and proliferation index by Ki67. Chromogranin, synaptophysin and CD56 could be useful in distinguishing pheochromocytoma from an adrenocortical tumor. AE1 / AE3, CK7 and TTF1 expression will be consistent with metastatic lung cancer. PAX8, CAIX and TFE3 expression panel will be helpful to confirm and classify renal cell carcinoma. MelanA, inhibin and calretinin are expressed in benign and malignant adrenocortical tumors, thus not ideal for precise diagnosis and prognostication of this neoplasm. Adrenal cortical carcinoma",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenocorticalcarcinomatretiakova02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 24",
+    "stem": "A 65 year old man presents with acute worsening of previously well controlled hypertension. Further investigation reveals elevated plasma metanephrines and a right sided adrenal mass. Adrenalectomy reveals a 3 cm, 120 g pheochromocytoma with large, uniform, polygonal cells and 4 mitotic figures per 10 high power fields (HPF). It is positive for chromogranin and synaptophysin. Which of the following features is associated with a more aggressive course?",
+    "difficulty": "medium",
+    "teaching_point": "> 3 mitoses per HPF. > 3 mitoses per HPF increases risk for malignant pheochromocytoma. It is part of the pheochromocytoma of the adrenal gland scaled score (PASS). A score of ≥ 4 is concerning for malignancy, and scores are based on the presence of the following features: periadrenal adipose invasion (+2), > 3 mitosis per 10 high powered fields (+2), atypical mitoses (+2), necrosis (+2), cellular spindling (+2), marked nuclear pleomorphism (+1), cellular monotony (+2), large nests or diffuse growth (+2), high cellularity (+2), capsular invasion (+1), vascular invasion (+1), hyperchromasia (+1). Age of diagnosis < 45 years is associated with more aggressive disease, rather than older age. Staining with synaptophysin is a characteristic feature of pheochromocytoma and does not predict a more aggressive disease course. Larger and heavier tumors are associated with more aggressive disease, rather than smaller and lighter tumors. Pheochromocytoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalpheochromocytoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "> 3 mitoses per HPF",
+        "is_correct": true,
+        "explanation": "> 3 mitoses per HPF. > 3 mitoses per HPF increases risk for malignant pheochromocytoma. It is part of the pheochromocytoma of the adrenal gland scaled score (PASS). A score of ≥ 4 is concerning for malignancy, and scores are based on the presence of the following features: periadrenal adipose invasion (+2), > 3 mitosis per 10 high powered fields (+2), atypical mitoses (+2), necrosis (+2), cellular spindling (+2), marked nuclear pleomorphism (+1), cellular monotony (+2), large nests or diffuse growth (+2), high cellularity (+2), capsular invasion (+1), vascular invasion (+1), hyperchromasia (+1). Age of diagnosis < 45 years is associated with more aggressive disease, rather than older age. Staining with synaptophysin is a characteristic feature of pheochromocytoma and does not predict a more aggressive disease course. Larger and heavier tumors are associated with more aggressive disease, rather than smaller and lighter tumors. Pheochromocytoma",
+        "order_index": 0
+      },
+      {
+        "text": "Age of diagnosis ≥ 45 years",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. > 3 mitoses per HPF. > 3 mitoses per HPF increases risk for malignant pheochromocytoma. It is part o...",
+        "order_index": 1
+      },
+      {
+        "text": "Positive for synaptophysin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. > 3 mitoses per HPF. > 3 mitoses per HPF increases risk for malignant pheochromocytoma. It is part o...",
+        "order_index": 2
+      },
+      {
+        "text": "Tumor size < 5 cm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. > 3 mitoses per HPF. > 3 mitoses per HPF increases risk for malignant pheochromocytoma. It is part o...",
+        "order_index": 3
+      },
+      {
+        "text": "Tumor weight < 130 g",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. > 3 mitoses per HPF. > 3 mitoses per HPF increases risk for malignant pheochromocytoma. It is part o...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenal/adrenalpheochromocytomazynger_10.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 25",
+    "stem": "The adrenal tumor shown above was found to express chromogranin and GATA3 and was negative for AE1 / AE3. Which is the correct diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Pheochromocytoma Pheochromocytoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalpheochromocytoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adrenal cortical adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Pheochromocytoma Pheochromocytoma",
+        "order_index": 0
+      },
+      {
+        "text": "Adrenal cortical carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Pheochromocytoma Pheochromocytoma",
+        "order_index": 1
+      },
+      {
+        "text": "Lung adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Pheochromocytoma Pheochromocytoma",
+        "order_index": 2
+      },
+      {
+        "text": "Pheochromocytoma",
+        "is_correct": true,
+        "explanation": "Pheochromocytoma Pheochromocytoma",
+        "order_index": 3
+      },
+      {
+        "text": "Urothelial carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Pheochromocytoma Pheochromocytoma",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenalpheochromocytomaBRQ3.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Pheochromocytoma",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 26",
+    "stem": "The photo above shows a spindle cell proliferation in the adrenal cortex that was incidentally identified upon microscopic examination. This lesion is described in the literature as ovarian thecal metaplasia. Based on IHC expression, this lesion is not related to either the ovary or the adrenal gland. Which combination of the following markers is usually expressed in this lesion?",
+    "difficulty": "medium",
+    "teaching_point": "SMA, desmin, WT1. This rare spindle cell proliferation of the adrenal cortex, termed ovarian thecal metaplasia, expresses SMA, desmin and WT1. this entity does not express keratins such as AE1 / AE3. this entity does not express adrenal cortical markers. this entity does not express S100 or CD34. Ovarian thecal metaplasia",
+    "question_references": "https://www.pathologyoutlines.com/topic/adrenalovarianthecal.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "AE1 / AE3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. SMA, desmin, WT1. This rare spindle cell proliferation of the adrenal cortex, termed ovarian thecal ...",
+        "order_index": 0
+      },
+      {
+        "text": "Inhibin, SF1, MelanA, HMB45",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. SMA, desmin, WT1. This rare spindle cell proliferation of the adrenal cortex, termed ovarian thecal ...",
+        "order_index": 1
+      },
+      {
+        "text": "S100, CD34",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. SMA, desmin, WT1. This rare spindle cell proliferation of the adrenal cortex, termed ovarian thecal ...",
+        "order_index": 2
+      },
+      {
+        "text": "SMA, desmin, WT1",
+        "is_correct": true,
+        "explanation": "SMA, desmin, WT1. This rare spindle cell proliferation of the adrenal cortex, termed ovarian thecal metaplasia, expresses SMA, desmin and WT1. this entity does not express keratins such as AE1 / AE3. this entity does not express adrenal cortical markers. this entity does not express S100 or CD34. Ovarian thecal metaplasia",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/adrenalovarianthecalZynger12.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "adrenal.html",
+      "category": "Anatomic Pathology > Endocrine",
+      "database_set": "Web"
+    }
+  }
+]

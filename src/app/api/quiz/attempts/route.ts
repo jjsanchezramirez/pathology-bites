@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
           title,
           difficulty
         ),
-        selected_answer:answer_options(
+        selected_answer:question_options(
           id,
           text,
           is_correct

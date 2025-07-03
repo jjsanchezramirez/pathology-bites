@@ -99,13 +99,11 @@ export function QuestionReviewDialog({
         return
       }
 
-      // Update question status and review fields
+      // Update question status
       const { error: updateError } = await supabase
         .from('questions')
         .update({
           status: newStatus,
-          reviewed_by: user.id,
-          reviewed_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq('id', question.id)
@@ -199,12 +197,12 @@ export function QuestionReviewDialog({
                 </div>
               )}
 
-              {/* Answer Options */}
-              {question.answer_options && question.answer_options.length > 0 && (
+              {/* Question Options */}
+              {(question.question_options || question.answer_options) && (question.question_options || question.answer_options)!.length > 0 && (
                 <div>
-                  <Label className="text-sm font-medium">Answer Options</Label>
+                  <Label className="text-sm font-medium">Question Options</Label>
                   <div className="mt-1 space-y-2">
-                    {question.answer_options.map((option, index) => (
+                    {(question.question_options || question.answer_options)!.map((option, index) => (
                       <div
                         key={option.id}
                         className={`p-3 rounded-md border ${

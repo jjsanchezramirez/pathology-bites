@@ -88,9 +88,9 @@ export class QuizService {
       .from('questions')
       .select(`
         *,
-        answer_options(*),
+        question_options(*),
         question_images(*, image:images(*)),
-        question_set:question_sets(*)
+        question_set:sets(*)
       `)
       .eq('status', 'published')
 
@@ -110,17 +110,11 @@ export class QuizService {
 
     // Filter by categories if specified
     let filteredQuestions = questions || []
-    
+
     if (formData.selectedCategories.length > 0) {
-      const { data: categoryQuestions, error: categoryError } = await this.supabase
-        .from('question_categories')
-        .select('question_id')
-        .in('category_id', formData.selectedCategories)
-
-      if (categoryError) throw categoryError
-
-      const categoryQuestionIds = new Set(categoryQuestions.map(cq => cq.question_id))
-      filteredQuestions = filteredQuestions.filter(q => categoryQuestionIds.has(q.id))
+      filteredQuestions = filteredQuestions.filter(q =>
+        q.category_id && formData.selectedCategories.includes(q.category_id)
+      )
     }
 
     return filteredQuestions
@@ -167,9 +161,9 @@ export class QuizService {
       .from('questions')
       .select(`
         *,
-        answer_options(*),
+        question_options(*),
         question_images(*, image:images(*)),
-        question_set:question_sets(*)
+        question_set:sets(*)
       `)
       .in('id', questionIds)
 
@@ -192,7 +186,7 @@ export class QuizService {
     try {
       // Get the correct answer
       const { data: answerOptions, error: answerError } = await this.supabase
-        .from('answer_options')
+        .from('question_options')
         .select('*')
         .eq('question_id', questionId)
 

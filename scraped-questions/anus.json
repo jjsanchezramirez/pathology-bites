@@ -1,0 +1,1815 @@
+[
+  {
+    "title": "Question 1",
+    "stem": "Which of the following is true about verrucous carcinoma of the anus?",
+    "difficulty": "medium",
+    "teaching_point": ". It may transform to traditional squamous cell carcinoma Verrucous carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusverrucous.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "HPV is always involved in its carcinogenesis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . It may transform to traditional squamous cell carcinoma Verrucous carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "It has a propensity to metastasize early",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . It may transform to traditional squamous cell carcinoma Verrucous carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "It may transform to traditional squamous cell carcinoma",
+        "is_correct": true,
+        "explanation": ". It may transform to traditional squamous cell carcinoma Verrucous carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Most cases are small (< 2 cm)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . It may transform to traditional squamous cell carcinoma Verrucous carcinoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anusverrucousmicro01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 2",
+    "stem": "A 27 year old man presented with a diffuse maculopapular rash, including on his palms and soles and a 4 cm white-gray raised perianal lesion. A biopsy was done of the perianal lesions and the histology is depicted in the H&E image. Which further testing should be ordered on the biopsy to best help determine the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". T. pallidum IHC. The H&E image demonstrates epithelial hyperplasia with a dense subepithelial plasmacytic infiltrate indicative of condyloma lata. T. pallidum IHC is the most sensitive and specific method to highlight the spirochetes within the tissue. while the Warthin-Starry silver stain may also be used to highlight T. pallidum, it is not as sensitive or specific as IHC for T. pallidum. an AFB stain should be done when chronic granulomatous inflammation is seen to rule out anal tuberculosis. p63 IHC is positive in condyloma accuminata, which will demonstrate koilocytes and should not have any plasmacytic inflammation. IgG4 related disease presents with masses and does not present with a rash. The plasma cells in condyloma lata should also be negative for IgG4 IHC. Anus & perianal area - Syphilis",
+    "question_references": "https://www.pathologyoutlines.com/topic/anussyphilis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "AFB stain",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . T. pallidum IHC. The H&E image demonstrates epithelial hyperplasia with a dense subepithelial plas...",
+        "order_index": 0
+      },
+      {
+        "text": "IgG4 IHC",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . T. pallidum IHC. The H&E image demonstrates epithelial hyperplasia with a dense subepithelial plas...",
+        "order_index": 1
+      },
+      {
+        "text": "p63 IHC",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . T. pallidum IHC. The H&E image demonstrates epithelial hyperplasia with a dense subepithelial plas...",
+        "order_index": 2
+      },
+      {
+        "text": "T. pallidum IHC",
+        "is_correct": true,
+        "explanation": ". T. pallidum IHC. The H&E image demonstrates epithelial hyperplasia with a dense subepithelial plasmacytic infiltrate indicative of condyloma lata. T. pallidum IHC is the most sensitive and specific method to highlight the spirochetes within the tissue. while the Warthin-Starry silver stain may also be used to highlight T. pallidum, it is not as sensitive or specific as IHC for T. pallidum. an AFB stain should be done when chronic granulomatous inflammation is seen to rule out anal tuberculosis. p63 IHC is positive in condyloma accuminata, which will demonstrate koilocytes and should not have any plasmacytic inflammation. IgG4 related disease presents with masses and does not present with a rash. The plasma cells in condyloma lata should also be negative for IgG4 IHC. Anus & perianal area - Syphilis",
+        "order_index": 3
+      },
+      {
+        "text": "Warthin-Starry silver stain",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . T. pallidum IHC. The H&E image demonstrates epithelial hyperplasia with a dense subepithelial plas...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anussyphilisHuber02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Syphilis",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "What histologic feature separates primary syphilis (chancre) from secondary syphilis (condyloma lata)?",
+    "difficulty": "medium",
+    "teaching_point": ". Epithelial hyperplasia is seen with secondary syphilis lesions (condyloma lata) but not with primary syphilis lesions (chancre), in which ulceration is more common. granulomas are not specific for any stage of syphilis nor specific for syphilis. coagulative necrosis is seen in tertiary syphilis lesions (gummas) but not in chancres or condyloma lata. obliterative endarteritis can be seen in both primary and secondary syphilis. Anus & perianal area - Syphilis",
+    "question_references": "https://www.pathologyoutlines.com/topic/anussyphilis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Coagulative necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Epithelial hyperplasia is seen with secondary syphilis lesions (condyloma lata) but not with prima...",
+        "order_index": 0
+      },
+      {
+        "text": "Epithelial hyperplasia",
+        "is_correct": true,
+        "explanation": ". Epithelial hyperplasia is seen with secondary syphilis lesions (condyloma lata) but not with primary syphilis lesions (chancre), in which ulceration is more common. granulomas are not specific for any stage of syphilis nor specific for syphilis. coagulative necrosis is seen in tertiary syphilis lesions (gummas) but not in chancres or condyloma lata. obliterative endarteritis can be seen in both primary and secondary syphilis. Anus & perianal area - Syphilis",
+        "order_index": 1
+      },
+      {
+        "text": "Granulomas",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Epithelial hyperplasia is seen with secondary syphilis lesions (condyloma lata) but not with prima...",
+        "order_index": 2
+      },
+      {
+        "text": "Obliterative endarteritis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Epithelial hyperplasia is seen with secondary syphilis lesions (condyloma lata) but not with prima...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "Which of the following criteria characterizes a malignancy as an anal, rather than a perianal, tumor?",
+    "difficulty": "medium",
+    "teaching_point": "Cannot be entirely visualized after gentle traction on the buttocks. Such cases are defined as anal tumors. cases that arise distal to the squamous mucocutaneous junction are considered perianal tumors. Answers C and D are incorrect because they are not used as criteria for determining the site of a tumor. Anus - Staging",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusstaging.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Arises distal to the squamous mucocutaneous junction",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cannot be entirely visualized after gentle traction on the buttocks. Such cases are defined as anal ...",
+        "order_index": 0
+      },
+      {
+        "text": "Cannot be entirely visualized after gentle traction on the buttocks",
+        "is_correct": true,
+        "explanation": "Cannot be entirely visualized after gentle traction on the buttocks. Such cases are defined as anal tumors. cases that arise distal to the squamous mucocutaneous junction are considered perianal tumors. Answers C and D are incorrect because they are not used as criteria for determining the site of a tumor. Anus - Staging",
+        "order_index": 1
+      },
+      {
+        "text": "Squamous cell or basal cell carcinoma histologically",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cannot be entirely visualized after gentle traction on the buttocks. Such cases are defined as anal ...",
+        "order_index": 2
+      },
+      {
+        "text": "Visible only on colonoscopy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cannot be entirely visualized after gentle traction on the buttocks. Such cases are defined as anal ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 5",
+    "stem": "Which of the following criteria characterizes an anal squamous cell carcinoma as pT3?",
+    "difficulty": "medium",
+    "teaching_point": ". Size > 5 cm. This is the TNM criterion for pT3 disease. it indicates pT4 disease. it indicates pT1 disease. it indicates pT2 disease. Anus - Staging",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusstaging.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Invasion of adjacent organs",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Size > 5 cm. This is the TNM criterion for pT3 disease. it indicates pT4 disease. it indicates pT1...",
+        "order_index": 0
+      },
+      {
+        "text": "Size ≤ 2 cm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Size > 5 cm. This is the TNM criterion for pT3 disease. it indicates pT4 disease. it indicates pT1...",
+        "order_index": 1
+      },
+      {
+        "text": "Size > 2 cm but ≤ 5 cm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Size > 5 cm. This is the TNM criterion for pT3 disease. it indicates pT4 disease. it indicates pT1...",
+        "order_index": 2
+      },
+      {
+        "text": "Size > 5 cm",
+        "is_correct": true,
+        "explanation": ". Size > 5 cm. This is the TNM criterion for pT3 disease. it indicates pT4 disease. it indicates pT1 disease. it indicates pT2 disease. Anus - Staging",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "A 66 year old White woman presents with anal pain and is found to have a pigmented anal mass. The mass is biopsied and the histology is depicted in the H&E image shown above. Which immunohistochemical stain would best support the correct diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "HMB45. The H&E image demonstrates anal melanoma. HMB45 is a melanocytic marker that would confirm the diagnosis of melanoma, along with the malignant features seen on H&E. CD45 is a lymphocytic marker. CD45 should be ordered to rule out lymphoma but a negative result would not confirm the diagnosis in this case. melanoma is typically pancytokeratin negative. This would be a good confirmatory stain but would not be diagnostic of melanoma by itself. CDX2 is a common marker for colonic adenocarcinomas. CDX2 should be used to rule out a primary rectal adenocarcinoma that involves the anus but will be negative for any anal malignancies, including melanoma. Anal melanoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusmelanoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CD45",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. HMB45. The H&E image demonstrates anal melanoma. HMB45 is a melanocytic marker that would confirm th...",
+        "order_index": 0
+      },
+      {
+        "text": "CDX2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. HMB45. The H&E image demonstrates anal melanoma. HMB45 is a melanocytic marker that would confirm th...",
+        "order_index": 1
+      },
+      {
+        "text": "HMB45",
+        "is_correct": true,
+        "explanation": "HMB45. The H&E image demonstrates anal melanoma. HMB45 is a melanocytic marker that would confirm the diagnosis of melanoma, along with the malignant features seen on H&E. CD45 is a lymphocytic marker. CD45 should be ordered to rule out lymphoma but a negative result would not confirm the diagnosis in this case. melanoma is typically pancytokeratin negative. This would be a good confirmatory stain but would not be diagnostic of melanoma by itself. CDX2 is a common marker for colonic adenocarcinomas. CDX2 should be used to rule out a primary rectal adenocarcinoma that involves the anus but will be negative for any anal malignancies, including melanoma. Anal melanoma",
+        "order_index": 2
+      },
+      {
+        "text": "Pancytokeratin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. HMB45. The H&E image demonstrates anal melanoma. HMB45 is a melanocytic marker that would confirm th...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anusmelanomaMicroHuber1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "Which of the following characteristics is similar for both cutaneous and anal melanoma?",
+    "difficulty": "medium",
+    "teaching_point": "Staining / IHC. Cutaneous and anal melanoma will stain with similar melanocytic markers (SOX10, S100, HMB45, MelanA, etc.). anal melanoma has a worse prognosis when compared to cutaneous melanoma, especially because patients with anal melanoma often have advanced disease on presentation due to the vague clinical symptoms and difficulty in diagnosis. anal melanoma typically presents with vague symptoms and not the typical ABCDE (asymmetry, border, color, diameter, evolving) criteria for cutaneous melanoma. anal melanoma does not have a standardized pathologic staging system. Anal melanomas can be staged similarly to cutaneous melanoma but this is not universal. Anal melanoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusmelanoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Pathologic staging",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Staining / IHC. Cutaneous and anal melanoma will stain with similar melanocytic markers (SOX10, S100...",
+        "order_index": 0
+      },
+      {
+        "text": "Presentation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Staining / IHC. Cutaneous and anal melanoma will stain with similar melanocytic markers (SOX10, S100...",
+        "order_index": 1
+      },
+      {
+        "text": "Prognosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Staining / IHC. Cutaneous and anal melanoma will stain with similar melanocytic markers (SOX10, S100...",
+        "order_index": 2
+      },
+      {
+        "text": "Staining / IHC",
+        "is_correct": true,
+        "explanation": "Staining / IHC. Cutaneous and anal melanoma will stain with similar melanocytic markers (SOX10, S100, HMB45, MelanA, etc.). anal melanoma has a worse prognosis when compared to cutaneous melanoma, especially because patients with anal melanoma often have advanced disease on presentation due to the vague clinical symptoms and difficulty in diagnosis. anal melanoma typically presents with vague symptoms and not the typical ABCDE (asymmetry, border, color, diameter, evolving) criteria for cutaneous melanoma. anal melanoma does not have a standardized pathologic staging system. Anal melanomas can be staged similarly to cutaneous melanoma but this is not universal. Anal melanoma",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 8",
+    "stem": "A 65 year old man visited his gastroenterologist for anal bleeding. He had experienced intermittent anal bleeding due to longstanding hemorrhoidal disease over the past 10 years. On physical examination, digital examination revealed a medium sized elastic mass with convoluted grooves on a smooth surface in the proximal anus. This lesion was excised and sent to pathology for histological evaluation. The H&E image is shown. Which of the following is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Hypertrophied anal papillae Hypertrophied papillae",
+    "question_references": "https://www.pathologyoutlines.com/topic/anushypertrophiedpapillae.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "External hemorrhoids",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Hypertrophied anal papillae Hypertrophied papillae",
+        "order_index": 0
+      },
+      {
+        "text": "Hypertrophied anal papillae",
+        "is_correct": true,
+        "explanation": "Hypertrophied anal papillae Hypertrophied papillae",
+        "order_index": 1
+      },
+      {
+        "text": "Internal hemorrhoids",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Hypertrophied anal papillae Hypertrophied papillae",
+        "order_index": 2
+      },
+      {
+        "text": "Prolapsed associated inflammatory polyp",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Hypertrophied anal papillae Hypertrophied papillae",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anushypertrophiedpapillaeliu005.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 9",
+    "stem": "Which underlying condition(s) is associated with hypertrophied anal papillae?",
+    "difficulty": "medium",
+    "teaching_point": "Chronic fistula Hypertrophied papillae",
+    "question_references": "https://www.pathologyoutlines.com/topic/anushypertrophiedpapillae.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chronic fistula",
+        "is_correct": true,
+        "explanation": "Chronic fistula Hypertrophied papillae",
+        "order_index": 0
+      },
+      {
+        "text": "Degenerative change of perianal structure",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic fistula Hypertrophied papillae",
+        "order_index": 1
+      },
+      {
+        "text": "Elevated intra-abdominal pressure",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic fistula Hypertrophied papillae",
+        "order_index": 2
+      },
+      {
+        "text": "HPV infection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic fistula Hypertrophied papillae",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 10",
+    "stem": "A 50 year old HIV positive man is found to have a papillary perianal growth. The H&E section above demonstrates papillary squamous epithelium with koilocytic change in the upper third of the squamous epithelium, without cytologic atypia. p16 immunohistochemical stain is also shown. Which of the following HPV serotypes are associated with this lesion?",
+    "difficulty": "medium",
+    "teaching_point": "HPV 6 and 11 Condyloma acuminatum",
+    "question_references": "https://www.pathologyoutlines.com/topic/anuscondyloma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "HPV 6 and 11",
+        "is_correct": true,
+        "explanation": "HPV 6 and 11 Condyloma acuminatum",
+        "order_index": 0
+      },
+      {
+        "text": "HPV 16 and 18",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. HPV 6 and 11 Condyloma acuminatum",
+        "order_index": 1
+      },
+      {
+        "text": "HPV 31, 33 and 35",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. HPV 6 and 11 Condyloma acuminatum",
+        "order_index": 2
+      },
+      {
+        "text": "HPV 45",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. HPV 6 and 11 Condyloma acuminatum",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anuscondylomamicroForgo04.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anuscondylomamicroForgo05.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 11",
+    "stem": "According to the Lower Anogenital Squamous Terminology (LAST) project, what is the appropriate terminology for anal condyloma acuminatum?",
+    "difficulty": "medium",
+    "teaching_point": "LSIL (condyloma acuminatum) Condyloma acuminatum",
+    "question_references": "https://www.pathologyoutlines.com/topic/anuscondyloma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "AIN 1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. LSIL (condyloma acuminatum) Condyloma acuminatum",
+        "order_index": 0
+      },
+      {
+        "text": "ASIN-L",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. LSIL (condyloma acuminatum) Condyloma acuminatum",
+        "order_index": 1
+      },
+      {
+        "text": "Condyloma acuminatum",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. LSIL (condyloma acuminatum) Condyloma acuminatum",
+        "order_index": 2
+      },
+      {
+        "text": "LSIL",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. LSIL (condyloma acuminatum) Condyloma acuminatum",
+        "order_index": 3
+      },
+      {
+        "text": "LSIL (condyloma acuminatum)",
+        "is_correct": true,
+        "explanation": "LSIL (condyloma acuminatum) Condyloma acuminatum",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 12",
+    "stem": "Which of the following is true about perianal basal cell carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": ". It histologically resembles basal cell carcinoma at other sites Basal cell carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusbasalcell.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It accounts for 10% of basal cell carcinomas overall",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . It histologically resembles basal cell carcinoma at other sites Basal cell carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "It can also arise within the anus",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . It histologically resembles basal cell carcinoma at other sites Basal cell carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "It histologically resembles basal cell carcinoma at other sites",
+        "is_correct": true,
+        "explanation": ". It histologically resembles basal cell carcinoma at other sites Basal cell carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "It is negative for BerEP4 and BCL2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . It histologically resembles basal cell carcinoma at other sites Basal cell carcinoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anusbasalcellcarcinomagonzalez01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 13",
+    "stem": "A 54 year old woman presented with rectal fullness and was found to have a cystic tumor in the retrorectal space on pelvic magnetic resonance imaging (MRI). The lesion was surgically resected and is shown above. Which of the following, if found on histologic examination, would be most suggestive of a tailgut cyst?",
+    "difficulty": "medium",
+    "teaching_point": "Fibroconnective tissue cyst wall containing disorganized smooth muscle bundles is characteristic of tailgut cysts. an associated well developed smooth muscle layer that is muscularis propria-like and often with nerve plexi is seen in rectal duplication cysts. a cyst lining comprised of attenuated arachnoid cells is featured in anterior sacral meningoceles. keratinizing stratified squamous epithelial lining with associated skin adnexal structures is seen in dermoid cysts. physaliphorous cells showing immunoreactivity for brachyury is found in cystic sacrococcygeal chordomas. Tailgut cyst",
+    "question_references": "https://www.pathologyoutlines.com/topic/anustailgutcyst.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cyst lining comprised of attenuated arachnoid cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Fibroconnective tissue cyst wall containing disorganized smooth muscle bundles is characteristic of ...",
+        "order_index": 0
+      },
+      {
+        "text": "Cyst lining of rectal mucosa with associated well developed smooth muscle layer within the cyst wall",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Fibroconnective tissue cyst wall containing disorganized smooth muscle bundles is characteristic of ...",
+        "order_index": 1
+      },
+      {
+        "text": "Fibroconnective tissue containing disorganized smooth muscle bundles within the cyst wall",
+        "is_correct": true,
+        "explanation": "Fibroconnective tissue cyst wall containing disorganized smooth muscle bundles is characteristic of tailgut cysts. an associated well developed smooth muscle layer that is muscularis propria-like and often with nerve plexi is seen in rectal duplication cysts. a cyst lining comprised of attenuated arachnoid cells is featured in anterior sacral meningoceles. keratinizing stratified squamous epithelial lining with associated skin adnexal structures is seen in dermoid cysts. physaliphorous cells showing immunoreactivity for brachyury is found in cystic sacrococcygeal chordomas. Tailgut cyst",
+        "order_index": 2
+      },
+      {
+        "text": "Keratinizing stratified squamous epithelial lining with associated skin adnexal structures",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Fibroconnective tissue cyst wall containing disorganized smooth muscle bundles is characteristic of ...",
+        "order_index": 3
+      },
+      {
+        "text": "Physaliphorous cells showing immunoreactivity for brachyury",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Fibroconnective tissue cyst wall containing disorganized smooth muscle bundles is characteristic of ...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/thumb/anustailgutcystGross2.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 14",
+    "stem": "A 59 year old woman presented with constipation and was found to have a cystic tumor in the presacral space. The lesion was surgically resected and submitted for histopathological evaluation. A diagnosis of tailgut cyst was rendered. Which of the following is true regarding the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "The prognosis of tailgut cysts depends upon the presence or absence of malignant transformation. It is reported that up to ~25% of tailgut cysts show malignant transformation, most commonly as adenocarcinoma or well differentiated neuroendocrine tumors, although squamous cell carcinoma, adenosquamous carcinoma, transitional cell carcinoma and sarcoma have also been reported. fine needle biopsy is not recommended prior to surgical excision due to risk of infection or seeding of tumor cells. squamous cell carcinoma arising in association with tailgut cyst is extremely rare and limited to case reports. tailgut cysts are typically multilocular (~80%). tailgut cysts show disorganized / irregular smooth muscle bundles without nerve plexi within the cyst wall, as opposed to rectal duplication cysts, which show a well developed smooth muscle layer (muscularis propria-like) with nerve plexi. Tailgut cyst",
+    "question_references": "https://www.pathologyoutlines.com/topic/anustailgutcyst.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Fine needle biopsy is recommended prior to surgical excision",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. The prognosis of tailgut cysts depends upon the presence or absence of malignant transformation. It ...",
+        "order_index": 0
+      },
+      {
+        "text": "Prognosis depends upon the presence or absence of malignant transformation",
+        "is_correct": true,
+        "explanation": "The prognosis of tailgut cysts depends upon the presence or absence of malignant transformation. It is reported that up to ~25% of tailgut cysts show malignant transformation, most commonly as adenocarcinoma or well differentiated neuroendocrine tumors, although squamous cell carcinoma, adenosquamous carcinoma, transitional cell carcinoma and sarcoma have also been reported. fine needle biopsy is not recommended prior to surgical excision due to risk of infection or seeding of tumor cells. squamous cell carcinoma arising in association with tailgut cyst is extremely rare and limited to case reports. tailgut cysts are typically multilocular (~80%). tailgut cysts show disorganized / irregular smooth muscle bundles without nerve plexi within the cyst wall, as opposed to rectal duplication cysts, which show a well developed smooth muscle layer (muscularis propria-like) with nerve plexi. Tailgut cyst",
+        "order_index": 1
+      },
+      {
+        "text": "Squamous cell carcinoma is invariably present on microscopic examination when the lesion is completely submitted for histopathological evaluation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. The prognosis of tailgut cysts depends upon the presence or absence of malignant transformation. It ...",
+        "order_index": 2
+      },
+      {
+        "text": "Tends to be unilocular",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. The prognosis of tailgut cysts depends upon the presence or absence of malignant transformation. It ...",
+        "order_index": 3
+      },
+      {
+        "text": "The cyst wall usually contains a well developed smooth muscle layer with nerve plexi",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. The prognosis of tailgut cysts depends upon the presence or absence of malignant transformation. It ...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 15",
+    "stem": "Which of the following is true about the anal lesion shown in the image above?",
+    "difficulty": "medium",
+    "teaching_point": ". Anal Paget disease is positive for CK7 and mucicarmine. It is often but not always secondary, occurring alongside an invasive malignancy. It arises equally in men and women. Treatment related reactive changes may mimic Paget disease. Anus & perianal area - Paget disease",
+    "question_references": "https://www.pathologyoutlines.com/topic/anuspagets.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It always occurs alongside adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Anal Paget disease is positive for CK7 and mucicarmine. It is often but not always secondary, occu...",
+        "order_index": 0
+      },
+      {
+        "text": "It arises secondary to treatment for malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Anal Paget disease is positive for CK7 and mucicarmine. It is often but not always secondary, occu...",
+        "order_index": 1
+      },
+      {
+        "text": "It is positive for CK7 and mucicarmine",
+        "is_correct": true,
+        "explanation": ". Anal Paget disease is positive for CK7 and mucicarmine. It is often but not always secondary, occurring alongside an invasive malignancy. It arises equally in men and women. Treatment related reactive changes may mimic Paget disease. Anus & perianal area - Paget disease",
+        "order_index": 2
+      },
+      {
+        "text": "It only occurs in men",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Anal Paget disease is positive for CK7 and mucicarmine. It is often but not always secondary, occu...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anuspagetsgonzalez01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 16",
+    "stem": "What is the typical behavior of anal Paget disease?",
+    "difficulty": "medium",
+    "teaching_point": ". Anal Paget disease is generally indolent but may recur. Fewer than half of anal Paget disease cases are associated with invasive malignancy. It does not itself metastasize but it does not spontaneously regress either. Anus & perianal area - Paget disease",
+    "question_references": "https://www.pathologyoutlines.com/topic/anuspagets.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It can metastasize even in the absence of adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Anal Paget disease is generally indolent but may recur. Fewer than half of anal Paget disease case...",
+        "order_index": 0
+      },
+      {
+        "text": "It is generally indolent but may recur",
+        "is_correct": true,
+        "explanation": ". Anal Paget disease is generally indolent but may recur. Fewer than half of anal Paget disease cases are associated with invasive malignancy. It does not itself metastasize but it does not spontaneously regress either. Anus & perianal area - Paget disease",
+        "order_index": 1
+      },
+      {
+        "text": "It spontaneously regresses",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Anal Paget disease is generally indolent but may recur. Fewer than half of anal Paget disease case...",
+        "order_index": 2
+      },
+      {
+        "text": "It will always progress to invasive adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Anal Paget disease is generally indolent but may recur. Fewer than half of anal Paget disease case...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 17",
+    "stem": "This primary anal lesion is positive for pankeratin. What other stain would be expected to be positive?",
+    "difficulty": "medium",
+    "teaching_point": ". Synaptophysin. Anal small cell carcinoma, like all neuroendocrine carcinomas, is positive for synaptophysin. CD45 is positive in hematolymphoid neoplasms, CDX2 is positive in glandular rectal lesions and napsin A is positive in lung adenocarcinoma. Anus & perianal area - Neuroendocrine carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/anussmallcell.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CD45",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Synaptophysin. Anal small cell carcinoma, like all neuroendocrine carcinomas, is positive for syna...",
+        "order_index": 0
+      },
+      {
+        "text": "CDX2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Synaptophysin. Anal small cell carcinoma, like all neuroendocrine carcinomas, is positive for syna...",
+        "order_index": 1
+      },
+      {
+        "text": "Napsin A",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Synaptophysin. Anal small cell carcinoma, like all neuroendocrine carcinomas, is positive for syna...",
+        "order_index": 2
+      },
+      {
+        "text": "Synaptophysin",
+        "is_correct": true,
+        "explanation": ". Synaptophysin. Anal small cell carcinoma, like all neuroendocrine carcinomas, is positive for synaptophysin. CD45 is positive in hematolymphoid neoplasms, CDX2 is positive in glandular rectal lesions and napsin A is positive in lung adenocarcinoma. Anus & perianal area - Neuroendocrine carcinoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anussmallcellmicro02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 18",
+    "stem": "Which of the following is true about neuroendocrine carcinoma of the anus?",
+    "difficulty": "medium",
+    "teaching_point": ". It is associated with HPV infection. High risk HPV is usually detectable in anal neuroendocrine carcinoma, though at low copy numbers. This malignancy is rare and aggressive. Morphologically, it is indistinguishable from neuroendocrine carcinoma arising at other sites. Anus & perianal area - Neuroendocrine carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/anussmallcell.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It has a good prognosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . It is associated with HPV infection. High risk HPV is usually detectable in anal neuroendocrine ca...",
+        "order_index": 0
+      },
+      {
+        "text": "It is associated with HPV infection",
+        "is_correct": true,
+        "explanation": ". It is associated with HPV infection. High risk HPV is usually detectable in anal neuroendocrine carcinoma, though at low copy numbers. This malignancy is rare and aggressive. Morphologically, it is indistinguishable from neuroendocrine carcinoma arising at other sites. Anus & perianal area - Neuroendocrine carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "It is the most common anal malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . It is associated with HPV infection. High risk HPV is usually detectable in anal neuroendocrine ca...",
+        "order_index": 2
+      },
+      {
+        "text": "It shows morphologic features unique to this site",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . It is associated with HPV infection. High risk HPV is usually detectable in anal neuroendocrine ca...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 19",
+    "stem": "Which of the following is true about primary anal adenocarcinomas as a whole?",
+    "difficulty": "medium",
+    "teaching_point": ". They can arise in a fistula tract. This may occur in patients with Crohn's disease. Crohn's disease can lead to the development of chronic anal fistulas, which can eventually become malignant and develop into anal adenocarcinoma. advanced stage indicates a poor prognosis. anal adenocarcinoma is more common in men. anal adenocarcinomas are rare and secondary anal involvement by rectal carcinoma is more common. Anal adenocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusadenocarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Advanced stage cases paradoxically have a better prognosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . They can arise in a fistula tract. This may occur in patients with Crohn's disease. Crohn's diseas...",
+        "order_index": 0
+      },
+      {
+        "text": "They are more common in women",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . They can arise in a fistula tract. This may occur in patients with Crohn's disease. Crohn's diseas...",
+        "order_index": 1
+      },
+      {
+        "text": "They are more common than secondary involvement by rectal carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . They can arise in a fistula tract. This may occur in patients with Crohn's disease. Crohn's diseas...",
+        "order_index": 2
+      },
+      {
+        "text": "They can arise in a fistula tract",
+        "is_correct": true,
+        "explanation": ". They can arise in a fistula tract. This may occur in patients with Crohn's disease. Crohn's disease can lead to the development of chronic anal fistulas, which can eventually become malignant and develop into anal adenocarcinoma. advanced stage indicates a poor prognosis. anal adenocarcinoma is more common in men. anal adenocarcinomas are rare and secondary anal involvement by rectal carcinoma is more common. Anal adenocarcinoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anusadenocarcinomagonzalez01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 20",
+    "stem": "Extramucosal anal gland adenocarcinoma is usually positive for which of the following immunohistochemical stains?",
+    "difficulty": "medium",
+    "teaching_point": ". CK7. Anal gland adenocarcinomas are often positive for CK7, supporting the diagnosis. Answers A and C are incorrect because anal gland adenocarcinomas are generally negative for CDX2 and CK20, unlike mucosal anal adenocarcinomas and fistula associated anal adenocarcinomas. anal gland adenocarcinoma is not often positive for p16; however, some mucosal based anal adenocarcinomas are strongly positive for p16 and also positive for HPV. Anal adenocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusadenocarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CDX2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . CK7. Anal gland adenocarcinomas are often positive for CK7, supporting the diagnosis. Answers A an...",
+        "order_index": 0
+      },
+      {
+        "text": "CK7",
+        "is_correct": true,
+        "explanation": ". CK7. Anal gland adenocarcinomas are often positive for CK7, supporting the diagnosis. Answers A and C are incorrect because anal gland adenocarcinomas are generally negative for CDX2 and CK20, unlike mucosal anal adenocarcinomas and fistula associated anal adenocarcinomas. anal gland adenocarcinoma is not often positive for p16; however, some mucosal based anal adenocarcinomas are strongly positive for p16 and also positive for HPV. Anal adenocarcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "CK20",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . CK7. Anal gland adenocarcinomas are often positive for CK7, supporting the diagnosis. Answers A an...",
+        "order_index": 2
+      },
+      {
+        "text": "p16",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . CK7. Anal gland adenocarcinomas are often positive for CK7, supporting the diagnosis. Answers A an...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 21",
+    "stem": "An anal lesion is excised from a 33 year old woman (see image above). No area of invasion is identified on histologic examination. Which of the following statements is true?",
+    "difficulty": "medium",
+    "teaching_point": "Immunocompromised patients (particularly those HIV+) are at increased risk and present at a younger age. those lesions often recur after excision. this is high grade dysplasia and is often associated with HPV 16 and 19. p16 is often diffuse in high grade lesions. Squamous dysplasia",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusdysplasia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Immunocompromised patients are at increased risk and present at a younger age",
+        "is_correct": true,
+        "explanation": "Immunocompromised patients (particularly those HIV+) are at increased risk and present at a younger age. those lesions often recur after excision. this is high grade dysplasia and is often associated with HPV 16 and 19. p16 is often diffuse in high grade lesions. Squamous dysplasia",
+        "order_index": 0
+      },
+      {
+        "text": "Most cases are incidental findings in asymptomatic patients and do not recur after excision",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Immunocompromised patients (particularly those HIV+) are at increased risk and present at a younger ...",
+        "order_index": 1
+      },
+      {
+        "text": "Often associated with human papillomavirus genotype 6 and 11",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Immunocompromised patients (particularly those HIV+) are at increased risk and present at a younger ...",
+        "order_index": 2
+      },
+      {
+        "text": "p16 is often patchy in high grade lesions",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Immunocompromised patients (particularly those HIV+) are at increased risk and present at a younger ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anusdysplasiaMicroLiao8.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 22",
+    "stem": "Regarding human papillomavirus (HPV), which of the following is correct?",
+    "difficulty": "medium",
+    "teaching_point": "Low risk HPVs can be associated with high grade lesions. While low risk HPVs are generally associated with low grade lesions and high risk HPVs with high grade dysplasia, in recent years there are more and more cases of low risk HPVs giving rise to high grade lesions. diffuse p16 immunostaining positivity is a surrogate marker for high risk HPV infection. all HPVs are double stranded DNA viruses and some can insert into the human genome. the HPV virus can rarely infect glandular epithelium as well. Squamous dysplasia",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusdysplasia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Diffuse p16 immunostaining positivity is a surrogate marker for both low and high risk HPV infection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Low risk HPVs can be associated with high grade lesions. While low risk HPVs are generally associate...",
+        "order_index": 0
+      },
+      {
+        "text": "Low risk HPVs can be associated with high grade lesions",
+        "is_correct": true,
+        "explanation": "Low risk HPVs can be associated with high grade lesions. While low risk HPVs are generally associated with low grade lesions and high risk HPVs with high grade dysplasia, in recent years there are more and more cases of low risk HPVs giving rise to high grade lesions. diffuse p16 immunostaining positivity is a surrogate marker for high risk HPV infection. all HPVs are double stranded DNA viruses and some can insert into the human genome. the HPV virus can rarely infect glandular epithelium as well. Squamous dysplasia",
+        "order_index": 1
+      },
+      {
+        "text": "It is a single stranded RNA virus that does not insert into the human genome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Low risk HPVs can be associated with high grade lesions. While low risk HPVs are generally associate...",
+        "order_index": 2
+      },
+      {
+        "text": "It only infects the squamous epithelium",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Low risk HPVs can be associated with high grade lesions. While low risk HPVs are generally associate...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 23",
+    "stem": "Which of the following statements is true about anal squamous cell carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": "Patients with HIV have a worse prognosis. Poor prognostic factors in anal squamous cell carcinoma include older age, male sex and HIV positivity. Cases above the dentate line are more common in older women and cases below the dentate line are more common in younger men. Most cases are squamous cell carcinoma, NOS; basaloid examples are uncommon. Squamous cell carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusscc.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cases above the dentate line are more common in men",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Patients with HIV have a worse prognosis. Poor prognostic factors in anal squamous cell carcinoma in...",
+        "order_index": 0
+      },
+      {
+        "text": "Cases below the dentate line are more common in elderly patients",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Patients with HIV have a worse prognosis. Poor prognostic factors in anal squamous cell carcinoma in...",
+        "order_index": 1
+      },
+      {
+        "text": "Patients with HIV have a worse prognosis",
+        "is_correct": true,
+        "explanation": "Patients with HIV have a worse prognosis. Poor prognostic factors in anal squamous cell carcinoma include older age, male sex and HIV positivity. Cases above the dentate line are more common in older women and cases below the dentate line are more common in younger men. Most cases are squamous cell carcinoma, NOS; basaloid examples are uncommon. Squamous cell carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Vast majority are purely basaloid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Patients with HIV have a worse prognosis. Poor prognostic factors in anal squamous cell carcinoma in...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anussccmicro01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 24",
+    "stem": "Which of the following etiologic subtypes of anal squamous cell carcinoma has the worst prognosis?",
+    "difficulty": "medium",
+    "teaching_point": "HPV negative, p53 aberrant staining. Patients with this subtype have the worst prognosis. HPV positive cancers with p53 wild type staining confer the best prognosis and the other choices have an intermediate prognosis. Squamous cell carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusscc.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "HPV negative, p53 aberrant staining",
+        "is_correct": true,
+        "explanation": "HPV negative, p53 aberrant staining. Patients with this subtype have the worst prognosis. HPV positive cancers with p53 wild type staining confer the best prognosis and the other choices have an intermediate prognosis. Squamous cell carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "HPV negative, p53 wild type staining",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. HPV negative, p53 aberrant staining. Patients with this subtype have the worst prognosis. HPV positi...",
+        "order_index": 1
+      },
+      {
+        "text": "HPV positive, p53 aberrant staining",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. HPV negative, p53 aberrant staining. Patients with this subtype have the worst prognosis. HPV positi...",
+        "order_index": 2
+      },
+      {
+        "text": "HPV positive, p53 wild type staining",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. HPV negative, p53 aberrant staining. Patients with this subtype have the worst prognosis. HPV positi...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 25",
+    "stem": "Where is the lesion shown in the above image located?",
+    "difficulty": "medium",
+    "teaching_point": ". Inflammatory cloacogenic polyp is located in the anorectal transition zone. Inflammatory cloacogenic polyp",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusinflamcloaco.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Anorectal transition zone",
+        "is_correct": true,
+        "explanation": ". Inflammatory cloacogenic polyp is located in the anorectal transition zone. Inflammatory cloacogenic polyp",
+        "order_index": 0
+      },
+      {
+        "text": "Ascending colon",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Inflammatory cloacogenic polyp is located in the anorectal transition zone. Inflammatory cloacogen...",
+        "order_index": 1
+      },
+      {
+        "text": "Duodenum",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Inflammatory cloacogenic polyp is located in the anorectal transition zone. Inflammatory cloacogen...",
+        "order_index": 2
+      },
+      {
+        "text": "Rectum",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Inflammatory cloacogenic polyp is located in the anorectal transition zone. Inflammatory cloacogen...",
+        "order_index": 3
+      },
+      {
+        "text": "Stomach",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Inflammatory cloacogenic polyp is located in the anorectal transition zone. Inflammatory cloacogen...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anusinflamcloacoKhorsandiWen01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Inflammatory cloacogenic polyp",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 26",
+    "stem": "What is the preferred treatment for an inflammatory cloacogenic polyp?",
+    "difficulty": "medium",
+    "teaching_point": ". Endoscopic / surgical resection is the preferred treatment for an inflammatory cloacogenic polyp. Routine endoscopic surveillance is necessary after resection because of the risk of recurrence but it is not the treatment modality. Inflammatory cloacogenic polyp",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusinflamcloaco.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chemotherapy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Endoscopic / surgical resection is the preferred treatment for an inflammatory cloacogenic polyp. ...",
+        "order_index": 0
+      },
+      {
+        "text": "Colectomy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Endoscopic / surgical resection is the preferred treatment for an inflammatory cloacogenic polyp. ...",
+        "order_index": 1
+      },
+      {
+        "text": "Endoscopic / surgical resection",
+        "is_correct": true,
+        "explanation": ". Endoscopic / surgical resection is the preferred treatment for an inflammatory cloacogenic polyp. Routine endoscopic surveillance is necessary after resection because of the risk of recurrence but it is not the treatment modality. Inflammatory cloacogenic polyp",
+        "order_index": 2
+      },
+      {
+        "text": "Fecal immunohistochemical test",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Endoscopic / surgical resection is the preferred treatment for an inflammatory cloacogenic polyp. ...",
+        "order_index": 3
+      },
+      {
+        "text": "Routine endoscopic surveillance",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Endoscopic / surgical resection is the preferred treatment for an inflammatory cloacogenic polyp. ...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 27",
+    "stem": "A 56 year old woman came to the clinic complaining of a lump protruding from her anal opening. It was initially reducible but it is now irreducible. There is associated pain and itching. She also noticed bright red blood on her stool when she defecates. There is an associated history of chronic constipation. Examination of the perianal area revealed skin tags and a tender perianal mass covered with mucosa. Inspection of the anal mucosa showed no fissure. Histologic examination of the perianal mass revealed the image above. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Fourth degree internal hemorrhoid. The image shows thin walled dilated blood vessels with overlying glandular mucosa. external hemorrhoids are covered with squamous mucosa. third degree hemorrhoids are reducible with manual replacement. proctitis does not protrude from the anal opening. Hemorrhoids",
+    "question_references": "https://www.pathologyoutlines.com/topic/anushemorrhoids.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "External hemorrhoid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Fourth degree internal hemorrhoid. The image shows thin walled dilated blood vessels with overlying ...",
+        "order_index": 0
+      },
+      {
+        "text": "Fourth degree internal hemorrhoid",
+        "is_correct": true,
+        "explanation": "Fourth degree internal hemorrhoid. The image shows thin walled dilated blood vessels with overlying glandular mucosa. external hemorrhoids are covered with squamous mucosa. third degree hemorrhoids are reducible with manual replacement. proctitis does not protrude from the anal opening. Hemorrhoids",
+        "order_index": 1
+      },
+      {
+        "text": "Proctitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Fourth degree internal hemorrhoid. The image shows thin walled dilated blood vessels with overlying ...",
+        "order_index": 2
+      },
+      {
+        "text": "Third degree internal hemorrhoid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Fourth degree internal hemorrhoid. The image shows thin walled dilated blood vessels with overlying ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anushemorrhoidsMueller01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 28",
+    "stem": "Which of the following is most accurate about the etiology and epidemiology of hemorrhoids?",
+    "difficulty": "medium",
+    "teaching_point": "Recognized risk factors associated with the development of hemorrhoids include lack of fiber rich diet, prolonged sitting and pelvic tumors. hemorrhoids have no known sex predilection, although men are more likely to seek treatment. internal hemorrhoids cannot cause cutaneous pain since they are above the dentate line and are not innervated by cutaneous nerves. pregnancy is a known risk factor to develop hemorrhoids. Hemorrhoids",
+    "question_references": "https://www.pathologyoutlines.com/topic/anushemorrhoids.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Hemorrhoids have a male to female predilection of nearly 4:1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Recognized risk factors associated with the development of hemorrhoids include lack of fiber rich di...",
+        "order_index": 0
+      },
+      {
+        "text": "Internal hemorrhoids often cause cutaneous pain because they are innervated by cutaneous nerves",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Recognized risk factors associated with the development of hemorrhoids include lack of fiber rich di...",
+        "order_index": 1
+      },
+      {
+        "text": "Pregnancy is not a risk factor to develop hemorrhoids",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Recognized risk factors associated with the development of hemorrhoids include lack of fiber rich di...",
+        "order_index": 2
+      },
+      {
+        "text": "Recognized risk factors associated with the development of hemorrhoids include lack of fiber rich diet, prolonged sitting and pelvic tumors",
+        "is_correct": true,
+        "explanation": "Recognized risk factors associated with the development of hemorrhoids include lack of fiber rich diet, prolonged sitting and pelvic tumors. hemorrhoids have no known sex predilection, although men are more likely to seek treatment. internal hemorrhoids cannot cause cutaneous pain since they are above the dentate line and are not innervated by cutaneous nerves. pregnancy is a known risk factor to develop hemorrhoids. Hemorrhoids",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 29",
+    "stem": "What is the term for this epithelialized connection between the anal canal and perianal skin seen in the photo?",
+    "difficulty": "medium",
+    "teaching_point": "Anal fistula. An anal fistula is an epithelialized connection between the anal canal and perianal skin. Fistula",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusanalfistula.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Anal fistula",
+        "is_correct": true,
+        "explanation": "Anal fistula. An anal fistula is an epithelialized connection between the anal canal and perianal skin. Fistula",
+        "order_index": 0
+      },
+      {
+        "text": "Hidradenitis suppurativa",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Anal fistula. An anal fistula is an epithelialized connection between the anal canal and perianal sk...",
+        "order_index": 1
+      },
+      {
+        "text": "Infected pilonidal cyst",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Anal fistula. An anal fistula is an epithelialized connection between the anal canal and perianal sk...",
+        "order_index": 2
+      },
+      {
+        "text": "Subcutaneous abscess",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Anal fistula. An anal fistula is an epithelialized connection between the anal canal and perianal sk...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anusanalfistulaAkarcaWen06.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 30",
+    "stem": "What is the most common cause of anal fistula?",
+    "difficulty": "medium",
+    "teaching_point": "Idiopathic. The most common etiology of anal fistulas is idiopathic. Less common causes include inflammatory bowel disease, infections, radiation and trauma, among others. Fistula",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusanalfistula.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Idiopathic. The most common etiology of anal fistulas is idiopathic. Less common causes include infl...",
+        "order_index": 0
+      },
+      {
+        "text": "Fungal infection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Idiopathic. The most common etiology of anal fistulas is idiopathic. Less common causes include infl...",
+        "order_index": 1
+      },
+      {
+        "text": "Idiopathic",
+        "is_correct": true,
+        "explanation": "Idiopathic. The most common etiology of anal fistulas is idiopathic. Less common causes include inflammatory bowel disease, infections, radiation and trauma, among others. Fistula",
+        "order_index": 2
+      },
+      {
+        "text": "Pelvic radiation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Idiopathic. The most common etiology of anal fistulas is idiopathic. Less common causes include infl...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 31",
+    "stem": "What is the most common primary tumor of the anus?",
+    "difficulty": "medium",
+    "teaching_point": ". Squamous cell carcinoma is the most common primary tumor of the anus. Answers A and C are incorrect because they are rare forms of anal malignancy. basal cell carcinoma arises in perianal skin, not the anal canal. Carcinoma overview",
+    "question_references": "https://www.pathologyoutlines.com/topic/anuscarcinomageneral.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Squamous cell carcinoma is the most common primary tumor of the anus. Answers A and C are incorrec...",
+        "order_index": 0
+      },
+      {
+        "text": "Basal cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Squamous cell carcinoma is the most common primary tumor of the anus. Answers A and C are incorrec...",
+        "order_index": 1
+      },
+      {
+        "text": "Neuroendocrine carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Squamous cell carcinoma is the most common primary tumor of the anus. Answers A and C are incorrec...",
+        "order_index": 2
+      },
+      {
+        "text": "Squamous cell carcinoma",
+        "is_correct": true,
+        "explanation": ". Squamous cell carcinoma is the most common primary tumor of the anus. Answers A and C are incorrect because they are rare forms of anal malignancy. basal cell carcinoma arises in perianal skin, not the anal canal. Carcinoma overview",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 32",
+    "stem": "What screening method can be used for patients at high risk of anal carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": ". Annual anal Pap smear can be used to screen patients at high risk for anal malignancy. Answers B, C and D are incorrect because these modalities are not used to screen this patient population. Carcinoma overview",
+    "question_references": "https://www.pathologyoutlines.com/topic/anuscarcinomageneral.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Annual anal Pap smear",
+        "is_correct": true,
+        "explanation": ". Annual anal Pap smear can be used to screen patients at high risk for anal malignancy. Answers B, C and D are incorrect because these modalities are not used to screen this patient population. Carcinoma overview",
+        "order_index": 0
+      },
+      {
+        "text": "Annual colonoscopy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Annual anal Pap smear can be used to screen patients at high risk for anal malignancy. Answers B, ...",
+        "order_index": 1
+      },
+      {
+        "text": "Annual computed tomography (CT) scan",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Annual anal Pap smear can be used to screen patients at high risk for anal malignancy. Answers B, ...",
+        "order_index": 2
+      },
+      {
+        "text": "Annual magnetic resonance imaging (MRI) scan",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Annual anal Pap smear can be used to screen patients at high risk for anal malignancy. Answers B, ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 33",
+    "stem": "Which of the following features best distinguishes Buschke-Löwenstein tumor from verrucous squamous carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": ". HPV ISH positivity. Buschke-Löwenstein tumor is an HPV related neoplasm whereas verrucous carcinoma is not, so HPV ISH staining (positive) would be expected with Buschke-Löwenstein tumor but not with verrucous carcinoma. Buschke-Löwenstein tumor is most often due to a low risk HPV type, such as HPV 6 or 11. Invasive or displacing type growth can be seen in either lesion. Buschke-Löwenstein tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusbuschkelowenstein.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "HPV ISH positivity",
+        "is_correct": true,
+        "explanation": ". HPV ISH positivity. Buschke-Löwenstein tumor is an HPV related neoplasm whereas verrucous carcinoma is not, so HPV ISH staining (positive) would be expected with Buschke-Löwenstein tumor but not with verrucous carcinoma. Buschke-Löwenstein tumor is most often due to a low risk HPV type, such as HPV 6 or 11. Invasive or displacing type growth can be seen in either lesion. Buschke-Löwenstein tumor",
+        "order_index": 0
+      },
+      {
+        "text": "p53 immunostatus",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . HPV ISH positivity. Buschke-Löwenstein tumor is an HPV related neoplasm whereas verrucous carcinom...",
+        "order_index": 1
+      },
+      {
+        "text": "Patient age less than 50 years",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . HPV ISH positivity. Buschke-Löwenstein tumor is an HPV related neoplasm whereas verrucous carcinom...",
+        "order_index": 2
+      },
+      {
+        "text": "Pushing invasion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . HPV ISH positivity. Buschke-Löwenstein tumor is an HPV related neoplasm whereas verrucous carcinom...",
+        "order_index": 3
+      },
+      {
+        "text": "Size greater than 5 cm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . HPV ISH positivity. Buschke-Löwenstein tumor is an HPV related neoplasm whereas verrucous carcinom...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 34",
+    "stem": "Lymphadenopathy seen in conjunction with a bulky anovaginal tumor characterized by parakeratosis, superficial koilocytosis, HPV ISH positivity and minimal squamous atypia as seen in this image is most likely due to",
+    "difficulty": "medium",
+    "teaching_point": ". Reactive lymphadenopathy related to tumor associated infection. Buschke-Löwenstein tumor is frequently associated with fistulae and perirectal or peritumoral abscess formation, which can lead to regional lymphadenopathy. Metastasis is very uncommon. While immunocompromise may predispose to development of Buschke-Löwenstein tumor, the cause is infrequently due to a lymphoproliferative disorder that would enlarge the lymph nodes. Netherton syndrome is not primarily associated with adenopathy. Buschke-Löwenstein tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusbuschkelowenstein.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Associated lymphoma or other immune deficiency inducing state",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Reactive lymphadenopathy related to tumor associated infection. Buschke-Löwenstein tumor is freque...",
+        "order_index": 0
+      },
+      {
+        "text": "Fatty infiltration of the lymph nodes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Reactive lymphadenopathy related to tumor associated infection. Buschke-Löwenstein tumor is freque...",
+        "order_index": 1
+      },
+      {
+        "text": "Metastasis from a well differentiated invasive component of the tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Reactive lymphadenopathy related to tumor associated infection. Buschke-Löwenstein tumor is freque...",
+        "order_index": 2
+      },
+      {
+        "text": "Netherton syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Reactive lymphadenopathy related to tumor associated infection. Buschke-Löwenstein tumor is freque...",
+        "order_index": 3
+      },
+      {
+        "text": "Reactive lymphadenopathy related to tumor associated infection",
+        "is_correct": true,
+        "explanation": ". Reactive lymphadenopathy related to tumor associated infection. Buschke-Löwenstein tumor is frequently associated with fistulae and perirectal or peritumoral abscess formation, which can lead to regional lymphadenopathy. Metastasis is very uncommon. While immunocompromise may predispose to development of Buschke-Löwenstein tumor, the cause is infrequently due to a lymphoproliferative disorder that would enlarge the lymph nodes. Netherton syndrome is not primarily associated with adenopathy. Buschke-Löwenstein tumor",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anusbuschkelowenstein_rosai02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 35",
+    "stem": "Which of the following immunohistochemical markers are commonly positive in apocrine carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": "GCDFP-15, androgen receptor, CK7. Apocrine carcinoma typically expresses GCDFP-15, AR and CK7. these markers are associated with gastrointestinal adenocarcinomas, not apocrine carcinomas. CDX2 and CK20 are specific to intestinal differentiation, which is not a feature of apocrine tumors. while CK7 is positive in apocrine carcinoma, CK19 is not specific to apocrine differentiation and CDX2 indicates intestinal origin. while GCDFP-15 is typically positive in apocrine carcinoma, ER and PR would likely be negative, differentiating apocrine carcinomas from other hormone sensitive carcinomas, such as breast cancer. Apocrine carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusapocrinecarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CDX2, CK20, EMA",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. GCDFP-15, androgen receptor, CK7. Apocrine carcinoma typically expresses GCDFP-15, AR and CK7. these...",
+        "order_index": 0
+      },
+      {
+        "text": "CK7, CK19, CDX2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. GCDFP-15, androgen receptor, CK7. Apocrine carcinoma typically expresses GCDFP-15, AR and CK7. these...",
+        "order_index": 1
+      },
+      {
+        "text": "ER, PR, GCDFP-15",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. GCDFP-15, androgen receptor, CK7. Apocrine carcinoma typically expresses GCDFP-15, AR and CK7. these...",
+        "order_index": 2
+      },
+      {
+        "text": "GCDFP-15, androgen receptor, CK7",
+        "is_correct": true,
+        "explanation": "GCDFP-15, androgen receptor, CK7. Apocrine carcinoma typically expresses GCDFP-15, AR and CK7. these markers are associated with gastrointestinal adenocarcinomas, not apocrine carcinomas. CDX2 and CK20 are specific to intestinal differentiation, which is not a feature of apocrine tumors. while CK7 is positive in apocrine carcinoma, CK19 is not specific to apocrine differentiation and CDX2 indicates intestinal origin. while GCDFP-15 is typically positive in apocrine carcinoma, ER and PR would likely be negative, differentiating apocrine carcinomas from other hormone sensitive carcinomas, such as breast cancer. Apocrine carcinoma",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 36",
+    "stem": "What is a distinguishing histologic feature of apocrine carcinoma (shown above)?",
+    "difficulty": "medium",
+    "teaching_point": "Large pleomorphic cells with eosinophilic granular cytoplasm and prominent nucleoli. Apocrine carcinoma is characterized histologically by large pleomorphic cells with eosinophilic granular cytoplasm and prominent nucleoli, which are hallmark features of apocrine differentiation. discohesive large cells with prominent nucleoli, brown pigments and necrosis are more suggestive of melanoma rather than apocrine carcinoma. signet ring cells with mucin production are a defining feature of signet ring cell carcinoma, typically of colorectal or gastric origin, and are not associated with apocrine carcinoma. small blue cells with hyperchromatic nuclei are characteristic of basal cell carcinoma or small cell neuroendocrine carcinoma. These cells are markedly different in size and morphology from the large pleomorphic apocrine cells seen in apocrine carcinoma. Apocrine carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusapocrinecarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Discohesive large cells with prominent nucleoli, brown pigments and necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Large pleomorphic cells with eosinophilic granular cytoplasm and prominent nucleoli. Apocrine carcin...",
+        "order_index": 0
+      },
+      {
+        "text": "Large pleomorphic cells with eosinophilic granular cytoplasm and prominent nucleoli",
+        "is_correct": true,
+        "explanation": "Large pleomorphic cells with eosinophilic granular cytoplasm and prominent nucleoli. Apocrine carcinoma is characterized histologically by large pleomorphic cells with eosinophilic granular cytoplasm and prominent nucleoli, which are hallmark features of apocrine differentiation. discohesive large cells with prominent nucleoli, brown pigments and necrosis are more suggestive of melanoma rather than apocrine carcinoma. signet ring cells with mucin production are a defining feature of signet ring cell carcinoma, typically of colorectal or gastric origin, and are not associated with apocrine carcinoma. small blue cells with hyperchromatic nuclei are characteristic of basal cell carcinoma or small cell neuroendocrine carcinoma. These cells are markedly different in size and morphology from the large pleomorphic apocrine cells seen in apocrine carcinoma. Apocrine carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Signet ring cells with mucin production",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Large pleomorphic cells with eosinophilic granular cytoplasm and prominent nucleoli. Apocrine carcin...",
+        "order_index": 2
+      },
+      {
+        "text": "Small blue cells with hyperchromatic nuclei",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Large pleomorphic cells with eosinophilic granular cytoplasm and prominent nucleoli. Apocrine carcin...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anusapocrinecarcinomaMicroLiao7.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 37",
+    "stem": "A 55 year old woman presents with a painless 2 cm perianal mass, which is excised. It is positive for S100 and CD68. Which of the following is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Granular cell tumor. The histologic appearance and immunohistochemical profile are consistent with granular cell tumor. Answers A, B and D are incorrect because the other lesions are negative for S100 and CD68. Alveolar soft part sarcoma and squamous cell carcinoma would show more cytologic atypia and gastrointestinal stromal tumor would likely be spindled. Granular cell tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusGCT.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Alveolar soft part sarcoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Granular cell tumor. The histologic appearance and immunohistochemical profile are consistent with g...",
+        "order_index": 0
+      },
+      {
+        "text": "Gastrointestinal stromal tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Granular cell tumor. The histologic appearance and immunohistochemical profile are consistent with g...",
+        "order_index": 1
+      },
+      {
+        "text": "Granular cell tumor",
+        "is_correct": true,
+        "explanation": "Granular cell tumor. The histologic appearance and immunohistochemical profile are consistent with granular cell tumor. Answers A, B and D are incorrect because the other lesions are negative for S100 and CD68. Alveolar soft part sarcoma and squamous cell carcinoma would show more cytologic atypia and gastrointestinal stromal tumor would likely be spindled. Granular cell tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Squamous cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Granular cell tumor. The histologic appearance and immunohistochemical profile are consistent with g...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/anusGCTgonzalez06.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Phagolysosomes",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 38",
+    "stem": "Which of the following statements is true for granular cell tumor of the anus?",
+    "difficulty": "medium",
+    "teaching_point": "It may arise in syndromic patients. Multiple granular cell tumors can occur in patients with Noonan syndrome, LEOPARD syndrome and neurofibromatosis 1. The anus is a potential site. granular cell tumors are slow growing and painless. they very rarely metastasize. the esophagus is the most common site for digestive tract granular cell tumors. Granular cell tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/anusGCT.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It can never metastasize",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. It may arise in syndromic patients. Multiple granular cell tumors can occur in patients with Noonan ...",
+        "order_index": 0
+      },
+      {
+        "text": "It is a fast growing painful lesion that infiltrates into the surrounding structures",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. It may arise in syndromic patients. Multiple granular cell tumors can occur in patients with Noonan ...",
+        "order_index": 1
+      },
+      {
+        "text": "It is the most common site for granular cell tumors in the digestive tract",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. It may arise in syndromic patients. Multiple granular cell tumors can occur in patients with Noonan ...",
+        "order_index": 2
+      },
+      {
+        "text": "It may arise in syndromic patients",
+        "is_correct": true,
+        "explanation": "It may arise in syndromic patients. Multiple granular cell tumors can occur in patients with Noonan syndrome, LEOPARD syndrome and neurofibromatosis 1. The anus is a potential site. granular cell tumors are slow growing and painless. they very rarely metastasize. the esophagus is the most common site for digestive tract granular cell tumors. Granular cell tumor",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "anus.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  }
+]

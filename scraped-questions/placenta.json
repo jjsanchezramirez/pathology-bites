@@ -1,0 +1,3762 @@
+[
+  {
+    "title": "Question 1",
+    "stem": "A 38 week gestational age placenta showed chronic villitis involving the majority of the villi. Representative H&E and cytomegalovirus (CMV) immunohistochemical stain images are shown above. What is the best classification for this placental abnormality?",
+    "difficulty": "medium",
+    "teaching_point": "High grade chronic villitis, diffuse. Chronic villitis involving > 30% of villi is classified as high grade, diffuse villitis. Diffuse villitis or a plasmacytic component to the chronic inflammatory infiltrate (the latter is absent in this case) warrants investigation for an infectious etiology, particularly CMV. In addition, there is stem vessel obliteration and avascular villi in these photos. there are > 30% of villi involved. Answers C and D are incorrect because there is more than limited involvement of villi. Chronic lymphocytic villitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentavillitisunknown.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "High grade chronic villitis, diffuse",
+        "is_correct": true,
+        "explanation": "High grade chronic villitis, diffuse. Chronic villitis involving > 30% of villi is classified as high grade, diffuse villitis. Diffuse villitis or a plasmacytic component to the chronic inflammatory infiltrate (the latter is absent in this case) warrants investigation for an infectious etiology, particularly CMV. In addition, there is stem vessel obliteration and avascular villi in these photos. there are > 30% of villi involved. Answers C and D are incorrect because there is more than limited involvement of villi. Chronic lymphocytic villitis",
+        "order_index": 0
+      },
+      {
+        "text": "High grade chronic villitis, patchy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. High grade chronic villitis, diffuse. Chronic villitis involving > 30% of villi is classified as hig...",
+        "order_index": 1
+      },
+      {
+        "text": "Low grade chronic villitis, focal",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. High grade chronic villitis, diffuse. Chronic villitis involving > 30% of villi is classified as hig...",
+        "order_index": 2
+      },
+      {
+        "text": "Low grade chronic villitis, multifocal",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. High grade chronic villitis, diffuse. Chronic villitis involving > 30% of villi is classified as hig...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentavillitisunknownBRQ1a.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentavillitisunknownBRQ1b.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentavillitisunknownBRQ1c.jpg",
+        "question_section": "stem",
+        "order_index": 2,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 2",
+    "stem": "What is the clinical association related to the placental lesion shown above?",
+    "difficulty": "medium",
+    "teaching_point": "Intrauterine growth restriction (IUGR). A subset of villitis of unknown etiology (VUE) is associated with obstetric complications ranging from IUGR and low weight for gestational age to intrauterine fetal demise. VUE excludes an infectious etiology by definition. Answers A and D are incorrect because there is no direct relationship or association of VUE with maternal diabetes or gestational hypertension. group B streptococcal infection is associated with acute chorioamnionitis. Chronic lymphocytic villitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentavillitisunknown.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Gestational hypertension",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Intrauterine growth restriction (IUGR). A subset of villitis of unknown etiology (VUE) is associated...",
+        "order_index": 0
+      },
+      {
+        "text": "Gram positive, group B streptococcal infection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Intrauterine growth restriction (IUGR). A subset of villitis of unknown etiology (VUE) is associated...",
+        "order_index": 1
+      },
+      {
+        "text": "Intrauterine growth restriction (IUGR)",
+        "is_correct": true,
+        "explanation": "Intrauterine growth restriction (IUGR). A subset of villitis of unknown etiology (VUE) is associated with obstetric complications ranging from IUGR and low weight for gestational age to intrauterine fetal demise. VUE excludes an infectious etiology by definition. Answers A and D are incorrect because there is no direct relationship or association of VUE with maternal diabetes or gestational hypertension. group B streptococcal infection is associated with acute chorioamnionitis. Chronic lymphocytic villitis",
+        "order_index": 2
+      },
+      {
+        "text": "Maternal diabetes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Intrauterine growth restriction (IUGR). A subset of villitis of unknown etiology (VUE) is associated...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentavillitisunknownBRQ2a.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentavillitisunknownBRQ2b.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "A 32 year old with no prenatal care presents with premature rupture of membranes and delivers an infant at approximately 31 weeks with Apgars of 5 and 6 at 1 and 5 minutes. At delivery, a maternal fever of 101.5 °F and foul smelling amniotic fluid are identified. The placental surface and fetal membranes are green tinged and opaque. The umbilical cord reveals the features seen in the submitted image (PAS stain). Which of the following gross features would most likely be found on careful macroscopic examination of the umbilical cord?",
+    "difficulty": "medium",
+    "teaching_point": ". Peripheral white plaque(s). While often no macroscopic lesions are seen in cases of mild-moderate umbilical vasculitis or funisitis, gross findings are evident in some circumstances. A common gross finding with funisitis is the presence of peripheral white, creamy or yellowish plaques / lesions, which are often due to infection by Candida species (which is present in the above image). Additionally, white concentric rings may be appreciated around umbilical vessels. This finding is usually associated with necrotizing funisitis and represents the accumulation of dying cells, cellular debris and associated immune complexes that aggregate as arcs around vessels (analogous to the precipitin arcs seen in an Ouchterlony immunodiffusion assay). Umbilical vasculitis and funisitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaacutefunisitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Excessive twisting",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Peripheral white plaque(s). While often no macroscopic lesions are seen in cases of mild-moderate ...",
+        "order_index": 0
+      },
+      {
+        "text": "Excessively long length",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Peripheral white plaque(s). While often no macroscopic lesions are seen in cases of mild-moderate ...",
+        "order_index": 1
+      },
+      {
+        "text": "Peripheral white plaque(s)",
+        "is_correct": true,
+        "explanation": ". Peripheral white plaque(s). While often no macroscopic lesions are seen in cases of mild-moderate umbilical vasculitis or funisitis, gross findings are evident in some circumstances. A common gross finding with funisitis is the presence of peripheral white, creamy or yellowish plaques / lesions, which are often due to infection by Candida species (which is present in the above image). Additionally, white concentric rings may be appreciated around umbilical vessels. This finding is usually associated with necrotizing funisitis and represents the accumulation of dying cells, cellular debris and associated immune complexes that aggregate as arcs around vessels (analogous to the precipitin arcs seen in an Ouchterlony immunodiffusion assay). Umbilical vasculitis and funisitis",
+        "order_index": 2
+      },
+      {
+        "text": "True knot(s)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Peripheral white plaque(s). While often no macroscopic lesions are seen in cases of mild-moderate ...",
+        "order_index": 3
+      },
+      {
+        "text": "Umbilical vein thrombosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Peripheral white plaque(s). While often no macroscopic lesions are seen in cases of mild-moderate ...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaacutefunisitis_utoronto8.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "A 19 year old G1P0 delivers a healthy term infant with post due dates (40.5 weeks) and Apgars of 9 and 9 at 1 and 5 minutes. Meconium fluid is identified at delivery. Which of the following is the most likely histologic finding in the umbilical cord?",
+    "difficulty": "medium",
+    "teaching_point": ". Phlebitis involving the umbilical vein. Mild phlebitis (inflammation specifically of the umbilical vein) is a relatively common finding with meconium in the amniotic fluid. Presumably, this is due to the early / developing fetal response toward an injurious agent (meconium). Umbilical vasculitis and funisitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaacutefunisitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Arteritis involving one or both umbilical arteries",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Phlebitis involving the umbilical vein. Mild phlebitis (inflammation specifically of the umbilical...",
+        "order_index": 0
+      },
+      {
+        "text": "Concentric calcifications around umbilical vessels",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Phlebitis involving the umbilical vein. Mild phlebitis (inflammation specifically of the umbilical...",
+        "order_index": 1
+      },
+      {
+        "text": "Necrotizing funisitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Phlebitis involving the umbilical vein. Mild phlebitis (inflammation specifically of the umbilical...",
+        "order_index": 2
+      },
+      {
+        "text": "Phlebitis involving the umbilical vein",
+        "is_correct": true,
+        "explanation": ". Phlebitis involving the umbilical vein. Mild phlebitis (inflammation specifically of the umbilical vein) is a relatively common finding with meconium in the amniotic fluid. Presumably, this is due to the early / developing fetal response toward an injurious agent (meconium). Umbilical vasculitis and funisitis",
+        "order_index": 3
+      },
+      {
+        "text": "3 vessel vasculitis (panvasculitis)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Phlebitis involving the umbilical vein. Mild phlebitis (inflammation specifically of the umbilical...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 5",
+    "stem": "Which of the following is correct in reference to dichorionic twin placentas?",
+    "difficulty": "medium",
+    "teaching_point": "Dichorionic placentas can be either dizygotic or monozygotic (Am J Obstet Gynecol 2015;213:S91) Twins",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentatwins.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "All dichorionic twin placentas are dizygotic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Dichorionic placentas can be either dizygotic or monozygotic (Am J Obstet Gynecol 2015;213:S91) Twin...",
+        "order_index": 0
+      },
+      {
+        "text": "All dichorionic twin placentas are monozygotic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Dichorionic placentas can be either dizygotic or monozygotic (Am J Obstet Gynecol 2015;213:S91) Twin...",
+        "order_index": 1
+      },
+      {
+        "text": "Dichorionic placentas are never monozygotic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Dichorionic placentas can be either dizygotic or monozygotic (Am J Obstet Gynecol 2015;213:S91) Twin...",
+        "order_index": 2
+      },
+      {
+        "text": "Dichorionic placentas can be either dizygotic or monozygotic",
+        "is_correct": true,
+        "explanation": "Dichorionic placentas can be either dizygotic or monozygotic (Am J Obstet Gynecol 2015;213:S91) Twins",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentatwinsSaab01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "Which of the following is true regarding dividing membranes of twin placentas?",
+    "difficulty": "medium",
+    "teaching_point": "The dividing membranes of separate, fused dichorionic diamnionic twin placentas are comprised of 3 or 4 layers (Am J Obstet Gynecol 2015;213:S91) Twins",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentatwins.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Dichorionic twins cannot have separate placentas without a dividing membrane",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. The dividing membranes of separate, fused dichorionic diamnionic twin placentas are comprised of 3 o...",
+        "order_index": 0
+      },
+      {
+        "text": "The dividing membranes of dichorionic diamnionic twin placentas are always comprised of 4 layers",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. The dividing membranes of separate, fused dichorionic diamnionic twin placentas are comprised of 3 o...",
+        "order_index": 1
+      },
+      {
+        "text": "The dividing membranes of monochorionic diamnionic twin placentas can be comprised of 2 or 3 layers",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. The dividing membranes of separate, fused dichorionic diamnionic twin placentas are comprised of 3 o...",
+        "order_index": 2
+      },
+      {
+        "text": "The dividing membranes of separate, fused dichorionic diamnionic twin placentas are comprised of 3 or 4 layers",
+        "is_correct": true,
+        "explanation": "The dividing membranes of separate, fused dichorionic diamnionic twin placentas are comprised of 3 or 4 layers (Am J Obstet Gynecol 2015;213:S91) Twins",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "Which disease is included in the definition of preeclampsia?",
+    "difficulty": "medium",
+    "teaching_point": "Hypertension Toxemia of pregnancy (preeclampsia and eclampsia)",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentatoxemia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Elevated liver function tests",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Hypertension Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 0
+      },
+      {
+        "text": "Hemolysis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Hypertension Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 1
+      },
+      {
+        "text": "Hypertension",
+        "is_correct": true,
+        "explanation": "Hypertension Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 2
+      },
+      {
+        "text": "Hypovolemic shock",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Hypertension Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 3
+      },
+      {
+        "text": "Low platelets",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Hypertension Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 8",
+    "stem": "Which diagnosis is related to toxemia of pregnancy and may lead to death by cerebral hemorrhage?",
+    "difficulty": "medium",
+    "teaching_point": "HELLP syndrome Toxemia of pregnancy (preeclampsia and eclampsia)",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentatoxemia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Convulsions",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. HELLP syndrome Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 0
+      },
+      {
+        "text": "Disseminated intravascular coagulation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. HELLP syndrome Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 1
+      },
+      {
+        "text": "HELLP syndrome",
+        "is_correct": true,
+        "explanation": "HELLP syndrome Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 2
+      },
+      {
+        "text": "High platelets",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. HELLP syndrome Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 3
+      },
+      {
+        "text": "Hypovolemic shock",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. HELLP syndrome Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 9",
+    "stem": "A 30 year old gravida 2 para 1 with gestational hypertension, edema and proteinuria with intrauterine growth restriction presents at term for spontaneous vaginal delivery (SVD). The placenta is small for the gestational age. Histological examination of the placental disc section reveals the above changes in the decidual arteries. Which complication should we be aware of?",
+    "difficulty": "medium",
+    "teaching_point": "Convulsions Toxemia of pregnancy (preeclampsia and eclampsia)",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentatoxemia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Convulsions",
+        "is_correct": true,
+        "explanation": "Convulsions Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 0
+      },
+      {
+        "text": "Depression",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Convulsions Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 1
+      },
+      {
+        "text": "Diabetes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Convulsions Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 2
+      },
+      {
+        "text": "High platelets",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Convulsions Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 3
+      },
+      {
+        "text": "Hypovolemic shock",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Convulsions Toxemia of pregnancy (preeclampsia and eclampsia)",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentatoxemiaAljerian03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 10",
+    "stem": "Which of the following best describes a thin umbilical cord?",
+    "difficulty": "medium",
+    "teaching_point": ". Thin cord is due to a decrease in Wharton jelly or a decrease in the number of umbilical vessels, which can predispose the umbilical vessels to compression phenomena. Thin umbilical cord",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentathincord.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "A cord diameter less than 2 cm at term is characteristic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Thin cord is due to a decrease in Wharton jelly or a decrease in the number of umbilical vessels, ...",
+        "order_index": 0
+      },
+      {
+        "text": "A reduction in the size of the tunica media layer",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Thin cord is due to a decrease in Wharton jelly or a decrease in the number of umbilical vessels, ...",
+        "order_index": 1
+      },
+      {
+        "text": "Associated with preterm labor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Thin cord is due to a decrease in Wharton jelly or a decrease in the number of umbilical vessels, ...",
+        "order_index": 2
+      },
+      {
+        "text": "No change in the number of umbilical vessels",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Thin cord is due to a decrease in Wharton jelly or a decrease in the number of umbilical vessels, ...",
+        "order_index": 3
+      },
+      {
+        "text": "Predisposes the umbilical vessels to compression effects",
+        "is_correct": true,
+        "explanation": ". Thin cord is due to a decrease in Wharton jelly or a decrease in the number of umbilical vessels, which can predispose the umbilical vessels to compression phenomena. Thin umbilical cord",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 11",
+    "stem": "Which of the following is the pTNM stage (per the AJCC 8th edition) of the gestational trophoblastic neoplasm in the image above? The tumor involves the uterus and bilateral ovaries with metastases to the lung.",
+    "difficulty": "medium",
+    "teaching_point": "pT2 M1a, FIGO stage III. The figure shows a trophoblastic tumor with geographic necrosis, consistent with an epithelioid trophoblastic tumor. Any tumor with M1a, regardless of the pT status, is staged as FIGO stage III. Answers A and B are incorrect because metastasis to other genital structures is present, which makes this case a pT2 tumor. this case shows metastasis to the lung, classifying it as a M1a tumor. the tumor shown would be classified as stage III not IV as it does not extend to other sites outside of the reproductive organs or lungs. Staging-gestational trophoblastic neoplasms",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentastaging.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "pT1 M0, FIGO stage I",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. pT2 M1a, FIGO stage III. The figure shows a trophoblastic tumor with geographic necrosis, consistent...",
+        "order_index": 0
+      },
+      {
+        "text": "pT1 M1a, FIGO stage III",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. pT2 M1a, FIGO stage III. The figure shows a trophoblastic tumor with geographic necrosis, consistent...",
+        "order_index": 1
+      },
+      {
+        "text": "pT2 M0, FIGO stage II",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. pT2 M1a, FIGO stage III. The figure shows a trophoblastic tumor with geographic necrosis, consistent...",
+        "order_index": 2
+      },
+      {
+        "text": "pT2 M1a, FIGO stage III",
+        "is_correct": true,
+        "explanation": "pT2 M1a, FIGO stage III. The figure shows a trophoblastic tumor with geographic necrosis, consistent with an epithelioid trophoblastic tumor. Any tumor with M1a, regardless of the pT status, is staged as FIGO stage III. Answers A and B are incorrect because metastasis to other genital structures is present, which makes this case a pT2 tumor. this case shows metastasis to the lung, classifying it as a M1a tumor. the tumor shown would be classified as stage III not IV as it does not extend to other sites outside of the reproductive organs or lungs. Staging-gestational trophoblastic neoplasms",
+        "order_index": 3
+      },
+      {
+        "text": "pT2 M1b, FIGO stage IV",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. pT2 M1a, FIGO stage III. The figure shows a trophoblastic tumor with geographic necrosis, consistent...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentastagingKertowidjojo07.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 12",
+    "stem": "A 32 year old woman was diagnosed with a placental site trophoblastic tumor. She had a missed abortion 2 years prior to diagnosis. Her serum hCG before surgery was 550 mIU/mL. Imaging did not identify any metastatic foci. The patient underwent a total hysterectomy and bilateral salpingo-oophorectomy. The tumor was found to measure 6.5 cm in greatest dimension with focal extension into the right ovary. What is her FIGO stage and prognostic score?",
+    "difficulty": "medium",
+    "teaching_point": "FIGO stage II; risk score 7. Involvement of the ovary and the lack of metastasis makes this a pT2 M0 tumor, which corresponds to FIGO stage II. The patient is < 40 years old (score 0) with an antecedent abortion (score 1) which occurred 2 years prior (score 4). Her pretreatment hCG is below 1,000 IU/mL (score 0) and her largest tumor size is 6.5 cm (score 2). She has no metastatic disease or involvement beyond the reproductive organs (score 0 + 0) and no prior treatment (score 0). Taken together, her prognostic score is 0 + 1 + 4 + 0 + 2 + 0 + 0 + 0 = 7. Staging-gestational trophoblastic neoplasms",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentastaging.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "FIGO stage I; risk score 4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. FIGO stage II; risk score 7. Involvement of the ovary and the lack of metastasis makes this a pT2 M0...",
+        "order_index": 0
+      },
+      {
+        "text": "FIGO stage I; risk score 5",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. FIGO stage II; risk score 7. Involvement of the ovary and the lack of metastasis makes this a pT2 M0...",
+        "order_index": 1
+      },
+      {
+        "text": "FIGO stage II; risk score 4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. FIGO stage II; risk score 7. Involvement of the ovary and the lack of metastasis makes this a pT2 M0...",
+        "order_index": 2
+      },
+      {
+        "text": "FIGO stage II; risk score 7",
+        "is_correct": true,
+        "explanation": "FIGO stage II; risk score 7. Involvement of the ovary and the lack of metastasis makes this a pT2 M0 tumor, which corresponds to FIGO stage II. The patient is < 40 years old (score 0) with an antecedent abortion (score 1) which occurred 2 years prior (score 4). Her pretreatment hCG is below 1,000 IU/mL (score 0) and her largest tumor size is 6.5 cm (score 2). She has no metastatic disease or involvement beyond the reproductive organs (score 0 + 0) and no prior treatment (score 0). Taken together, her prognostic score is 0 + 1 + 4 + 0 + 2 + 0 + 0 + 0 = 7. Staging-gestational trophoblastic neoplasms",
+        "order_index": 3
+      },
+      {
+        "text": "FIGO stage III; risk score 7",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. FIGO stage II; risk score 7. Involvement of the ovary and the lack of metastasis makes this a pT2 M0...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 13",
+    "stem": "All of the following are associated with short umbilical cords, except:",
+    "difficulty": "medium",
+    "teaching_point": "Includes functionally shortened cords, such as with nuchal cords Short umbilical cord",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentashortcord.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "A poorly understood etiology, although a genetic predisposition is possible",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Includes functionally shortened cords, such as with nuchal cords Short umbilical cord",
+        "order_index": 0
+      },
+      {
+        "text": "Cord length is most accurately measured at the time of delivery",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Includes functionally shortened cords, such as with nuchal cords Short umbilical cord",
+        "order_index": 1
+      },
+      {
+        "text": "Defined as an absolute cord length less than 35 cm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Includes functionally shortened cords, such as with nuchal cords Short umbilical cord",
+        "order_index": 2
+      },
+      {
+        "text": "Includes functionally shortened cords, such as with nuchal cords",
+        "is_correct": true,
+        "explanation": "Includes functionally shortened cords, such as with nuchal cords Short umbilical cord",
+        "order_index": 3
+      },
+      {
+        "text": "It increases the risk of traction phenomena on the placenta",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Includes functionally shortened cords, such as with nuchal cords Short umbilical cord",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 14",
+    "stem": "A 35 year old woman at 25 weeks gestation presents with vaginal bleeding and nonreassuring fetal heart tracings and undergoes an urgent cesarean section. Gross examination of the placenta demonstrates a large retroplacental hematoma with indentation (see image above). What finding might you expect to see microscopically?",
+    "difficulty": "medium",
+    "teaching_point": ". Villous infarction Retroplacental hematoma with intraplacental extension (abruption)",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaretroplacentalhematoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chronic villitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Villous infarction Retroplacental hematoma with intraplacental extension (abruption)",
+        "order_index": 0
+      },
+      {
+        "text": "Delayed villous maturation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Villous infarction Retroplacental hematoma with intraplacental extension (abruption)",
+        "order_index": 1
+      },
+      {
+        "text": "Maternal floor infarction",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Villous infarction Retroplacental hematoma with intraplacental extension (abruption)",
+        "order_index": 2
+      },
+      {
+        "text": "Villous stromal vascular karyorrhexis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Villous infarction Retroplacental hematoma with intraplacental extension (abruption)",
+        "order_index": 3
+      },
+      {
+        "text": "Villous infarction",
+        "is_correct": true,
+        "explanation": ". Villous infarction Retroplacental hematoma with intraplacental extension (abruption)",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaretroplacentalhematomaravishankar01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 15",
+    "stem": "A 24 year old woman at 23 weeks gestation presents with intrauterine fetal demise. Pathologic examination of the placenta demonstrates a small placenta with foci of intravillous hemorrhage. What clinical syndrome is the mother likely to have?",
+    "difficulty": "medium",
+    "teaching_point": ". Preeclampsia Retroplacental hematoma with intraplacental extension (abruption)",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaretroplacentalhematoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cholestasis of pregnancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Preeclampsia Retroplacental hematoma with intraplacental extension (abruption)",
+        "order_index": 0
+      },
+      {
+        "text": "Gestational diabetes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Preeclampsia Retroplacental hematoma with intraplacental extension (abruption)",
+        "order_index": 1
+      },
+      {
+        "text": "Maternal fever",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Preeclampsia Retroplacental hematoma with intraplacental extension (abruption)",
+        "order_index": 2
+      },
+      {
+        "text": "Placenta previa",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Preeclampsia Retroplacental hematoma with intraplacental extension (abruption)",
+        "order_index": 3
+      },
+      {
+        "text": "Preeclampsia",
+        "is_correct": true,
+        "explanation": ". Preeclampsia Retroplacental hematoma with intraplacental extension (abruption)",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 16",
+    "stem": "A 31 year old woman, gravida 2, para 1, presents with profuse vaginal bleeding. Prior to this, the patient had amenorrhea for about 12 weeks with uterine enlargment. Ultrasound reveals a 10 - 12 week enlarged uterus with a 4 cm polypoid endomyometrial mass. There was no intrauterine pregnancy. Serum beta hCG is < 1,000 mIU/mL. On H&E sections of the endometrial sample, the tumor shows an infiltrative growth pattern consisting of aggregates or sheets of large, polyhedral to round, predominantly mononucleated cells (representative section is shown above). Vascular invasion is present, replacing the wall of myometrial vessels. The proliferation index (Ki67) is < 30%. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Placental site trophoblastic tumor Placental site trophoblastic tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaPSTT.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Choriocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Placental site trophoblastic tumor Placental site trophoblastic tumor",
+        "order_index": 0
+      },
+      {
+        "text": "Epithelioid trophoblastic tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Placental site trophoblastic tumor Placental site trophoblastic tumor",
+        "order_index": 1
+      },
+      {
+        "text": "Placental site nodule",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Placental site trophoblastic tumor Placental site trophoblastic tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Placental site trophoblastic tumor",
+        "is_correct": true,
+        "explanation": ". Placental site trophoblastic tumor Placental site trophoblastic tumor",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaPSTTmendozaBRQ01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 17",
+    "stem": "Characteristic histological features helpful in differentiating placental site trophoblastic tumor from most other neoplasms are",
+    "difficulty": "medium",
+    "teaching_point": ". Invasion and replacement of myometrial vessel walls Placental site trophoblastic tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaPSTT.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Ability to replace and re-epithelialize the endocervical / endometrial surface epithelium",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Invasion and replacement of myometrial vessel walls Placental site trophoblastic tumor",
+        "order_index": 0
+      },
+      {
+        "text": "Invasion and replacement of myometrial vessel walls",
+        "is_correct": true,
+        "explanation": ". Invasion and replacement of myometrial vessel walls Placental site trophoblastic tumor",
+        "order_index": 1
+      },
+      {
+        "text": "Presence of distinct neoplastic components (triphasic tumor)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Invasion and replacement of myometrial vessel walls Placental site trophoblastic tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Presence of extensive geographic necrosis and expression of p63",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Invasion and replacement of myometrial vessel walls Placental site trophoblastic tumor",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 18",
+    "stem": "A 28 year old, para 2 woman presented with menorrhagia. Endometrial sampling was performed and a representative section of the lesion is shown above. No mitoses are seen. Which of the following immunohistochemical stains is expected to be expressed in this lesion?",
+    "difficulty": "medium",
+    "teaching_point": "p63 Placental site nodule",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaplacentalsitenodule.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Beta hCG",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. p63 Placental site nodule",
+        "order_index": 0
+      },
+      {
+        "text": "Cyclin E",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. p63 Placental site nodule",
+        "order_index": 1
+      },
+      {
+        "text": "p16",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. p63 Placental site nodule",
+        "order_index": 2
+      },
+      {
+        "text": "p63",
+        "is_correct": true,
+        "explanation": "p63 Placental site nodule",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaplacentalsitenoduleMendoza2.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 19",
+    "stem": "The typical immunophenotypic profile of placental site nodule is which of the following?",
+    "difficulty": "medium",
+    "teaching_point": "p63+, inhibin+, cyclin E- Placental site nodule",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaplacentalsitenodule.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "p63-, inhibin-, cyclin E+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. p63+, inhibin+, cyclin E- Placental site nodule",
+        "order_index": 0
+      },
+      {
+        "text": "p63-, inhibin+, cyclin E-",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. p63+, inhibin+, cyclin E- Placental site nodule",
+        "order_index": 1
+      },
+      {
+        "text": "p63-, inhibin+, cyclin E+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. p63+, inhibin+, cyclin E- Placental site nodule",
+        "order_index": 2
+      },
+      {
+        "text": "p63+, inhibin+, cyclin E-",
+        "is_correct": true,
+        "explanation": "p63+, inhibin+, cyclin E- Placental site nodule",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 20",
+    "stem": "Products of conception in a 30 year old patient. Which of the following statements is true for the entity depicted in the photos?",
+    "difficulty": "medium",
+    "teaching_point": ". p57 immunohistochemistry can be used to differentiate it from complete hydatidiform mole Partial hydatidiform mole",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaincompletemole.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It has exclusively paternal genetic material",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . p57 immunohistochemistry can be used to differentiate it from complete hydatidiform mole Partial h...",
+        "order_index": 0
+      },
+      {
+        "text": "It has increased risk of persistent gestational trophoblastic disease and choriocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . p57 immunohistochemistry can be used to differentiate it from complete hydatidiform mole Partial h...",
+        "order_index": 1
+      },
+      {
+        "text": "p57 immunohistochemistry can be used to differentiate it from complete hydatidiform mole",
+        "is_correct": true,
+        "explanation": ". p57 immunohistochemistry can be used to differentiate it from complete hydatidiform mole Partial hydatidiform mole",
+        "order_index": 2
+      },
+      {
+        "text": "p57 immunohistochemistry can be used to differentiate it from hydropic abortion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . p57 immunohistochemistry can be used to differentiate it from complete hydatidiform mole Partial h...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaincompletemoleBusca01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Partial hydatidiform mole",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaincompletemoleBusca05.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "Partial hydatidiform mole",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 21",
+    "stem": "What is the typical genetic profile of incomplete mole?",
+    "difficulty": "medium",
+    "teaching_point": ". Diandric triploidy Partial hydatidiform mole",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaincompletemole.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Biparental diploidiy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Diandric triploidy Partial hydatidiform mole",
+        "order_index": 0
+      },
+      {
+        "text": "Diandric triploidy",
+        "is_correct": true,
+        "explanation": ". Diandric triploidy Partial hydatidiform mole",
+        "order_index": 1
+      },
+      {
+        "text": "Digynic triploidy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Diandric triploidy Partial hydatidiform mole",
+        "order_index": 2
+      },
+      {
+        "text": "Triandric tetraploid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Diandric triploidy Partial hydatidiform mole",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 22",
+    "stem": "When is the risk of fetal metastasis by a maternal malignant tumor highest during pregnancy?",
+    "difficulty": "medium",
+    "teaching_point": "When the tumor cells invade into the chorionic villi. Metastases",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentamets.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "When the placenta is normal microscopically",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. When the tumor cells invade into the chorionic villi. Metastases",
+        "order_index": 0
+      },
+      {
+        "text": "When the tumor cells are present in the chorionic membranes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. When the tumor cells invade into the chorionic villi. Metastases",
+        "order_index": 1
+      },
+      {
+        "text": "When the tumor cells are seen in the intervillous space",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. When the tumor cells invade into the chorionic villi. Metastases",
+        "order_index": 2
+      },
+      {
+        "text": "When the tumor cells invade into the chorionic villi",
+        "is_correct": true,
+        "explanation": "When the tumor cells invade into the chorionic villi. Metastases",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 23",
+    "stem": "Which maternal and fetal tumors, respectively, have been shown to have the highest proportion of placental metastases?",
+    "difficulty": "medium",
+    "teaching_point": "Melanoma and neuroblastoma. Metastases",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentamets.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Breast carcinoma and adenoid cystic carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Melanoma and neuroblastoma. Metastases",
+        "order_index": 0
+      },
+      {
+        "text": "Gastric carcinoma and hepatoblastoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Melanoma and neuroblastoma. Metastases",
+        "order_index": 1
+      },
+      {
+        "text": "Leukemia and rhabdoid tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Melanoma and neuroblastoma. Metastases",
+        "order_index": 2
+      },
+      {
+        "text": "Melanoma and neuroblastoma",
+        "is_correct": true,
+        "explanation": "Melanoma and neuroblastoma. Metastases",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 24",
+    "stem": "A neonate and placenta are delivered vaginally at 40 weeks 4 days gestation. APGAR scores are 9/9. The placenta shows diffuse green staining of the membranes but is otherwise unremarkable. Microscopic examination of the fetal membranes would show which of the following changes?",
+    "difficulty": "medium",
+    "teaching_point": "Vacuolization of the amniotic epithelium, heaping up of amniotic cells and edema of the amnion. Green staining of the fetal membranes generally refers to meconium staining and the amnion epithelial changes listed are characteristic degenerative changes associated with meconium staining. it depicts severe acute chorioamnionitis. the yellow-brown granular pigments that stain positive for Prussian blue are indicative of hemosiderin pigment rather than meconium. it describes a pseudocyst (or chorionic cyst). Meconium staining",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentameconium.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cysts that contain secretions and are lined by extravillous trophoblasts within the chorion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Vacuolization of the amniotic epithelium, heaping up of amniotic cells and edema of the amnion. Gree...",
+        "order_index": 0
+      },
+      {
+        "text": "Diffuse infiltration of neutrophils in the amnion and chorion, including presence of microabscesses",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Vacuolization of the amniotic epithelium, heaping up of amniotic cells and edema of the amnion. Gree...",
+        "order_index": 1
+      },
+      {
+        "text": "Macrophages demonstrating yellow-brown granular pigment, which stains positive on Prussian blue",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Vacuolization of the amniotic epithelium, heaping up of amniotic cells and edema of the amnion. Gree...",
+        "order_index": 2
+      },
+      {
+        "text": "Vacuolization of the amniotic epithelium, heaping up of amniotic cells and edema of the amnion",
+        "is_correct": true,
+        "explanation": "Vacuolization of the amniotic epithelium, heaping up of amniotic cells and edema of the amnion. Green staining of the fetal membranes generally refers to meconium staining and the amnion epithelial changes listed are characteristic degenerative changes associated with meconium staining. it depicts severe acute chorioamnionitis. the yellow-brown granular pigments that stain positive for Prussian blue are indicative of hemosiderin pigment rather than meconium. it describes a pseudocyst (or chorionic cyst). Meconium staining",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 25",
+    "stem": "A 33 year old gravida 3 para 2 woman delivers a neonate at 39 weeks 6 days gestation. The pregnancy and delivery were uncomplicated. Gross examination of the placenta reveals a discoid placenta with a trimmed disc weight in the 75th percentile for gestational age, green stained slimy membranes and a left twisted umbilical cord with eccentric insertion. Microscopic findings of the fetal membranes are seen in the image above. Which of the following statements is true regarding this case?",
+    "difficulty": "medium",
+    "teaching_point": "Most cases with this finding have normal neonatal outcomes. The gross description supports the meconium staining of fetal membranes shown in the image. There does not appear to be any other lesion noted in the placenta and most cases with meconium staining have normal outcomes. meconium staining is more common in postterm, rather than preterm, births. antibiotic therapy may be the management for chorioamnionitis or other infectious lesions. only ~2 - 5% of cases with meconium staining are associated with meconium aspiration syndrome. Meconium staining",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentameconium.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Antibiotic therapy is the standard of care",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Most cases with this finding have normal neonatal outcomes. The gross description supports the mecon...",
+        "order_index": 0
+      },
+      {
+        "text": "It is predominantly associated with preterm births",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Most cases with this finding have normal neonatal outcomes. The gross description supports the mecon...",
+        "order_index": 1
+      },
+      {
+        "text": "Most cases with this finding have normal neonatal outcomes",
+        "is_correct": true,
+        "explanation": "Most cases with this finding have normal neonatal outcomes. The gross description supports the meconium staining of fetal membranes shown in the image. There does not appear to be any other lesion noted in the placenta and most cases with meconium staining have normal outcomes. meconium staining is more common in postterm, rather than preterm, births. antibiotic therapy may be the management for chorioamnionitis or other infectious lesions. only ~2 - 5% of cases with meconium staining are associated with meconium aspiration syndrome. Meconium staining",
+        "order_index": 2
+      },
+      {
+        "text": "There is a high likelihood of meconium aspiration syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Most cases with this finding have normal neonatal outcomes. The gross description supports the mecon...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentameconiumma11.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 26",
+    "stem": "A 34 year old woman who is pregnant with her third child and has 2 kids (G3P2002), with a history of gestational hypertension and diabetes, presents for delivery. Her placenta is sent for pathology. Gross examination reveals a placenta that is small for gestational age, with a 2.1 cm infarction within the central placenta (15% of placenta disc). What feature would be most expected on histopathologic examination?",
+    "difficulty": "medium",
+    "teaching_point": "Increased syncytial knots (Tenney-Parker changes) Maternal vascular malperfusion",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentauteroplacentalinsuff.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chronic intervillositis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Increased syncytial knots (Tenney-Parker changes) Maternal vascular malperfusion",
+        "order_index": 0
+      },
+      {
+        "text": "Decreased syncytial knots",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Increased syncytial knots (Tenney-Parker changes) Maternal vascular malperfusion",
+        "order_index": 1
+      },
+      {
+        "text": "Increased syncytial knots (Tenney-Parker changes)",
+        "is_correct": true,
+        "explanation": "Increased syncytial knots (Tenney-Parker changes) Maternal vascular malperfusion",
+        "order_index": 2
+      },
+      {
+        "text": "Maternal floor infarction",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Increased syncytial knots (Tenney-Parker changes) Maternal vascular malperfusion",
+        "order_index": 3
+      },
+      {
+        "text": "Normal placenta",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Increased syncytial knots (Tenney-Parker changes) Maternal vascular malperfusion",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentauteroplacentalinsuffHecht05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 27",
+    "stem": "Accelerated maturation is a feature of maternal vascular malperfusion. What histologic feature is associated with it?",
+    "difficulty": "medium",
+    "teaching_point": "Decidual arteriopathy Maternal vascular malperfusion",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentauteroplacentalinsuff.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Decidual arteriopathy",
+        "is_correct": true,
+        "explanation": "Decidual arteriopathy Maternal vascular malperfusion",
+        "order_index": 0
+      },
+      {
+        "text": "Decreased syncytial knots",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Decidual arteriopathy Maternal vascular malperfusion",
+        "order_index": 1
+      },
+      {
+        "text": "High placental weight",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Decidual arteriopathy Maternal vascular malperfusion",
+        "order_index": 2
+      },
+      {
+        "text": "Villlous sclerosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Decidual arteriopathy Maternal vascular malperfusion",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 28",
+    "stem": "Evaluation of a placenta demonstrates sections with the pathology shown above. Which of the following organ systems may be affected in this infant?",
+    "difficulty": "medium",
+    "teaching_point": ". Renal. Associated neonatal outcomes of massive perivillous fibrin deposition can include neurocompromise, renal tubular dysplasia, cystic renal disease, long chain 3-hydroxyacyl-CoA dehydrogenase mutations, poor ossification of bones and death / stillbirth. Answers A, B, C and E are incorrect because these systems have not been associated with massive perivillous fibrin deposition / maternal floor infarction neonatal outcomes. Massive perivillous fibrin deposition / maternal floor infarction",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentamatfloorinfarct.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Hematolymphoid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Renal. Associated neonatal outcomes of massive perivillous fibrin deposition can include neurocomp...",
+        "order_index": 0
+      },
+      {
+        "text": "Hepatobiliary",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Renal. Associated neonatal outcomes of massive perivillous fibrin deposition can include neurocomp...",
+        "order_index": 1
+      },
+      {
+        "text": "Pulmonary",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Renal. Associated neonatal outcomes of massive perivillous fibrin deposition can include neurocomp...",
+        "order_index": 2
+      },
+      {
+        "text": "Renal",
+        "is_correct": true,
+        "explanation": ". Renal. Associated neonatal outcomes of massive perivillous fibrin deposition can include neurocompromise, renal tubular dysplasia, cystic renal disease, long chain 3-hydroxyacyl-CoA dehydrogenase mutations, poor ossification of bones and death / stillbirth. Answers A, B, C and E are incorrect because these systems have not been associated with massive perivillous fibrin deposition / maternal floor infarction neonatal outcomes. Massive perivillous fibrin deposition / maternal floor infarction",
+        "order_index": 3
+      },
+      {
+        "text": "Vascular",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Renal. Associated neonatal outcomes of massive perivillous fibrin deposition can include neurocomp...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentamatfloorinfarctRay07.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Massive perivillous fibrin deposition / Maternal floor infarction",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 29",
+    "stem": "Gross evaluation of a placenta shows waxy, tan-white deposition, involving 60% of the parenchyma. Which of the following diagnoses is most appropriate?",
+    "difficulty": "medium",
+    "teaching_point": ". Massive perivillous fibrin deposition, transmural type, as > 50% of the parenchyma is involved. Answers B and D are incorrect because these are the same entity and this is limited to the maternal floor (basal plate). borderline type involves 25 - 50% of the parenchyma. Massive perivillous fibrin deposition / maternal floor infarction",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentamatfloorinfarct.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Massive perivillous fibrin deposition, borderline type",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Massive perivillous fibrin deposition, transmural type, as > 50% of the parenchyma is involved. An...",
+        "order_index": 0
+      },
+      {
+        "text": "Massive perivillous fibrin deposition, classic type",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Massive perivillous fibrin deposition, transmural type, as > 50% of the parenchyma is involved. An...",
+        "order_index": 1
+      },
+      {
+        "text": "Massive perivillous fibrin deposition, transmural type",
+        "is_correct": true,
+        "explanation": ". Massive perivillous fibrin deposition, transmural type, as > 50% of the parenchyma is involved. Answers B and D are incorrect because these are the same entity and this is limited to the maternal floor (basal plate). borderline type involves 25 - 50% of the parenchyma. Massive perivillous fibrin deposition / maternal floor infarction",
+        "order_index": 2
+      },
+      {
+        "text": "Maternal floor infarction",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Massive perivillous fibrin deposition, transmural type, as > 50% of the parenchyma is involved. An...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 30",
+    "stem": "What is the most common site for metastatic invasive hydatidiform mole?",
+    "difficulty": "medium",
+    "teaching_point": "Pelvis / vaginal wall. The pelvis / vaginal wall is the most common site for metastatic hydatidiform moles. Answers D and A are incorrect because vulva and lungs are the next most common sites. metastatic invasive hydatidiform moles are not usually seen in the peritoneal cavity. Invasive hydatidiform mole",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentainvasivemole.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Lungs",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Pelvis / vaginal wall. The pelvis / vaginal wall is the most common site for metastatic hydatidiform...",
+        "order_index": 0
+      },
+      {
+        "text": "Pelvis / vaginal wall",
+        "is_correct": true,
+        "explanation": "Pelvis / vaginal wall. The pelvis / vaginal wall is the most common site for metastatic hydatidiform moles. Answers D and A are incorrect because vulva and lungs are the next most common sites. metastatic invasive hydatidiform moles are not usually seen in the peritoneal cavity. Invasive hydatidiform mole",
+        "order_index": 1
+      },
+      {
+        "text": "Peritoneal cavity",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Pelvis / vaginal wall. The pelvis / vaginal wall is the most common site for metastatic hydatidiform...",
+        "order_index": 2
+      },
+      {
+        "text": "Vulva",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Pelvis / vaginal wall. The pelvis / vaginal wall is the most common site for metastatic hydatidiform...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentainvasivemolelanjewar02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 31",
+    "stem": "Which of the following is true about invasive hydatidiform mole?",
+    "difficulty": "medium",
+    "teaching_point": "Presents as a persistent elevation of hCG after primary evacuation of a hydatidiform mole. In invasive / metastatic hydatidiform moles, hCG levels are persistently high despite the evacuation of the primary molar pregnancy. invasive hydatidiform moles present as an erosive, hemorrhagic lesion on gross examination. invasive hydatidiform moles are second only to primary hydatidiform moles in incidence. in most cases, imaging is not helpful in its diagnosis. Invasive hydatidiform mole",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentainvasivemole.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Grossly presents as a mass-like lesion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Presents as a persistent elevation of hCG after primary evacuation of a hydatidiform mole. In invasi...",
+        "order_index": 0
+      },
+      {
+        "text": "It is a rare type of persistent gestational trophoblastic disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Presents as a persistent elevation of hCG after primary evacuation of a hydatidiform mole. In invasi...",
+        "order_index": 1
+      },
+      {
+        "text": "Presents as a persistent elevation of hCG after primary evacuation of a hydatidiform mole",
+        "is_correct": true,
+        "explanation": "Presents as a persistent elevation of hCG after primary evacuation of a hydatidiform mole. In invasive / metastatic hydatidiform moles, hCG levels are persistently high despite the evacuation of the primary molar pregnancy. invasive hydatidiform moles present as an erosive, hemorrhagic lesion on gross examination. invasive hydatidiform moles are second only to primary hydatidiform moles in incidence. in most cases, imaging is not helpful in its diagnosis. Invasive hydatidiform mole",
+        "order_index": 2
+      },
+      {
+        "text": "They can usually be diagnosed by imaging prior to removal",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Presents as a persistent elevation of hCG after primary evacuation of a hydatidiform mole. In invasi...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 32",
+    "stem": "This is a placenta from a fetal demise at 28 weeks' gestation. What does the gross image above show?",
+    "difficulty": "medium",
+    "teaching_point": "Abnormal umbilical cord insertion Intrauterine fetal demise",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentafetaldeath.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Abnormal umbilical cord insertion",
+        "is_correct": true,
+        "explanation": "Abnormal umbilical cord insertion Intrauterine fetal demise",
+        "order_index": 0
+      },
+      {
+        "text": "Amnion nodosum",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Abnormal umbilical cord insertion Intrauterine fetal demise",
+        "order_index": 1
+      },
+      {
+        "text": "Heavy placenta",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Abnormal umbilical cord insertion Intrauterine fetal demise",
+        "order_index": 2
+      },
+      {
+        "text": "Placental abruption",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Abnormal umbilical cord insertion Intrauterine fetal demise",
+        "order_index": 3
+      },
+      {
+        "text": "Umbilical hypocoiling",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Abnormal umbilical cord insertion Intrauterine fetal demise",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentafetaldeathBoydBRQ1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 33",
+    "stem": "This is a microscopic image from a placenta at 28 weeks' gestation. What is depicted in the image above?",
+    "difficulty": "medium",
+    "teaching_point": "Recent chorionic thrombosis Intrauterine fetal demise",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentafetaldeath.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute subchorionitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Recent chorionic thrombosis Intrauterine fetal demise",
+        "order_index": 0
+      },
+      {
+        "text": "Chorionic vasculitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Recent chorionic thrombosis Intrauterine fetal demise",
+        "order_index": 1
+      },
+      {
+        "text": "Perivillous fibrin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Recent chorionic thrombosis Intrauterine fetal demise",
+        "order_index": 2
+      },
+      {
+        "text": "Postmortem fetal vascular involution",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Recent chorionic thrombosis Intrauterine fetal demise",
+        "order_index": 3
+      },
+      {
+        "text": "Recent chorionic thrombosis",
+        "is_correct": true,
+        "explanation": "Recent chorionic thrombosis Intrauterine fetal demise",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentafetaldeathBoydBRQ2.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 34",
+    "stem": "This is a microscopic image from a placenta at 28 weeks' gestation. What is depicted in the image above?",
+    "difficulty": "medium",
+    "teaching_point": "Avascular villi due to fetal vascular malperfusion Intrauterine fetal demise",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentafetaldeath.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Avascular villi due to fetal vascular malperfusion",
+        "is_correct": true,
+        "explanation": "Avascular villi due to fetal vascular malperfusion Intrauterine fetal demise",
+        "order_index": 0
+      },
+      {
+        "text": "Avascular villi due to postmortem vascular involution",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Avascular villi due to fetal vascular malperfusion Intrauterine fetal demise",
+        "order_index": 1
+      },
+      {
+        "text": "Chronic villitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Avascular villi due to fetal vascular malperfusion Intrauterine fetal demise",
+        "order_index": 2
+      },
+      {
+        "text": "Massive perivillous fibrin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Avascular villi due to fetal vascular malperfusion Intrauterine fetal demise",
+        "order_index": 3
+      },
+      {
+        "text": "Placental abruption",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Avascular villi due to fetal vascular malperfusion Intrauterine fetal demise",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentafetaldeathBoydBRQ3.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 35",
+    "stem": "It is generally accepted that any infarct in a preterm placenta is significant. In a term placenta, involvement of more than what percentage of the nonmarginal parenchyma is considered significant?",
+    "difficulty": "medium",
+    "teaching_point": ". 5% Infarct",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaplainfarct.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "1%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . 5% Infarct",
+        "order_index": 0
+      },
+      {
+        "text": "5%",
+        "is_correct": true,
+        "explanation": ". 5% Infarct",
+        "order_index": 1
+      },
+      {
+        "text": "25%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . 5% Infarct",
+        "order_index": 2
+      },
+      {
+        "text": "50%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . 5% Infarct",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaplainfarctChenRoberts01.JPG",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 36",
+    "stem": "A placental infarct is an example (evidence) of what kind of lesion?",
+    "difficulty": "medium",
+    "teaching_point": ". Maternal vascular malperfusion Infarct",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaplainfarct.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Delayed villous maturation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Maternal vascular malperfusion Infarct",
+        "order_index": 0
+      },
+      {
+        "text": "Fetal vascular malperfusion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Maternal vascular malperfusion Infarct",
+        "order_index": 1
+      },
+      {
+        "text": "Maternal vascular malperfusion",
+        "is_correct": true,
+        "explanation": ". Maternal vascular malperfusion Infarct",
+        "order_index": 2
+      },
+      {
+        "text": "Villitis of unknown etiology",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Maternal vascular malperfusion Infarct",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaplainfarctChen03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 37",
+    "stem": "Which of the following is true regarding hydatidiform moles?",
+    "difficulty": "medium",
+    "teaching_point": "Heterozygous complete mole has a higher risk of postmolar gestational trophoblastic disease / neoplasia than homozygous complete mole. Immunostaining for p57 is positive in partial and negative in complete hydatidiform mole (C). Although complete moles are most commonly monospermic and homozygous, partial moles are more frequently dispermic and heterozygous (A) with diandric monogynic triploidy (D). Hydatidiform mole",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentahydatgeneral.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Both partial and complete moles are most commonly monospermic and homozygous",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Heterozygous complete mole has a higher risk of postmolar gestational trophoblastic disease / neopla...",
+        "order_index": 0
+      },
+      {
+        "text": "Heterozygous complete mole has a higher risk of postmolar gestational trophoblastic disease / neoplasia than homozygous complete mole",
+        "is_correct": true,
+        "explanation": "Heterozygous complete mole has a higher risk of postmolar gestational trophoblastic disease / neoplasia than homozygous complete mole. Immunostaining for p57 is positive in partial and negative in complete hydatidiform mole (C). Although complete moles are most commonly monospermic and homozygous, partial moles are more frequently dispermic and heterozygous (A) with diandric monogynic triploidy (D). Hydatidiform mole",
+        "order_index": 1
+      },
+      {
+        "text": "Immunohistochemical staining for p57 is negative in partial and complete hydatidiform moles",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Heterozygous complete mole has a higher risk of postmolar gestational trophoblastic disease / neopla...",
+        "order_index": 2
+      },
+      {
+        "text": "The typical genetic profile of a partial mole is digynic triploidy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Heterozygous complete mole has a higher risk of postmolar gestational trophoblastic disease / neopla...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 38",
+    "stem": "The image above shows products of conception in a 34 year old patient. Which of the following is true regarding this entity?",
+    "difficulty": "medium",
+    "teaching_point": "Risk of choriocarcinoma is < 0.5%. The image shows features of partial hydatidiform mole. Partial moles have a much lower risk of choriocarcinoma (< 0.5%) than complete moles (2 - 3%). Amniotic fluid is typically present in partial moles (A). Ovarian theca lutein cysts (B) and genomic imprinting of maternal KHDC3L gene (C) are commonly associated with complete moles, not partial moles. Hydatidiform mole",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentahydatgeneral.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Amniotic fluid is absent",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Risk of choriocarcinoma is < 0.5%. The image shows features of partial hydatidiform mole. Partial mo...",
+        "order_index": 0
+      },
+      {
+        "text": "Can be associated with ovarian theca lutein cysts",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Risk of choriocarcinoma is < 0.5%. The image shows features of partial hydatidiform mole. Partial mo...",
+        "order_index": 1
+      },
+      {
+        "text": "Can result from abnormal genomic imprinting of maternal KHDC3L gene",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Risk of choriocarcinoma is < 0.5%. The image shows features of partial hydatidiform mole. Partial mo...",
+        "order_index": 2
+      },
+      {
+        "text": "Risk of choriocarcinoma is < 0.5%",
+        "is_correct": true,
+        "explanation": "Risk of choriocarcinoma is < 0.5%. The image shows features of partial hydatidiform mole. Partial moles have a much lower risk of choriocarcinoma (< 0.5%) than complete moles (2 - 3%). Amniotic fluid is typically present in partial moles (A). Ovarian theca lutein cysts (B) and genomic imprinting of maternal KHDC3L gene (C) are commonly associated with complete moles, not partial moles. Hydatidiform mole",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentahydatidiformsheikh05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 40",
+    "stem": "A products of conception specimen from a 41 year old woman has the gross appearance seen in the photo above. Which of the following structures is represented in the photo?",
+    "difficulty": "medium",
+    "teaching_point": "Chorionic villi Grossing-products of conception",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentagrossingPOC.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chorionic villi",
+        "is_correct": true,
+        "explanation": "Chorionic villi Grossing-products of conception",
+        "order_index": 0
+      },
+      {
+        "text": "Decidua",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chorionic villi Grossing-products of conception",
+        "order_index": 1
+      },
+      {
+        "text": "Fetal / embryonic tissue",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chorionic villi Grossing-products of conception",
+        "order_index": 2
+      },
+      {
+        "text": "Implantation site",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chorionic villi Grossing-products of conception",
+        "order_index": 3
+      },
+      {
+        "text": "Membranes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chorionic villi Grossing-products of conception",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentagrossingPOCRavishankargross5.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 41",
+    "stem": "Which of the following statements is true regarding appropriate gross handling of the placental finding depicted above?",
+    "difficulty": "medium",
+    "teaching_point": "Status of the connecting vessels and distance from the main disc are important to describe Placenta - Grossing",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentagrossing.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Clinically insignificant and does not need to be described",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Status of the connecting vessels and distance from the main disc are important to describe Placenta ...",
+        "order_index": 0
+      },
+      {
+        "text": "Does not occur more than once in the same placenta",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Status of the connecting vessels and distance from the main disc are important to describe Placenta ...",
+        "order_index": 1
+      },
+      {
+        "text": "Should be sampled as part of routine sections",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Status of the connecting vessels and distance from the main disc are important to describe Placenta ...",
+        "order_index": 2
+      },
+      {
+        "text": "Status of the connecting vessels and distance from the main disc are important to describe",
+        "is_correct": true,
+        "explanation": "Status of the connecting vessels and distance from the main disc are important to describe Placenta - Grossing",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentagrossingRavishankarBRQ.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 42",
+    "stem": "Exaggerated placental site (shown in the image above) is characterized by which of the following features?",
+    "difficulty": "medium",
+    "teaching_point": ". Proliferation of implantation type intermediate trophoblasts with invasion of myometrium Exaggerated placental site",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaexagg.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Absence of villi",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Proliferation of implantation type intermediate trophoblasts with invasion of myometrium Exaggerat...",
+        "order_index": 0
+      },
+      {
+        "text": "Presence of necrosis and mitoses",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Proliferation of implantation type intermediate trophoblasts with invasion of myometrium Exaggerat...",
+        "order_index": 1
+      },
+      {
+        "text": "Proliferation of chorionic type intermediate trophoblasts with invasion of myometrium",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Proliferation of implantation type intermediate trophoblasts with invasion of myometrium Exaggerat...",
+        "order_index": 2
+      },
+      {
+        "text": "Proliferation of implantation type intermediate trophoblasts with invasion of myometrium",
+        "is_correct": true,
+        "explanation": ". Proliferation of implantation type intermediate trophoblasts with invasion of myometrium Exaggerated placental site",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaexagggupta02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 43",
+    "stem": "Ki67 labeling index in exaggerated placental site is",
+    "difficulty": "medium",
+    "teaching_point": ". Near 0% Exaggerated placental site",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaexagg.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Near 0%",
+        "is_correct": true,
+        "explanation": ". Near 0% Exaggerated placental site",
+        "order_index": 0
+      },
+      {
+        "text": "Near 5%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Near 0% Exaggerated placental site",
+        "order_index": 1
+      },
+      {
+        "text": "Near 15%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Near 0% Exaggerated placental site",
+        "order_index": 2
+      },
+      {
+        "text": "Near 100%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Near 0% Exaggerated placental site",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 44",
+    "stem": "A 35 year old gravida 2 para 1 woman presents with vaginal bleeding. On ultrasound, a 2.5 cm fungating lower uterine mass / upper endocervical is identified. The findings from the biopsy specimen are shown in the images above. The immunohistochemical stains show positive expression for p63, HLA-G and inhibin and negative expression for HPL, PLAP, hCG and p16. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Epithelioid trophoblastic tumor Epithelioid trophoblastic tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaETT.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Choriocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Epithelioid trophoblastic tumor Epithelioid trophoblastic tumor",
+        "order_index": 0
+      },
+      {
+        "text": "Epithelioid trophoblastic tumor",
+        "is_correct": true,
+        "explanation": ". Epithelioid trophoblastic tumor Epithelioid trophoblastic tumor",
+        "order_index": 1
+      },
+      {
+        "text": "Placental site trophoblastic tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Epithelioid trophoblastic tumor Epithelioid trophoblastic tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Squamous cell carcinoma of the cervix",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Epithelioid trophoblastic tumor Epithelioid trophoblastic tumor",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaETTMendoza03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Epithelioid trophoblastic tumor",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaETTMendoza04.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "Epithelioid trophoblastic tumor",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaETTMendoza05.jpg",
+        "question_section": "stem",
+        "order_index": 2,
+        "alt_text": "Epithelioid trophoblastic tumor",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 45",
+    "stem": "Which of the following immunohistochemical stains can help differentiate placental site trophoblastic tumor from epithelioid trophoblastic tumor?",
+    "difficulty": "medium",
+    "teaching_point": ". p63 Epithelioid trophoblastic tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaETT.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CD10",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . p63 Epithelioid trophoblastic tumor",
+        "order_index": 0
+      },
+      {
+        "text": "hCG",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . p63 Epithelioid trophoblastic tumor",
+        "order_index": 1
+      },
+      {
+        "text": "HSD3B1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . p63 Epithelioid trophoblastic tumor",
+        "order_index": 2
+      },
+      {
+        "text": "p63",
+        "is_correct": true,
+        "explanation": ". p63 Epithelioid trophoblastic tumor",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 46",
+    "stem": "The entity shown above was identified in the placenta of a female infant delivered via normal vaginal delivery at 38 weeks gestation to a 35 year old primipara. Which of the following pathologies is most likely to also be present in the placenta?",
+    "difficulty": "medium",
+    "teaching_point": ". Chronic villitis. Chronic villitis, chronic deciduitis, chronic chorioamnionitis and eosinophilic / T cell chorionic vasculitis often appear together in a single placenta (sometimes referred to as the chronic inflammatory tetrad). If a pathologist identifies 1 of the 4 entities, they should look carefully for the other 3 diagnoses (Semin Perinatol 2015;39:20). acute villitis typically involves acute inflammatory cells like neutrophils and is generally associated with bacterial infections. chorangiosis refers to an increased number of capillaries in the chorionic villi and is associated with conditions like chronic hypoxia. delayed villous maturation is a placental maturation disorder often seen in cases of maternal diabetes or other conditions affecting fetal growth. Eosinophilic / T cell vasculitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaeosinophilicTcellvasculitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute villitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Chronic villitis. Chronic villitis, chronic deciduitis, chronic chorioamnionitis and eosinophilic ...",
+        "order_index": 0
+      },
+      {
+        "text": "Chorangiosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Chronic villitis. Chronic villitis, chronic deciduitis, chronic chorioamnionitis and eosinophilic ...",
+        "order_index": 1
+      },
+      {
+        "text": "Chronic villitis",
+        "is_correct": true,
+        "explanation": ". Chronic villitis. Chronic villitis, chronic deciduitis, chronic chorioamnionitis and eosinophilic / T cell chorionic vasculitis often appear together in a single placenta (sometimes referred to as the chronic inflammatory tetrad). If a pathologist identifies 1 of the 4 entities, they should look carefully for the other 3 diagnoses (Semin Perinatol 2015;39:20). acute villitis typically involves acute inflammatory cells like neutrophils and is generally associated with bacterial infections. chorangiosis refers to an increased number of capillaries in the chorionic villi and is associated with conditions like chronic hypoxia. delayed villous maturation is a placental maturation disorder often seen in cases of maternal diabetes or other conditions affecting fetal growth. Eosinophilic / T cell vasculitis",
+        "order_index": 2
+      },
+      {
+        "text": "Delayed villous maturation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Chronic villitis. Chronic villitis, chronic deciduitis, chronic chorioamnionitis and eosinophilic ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaeosinophilicTcellvasculitisKeir01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaeosinophilicTcellvasculitisKeir03.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 47",
+    "stem": "How is eosinophilic / T cell chorionic vasculitis diagnosed?",
+    "difficulty": "medium",
+    "teaching_point": ". Histological examination of the placenta. At present, there are no recognized laboratory, radiological or macroscopic features that indicate the presence of eosinophilic / T cell chorionic vasculitis. Diagnosis can only be made at present by histological identification of a mixed T cell, eosinophilic and histiocytic infiltrate within the vessel wall of ≥ 1 chorionic, umbilical or stem villous vessel in the absence associated neutrophil polymorphs. macroscopic examination involves visually inspecting the placenta for gross abnormalities, such as size, shape and visible lesions or infarctions. However, eosinophilic / T cell vasculitis requires microscopic evaluation to identify specific cellular infiltrates and detailed vascular changes that cannot be seen with the naked eye. while a CBC can provide information about the overall health of the mother, including white blood cell counts and the presence of eosinophilia (an increased number of eosinophils), it does not provide direct information about the cellular composition or specific inflammatory processes within the placenta. Diagnosing eosinophilic / T cell chorionic vasculitis requires examination of placental tissue. ultrasound scans are used to assess the placenta and fetus's physical and functional status, such as placental location, blood flow and fetal growth. While they can identify some placental abnormalities, they cannot detect specific cellular infiltrates or the detailed histopathological changes characteristic of eosinophilic / T cell vasculitis. Ultrasound is not capable of providing the microscopic detail necessary for this diagnosis. Eosinophilic / T cell vasculitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaeosinophilicTcellvasculitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Histological examination of the placenta",
+        "is_correct": true,
+        "explanation": ". Histological examination of the placenta. At present, there are no recognized laboratory, radiological or macroscopic features that indicate the presence of eosinophilic / T cell chorionic vasculitis. Diagnosis can only be made at present by histological identification of a mixed T cell, eosinophilic and histiocytic infiltrate within the vessel wall of ≥ 1 chorionic, umbilical or stem villous vessel in the absence associated neutrophil polymorphs. macroscopic examination involves visually inspecting the placenta for gross abnormalities, such as size, shape and visible lesions or infarctions. However, eosinophilic / T cell vasculitis requires microscopic evaluation to identify specific cellular infiltrates and detailed vascular changes that cannot be seen with the naked eye. while a CBC can provide information about the overall health of the mother, including white blood cell counts and the presence of eosinophilia (an increased number of eosinophils), it does not provide direct information about the cellular composition or specific inflammatory processes within the placenta. Diagnosing eosinophilic / T cell chorionic vasculitis requires examination of placental tissue. ultrasound scans are used to assess the placenta and fetus's physical and functional status, such as placental location, blood flow and fetal growth. While they can identify some placental abnormalities, they cannot detect specific cellular infiltrates or the detailed histopathological changes characteristic of eosinophilic / T cell vasculitis. Ultrasound is not capable of providing the microscopic detail necessary for this diagnosis. Eosinophilic / T cell vasculitis",
+        "order_index": 0
+      },
+      {
+        "text": "Macroscopic placental examination",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Histological examination of the placenta. At present, there are no recognized laboratory, radiolog...",
+        "order_index": 1
+      },
+      {
+        "text": "Maternal complete blood count (CBC)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Histological examination of the placenta. At present, there are no recognized laboratory, radiolog...",
+        "order_index": 2
+      },
+      {
+        "text": "Third trimester ultrasound scan",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Histological examination of the placenta. At present, there are no recognized laboratory, radiolog...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 48",
+    "stem": "Which of the following is rarely present in early product of conception specimens?",
+    "difficulty": "medium",
+    "teaching_point": ". Embryonic / fetal tissue. Despite frequent identification on ultrasound, embryo or fetus are often not recognized on product of conception specimens. Early first trimester pregnancy loss",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaspontaneousab.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Decidualized / gestational endometrium",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Embryonic / fetal tissue. Despite frequent identification on ultrasound, embryo or fetus are often...",
+        "order_index": 0
+      },
+      {
+        "text": "Embryonic / fetal tissue",
+        "is_correct": true,
+        "explanation": ". Embryonic / fetal tissue. Despite frequent identification on ultrasound, embryo or fetus are often not recognized on product of conception specimens. Early first trimester pregnancy loss",
+        "order_index": 1
+      },
+      {
+        "text": "Immature chorionic villi",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Embryonic / fetal tissue. Despite frequent identification on ultrasound, embryo or fetus are often...",
+        "order_index": 2
+      },
+      {
+        "text": "Placental implantation site",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Embryonic / fetal tissue. Despite frequent identification on ultrasound, embryo or fetus are often...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 49",
+    "stem": "Which feature favors edematous villi over molar gestation?",
+    "difficulty": "medium",
+    "teaching_point": ". Absence of circumeferential trophoblastic proliferation. Circumferential trophoblastic proliferation should raise suspicion for molar pregnancy, particularly complete mole. Early first trimester pregnancy loss",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaspontaneousab.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Absence of circumeferential trophoblastic proliferation",
+        "is_correct": true,
+        "explanation": ". Absence of circumeferential trophoblastic proliferation. Circumferential trophoblastic proliferation should raise suspicion for molar pregnancy, particularly complete mole. Early first trimester pregnancy loss",
+        "order_index": 0
+      },
+      {
+        "text": "Highly irregular villous shapes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Absence of circumeferential trophoblastic proliferation. Circumferential trophoblastic proliferati...",
+        "order_index": 1
+      },
+      {
+        "text": "Trophoblast inclusions",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Absence of circumeferential trophoblastic proliferation. Circumferential trophoblastic proliferati...",
+        "order_index": 2
+      },
+      {
+        "text": "Uniformly vesicular and enlarged villi with circumferentially hyperplastic trophoblasts",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Absence of circumeferential trophoblastic proliferation. Circumferential trophoblastic proliferati...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaabortionsubtypescarreon02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 50",
+    "stem": "Which of the following conditions is associated with the depicted placental finding seen at 39 weeks gestation?",
+    "difficulty": "medium",
+    "teaching_point": ". Gestational diabetes. The image depicts delayed villous maturation with larger villous diameter for gestational age, centrally placed capillaries, continuous cytotrophoblast layer and poor vasculosyncytial membrane formation. Delayed villous maturation is associated with gestational diabetes. accelerated villous maturation is more often seen in preeclampsia versus delayed villous maturation. Answers A, C and D are incorrect because chorioamnionitis, meconium staining and placenta accreta are not associated with delayed villous maturation. Distal villous hyperplasia (villous dysmaturity / delayed villous maturation)",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentavillousdysmaturity.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chorioamnionitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Gestational diabetes. The image depicts delayed villous maturation with larger villous diameter fo...",
+        "order_index": 0
+      },
+      {
+        "text": "Gestational diabetes",
+        "is_correct": true,
+        "explanation": ". Gestational diabetes. The image depicts delayed villous maturation with larger villous diameter for gestational age, centrally placed capillaries, continuous cytotrophoblast layer and poor vasculosyncytial membrane formation. Delayed villous maturation is associated with gestational diabetes. accelerated villous maturation is more often seen in preeclampsia versus delayed villous maturation. Answers A, C and D are incorrect because chorioamnionitis, meconium staining and placenta accreta are not associated with delayed villous maturation. Distal villous hyperplasia (villous dysmaturity / delayed villous maturation)",
+        "order_index": 1
+      },
+      {
+        "text": "Meconium stained fluid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Gestational diabetes. The image depicts delayed villous maturation with larger villous diameter fo...",
+        "order_index": 2
+      },
+      {
+        "text": "Placenta accreta",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Gestational diabetes. The image depicts delayed villous maturation with larger villous diameter fo...",
+        "order_index": 3
+      },
+      {
+        "text": "Preeclampsia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Gestational diabetes. The image depicts delayed villous maturation with larger villous diameter fo...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentavillousdysmaturityKertowidjojo03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 51",
+    "stem": "Which of the following microscopic findings is a feature of delayed villous maturation?",
+    "difficulty": "medium",
+    "teaching_point": ". Poor vasculosyncytial membrane formation. Histologic features of delayed villous maturation includes increased villous diameter for gestational age, centrally placed capillaries, a continuous cytotrophoblast layer, decreased syncytial knots and poor vasculosyncytial membrane formation. Answers B, C and D are incorrect because decreased villous diameter for gestational age, distal villous hypoplasia and increased syncytial knots are features of accelerated villous maturation. decidual hemorrhage is a finding that can be seen in placental abruption. Distal villous hyperplasia (villous dysmaturity / delayed villous maturation)",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentavillousdysmaturity.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Decidual hemorrhage",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Poor vasculosyncytial membrane formation. Histologic features of delayed villous maturation includ...",
+        "order_index": 0
+      },
+      {
+        "text": "Decreased villous diameter for gestational age",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Poor vasculosyncytial membrane formation. Histologic features of delayed villous maturation includ...",
+        "order_index": 1
+      },
+      {
+        "text": "Distal villous hypoplasia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Poor vasculosyncytial membrane formation. Histologic features of delayed villous maturation includ...",
+        "order_index": 2
+      },
+      {
+        "text": "Increased syncytial knots",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Poor vasculosyncytial membrane formation. Histologic features of delayed villous maturation includ...",
+        "order_index": 3
+      },
+      {
+        "text": "Poor vasculosyncytial membrane formation",
+        "is_correct": true,
+        "explanation": ". Poor vasculosyncytial membrane formation. Histologic features of delayed villous maturation includes increased villous diameter for gestational age, centrally placed capillaries, a continuous cytotrophoblast layer, decreased syncytial knots and poor vasculosyncytial membrane formation. Answers B, C and D are incorrect because decreased villous diameter for gestational age, distal villous hypoplasia and increased syncytial knots are features of accelerated villous maturation. decidual hemorrhage is a finding that can be seen in placental abruption. Distal villous hyperplasia (villous dysmaturity / delayed villous maturation)",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 52",
+    "stem": "A 34 year old woman who is pregnant with her third child and has 2 children (G3P2002) presents at 39 weeks for delivery. Histologic examination of the membrane roll reveals small arteries with detached endothelial cells and a perivascular lymphocytic infiltrate. Which immunohistochemical stain would best highlight the fragmentation of smooth muscle within the vessel walls?",
+    "difficulty": "medium",
+    "teaching_point": "Desmin Decidual arteriopathy",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentadecidualvasculopathy.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Caldesmon",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Desmin Decidual arteriopathy",
+        "order_index": 0
+      },
+      {
+        "text": "Desmin",
+        "is_correct": true,
+        "explanation": "Desmin Decidual arteriopathy",
+        "order_index": 1
+      },
+      {
+        "text": "MyoD1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Desmin Decidual arteriopathy",
+        "order_index": 2
+      },
+      {
+        "text": "Myogenin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Desmin Decidual arteriopathy",
+        "order_index": 3
+      },
+      {
+        "text": "Smooth muscle actin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Desmin Decidual arteriopathy",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentadecidualvasculopathyHecht04.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 53",
+    "stem": "32 year old G3P1102 presents at 39 weeks for delivery. Histologic examination of the membrane roll reveals small arteries with detached endothelial cells and a perivascular lymphocytic infiltrate. Which predisposing factor is this mother most likely to have?",
+    "difficulty": "medium",
+    "teaching_point": "Gestational hypertension Decidual arteriopathy",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentadecidualvasculopathy.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Gestational hypertension",
+        "is_correct": true,
+        "explanation": "Gestational hypertension Decidual arteriopathy",
+        "order_index": 0
+      },
+      {
+        "text": "Increased exercise during pregnancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Gestational hypertension Decidual arteriopathy",
+        "order_index": 1
+      },
+      {
+        "text": "Infection during pregnancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Gestational hypertension Decidual arteriopathy",
+        "order_index": 2
+      },
+      {
+        "text": "Low body weight",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Gestational hypertension Decidual arteriopathy",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 54",
+    "stem": "A placenta was delivered to a mother with recent hospital admission for COVID pneumonia. The minimal diagnostic features required for COVID placentitis are",
+    "difficulty": "medium",
+    "teaching_point": "Chronic histiocytic intervillositis and trophoblast necrosis and documentation of recent maternal infection via nasal swab COVID-19 placentitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaCOVID-19placentitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chronic histiocytic intervillositis and trophoblast necrosis and documentation of recent maternal infection via nasal swab",
+        "is_correct": true,
+        "explanation": "Chronic histiocytic intervillositis and trophoblast necrosis and documentation of recent maternal infection via nasal swab COVID-19 placentitis",
+        "order_index": 0
+      },
+      {
+        "text": "Chronic villitis of uncertain etiology (VUE) with documented placental infection by SARS-CoV-2 by ISH",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic histiocytic intervillositis and trophoblast necrosis and documentation of recent maternal in...",
+        "order_index": 1
+      },
+      {
+        "text": "Evidence of maternal vascular malperfusion and preeclampsia and documentation of recent maternal infection via nasal swab",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic histiocytic intervillositis and trophoblast necrosis and documentation of recent maternal in...",
+        "order_index": 2
+      },
+      {
+        "text": "Fetal vascular malperfusion with documented placental infection by SARS-CoV-2 by ISH",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic histiocytic intervillositis and trophoblast necrosis and documentation of recent maternal in...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 55",
+    "stem": "Which is the best predictor of fetal / neonatal SARS-CoV-2?",
+    "difficulty": "medium",
+    "teaching_point": "Chronic histiocytic intervillositis and trophoblast necrosis in placentas with documented placental infection by SARS-CoV-2 by ISH COVID-19 placentitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaCOVID-19placentitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chronic histiocytic intervillositis and trophoblast necrosis in placentas with documented placental infection by SARS-CoV-2 by ISH",
+        "is_correct": true,
+        "explanation": "Chronic histiocytic intervillositis and trophoblast necrosis in placentas with documented placental infection by SARS-CoV-2 by ISH COVID-19 placentitis",
+        "order_index": 0
+      },
+      {
+        "text": "Fetal demise in the setting of maternal COVID infection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic histiocytic intervillositis and trophoblast necrosis in placentas with documented placental ...",
+        "order_index": 1
+      },
+      {
+        "text": "High grade chronic villitis of uncertain etiology (VUE) in a mother with severe clinical COVID viral syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic histiocytic intervillositis and trophoblast necrosis in placentas with documented placental ...",
+        "order_index": 2
+      },
+      {
+        "text": "Maternal infection with a severe clinical viral syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic histiocytic intervillositis and trophoblast necrosis in placentas with documented placental ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 56",
+    "stem": "The findings depicted in this image are",
+    "difficulty": "medium",
+    "teaching_point": "Chronic histiocytic intervillositis and trophoblast necrosis (COVID placentitis) COVID-19 placentitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaCOVID-19placentitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chronic histiocytic intervillositis and trophoblast necrosis (COVID placentitis)",
+        "is_correct": true,
+        "explanation": "Chronic histiocytic intervillositis and trophoblast necrosis (COVID placentitis) COVID-19 placentitis",
+        "order_index": 0
+      },
+      {
+        "text": "Chronic villitis of uncertain etiology (VUE)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic histiocytic intervillositis and trophoblast necrosis (COVID placentitis) COVID-19 placentiti...",
+        "order_index": 1
+      },
+      {
+        "text": "Fetal vascular malperfusion; villous sclerosis and stem vessel thrombosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic histiocytic intervillositis and trophoblast necrosis (COVID placentitis) COVID-19 placentiti...",
+        "order_index": 2
+      },
+      {
+        "text": "Maternal vascular malperfusion; infarction and accelerated maturation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic histiocytic intervillositis and trophoblast necrosis (COVID placentitis) COVID-19 placentiti...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaCOVID-19placentitisravishankar05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 57",
+    "stem": "A 24 year old woman presents with vaginal bleeding during the 14th week of pregnancy. She reports intractable nausea. Serum beta human chorionic gonadotropin (beta hCG) levels are markedly elevated at 1,780,000 mIU/ml. Ultrasound assessment reveals no visible fetus but a snowstorm pattern is noted by the radiologist. Curettage reveals 510 grams of bloody granular and friable tissue with numerous small vesicles, which contain clear, colorless fluid. No fetal parts are seen grossly. Representative histologic section is as shown above with circumferential trophoblastic proliferation and cistern formation. Which of the following is true about this condition?",
+    "difficulty": "medium",
+    "teaching_point": "Abnormal karyotype may arise from endoreplication of paternal chromosome Complete hydatidiform mole",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentacompletemole.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Abnormal karyotype may arise from endoreplication of paternal chromosome",
+        "is_correct": true,
+        "explanation": "Abnormal karyotype may arise from endoreplication of paternal chromosome Complete hydatidiform mole",
+        "order_index": 0
+      },
+      {
+        "text": "Immunostaining for p57 should be negative in decidual tissue and syncytiotrophoblasts",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Abnormal karyotype may arise from endoreplication of paternal chromosome Complete hydatidiform mole",
+        "order_index": 1
+      },
+      {
+        "text": "Typical genetic profile is diandric triploidy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Abnormal karyotype may arise from endoreplication of paternal chromosome Complete hydatidiform mole",
+        "order_index": 2
+      },
+      {
+        "text": "This results from fertilization of a haploid ovum with two haploid sperm cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Abnormal karyotype may arise from endoreplication of paternal chromosome Complete hydatidiform mole",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentacompletemoleMendoza4.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 58",
+    "stem": "The most common karyotype for complete mole is",
+    "difficulty": "medium",
+    "teaching_point": "46XX Complete hydatidiform mole",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentacompletemole.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "45XX",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. 46XX Complete hydatidiform mole",
+        "order_index": 0
+      },
+      {
+        "text": "46XX",
+        "is_correct": true,
+        "explanation": "46XX Complete hydatidiform mole",
+        "order_index": 1
+      },
+      {
+        "text": "46XY",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. 46XX Complete hydatidiform mole",
+        "order_index": 2
+      },
+      {
+        "text": "69XXY",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. 46XX Complete hydatidiform mole",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 59",
+    "stem": "A placenta is delivered at 37 weeks of gestation and shows the above findings. What is the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Chronic histiocytic intervillositis. The image depicts an infiltrate of histiocytes in the maternal intervillous space, consistent with chronic histiocytic intervillositis. massive perivillous fibrin deposition is characterized by excessive acellular fibrin deposition, which encases chorionic villi and obliterates the intervillous space. mucopolysaccharidosis type I, also known as Hurler syndrome, is a metabolic storage disorder; metabolic storage disorders are characterized by cytoplasmic vacuolization of villous cells, which is not seen here. villous stromal vascular karyorrhexis is characterized by nuclear fragmentation and degeneration of villous stromal and endothelial cells, along with the presence of red blood cell fragments. This represents an early stage of distal terminal villous ischemia, which ultimately progresses to avascular villi. Chronic histiocytic intervillositis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentachronicintervillositis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chronic histiocytic intervillositis",
+        "is_correct": true,
+        "explanation": "Chronic histiocytic intervillositis. The image depicts an infiltrate of histiocytes in the maternal intervillous space, consistent with chronic histiocytic intervillositis. massive perivillous fibrin deposition is characterized by excessive acellular fibrin deposition, which encases chorionic villi and obliterates the intervillous space. mucopolysaccharidosis type I, also known as Hurler syndrome, is a metabolic storage disorder; metabolic storage disorders are characterized by cytoplasmic vacuolization of villous cells, which is not seen here. villous stromal vascular karyorrhexis is characterized by nuclear fragmentation and degeneration of villous stromal and endothelial cells, along with the presence of red blood cell fragments. This represents an early stage of distal terminal villous ischemia, which ultimately progresses to avascular villi. Chronic histiocytic intervillositis",
+        "order_index": 0
+      },
+      {
+        "text": "Massive perivillous fibrin deposition",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic histiocytic intervillositis. The image depicts an infiltrate of histiocytes in the maternal ...",
+        "order_index": 1
+      },
+      {
+        "text": "Mucopolysaccharidoses type I",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic histiocytic intervillositis. The image depicts an infiltrate of histiocytes in the maternal ...",
+        "order_index": 2
+      },
+      {
+        "text": "Villous stromal vascular karyorrhexis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Chronic histiocytic intervillositis. The image depicts an infiltrate of histiocytes in the maternal ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentachronicintervillositisMa04.jpeg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 60",
+    "stem": "A 35 year old patient delivered a placenta with findings depicted in the image above. Which of the following statements is most likely true?",
+    "difficulty": "medium",
+    "teaching_point": "The patient has a history of recurrent miscarriages. The image depicts an infiltrate of histiocytes in the maternal intervillous space, consistent with chronic histiocytic intervillositis. Chronic histiocytic intervillositis is an idiopathic inflammatory disorder associated with fetal growth restriction, recurrent spontaneous abortion and stillbirth. chronic histiocytic intervillositis has no association with gestational trophoblastic disease. a positive RPR is a nonspecific test result for syphilis, which is an infectious process. the image findings do not show features of maternal vascular malperfusion. Chronic histiocytic intervillositis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentachronicintervillositis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "The patient has a history of hypertension",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. The patient has a history of recurrent miscarriages. The image depicts an infiltrate of histiocytes ...",
+        "order_index": 0
+      },
+      {
+        "text": "The patient has a history of partial hydatidiform mole",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. The patient has a history of recurrent miscarriages. The image depicts an infiltrate of histiocytes ...",
+        "order_index": 1
+      },
+      {
+        "text": "The patient has a history of positive rapid plasma reagin (RPR) tests",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. The patient has a history of recurrent miscarriages. The image depicts an infiltrate of histiocytes ...",
+        "order_index": 2
+      },
+      {
+        "text": "The patient has a history of recurrent miscarriages",
+        "is_correct": true,
+        "explanation": "The patient has a history of recurrent miscarriages. The image depicts an infiltrate of histiocytes in the maternal intervillous space, consistent with chronic histiocytic intervillositis. Chronic histiocytic intervillositis is an idiopathic inflammatory disorder associated with fetal growth restriction, recurrent spontaneous abortion and stillbirth. chronic histiocytic intervillositis has no association with gestational trophoblastic disease. a positive RPR is a nonspecific test result for syphilis, which is an infectious process. the image findings do not show features of maternal vascular malperfusion. Chronic histiocytic intervillositis",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentachronicintervillositisMa02.jpeg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 61",
+    "stem": "Which of the following serum markers is markedly elevated in the tumor above?",
+    "difficulty": "medium",
+    "teaching_point": "hCG Choriocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentachoriocarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CA125",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. hCG Choriocarcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "CA19-9",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. hCG Choriocarcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "CEA",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. hCG Choriocarcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "hCG",
+        "is_correct": true,
+        "explanation": "hCG Choriocarcinoma",
+        "order_index": 3
+      },
+      {
+        "text": "hPL",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. hCG Choriocarcinoma",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentachoriocarcinomaschultz02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Triphasic neoplasm",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 62",
+    "stem": "Which is the best tool to differentiate gestational from nongestational choriocarcinoma?",
+    "difficulty": "medium",
+    "teaching_point": "Short tandem repeat analysis Choriocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentachoriocarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Copy number analysis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Short tandem repeat analysis Choriocarcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Immunohistochemistry",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Short tandem repeat analysis Choriocarcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Microsatellite instability status",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Short tandem repeat analysis Choriocarcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Short tandem repeat analysis",
+        "is_correct": true,
+        "explanation": "Short tandem repeat analysis Choriocarcinoma",
+        "order_index": 3
+      },
+      {
+        "text": "Tumor mutational burden analysis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Short tandem repeat analysis Choriocarcinoma",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 63",
+    "stem": "This placenta from a primigravida living in Nepal shows what feature?",
+    "difficulty": "medium",
+    "teaching_point": "Chorangiosis Chorangiosis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentachorangiosis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chorangioma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Chorangiosis Chorangiosis",
+        "order_index": 0
+      },
+      {
+        "text": "Chorangiomatosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Chorangiosis Chorangiosis",
+        "order_index": 1
+      },
+      {
+        "text": "Chorangiosis",
+        "is_correct": true,
+        "explanation": "Chorangiosis Chorangiosis",
+        "order_index": 2
+      },
+      {
+        "text": "Normal placenta villi",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Chorangiosis Chorangiosis",
+        "order_index": 3
+      },
+      {
+        "text": "Villous edema",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Chorangiosis Chorangiosis",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentachorangiosisRoberts01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 64",
+    "stem": "Chorangiosis (see figure) is associated with which of these clinical histories?",
+    "difficulty": "medium",
+    "teaching_point": "High altitude pregnancies Chorangiosis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentachorangiosis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CMV placentitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. High altitude pregnancies Chorangiosis",
+        "order_index": 0
+      },
+      {
+        "text": "High altitude pregnancies",
+        "is_correct": true,
+        "explanation": "High altitude pregnancies Chorangiosis",
+        "order_index": 1
+      },
+      {
+        "text": "Intrauterine fetal demise",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. High altitude pregnancies Chorangiosis",
+        "order_index": 2
+      },
+      {
+        "text": "Maternal depression",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. High altitude pregnancies Chorangiosis",
+        "order_index": 3
+      },
+      {
+        "text": "Small for gestational age fetus",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. High altitude pregnancies Chorangiosis",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentachorangiosisRoberts02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 65",
+    "stem": "Which of the following describes the lesion shown above?",
+    "difficulty": "medium",
+    "teaching_point": "Foci of excessive capillary proliferation present at the edges of stem and intermediate villi that can be associated with advanced maternal age, preterm birth and multiparty. it describes localized chorangiomatosis (wandering chorangioma). Answer B is incorrect since it describes a giant chorangioma, which has a high prevalence of poor fetal outcomes related to polyhydramnios, intrauterine growth restriction, cardiomegaly, high output heart failure and fetal hydrops. it describes dysmorphic villi. it describes immature villi. Chorangiomatosis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentachorangiomatosis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "A capillary proliferation localized to a group of contiguous primary stem villi",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Foci of excessive capillary proliferation present at the edges of stem and intermediate villi that c...",
+        "order_index": 0
+      },
+      {
+        "text": "A localized capillary proliferation which when > 3 cm can result in polyhydramnios and intrauterine growth restriction",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Foci of excessive capillary proliferation present at the edges of stem and intermediate villi that c...",
+        "order_index": 1
+      },
+      {
+        "text": "Enlarged villi with irregular contours, increased stroma, trophoblast inclusions and irregularly distributed arterioles, venules and capillaries",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Foci of excessive capillary proliferation present at the edges of stem and intermediate villi that c...",
+        "order_index": 2
+      },
+      {
+        "text": "Foci of excessive capillary proliferation present at the edges of stem and intermediate villi that can be associated with advanced maternal age, preterm birth and multiparty",
+        "is_correct": true,
+        "explanation": "Foci of excessive capillary proliferation present at the edges of stem and intermediate villi that can be associated with advanced maternal age, preterm birth and multiparty. it describes localized chorangiomatosis (wandering chorangioma). Answer B is incorrect since it describes a giant chorangioma, which has a high prevalence of poor fetal outcomes related to polyhydramnios, intrauterine growth restriction, cardiomegaly, high output heart failure and fetal hydrops. it describes dysmorphic villi. it describes immature villi. Chorangiomatosis",
+        "order_index": 3
+      },
+      {
+        "text": "Multifocal or diffuse increase in villous diameter with increased stromal cellularity and the presence of nonperipheral villous capillaries",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Foci of excessive capillary proliferation present at the edges of stem and intermediate villi that c...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentachorangiomatosisMicro7.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 66",
+    "stem": "Which of the following is true about multifocal chorangiomatosis?",
+    "difficulty": "medium",
+    "teaching_point": "Can be categorized as patchy or extensive. it describes chorangiosis. it describes placental mesenchymal dysplasia. it describes chorangioma. Chorangiomatosis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentachorangiomatosis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Can be categorized as patchy or extensive",
+        "is_correct": true,
+        "explanation": "Can be categorized as patchy or extensive. it describes chorangiosis. it describes placental mesenchymal dysplasia. it describes chorangioma. Chorangiomatosis",
+        "order_index": 0
+      },
+      {
+        "text": "Can be seen in placentas of mothers living at high altitudes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Can be categorized as patchy or extensive. it describes chorangiosis. it describes placental mesench...",
+        "order_index": 1
+      },
+      {
+        "text": "Localized, nodular capillary proliferation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Can be categorized as patchy or extensive. it describes chorangiosis. it describes placental mesench...",
+        "order_index": 2
+      },
+      {
+        "text": "Placentas are enlarged with segmentally abnormal proximal villi showing stromal overgrowth and vascular abnormalities affecting small and large villous vessels",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Can be categorized as patchy or extensive. it describes chorangiosis. it describes placental mesench...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 67",
+    "stem": "Which of the following is the most likely diagnosis of this well circumscribed placental mass near the chorionic plate?",
+    "difficulty": "medium",
+    "teaching_point": ". Chorangioma. Chorangiomas are likely hamartomas of the placental stem villi forming vascular masses nearly always peripheral and adjacent to the chorionic plate. They are well demarcated, firm masses when grossly identifiable and most are incidental and microscopic. Leiomyomas from the uterus can be adherent to the basal plate of the placenta and are extremely rare masses, extraneous to the placental parenchyma. Placental infarcts are typically firm and gritty triangular or rectangular masses at the maternal floor (not the chorionic plate). Intervillous thrombi are laminated irregularly shaped red or white soft masses anywhere in the placenta. Placental associated inflammatory myofibroblastic tumors are also unusual extrinsic masses that can be attached to the placenta basal plate or membranes. Chorangioma",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentachorangioma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chorangioma",
+        "is_correct": true,
+        "explanation": ". Chorangioma. Chorangiomas are likely hamartomas of the placental stem villi forming vascular masses nearly always peripheral and adjacent to the chorionic plate. They are well demarcated, firm masses when grossly identifiable and most are incidental and microscopic. Leiomyomas from the uterus can be adherent to the basal plate of the placenta and are extremely rare masses, extraneous to the placental parenchyma. Placental infarcts are typically firm and gritty triangular or rectangular masses at the maternal floor (not the chorionic plate). Intervillous thrombi are laminated irregularly shaped red or white soft masses anywhere in the placenta. Placental associated inflammatory myofibroblastic tumors are also unusual extrinsic masses that can be attached to the placenta basal plate or membranes. Chorangioma",
+        "order_index": 0
+      },
+      {
+        "text": "Inflammatory myofibroblastic tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Chorangioma. Chorangiomas are likely hamartomas of the placental stem villi forming vascular masse...",
+        "order_index": 1
+      },
+      {
+        "text": "Intervillous thrombus",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Chorangioma. Chorangiomas are likely hamartomas of the placental stem villi forming vascular masse...",
+        "order_index": 2
+      },
+      {
+        "text": "Leiomyoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Chorangioma. Chorangiomas are likely hamartomas of the placental stem villi forming vascular masse...",
+        "order_index": 3
+      },
+      {
+        "text": "Placental infarct",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Chorangioma. Chorangiomas are likely hamartomas of the placental stem villi forming vascular masse...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentachorangiomaboyraz01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 68",
+    "stem": "What are complications associated with chorangioma?",
+    "difficulty": "medium",
+    "teaching_point": ". Fetal and maternal hydrops. Vascular steal and heart failure due to fetal perfusion of a large chorangioma can lead to fetal hydrops. Maternal mirror syndrome is a rare but serious complication of hydrops fetalis. Malignant transformation does not occur in chorangiomas; if malignancy occurs, the diagnosis is likely an intraplacental choriocarcinoma, which can have associated hypervascular villi. Visceral hemangiomas in the mother are not associated with chorangiomas but fetal / neonatal hemangiomas of the skin have been reported. Chorangiomas rarely reach a size which could complicate delivery. Chorangioma",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentachorangioma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Fetal and maternal hydrops",
+        "is_correct": true,
+        "explanation": ". Fetal and maternal hydrops. Vascular steal and heart failure due to fetal perfusion of a large chorangioma can lead to fetal hydrops. Maternal mirror syndrome is a rare but serious complication of hydrops fetalis. Malignant transformation does not occur in chorangiomas; if malignancy occurs, the diagnosis is likely an intraplacental choriocarcinoma, which can have associated hypervascular villi. Visceral hemangiomas in the mother are not associated with chorangiomas but fetal / neonatal hemangiomas of the skin have been reported. Chorangiomas rarely reach a size which could complicate delivery. Chorangioma",
+        "order_index": 0
+      },
+      {
+        "text": "Malignant transformation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Fetal and maternal hydrops. Vascular steal and heart failure due to fetal perfusion of a large cho...",
+        "order_index": 1
+      },
+      {
+        "text": "Maternal visceral hemangiomas",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Fetal and maternal hydrops. Vascular steal and heart failure due to fetal perfusion of a large cho...",
+        "order_index": 2
+      },
+      {
+        "text": "Obstructed labor and delivery",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Fetal and maternal hydrops. Vascular steal and heart failure due to fetal perfusion of a large cho...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 69",
+    "stem": "Placenta product of a concealed pregnancy is submitted for assessment of the gestational age. The trimmed placental weight is 51 grams. The histology shows a prevalence of intermediate immature villi with presence of extravillous (intermediate) trophoblast. What is the most likely gestational age of the placenta?",
+    "difficulty": "medium",
+    "teaching_point": "12 weeks gestation. Immature intermediate villi are dominant in early pregnancy (first trimester). The presence of extravillous trophoblast invades the uterus during implantation. Answers B - E are incorrect because these features would likely not be present by the gestational age listed. Anatomy & histology-placenta & umbilical cord",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentanormalhistology.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "12 weeks",
+        "is_correct": true,
+        "explanation": "12 weeks gestation. Immature intermediate villi are dominant in early pregnancy (first trimester). The presence of extravillous trophoblast invades the uterus during implantation. Answers B - E are incorrect because these features would likely not be present by the gestational age listed. Anatomy & histology-placenta & umbilical cord",
+        "order_index": 0
+      },
+      {
+        "text": "26 weeks",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 12 weeks gestation. Immature intermediate villi are dominant in early pregnancy (first trimester). T...",
+        "order_index": 1
+      },
+      {
+        "text": "36 weeks",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 12 weeks gestation. Immature intermediate villi are dominant in early pregnancy (first trimester). T...",
+        "order_index": 2
+      },
+      {
+        "text": "40 weeks",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 12 weeks gestation. Immature intermediate villi are dominant in early pregnancy (first trimester). T...",
+        "order_index": 3
+      },
+      {
+        "text": "42 weeks",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 12 weeks gestation. Immature intermediate villi are dominant in early pregnancy (first trimester). T...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentanormalhistologyCohen10.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 70",
+    "stem": "In which placental compartment is the Wharton jelly present?",
+    "difficulty": "medium",
+    "teaching_point": "Umbilical cord. Intervening Wharton jelly contains loose ground substance, a fine network of microfibrils and scattered nucleated cells (predominantly macrophages, myofibroblasts and mast cells). Answers A - C and E are incorrect because Wharton jelly is not present in these placental compartments. Anatomy & histology-placenta & umbilical cord",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentanormalhistology.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Basal plate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Umbilical cord. Intervening Wharton jelly contains loose ground substance, a fine network of microfi...",
+        "order_index": 0
+      },
+      {
+        "text": "Chorionic plate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Umbilical cord. Intervening Wharton jelly contains loose ground substance, a fine network of microfi...",
+        "order_index": 1
+      },
+      {
+        "text": "Membranes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Umbilical cord. Intervening Wharton jelly contains loose ground substance, a fine network of microfi...",
+        "order_index": 2
+      },
+      {
+        "text": "Umbilical cord",
+        "is_correct": true,
+        "explanation": "Umbilical cord. Intervening Wharton jelly contains loose ground substance, a fine network of microfibrils and scattered nucleated cells (predominantly macrophages, myofibroblasts and mast cells). Answers A - C and E are incorrect because Wharton jelly is not present in these placental compartments. Anatomy & histology-placenta & umbilical cord",
+        "order_index": 3
+      },
+      {
+        "text": "Villi",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Umbilical cord. Intervening Wharton jelly contains loose ground substance, a fine network of microfi...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 71",
+    "stem": "The lesion in the image above is found in the placenta. What is the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Amnion nodosum Amnion nodosum",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaamnionnodosum.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute chorioamnionitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Amnion nodosum Amnion nodosum",
+        "order_index": 0
+      },
+      {
+        "text": "Amnion nodosum",
+        "is_correct": true,
+        "explanation": "Amnion nodosum Amnion nodosum",
+        "order_index": 1
+      },
+      {
+        "text": "Chorion nodosum",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Amnion nodosum Amnion nodosum",
+        "order_index": 2
+      },
+      {
+        "text": "Squamous metaplasia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Amnion nodosum Amnion nodosum",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaamnionnodosumSimon02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 72",
+    "stem": "Amnion nodosum is most commonly associated with which congenital anomaly / malformation?",
+    "difficulty": "medium",
+    "teaching_point": "Renal agenesis Amnion nodosum",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaamnionnodosum.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Renal agenesis",
+        "is_correct": true,
+        "explanation": "Renal agenesis Amnion nodosum",
+        "order_index": 0
+      },
+      {
+        "text": "Tracheoesophageal fistula",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Renal agenesis Amnion nodosum",
+        "order_index": 1
+      },
+      {
+        "text": "Trisomy 18",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Renal agenesis Amnion nodosum",
+        "order_index": 2
+      },
+      {
+        "text": "Ventricular septal defect",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Renal agenesis Amnion nodosum",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 73",
+    "stem": "A 29 year old woman, gravida 2, para 1 now 2, delivers at term with fever, nausea and vomiting. She has a history of eating processed meats. The placenta is delivered and shows multiple gray-yellow soft parenchyma masses, yellow cloudy membranes and has a fruity odor. Histologically, the masses are abscesses associated with acute villitis and villous necrosis. The most likely diagnosis is",
+    "difficulty": "medium",
+    "teaching_point": "Listerial placentitis Acute villitis and intervillositis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaacutevillitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cytomegalovirus placentitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Listerial placentitis Acute villitis and intervillositis",
+        "order_index": 0
+      },
+      {
+        "text": "Group B strep infection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Listerial placentitis Acute villitis and intervillositis",
+        "order_index": 1
+      },
+      {
+        "text": "Listerial placentitis",
+        "is_correct": true,
+        "explanation": "Listerial placentitis Acute villitis and intervillositis",
+        "order_index": 2
+      },
+      {
+        "text": "Syphilitic placentitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Listerial placentitis Acute villitis and intervillositis",
+        "order_index": 3
+      },
+      {
+        "text": "Villitis of unknown etiology",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Listerial placentitis Acute villitis and intervillositis",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaacutevillitisRobertsMicro3.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 74",
+    "stem": "A 31 year old woman, gravida 3, para 2, presents with an intrauterine fetal demise at 18 weeks gestational age. She is induced and delivers vaginally. The male fetus is externally unremarkable and autopsy / fetopsy consent was denied. A small noncloudy placenta was examined histologically and showed acute villitis with intravascular cocci. Which of the following is true?",
+    "difficulty": "medium",
+    "teaching_point": "Most likely diagnosis is group B strep fetal sepsis and the clinician should be notified as a critical value, as there is a risk of maternal morbidity Acute villitis and intervillositis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentaacutevillitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Bacteria are contaminants from the vaginal delivery",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Most likely diagnosis is group B strep fetal sepsis and the clinician should be notified as a critic...",
+        "order_index": 0
+      },
+      {
+        "text": "Culturing the placenta is not possible, as this was a vaginal delivery",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Most likely diagnosis is group B strep fetal sepsis and the clinician should be notified as a critic...",
+        "order_index": 1
+      },
+      {
+        "text": "Findings suggest an ascending infection in utero",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Most likely diagnosis is group B strep fetal sepsis and the clinician should be notified as a critic...",
+        "order_index": 2
+      },
+      {
+        "text": "Most likely diagnosis is group B strep fetal sepsis and the clinician should be notified as a critical value, as there is a risk of maternal morbidity",
+        "is_correct": true,
+        "explanation": "Most likely diagnosis is group B strep fetal sepsis and the clinician should be notified as a critical value, as there is a risk of maternal morbidity Acute villitis and intervillositis",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentaacutevillitisRobertsMicro4.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 75",
+    "stem": "A yellow / green discolored and cloudy placenta shows which of the following histologies of the membranes and umbilical cord?",
+    "difficulty": "medium",
+    "teaching_point": "Stage 2 grade 2 acute chorioamnionitis, maternal inflammatory response with a fetal inflammatory response stage 2 grade 1 Acute chorioamnionitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentachorioamnionitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Stage 0 grade 1 acute chorioamnionitis, maternal inflammatory response with a fetal inflammatory response stage 1 grade 1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Stage 2 grade 2 acute chorioamnionitis, maternal inflammatory response with a fetal inflammatory res...",
+        "order_index": 0
+      },
+      {
+        "text": "Stage 1 grade 1 acute chorioamnionitis, maternal inflammatory response with a fetal inflammatory response stage 2 grade 1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Stage 2 grade 2 acute chorioamnionitis, maternal inflammatory response with a fetal inflammatory res...",
+        "order_index": 1
+      },
+      {
+        "text": "Stage 2 grade 2 acute chorioamnionitis, maternal inflammatory response with a fetal inflammatory response stage 2 grade 1",
+        "is_correct": true,
+        "explanation": "Stage 2 grade 2 acute chorioamnionitis, maternal inflammatory response with a fetal inflammatory response stage 2 grade 1 Acute chorioamnionitis",
+        "order_index": 2
+      },
+      {
+        "text": "Stage 3 grade 2 acute chorioamnionitis, maternal inflammatory response with a fetal inflammatory response stage 2 grade 2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Stage 2 grade 2 acute chorioamnionitis, maternal inflammatory response with a fetal inflammatory res...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentachorioamnionitismicroRoberts05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 76",
+    "stem": "This umbilical cord shows patchy white / yellow lesions on the surface. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Candidal funisitis Acute chorioamnionitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/placentachorioamnionitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Candidal funisitis",
+        "is_correct": true,
+        "explanation": "Candidal funisitis Acute chorioamnionitis",
+        "order_index": 0
+      },
+      {
+        "text": "Fusobacterial funisitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Candidal funisitis Acute chorioamnionitis",
+        "order_index": 1
+      },
+      {
+        "text": "Meconium myonecrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Candidal funisitis Acute chorioamnionitis",
+        "order_index": 2
+      },
+      {
+        "text": "Syphilitic funisitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Candidal funisitis Acute chorioamnionitis",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/placentachorioamnionitisgrossRoberts01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "placenta.html",
+      "category": "Anatomic Pathology > Gynecologic",
+      "database_set": "Web"
+    }
+  }
+]

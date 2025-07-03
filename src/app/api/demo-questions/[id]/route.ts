@@ -33,7 +33,8 @@ interface QuestionData {
   question_references: string | null;
   status: string;
   difficulty: string;
-  answer_options: AnswerOptionData[];
+  question_options: AnswerOptionData[];
+  answer_options?: AnswerOptionData[]; // Legacy field for backward compatibility
   question_images: QuestionImageData[];
 }
 
@@ -109,7 +110,7 @@ export async function GET(
           question_references,
           status,
           difficulty,
-          answer_options(
+          question_options(
             id,
             text,
             is_correct,
@@ -165,8 +166,9 @@ export async function GET(
         
         const explanationImage: QuestionImage | null = explanationImages.length > 0 ? explanationImages[0] : null;
         
-        // Process options
-        const options: QuestionOption[] = typedData.answer_options.map((opt: AnswerOptionData) => ({
+        // Process options (use question_options or fall back to answer_options for backward compatibility)
+        const optionsData = typedData.question_options || typedData.answer_options || [];
+        const options: QuestionOption[] = optionsData.map((opt: AnswerOptionData) => ({
           id: opt.id || '',
           text: opt.text || '',
           correct: !!opt.is_correct,
@@ -175,7 +177,7 @@ export async function GET(
         
         // Build incorrect explanations object
         const incorrectExplanations: Record<string, string> = {};
-        typedData.answer_options.forEach((opt: AnswerOptionData) => {
+        optionsData.forEach((opt: AnswerOptionData) => {
           if (!opt.is_correct && opt.explanation) {
             incorrectExplanations[opt.id] = opt.explanation;
           }

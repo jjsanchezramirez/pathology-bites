@@ -110,12 +110,10 @@ Each version stores:
 - Links flaggers and resolvers
 
 ### Enhanced questions Table
-New fields added:
-- `reviewed_by`: ID of reviewer who last reviewed
-- `reviewed_at`: Timestamp of last review
-- `flagged_by`: ID of user who flagged the question
-- `flagged_at`: Timestamp when flagged
-- `flag_reason`: Type of flag that was raised
+The questions table maintains a clean structure with review and flag information stored in dedicated tables:
+- Review information is stored in `question_reviews` table
+- Flag information is stored in `question_flags` table
+- This ensures proper normalization and prevents data duplication
 
 ## User Interface Changes
 

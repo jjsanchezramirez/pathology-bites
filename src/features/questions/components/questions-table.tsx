@@ -36,7 +36,7 @@ import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
 import { CreateQuestionDialog } from './create-question-dialog';
 import { EditQuestionDialog } from './edit-question-dialog';
-import { ImportQuestionDialog } from './import-question-dialog';
+import { EnhancedImportDialog } from './enhanced-import-dialog';
 import { QuestionFlagDialog } from './question-flag-dialog';
 import { getQuestionSetDisplayName, getCategoryDisplayName } from '@/features/questions/utils/display-helpers';
 
@@ -482,7 +482,7 @@ export function QuestionsTable() {
         onSave={handleCreateSave}
       />
 
-      <ImportQuestionDialog
+      <EnhancedImportDialog
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
         onSave={handleImportSave}

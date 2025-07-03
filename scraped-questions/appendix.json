@@ -1,0 +1,1943 @@
+[
+  {
+    "title": "Question 1",
+    "stem": "Which of the following is true about intestinal type adenomas of the appendix?",
+    "difficulty": "medium",
+    "teaching_point": ". They can cause intussusception. Intestinal type adenomas of the appendix can cause appendicitis, bowel obstruction or perforation. They have no precursor lesion and may themselves progress to adenocarcinoma. They can occur sporadically or in patients with polyposis syndromes. Tubular adenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixtubularadenoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "They arise from low grade appendiceal mucinous neoplasms",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . They can cause intussusception. Intestinal type adenomas of the appendix can cause appendicitis, b...",
+        "order_index": 0
+      },
+      {
+        "text": "They can cause intussusception",
+        "is_correct": true,
+        "explanation": ". They can cause intussusception. Intestinal type adenomas of the appendix can cause appendicitis, bowel obstruction or perforation. They have no precursor lesion and may themselves progress to adenocarcinoma. They can occur sporadically or in patients with polyposis syndromes. Tubular adenoma",
+        "order_index": 1
+      },
+      {
+        "text": "They have no risk of malignant progression",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . They can cause intussusception. Intestinal type adenomas of the appendix can cause appendicitis, b...",
+        "order_index": 2
+      },
+      {
+        "text": "They only occur in patients with familial adenomatous polyposis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . They can cause intussusception. Intestinal type adenomas of the appendix can cause appendicitis, b...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixtubularadenomaGonzalez05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Tubular adenoma",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 2",
+    "stem": "Which of the following factors affect the staging of appendiceal neuroendocrine tumors?",
+    "difficulty": "medium",
+    "teaching_point": ". Size and extent of local spread. These are used to determine pT category staging; pT1 - pT3 include size and pT3 - pT4 include local spread. Answers A, B and D are incorrect because Ki67 index and mitotic rate are used in grading but not staging of appendiceal neuroendocrine tumors. Appendix - Staging - neuroendocrine tumors",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixstagingneuroendocrine.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Ki67 index and extent of local spread",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Size and extent of local spread. These are used to determine pT category staging; pT1 - pT3 includ...",
+        "order_index": 0
+      },
+      {
+        "text": "Ki67 index and mitotic rate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Size and extent of local spread. These are used to determine pT category staging; pT1 - pT3 includ...",
+        "order_index": 1
+      },
+      {
+        "text": "Size and extent of local spread",
+        "is_correct": true,
+        "explanation": ". Size and extent of local spread. These are used to determine pT category staging; pT1 - pT3 include size and pT3 - pT4 include local spread. Answers A, B and D are incorrect because Ki67 index and mitotic rate are used in grading but not staging of appendiceal neuroendocrine tumors. Appendix - Staging - neuroendocrine tumors",
+        "order_index": 2
+      },
+      {
+        "text": "Size and Ki67 index",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Size and extent of local spread. These are used to determine pT category staging; pT1 - pT3 includ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "An appendiceal neuroendocrine tumor develops clinical metastatic disease to the liver but no other sites. What is the cM category staging for this tumor?",
+    "difficulty": "medium",
+    "teaching_point": ". cM1a. Metastatic disease only to the liver is considered M1a for appendiceal neuroendocrine tumors. it suggests there is no distant metastatic disease. M1b requires metastasis to nonhepatic distant sites. M1c requires distant metastasis to both hepatic and extrahepatic sites. Appendix - Staging - neuroendocrine tumors",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixstagingneuroendocrine.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "cM0",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . cM1a. Metastatic disease only to the liver is considered M1a for appendiceal neuroendocrine tumors...",
+        "order_index": 0
+      },
+      {
+        "text": "cM1a",
+        "is_correct": true,
+        "explanation": ". cM1a. Metastatic disease only to the liver is considered M1a for appendiceal neuroendocrine tumors. it suggests there is no distant metastatic disease. M1b requires metastasis to nonhepatic distant sites. M1c requires distant metastasis to both hepatic and extrahepatic sites. Appendix - Staging - neuroendocrine tumors",
+        "order_index": 1
+      },
+      {
+        "text": "cM1b",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . cM1a. Metastatic disease only to the liver is considered M1a for appendiceal neuroendocrine tumors...",
+        "order_index": 2
+      },
+      {
+        "text": "cM1c",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . cM1a. Metastatic disease only to the liver is considered M1a for appendiceal neuroendocrine tumors...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "Using AJCC staging criteria for adenocarcinomas of the appendix, at what point is tumor grade utilized (along with pT, pN and pM status) in order to assign overall combined tumor stage?",
+    "difficulty": "medium",
+    "teaching_point": "When a tumor has cellular intraperitoneal metastases. Such cases are stage IV and they may be subclassified as IVA or IVB depending on the tumor grade. tumor grade does not impact pT category staging of appendiceal adenocarcinomas. Answers A and D are incorrect because they do not influence staging of appendiceal adenocarcinomas. Appendix - Staging - carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixstaging.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "When a tumor extends to the surgical resection margin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. When a tumor has cellular intraperitoneal metastases. Such cases are stage IV and they may be subcla...",
+        "order_index": 0
+      },
+      {
+        "text": "When a tumor has cellular intraperitoneal metastases",
+        "is_correct": true,
+        "explanation": "When a tumor has cellular intraperitoneal metastases. Such cases are stage IV and they may be subclassified as IVA or IVB depending on the tumor grade. tumor grade does not impact pT category staging of appendiceal adenocarcinomas. Answers A and D are incorrect because they do not influence staging of appendiceal adenocarcinomas. Appendix - Staging - carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "When a tumor involves the muscularis propria",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. When a tumor has cellular intraperitoneal metastases. Such cases are stage IV and they may be subcla...",
+        "order_index": 2
+      },
+      {
+        "text": "When a tumor is a goblet cell adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. When a tumor has cellular intraperitoneal metastases. Such cases are stage IV and they may be subcla...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 5",
+    "stem": "What is the difference in AJCC staging parameters for low grade apendiceal mucinous neoplasm (LAMN) and high grade apendiceal mucinous neoplasm (HAMN)?",
+    "difficulty": "medium",
+    "teaching_point": "LAMN cannot be pT1 / 2 but HAMN can. LAMN is reported as pTis(LAMN) if bound by muscularis propria, whereas HAMN would be pT1 or pT2 in the same situation, depending on whether submucosa or muscularis propria is involved. both LAMN and HAMN can be pM1a. both LAMN and HAMN can theoretically be pN1 (though this is extraordinarily unlikely). both LAMN and HAMN can be pT4a. Appendix - Staging - carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixstaging.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "LAMN cannot be pM1a but HAMN can",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. LAMN cannot be pT1 / 2 but HAMN can. LAMN is reported as pTis(LAMN) if bound by muscularis propria, ...",
+        "order_index": 0
+      },
+      {
+        "text": "LAMN cannot be pN1 but HAMN can",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. LAMN cannot be pT1 / 2 but HAMN can. LAMN is reported as pTis(LAMN) if bound by muscularis propria, ...",
+        "order_index": 1
+      },
+      {
+        "text": "LAMN cannot be pT1 / 2 but HAMN can",
+        "is_correct": true,
+        "explanation": "LAMN cannot be pT1 / 2 but HAMN can. LAMN is reported as pTis(LAMN) if bound by muscularis propria, whereas HAMN would be pT1 or pT2 in the same situation, depending on whether submucosa or muscularis propria is involved. both LAMN and HAMN can be pM1a. both LAMN and HAMN can theoretically be pN1 (though this is extraordinarily unlikely). both LAMN and HAMN can be pT4a. Appendix - Staging - carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "LAMN cannot be pT4a but HAMN can",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. LAMN cannot be pT1 / 2 but HAMN can. LAMN is reported as pTis(LAMN) if bound by muscularis propria, ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "Serrated polyp of the appendix differs from sessile serrated polyp / adenoma of the colon in what way?",
+    "difficulty": "medium",
+    "teaching_point": ". It favors KRAS mutation over BRAF mutation Serrated polyp",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixserratedpolyps.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It favors KRAS mutation over BRAF mutation",
+        "is_correct": true,
+        "explanation": ". It favors KRAS mutation over BRAF mutation Serrated polyp",
+        "order_index": 0
+      },
+      {
+        "text": "It has a higher incidence",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . It favors KRAS mutation over BRAF mutation Serrated polyp",
+        "order_index": 1
+      },
+      {
+        "text": "It never shows cytologic atypia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . It favors KRAS mutation over BRAF mutation Serrated polyp",
+        "order_index": 2
+      },
+      {
+        "text": "It only occurs in patients with Lynch syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . It favors KRAS mutation over BRAF mutation Serrated polyp",
+        "order_index": 3
+      },
+      {
+        "text": "It rarely loses MLH1 by immunohistochemistry",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . It favors KRAS mutation over BRAF mutation Serrated polyp",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "A 45 year old woman presents with a 2 week history of abdominal pain and increased abdominal girth. Clinical and radiologic findings are concerning for pseudomyxoma peritonei. A biopsy from an omental nodule is shown. The primary neoplasm is most likely from which anatomic site?",
+    "difficulty": "medium",
+    "teaching_point": ". Appendix. Pseudomyxoma peritonei is a clinical syndrome characterized by extravasation of mucin into the abdomen due to a ruptured mucinous neoplasm. Primary tumors from all of the sites listed have been associated with pseudomyxoma peritonei. However, the large majority arise from the appendix. Furthermore, the low grade cytology displayed in the image strongly argues for a low grade appendiceal mucinous neoplasm primary. Pseudomyxoma peritonei",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixpseudomyxoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Appendix",
+        "is_correct": true,
+        "explanation": ". Appendix. Pseudomyxoma peritonei is a clinical syndrome characterized by extravasation of mucin into the abdomen due to a ruptured mucinous neoplasm. Primary tumors from all of the sites listed have been associated with pseudomyxoma peritonei. However, the large majority arise from the appendix. Furthermore, the low grade cytology displayed in the image strongly argues for a low grade appendiceal mucinous neoplasm primary. Pseudomyxoma peritonei",
+        "order_index": 0
+      },
+      {
+        "text": "Colon",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Appendix. Pseudomyxoma peritonei is a clinical syndrome characterized by extravasation of mucin in...",
+        "order_index": 1
+      },
+      {
+        "text": "Ovary",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Appendix. Pseudomyxoma peritonei is a clinical syndrome characterized by extravasation of mucin in...",
+        "order_index": 2
+      },
+      {
+        "text": "Pancreas",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Appendix. Pseudomyxoma peritonei is a clinical syndrome characterized by extravasation of mucin in...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixpseudomyxomaPlacek07.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 8",
+    "stem": "Based on the WHO (5th edition) grading system of peritoneal metastases of appendiceal mucinous neoplasms, which of the following is a feature of grade 2?",
+    "difficulty": "medium",
+    "teaching_point": ". Destructive invasion. The WHO (5th edition) recommends a 3 tier system for grading peritoneal disease of primary appendiceal mucinous neoplasia (grade 1 - 3). The grade of peritoneal disease has prognostic significance and guides therapeutic interventions. Hypocellular deposits with low grade cytology is classified as grade 1. Hypercellular deposits with high grade cytology or destructive invasion is classified as grade 2. Finally, grade 3 requires infiltrative signet ring cells. Importantly, degenerative cells floating in pools of mucin that morphologically resemble signet ring cells are not associated with a poor prognosis and do not warrant categorization as grade 3. Pseudomyxoma peritonei",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixpseudomyxoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Destructive invasion",
+        "is_correct": true,
+        "explanation": ". Destructive invasion. The WHO (5th edition) recommends a 3 tier system for grading peritoneal disease of primary appendiceal mucinous neoplasia (grade 1 - 3). The grade of peritoneal disease has prognostic significance and guides therapeutic interventions. Hypocellular deposits with low grade cytology is classified as grade 1. Hypercellular deposits with high grade cytology or destructive invasion is classified as grade 2. Finally, grade 3 requires infiltrative signet ring cells. Importantly, degenerative cells floating in pools of mucin that morphologically resemble signet ring cells are not associated with a poor prognosis and do not warrant categorization as grade 3. Pseudomyxoma peritonei",
+        "order_index": 0
+      },
+      {
+        "text": "Infiltrating signet ring cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Destructive invasion. The WHO (5th edition) recommends a 3 tier system for grading peritoneal dise...",
+        "order_index": 1
+      },
+      {
+        "text": "Low grade cytology",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Destructive invasion. The WHO (5th edition) recommends a 3 tier system for grading peritoneal dise...",
+        "order_index": 2
+      },
+      {
+        "text": "Signet ring appearing cells floating in mucin pools",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Destructive invasion. The WHO (5th edition) recommends a 3 tier system for grading peritoneal dise...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 9",
+    "stem": "A 17 year old girl presents with a one day history of crampy right lower quadrant abdominal pain and fever. Imaging shows an enlarged appendix. Appendectomy is performed and on histologic examination the specimen shows neutrophilic infiltrate in the serosa, sparing the mucosa. What is the most likely underlying cause of periappendicitis?",
+    "difficulty": "medium",
+    "teaching_point": "The patient has periappendicitis secondary to intra-abdominal inflammatory pathology. Salpingitis is the most common cause of acute periappendicitis. While inflammatory bowel disease and Meckel diverticulum are both possible causes, they are less common. Acute appendicitis by definition will involve the mucosa of the appendix. Periappendicitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixperiappendicitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute appendicitis with perforation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. The patient has periappendicitis secondary to intra-abdominal inflammatory pathology. Salpingitis is...",
+        "order_index": 0
+      },
+      {
+        "text": "Acute salpingitis",
+        "is_correct": true,
+        "explanation": "The patient has periappendicitis secondary to intra-abdominal inflammatory pathology. Salpingitis is the most common cause of acute periappendicitis. While inflammatory bowel disease and Meckel diverticulum are both possible causes, they are less common. Acute appendicitis by definition will involve the mucosa of the appendix. Periappendicitis",
+        "order_index": 1
+      },
+      {
+        "text": "Inflammatory bowel disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. The patient has periappendicitis secondary to intra-abdominal inflammatory pathology. Salpingitis is...",
+        "order_index": 2
+      },
+      {
+        "text": "Meckel's diverticulum",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. The patient has periappendicitis secondary to intra-abdominal inflammatory pathology. Salpingitis is...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 10",
+    "stem": "You receive an appendix for microscopic examination. You note that the patient has a history of treated Crohn's colitis and is currently hospitalized after partial colectomy. On examination, the appendiceal serosa shows scattered neutrophils without other pathologic change. What is the most likely cause of this finding?",
+    "difficulty": "medium",
+    "teaching_point": "Mild serosal neutrophilic infiltrate can occur after surgical manipulation of the appendix. Acute appendicitis is not the correct answer as the mucosa did not show any evidence of active inflammation. Although salpingitis is a possibility, the likelihood of that is less than mild inflammation due to prior surgery. Periappendicitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixperiappendicitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute appendicitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Mild serosal neutrophilic infiltrate can occur after surgical manipulation of the appendix. Acute ap...",
+        "order_index": 0
+      },
+      {
+        "text": "Previous surgery",
+        "is_correct": true,
+        "explanation": "Mild serosal neutrophilic infiltrate can occur after surgical manipulation of the appendix. Acute appendicitis is not the correct answer as the mucosa did not show any evidence of active inflammation. Although salpingitis is a possibility, the likelihood of that is less than mild inflammation due to prior surgery. Periappendicitis",
+        "order_index": 1
+      },
+      {
+        "text": "Salpingitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Mild serosal neutrophilic infiltrate can occur after surgical manipulation of the appendix. Acute ap...",
+        "order_index": 2
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixperiappendicitis0PezhouhBRQ2.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 11",
+    "stem": "What feature(s) determine(s) the difference between appendiceal neuroendocrine tumor (NET) and neuroendocrine carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": "Morphologically well differentiated or poorly differentiated Well differentiated neuroendocrine tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixwdneuroendocrine.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Invasive versus noninvasive",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Morphologically well differentiated or poorly differentiated Well differentiated neuroendocrine tumo...",
+        "order_index": 0
+      },
+      {
+        "text": "Ki67 labeling index and counts of mitotic figures",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Morphologically well differentiated or poorly differentiated Well differentiated neuroendocrine tumo...",
+        "order_index": 1
+      },
+      {
+        "text": "Morphologically well differentiated or poorly differentiated",
+        "is_correct": true,
+        "explanation": "Morphologically well differentiated or poorly differentiated Well differentiated neuroendocrine tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Presence of TP53 mutation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Morphologically well differentiated or poorly differentiated Well differentiated neuroendocrine tumo...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 12",
+    "stem": "What is the most important feature that determines the potential for metastasis for the appendiceal tumor (NET) shown above?",
+    "difficulty": "medium",
+    "teaching_point": "Size of the tumor Well differentiated neuroendocrine tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixwdneuroendocrine.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Depth of invasion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Size of the tumor Well differentiated neuroendocrine tumor",
+        "order_index": 0
+      },
+      {
+        "text": "Ki67 labeling index",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Size of the tumor Well differentiated neuroendocrine tumor",
+        "order_index": 1
+      },
+      {
+        "text": "Loss of synaptophysin expression on immunohistochemistry",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Size of the tumor Well differentiated neuroendocrine tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Size of the tumor",
+        "is_correct": true,
+        "explanation": "Size of the tumor Well differentiated neuroendocrine tumor",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixwdneuroendocrinebrq1Wen1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 13",
+    "stem": "A 32 year old woman with history of hematuria coinciding with her menstruation underwent an appendectomy for an incidentally discovered dilated appendix. On gross exam, the appendix appeared dilated. Sectioning revealed a dilated mucin filled lumen with no evidence of neoplasms. What histological findings are supportive of an endometriosis involving an appendix?",
+    "difficulty": "medium",
+    "teaching_point": ". Unremarkable appendiceal epithelium with focal fibrosis and nests of endometrial stroma. This patient is presenting with signs of endometriosis. Endometriosis and focal scarring may obstruct the appendix, causing dilation of the lumen and mucus build up. flat proliferation of mucinous epithelial cells suggests a mucinous neoplasm, likely a low grade appendiceal neoplasm (LAMN). monotonous infiltration of small round cells with speckled nuclei suggests a neuroendocrine tumor. complex villous proliferation of appendiceal epithelium refers to a high grade mucinous neoplasm. Mucocele",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixmucocele.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Complex villous proliferation of appendiceal epithelium",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Unremarkable appendiceal epithelium with focal fibrosis and nests of endometrial stroma. This pati...",
+        "order_index": 0
+      },
+      {
+        "text": "Flat proliferation of mucinous epithelial cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Unremarkable appendiceal epithelium with focal fibrosis and nests of endometrial stroma. This pati...",
+        "order_index": 1
+      },
+      {
+        "text": "Monotonous infiltration of small round cells with speckled nuclei",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Unremarkable appendiceal epithelium with focal fibrosis and nests of endometrial stroma. This pati...",
+        "order_index": 2
+      },
+      {
+        "text": "Unremarkable appendiceal epithelium with focal fibrosis and nests of endometrial stroma",
+        "is_correct": true,
+        "explanation": ". Unremarkable appendiceal epithelium with focal fibrosis and nests of endometrial stroma. This patient is presenting with signs of endometriosis. Endometriosis and focal scarring may obstruct the appendix, causing dilation of the lumen and mucus build up. flat proliferation of mucinous epithelial cells suggests a mucinous neoplasm, likely a low grade appendiceal neoplasm (LAMN). monotonous infiltration of small round cells with speckled nuclei suggests a neuroendocrine tumor. complex villous proliferation of appendiceal epithelium refers to a high grade mucinous neoplasm. Mucocele",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 14",
+    "stem": "A 54 year old man with a history of acute appendicitis managed conservatively with antibiotics alone presented for an elective appendectomy after his appendix was incidentally found to be dilated in a recent hospital visit. The resected appendix appeared pink-tan with no gross signs of infection. Sectioning revealed focal scarring with no signs of necrosis of neoplasms. Microscopic exam noted focal fibrosis of the mucosa and focal lymphoid aggregates. No other abnormality was identified. What other treatment, if any, is appropriate for this patient?",
+    "difficulty": "medium",
+    "teaching_point": ". No further treatment is necessary. This patient presents with an incidentally dilated appendix likely due to scarring from his previous history of acute appendicitis. His clinical picture does not suggest any evidence of an appendiceal neoplasm. Answers A, C and D are incorrect because intraperitoneal chemotherapy, tumor debulking and right sided hemicolectomy with lymph node dissection are not warranted. Mucocele",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixmucocele.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Intraperitoneal chemotherapy is appropriate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . No further treatment is necessary. This patient presents with an incidentally dilated appendix lik...",
+        "order_index": 0
+      },
+      {
+        "text": "No further treatment is necessary",
+        "is_correct": true,
+        "explanation": ". No further treatment is necessary. This patient presents with an incidentally dilated appendix likely due to scarring from his previous history of acute appendicitis. His clinical picture does not suggest any evidence of an appendiceal neoplasm. Answers A, C and D are incorrect because intraperitoneal chemotherapy, tumor debulking and right sided hemicolectomy with lymph node dissection are not warranted. Mucocele",
+        "order_index": 1
+      },
+      {
+        "text": "Right sided hemicolectomy with lymph node dissection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . No further treatment is necessary. This patient presents with an incidentally dilated appendix lik...",
+        "order_index": 2
+      },
+      {
+        "text": "Tumor debulking",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . No further treatment is necessary. This patient presents with an incidentally dilated appendix lik...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 15",
+    "stem": "Which of the following statements is true about mucinous proliferations of the appendix and peritoneum?",
+    "difficulty": "medium",
+    "teaching_point": "Pseudomyxoma peritonei from appendiceal adenocarcinoma is typically grade 2 or 3. Pseudomyxoma peritonei can be any WHO grade (using peritoneal criteria) but is almost always grade 2 or 3 when arising from appendiceal adenocarcinoma. LAMN is always grade 1, so answer A is incorrect. Mucinous adenocarcinoma of the appendix is typically grade 2 unless signet ring cells are present, so answer B is incorrect. Pseudomyxoma peritonei is a neoplastic process, so answer D is incorrect. Mucinous neoplasms-general",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixmucinousgeneral.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Low grade appendiceal mucinous neoplasm (LAMN) has a variable grade depending on the morphologic features present",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Pseudomyxoma peritonei from appendiceal adenocarcinoma is typically grade 2 or 3. Pseudomyxoma perit...",
+        "order_index": 0
+      },
+      {
+        "text": "Mucinous adenocarcinoma of the appendix is typically grade 1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Pseudomyxoma peritonei from appendiceal adenocarcinoma is typically grade 2 or 3. Pseudomyxoma perit...",
+        "order_index": 1
+      },
+      {
+        "text": "Pseudomyxoma peritonei from appendiceal adenocarcinoma is typically grade 2 or 3",
+        "is_correct": true,
+        "explanation": "Pseudomyxoma peritonei from appendiceal adenocarcinoma is typically grade 2 or 3. Pseudomyxoma peritonei can be any WHO grade (using peritoneal criteria) but is almost always grade 2 or 3 when arising from appendiceal adenocarcinoma. LAMN is always grade 1, so answer A is incorrect. Mucinous adenocarcinoma of the appendix is typically grade 2 unless signet ring cells are present, so answer B is incorrect. Pseudomyxoma peritonei is a neoplastic process, so answer D is incorrect. Mucinous neoplasms-general",
+        "order_index": 2
+      },
+      {
+        "text": "Pseudomyxoma peritonei is typically nonneoplastic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Pseudomyxoma peritonei from appendiceal adenocarcinoma is typically grade 2 or 3. Pseudomyxoma perit...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 16",
+    "stem": "An 11 year old boy undergoes appendectomy for dilated appearing appendix on imaging. What is the most likely diagnosis for the histologic appearance shown above?",
+    "difficulty": "medium",
+    "teaching_point": ". Lymphoid hyperplasia. The image depicts marked hypertrophy of lymphoid follicles within the lamina propria, which is characteristic of lymphoid hyperplasia. neutrophilic inflammation is absent. granulomas are absent. the lymphoid infiltrate does not efface normal structures and is polymorphic without significant cytologic atypia. Lymphoid hyperplasia",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixlymphoidhyperplasia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute appendicitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Lymphoid hyperplasia. The image depicts marked hypertrophy of lymphoid follicles within the lamina...",
+        "order_index": 0
+      },
+      {
+        "text": "Granulomatous appendicitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Lymphoid hyperplasia. The image depicts marked hypertrophy of lymphoid follicles within the lamina...",
+        "order_index": 1
+      },
+      {
+        "text": "Lymphoid hyperplasia",
+        "is_correct": true,
+        "explanation": ". Lymphoid hyperplasia. The image depicts marked hypertrophy of lymphoid follicles within the lamina propria, which is characteristic of lymphoid hyperplasia. neutrophilic inflammation is absent. granulomas are absent. the lymphoid infiltrate does not efface normal structures and is polymorphic without significant cytologic atypia. Lymphoid hyperplasia",
+        "order_index": 2
+      },
+      {
+        "text": "Lymphoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Lymphoid hyperplasia. The image depicts marked hypertrophy of lymphoid follicles within the lamina...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixlymphoidhyperplasiahutchings05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 17",
+    "stem": "Appendiceal lymphoid hyperplasia is characterized microscopically by which of the following features?",
+    "difficulty": "medium",
+    "teaching_point": ". Prominent lymphoid aggregates containing follicles expanding the lamina propria. Lymphoid hyperplasia is characterized by prominent lymphoid aggregates containing follicles (typically including clusters > 10) in the lamina propria layer. in lymphoid hyperplasia, prominent lymphoid aggregates are predominantly restricted to the lamina propria, whereas transmural lymphoid aggregates may be seen with interval (delayed) appendectomy or Crohn's disease. transmural neutrophilic inflammation is a feature of acute appendicitis, not lymphoid hyperplasia. epithelioid granulomas are not a feature of lymphoid hyperplasia. Lymphoid hyperplasia",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixlymphoidhyperplasia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Epithelioid granulomas",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Prominent lymphoid aggregates containing follicles expanding the lamina propria. Lymphoid hyperpla...",
+        "order_index": 0
+      },
+      {
+        "text": "Prominent lymphoid aggregates containing follicles expanding the lamina propria",
+        "is_correct": true,
+        "explanation": ". Prominent lymphoid aggregates containing follicles expanding the lamina propria. Lymphoid hyperplasia is characterized by prominent lymphoid aggregates containing follicles (typically including clusters > 10) in the lamina propria layer. in lymphoid hyperplasia, prominent lymphoid aggregates are predominantly restricted to the lamina propria, whereas transmural lymphoid aggregates may be seen with interval (delayed) appendectomy or Crohn's disease. transmural neutrophilic inflammation is a feature of acute appendicitis, not lymphoid hyperplasia. epithelioid granulomas are not a feature of lymphoid hyperplasia. Lymphoid hyperplasia",
+        "order_index": 1
+      },
+      {
+        "text": "Transmural lymphoid aggregates",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Prominent lymphoid aggregates containing follicles expanding the lamina propria. Lymphoid hyperpla...",
+        "order_index": 2
+      },
+      {
+        "text": "Transmural neutrophilic inflammation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Prominent lymphoid aggregates containing follicles expanding the lamina propria. Lymphoid hyperpla...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 18",
+    "stem": "Which finding associated with an appendiceal mucinous neoplasm has the greatest risk of progression?",
+    "difficulty": "medium",
+    "teaching_point": "Extra-appendiceal mucin containing low grade epithelium LAMN and HAMN (mucinous neoplasms)",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixmucinousneoplasm.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acellular mucin outside the right lower quadrant of abdomen",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Extra-appendiceal mucin containing low grade epithelium LAMN and HAMN (mucinous neoplasms)",
+        "order_index": 0
+      },
+      {
+        "text": "Acellular mucin restricted to right lower quadrant of abdomen",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Extra-appendiceal mucin containing low grade epithelium LAMN and HAMN (mucinous neoplasms)",
+        "order_index": 1
+      },
+      {
+        "text": "Extra-appendiceal mucin containing low grade epithelium",
+        "is_correct": true,
+        "explanation": "Extra-appendiceal mucin containing low grade epithelium LAMN and HAMN (mucinous neoplasms)",
+        "order_index": 2
+      },
+      {
+        "text": "High grade epithelium confined to appendix",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Extra-appendiceal mucin containing low grade epithelium LAMN and HAMN (mucinous neoplasms)",
+        "order_index": 3
+      },
+      {
+        "text": "Low grade epithelium confined to appendix",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Extra-appendiceal mucin containing low grade epithelium LAMN and HAMN (mucinous neoplasms)",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 19",
+    "stem": "A 44 year old woman underwent screening colonoscopy. The endoscopist noted a polypoid mass arising in the cecum and performed endoscopic polypectomy. The findings are pictured above. Which of the following is a key microscopic feature of this entity?",
+    "difficulty": "medium",
+    "teaching_point": "Ganglion cells embedded in thick smooth muscle bundles. The presence of thick smooth muscle bundles of muscularis propria containing ganglion cells and nerve fibers is a key microscopic feature. the presence, rather than absence, of submucosal adipose tissue is a microscopic feature of inverted appendix. the presence of ganglion cells is a key to the identification of muscularis propria. the lesion is typically elongated, polypoid or dome shaped rather than sessile. Inverted appendix",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixinverted.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Absence of ganglion cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Ganglion cells embedded in thick smooth muscle bundles. The presence of thick smooth muscle bundles ...",
+        "order_index": 0
+      },
+      {
+        "text": "Absence of submucosal adipose tissue",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Ganglion cells embedded in thick smooth muscle bundles. The presence of thick smooth muscle bundles ...",
+        "order_index": 1
+      },
+      {
+        "text": "Ganglion cells embedded in thick smooth muscle bundles",
+        "is_correct": true,
+        "explanation": "Ganglion cells embedded in thick smooth muscle bundles. The presence of thick smooth muscle bundles of muscularis propria containing ganglion cells and nerve fibers is a key microscopic feature. the presence, rather than absence, of submucosal adipose tissue is a microscopic feature of inverted appendix. the presence of ganglion cells is a key to the identification of muscularis propria. the lesion is typically elongated, polypoid or dome shaped rather than sessile. Inverted appendix",
+        "order_index": 2
+      },
+      {
+        "text": "Sessile configuration of the lesion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Ganglion cells embedded in thick smooth muscle bundles. The presence of thick smooth muscle bundles ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixinvertedmicroAzimpouranHutchings07.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 20",
+    "stem": "A 56 year old woman with a history of cecal mass on imaging underwent partial cecectomy with appendectomy. The gross findings are pictured above. What is true of this diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "It is associated with endometriosis. The lesion shown is an inverted appendix, which can occur without any underlying abnormality or may be associated with anatomical variations or pathologic conditions, such as endometriosis or appendiceal neoplasm. inverted appendix is more common in women than men. though it may be diagnostically challenging in some cases, it is possible to diagnose on radiographic imaging or colonoscopy. appendectomy with resection of cecal cuff is generally recommended for inverted appendix to avoid recurrence. Inverted appendix",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixinverted.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It is associated with endometriosis",
+        "is_correct": true,
+        "explanation": "It is associated with endometriosis. The lesion shown is an inverted appendix, which can occur without any underlying abnormality or may be associated with anatomical variations or pathologic conditions, such as endometriosis or appendiceal neoplasm. inverted appendix is more common in women than men. though it may be diagnostically challenging in some cases, it is possible to diagnose on radiographic imaging or colonoscopy. appendectomy with resection of cecal cuff is generally recommended for inverted appendix to avoid recurrence. Inverted appendix",
+        "order_index": 0
+      },
+      {
+        "text": "More common in men than women",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. It is associated with endometriosis. The lesion shown is an inverted appendix, which can occur witho...",
+        "order_index": 1
+      },
+      {
+        "text": "Resection of the lesion is necessary for the diagnosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. It is associated with endometriosis. The lesion shown is an inverted appendix, which can occur witho...",
+        "order_index": 2
+      },
+      {
+        "text": "Resection was inappropriate management for this patient",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. It is associated with endometriosis. The lesion shown is an inverted appendix, which can occur witho...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixinvertedAzimpouranHutchings01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 21",
+    "stem": "A 65 year old man presented to the emergency room with decreased appetite and right lower abdominal pain. He was noted to have a fever 1 week ago that had resolved at the time of presentation. The patient has no known significant medical history. CT image showed an abscess around the cecum. Antibiotics was initiated and percutaneous drainage was performed. The patient came back 2 months later for appendectomy. The H&E image of the surgical specimen is shown. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Interval appendicitis. According to the clinical history provided, the patient was presented with acute appendicitis about 2 months ago and came back for a delayed appendectomy. There is no evidence of infection, inflammatory bowel disease or other significant medical history. H&E image showed a benign appendix with transmural chronic inflammation. Both clinical history and histological findings support a diagnosis of interval appendicitis. Interval appendicitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixinterval.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute appendicitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Interval appendicitis. According to the clinical history provided, the patient was presented with ...",
+        "order_index": 0
+      },
+      {
+        "text": "Adenocarcinoma of the appendix",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Interval appendicitis. According to the clinical history provided, the patient was presented with ...",
+        "order_index": 1
+      },
+      {
+        "text": "Interval appendicitis",
+        "is_correct": true,
+        "explanation": ". Interval appendicitis. According to the clinical history provided, the patient was presented with acute appendicitis about 2 months ago and came back for a delayed appendectomy. There is no evidence of infection, inflammatory bowel disease or other significant medical history. H&E image showed a benign appendix with transmural chronic inflammation. Both clinical history and histological findings support a diagnosis of interval appendicitis. Interval appendicitis",
+        "order_index": 2
+      },
+      {
+        "text": "Crohn's disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Interval appendicitis. According to the clinical history provided, the patient was presented with ...",
+        "order_index": 3
+      },
+      {
+        "text": "Lymphoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Interval appendicitis. According to the clinical history provided, the patient was presented with ...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixintervalNiLiu08.png",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Interval appendicitis",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 22",
+    "stem": "Which of the following descriptions is true regarding interval appendicitis?",
+    "difficulty": "medium",
+    "teaching_point": ". Interval appendicitis is characterized by histologic features of a chronic inflammatory process, such as the presence of scattered granulomas, xanthogranulomatous inflammation, and macrophages laden with hemosiderin, among others. Interval appendectomy is performed in selective patients with risk factors but not in most patients (see Treatment section). It has a wide spectrum of histological findings including acute inflammation. Crohn’s-like features can often be seen in interval appendectomy specimen. Interval appendicitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixinterval.html#appendixintervaltreatment",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Interval appendicitis is a chronic inflammatory process; thus, acute inflammation should not be identified microscopically",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Interval appendicitis is characterized by histologic features of a chronic inflammatory process, s...",
+        "order_index": 0
+      },
+      {
+        "text": "The main purpose of interval appendectomy is to prevent recurrence of appendicitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Interval appendicitis is characterized by histologic features of a chronic inflammatory process, s...",
+        "order_index": 1
+      },
+      {
+        "text": "Most patients with complicated appendicitis will undergo interval appendectomy after initial antibiotic management",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Interval appendicitis is characterized by histologic features of a chronic inflammatory process, s...",
+        "order_index": 2
+      },
+      {
+        "text": "Scattered granulomas and xanthogranulomatous inflammation can be seen in interval appendectomy specimens",
+        "is_correct": true,
+        "explanation": ". Interval appendicitis is characterized by histologic features of a chronic inflammatory process, such as the presence of scattered granulomas, xanthogranulomatous inflammation, and macrophages laden with hemosiderin, among others. Interval appendectomy is performed in selective patients with risk factors but not in most patients (see Treatment section). It has a wide spectrum of histological findings including acute inflammation. Crohn’s-like features can often be seen in interval appendectomy specimen. Interval appendicitis",
+        "order_index": 3
+      },
+      {
+        "text": "Transmural chronic inflammation and granulomas are characteristic features of Crohn's disease, which is not seen in interval appendicitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Interval appendicitis is characterized by histologic features of a chronic inflammatory process, s...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 23",
+    "stem": "A 20 year old man presented to the emergency department with right lower quadrant abdominal pain and tenderness, vomiting, fever and anorexia. Appendectomy with clinical diagnosis of acute appendicitis was done and histologic examination is shown in the image above. What is the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Granulomatous appendicitis. This section shows the formation of multiple granulomas. no significant acute inflammation supportive of acute appendicitis is present. no diverticula are identified. mucocele is a clinical diagnosis referring to a dilated appendix. Granulomatous appendicitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixidiopathicgran.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute appendicitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Granulomatous appendicitis. This section shows the formation of multiple granulomas. no significant ...",
+        "order_index": 0
+      },
+      {
+        "text": "Appendix diverticula",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Granulomatous appendicitis. This section shows the formation of multiple granulomas. no significant ...",
+        "order_index": 1
+      },
+      {
+        "text": "Granulomatous appendicitis",
+        "is_correct": true,
+        "explanation": "Granulomatous appendicitis. This section shows the formation of multiple granulomas. no significant acute inflammation supportive of acute appendicitis is present. no diverticula are identified. mucocele is a clinical diagnosis referring to a dilated appendix. Granulomatous appendicitis",
+        "order_index": 2
+      },
+      {
+        "text": "Mucocele",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Granulomatous appendicitis. This section shows the formation of multiple granulomas. no significant ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixidiopathicgranPezhouh05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 24",
+    "stem": "A 17 year old boy presented with mild right lower quadrant abdominal pain, malaise and mild fever for 2 weeks. He was diagnosed with ruptured acute appendicitis and was treated with antibiotics. He presented 2 months after for an appendectomy. Histologic evaluation of the appendix revealed chronic inflammation and multiple granulomas. What is the most likely underlying cause of granulomatous appendicitis in this patient?",
+    "difficulty": "medium",
+    "teaching_point": "Interval appendectomy. Interval appendectomy is an important cause of granulomatous inflammation in the appendix. Clinical history is the main clue in this scenario. Crohn's disease rarely involves the appendix. tuberculosis often presents with systemic symptoms and necrotizing granulomatous inflammation. sarcoidosis often shows well formed nonnecrotizing granulomas. Presence of a clinical history is helpful. Granulomatous appendicitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixidiopathicgran.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Crohn's disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Interval appendectomy. Interval appendectomy is an important cause of granulomatous inflammation in ...",
+        "order_index": 0
+      },
+      {
+        "text": "Interval appendectomy",
+        "is_correct": true,
+        "explanation": "Interval appendectomy. Interval appendectomy is an important cause of granulomatous inflammation in the appendix. Clinical history is the main clue in this scenario. Crohn's disease rarely involves the appendix. tuberculosis often presents with systemic symptoms and necrotizing granulomatous inflammation. sarcoidosis often shows well formed nonnecrotizing granulomas. Presence of a clinical history is helpful. Granulomatous appendicitis",
+        "order_index": 1
+      },
+      {
+        "text": "Sarcoidosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Interval appendectomy. Interval appendectomy is an important cause of granulomatous inflammation in ...",
+        "order_index": 2
+      },
+      {
+        "text": "Tuberculosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Interval appendectomy. Interval appendectomy is an important cause of granulomatous inflammation in ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 25",
+    "stem": "Which of the following criteria below should be used to stage the appendiceal tumor in this patient?",
+    "difficulty": "medium",
+    "teaching_point": ". Extent of invasion. Goblet cell adenocarcinoma behaves (and thus is graded and staged) like adenocarcinoma. Grading should be based on the proportion of low and high grade components. This case would be considered low grade since there is > 75% tubular growth and < 25% high grade component on the representative slide. Purely assessing percentage of glandular formation is used to grade traditional colorectal adenocarcinoma. Mitotic activity and Ki67 proliferative index are used to stage neuroendocrine tumors and should not be used to grade goblet cell adenocarcinomas. Size is used to stage neuroendocrine tumors. Goblet cell adenocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixgobletcellcarcinoid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Extent of invasion",
+        "is_correct": true,
+        "explanation": ". Extent of invasion. Goblet cell adenocarcinoma behaves (and thus is graded and staged) like adenocarcinoma. Grading should be based on the proportion of low and high grade components. This case would be considered low grade since there is > 75% tubular growth and < 25% high grade component on the representative slide. Purely assessing percentage of glandular formation is used to grade traditional colorectal adenocarcinoma. Mitotic activity and Ki67 proliferative index are used to stage neuroendocrine tumors and should not be used to grade goblet cell adenocarcinomas. Size is used to stage neuroendocrine tumors. Goblet cell adenocarcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Percentage of gland formation only",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Extent of invasion. Goblet cell adenocarcinoma behaves (and thus is graded and staged) like adenoc...",
+        "order_index": 1
+      },
+      {
+        "text": "Mitotic activity / Ki67",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Extent of invasion. Goblet cell adenocarcinoma behaves (and thus is graded and staged) like adenoc...",
+        "order_index": 2
+      },
+      {
+        "text": "Size",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Extent of invasion. Goblet cell adenocarcinoma behaves (and thus is graded and staged) like adenoc...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixgobletcellcarcinoidLollie11.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixgobletcellcarcinoidLollie12.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 26",
+    "stem": "You are reviewing a case of acute appendicitis and astutely notice the findings in the images provided. What should you do next?",
+    "difficulty": "medium",
+    "teaching_point": ". Submit the remaining appendix. You are confident with your diagnosis of low grade goblet cell adenocarcinoma and are ready to sign it out; however, the remaining appendix must be submitted to assess the extent of high grade features and the depth of invasion, thus D is the correct answer. There is a controversy over whether patients need a right hemicolectomy. Some features that suggest sufficient surgical management of an appendectomy with negative margins includes pT1 / pT2 tumors, < 2 cm size, confinement to the distal tip, no nodal metastasis and low grade histology. Goblet cell adenocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixgobletcellcarcinoid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Immediately alert the surgeon, as the patient requires a right hemicolectomy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Submit the remaining appendix. You are confident with your diagnosis of low grade goblet cell aden...",
+        "order_index": 0
+      },
+      {
+        "text": "Send the case out for consultation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Submit the remaining appendix. You are confident with your diagnosis of low grade goblet cell aden...",
+        "order_index": 1
+      },
+      {
+        "text": "Sign it out as goblet cell adenocarcinoma, grade 1 (formerly known as goblet cell carcinoid)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Submit the remaining appendix. You are confident with your diagnosis of low grade goblet cell aden...",
+        "order_index": 2
+      },
+      {
+        "text": "Submit the remaining appendix",
+        "is_correct": true,
+        "explanation": ". Submit the remaining appendix. You are confident with your diagnosis of low grade goblet cell adenocarcinoma and are ready to sign it out; however, the remaining appendix must be submitted to assess the extent of high grade features and the depth of invasion, thus D is the correct answer. There is a controversy over whether patients need a right hemicolectomy. Some features that suggest sufficient surgical management of an appendectomy with negative margins includes pT1 / pT2 tumors, < 2 cm size, confinement to the distal tip, no nodal metastasis and low grade histology. Goblet cell adenocarcinoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixgobletcellcarcinoidLollie11.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixgobletcellcarcinoidLollie12.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 29",
+    "stem": "A 14 year old girl complaining of perianal itching especially at night for 2 weeks came to the emergency department complaining of abdominal pain and underwent appendectomy. On pathologic examination of the resected appendix, structures shown in the micro image were detected in the appendicular lumen. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Appendicitis with Enterobius vermicularis infestation Enterobius vermicularis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixenterobius.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Appendicitis with Enterobius vermicularis infestation",
+        "is_correct": true,
+        "explanation": ". Appendicitis with Enterobius vermicularis infestation Enterobius vermicularis",
+        "order_index": 0
+      },
+      {
+        "text": "Appendicitis with whipworm infestation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Appendicitis with Enterobius vermicularis infestation Enterobius vermicularis",
+        "order_index": 1
+      },
+      {
+        "text": "Crohn's disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Appendicitis with Enterobius vermicularis infestation Enterobius vermicularis",
+        "order_index": 2
+      },
+      {
+        "text": "Granulomatous appendicitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Appendicitis with Enterobius vermicularis infestation Enterobius vermicularis",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixenterobiasishasby16.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 30",
+    "stem": "What is most likely to be helpful for the diagnosis of enterobiasis?",
+    "difficulty": "medium",
+    "teaching_point": ". Cellophane tape test Enterobius vermicularis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixenterobius.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Breath test",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Cellophane tape test Enterobius vermicularis",
+        "order_index": 0
+      },
+      {
+        "text": "Cellophane tape test",
+        "is_correct": true,
+        "explanation": ". Cellophane tape test Enterobius vermicularis",
+        "order_index": 1
+      },
+      {
+        "text": "Serological tests",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Cellophane tape test Enterobius vermicularis",
+        "order_index": 2
+      },
+      {
+        "text": "Stool examination",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Cellophane tape test Enterobius vermicularis",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 31",
+    "stem": "Which of the following is correct regarding the entity shown in the image above?",
+    "difficulty": "medium",
+    "teaching_point": "It can be acquired or congenital. the entity is appendiceal diverticulosis, which is a rare finding. there is a strong association between appendiceal diverticulosis and neoplasms; therefore, reporting of diverticulosis is required. appendix with acquired diverticulosis (acquired but not all diverticulosis) has a greater likelihood of perforation and mortality when inflamed. Diverticulosis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixdiverticula.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "All cases exhibit a higher perforation rate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. It can be acquired or congenital. the entity is appendiceal diverticulosis, which is a rare finding....",
+        "order_index": 0
+      },
+      {
+        "text": "It can be acquired or congenital",
+        "is_correct": true,
+        "explanation": "It can be acquired or congenital. the entity is appendiceal diverticulosis, which is a rare finding. there is a strong association between appendiceal diverticulosis and neoplasms; therefore, reporting of diverticulosis is required. appendix with acquired diverticulosis (acquired but not all diverticulosis) has a greater likelihood of perforation and mortality when inflamed. Diverticulosis",
+        "order_index": 1
+      },
+      {
+        "text": "It is a frequently encountered lesion and is commonly observed in routine surgical specimens",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. It can be acquired or congenital. the entity is appendiceal diverticulosis, which is a rare finding....",
+        "order_index": 2
+      },
+      {
+        "text": "It is an insignificant pathological finding; therefore, it does not require reporting",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. It can be acquired or congenital. the entity is appendiceal diverticulosis, which is a rare finding....",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixdiverticulaLiu01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 32",
+    "stem": "A 20 year old man with known cystic fibrosis presents with abdominal pain localized to the right lower quadrant. Imaging reveals an enlarged, mucus filled appendix. What is the most likely histologic finding in the appendix of this patient?",
+    "difficulty": "medium",
+    "teaching_point": ". Appendiceal dilation with inspissated mucus. Cystic fibrosis often leads to mucus obstruction in the appendix, resulting in appendiceal dilation and mucus impaction with or without acute inflammation. although mucinous neoplasms can present with appendiceal dilation, they do not typically arise as a result of cystic fibrosis. epithelial dysplasia with fibrotic changes is not a hallmark of cystic fibrosis in the appendix. hyperplasia of lymphoid tissue is unrelated to cystic fibrosis related appendiceal changes and is more typical in lymphoid hyperplasia. Appendix - Cystic fibrosis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixcysticfibrosis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Appendiceal dilation with inspissated mucus",
+        "is_correct": true,
+        "explanation": ". Appendiceal dilation with inspissated mucus. Cystic fibrosis often leads to mucus obstruction in the appendix, resulting in appendiceal dilation and mucus impaction with or without acute inflammation. although mucinous neoplasms can present with appendiceal dilation, they do not typically arise as a result of cystic fibrosis. epithelial dysplasia with fibrotic changes is not a hallmark of cystic fibrosis in the appendix. hyperplasia of lymphoid tissue is unrelated to cystic fibrosis related appendiceal changes and is more typical in lymphoid hyperplasia. Appendix - Cystic fibrosis",
+        "order_index": 0
+      },
+      {
+        "text": "Epithelial dysplasia with fibrotic changes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Appendiceal dilation with inspissated mucus. Cystic fibrosis often leads to mucus obstruction in t...",
+        "order_index": 1
+      },
+      {
+        "text": "Hyperplasia of the lymphoid tissue",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Appendiceal dilation with inspissated mucus. Cystic fibrosis often leads to mucus obstruction in t...",
+        "order_index": 2
+      },
+      {
+        "text": "Mucinous neoplasms",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Appendiceal dilation with inspissated mucus. Cystic fibrosis often leads to mucus obstruction in t...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 33",
+    "stem": "A 44 year old man with cystic fibrosis presents with abdominal pain and distension. Surgery reveals a distended appendix filled with inspissated mucin. A representative histologic image is shown above. What complication is most commonly associated with these findings in cystic fibrosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Appendiceal perforation. Inspissated mucus in cystic fibrosis can obstruct the appendiceal lumen, leading to increased intraluminal pressure and secondary inflammation, which commonly results in appendicitis. On very rare occasions, this can cause perforation. appendiceal adenocarcinoma is a neoplastic process that invades the appendiceal wall and often presents as a mass forming tumor. mucinous neoplasms are not a typical finding in cystic fibrosis related appendix pathology. carcinoid tumors are unrelated to mucus retention and appendicitis seen in cystic fibrosis patients. Appendix - Cystic fibrosis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixcysticfibrosis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Appendiceal perforation. Inspissated mucus in cystic fibrosis can obstruct the appendiceal lumen, ...",
+        "order_index": 0
+      },
+      {
+        "text": "Appendiceal perforation",
+        "is_correct": true,
+        "explanation": ". Appendiceal perforation. Inspissated mucus in cystic fibrosis can obstruct the appendiceal lumen, leading to increased intraluminal pressure and secondary inflammation, which commonly results in appendicitis. On very rare occasions, this can cause perforation. appendiceal adenocarcinoma is a neoplastic process that invades the appendiceal wall and often presents as a mass forming tumor. mucinous neoplasms are not a typical finding in cystic fibrosis related appendix pathology. carcinoid tumors are unrelated to mucus retention and appendicitis seen in cystic fibrosis patients. Appendix - Cystic fibrosis",
+        "order_index": 1
+      },
+      {
+        "text": "Carcinoid tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Appendiceal perforation. Inspissated mucus in cystic fibrosis can obstruct the appendiceal lumen, ...",
+        "order_index": 2
+      },
+      {
+        "text": "Mucinous neoplasms",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Appendiceal perforation. Inspissated mucus in cystic fibrosis can obstruct the appendiceal lumen, ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixcysticfibrosispezhouh01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 34",
+    "stem": "A 31 year old man presenting with right lower quadrant pain, fever and radiologic evidence of acute appendicitis undergoes appendectomy, which reveals the findings above. What is the most likely clinical risk factor?",
+    "difficulty": "medium",
+    "teaching_point": "HIV infection. Immunocompromised states like HIV infection or history of solid organ transplantation are risk factors for CMV infection. trauma is not a risk factor for CMV infection. recent antibiotic use is not a risk factor for CMV infection, though may predispose other infections, such as C. difficile. the patient's clinical presentation is not typical of inflammatory bowel disease (IBD), though patients with IBD may be at increased risk for CMV infection, particularly after steroid therapy. travel outside the U.S. may predispose to certain infections (e.g., parasitic) but it is not a risk factor for CMV infection. CMV appendicitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixCMVappendicitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "History of recent antibiotic use",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. HIV infection. Immunocompromised states like HIV infection or history of solid organ transplantation...",
+        "order_index": 0
+      },
+      {
+        "text": "HIV infection",
+        "is_correct": true,
+        "explanation": "HIV infection. Immunocompromised states like HIV infection or history of solid organ transplantation are risk factors for CMV infection. trauma is not a risk factor for CMV infection. recent antibiotic use is not a risk factor for CMV infection, though may predispose other infections, such as C. difficile. the patient's clinical presentation is not typical of inflammatory bowel disease (IBD), though patients with IBD may be at increased risk for CMV infection, particularly after steroid therapy. travel outside the U.S. may predispose to certain infections (e.g., parasitic) but it is not a risk factor for CMV infection. CMV appendicitis",
+        "order_index": 1
+      },
+      {
+        "text": "Inflammatory bowel disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. HIV infection. Immunocompromised states like HIV infection or history of solid organ transplantation...",
+        "order_index": 2
+      },
+      {
+        "text": "Trauma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. HIV infection. Immunocompromised states like HIV infection or history of solid organ transplantation...",
+        "order_index": 3
+      },
+      {
+        "text": "Travel outside the U.S.",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. HIV infection. Immunocompromised states like HIV infection or history of solid organ transplantation...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixCMVappendicitishutchings10.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 35",
+    "stem": "Which histologic feature is characteristic of CMV appendicitis?",
+    "difficulty": "medium",
+    "teaching_point": "Intranuclear and intracytoplasmic inclusions. The presence of basophilic intranuclear inclusions (owl eye inclusions) and intracytoplasmic inclusions are characteristic of CMV infected cells. rod shaped bacteria in the appendiceal lumen are nonspecific and may not be pathogenic. these features are typical of adenovirus infection. these features are typical of Entamoeba histolytica infection. these features are typical of measles (rubeola virus) infection. CMV appendicitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixCMVappendicitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Intranuclear and intracytoplasmic inclusions",
+        "is_correct": true,
+        "explanation": "Intranuclear and intracytoplasmic inclusions. The presence of basophilic intranuclear inclusions (owl eye inclusions) and intracytoplasmic inclusions are characteristic of CMV infected cells. rod shaped bacteria in the appendiceal lumen are nonspecific and may not be pathogenic. these features are typical of adenovirus infection. these features are typical of Entamoeba histolytica infection. these features are typical of measles (rubeola virus) infection. CMV appendicitis",
+        "order_index": 0
+      },
+      {
+        "text": "Luminal amoebae with foamy cytoplasm and ingested erythrocytes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Intranuclear and intracytoplasmic inclusions. The presence of basophilic intranuclear inclusions (ow...",
+        "order_index": 1
+      },
+      {
+        "text": "Multinucleate Warthin-Finkeldey giant cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Intranuclear and intracytoplasmic inclusions. The presence of basophilic intranuclear inclusions (ow...",
+        "order_index": 2
+      },
+      {
+        "text": "Rod shaped bacteria in the appendiceal lumen",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Intranuclear and intracytoplasmic inclusions. The presence of basophilic intranuclear inclusions (ow...",
+        "order_index": 3
+      },
+      {
+        "text": "Smudgy, crescent shaped intranuclear inclusions (smudge cells)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Intranuclear and intracytoplasmic inclusions. The presence of basophilic intranuclear inclusions (ow...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 36",
+    "stem": "Which of these features can be seen in a normal appendix?",
+    "difficulty": "medium",
+    "teaching_point": ". Focal lymphoid follicle. Focal small lymphoid follicles can normally be seen in a normal appendix. Answers B and D are incorrect because they are features of acute appendicitis. Answer C is incorrect as tubular adenoma is not a normal finding anywhere in the GI tract. Appendix - Anatomy",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixnormalanatomy.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Focal lymphoid follicle",
+        "is_correct": true,
+        "explanation": ". Focal lymphoid follicle. Focal small lymphoid follicles can normally be seen in a normal appendix. Answers B and D are incorrect because they are features of acute appendicitis. Answer C is incorrect as tubular adenoma is not a normal finding anywhere in the GI tract. Appendix - Anatomy",
+        "order_index": 0
+      },
+      {
+        "text": "Neutrophils",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Focal lymphoid follicle. Focal small lymphoid follicles can normally be seen in a normal appendix....",
+        "order_index": 1
+      },
+      {
+        "text": "Tubular adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Focal lymphoid follicle. Focal small lymphoid follicles can normally be seen in a normal appendix....",
+        "order_index": 2
+      },
+      {
+        "text": "Ulceration",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Focal lymphoid follicle. Focal small lymphoid follicles can normally be seen in a normal appendix....",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixnormalanatomyPezhouh02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Appendix - Anatomy",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 37",
+    "stem": "A 58 year old patient presents with acute right lower quadrant abdominal pain and is found to have an appendiceal mass during surgery. Histological examination of the resected specimen reveals a lesion as depicted in the images above. Which of the following is the correct diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Mucinous appendiceal adenocarcinoma. The tumor demonstrates infiltrative growth pattern with irregular glands and large mucin pools, adjacent to a low grade mucinous neoplasm. Answers A and B are incorrect because both low grade appendiceal mucinous neoplasm and high grade appendiceal mucinous neoplasm exhibit a pushing type of invasion, unlike the irregular infiltrative pattern seen here. signet ring cell adenocarcinoma should typically have a minimum of 50% of neoplastic cells displaying signet ring cell morphology. Appendix - Adenocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixadenocarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "High grade appendiceal mucinous neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Mucinous appendiceal adenocarcinoma. The tumor demonstrates infiltrative growth pattern with irregul...",
+        "order_index": 0
+      },
+      {
+        "text": "Low grade appendiceal mucinous neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Mucinous appendiceal adenocarcinoma. The tumor demonstrates infiltrative growth pattern with irregul...",
+        "order_index": 1
+      },
+      {
+        "text": "Mucinous appendiceal adenocarcinoma",
+        "is_correct": true,
+        "explanation": "Mucinous appendiceal adenocarcinoma. The tumor demonstrates infiltrative growth pattern with irregular glands and large mucin pools, adjacent to a low grade mucinous neoplasm. Answers A and B are incorrect because both low grade appendiceal mucinous neoplasm and high grade appendiceal mucinous neoplasm exhibit a pushing type of invasion, unlike the irregular infiltrative pattern seen here. signet ring cell adenocarcinoma should typically have a minimum of 50% of neoplastic cells displaying signet ring cell morphology. Appendix - Adenocarcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Signet ring cell adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Mucinous appendiceal adenocarcinoma. The tumor demonstrates infiltrative growth pattern with irregul...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixadenocarcinomaliu01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Adenocarcinoma with adjacent LAMN",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixadenocarcinomaliu02.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "Infiltrative glands with desmoplasia",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 38",
+    "stem": "You are reviewing a case of acute appendicitis and notice the findings in the images provided. Which of the following statements is true regarding this lesion?",
+    "difficulty": "medium",
+    "teaching_point": "Signet ring cell type is associated with a worse prognosis. The clinical and histological findings suggest appendiceal signet ring cell adenocarcinoma, which is associated with a worse prognosis compared to other types of appendiceal adenocarcinoma. appendiceal adenocarcinoma typically displays a low prevalence of microsatellite instability. appendiceal adenocarcinoma stains positive for CK20 but majority lacks CK7 expression. appendiceal adenocarcinomas usually occur in patients in their fifth to seventh decade of life. Appendix - Adenocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixadenocarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It is characterized by frequent microsatellite instability",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Signet ring cell type is associated with a worse prognosis. The clinical and histological findings s...",
+        "order_index": 0
+      },
+      {
+        "text": "It is frequently positive for CK7 and negative for CK20",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Signet ring cell type is associated with a worse prognosis. The clinical and histological findings s...",
+        "order_index": 1
+      },
+      {
+        "text": "It usually involves patients 30 - 50 years of age",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Signet ring cell type is associated with a worse prognosis. The clinical and histological findings s...",
+        "order_index": 2
+      },
+      {
+        "text": "Signet ring cell type is associated with a worse prognosis",
+        "is_correct": true,
+        "explanation": "Signet ring cell type is associated with a worse prognosis. The clinical and histological findings suggest appendiceal signet ring cell adenocarcinoma, which is associated with a worse prognosis compared to other types of appendiceal adenocarcinoma. appendiceal adenocarcinoma typically displays a low prevalence of microsatellite instability. appendiceal adenocarcinoma stains positive for CK20 but majority lacks CK7 expression. appendiceal adenocarcinomas usually occur in patients in their fifth to seventh decade of life. Appendix - Adenocarcinoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixadenocarcinomaliu08.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Luminal obstruction",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixadenocarcinomaliu09.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "Signet ring cells",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 39",
+    "stem": "A 40 year old caucasian man presented into the emergency room with right lower quadrant pain associated with vomiting, abdominal tenderness, fever and moderate leukocytosis. Acute appendicitis was suspected and he underwent an appendectomy. His appendix was sent to pathology for histological evaluation. The H&E images are shown above. Which of the following is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Appendiceal diverticulitis Acute appendicitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixacuteappendicitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Appendiceal diverticulitis",
+        "is_correct": true,
+        "explanation": ". Appendiceal diverticulitis Acute appendicitis",
+        "order_index": 0
+      },
+      {
+        "text": "Appendiceal endometriosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Appendiceal diverticulitis Acute appendicitis",
+        "order_index": 1
+      },
+      {
+        "text": "Interval appendicitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Appendiceal diverticulitis Acute appendicitis",
+        "order_index": 2
+      },
+      {
+        "text": "Low grade appendiceal mucinous neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Appendiceal diverticulitis Acute appendicitis",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixacuteappendicitisqingqing01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixacuteappendicitisqingqing02.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 40",
+    "stem": "A 35 year old woman presented with localized right lower quadrant abdominal pain for 1 day. She also presented with nausea, vomiting, menorrhagia and dizziness. She reported that she was actively menstruating and that these symptoms typically occurred monthly with menstruation but had been particularly severe in that month. CT scan showed thick walled appendix consistent with acute appendicitis. She underwent an appendectomy. The H&E images are shown above. Which of the following is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Appendiceal endometriosis Acute appendicitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixacuteappendicitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute appendicitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Appendiceal endometriosis Acute appendicitis",
+        "order_index": 0
+      },
+      {
+        "text": "Appendiceal diverticulitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Appendiceal endometriosis Acute appendicitis",
+        "order_index": 1
+      },
+      {
+        "text": "Appendiceal endometriosis",
+        "is_correct": true,
+        "explanation": ". Appendiceal endometriosis Acute appendicitis",
+        "order_index": 2
+      },
+      {
+        "text": "Interval appendicitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Appendiceal endometriosis Acute appendicitis",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixacuteappendicitisqingqing03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixacuteappendicitisqingqing04.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 41",
+    "stem": "The depicted lesion was incidentally identified in an appendix removed for acute appendicitis. The lesion is best classified as which of the following?",
+    "difficulty": "medium",
+    "teaching_point": "Hyperplastic polyp. This is an incidentally identified hyperplastic polyp in the appendix. There is background acute inflammation indicative of acute appendicitis. Appendiceal hyperplastic polyps are usually found in appendices removed for reasons other than a polypoid lesion. Answers B and D are incorrect because there is no cytologic dysplasia, so this is not a serrated lesion with dysplasia or a tubulovillous adenoma. a serrated lesion without dysplasia should have architectural features of a serrated lesion, including serrations involving the full thickness of the epithelium and base of the crypts with abnormal inverted T or L shaped crypts. Hyperplastic polyp",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixhyperplasticpolyp.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Hyperplastic polyp",
+        "is_correct": true,
+        "explanation": "Hyperplastic polyp. This is an incidentally identified hyperplastic polyp in the appendix. There is background acute inflammation indicative of acute appendicitis. Appendiceal hyperplastic polyps are usually found in appendices removed for reasons other than a polypoid lesion. Answers B and D are incorrect because there is no cytologic dysplasia, so this is not a serrated lesion with dysplasia or a tubulovillous adenoma. a serrated lesion without dysplasia should have architectural features of a serrated lesion, including serrations involving the full thickness of the epithelium and base of the crypts with abnormal inverted T or L shaped crypts. Hyperplastic polyp",
+        "order_index": 0
+      },
+      {
+        "text": "Serrated lesion with dysplasia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Hyperplastic polyp. This is an incidentally identified hyperplastic polyp in the appendix. There is ...",
+        "order_index": 1
+      },
+      {
+        "text": "Serrated lesion without dysplasia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Hyperplastic polyp. This is an incidentally identified hyperplastic polyp in the appendix. There is ...",
+        "order_index": 2
+      },
+      {
+        "text": "Tubulovillous adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Hyperplastic polyp. This is an incidentally identified hyperplastic polyp in the appendix. There is ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/appendixhyperplasticpolyphuber03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 42",
+    "stem": "Which of the following is true regarding the current molecular understanding of the possible pathogenesis of hyperplastic polyps in the appendix?",
+    "difficulty": "medium",
+    "teaching_point": "Appendiceal hyperplastic polyps more often harbor a KRAS gene mutation versus a BRAF mutation. Appendiceal hyperplastic polyps do not appear to develop via the serrated pathway of colorectal neoplasia, which is characterized by BRAF mutations, DNA methylation and microsatellite instability. Appendiceal hyperplastic polyps do not typically have a CIMP phenotype. Hyperplastic polyp",
+    "question_references": "https://www.pathologyoutlines.com/topic/appendixhyperplasticpolyp.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "They are clearly related to and caused by the serrated pathway of colorectal neoplasia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Appendiceal hyperplastic polyps more often harbor a KRAS gene mutation versus a BRAF mutation. Appen...",
+        "order_index": 0
+      },
+      {
+        "text": "They commonly demonstrate a CpG island methylator (CIMP) phenotype",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Appendiceal hyperplastic polyps more often harbor a KRAS gene mutation versus a BRAF mutation. Appen...",
+        "order_index": 1
+      },
+      {
+        "text": "They commonly have microsatellite instability",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Appendiceal hyperplastic polyps more often harbor a KRAS gene mutation versus a BRAF mutation. Appen...",
+        "order_index": 2
+      },
+      {
+        "text": "They more often have KRAS rather than BRAF mutations",
+        "is_correct": true,
+        "explanation": "Appendiceal hyperplastic polyps more often harbor a KRAS gene mutation versus a BRAF mutation. Appendiceal hyperplastic polyps do not appear to develop via the serrated pathway of colorectal neoplasia, which is characterized by BRAF mutations, DNA methylation and microsatellite instability. Appendiceal hyperplastic polyps do not typically have a CIMP phenotype. Hyperplastic polyp",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "appendix.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  }
+]

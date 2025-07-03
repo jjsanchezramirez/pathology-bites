@@ -1,0 +1,284 @@
+[
+  {
+    "title": "Question 2",
+    "stem": "[Image 1: https://www.pathologyoutlines.com/imgau/earkeloidDettrick05.jpg]\n\nThis is a photomicrograph of an excision biopsy from the earlobe of a 22 year old Japanese-Australian woman. What is your diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "",
+    "question_references": "Source: PathOutlines (ear.html)",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Dermatofibroma",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 0
+      },
+      {
+        "text": "Hypertrophic scar",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 1
+      },
+      {
+        "text": "Keloid",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 2
+      },
+      {
+        "text": "Scleroderma / morphea",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 3
+      }
+    ],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "images": [
+        {
+          "url": "https://www.pathologyoutlines.com/imgau/earkeloidDettrick05.jpg",
+          "alt_text": "",
+          "caption": ""
+        }
+      ],
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "[Image 1: https://www.pathologyoutlines.com/imgau/earinflammatoryoticUdoh06.jpg]\n\nWhich of the following statements regarding otic polyps is true?",
+    "difficulty": "medium",
+    "teaching_point": "",
+    "question_references": "Source: PathOutlines (ear.html)",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Composed primarily of keratinized squamous epithelium",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 0
+      },
+      {
+        "text": "Often associated with a history of cholesteatoma",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 1
+      },
+      {
+        "text": "They commonly arise from the tympanic membrane",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 2
+      },
+      {
+        "text": "Typically present with sudden sensorineural hearing loss",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 3
+      },
+      {
+        "text": "Usually become malignant if untreated",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 4
+      }
+    ],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "images": [
+        {
+          "url": "https://www.pathologyoutlines.com/imgau/earinflammatoryoticUdoh06.jpg",
+          "alt_text": "",
+          "caption": ""
+        }
+      ],
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "A 55 year old woman presents with recurrent episodes of unilateral otorrhea, hearing loss and a sensation of fullness in the affected ear. Examination reveals a pink, fleshy mass protruding into the external auditory canal. Histopathological examination demonstrates hyperplastic squamous epithelium and numerous dilated vessels infiltrated by chronic inflammatory cells. Which of the following is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "",
+    "question_references": "Source: PathOutlines (ear.html)",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cerumen impaction",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 0
+      },
+      {
+        "text": "Cholesteatoma",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 1
+      },
+      {
+        "text": "Otic polyp",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 2
+      },
+      {
+        "text": "Otitis externa",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 3
+      },
+      {
+        "text": "Squamous cell carcinoma",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 4
+      }
+    ],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "images": [],
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 5",
+    "stem": "[Image 1: https://www.pathologyoutlines.com/imgau/earcholesteatomaMicroMagliocca06.jpg]\n\nThe keratinizing squamous epithelium (blue arrow in image shown above) of cholesteatoma is also known as",
+    "difficulty": "medium",
+    "teaching_point": "",
+    "question_references": "Source: PathOutlines (ear.html)",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cholesterol clefts",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 0
+      },
+      {
+        "text": "Cystic contents",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 1
+      },
+      {
+        "text": "Matrix",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 2
+      },
+      {
+        "text": "Perimatrix",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 3
+      }
+    ],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "images": [
+        {
+          "url": "https://www.pathologyoutlines.com/imgau/earcholesteatomaMicroMagliocca06.jpg",
+          "alt_text": "",
+          "caption": ""
+        }
+      ],
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "How does congenital cholesteatoma typically present?",
+    "difficulty": "medium",
+    "teaching_point": "",
+    "question_references": "Source: PathOutlines (ear.html)",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "White-yellow mass in anterior superior quadrant of the middle ear, disrupted tympanic membrane, slowly progressive sensorineural hearing loss",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 0
+      },
+      {
+        "text": "White-yellow mass in anterior superior quadrant of the middle ear, intact tympanic membrane, slowly progressive conductive hearing loss",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 1
+      },
+      {
+        "text": "White-yellow mass in posterior superior retraction pocket, disrupted tympanic membrane, slowly progressive sensorineural hearing loss",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 2
+      },
+      {
+        "text": "White-yellow mass in posterior superior retraction pocket, intact tympanic membrane, slowly progressive conductive hearing loss",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 3
+      }
+    ],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "images": [],
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "[Image 1: https://www.pathologyoutlines.com/imgau/earaccessorytragiAsadbeigi05.jpg]\n\nWhich histological feature (as seen in the image shown above) best distinguishes an accessory tragus from a hair follicle nevus?",
+    "difficulty": "medium",
+    "teaching_point": "",
+    "question_references": "Source: PathOutlines (ear.html)",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Presence of a cartilaginous core",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 0
+      },
+      {
+        "text": "Presence of dense connective tissue framework",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 1
+      },
+      {
+        "text": "Presence of sebaceous glands",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 2
+      },
+      {
+        "text": "Presence of well developed hair follicles",
+        "is_correct": false,
+        "explanation": "This option is incorrect. ",
+        "order_index": 3
+      }
+    ],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "images": [
+        {
+          "url": "https://www.pathologyoutlines.com/imgau/earaccessorytragiAsadbeigi05.jpg",
+          "alt_text": "Accessory tragi",
+          "caption": ""
+        }
+      ],
+      "database_set": "Web"
+    }
+  }
+]

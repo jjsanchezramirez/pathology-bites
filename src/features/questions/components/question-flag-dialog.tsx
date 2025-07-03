@@ -105,9 +105,6 @@ export function QuestionFlagDialog({
           .from('questions')
           .update({
             status: 'flagged',
-            flagged_by: user.id,
-            flagged_at: new Date().toISOString(),
-            flag_reason: selectedFlagType,
             updated_at: new Date().toISOString()
           })
           .eq('id', question.id)

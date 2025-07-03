@@ -80,13 +80,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create review' }, { status: 500 });
     }
 
-    // Update question status and review fields
+    // Update question status
     const { error: updateError } = await supabase
       .from('questions')
       .update({
         status: newStatus,
-        reviewed_by: user.id,
-        reviewed_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
       .eq('id', question_id);

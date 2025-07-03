@@ -1,0 +1,1071 @@
+[
+  {
+    "title": "Question 1",
+    "stem": "A 68 year old woman experiences acute onset chest pain and dyspnea upon receiving news that she is being evicted from her home. Cardiac imaging (shown above) suggests Takotsubo cardiomyopathy. Which of the following is most likely to be seen on biopsy of the affected myocardium?",
+    "difficulty": "medium",
+    "teaching_point": ". Myocyte hypertrophy. Takotsubo cardiomyopathy is characterized by ischemic damage to the ventricular myocardium, which leads to myocyte hypertrophy, resolving in a matter of days to weeks. In the absence of complications, necrosis is not usually seen. Atherosclerotic plaques are not usually seen in Takotsubo cardiomyopathy and if present are regarded as incidental findings. Some inflammatory cells could be seen but would not be the characteristic finding. The picture (taken through ventriculography) shows ballooning at the apex of the heart, which is the most common pattern seen in Takotsubo cardiomyopathy. Takotsubo cardiomyopathy",
+    "question_references": "https://www.pathologyoutlines.com/topic/hearttakotsubo.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Abundant inflammatory cell infiltrate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Myocyte hypertrophy. Takotsubo cardiomyopathy is characterized by ischemic damage to the ventricul...",
+        "order_index": 0
+      },
+      {
+        "text": "Atherosclerotic plaque in microvessels",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Myocyte hypertrophy. Takotsubo cardiomyopathy is characterized by ischemic damage to the ventricul...",
+        "order_index": 1
+      },
+      {
+        "text": "Coagulative necrosis of the cardiac apex",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Myocyte hypertrophy. Takotsubo cardiomyopathy is characterized by ischemic damage to the ventricul...",
+        "order_index": 2
+      },
+      {
+        "text": "Myocyte hypertrophy",
+        "is_correct": true,
+        "explanation": ". Myocyte hypertrophy. Takotsubo cardiomyopathy is characterized by ischemic damage to the ventricular myocardium, which leads to myocyte hypertrophy, resolving in a matter of days to weeks. In the absence of complications, necrosis is not usually seen. Atherosclerotic plaques are not usually seen in Takotsubo cardiomyopathy and if present are regarded as incidental findings. Some inflammatory cells could be seen but would not be the characteristic finding. The picture (taken through ventriculography) shows ballooning at the apex of the heart, which is the most common pattern seen in Takotsubo cardiomyopathy. Takotsubo cardiomyopathy",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/thumb/hearttakotsubo_jamacardio02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 2",
+    "stem": "A 72 year old woman presents with acute onset chest pain and dyspnea. Cardiac enzymes are elevated and ECG shows a new ST elevation. Cardiac imaging reveals an enlarged, balloon-like left ventricle which fails to contract during systole. However, coronary angiography reveals no evidence of coronary artery disease or thrombus. The patient improves clinically with minimal supportive care over the next 2 weeks and is discharged to her home. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Takotsubo cardiomyopathy classically mimics acute coronary syndrome's presentation. Unobstructed coronary arteries, however, point towards Takotsubo cardiomyopathy. The ballooning appearance on echocardiography or ventriculography, as well as her relatively rapid recovery, are characteristic of Takotsubo cardiomyopathy. Takotsubo cardiomyopathy",
+    "question_references": "https://www.pathologyoutlines.com/topic/hearttakotsubo.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Dressler syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Takotsubo cardiomyopathy classically mimics acute coronary syndrome's presentation. Unobstructed c...",
+        "order_index": 0
+      },
+      {
+        "text": "Hypertrophic cardiomyopathy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Takotsubo cardiomyopathy classically mimics acute coronary syndrome's presentation. Unobstructed c...",
+        "order_index": 1
+      },
+      {
+        "text": "Takotsubo cardiomyopathy",
+        "is_correct": true,
+        "explanation": ". Takotsubo cardiomyopathy classically mimics acute coronary syndrome's presentation. Unobstructed coronary arteries, however, point towards Takotsubo cardiomyopathy. The ballooning appearance on echocardiography or ventriculography, as well as her relatively rapid recovery, are characteristic of Takotsubo cardiomyopathy. Takotsubo cardiomyopathy",
+        "order_index": 2
+      },
+      {
+        "text": "Viral myocarditis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Takotsubo cardiomyopathy classically mimics acute coronary syndrome's presentation. Unobstructed c...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "A 40 year old woman presented with dyspnea on exertion and several pulmonary nodules seen on a prior abdominal CT scan. Additional CT scan of the chest showed cardiomegaly and subsequent endomyocardial biopsy revealed the histology seen above. What is the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Sarcoidosis. This patient has nonnecrotizing granulomas on cardiac biopsy. In the setting of pulmonary nodules on prior imaging, this most likely represents sarcoidosis with cardiac involvement. Her shortness of breath may represent development of heart failure. Sarcoidosis",
+    "question_references": "https://www.pathologyoutlines.com/topic/heartsarcoidosis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Amyloidosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Sarcoidosis. This patient has nonnecrotizing granulomas on cardiac biopsy. In the setting of pulmona...",
+        "order_index": 0
+      },
+      {
+        "text": "Giant cell myocarditis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Sarcoidosis. This patient has nonnecrotizing granulomas on cardiac biopsy. In the setting of pulmona...",
+        "order_index": 1
+      },
+      {
+        "text": "Hemochromatosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Sarcoidosis. This patient has nonnecrotizing granulomas on cardiac biopsy. In the setting of pulmona...",
+        "order_index": 2
+      },
+      {
+        "text": "Sarcoidosis",
+        "is_correct": true,
+        "explanation": "Sarcoidosis. This patient has nonnecrotizing granulomas on cardiac biopsy. In the setting of pulmonary nodules on prior imaging, this most likely represents sarcoidosis with cardiac involvement. Her shortness of breath may represent development of heart failure. Sarcoidosis",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/heartsarcoidosisGlass01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "A 28 year old woman with no significant medical history presents with dizziness. On further questioning, the patient describes a sensation of blacking out. Electrocardiogram (ECG) is performed and reveals sinus rhythm with PR prolongation. Chest Xray reveals bilateral lung opacities. What is the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Sarcoidosis. This patient likely has presyncope due to conduction abnormalities, as evidenced by atrioventricular (AV) block on ECG. In the setting of lung opacities on chest Xray and with no other explanation for AV block in this young patient who is otherwise healthy, this is most likely due to sarcoidosis with cardiac involvement. Sarcoidosis",
+    "question_references": "https://www.pathologyoutlines.com/topic/heartsarcoidosis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Coronary artery disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Sarcoidosis. This patient likely has presyncope due to conduction abnormalities, as evidenced by atr...",
+        "order_index": 0
+      },
+      {
+        "text": "Hyperthyroidism",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Sarcoidosis. This patient likely has presyncope due to conduction abnormalities, as evidenced by atr...",
+        "order_index": 1
+      },
+      {
+        "text": "Sarcoidosis",
+        "is_correct": true,
+        "explanation": "Sarcoidosis. This patient likely has presyncope due to conduction abnormalities, as evidenced by atrioventricular (AV) block on ECG. In the setting of lung opacities on chest Xray and with no other explanation for AV block in this young patient who is otherwise healthy, this is most likely due to sarcoidosis with cardiac involvement. Sarcoidosis",
+        "order_index": 2
+      },
+      {
+        "text": "Viral myocarditis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Sarcoidosis. This patient likely has presyncope due to conduction abnormalities, as evidenced by atr...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 5",
+    "stem": "This tumor was surgically excised from the aortic valve of a 58 year old man. This patient was most likely to have prior exposure to which of the following?",
+    "difficulty": "medium",
+    "teaching_point": "Thoracic irradiation. Endocardial injury is associated with the development of papillary fibroelastomas. Damage may be from iatrogenic causes (e.g. thoracic irradiation, prior cardiac surgery) or from hemodynamic changes secondary to intrinsic structural heart disease. Chemotherapies and antibiotics have not been associated with papillary fibroelastoma development. IVC filters do not contact the heart. Papillary fibroelastoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/hearttumorfibroelastoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cisplatin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Thoracic irradiation. Endocardial injury is associated with the development of papillary fibroelasto...",
+        "order_index": 0
+      },
+      {
+        "text": "Inferior vena cava (IVC) filter",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Thoracic irradiation. Endocardial injury is associated with the development of papillary fibroelasto...",
+        "order_index": 1
+      },
+      {
+        "text": "Smoking",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Thoracic irradiation. Endocardial injury is associated with the development of papillary fibroelasto...",
+        "order_index": 2
+      },
+      {
+        "text": "Thoracic irradiation",
+        "is_correct": true,
+        "explanation": "Thoracic irradiation. Endocardial injury is associated with the development of papillary fibroelastomas. Damage may be from iatrogenic causes (e.g. thoracic irradiation, prior cardiac surgery) or from hemodynamic changes secondary to intrinsic structural heart disease. Chemotherapies and antibiotics have not been associated with papillary fibroelastoma development. IVC filters do not contact the heart. Papillary fibroelastoma",
+        "order_index": 3
+      },
+      {
+        "text": "Vancomycin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Thoracic irradiation. Endocardial injury is associated with the development of papillary fibroelasto...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/heartpapillaryfibroelastomabois05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "A 63 year old woman experienced multiple transient ischemic attacks and was subsequently found to have a large, mobile cardiac mass attached to her aortic valve by a stalk on echocardiography. Why would her cardiologist recommend surgical excision?",
+    "difficulty": "medium",
+    "teaching_point": "Risk of thrombus formation with subsequent thromboembolization. Papillary fibroelastomas undergo surgical excision because of their (thrombo) embolic potential. The most common mechanism is thought to be related to thrombus formation with subsequent embolization; however, portions of the tumor may fragment and result in downstream ischemia. They have not been documented to show malignant transformation and surgical resection is considered curative without need for subsequent chemotherapy. They are not thought to be hereditary in origin. Papillary fibroelastoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/hearttumorfibroelastoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Definitive diagnosis and triage to chemotherapeutic regimen",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Risk of thrombus formation with subsequent thromboembolization. Papillary fibroelastomas undergo sur...",
+        "order_index": 0
+      },
+      {
+        "text": "Genetic testing for identification of at risk family members",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Risk of thrombus formation with subsequent thromboembolization. Papillary fibroelastomas undergo sur...",
+        "order_index": 1
+      },
+      {
+        "text": "Potential for malignant transformation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Risk of thrombus formation with subsequent thromboembolization. Papillary fibroelastomas undergo sur...",
+        "order_index": 2
+      },
+      {
+        "text": "Risk of thrombus formation with subsequent thromboembolization",
+        "is_correct": true,
+        "explanation": "Risk of thrombus formation with subsequent thromboembolization. Papillary fibroelastomas undergo surgical excision because of their (thrombo) embolic potential. The most common mechanism is thought to be related to thrombus formation with subsequent embolization; however, portions of the tumor may fragment and result in downstream ischemia. They have not been documented to show malignant transformation and surgical resection is considered curative without need for subsequent chemotherapy. They are not thought to be hereditary in origin. Papillary fibroelastoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/heartpapillaryfibroelastomabois03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "Regarding a cardiac myxoma, which of the following statements is true?",
+    "difficulty": "medium",
+    "teaching_point": ". Diagnostic criteria are based on the presence of myxoid stroma and lepidic cells The diagnosis of cardiac myxoma, which is distinctive from soft tissue myxomas, requires the presence of the typical lepidic myxoma cells that are polygonal cells with no or mild atypia and abundant eosinophilic cytoplasm. They are arranged as single cells, nests or cordons, often around vessels, within an abundant myxoid stroma. Other findings are leukocytic infiltrates, hemorrhage, calcifications, osseous metaplasia, thymic rests or glandular structures. Most patients are between 30 and 60 years of age (mean age 50 years); cardiac myxoma can be found in younger patients and in children in rare cases, in particular in patients with Carney complex Most cases are in the left atrium: 90% occur in atria, 75% on left side and localized to the interatrial septum and close to fossa ovalis but cardiac myxoma can be localized to any other cardiac chamber (right atrium, ventricles and valves) (J Pediatr 2013;162:964). Cardiac myxoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/hearttumormyxoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Diagnostic criteria are based on the presence of myxoid stroma and lepidic cells",
+        "is_correct": true,
+        "explanation": ". Diagnostic criteria are based on the presence of myxoid stroma and lepidic cells The diagnosis of cardiac myxoma, which is distinctive from soft tissue myxomas, requires the presence of the typical lepidic myxoma cells that are polygonal cells with no or mild atypia and abundant eosinophilic cytoplasm. They are arranged as single cells, nests or cordons, often around vessels, within an abundant myxoid stroma. Other findings are leukocytic infiltrates, hemorrhage, calcifications, osseous metaplasia, thymic rests or glandular structures. Most patients are between 30 and 60 years of age (mean age 50 years); cardiac myxoma can be found in younger patients and in children in rare cases, in particular in patients with Carney complex Most cases are in the left atrium: 90% occur in atria, 75% on left side and localized to the interatrial septum and close to fossa ovalis but cardiac myxoma can be localized to any other cardiac chamber (right atrium, ventricles and valves) (J Pediatr 2013;162:964). Cardiac myxoma",
+        "order_index": 0
+      },
+      {
+        "text": "Inflammatory infiltrates are uncommon",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Diagnostic criteria are based on the presence of myxoid stroma and lepidic cells The diagnosis of ...",
+        "order_index": 1
+      },
+      {
+        "text": "Most patients are children",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Diagnostic criteria are based on the presence of myxoid stroma and lepidic cells The diagnosis of ...",
+        "order_index": 2
+      },
+      {
+        "text": "Mostly found in the right ventricle",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Diagnostic criteria are based on the presence of myxoid stroma and lepidic cells The diagnosis of ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/heartcardiacmyxomapucciBRQ01NEW.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 8",
+    "stem": "In a patient presenting with a stroke, a cardiac mass of the left atrium is shown by echocardiography. At surgery, a left atrial mass with villous projection is excised. Histology does not show necrosis or mitotic activity of the myxoid mass; calretinin is strongly expressed by the tumor cells. Which of the following is most likely the correct diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Cardiac myxoma Cardiac myxomas are more frequently found in the left atrium and may frequently embolize, even causing stroke. Treatment requires complete surgical resection to avoid relapse and embolic or systemic symptoms. The presence of a myxoid tumor in a cardiac chamber requires histology for differential diagnosis from malignant tumors, including sarcomas, which exhibit mitotic activity, marked cell atypia, necrosis and a different immunophenotypes. Cardiac myxomas are strongly immunoreactive for calretinin and do not show significant cell atypia, necrosis or mitotic activity. Cardiac myxoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/hearttumormyxoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cardiac myxoma",
+        "is_correct": true,
+        "explanation": ". Cardiac myxoma Cardiac myxomas are more frequently found in the left atrium and may frequently embolize, even causing stroke. Treatment requires complete surgical resection to avoid relapse and embolic or systemic symptoms. The presence of a myxoid tumor in a cardiac chamber requires histology for differential diagnosis from malignant tumors, including sarcomas, which exhibit mitotic activity, marked cell atypia, necrosis and a different immunophenotypes. Cardiac myxomas are strongly immunoreactive for calretinin and do not show significant cell atypia, necrosis or mitotic activity. Cardiac myxoma",
+        "order_index": 0
+      },
+      {
+        "text": "Leiomyosarcoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Cardiac myxoma Cardiac myxomas are more frequently found in the left atrium and may frequently emb...",
+        "order_index": 1
+      },
+      {
+        "text": "Metastatic carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Cardiac myxoma Cardiac myxomas are more frequently found in the left atrium and may frequently emb...",
+        "order_index": 2
+      },
+      {
+        "text": "Mesothelioma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Cardiac myxoma Cardiac myxomas are more frequently found in the left atrium and may frequently emb...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 9",
+    "stem": "Which location is the last to receive blood flow from the coronary arteries (i.e. the zone most prone to ischemic injury)?",
+    "difficulty": "medium",
+    "teaching_point": ". Subendocardium Histology",
+    "question_references": "https://www.pathologyoutlines.com/topic/hearthistology.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Subendocardium",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Subendocardium Histology",
+        "order_index": 0
+      },
+      {
+        "text": "Midmural myocardium",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Subendocardium Histology",
+        "order_index": 1
+      },
+      {
+        "text": "Subepicardium",
+        "is_correct": true,
+        "explanation": ". Subendocardium Histology",
+        "order_index": 2
+      },
+      {
+        "text": "Epicardium",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Subendocardium Histology",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/hearthistologyBois04.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Histology",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 10",
+    "stem": "Which structure is referred to as the pacemaker of the heart?",
+    "difficulty": "medium",
+    "teaching_point": ". Sinoatrial node Histology",
+    "question_references": "https://www.pathologyoutlines.com/topic/hearthistology.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atrioventricular node",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Sinoatrial node Histology",
+        "order_index": 0
+      },
+      {
+        "text": "Bachmann bundle",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Sinoatrial node Histology",
+        "order_index": 1
+      },
+      {
+        "text": "Bundle of His",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Sinoatrial node Histology",
+        "order_index": 2
+      },
+      {
+        "text": "Sinoatrial node",
+        "is_correct": true,
+        "explanation": ". Sinoatrial node Histology",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 11",
+    "stem": "Which specific degenerative valve disease is the most common worldwide?",
+    "difficulty": "medium",
+    "teaching_point": "Degenerative mitral valve. Degenerative mitral valve disease is the most common, occurring in ~24 million people worldwide compared with 9 million with calcific aortic stenosis, which is the second most common. Degenerative valve disease",
+    "question_references": "https://www.pathologyoutlines.com/topic/heartdegenerative.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Bicuspid aortic valve",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Degenerative mitral valve. Degenerative mitral valve disease is the most common, occurring in ~24 mi...",
+        "order_index": 0
+      },
+      {
+        "text": "Calcific aortic stenosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Degenerative mitral valve. Degenerative mitral valve disease is the most common, occurring in ~24 mi...",
+        "order_index": 1
+      },
+      {
+        "text": "Degenerative mitral valve",
+        "is_correct": true,
+        "explanation": "Degenerative mitral valve. Degenerative mitral valve disease is the most common, occurring in ~24 million people worldwide compared with 9 million with calcific aortic stenosis, which is the second most common. Degenerative valve disease",
+        "order_index": 2
+      },
+      {
+        "text": "Myxomatous mitral valve degeneration",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Degenerative mitral valve. Degenerative mitral valve disease is the most common, occurring in ~24 mi...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 12",
+    "stem": "What test is used for definitive diagnosis of degenerative mitral valve?",
+    "difficulty": "medium",
+    "teaching_point": "Echocardiogram. Patients undergo auscultation at regular intervals to confirm the diagnosis, whereas a definitive diagnosis can be made with an echocardiogram once the diagnosis has been established. Degenerative valve disease",
+    "question_references": "https://www.pathologyoutlines.com/topic/heartdegenerative.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chest MRI",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Echocardiogram. Patients undergo auscultation at regular intervals to confirm the diagnosis, whereas...",
+        "order_index": 0
+      },
+      {
+        "text": "Chest ultrasonography",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Echocardiogram. Patients undergo auscultation at regular intervals to confirm the diagnosis, whereas...",
+        "order_index": 1
+      },
+      {
+        "text": "Echocardiogram",
+        "is_correct": true,
+        "explanation": "Echocardiogram. Patients undergo auscultation at regular intervals to confirm the diagnosis, whereas a definitive diagnosis can be made with an echocardiogram once the diagnosis has been established. Degenerative valve disease",
+        "order_index": 2
+      },
+      {
+        "text": "Physical examination",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Echocardiogram. Patients undergo auscultation at regular intervals to confirm the diagnosis, whereas...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 13",
+    "stem": "A 34 year old Hispanic man underwent an orthotopic heart transplantation six years ago following intractable idiopathic restrictive cardiomyopathy where he received a heart from a 25 year old white woman. Routine posttransplant endomyocardial biopsies showed no histological evidence of rejection but surveillance coronary angiography and intravascular ultrasound recently revealed diffuse, circumferential thickening of the left anterior descending artery with significant intimal thickening and 70% luminal stenosis. The patient has no history of dyslipidemia, diabetes or CMV infection. Which of the following is a significant risk factor in the development of this patient's disease?",
+    "difficulty": "medium",
+    "teaching_point": "This patient has chronic allograft vasculopathy as indicated by diffuse concentric intimal hyperplasia and 70% stenosis of a single primary vessel (left anterior descending) on angiography. White race of the donor is associated with an increased incidence of cardiac allograft vasculopathy in the recipient. Recipient CMV IgG/IgM seropositivity, not seronegativity, is also associated with an increased risk of disease. Absence of histological evidence of rejection has no effect on incidence and may be reflective of sampling error (i.e., biopsies did not capture diseased microvasculature). Donor old age and male sex, not young age and female sex, are risk factors for the development of cardiac allograft vasculopathy. Chronic allograft vasculopathy",
+    "question_references": "https://www.pathologyoutlines.com/topic/heartchronicgraftvasculopathy.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Absence of histological evidence of rejection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. This patient has chronic allograft vasculopathy as indicated by diffuse concentric intimal hyperplas...",
+        "order_index": 0
+      },
+      {
+        "text": "Donor female sex",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. This patient has chronic allograft vasculopathy as indicated by diffuse concentric intimal hyperplas...",
+        "order_index": 1
+      },
+      {
+        "text": "Donor white race",
+        "is_correct": true,
+        "explanation": "This patient has chronic allograft vasculopathy as indicated by diffuse concentric intimal hyperplasia and 70% stenosis of a single primary vessel (left anterior descending) on angiography. White race of the donor is associated with an increased incidence of cardiac allograft vasculopathy in the recipient. Recipient CMV IgG/IgM seropositivity, not seronegativity, is also associated with an increased risk of disease. Absence of histological evidence of rejection has no effect on incidence and may be reflective of sampling error (i.e., biopsies did not capture diseased microvasculature). Donor old age and male sex, not young age and female sex, are risk factors for the development of cardiac allograft vasculopathy. Chronic allograft vasculopathy",
+        "order_index": 2
+      },
+      {
+        "text": "Donor young age",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. This patient has chronic allograft vasculopathy as indicated by diffuse concentric intimal hyperplas...",
+        "order_index": 3
+      },
+      {
+        "text": "Recipient CMV IgG/IgM seronegativity",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. This patient has chronic allograft vasculopathy as indicated by diffuse concentric intimal hyperplas...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 14",
+    "stem": "A 51 year old woman received an orthotopic heart transplant four years ago due to end stage dilated cardiomyopathy. One year ago, she began experiencing mild exertional dyspnea. At that time, invasive angiography demonstrated 60% stenosis and diffuse narrowing of the left circumflex artery. Over time, the patient developed progressive heart failure and required a repeat transplantation. A representative section of her explanted heart is shown above. Which of the following statements about this disease is true?",
+    "difficulty": "medium",
+    "teaching_point": "This patient has chronic allograft vasculopathy as indicated by diffuse concentric intimal hyperplasia and 60% stenosis of a single primary vessel (left main coronary artery) on angiography. The patient's biopsy also shows severe intimal hyperplasia with marked luminal stenosis. In this disease, the donor coronary vasculature is affected while the recipient vasculature is spared. EBV seroconversion or reactivation is more associated with posttransplant lymphoproliferative disease. While acute antibody mediated rejection events (indicated by immunofluorescence in choice B) may occur in the context of cardiac allograft vasculopathy, it is not diagnostic. The inflammatory infiltrate seen in the disease may occur in any layer of the vessel and concentric intimal thickening may occur in both epicardial arteries and veins. Chronic allograft vasculopathy",
+    "question_references": "https://www.pathologyoutlines.com/topic/heartchronicgraftvasculopathy.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Although donor vasculature is affected, recipient vasculature is spared",
+        "is_correct": true,
+        "explanation": "This patient has chronic allograft vasculopathy as indicated by diffuse concentric intimal hyperplasia and 60% stenosis of a single primary vessel (left main coronary artery) on angiography. The patient's biopsy also shows severe intimal hyperplasia with marked luminal stenosis. In this disease, the donor coronary vasculature is affected while the recipient vasculature is spared. EBV seroconversion or reactivation is more associated with posttransplant lymphoproliferative disease. While acute antibody mediated rejection events (indicated by immunofluorescence in choice B) may occur in the context of cardiac allograft vasculopathy, it is not diagnostic. The inflammatory infiltrate seen in the disease may occur in any layer of the vessel and concentric intimal thickening may occur in both epicardial arteries and veins. Chronic allograft vasculopathy",
+        "order_index": 0
+      },
+      {
+        "text": "Characteristic mononuclear inflammatory infiltrate is limited to the adventitia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. This patient has chronic allograft vasculopathy as indicated by diffuse concentric intimal hyperplas...",
+        "order_index": 1
+      },
+      {
+        "text": "Concentric intimal thickening and luminal stenosis is found in epicardial arteries but not epicardial veins",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. This patient has chronic allograft vasculopathy as indicated by diffuse concentric intimal hyperplas...",
+        "order_index": 2
+      },
+      {
+        "text": "Development of the disease is closely associated with EBV seroconversion or reactivation of anti-EBV IgM",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. This patient has chronic allograft vasculopathy as indicated by diffuse concentric intimal hyperplas...",
+        "order_index": 3
+      },
+      {
+        "text": "Positive immunofluorescence for IgG, IgM or IgA is diagnostic of the disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. This patient has chronic allograft vasculopathy as indicated by diffuse concentric intimal hyperplas...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/heart/chronicgraftvasculopathyGlassBRQ.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 15",
+    "stem": "Which microscopic feature may be observed in cardiac fibroma?",
+    "difficulty": "medium",
+    "teaching_point": ". Prominent calcifications. Other microscopic features that may be observed in cardiac fibromas include dystrophic calcifications, lymphocytic infiltrate and extramedullary hematopoiesis, among others. High grade features are absent. Cardiac fibroma",
+    "question_references": "https://www.pathologyoutlines.com/topic/hearttumorfibroma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Extensive necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Prominent calcifications. Other microscopic features that may be observed in cardiac fibromas incl...",
+        "order_index": 0
+      },
+      {
+        "text": "High mitotic count",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Prominent calcifications. Other microscopic features that may be observed in cardiac fibromas incl...",
+        "order_index": 1
+      },
+      {
+        "text": "Marked atypia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Prominent calcifications. Other microscopic features that may be observed in cardiac fibromas incl...",
+        "order_index": 2
+      },
+      {
+        "text": "Prominent calcifications",
+        "is_correct": true,
+        "explanation": ". Prominent calcifications. Other microscopic features that may be observed in cardiac fibromas include dystrophic calcifications, lymphocytic infiltrate and extramedullary hematopoiesis, among others. High grade features are absent. Cardiac fibroma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/heartcardiacfibromacarreon09.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 16",
+    "stem": "Cardiac fibromas may be a manifestation of which of the following syndromes?",
+    "difficulty": "medium",
+    "teaching_point": ". Gorlin syndrome, also known as basal cell nevus syndrome (BCNS), is caused by mutations in a tumor suppressor gene called PTCH1. This gene is located on chromosome 9. Mutations in this gene may increase the risk for other tumors, including keratocystic odontogenic tumors, medulloblastomas and ovarian fibromas. Cardiac fibroma",
+    "question_references": "https://www.pathologyoutlines.com/topic/hearttumorfibroma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Carney complex",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Gorlin syndrome, also known as basal cell nevus syndrome (BCNS), is caused by mutations in a tumor...",
+        "order_index": 0
+      },
+      {
+        "text": "Gorlin syndrome",
+        "is_correct": true,
+        "explanation": ". Gorlin syndrome, also known as basal cell nevus syndrome (BCNS), is caused by mutations in a tumor suppressor gene called PTCH1. This gene is located on chromosome 9. Mutations in this gene may increase the risk for other tumors, including keratocystic odontogenic tumors, medulloblastomas and ovarian fibromas. Cardiac fibroma",
+        "order_index": 1
+      },
+      {
+        "text": "Holt-Oram syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Gorlin syndrome, also known as basal cell nevus syndrome (BCNS), is caused by mutations in a tumor...",
+        "order_index": 2
+      },
+      {
+        "text": "Tuberous sclerosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Gorlin syndrome, also known as basal cell nevus syndrome (BCNS), is caused by mutations in a tumor...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 17",
+    "stem": "A 75 year old man presents with acute chest pain, shortness of breath and EKG changes concerning for acute myocardial infarction. At autopsy, the above finding is identified when examining the coronary arteries. Which of the following is a risk factor for this finding?",
+    "difficulty": "medium",
+    "teaching_point": "Lipid rich coronary artery plaque with thin fibrous cap Atherosclerotic coronary artery disease",
+    "question_references": "https://www.pathologyoutlines.com/topic/heartatheroscleroticCAD.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Coronary artery plaque with thick fibrous cap",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Lipid rich coronary artery plaque with thin fibrous cap Atherosclerotic coronary artery disease",
+        "order_index": 0
+      },
+      {
+        "text": "Lipid rich coronary artery plaque with thin fibrous cap",
+        "is_correct": true,
+        "explanation": "Lipid rich coronary artery plaque with thin fibrous cap Atherosclerotic coronary artery disease",
+        "order_index": 1
+      },
+      {
+        "text": "Low blood triglyceride level",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Lipid rich coronary artery plaque with thin fibrous cap Atherosclerotic coronary artery disease",
+        "order_index": 2
+      },
+      {
+        "text": "Patient is a nonsmoker",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Lipid rich coronary artery plaque with thin fibrous cap Atherosclerotic coronary artery disease",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/heartatheroscleroticSchulte2.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 18",
+    "stem": "An adolescent male dies and undergoes autopsy. The autopsy pathologist notes some changes associated with atherosclerosis. The most likely finding to be identified at this age is",
+    "difficulty": "medium",
+    "teaching_point": "Fatty streak formation Atherosclerotic coronary artery disease",
+    "question_references": "https://www.pathologyoutlines.com/topic/heartatheroscleroticCAD.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Accumulation of calcium in vessel walls",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Fatty streak formation Atherosclerotic coronary artery disease",
+        "order_index": 0
+      },
+      {
+        "text": "Fatty streak formation",
+        "is_correct": true,
+        "explanation": "Fatty streak formation Atherosclerotic coronary artery disease",
+        "order_index": 1
+      },
+      {
+        "text": "Lipid rich atheromatous plaques",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Fatty streak formation Atherosclerotic coronary artery disease",
+        "order_index": 2
+      },
+      {
+        "text": "Vascular intimal thickening",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Fatty streak formation Atherosclerotic coronary artery disease",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 19",
+    "stem": "A 55 year old woman with a history of dilated cardiomyopathy undergoes orthotopic heart transplantation. 1 month posttransplant, she presents with worsening dyspnea and elevated cardiac enzymes. Endomyocardial biopsy reveals the histology shown above with the diffuse presence of C4d deposition in the capillaries (> 50%). Which of the following is the most likely mechanism underlying her condition?",
+    "difficulty": "medium",
+    "teaching_point": ". Direct cytotoxicity by donor specific antibodies (DSAs). The presence of C4d deposition in the capillaries signifies the activation of the complement system due to DSAs. The mechanism of AMR involves DSAs binding to endothelial cell antigens, triggering cytotoxic effects, complement activation and subsequent inflammatory responses, all of which contribute to graft dysfunction. cellular infiltration by T lymphocytes typically does not activate the complement system. As a result, C4d deposition would be negative in cases of cellular rejection. graft versus host disease is a rare complication in solid organ transplants, primarily involving a T lymphocyte response. inflammation caused by infectious organisms typically presents with diffuse lymphocytic eosinophils or histiocytic infiltration of the myocardium and an identifiable microorganism is sometimes present. Quilty lesion consists of a cellular infiltrate made up of T and B lymphocytes, macrophages and occasional plasma cells, often found on the endocardial surface. The pathogenesis of Quilty lesions is largely unknown; however, it is hypothesized to have an association with cyclosporin based immunosuppressive regimens. Antibody mediated rejection",
+    "question_references": "https://www.pathologyoutlines.com/topic/heartantibodymediatedrejection.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cellular infiltration by T lymphocytes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Direct cytotoxicity by donor specific antibodies (DSAs). The presence of C4d deposition in the cap...",
+        "order_index": 0
+      },
+      {
+        "text": "Direct cytotoxicity by donor specific antibodies (DSAs)",
+        "is_correct": true,
+        "explanation": ". Direct cytotoxicity by donor specific antibodies (DSAs). The presence of C4d deposition in the capillaries signifies the activation of the complement system due to DSAs. The mechanism of AMR involves DSAs binding to endothelial cell antigens, triggering cytotoxic effects, complement activation and subsequent inflammatory responses, all of which contribute to graft dysfunction. cellular infiltration by T lymphocytes typically does not activate the complement system. As a result, C4d deposition would be negative in cases of cellular rejection. graft versus host disease is a rare complication in solid organ transplants, primarily involving a T lymphocyte response. inflammation caused by infectious organisms typically presents with diffuse lymphocytic eosinophils or histiocytic infiltration of the myocardium and an identifiable microorganism is sometimes present. Quilty lesion consists of a cellular infiltrate made up of T and B lymphocytes, macrophages and occasional plasma cells, often found on the endocardial surface. The pathogenesis of Quilty lesions is largely unknown; however, it is hypothesized to have an association with cyclosporin based immunosuppressive regimens. Antibody mediated rejection",
+        "order_index": 1
+      },
+      {
+        "text": "Graft versus host disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Direct cytotoxicity by donor specific antibodies (DSAs). The presence of C4d deposition in the cap...",
+        "order_index": 2
+      },
+      {
+        "text": "Inflammation mediated by infectious organism",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Direct cytotoxicity by donor specific antibodies (DSAs). The presence of C4d deposition in the cap...",
+        "order_index": 3
+      },
+      {
+        "text": "Quilty lesion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Direct cytotoxicity by donor specific antibodies (DSAs). The presence of C4d deposition in the cap...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/heartantibodymediatedrejectionReyesmicro05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 20",
+    "stem": "A 62 year old man underwent a heart transplant due to ischemic heart disease. He is treated with a combination of immunosuppressive medications. 5 weeks after surgery, he developed acute rejection characterized by high fever, malaise and chest discomfort. Laboratory studies showed elevated titers of antidonor antibodies and a biopsy revealed evidence of antibody mediated rejection. Which of the following findings is indicative of antibody mediated rejection?",
+    "difficulty": "medium",
+    "teaching_point": ". C4d deposition in capillaries (multifocal staining). C4d deposition in the capillaries serves as a marker for antibody mediated rejection, indicating complement activation triggered by antibodies binding to the vascular endothelium, which leads to tissue injury. Answers B, C and D are incorrect because in a clinical context, the presence of high titers of antidonor antibodies alongside C4d positivity confirms acute antibody mediated rejection, distinguishing it from acute cellular rejection (answer B), peritransplant injury (answer C) and Quilty lesion (answer D). transmural inflammation with eosinophil and myocyte injury is seen in eosinophilic myocarditis. C4d deposition in the capillaries would not be present in this condition. Antibody mediated rejection",
+    "question_references": "https://www.pathologyoutlines.com/topic/heartantibodymediatedrejection.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "C4d deposition in capillaries (multifocal staining)",
+        "is_correct": true,
+        "explanation": ". C4d deposition in capillaries (multifocal staining). C4d deposition in the capillaries serves as a marker for antibody mediated rejection, indicating complement activation triggered by antibodies binding to the vascular endothelium, which leads to tissue injury. Answers B, C and D are incorrect because in a clinical context, the presence of high titers of antidonor antibodies alongside C4d positivity confirms acute antibody mediated rejection, distinguishing it from acute cellular rejection (answer B), peritransplant injury (answer C) and Quilty lesion (answer D). transmural inflammation with eosinophil and myocyte injury is seen in eosinophilic myocarditis. C4d deposition in the capillaries would not be present in this condition. Antibody mediated rejection",
+        "order_index": 0
+      },
+      {
+        "text": "Lymphocytic infiltrate in interstitial or perivascular distribution of myocardium",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . C4d deposition in capillaries (multifocal staining). C4d deposition in the capillaries serves as a...",
+        "order_index": 1
+      },
+      {
+        "text": "Mixed inflammation with myocyte necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . C4d deposition in capillaries (multifocal staining). C4d deposition in the capillaries serves as a...",
+        "order_index": 2
+      },
+      {
+        "text": "Subendocardial lymphocytic aggregate with prominent blood vessels",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . C4d deposition in capillaries (multifocal staining). C4d deposition in the capillaries serves as a...",
+        "order_index": 3
+      },
+      {
+        "text": "Transmural inflammation with eosinophils and myocyte injury",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . C4d deposition in capillaries (multifocal staining). C4d deposition in the capillaries serves as a...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/heartantibodymediatedrejectionReyesmicro09.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 21",
+    "stem": "A cardiac biopsy demonstrates negative Congo red staining and there is a well founded morphologic suspicion for cardiac amyloidosis. What is the next best step?",
+    "difficulty": "medium",
+    "teaching_point": "Repeat Congo red (CR) stain on 2 more sections. Repeat the CR stain on 2 or more 8 - 10 micron sections in order to exclude technical problems. Use a rotating stage to evaluate various angles, avoid plastic coverslips and use proper optics (avoid polarizer with built in compensator). If CR stain is still negative, then proceed to crystal violet stain (answer B) (Diagn Pathol 2019;14:57). In practice, a repeat CR stain and crystal violet stain may be done simultaneously. Answer A is incorrect, as the patient has undergone a cardiac biopsy. An abdominal fat pad biopsy, even if positive for amyloidosis, is not diagnostic of cardiac amyloidosis. in a patient with a high index of suspicion and a negative CR stain, the stain should be double checked or repeated to control for possible technical errors. Cardiac amyloidosis",
+    "question_references": "https://www.pathologyoutlines.com/topic/heartamyloidosis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Abdominal fat pad biopsy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Repeat Congo red (CR) stain on 2 more sections. Repeat the CR stain on 2 or more 8 - 10 micron secti...",
+        "order_index": 0
+      },
+      {
+        "text": "Crystal violet stain",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Repeat Congo red (CR) stain on 2 more sections. Repeat the CR stain on 2 or more 8 - 10 micron secti...",
+        "order_index": 1
+      },
+      {
+        "text": "Provide the negative diagnosis and suggest alternative diagnoses",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Repeat Congo red (CR) stain on 2 more sections. Repeat the CR stain on 2 or more 8 - 10 micron secti...",
+        "order_index": 2
+      },
+      {
+        "text": "Repeat Congo red stain on 2 more sections",
+        "is_correct": true,
+        "explanation": "Repeat Congo red (CR) stain on 2 more sections. Repeat the CR stain on 2 or more 8 - 10 micron sections in order to exclude technical problems. Use a rotating stage to evaluate various angles, avoid plastic coverslips and use proper optics (avoid polarizer with built in compensator). If CR stain is still negative, then proceed to crystal violet stain (answer B) (Diagn Pathol 2019;14:57). In practice, a repeat CR stain and crystal violet stain may be done simultaneously. Answer A is incorrect, as the patient has undergone a cardiac biopsy. An abdominal fat pad biopsy, even if positive for amyloidosis, is not diagnostic of cardiac amyloidosis. in a patient with a high index of suspicion and a negative CR stain, the stain should be double checked or repeated to control for possible technical errors. Cardiac amyloidosis",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/heartamyloidosisMicroJagirdar5.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/heartamyloidosisMicroJagirdar6.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 22",
+    "stem": "What is the gold standard to identify amyloid subtype and precursor protein?",
+    "difficulty": "medium",
+    "teaching_point": "Mass spectrometry. Mass spectrometry is the gold standard for identifying amyloid subtypes and precursor proteins. Answers A - C are incorrect as these methods are not the gold standard. Note that formalin fixed and paraffin embedded (FFPE) specimens can be used for a complete examination and characterizations (suitable for histologic, histochemical, immunohistochemical investigations, as well as molecular analysis). Frozen sections are only needed at centers that traditionally use immunofluorescence for amyloid typing (Front Cardiovasc Med 2022;9:1081098, Biomedicines 2022;10:3054). Cardiac amyloidosis",
+    "question_references": "https://www.pathologyoutlines.com/topic/heartamyloidosis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Electron microscopy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Mass spectrometry. Mass spectrometry is the gold standard for identifying amyloid subtypes and precu...",
+        "order_index": 0
+      },
+      {
+        "text": "Immunofluorescence studies",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Mass spectrometry. Mass spectrometry is the gold standard for identifying amyloid subtypes and precu...",
+        "order_index": 1
+      },
+      {
+        "text": "Immunohistochemistry",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Mass spectrometry. Mass spectrometry is the gold standard for identifying amyloid subtypes and precu...",
+        "order_index": 2
+      },
+      {
+        "text": "Mass spectrometry",
+        "is_correct": true,
+        "explanation": "Mass spectrometry. Mass spectrometry is the gold standard for identifying amyloid subtypes and precursor proteins. Answers A - C are incorrect as these methods are not the gold standard. Note that formalin fixed and paraffin embedded (FFPE) specimens can be used for a complete examination and characterizations (suitable for histologic, histochemical, immunohistochemical investigations, as well as molecular analysis). Frozen sections are only needed at centers that traditionally use immunofluorescence for amyloid typing (Front Cardiovasc Med 2022;9:1081098, Biomedicines 2022;10:3054). Cardiac amyloidosis",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "heart.html",
+      "category": "Anatomic Pathology > Cardiovascular",
+      "database_set": "Web"
+    }
+  }
+]

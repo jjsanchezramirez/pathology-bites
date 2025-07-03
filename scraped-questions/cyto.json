@@ -1,0 +1,1598 @@
+[
+  {
+    "title": "Question 1",
+    "stem": "Which of the following is true about the findings shown in the image above?",
+    "difficulty": "medium",
+    "teaching_point": ". A morphologic diagnosis associated with various conditions. Granulomatous inflammation is a cytomorphologic diagnosis observed with or without necrosis and can be associated with a variety of conditions, including not only infections (fungal, parasitic, mycobacterial) but also sarcoidosis, chronic inflammation and malignancies. Answers A, B and C are incorrect because while granulomatous inflammation can be associated with infections, carcinomas and sarcoidosis, granulomatous inflammation can also be seen in a variety of other conditions not limited to these. WHO reporting system for lung cytopathology",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungWHO.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Always associated with carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . A morphologic diagnosis associated with various conditions. Granulomatous inflammation is a cytomo...",
+        "order_index": 0
+      },
+      {
+        "text": "Always associated with infections",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . A morphologic diagnosis associated with various conditions. Granulomatous inflammation is a cytomo...",
+        "order_index": 1
+      },
+      {
+        "text": "Always associated with sarcoidosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . A morphologic diagnosis associated with various conditions. Granulomatous inflammation is a cytomo...",
+        "order_index": 2
+      },
+      {
+        "text": "A morphologic diagnosis associated with various conditions",
+        "is_correct": true,
+        "explanation": ". A morphologic diagnosis associated with various conditions. Granulomatous inflammation is a cytomorphologic diagnosis observed with or without necrosis and can be associated with a variety of conditions, including not only infections (fungal, parasitic, mycobacterial) but also sarcoidosis, chronic inflammation and malignancies. Answers A, B and C are incorrect because while granulomatous inflammation can be associated with infections, carcinomas and sarcoidosis, granulomatous inflammation can also be seen in a variety of other conditions not limited to these. WHO reporting system for lung cytopathology",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologylungWHOBRQ1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 2",
+    "stem": "Which immunostain(s) will confirm the diagnosis of adenocarcinoma in a lung cytology specimen?",
+    "difficulty": "medium",
+    "teaching_point": ". TTF1 and CK7 immunostaining. The cytomorphologic features of intracytoplasmic mucin, acini or tubule formation along with immunostains positive for nuclear TTF1 and cytokeratin 7 (cytoplasmic) are helpful for diagnosis of adenocarcinoma in cytology specimens. CD45 stained cells are used to determine the prognosis of small cell lung cancer (SCLC). EGFR mutation testing is molecular testing done to determine the targeted therapies. p40 and CK5/6 are positive in squamous cell carcinoma. WHO reporting system for lung cytopathology",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungWHO.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CD45 immunostaining",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . TTF1 and CK7 immunostaining. The cytomorphologic features of intracytoplasmic mucin, acini or tubu...",
+        "order_index": 0
+      },
+      {
+        "text": "EGFR mutation testing",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . TTF1 and CK7 immunostaining. The cytomorphologic features of intracytoplasmic mucin, acini or tubu...",
+        "order_index": 1
+      },
+      {
+        "text": "p40 and CK5/6 immunostaining",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . TTF1 and CK7 immunostaining. The cytomorphologic features of intracytoplasmic mucin, acini or tubu...",
+        "order_index": 2
+      },
+      {
+        "text": "TTF1 and CK7 immunostaining",
+        "is_correct": true,
+        "explanation": ". TTF1 and CK7 immunostaining. The cytomorphologic features of intracytoplasmic mucin, acini or tubule formation along with immunostains positive for nuclear TTF1 and cytokeratin 7 (cytoplasmic) are helpful for diagnosis of adenocarcinoma in cytology specimens. CD45 stained cells are used to determine the prognosis of small cell lung cancer (SCLC). EGFR mutation testing is molecular testing done to determine the targeted therapies. p40 and CK5/6 are positive in squamous cell carcinoma. WHO reporting system for lung cytopathology",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "A 79 year old smoker presents with dyspnea. A computed tomography (CT) scan shows a 3 cm mass in his right lung. Endobronchial ultrasound (EBUS) guided fine needle aspiration of the mass is shown in the image above. It shows only a small number of atypical cells in a necrotic background. Which of the following is the best diagnostic category?",
+    "difficulty": "medium",
+    "teaching_point": "Suspicious for malignancy. There is significant cytopathological atypia including nuclear enlargement, nuclear pleomorphism, irregular nuclear membrane, hyperchromatic chromatin and nuclear crowding but there are only a small number of cells showing these features. a specimen categorized as insufficient / inadequate lacks atypical cells. a specimen categorized as benign should show benign cytopathological features. a specimen categorized as atypical demonstrates features predominantly seen in benign lesions and minimal features that may raise the possibility of a malignant lesion. a specimen categorized as malignant should show unequivocal cytopathological features of malignancy. Suspicious for malignancy",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungsuspicious.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypical",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Suspicious for malignancy. There is significant cytopathological atypia including nuclear enlargemen...",
+        "order_index": 0
+      },
+      {
+        "text": "Benign",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Suspicious for malignancy. There is significant cytopathological atypia including nuclear enlargemen...",
+        "order_index": 1
+      },
+      {
+        "text": "Insufficient / inadequate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Suspicious for malignancy. There is significant cytopathological atypia including nuclear enlargemen...",
+        "order_index": 2
+      },
+      {
+        "text": "Malignant",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Suspicious for malignancy. There is significant cytopathological atypia including nuclear enlargemen...",
+        "order_index": 3
+      },
+      {
+        "text": "Suspicious for malignancy",
+        "is_correct": true,
+        "explanation": "Suspicious for malignancy. There is significant cytopathological atypia including nuclear enlargement, nuclear pleomorphism, irregular nuclear membrane, hyperchromatic chromatin and nuclear crowding but there are only a small number of cells showing these features. a specimen categorized as insufficient / inadequate lacks atypical cells. a specimen categorized as benign should show benign cytopathological features. a specimen categorized as atypical demonstrates features predominantly seen in benign lesions and minimal features that may raise the possibility of a malignant lesion. a specimen categorized as malignant should show unequivocal cytopathological features of malignancy. Suspicious for malignancy",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologylungsuspiciousCytoAlshaikh4a.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "A 55 year old man presented with a centrally located 3.5 cm mass. An FNA was performed and the Diff-Quik smear (image shown above) shows a rare cluster of medium sized pleomorphic atypical cells, with high N:C ratio, irregular nuclear membranes and hyperchromatic nuclei. Which of the following is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Suspicious for malignancy. There is one cluster that shows marked cytopathological atypia including nuclear enlargement, nuclear pleomorphism, irregular nuclear membrane, hyperchromatic chromatin and nuclear crowding but there are only a small number of cells showing these features. a specimen categorized as insufficient / inadequate lacks atypical cells. a specimen categorized as atypical should show features predominantly seen in benign lesions and minimal features that may raise the possibility of a malignant lesion. a specimen categorized as small cell carcinoma should show sufficient cellularity and cytopathological features of malignancy, including oval to elongated nuclei, absent nucleoli, scant cytoplasm, molding, necrosis and apoptosis. a specimen categorized as adenocarcinoma should show sufficient clusters of cohesive cells, with foamy vacuolated cytoplasm, fine chromatin and prominent nucleoli. Suspicious for malignancy",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungsuspicious.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Suspicious for malignancy. There is one cluster that shows marked cytopathological atypia including ...",
+        "order_index": 0
+      },
+      {
+        "text": "Atypical",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Suspicious for malignancy. There is one cluster that shows marked cytopathological atypia including ...",
+        "order_index": 1
+      },
+      {
+        "text": "Insufficient / inadequate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Suspicious for malignancy. There is one cluster that shows marked cytopathological atypia including ...",
+        "order_index": 2
+      },
+      {
+        "text": "Small cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Suspicious for malignancy. There is one cluster that shows marked cytopathological atypia including ...",
+        "order_index": 3
+      },
+      {
+        "text": "Suspicious for malignancy",
+        "is_correct": true,
+        "explanation": "Suspicious for malignancy. There is one cluster that shows marked cytopathological atypia including nuclear enlargement, nuclear pleomorphism, irregular nuclear membrane, hyperchromatic chromatin and nuclear crowding but there are only a small number of cells showing these features. a specimen categorized as insufficient / inadequate lacks atypical cells. a specimen categorized as atypical should show features predominantly seen in benign lesions and minimal features that may raise the possibility of a malignant lesion. a specimen categorized as small cell carcinoma should show sufficient cellularity and cytopathological features of malignancy, including oval to elongated nuclei, absent nucleoli, scant cytoplasm, molding, necrosis and apoptosis. a specimen categorized as adenocarcinoma should show sufficient clusters of cohesive cells, with foamy vacuolated cytoplasm, fine chromatin and prominent nucleoli. Suspicious for malignancy",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologylungsuspiciousCytoAlshaikh1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 5",
+    "stem": "Which of the following is a contraindication for FNA?",
+    "difficulty": "medium",
+    "teaching_point": "Pulsatile neck lesions. Pulsatile neck lesions are associated with higher risk of bleeding due to their vascular nature. The other options are incorrect as they are not contraindications for FNA. FNA is a helpful tool for differentiating neoplastic and nonneoplastic conditions and diagnosing most benign salivary gland neoplasms. FNA of palpable cervical lymph node is useful in the diagnosis of metastatic carcinomas and granulomatous processes. FNA is a reliable and useful procedure for the diagnosis of superficial palpable skin and subcutaneous nodules. Complications are quite rare, especially when using the small needle. Superficial FNA procedure: contraindications and complications",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyfnacontraindications.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Palpable cervical lymph node",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Pulsatile neck lesions. Pulsatile neck lesions are associated with higher risk of bleeding due to th...",
+        "order_index": 0
+      },
+      {
+        "text": "Pulsatile neck lesions",
+        "is_correct": true,
+        "explanation": "Pulsatile neck lesions. Pulsatile neck lesions are associated with higher risk of bleeding due to their vascular nature. The other options are incorrect as they are not contraindications for FNA. FNA is a helpful tool for differentiating neoplastic and nonneoplastic conditions and diagnosing most benign salivary gland neoplasms. FNA of palpable cervical lymph node is useful in the diagnosis of metastatic carcinomas and granulomatous processes. FNA is a reliable and useful procedure for the diagnosis of superficial palpable skin and subcutaneous nodules. Complications are quite rare, especially when using the small needle. Superficial FNA procedure: contraindications and complications",
+        "order_index": 1
+      },
+      {
+        "text": "Salivary gland mass or cyst",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Pulsatile neck lesions. Pulsatile neck lesions are associated with higher risk of bleeding due to th...",
+        "order_index": 2
+      },
+      {
+        "text": "Superficial palpable skin and subcutaneous nodule",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Pulsatile neck lesions. Pulsatile neck lesions are associated with higher risk of bleeding due to th...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "Which of the following statements regarding FNA is correct?",
+    "difficulty": "medium",
+    "teaching_point": "Complications are lower with superficial masses when compared to deep seated masses. Answer A is correct because complications, such as spread of infection or seeding of neoplastic cells through other tissue layers, are lower when FNA is performed on superficial masses as compared to the deep seated masses. FNA cannot reliably distinguish in situ from invasive carcinoma, as invasive features require documentation of stromal invasion in tissue biopsy. the FNA technique is very helpful in distinguishing between neoplastic and nonneoplastic lesions. patient understanding and consent are absolute requirements before performing the FNA. Superficial FNA procedure: contraindications and complications",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyfnacontraindications.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Complications are lower with superficial masses when compared to the deep seated masses",
+        "is_correct": true,
+        "explanation": "Complications are lower with superficial masses when compared to deep seated masses. Answer A is correct because complications, such as spread of infection or seeding of neoplastic cells through other tissue layers, are lower when FNA is performed on superficial masses as compared to the deep seated masses. FNA cannot reliably distinguish in situ from invasive carcinoma, as invasive features require documentation of stromal invasion in tissue biopsy. the FNA technique is very helpful in distinguishing between neoplastic and nonneoplastic lesions. patient understanding and consent are absolute requirements before performing the FNA. Superficial FNA procedure: contraindications and complications",
+        "order_index": 0
+      },
+      {
+        "text": "It cannot distinguish between in situ and invasive breast carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Complications are lower with superficial masses when compared to deep seated masses. Answer A is cor...",
+        "order_index": 1
+      },
+      {
+        "text": "It cannot distinguish between neoplastic and nonneoplastic lesions",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Complications are lower with superficial masses when compared to deep seated masses. Answer A is cor...",
+        "order_index": 2
+      },
+      {
+        "text": "Patient understanding and consent are not necessary before the procedure",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Complications are lower with superficial masses when compared to deep seated masses. Answer A is cor...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "A radiologist performs an ultrasound guided fine needle aspiration biopsy of a liver mass obtaining 4 passes from a single anatomic site. Aspirate smears from each pass were evaluated by an attending pathologist during rapid on site evaluation (ROSE). A preliminary interpretation was given to the radiologist for each pass and was subsequently recorded in the patient record in a preliminary report. What CPT codes are appropriate for the ROSE portion of this procedure?",
+    "difficulty": "medium",
+    "teaching_point": "88172x1 and 88177x3 (see CPT coding) Rapid on site evaluation (ROSE)",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyrose.html#cytopathologyrosecpt",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "88172x1 and 88177x3",
+        "is_correct": true,
+        "explanation": "88172x1 and 88177x3 (see CPT coding) Rapid on site evaluation (ROSE)",
+        "order_index": 0
+      },
+      {
+        "text": "88172x4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 88172x1 and 88177x3 (see CPT coding) Rapid on site evaluation (ROSE)",
+        "order_index": 1
+      },
+      {
+        "text": "88307x1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 88172x1 and 88177x3 (see CPT coding) Rapid on site evaluation (ROSE)",
+        "order_index": 2
+      },
+      {
+        "text": "88333x1 and 88334x3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 88172x1 and 88177x3 (see CPT coding) Rapid on site evaluation (ROSE)",
+        "order_index": 3
+      },
+      {
+        "text": "88333x4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 88172x1 and 88177x3 (see CPT coding) Rapid on site evaluation (ROSE)",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 8",
+    "stem": "A radiologist performs a CT guided needle core biopsy of a soft tissue mass present in the quadriceps muscle of a patient obtaining 3 passes. Each needle core is transferred to an attending pathologist during rapid on site evaluation (ROSE). The pathologist gently manipulates each needle core on a glass slide to produce touch preparations and then transfers them to a formalin container for posterior processing in the cytology laboratory. Following staining an examination of the touch preparation slides, a preliminary interpretation of \"scant spindle cells and blood\" is provided to the radiologist following each pass. These results were recorded in the patient record in a preliminary report. Examination of the formalin fixed, paraffin embedded needle core tissue with H&E demonstrates a schwannoma which correlates well with the clinical and radiological impression. No immunohistochemical studies were necessary to produce the final diagnosis. What CPT codes should be applied to this pathology case?",
+    "difficulty": "medium",
+    "teaching_point": "88333x1, 88334x2, 88307x1 (see CPT coding) Rapid on site evaluation (ROSE)",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyrose.html#cytopathologyrosecpt",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "88172x1, 88177x2, 88305x1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. 88333x1, 88334x2, 88307x1 (see CPT coding) Rapid on site evaluation (ROSE)",
+        "order_index": 0
+      },
+      {
+        "text": "88172x3, 88305x1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. 88333x1, 88334x2, 88307x1 (see CPT coding) Rapid on site evaluation (ROSE)",
+        "order_index": 1
+      },
+      {
+        "text": "88307x1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. 88333x1, 88334x2, 88307x1 (see CPT coding) Rapid on site evaluation (ROSE)",
+        "order_index": 2
+      },
+      {
+        "text": "88333x1, 88334x2, 88307x1",
+        "is_correct": true,
+        "explanation": "88333x1, 88334x2, 88307x1 (see CPT coding) Rapid on site evaluation (ROSE)",
+        "order_index": 3
+      },
+      {
+        "text": "88333x3, 88307x1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. 88333x1, 88334x2, 88307x1 (see CPT coding) Rapid on site evaluation (ROSE)",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 9",
+    "stem": "The practices and terminologies used to perform rapid on site evaluation (ROSE) are",
+    "difficulty": "medium",
+    "teaching_point": "Vary widely between institutions. The practice, terminologies and equipment to perform ROSE vary widely between institutions and may even vary within institutions depending on the specific needs of clinical practices. Variation is influenced by organ site, clinical capabilities, local convention and individual judgement of the ROSE provider. Rapid on site evaluation (ROSE)",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyrose.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Delineated by CLIA '88 and the College of American Pathologists",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Vary widely between institutions. The practice, terminologies and equipment to perform ROSE vary wid...",
+        "order_index": 0
+      },
+      {
+        "text": "Regulated and informed by standards established by the American Society of Cytopathology",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Vary widely between institutions. The practice, terminologies and equipment to perform ROSE vary wid...",
+        "order_index": 1
+      },
+      {
+        "text": "Universal and standardized",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Vary widely between institutions. The practice, terminologies and equipment to perform ROSE vary wid...",
+        "order_index": 2
+      },
+      {
+        "text": "Vary widely between institutions",
+        "is_correct": true,
+        "explanation": "Vary widely between institutions. The practice, terminologies and equipment to perform ROSE vary widely between institutions and may even vary within institutions depending on the specific needs of clinical practices. Variation is influenced by organ site, clinical capabilities, local convention and individual judgement of the ROSE provider. Rapid on site evaluation (ROSE)",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 10",
+    "stem": "Which of the following, when present in an EBUS FNA from a lung mass, is considered adequate?",
+    "difficulty": "medium",
+    "teaching_point": "Aspergillus hyphae. Aspergilloma is one of the causes of cavitary mass-like lesion in the lung. The presence of Aspergillus organisms explains the mass in the lung and is considered adequate for evaluation. goblet cells and alveolar macrophages are part of the normal respiratory epithelial lining of the airways. Finding these in an EBUS FNA sample would likely indicate contamination with normal respiratory tract cells. These cells are not indicative of the characteristics of a lung mass and their presence would not help in evaluating the mass itself. the presence of mucin in an EBUS FNA sample is generally not sufficient for evaluating a lung mass. Mucin can be present in various lung conditions but its presence alone does not provide specific information about the nature of the mass, whether it's benign or malignant or what type of mass it is. in an EBUS FNA procedure, the goal is to obtain a sample that can be used to evaluate the nature and characteristics of a lung mass. The presence of respiratory epithelium, such as tufts of columnar epithelium with a terminal bar and cilia, is valuable because it indicates that the sample is from the lining of the airways. However, it does not explain the presence of a mass-like lesion. type 2 pneumocytes are a type of lung cell responsible for producing surfactant and are not typically associated with the evaluation of lung masses. Finding these cells without atypia would suggest the presence of normal lung tissue but it doesn't provide information about the characteristics or pathology of the mass itself. Lung - Nondiagnostic",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungnondiagnostic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Aspergillus hyphae",
+        "is_correct": true,
+        "explanation": "Aspergillus hyphae. Aspergilloma is one of the causes of cavitary mass-like lesion in the lung. The presence of Aspergillus organisms explains the mass in the lung and is considered adequate for evaluation. goblet cells and alveolar macrophages are part of the normal respiratory epithelial lining of the airways. Finding these in an EBUS FNA sample would likely indicate contamination with normal respiratory tract cells. These cells are not indicative of the characteristics of a lung mass and their presence would not help in evaluating the mass itself. the presence of mucin in an EBUS FNA sample is generally not sufficient for evaluating a lung mass. Mucin can be present in various lung conditions but its presence alone does not provide specific information about the nature of the mass, whether it's benign or malignant or what type of mass it is. in an EBUS FNA procedure, the goal is to obtain a sample that can be used to evaluate the nature and characteristics of a lung mass. The presence of respiratory epithelium, such as tufts of columnar epithelium with a terminal bar and cilia, is valuable because it indicates that the sample is from the lining of the airways. However, it does not explain the presence of a mass-like lesion. type 2 pneumocytes are a type of lung cell responsible for producing surfactant and are not typically associated with the evaluation of lung masses. Finding these cells without atypia would suggest the presence of normal lung tissue but it doesn't provide information about the characteristics or pathology of the mass itself. Lung - Nondiagnostic",
+        "order_index": 0
+      },
+      {
+        "text": "Goblet cells and alveolar macrophages",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Aspergillus hyphae. Aspergilloma is one of the causes of cavitary mass-like lesion in the lung. The ...",
+        "order_index": 1
+      },
+      {
+        "text": "Mucin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Aspergillus hyphae. Aspergilloma is one of the causes of cavitary mass-like lesion in the lung. The ...",
+        "order_index": 2
+      },
+      {
+        "text": "Tufts of columnar epithelium with terminal bar and cilia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Aspergillus hyphae. Aspergilloma is one of the causes of cavitary mass-like lesion in the lung. The ...",
+        "order_index": 3
+      },
+      {
+        "text": "Type 2 pneumocytes without atypia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Aspergillus hyphae. Aspergilloma is one of the causes of cavitary mass-like lesion in the lung. The ...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 11",
+    "stem": "Presence of which of the following cells in a percutaneous transthoracic FNA from a well circumscribed lung mass is a reason to consider the sample adequate?",
+    "difficulty": "medium",
+    "teaching_point": "Neutrophils. Presence of increased number of neutrophils in a mass lesion may indicate an abscess. Neutrophils can be present in various lung conditions, and more clinical information is essential to make a definitive diagnosis. alveolar macrophages are normal components of lung tissue and are not indicative of the nature of the lung mass. Their presence doesn't provide specific information about the mass. in a percutaneous transthoracic FNA, the goal is to obtain a sample that can help diagnose and characterize the nature of a lung mass. While the presence of degenerated epithelial cells may indicate that the sample may be from a lung mass, a definitive diagnosis cannot be made just by the presence of degenerated epithelial cells. the presence of red blood cells may suggest bleeding within the mass but doesn't, on its own, provide adequate information for characterizing the nature of the lung mass. superficial squamous cells are typically part of the normal respiratory tract lining and may indicate contamination with normal cells rather than providing information about the nature of the mass. Lung - Nondiagnostic",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungnondiagnostic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Alveolar macrophages",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Neutrophils. Presence of increased number of neutrophils in a mass lesion may indicate an abscess. N...",
+        "order_index": 0
+      },
+      {
+        "text": "Degenerated epithelial cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Neutrophils. Presence of increased number of neutrophils in a mass lesion may indicate an abscess. N...",
+        "order_index": 1
+      },
+      {
+        "text": "Neutrophils",
+        "is_correct": true,
+        "explanation": "Neutrophils. Presence of increased number of neutrophils in a mass lesion may indicate an abscess. Neutrophils can be present in various lung conditions, and more clinical information is essential to make a definitive diagnosis. alveolar macrophages are normal components of lung tissue and are not indicative of the nature of the lung mass. Their presence doesn't provide specific information about the mass. in a percutaneous transthoracic FNA, the goal is to obtain a sample that can help diagnose and characterize the nature of a lung mass. While the presence of degenerated epithelial cells may indicate that the sample may be from a lung mass, a definitive diagnosis cannot be made just by the presence of degenerated epithelial cells. the presence of red blood cells may suggest bleeding within the mass but doesn't, on its own, provide adequate information for characterizing the nature of the lung mass. superficial squamous cells are typically part of the normal respiratory tract lining and may indicate contamination with normal cells rather than providing information about the nature of the mass. Lung - Nondiagnostic",
+        "order_index": 2
+      },
+      {
+        "text": "Red blood cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Neutrophils. Presence of increased number of neutrophils in a mass lesion may indicate an abscess. N...",
+        "order_index": 3
+      },
+      {
+        "text": "Superficial squamous cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Neutrophils. Presence of increased number of neutrophils in a mass lesion may indicate an abscess. N...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 12",
+    "stem": "What is the most likely interpretation of this bronchioalveolar lavage (see image above) from a 51 year old HIV positive AIDS patient?",
+    "difficulty": "medium",
+    "teaching_point": "Nondiagnostic. It is a nondiagnostic specimen due to the lack of alveolar macrophages. Other cells and material in this specimen, such as a few chronic inflammatory and mucin, may represent contamination. this option is not likely as the specimen does not show the presence of atypical cells, which would typically be associated with malignancy. while the specimen may not contain clear evidence of malignancy, it cannot be confidently classified as negative for malignancy due to the lack of alveolar macrophages and the nondiagnostic nature of the sample. there is insufficient evidence in the specimen to conclude that it is positive for malignancy. The absence of alveolar macrophages and a clear lack of cancerous cells makes this an unlikely interpretation. similar to the other options, this interpretation is not supported due to the lack of alveolar macrophages and the nondiagnostic nature of the specimen. In summary, the provided picture of bronchioalveolar lavage (BAL) suggests that the sample is nondiagnostic due to the absence of alveolar macrophages and any atypical cell. Further testing or sampling may be needed to establish a definitive diagnosis. Lung - Nondiagnostic",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungnondiagnostic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypical",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Nondiagnostic. It is a nondiagnostic specimen due to the lack of alveolar macrophages. Other cells a...",
+        "order_index": 0
+      },
+      {
+        "text": "Negative (for malignancy)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Nondiagnostic. It is a nondiagnostic specimen due to the lack of alveolar macrophages. Other cells a...",
+        "order_index": 1
+      },
+      {
+        "text": "Nondiagnostic",
+        "is_correct": true,
+        "explanation": "Nondiagnostic. It is a nondiagnostic specimen due to the lack of alveolar macrophages. Other cells and material in this specimen, such as a few chronic inflammatory and mucin, may represent contamination. this option is not likely as the specimen does not show the presence of atypical cells, which would typically be associated with malignancy. while the specimen may not contain clear evidence of malignancy, it cannot be confidently classified as negative for malignancy due to the lack of alveolar macrophages and the nondiagnostic nature of the sample. there is insufficient evidence in the specimen to conclude that it is positive for malignancy. The absence of alveolar macrophages and a clear lack of cancerous cells makes this an unlikely interpretation. similar to the other options, this interpretation is not supported due to the lack of alveolar macrophages and the nondiagnostic nature of the specimen. In summary, the provided picture of bronchioalveolar lavage (BAL) suggests that the sample is nondiagnostic due to the absence of alveolar macrophages and any atypical cell. Further testing or sampling may be needed to establish a definitive diagnosis. Lung - Nondiagnostic",
+        "order_index": 2
+      },
+      {
+        "text": "Positive for malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Nondiagnostic. It is a nondiagnostic specimen due to the lack of alveolar macrophages. Other cells a...",
+        "order_index": 3
+      },
+      {
+        "text": "Suspicious for malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Nondiagnostic. It is a nondiagnostic specimen due to the lack of alveolar macrophages. Other cells a...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologylungnondiagnostickhan10.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 13",
+    "stem": "A 65 year old woman with an extensive smoking history is found to have a 4.2 cm right lower lobe lung mass. Fine needle aspiration of the mass is shown above. What set of genes should always be interrogated for mutations or rearrangements in this type of tumor in order to guide treatment?",
+    "difficulty": "medium",
+    "teaching_point": "EGFR, ALK, ROS1, BRAF. The cytology specimen demonstrates adenocarcinoma and all adenocarcinomas should be tested for mutations or rearrangements in EGFR, ALK, ROS1 and BRAF to predict response to treatment with tyrosine kinase and BRAF inhibitors (although it may be reasonable to perform sequential testing on EGFR and ALK, followed by ROS1 testing). Additionally, IHC for PDL1 is standard of care in NSCLC to evaluate potential treatment with immune checkpoint inhibitors. Answers B - D are incorrect because it is appropriate to include MET, RET, ERBB2 (HER2) and KRAS as part of larger panels performed initially or when routine testing is negative but they are not currently required. ASCL1, NEUROD1, POU2F3 and YAP1 are genes involved in SCLC subtyping (J Thorac Oncol 2018;13:323, Drugs Context 2023;12:2022, J Thorac Oncol 2020;15:1823). Cytopathology - Malignant (lung)",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungmalignant.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "EGFR, ALK, ROS1, BRAF",
+        "is_correct": true,
+        "explanation": "EGFR, ALK, ROS1, BRAF. The cytology specimen demonstrates adenocarcinoma and all adenocarcinomas should be tested for mutations or rearrangements in EGFR, ALK, ROS1 and BRAF to predict response to treatment with tyrosine kinase and BRAF inhibitors (although it may be reasonable to perform sequential testing on EGFR and ALK, followed by ROS1 testing). Additionally, IHC for PDL1 is standard of care in NSCLC to evaluate potential treatment with immune checkpoint inhibitors. Answers B - D are incorrect because it is appropriate to include MET, RET, ERBB2 (HER2) and KRAS as part of larger panels performed initially or when routine testing is negative but they are not currently required. ASCL1, NEUROD1, POU2F3 and YAP1 are genes involved in SCLC subtyping (J Thorac Oncol 2018;13:323, Drugs Context 2023;12:2022, J Thorac Oncol 2020;15:1823). Cytopathology - Malignant (lung)",
+        "order_index": 0
+      },
+      {
+        "text": "EGFR, MET, ALK, ASCL1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. EGFR, ALK, ROS1, BRAF. The cytology specimen demonstrates adenocarcinoma and all adenocarcinomas sho...",
+        "order_index": 1
+      },
+      {
+        "text": "ERBB2 (HER2), KRAS, NEUROD1, BRAF",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. EGFR, ALK, ROS1, BRAF. The cytology specimen demonstrates adenocarcinoma and all adenocarcinomas sho...",
+        "order_index": 2
+      },
+      {
+        "text": "MET, RET, ERBB2 (HER2), YAP1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. EGFR, ALK, ROS1, BRAF. The cytology specimen demonstrates adenocarcinoma and all adenocarcinomas sho...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologylungmalignantelnaili01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Adenocarcinoma",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 14",
+    "stem": "A 78 year old man is found to have a 5.2 cm left upper lobe mass with central cavitation. Fine needle aspiration of the mass is shown above. What is the expected staining pattern of this mass?",
+    "difficulty": "medium",
+    "teaching_point": "TTF1-, napsin A-, p40+. The radiographic description and cytology specimen is consistent with squamous cell carcinoma, which typically stains positive for p40. Answers A, B and D are incorrect because TTF1 and napsin A are typically positive in adenocarcinomas. Of note, TTF1 can also positive in tumors of neuroendocrine lineage and may also stain background benign bronchial cells. Cytopathology - Malignant (lung)",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungmalignant.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "TTF1+, napsin A+, p40-",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. TTF1-, napsin A-, p40+. The radiographic description and cytology specimen is consistent with squamo...",
+        "order_index": 0
+      },
+      {
+        "text": "TTF1+, napsin A-, p40+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. TTF1-, napsin A-, p40+. The radiographic description and cytology specimen is consistent with squamo...",
+        "order_index": 1
+      },
+      {
+        "text": "TTF1-, napsin A-, p40+",
+        "is_correct": true,
+        "explanation": "TTF1-, napsin A-, p40+. The radiographic description and cytology specimen is consistent with squamous cell carcinoma, which typically stains positive for p40. Answers A, B and D are incorrect because TTF1 and napsin A are typically positive in adenocarcinomas. Of note, TTF1 can also positive in tumors of neuroendocrine lineage and may also stain background benign bronchial cells. Cytopathology - Malignant (lung)",
+        "order_index": 2
+      },
+      {
+        "text": "TTF1-, napsin A+, p40+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. TTF1-, napsin A-, p40+. The radiographic description and cytology specimen is consistent with squamo...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologylungmalignantelnaili05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Squamous cell carcinoma",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 15",
+    "stem": "Fine needle aspiration of a central lung mass in a patient with an extensive smoking history is diagnosed as small cell lung carcinoma. What feature likely aided this diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Light blue cytoplasmic inclusions describe paranuclear blue bodies, a distinctive finding of small cell carcinoma. Answers A and D are incorrect because small cell lung carcinomas typically have angulated nuclei that demonstrate nuclear molding and typically have a background of prominent necrosis. while not a diagnostic criteria, small cell carcinomas typically have a Ki67 of 70 - 100%. Cytopathology - Malignant (lung)",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungmalignant.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Absence of necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Light blue cytoplasmic inclusions describe paranuclear blue bodies, a distinctive finding of small c...",
+        "order_index": 0
+      },
+      {
+        "text": "Ki67 of 35%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Light blue cytoplasmic inclusions describe paranuclear blue bodies, a distinctive finding of small c...",
+        "order_index": 1
+      },
+      {
+        "text": "Light blue cytoplasmic inclusions",
+        "is_correct": true,
+        "explanation": "Light blue cytoplasmic inclusions describe paranuclear blue bodies, a distinctive finding of small cell carcinoma. Answers A and D are incorrect because small cell lung carcinomas typically have angulated nuclei that demonstrate nuclear molding and typically have a background of prominent necrosis. while not a diagnostic criteria, small cell carcinomas typically have a Ki67 of 70 - 100%. Cytopathology - Malignant (lung)",
+        "order_index": 2
+      },
+      {
+        "text": "Round nuclei with prominent nucleoli",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Light blue cytoplasmic inclusions describe paranuclear blue bodies, a distinctive finding of small c...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 16",
+    "stem": "Regarding cervical cytology, which of the following is a known difference observed in liquid based preparation when compared with conventional smears?",
+    "difficulty": "medium",
+    "teaching_point": ". Reduction in background blood and inflammation (Demay: The Art & Science of Cytopathology, 2nd Edition, 2011) Liquid based cytology",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyliquidbased.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Larger cell size",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Reduction in background blood and inflammation (Demay: The Art & Science of Cytopathology, 2nd Edi...",
+        "order_index": 0
+      },
+      {
+        "text": "Larger cellular aggregates",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Reduction in background blood and inflammation (Demay: The Art & Science of Cytopathology, 2nd Edi...",
+        "order_index": 1
+      },
+      {
+        "text": "Larger nuclear size",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Reduction in background blood and inflammation (Demay: The Art & Science of Cytopathology, 2nd Edi...",
+        "order_index": 2
+      },
+      {
+        "text": "Nucleoli are less visible",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Reduction in background blood and inflammation (Demay: The Art & Science of Cytopathology, 2nd Edi...",
+        "order_index": 3
+      },
+      {
+        "text": "Reduction in background blood and inflammation",
+        "is_correct": true,
+        "explanation": ". Reduction in background blood and inflammation (Demay: The Art & Science of Cytopathology, 2nd Edition, 2011) Liquid based cytology",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologyliquidbasedsayeed01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 17",
+    "stem": "A pleural effusion sample has been entirely placed in a ThinPrep vial and processed. A single ThinPrep slide and cell block has been created. The clinical information received with the specimen is \"rule out lymphoma\". Which known limitation of liquid based preparation applies in this scenario?",
+    "difficulty": "medium",
+    "teaching_point": ". Flow cytometry cannot be performed. Since the specimen was entirely placed in the methanol based ThinPrep vial, flow cytometry and microbial culture tests cannot be performed. Flow cytometry may be required for diagnosis when the clinical suspicion includes lymphoma. Immunohistochemistry, molecular testing and FISH studies can all be potentially performed on the cell block. In some instances, molecular and FISH testing can be performed on residual sample collected in ThinPrep vials. Liquid based cytology",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyliquidbased.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "FISH studies cannot be performed",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Flow cytometry cannot be performed. Since the specimen was entirely placed in the methanol based T...",
+        "order_index": 0
+      },
+      {
+        "text": "Flow cytometry cannot be performed",
+        "is_correct": true,
+        "explanation": ". Flow cytometry cannot be performed. Since the specimen was entirely placed in the methanol based ThinPrep vial, flow cytometry and microbial culture tests cannot be performed. Flow cytometry may be required for diagnosis when the clinical suspicion includes lymphoma. Immunohistochemistry, molecular testing and FISH studies can all be potentially performed on the cell block. In some instances, molecular and FISH testing can be performed on residual sample collected in ThinPrep vials. Liquid based cytology",
+        "order_index": 1
+      },
+      {
+        "text": "Immunohistochemistry cannot be performed",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Flow cytometry cannot be performed. Since the specimen was entirely placed in the methanol based T...",
+        "order_index": 2
+      },
+      {
+        "text": "Microbial culture cannot be performed",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Flow cytometry cannot be performed. Since the specimen was entirely placed in the methanol based T...",
+        "order_index": 3
+      },
+      {
+        "text": "Molecular testing cannot be performed",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Flow cytometry cannot be performed. Since the specimen was entirely placed in the methanol based T...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 18",
+    "stem": "Which of the following is the category for the above findings in a peritoneal washing according to the international system for reporting serous fluid cytopathology?",
+    "difficulty": "medium",
+    "teaching_point": ". Negative for malignancy International system for reporting serous fluid cytopathology",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyinternationalsystem.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypia of undetermined significance",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Negative for malignancy International system for reporting serous fluid cytopathology",
+        "order_index": 0
+      },
+      {
+        "text": "Malignant",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Negative for malignancy International system for reporting serous fluid cytopathology",
+        "order_index": 1
+      },
+      {
+        "text": "Negative for malignancy",
+        "is_correct": true,
+        "explanation": ". Negative for malignancy International system for reporting serous fluid cytopathology",
+        "order_index": 2
+      },
+      {
+        "text": "Nondiagnostic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Negative for malignancy International system for reporting serous fluid cytopathology",
+        "order_index": 3
+      },
+      {
+        "text": "Suspicious for malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Negative for malignancy International system for reporting serous fluid cytopathology",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologyinternationalsystemLinBrandler07.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 19",
+    "stem": "Which of the following is the category for the above findings in a peritoneal washing according to the international system for reporting serous fluid cytopathology?",
+    "difficulty": "medium",
+    "teaching_point": ". Negative for malignancy International system for reporting serous fluid cytopathology",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyinternationalsystem.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypia of undetermined significance",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Negative for malignancy International system for reporting serous fluid cytopathology",
+        "order_index": 0
+      },
+      {
+        "text": "Malignant",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Negative for malignancy International system for reporting serous fluid cytopathology",
+        "order_index": 1
+      },
+      {
+        "text": "Negative for malignancy",
+        "is_correct": true,
+        "explanation": ". Negative for malignancy International system for reporting serous fluid cytopathology",
+        "order_index": 2
+      },
+      {
+        "text": "Nondiagnostic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Negative for malignancy International system for reporting serous fluid cytopathology",
+        "order_index": 3
+      },
+      {
+        "text": "Suspicious for malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Negative for malignancy International system for reporting serous fluid cytopathology",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologyinternationalsystemLinBrandler21.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 20",
+    "stem": "Which of the following is the category for the above findings in a peritoneal washing according to the international system for reporting serous fluid cytopathology in a patient with concurrent surgical pathology with ovarian serous borderline tumor?",
+    "difficulty": "medium",
+    "teaching_point": ". Atypia of undetermined significance International system for reporting serous fluid cytopathology",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyinternationalsystem.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypia of undetermined significance",
+        "is_correct": true,
+        "explanation": ". Atypia of undetermined significance International system for reporting serous fluid cytopathology",
+        "order_index": 0
+      },
+      {
+        "text": "Malignant",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Atypia of undetermined significance International system for reporting serous fluid cytopathology",
+        "order_index": 1
+      },
+      {
+        "text": "Negative for malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Atypia of undetermined significance International system for reporting serous fluid cytopathology",
+        "order_index": 2
+      },
+      {
+        "text": "Nondiagnostic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Atypia of undetermined significance International system for reporting serous fluid cytopathology",
+        "order_index": 3
+      },
+      {
+        "text": "Suspicious for malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Atypia of undetermined significance International system for reporting serous fluid cytopathology",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologyinternationalsystemLinBrandler10.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Serous borderline tumor (AUS)",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 21",
+    "stem": "Which immunostaining panel is most helpful in the differential diagnosis of a 60 year old male patient with unilateral pleural effusion with the above findings from the pleural fluid cytology smear stained with Papanicolaou stain?",
+    "difficulty": "medium",
+    "teaching_point": "BerEP4, MOC31, calretinin, D2-40, TTF1 IHC panels",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyihcpanels.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "AE1 / AE3, CAM5.2, CK7, CK20",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. BerEP4, MOC31, calretinin, D2-40, TTF1 IHC panels",
+        "order_index": 0
+      },
+      {
+        "text": "BerEP4, MOC31, calretinin, D2-40, TTF1",
+        "is_correct": true,
+        "explanation": "BerEP4, MOC31, calretinin, D2-40, TTF1 IHC panels",
+        "order_index": 1
+      },
+      {
+        "text": "BerEP4, MOC31, CK7, CK20, TTF1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. BerEP4, MOC31, calretinin, D2-40, TTF1 IHC panels",
+        "order_index": 2
+      },
+      {
+        "text": "Calretinin, D2-40, WT1, AE1 / AE3, CAM5.2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. BerEP4, MOC31, calretinin, D2-40, TTF1 IHC panels",
+        "order_index": 3
+      },
+      {
+        "text": "TTF1, synaptophysin, chromogranin, Ki67",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. BerEP4, MOC31, calretinin, D2-40, TTF1 IHC panels",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologyihcpanelsLin16.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 22",
+    "stem": "Which of the following immunostains can aid in the differentiation between a reactive mesothelial cells and mesothelioma?",
+    "difficulty": "medium",
+    "teaching_point": "BAP1 IHC panels",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyihcpanels.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "BAP1",
+        "is_correct": true,
+        "explanation": "BAP1 IHC panels",
+        "order_index": 0
+      },
+      {
+        "text": "BerEP4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. BAP1 IHC panels",
+        "order_index": 1
+      },
+      {
+        "text": "Calretinin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. BAP1 IHC panels",
+        "order_index": 2
+      },
+      {
+        "text": "D2-40",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. BAP1 IHC panels",
+        "order_index": 3
+      },
+      {
+        "text": "MOC31",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. BAP1 IHC panels",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 23",
+    "stem": "A human immunodeficiency virus (HIV) positive 35 year old man from New Mexico presented with headache, fever and confusion. A lumbar puncture was performed and cerebrospinal fluid (CSF) was submitted for cytological examination. On microscopic evaluation, the findings shown above were noted and described as round refractile organisms surrounded by a clear halo. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Cryptococcus neoformans is a yeast that can cause meningoencephalitis, especially in immunocompromised patients. On CSF cytology, round refractile yeast forms with narrow based budding and mucopolysaccharide capsules are present. It is classically identified using an India ink preparation, which demonstrates the encapsulated yeast cells with a characteristic clear halo representing the polysaccharide capsule. Candida albicans has pseudohyphae and lacks the characteristic capsule. Histoplasma capsulatum is usually seen as small intracellular yeast forms in macrophages without a capsule. Coccidioides immitis appears as large spherules containing endospores. Aspergillus fumigatus will have septate hyphae with acute angle branching. Cerebrospinal fluid overview",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologycerebrospinalfluid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Aspergillus fumigatus Candida albicans Coccidioides immitis Cryptococcus neoformans Histoplasma capsulatum",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Cryptococcus neoformans is a yeast that can cause meningoencephalitis, especially in immunocompromis...",
+        "order_index": 0
+      },
+      {
+        "text": "Candida albicans",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Cryptococcus neoformans is a yeast that can cause meningoencephalitis, especially in immunocompromis...",
+        "order_index": 1
+      },
+      {
+        "text": "Coccidioides immitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Cryptococcus neoformans is a yeast that can cause meningoencephalitis, especially in immunocompromis...",
+        "order_index": 2
+      },
+      {
+        "text": "Cryptococcus neoformans",
+        "is_correct": true,
+        "explanation": "Cryptococcus neoformans is a yeast that can cause meningoencephalitis, especially in immunocompromised patients. On CSF cytology, round refractile yeast forms with narrow based budding and mucopolysaccharide capsules are present. It is classically identified using an India ink preparation, which demonstrates the encapsulated yeast cells with a characteristic clear halo representing the polysaccharide capsule. Candida albicans has pseudohyphae and lacks the characteristic capsule. Histoplasma capsulatum is usually seen as small intracellular yeast forms in macrophages without a capsule. Coccidioides immitis appears as large spherules containing endospores. Aspergillus fumigatus will have septate hyphae with acute angle branching. Cerebrospinal fluid overview",
+        "order_index": 3
+      },
+      {
+        "text": "Histoplasma capsulatum",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Cryptococcus neoformans is a yeast that can cause meningoencephalitis, especially in immunocompromis...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologycerebrospinalfluidCytoReyes6.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 24",
+    "stem": "A cytological preparation is performed on a lumbar puncture cerebral spinal fluid specimen and reveals the image shown above. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Metastatic breast adenocarcinoma shows linear rows of cells with scant cytoplasm. it is classically associated with the monocytoid Mollaret cells with a stamped out nucleus. cryptococcal organisms are round refractile yeast forms with asymmetric, narrow based budding. bacterial meningitis is typically associated with numerous neutrophils and the bacteria may or may not be visualized or phagocytized. astrocytoma is associated with small anaplastic cells with hyperchromatic nuclei or large pleomorphic cells. Cerebrospinal fluid overview",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologycerebrospinalfluid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Astrocytoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Metastatic breast adenocarcinoma shows linear rows of cells with scant cytoplasm. it is classically ...",
+        "order_index": 0
+      },
+      {
+        "text": "Bacterial meningitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Metastatic breast adenocarcinoma shows linear rows of cells with scant cytoplasm. it is classically ...",
+        "order_index": 1
+      },
+      {
+        "text": "Cryptococcal meningitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Metastatic breast adenocarcinoma shows linear rows of cells with scant cytoplasm. it is classically ...",
+        "order_index": 2
+      },
+      {
+        "text": "Metastatic breast adenocarcinoma",
+        "is_correct": true,
+        "explanation": "Metastatic breast adenocarcinoma shows linear rows of cells with scant cytoplasm. it is classically associated with the monocytoid Mollaret cells with a stamped out nucleus. cryptococcal organisms are round refractile yeast forms with asymmetric, narrow based budding. bacterial meningitis is typically associated with numerous neutrophils and the bacteria may or may not be visualized or phagocytized. astrocytoma is associated with small anaplastic cells with hyperchromatic nuclei or large pleomorphic cells. Cerebrospinal fluid overview",
+        "order_index": 3
+      },
+      {
+        "text": "Mollaret meningitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Metastatic breast adenocarcinoma shows linear rows of cells with scant cytoplasm. it is classically ...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologycerebrospinalfluidCytoReyes8.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 25",
+    "stem": "This image is from a 63 year old man who presented with a right upper lobe mass. Which of the following is the best diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Benign: favor hamartoma. This FNA image comes from a 63 year old man who presented with a right upper lobe lobulated mass. A Diff-Quik smear shows benign, matrix-like material with adjacent chronic inflammation. This case was signed out as having neoplastic cells that are compatible with pulmonary hamartoma. Correlation with the imaging findings was helpful in rendering this diagnosis. Answers A and D are incorrect because the matrix material and adipose tissue are hallmarks for hamartoma; therefore, the categories of nondiagnostic and atypical are not appropriate in this context. there is an abundance of matrix material and a lack of bronchial cells. there are no small cell carcinoma cells in this sample. Cytopathology - Benign (lung)",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungbenign.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypical cells present",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Benign: favor hamartoma. This FNA image comes from a 63 year old man who presented with a right up...",
+        "order_index": 0
+      },
+      {
+        "text": "Benign: bronchial cells only",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Benign: favor hamartoma. This FNA image comes from a 63 year old man who presented with a right up...",
+        "order_index": 1
+      },
+      {
+        "text": "Benign: favor hamartoma",
+        "is_correct": true,
+        "explanation": ". Benign: favor hamartoma. This FNA image comes from a 63 year old man who presented with a right upper lobe lobulated mass. A Diff-Quik smear shows benign, matrix-like material with adjacent chronic inflammation. This case was signed out as having neoplastic cells that are compatible with pulmonary hamartoma. Correlation with the imaging findings was helpful in rendering this diagnosis. Answers A and D are incorrect because the matrix material and adipose tissue are hallmarks for hamartoma; therefore, the categories of nondiagnostic and atypical are not appropriate in this context. there is an abundance of matrix material and a lack of bronchial cells. there are no small cell carcinoma cells in this sample. Cytopathology - Benign (lung)",
+        "order_index": 2
+      },
+      {
+        "text": "Nondiagnostic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Benign: favor hamartoma. This FNA image comes from a 63 year old man who presented with a right up...",
+        "order_index": 3
+      },
+      {
+        "text": "Positive for non-small cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Benign: favor hamartoma. This FNA image comes from a 63 year old man who presented with a right up...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologylungbenignchenyost02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 26",
+    "stem": "This image is from a 35 year old woman that has a history of lung transplant and underwent a bronchial washing. Which of the following is the best diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Benign: cytomegalovirus (CMV) present. This ThinPrep slide shows cells with owl eye inclusions characteristic of CMV. There is an enlarged nucleus with a surrounding halo, consistent with viral cytopathic changes of CMV. while the nuclei are atypically large, the nuclear halo helps with the diagnosis of CMV infection in benign cells. the cells present are diagnostic of CMV. Answers D and E are incorrect because the sample does not show neoplastic cells. The nuclei are enlarged but the changes seen, such as the nuclear halo and the preserved N:C ratio, are more supportive of CMV infection. Cytopathology - Benign (lung)",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungbenign.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypical cells present",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Benign: cytomegalovirus (CMV) present. This ThinPrep slide shows cells with owl eye inclusions cha...",
+        "order_index": 0
+      },
+      {
+        "text": "Benign: cytomegalovirus (CMV) present",
+        "is_correct": true,
+        "explanation": ". Benign: cytomegalovirus (CMV) present. This ThinPrep slide shows cells with owl eye inclusions characteristic of CMV. There is an enlarged nucleus with a surrounding halo, consistent with viral cytopathic changes of CMV. while the nuclei are atypically large, the nuclear halo helps with the diagnosis of CMV infection in benign cells. the cells present are diagnostic of CMV. Answers D and E are incorrect because the sample does not show neoplastic cells. The nuclei are enlarged but the changes seen, such as the nuclear halo and the preserved N:C ratio, are more supportive of CMV infection. Cytopathology - Benign (lung)",
+        "order_index": 1
+      },
+      {
+        "text": "Nondiagnostic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Benign: cytomegalovirus (CMV) present. This ThinPrep slide shows cells with owl eye inclusions cha...",
+        "order_index": 2
+      },
+      {
+        "text": "Positive for non-small cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Benign: cytomegalovirus (CMV) present. This ThinPrep slide shows cells with owl eye inclusions cha...",
+        "order_index": 3
+      },
+      {
+        "text": "Suspicious for adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Benign: cytomegalovirus (CMV) present. This ThinPrep slide shows cells with owl eye inclusions cha...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/thumb/cytopathologylungbenignpubmed02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 27",
+    "stem": "This image is from a 57 year old man that underwent a bronchial washing. Which of the following is the best diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Benign: bronchial cells only. The cells in the image show a low N:C ratio and are columnar. Prominent cilia are present, supporting the diagnosis of benign bronchial cells. the cells do not show nuclear atypia. In addition, there is appropriate N:C ratio and terminal bars with cilia. Overall, these features exclude these cells from the atypical category. this is a bronchial washing and the presence of bronchial cells and macrophages are considered normal elements in such a specimen. Answers D and E are incorrect because the background columnar cells show preserved N:C ratio and terminal bars with cilia. The nuclei are not overlapping. Overall, these features are diagnostic of benign bronchial cells. Cytopathology - Benign (lung)",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungbenign.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypical cells present",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Benign: bronchial cells only. The cells in the image show a low N:C ratio and are columnar. Promin...",
+        "order_index": 0
+      },
+      {
+        "text": "Benign: bronchial cells only",
+        "is_correct": true,
+        "explanation": ". Benign: bronchial cells only. The cells in the image show a low N:C ratio and are columnar. Prominent cilia are present, supporting the diagnosis of benign bronchial cells. the cells do not show nuclear atypia. In addition, there is appropriate N:C ratio and terminal bars with cilia. Overall, these features exclude these cells from the atypical category. this is a bronchial washing and the presence of bronchial cells and macrophages are considered normal elements in such a specimen. Answers D and E are incorrect because the background columnar cells show preserved N:C ratio and terminal bars with cilia. The nuclei are not overlapping. Overall, these features are diagnostic of benign bronchial cells. Cytopathology - Benign (lung)",
+        "order_index": 1
+      },
+      {
+        "text": "Nondiagnostic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Benign: bronchial cells only. The cells in the image show a low N:C ratio and are columnar. Promin...",
+        "order_index": 2
+      },
+      {
+        "text": "Positive for metastatic colorectal adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Benign: bronchial cells only. The cells in the image show a low N:C ratio and are columnar. Promin...",
+        "order_index": 3
+      },
+      {
+        "text": "Positive for non-small cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Benign: bronchial cells only. The cells in the image show a low N:C ratio and are columnar. Promin...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologylungbenignjin01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 28",
+    "stem": "In modern laboratories, automated analysis of the slide pictured above would most likely utilize which of the following image processors?",
+    "difficulty": "medium",
+    "teaching_point": "ThinPrep imaging system Cytopathology automation",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyautomation.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "AutoPap 300 QC",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. ThinPrep imaging system Cytopathology automation",
+        "order_index": 0
+      },
+      {
+        "text": "BD FocalPoint GS imaging system",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. ThinPrep imaging system Cytopathology automation",
+        "order_index": 1
+      },
+      {
+        "text": "PAPNET",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. ThinPrep imaging system Cytopathology automation",
+        "order_index": 2
+      },
+      {
+        "text": "ThinPrep imaging system",
+        "is_correct": true,
+        "explanation": "ThinPrep imaging system Cytopathology automation",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/thumb/cytopathologyautomationBRQ101.JPG",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 29",
+    "stem": "Review of slides screened as \"abnormal\" with automated preparation, counts as how many slides toward the daily workload limit?",
+    "difficulty": "medium",
+    "teaching_point": "1.5 slides Cytopathology automation",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologyautomation.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "0 slides",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. 1.5 slides Cytopathology automation",
+        "order_index": 0
+      },
+      {
+        "text": "0.5 slide",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. 1.5 slides Cytopathology automation",
+        "order_index": 1
+      },
+      {
+        "text": "1.0 slide",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. 1.5 slides Cytopathology automation",
+        "order_index": 2
+      },
+      {
+        "text": "1.5 slides",
+        "is_correct": true,
+        "explanation": "1.5 slides Cytopathology automation",
+        "order_index": 3
+      },
+      {
+        "text": "2.0 slides",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. 1.5 slides Cytopathology automation",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 30",
+    "stem": "Which of the following is most likely to warrant an atypical category designation when reporting respiratory cytology specimens?",
+    "difficulty": "medium",
+    "teaching_point": ". Reactive changes after radiation therapy. Postradiation therapy, respiratory cells can develop abnormal features that mimic malignancy such as enlarged nuclei with irregularity and prominent nucleoli. However, these cells often have other reassuring morphologic features such as a low N:C ratio, smudgy chromatin pattern and cytoplasmic vacuolization. Overall, these cases are best put in the atypical category, especially if there is a lack of clinical history of radiation therapy. Answers C and E are incorrect because they are typically found in benign respiratory samples. Answers A and B are incorrect because the atypical category is reserved for cases that suggest potential malignancy but lack the quantity or definitive features required to confirm a malignant or benign diagnosis. Lung - Atypical",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungatypical.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Abundant neutrophilic inflammation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Reactive changes after radiation therapy. Postradiation therapy, respiratory cells can develop abn...",
+        "order_index": 0
+      },
+      {
+        "text": "Lymphocytic proliferation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Reactive changes after radiation therapy. Postradiation therapy, respiratory cells can develop abn...",
+        "order_index": 1
+      },
+      {
+        "text": "Pulmonary macrophages",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Reactive changes after radiation therapy. Postradiation therapy, respiratory cells can develop abn...",
+        "order_index": 2
+      },
+      {
+        "text": "Reactive changes after radiation therapy",
+        "is_correct": true,
+        "explanation": ". Reactive changes after radiation therapy. Postradiation therapy, respiratory cells can develop abnormal features that mimic malignancy such as enlarged nuclei with irregularity and prominent nucleoli. However, these cells often have other reassuring morphologic features such as a low N:C ratio, smudgy chromatin pattern and cytoplasmic vacuolization. Overall, these cases are best put in the atypical category, especially if there is a lack of clinical history of radiation therapy. Answers C and E are incorrect because they are typically found in benign respiratory samples. Answers A and B are incorrect because the atypical category is reserved for cases that suggest potential malignancy but lack the quantity or definitive features required to confirm a malignant or benign diagnosis. Lung - Atypical",
+        "order_index": 3
+      },
+      {
+        "text": "Unremarkable bronchiolar epithelial cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Reactive changes after radiation therapy. Postradiation therapy, respiratory cells can develop abn...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 31",
+    "stem": "Which of the following is a highly recommended first step to take before categorizing the cytologic respiratory specimen shown above as atypical?",
+    "difficulty": "medium",
+    "teaching_point": ". Correlation of clinical and radiographic findings. Clinical and radiographic findings should be reviewed before categorizing a specimen as atypical. This ensures that cytologic features are interpreted in the right clinical and radiographic context. Other testing can then be performed if warranted. while flow cytometry can provide information about cellular populations, it is not the first step in determining whether a specimen is atypical. the cytologic features should be correlated with clinical and radiographic findings prior to ordering special stains to determine whether an infection is a likely consideration. It is not the first step in categorizing a specimen as atypical, as molecular testing is specific to certain genetic alterations. repeat sampling is only necessary when the initial specimen is inadequate or nondiagnostic; therefore, the current specimen should be assessed first in the context of clinical and radiographic findings. Lung - Atypical",
+    "question_references": "https://www.pathologyoutlines.com/topic/cytopathologylungatypical.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Assessment by flow cytometry",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Correlation of clinical and radiographic findings. Clinical and radiographic findings should be re...",
+        "order_index": 0
+      },
+      {
+        "text": "Correlation of clinical and radiographic findings",
+        "is_correct": true,
+        "explanation": ". Correlation of clinical and radiographic findings. Clinical and radiographic findings should be reviewed before categorizing a specimen as atypical. This ensures that cytologic features are interpreted in the right clinical and radiographic context. Other testing can then be performed if warranted. while flow cytometry can provide information about cellular populations, it is not the first step in determining whether a specimen is atypical. the cytologic features should be correlated with clinical and radiographic findings prior to ordering special stains to determine whether an infection is a likely consideration. It is not the first step in categorizing a specimen as atypical, as molecular testing is specific to certain genetic alterations. repeat sampling is only necessary when the initial specimen is inadequate or nondiagnostic; therefore, the current specimen should be assessed first in the context of clinical and radiographic findings. Lung - Atypical",
+        "order_index": 1
+      },
+      {
+        "text": "Performing special stains for infectious organisms",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Correlation of clinical and radiographic findings. Clinical and radiographic findings should be re...",
+        "order_index": 2
+      },
+      {
+        "text": "Perform molecular testing",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Correlation of clinical and radiographic findings. Clinical and radiographic findings should be re...",
+        "order_index": 3
+      },
+      {
+        "text": "Repeat sampling",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Correlation of clinical and radiographic findings. Clinical and radiographic findings should be re...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/cytopathologylungatypicalFerreira01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "cyto.html",
+      "category": "Anatomic Pathology > Cytopathology",
+      "database_set": "Web"
+    }
+  }
+]

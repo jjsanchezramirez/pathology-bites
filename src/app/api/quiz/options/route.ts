@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     // Get question sets with question counts
     const { data: questionSets, error: questionSetsError } = await supabase
-      .from('question_sets')
+      .from('sets')
       .select(`
         id,
         name,
@@ -63,9 +63,10 @@ export async function GET(request: NextRequest) {
     const categoriesWithCounts = await Promise.all(
       (categories || []).map(async (category) => {
         const { count } = await supabase
-          .from('question_categories')
+          .from('questions')
           .select('*', { count: 'exact', head: true })
           .eq('category_id', category.id)
+          .eq('status', 'published')
 
         return {
           ...category,

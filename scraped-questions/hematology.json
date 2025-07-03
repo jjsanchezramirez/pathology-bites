@@ -1,0 +1,716 @@
+[
+  {
+    "title": "Question 1",
+    "stem": "A postnatal day 12 male infant presented with thrombocytopenia. Cardiopulmonary and abdomen examination showed no obvious abnormalities. Results of blood tests before admission were as follows: white blood cell 9.7 x 10 9 /L, hemoglobin 156 g/L, platelet 50 x 10 9 /L, neutrophil 58%, lymphocyte 25%. The immune function examination and blood lymphocyte subsets tests were mildly abnormal. The child died from brain bleeding shortly after admission. The family history documented that the infant’s uncle died in infancy due to repeated infections. His mother was physically healthy. A panel of gene mutation studies was performed and a loss of function mutation was detected in one of the genes. Which of the following genes is the most likely mutated in this child?",
+    "difficulty": "medium",
+    "teaching_point": "WASP gene Wiskott-Aldrich syndrome",
+    "question_references": "https://www.pathologyoutlines.com/topic/spleenwiskott.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CXCR4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. WASP gene Wiskott-Aldrich syndrome",
+        "order_index": 0
+      },
+      {
+        "text": "FAS",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. WASP gene Wiskott-Aldrich syndrome",
+        "order_index": 1
+      },
+      {
+        "text": "IL7R",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. WASP gene Wiskott-Aldrich syndrome",
+        "order_index": 2
+      },
+      {
+        "text": "RAG1/2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. WASP gene Wiskott-Aldrich syndrome",
+        "order_index": 3
+      },
+      {
+        "text": "WASP",
+        "is_correct": true,
+        "explanation": "WASP gene Wiskott-Aldrich syndrome",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 2",
+    "stem": "A 45 year old man presented with leukocytosis of 28 x 10 9 /L with prominent left shifted granulocytes, rare blasts and no basophilia in the peripheral smear review. What is the next step?",
+    "difficulty": "medium",
+    "teaching_point": "Check clinical history and physical examination record to assess the possibility of a leukemoid reaction before proceeding to ancillary testing or an invasive procedure. Reactive neutrophilia",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyreactiveneutrophilia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Check clinical history and physical examination record",
+        "is_correct": true,
+        "explanation": "Check clinical history and physical examination record to assess the possibility of a leukemoid reaction before proceeding to ancillary testing or an invasive procedure. Reactive neutrophilia",
+        "order_index": 0
+      },
+      {
+        "text": "Order BCR::ABL PCR",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Check clinical history and physical examination record to assess the possibility of a leukemoid reac...",
+        "order_index": 1
+      },
+      {
+        "text": "Send peripheral blood for flow cytometry",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Check clinical history and physical examination record to assess the possibility of a leukemoid reac...",
+        "order_index": 2
+      },
+      {
+        "text": "Suggest a marrow biopsy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Check clinical history and physical examination record to assess the possibility of a leukemoid reac...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/hematologynonneoplasticWBCWang01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "A 2 day old baby girl presented with leukocytosis of 50 x 10 9 /L. The peripheral blood smear review shows marked neutrophilia with prominent left shifted granulocytes and rare blasts. The baby's mother had chorioamnionitis. The baby has no splenomegaly on physical examination. What is the most likely diagnosis or information needed for diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Reactive neutrophilia Reactive neutrophilia",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyreactiveneutrophilia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Need flow cytometry study for diagnosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Reactive neutrophilia Reactive neutrophilia",
+        "order_index": 0
+      },
+      {
+        "text": "Need marrow biopsy for diagnosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Reactive neutrophilia Reactive neutrophilia",
+        "order_index": 1
+      },
+      {
+        "text": "Neoplasm, since the white cell count is too high",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Reactive neutrophilia Reactive neutrophilia",
+        "order_index": 2
+      },
+      {
+        "text": "Reactive neutrophilia",
+        "is_correct": true,
+        "explanation": "Reactive neutrophilia Reactive neutrophilia",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "Which of the following lymphoproliferative disorders is associated with human retrovirus HTLV1?",
+    "difficulty": "medium",
+    "teaching_point": "Adult T cell leukemia / lymphoma Neoplastic WBC",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyneoplasticWBC.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adult T cell leukemia / lymphoma",
+        "is_correct": true,
+        "explanation": "Adult T cell leukemia / lymphoma Neoplastic WBC",
+        "order_index": 0
+      },
+      {
+        "text": "Hairy cell leukemia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Adult T cell leukemia / lymphoma Neoplastic WBC",
+        "order_index": 1
+      },
+      {
+        "text": "Sézary syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Adult T cell leukemia / lymphoma Neoplastic WBC",
+        "order_index": 2
+      },
+      {
+        "text": "T cell large granular lymphocytic leukemia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Adult T cell leukemia / lymphoma Neoplastic WBC",
+        "order_index": 3
+      },
+      {
+        "text": "T cell prolymphocytic leukemia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Adult T cell leukemia / lymphoma Neoplastic WBC",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 5",
+    "stem": "Which of the following lymphoproliferative disorders is associated with BRAF V600E mutation?",
+    "difficulty": "medium",
+    "teaching_point": "Classic hairy cell leukemia Neoplastic WBC",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyneoplasticWBC.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chronic lymphocytic leukemia / small lymphocytic lymphoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Classic hairy cell leukemia Neoplastic WBC",
+        "order_index": 0
+      },
+      {
+        "text": "Classic hairy cell leukemia",
+        "is_correct": true,
+        "explanation": "Classic hairy cell leukemia Neoplastic WBC",
+        "order_index": 1
+      },
+      {
+        "text": "Mantle cell lymphoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Classic hairy cell leukemia Neoplastic WBC",
+        "order_index": 2
+      },
+      {
+        "text": "Multiple myeloma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Classic hairy cell leukemia Neoplastic WBC",
+        "order_index": 3
+      },
+      {
+        "text": "Sézary syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Classic hairy cell leukemia Neoplastic WBC",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/hematologyneoplasticWBClipozdnyakova04.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "Which of the following tests is considered the gold standard test for paroxysmal nocturnal hemoglobinuria (PNH) detection?",
+    "difficulty": "medium",
+    "teaching_point": ". Flow cytometry Paroxysmal nocturnal hemoglobinuria (PNH)",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyPNH.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Bone marrow biopsy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Flow cytometry Paroxysmal nocturnal hemoglobinuria (PNH)",
+        "order_index": 0
+      },
+      {
+        "text": "Coombs test",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Flow cytometry Paroxysmal nocturnal hemoglobinuria (PNH)",
+        "order_index": 1
+      },
+      {
+        "text": "Flow cytometry",
+        "is_correct": true,
+        "explanation": ". Flow cytometry Paroxysmal nocturnal hemoglobinuria (PNH)",
+        "order_index": 2
+      },
+      {
+        "text": "Serum haptoglobin level",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Flow cytometry Paroxysmal nocturnal hemoglobinuria (PNH)",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "Which of the following is a glycosylphosphatidylinositol (GPI) anchored protein and is part of the paroxysmal nocturnal hemoglobinuria (PNH) flow cytometry panel?",
+    "difficulty": "medium",
+    "teaching_point": ". CD14 Paroxysmal nocturnal hemoglobinuria (PNH)",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyPNH.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CD11b",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . CD14 Paroxysmal nocturnal hemoglobinuria (PNH)",
+        "order_index": 0
+      },
+      {
+        "text": "CD11c",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . CD14 Paroxysmal nocturnal hemoglobinuria (PNH)",
+        "order_index": 1
+      },
+      {
+        "text": "CD14",
+        "is_correct": true,
+        "explanation": ". CD14 Paroxysmal nocturnal hemoglobinuria (PNH)",
+        "order_index": 2
+      },
+      {
+        "text": "CD64",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . CD14 Paroxysmal nocturnal hemoglobinuria (PNH)",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 8",
+    "stem": "Which of the following is considered the definitive test for diagnosis of paroxysmal cold hemoglobinuria (PCH)?",
+    "difficulty": "medium",
+    "teaching_point": "Donath-Landsteiner test. The Donath-Landsteiner test, an in vitro test to measure biphasic hemolysins with anti-P specificity, is positive in cases of PCH. bone marrow biopsy could range from normal to evidence of bone marrow compensation (e.g., erythroid hyperplasia) due to hemolysis in a patient with PCH. Erythroid hyperplasia is a nonspecific sign that can be seen in many disease states where hemolysis or anemia are present. the direct antiglobulin (Coombs) test is a nonspecific test. Both positive and negative results can be seen in a wide variety of disease states and it does not definitively define PCH. unlike paroxysmal nocturnal hemoglobinuria, there are no specific flow cytometry markers associated with PCH. Paroxysmal cold hemoglobinuria (PCH)",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyPNH.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Bone marrow biopsy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Donath-Landsteiner test. The Donath-Landsteiner test, an in vitro test to measure biphasic hemolysin...",
+        "order_index": 0
+      },
+      {
+        "text": "Coombs test",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Donath-Landsteiner test. The Donath-Landsteiner test, an in vitro test to measure biphasic hemolysin...",
+        "order_index": 1
+      },
+      {
+        "text": "Donath-Landsteiner test",
+        "is_correct": true,
+        "explanation": "Donath-Landsteiner test. The Donath-Landsteiner test, an in vitro test to measure biphasic hemolysins with anti-P specificity, is positive in cases of PCH. bone marrow biopsy could range from normal to evidence of bone marrow compensation (e.g., erythroid hyperplasia) due to hemolysis in a patient with PCH. Erythroid hyperplasia is a nonspecific sign that can be seen in many disease states where hemolysis or anemia are present. the direct antiglobulin (Coombs) test is a nonspecific test. Both positive and negative results can be seen in a wide variety of disease states and it does not definitively define PCH. unlike paroxysmal nocturnal hemoglobinuria, there are no specific flow cytometry markers associated with PCH. Paroxysmal cold hemoglobinuria (PCH)",
+        "order_index": 2
+      },
+      {
+        "text": "Flow cytometry",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Donath-Landsteiner test. The Donath-Landsteiner test, an in vitro test to measure biphasic hemolysin...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/hematologyPCHMack02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 9",
+    "stem": "Which red cell antigen is the biphasic Donath-Landsteiner autoantibody usually reactive against?",
+    "difficulty": "medium",
+    "teaching_point": "P antigen. The P antigen is a part of the globoside blood group system. It is a receptor for parvovirus B19 and some forms of E. coli. Antibodies to the P antigen have a known association with paroxysmal cold hemoglobinuria (PCH). Answers A and C are incorrect because blood group antigens A and O (the absence of blood group antigens A and B) have no known association with PCH. I antigens occur at the branching points of type II oligosaccharide chains. Decreased I antigen expression is associated with some leukemias. There is no known association with PCH. Paroxysmal cold hemoglobinuria (PCH)",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyPCH.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "A antigen",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. P antigen. The P antigen is a part of the globoside blood group system. It is a receptor for parvovi...",
+        "order_index": 0
+      },
+      {
+        "text": "I antigen",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. P antigen. The P antigen is a part of the globoside blood group system. It is a receptor for parvovi...",
+        "order_index": 1
+      },
+      {
+        "text": "O antigen",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. P antigen. The P antigen is a part of the globoside blood group system. It is a receptor for parvovi...",
+        "order_index": 2
+      },
+      {
+        "text": "P antigen",
+        "is_correct": true,
+        "explanation": "P antigen. The P antigen is a part of the globoside blood group system. It is a receptor for parvovirus B19 and some forms of E. coli. Antibodies to the P antigen have a known association with paroxysmal cold hemoglobinuria (PCH). Answers A and C are incorrect because blood group antigens A and O (the absence of blood group antigens A and B) have no known association with PCH. I antigens occur at the branching points of type II oligosaccharide chains. Decreased I antigen expression is associated with some leukemias. There is no known association with PCH. Paroxysmal cold hemoglobinuria (PCH)",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 10",
+    "stem": "A 27 year old Asian woman, gravida 1, para 0, comes to the office at 26 weeks gestation for prenatal care. The patient denies abdominal pain, vaginal bleeding and leakage of fluid. Fetal movement is normal. For the past few weeks, she has become increasingly fatigued and has been having exertional dyspnea. She is taking proper vitamins as prescribed. On examination, she has general pallor and scooping of nails. Her pregnancy has been uncomplicated. Hemoglobin (Hb) electrophoresis does not reveal abnormal Hb and her initial complete blood count (CBC) results are shown below: RBCs: 4.2 (4.3 - 5.6 x 10 12 /L) Hb: 8.0 (11.6 - 15 grams/dL) MCV: 60 (80 - 100 fL) Platelets: 452 x 10 3 /uL (150 - 450 x 10 3 /uL) WBC count: 5.2 k/ul (4.5 - 11.5/uL) What is most likely diagnosis and treatment for the patient?",
+    "difficulty": "medium",
+    "teaching_point": "Iron deficiency anemia due to increased nutrient requirement during pregnancy and requires iron supplementation. Iron deficiency anemia",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyirondefanemia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Anemia due to hemoglobinopathy and requires immediate blood transfusion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Iron deficiency anemia due to increased nutrient requirement during pregnancy and requires iron supp...",
+        "order_index": 0
+      },
+      {
+        "text": "Anemia due to increased nutrient requirement during pregnancy and requires iron supplementation",
+        "is_correct": true,
+        "explanation": "Iron deficiency anemia due to increased nutrient requirement during pregnancy and requires iron supplementation. Iron deficiency anemia",
+        "order_index": 1
+      },
+      {
+        "text": "Anemia due to physiologic changes of pregnancy and requires no further treatment",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Iron deficiency anemia due to increased nutrient requirement during pregnancy and requires iron supp...",
+        "order_index": 2
+      },
+      {
+        "text": "Anemia due to the lack of prenatal vitamins; folic acid supplementation is indicated",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Iron deficiency anemia due to increased nutrient requirement during pregnancy and requires iron supp...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/thumb/hematologyirondefanemiaBRQ101.PNG",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 11",
+    "stem": "Which of the following is the single best test for diagnosis of iron deficiency anemia?",
+    "difficulty": "medium",
+    "teaching_point": "Decreased serum ferritin. Decreased levels of serum ferritin is the best test for iron deficiency anemia. Iron deficiency anemia",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyirondefanemia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Decreased serum ferritin",
+        "is_correct": true,
+        "explanation": "Decreased serum ferritin. Decreased levels of serum ferritin is the best test for iron deficiency anemia. Iron deficiency anemia",
+        "order_index": 0
+      },
+      {
+        "text": "Decreased serum iron",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Decreased serum ferritin. Decreased levels of serum ferritin is the best test for iron deficiency an...",
+        "order_index": 1
+      },
+      {
+        "text": "Decreased soluble serum transferrin receptor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Decreased serum ferritin. Decreased levels of serum ferritin is the best test for iron deficiency an...",
+        "order_index": 2
+      },
+      {
+        "text": "Decreased total iron binding capacity",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Decreased serum ferritin. Decreased levels of serum ferritin is the best test for iron deficiency an...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 12",
+    "stem": "Which of the following is true regarding HbC disease?",
+    "difficulty": "medium",
+    "teaching_point": "Affected patients may have falsely low glycated HbA1c Hemoglobin C disease",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyhemoglobinCdisease.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Affected patients are more prone to severe malaria",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Affected patients may have falsely low glycated HbA1c Hemoglobin C disease",
+        "order_index": 0
+      },
+      {
+        "text": "Affected patients are usually transfusion dependent",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Affected patients may have falsely low glycated HbA1c Hemoglobin C disease",
+        "order_index": 1
+      },
+      {
+        "text": "Affected patients may have falsely low glycated HbA1c",
+        "is_correct": true,
+        "explanation": "Affected patients may have falsely low glycated HbA1c Hemoglobin C disease",
+        "order_index": 2
+      },
+      {
+        "text": "HbC comigrates with HbE and HbO Arab on citrate agar",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Affected patients may have falsely low glycated HbA1c Hemoglobin C disease",
+        "order_index": 3
+      },
+      {
+        "text": "It is clinically more severe than sickle cell disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Affected patients may have falsely low glycated HbA1c Hemoglobin C disease",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 13",
+    "stem": "In the image shown above of an alkaline electrophoretic gel, what other hemoglobin variant comigrates with the abnormal band in the left panel?",
+    "difficulty": "medium",
+    "teaching_point": "HbO Hemoglobin C disease",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyhemoglobinCdisease.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "HbCS",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. HbO Hemoglobin C disease",
+        "order_index": 0
+      },
+      {
+        "text": "HbD",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. HbO Hemoglobin C disease",
+        "order_index": 1
+      },
+      {
+        "text": "HbF",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. HbO Hemoglobin C disease",
+        "order_index": 2
+      },
+      {
+        "text": "HbO",
+        "is_correct": true,
+        "explanation": "HbO Hemoglobin C disease",
+        "order_index": 3
+      },
+      {
+        "text": "HbS",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. HbO Hemoglobin C disease",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/hematologyhemoglobinCdiseaseMais04.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 17",
+    "stem": "What are the characteristic microscopic peripheral blood findings in an acute episode of immune / acquired thrombotic thrombocytopenic purpura (TTP)?",
+    "difficulty": "medium",
+    "teaching_point": "Anemia, schistocytosis and thrombocytopenia. TTP is a type of thrombotic microangiopathy, which consists of microangiopathic hemolytic anemia (i.e., anemia from intravascular hemolysis substantiated by peripheral blood findings of schistocytosis) and thrombocytopenia. Answers B, C and D are incorrect because thrombocytosis and spherocytosis are not characteristic peripheral blood findings of an acute episode of TTP. Immune thrombotic thrombocytopenic purpura (TTP)",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyTTP.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Anemia, schistocytosis and thrombocytopenia",
+        "is_correct": true,
+        "explanation": "Anemia, schistocytosis and thrombocytopenia. TTP is a type of thrombotic microangiopathy, which consists of microangiopathic hemolytic anemia (i.e., anemia from intravascular hemolysis substantiated by peripheral blood findings of schistocytosis) and thrombocytopenia. Answers B, C and D are incorrect because thrombocytosis and spherocytosis are not characteristic peripheral blood findings of an acute episode of TTP. Immune thrombotic thrombocytopenic purpura (TTP)",
+        "order_index": 0
+      },
+      {
+        "text": "Anemia, schistocytosis and thrombocytosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Anemia, schistocytosis and thrombocytopenia. TTP is a type of thrombotic microangiopathy, which cons...",
+        "order_index": 1
+      },
+      {
+        "text": "Spherocytosis and thrombocytopenia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Anemia, schistocytosis and thrombocytopenia. TTP is a type of thrombotic microangiopathy, which cons...",
+        "order_index": 2
+      },
+      {
+        "text": "Spherocytosis and thrombocytosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Anemia, schistocytosis and thrombocytopenia. TTP is a type of thrombotic microangiopathy, which cons...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/hematologyTTPRollinsRaval01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 18",
+    "stem": "What is the standard of care treatment for immune / acquired thrombotic thrombocytopenic purpura (TTP)?",
+    "difficulty": "medium",
+    "teaching_point": "Therapeutic plasma exchange and immunosuppression. Treatment of TTP requires emergent initiation of therapeutic plasma exchange (TPE) and immunosuppressive medications (such as rituximab). although aspirin can be used for supportive care, it is not a mainstay of management (J Blood Med 2014;5:15). the high volume of plasma needed for TTP remission may lead to fluid overload (Medicine (Baltimore) 2003;82:27). platelet transfusion is contraindicated in TTP, except in the setting of severe bleeding. Immune thrombotic thrombocytopenic purpura (TTP)",
+    "question_references": "https://www.pathologyoutlines.com/topic/hematologyTTP.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Aspirin therapy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Therapeutic plasma exchange and immunosuppression. Treatment of TTP requires emergent initiation of ...",
+        "order_index": 0
+      },
+      {
+        "text": "High volume plasma transfusion and immunosuppression",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Therapeutic plasma exchange and immunosuppression. Treatment of TTP requires emergent initiation of ...",
+        "order_index": 1
+      },
+      {
+        "text": "Platelet and red blood cell (RBC) transfusion therapy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Therapeutic plasma exchange and immunosuppression. Treatment of TTP requires emergent initiation of ...",
+        "order_index": 2
+      },
+      {
+        "text": "Therapeutic plasma exchange and immunosuppression",
+        "is_correct": true,
+        "explanation": "Therapeutic plasma exchange and immunosuppression. Treatment of TTP requires emergent initiation of therapeutic plasma exchange (TPE) and immunosuppressive medications (such as rituximab). although aspirin can be used for supportive care, it is not a mainstay of management (J Blood Med 2014;5:15). the high volume of plasma needed for TTP remission may lead to fluid overload (Medicine (Baltimore) 2003;82:27). platelet transfusion is contraindicated in TTP, except in the setting of severe bleeding. Immune thrombotic thrombocytopenic purpura (TTP)",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "hematology.html",
+      "category": "Clinical Pathology > Hematology",
+      "database_set": "Web"
+    }
+  }
+]

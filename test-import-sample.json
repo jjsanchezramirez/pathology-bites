@@ -1,0 +1,95 @@
+[
+  {
+    "title": "Question 1",
+    "stem": "Which of the following is true of keloid?",
+    "difficulty": "medium",
+    "teaching_point": "Keloids are more common in Asian and African populations. Keloids are up to 15 times more common in Asians, Hispanics and Africans. hypertrophic scars overlap histologically with keloid but are a separate clinical entity; clinical correlation may be required to separate them. recurrence occurs in up to half following simple excision. keloidal collagen is characteristic of keloid but can be seen to a lesser extent in hypertrophic scars. Keloid",
+    "question_references": "https://www.pathologyoutlines.com/topic/earkeloid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Hypertrophic scar is synonymous with keloid scar",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Keloids are more common in Asian and African populations. Keloids are up to 15 times more common in ...",
+        "order_index": 0
+      },
+      {
+        "text": "Keloids are more common in Asian and African populations",
+        "is_correct": true,
+        "explanation": "Keloids are more common in Asian and African populations. Keloids are up to 15 times more common in Asians, Hispanics and Africans. hypertrophic scars overlap histologically with keloid but are a separate clinical entity; clinical correlation may be required to separate them. recurrence occurs in up to half following simple excision. keloidal collagen is characteristic of keloid but can be seen to a lesser extent in hypertrophic scars. Keloid",
+        "order_index": 1
+      },
+      {
+        "text": "Recurrence after surgical excision is uncommon",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Keloids are more common in Asian and African populations. Keloids are up to 15 times more common in ...",
+        "order_index": 2
+      },
+      {
+        "text": "Thick collagen bundles are unique to keloid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Keloids are more common in Asian and African populations. Keloids are up to 15 times more common in ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 2",
+    "stem": "This is a photomicrograph of an excision biopsy from the earlobe of a 22 year old Japanese-Australian woman. What is your diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Keloid. The image shows the classic and characteristic appearance of keloidal collagen. while dermatofibroma can be similar in appearance, it is typically more cellular and is most common on the legs. while hypertrophic scars can overlap in histological appearance with keloid, they are generally more cellular and have less keloidal collagen. Clinical history helps to make the diagnosis as Asian individuals have a much higher risk, keloids are most common in young people (10 - 30 years old) and the earlobe is a typical site. while scleroderma / morphea can mimic keloid on a small biopsy, the collagen pattern is different (being more ordered and almost acellular) and the clinical history is not suggestive. Keloid",
+    "question_references": "https://www.pathologyoutlines.com/topic/earkeloid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Dermatofibroma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Keloid. The image shows the classic and characteristic appearance of keloidal collagen. while dermat...",
+        "order_index": 0
+      },
+      {
+        "text": "Hypertrophic scar",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Keloid. The image shows the classic and characteristic appearance of keloidal collagen. while dermat...",
+        "order_index": 1
+      },
+      {
+        "text": "Keloid",
+        "is_correct": true,
+        "explanation": "Keloid. The image shows the classic and characteristic appearance of keloidal collagen. while dermatofibroma can be similar in appearance, it is typically more cellular and is most common on the legs. while hypertrophic scars can overlap in histological appearance with keloid, they are generally more cellular and have less keloidal collagen. Clinical history helps to make the diagnosis as Asian individuals have a much higher risk, keloids are most common in young people (10 - 30 years old) and the earlobe is a typical site. while scleroderma / morphea can mimic keloid on a small biopsy, the collagen pattern is different (being more ordered and almost acellular) and the clinical history is not suggestive. Keloid",
+        "order_index": 2
+      },
+      {
+        "text": "Scleroderma / morphea",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Keloid. The image shows the classic and characteristic appearance of keloidal collagen. while dermat...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/earkeloidDettrick05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  }
+]

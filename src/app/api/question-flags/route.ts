@@ -87,9 +87,6 @@ export async function POST(request: NextRequest) {
       .from('questions')
       .update({
         status: 'flagged',
-        flagged_by: user.id,
-        flagged_at: new Date().toISOString(),
-        flag_reason: flag_type,
         updated_at: new Date().toISOString()
       })
       .eq('id', question_id);

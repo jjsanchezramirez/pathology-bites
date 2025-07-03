@@ -23,7 +23,7 @@ export function useQuestionSets(): UseQuestionSetsReturn {
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('question_sets')
+        .from('sets')
         .select('*')
         .eq('is_active', true)
         .order('name');

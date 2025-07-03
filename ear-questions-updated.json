@@ -1,0 +1,344 @@
+[
+  {
+    "title": "Question 1",
+    "stem": "Which of the following is true of keloid?",
+    "difficulty": "medium",
+    "teaching_point": "Keloids are more common in Asian and African populations. Keloids are up to 15 times more common in Asians, Hispanics and Africans. hypertrophic scars overlap histologically with keloid but are a separate clinical entity; clinical correlation may be required to separate them. recurrence occurs in up to half following simple excision. keloidal collagen is characteristic of keloid but can be seen to a lesser extent in hypertrophic scars. Keloid",
+    "question_references": "https://www.pathologyoutlines.com/topic/earkeloid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Hypertrophic scar is synonymous with keloid scar",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Keloids are more common in Asian and African populations. Keloids are up to 15 times more common in ...",
+        "order_index": 0
+      },
+      {
+        "text": "Keloids are more common in Asian and African populations",
+        "is_correct": true,
+        "explanation": "Keloids are more common in Asian and African populations. Keloids are up to 15 times more common in Asians, Hispanics and Africans. hypertrophic scars overlap histologically with keloid but are a separate clinical entity; clinical correlation may be required to separate them. recurrence occurs in up to half following simple excision. keloidal collagen is characteristic of keloid but can be seen to a lesser extent in hypertrophic scars. Keloid",
+        "order_index": 1
+      },
+      {
+        "text": "Recurrence after surgical excision is uncommon",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Keloids are more common in Asian and African populations. Keloids are up to 15 times more common in ...",
+        "order_index": 2
+      },
+      {
+        "text": "Thick collagen bundles are unique to keloid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Keloids are more common in Asian and African populations. Keloids are up to 15 times more common in ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 2",
+    "stem": "This is a photomicrograph of an excision biopsy from the earlobe of a 22 year old Japanese-Australian woman. What is your diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Keloid. The image shows the classic and characteristic appearance of keloidal collagen. while dermatofibroma can be similar in appearance, it is typically more cellular and is most common on the legs. while hypertrophic scars can overlap in histological appearance with keloid, they are generally more cellular and have less keloidal collagen. Clinical history helps to make the diagnosis as Asian individuals have a much higher risk, keloids are most common in young people (10 - 30 years old) and the earlobe is a typical site. while scleroderma / morphea can mimic keloid on a small biopsy, the collagen pattern is different (being more ordered and almost acellular) and the clinical history is not suggestive. Keloid",
+    "question_references": "https://www.pathologyoutlines.com/topic/earkeloid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Dermatofibroma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Keloid. The image shows the classic and characteristic appearance of keloidal collagen. while dermat...",
+        "order_index": 0
+      },
+      {
+        "text": "Hypertrophic scar",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Keloid. The image shows the classic and characteristic appearance of keloidal collagen. while dermat...",
+        "order_index": 1
+      },
+      {
+        "text": "Keloid",
+        "is_correct": true,
+        "explanation": "Keloid. The image shows the classic and characteristic appearance of keloidal collagen. while dermatofibroma can be similar in appearance, it is typically more cellular and is most common on the legs. while hypertrophic scars can overlap in histological appearance with keloid, they are generally more cellular and have less keloidal collagen. Clinical history helps to make the diagnosis as Asian individuals have a much higher risk, keloids are most common in young people (10 - 30 years old) and the earlobe is a typical site. while scleroderma / morphea can mimic keloid on a small biopsy, the collagen pattern is different (being more ordered and almost acellular) and the clinical history is not suggestive. Keloid",
+        "order_index": 2
+      },
+      {
+        "text": "Scleroderma / morphea",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Keloid. The image shows the classic and characteristic appearance of keloidal collagen. while dermat...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/earkeloidDettrick05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "Which of the following statements regarding otic polyps is true?",
+    "difficulty": "medium",
+    "teaching_point": "Often associated with a history of cholesteatoma. Otic polyps are associated with cholesteatoma in 80% of cases. otic polyps commonly arise from the mucosa of the middle ear or external auditory canal, rather than the tympanic membrane itself. otic polyps are typically benign growths composed of granulation tissue, inflammatory cells and sometimes hypertrophic mucosa. Malignant transformation has not been reported in the literature. otic polyps may lead to conductive hearing loss due to obstruction of the external auditory canal or middle ear space. Sudden sensorineural hearing loss is not a typical presentation of otic polyps. otic polyps are primarily composed of granulation tissue, which consists of fibroblasts, blood vessels and inflammatory cells, such as lymphocytes and plasma cells. Keratinized squamous epithelium is not a predominant component of otic polyps. Inflammatory aural / otic polyp",
+    "question_references": "https://www.pathologyoutlines.com/topic/earinflammatoryotic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Composed primarily of keratinized squamous epithelium",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Often associated with a history of cholesteatoma. Otic polyps are associated with cholesteatoma in 8...",
+        "order_index": 0
+      },
+      {
+        "text": "Often associated with a history of cholesteatoma",
+        "is_correct": true,
+        "explanation": "Often associated with a history of cholesteatoma. Otic polyps are associated with cholesteatoma in 80% of cases. otic polyps commonly arise from the mucosa of the middle ear or external auditory canal, rather than the tympanic membrane itself. otic polyps are typically benign growths composed of granulation tissue, inflammatory cells and sometimes hypertrophic mucosa. Malignant transformation has not been reported in the literature. otic polyps may lead to conductive hearing loss due to obstruction of the external auditory canal or middle ear space. Sudden sensorineural hearing loss is not a typical presentation of otic polyps. otic polyps are primarily composed of granulation tissue, which consists of fibroblasts, blood vessels and inflammatory cells, such as lymphocytes and plasma cells. Keratinized squamous epithelium is not a predominant component of otic polyps. Inflammatory aural / otic polyp",
+        "order_index": 1
+      },
+      {
+        "text": "They commonly arise from the tympanic membrane",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Often associated with a history of cholesteatoma. Otic polyps are associated with cholesteatoma in 8...",
+        "order_index": 2
+      },
+      {
+        "text": "Typically present with sudden sensorineural hearing loss",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Often associated with a history of cholesteatoma. Otic polyps are associated with cholesteatoma in 8...",
+        "order_index": 3
+      },
+      {
+        "text": "Usually become malignant if untreated",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Often associated with a history of cholesteatoma. Otic polyps are associated with cholesteatoma in 8...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/earinflammatoryoticUdoh06.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "A 55 year old woman presents with recurrent episodes of unilateral otorrhea, hearing loss and a sensation of fullness in the affected ear. Examination reveals a pink, fleshy mass protruding into the external auditory canal. Histopathological examination demonstrates hyperplastic squamous epithelium and numerous dilated vessels infiltrated by chronic inflammatory cells. Which of the following is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Otic polyp. It arises from the middle ear but may extend into the external auditory canal if perforated. The mass appears fleshy and is composed of granulation tissue, mixed inflammation and abundant plasma cells. squamous cell carcinoma typically presents as a nonhealing ulcer often associated with bleeding, pain and hearing loss. while cerumen impaction can cause symptoms such as hearing loss and fullness in the ear, it typically does not present as a fleshy mass. Additionally, cerumen impaction does not demonstrate the histopathological findings described in the question stem, such as hyperplastic squamous epithelium and dilated vessels infiltrated by chronic inflammatory cells. cholesteatoma is a benign but locally destructive growth of keratinizing squamous epithelium with keratin debris and inflammation. It is typically not described as a fleshy mass. otitis externa, also known as swimmer's ear, refers to inflammation of the external auditory canal. While otitis externa can present with otorrhea, hearing loss and a sensation of fullness in the ear, it typically does not manifest as a fleshy mass. Inflammatory aural / otic polyp",
+    "question_references": "https://www.pathologyoutlines.com/topic/earinflammatoryotic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cerumen impaction",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Otic polyp. It arises from the middle ear but may extend into the external auditory canal if perfora...",
+        "order_index": 0
+      },
+      {
+        "text": "Cholesteatoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Otic polyp. It arises from the middle ear but may extend into the external auditory canal if perfora...",
+        "order_index": 1
+      },
+      {
+        "text": "Otic polyp",
+        "is_correct": true,
+        "explanation": "Otic polyp. It arises from the middle ear but may extend into the external auditory canal if perforated. The mass appears fleshy and is composed of granulation tissue, mixed inflammation and abundant plasma cells. squamous cell carcinoma typically presents as a nonhealing ulcer often associated with bleeding, pain and hearing loss. while cerumen impaction can cause symptoms such as hearing loss and fullness in the ear, it typically does not present as a fleshy mass. Additionally, cerumen impaction does not demonstrate the histopathological findings described in the question stem, such as hyperplastic squamous epithelium and dilated vessels infiltrated by chronic inflammatory cells. cholesteatoma is a benign but locally destructive growth of keratinizing squamous epithelium with keratin debris and inflammation. It is typically not described as a fleshy mass. otitis externa, also known as swimmer's ear, refers to inflammation of the external auditory canal. While otitis externa can present with otorrhea, hearing loss and a sensation of fullness in the ear, it typically does not manifest as a fleshy mass. Inflammatory aural / otic polyp",
+        "order_index": 2
+      },
+      {
+        "text": "Otitis externa",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Otic polyp. It arises from the middle ear but may extend into the external auditory canal if perfora...",
+        "order_index": 3
+      },
+      {
+        "text": "Squamous cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Otic polyp. It arises from the middle ear but may extend into the external auditory canal if perfora...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 5",
+    "stem": "The keratinizing squamous epithelium (blue arrow in image shown above) of cholesteatoma is also known as",
+    "difficulty": "medium",
+    "teaching_point": "Matrix. Matrix, perimatrix and cystic contents are terms that are more commonly used clinically and refer to the keratinizing squamous epithelium, connective tissue wall and keratin debris, respectively. Cholesteatoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/earcholesteatoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cholesterol clefts",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Matrix. Matrix, perimatrix and cystic contents are terms that are more commonly used clinically and ...",
+        "order_index": 0
+      },
+      {
+        "text": "Cystic contents",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Matrix. Matrix, perimatrix and cystic contents are terms that are more commonly used clinically and ...",
+        "order_index": 1
+      },
+      {
+        "text": "Matrix",
+        "is_correct": true,
+        "explanation": "Matrix. Matrix, perimatrix and cystic contents are terms that are more commonly used clinically and refer to the keratinizing squamous epithelium, connective tissue wall and keratin debris, respectively. Cholesteatoma",
+        "order_index": 2
+      },
+      {
+        "text": "Perimatrix",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Matrix. Matrix, perimatrix and cystic contents are terms that are more commonly used clinically and ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/earcholesteatomaMicroMagliocca06.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "How does congenital cholesteatoma typically present?",
+    "difficulty": "medium",
+    "teaching_point": "White-yellow mass in anterior superior quadrant of the middle ear, intact tympanic membrane, slowly progressive conductive hearing loss. Congenital cholesteatoma usually arises in the middle ear, most commonly in the absence of otorrhea, related to an intact tympanic membrane. Most patients are asymptomatic, although this, in addition to other symptoms, depends on the extent of disease. Over time, patients will develop conductive hearing loss related to cholesteatoma formation. Cholesteatoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/earcholesteatoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "White-yellow mass in anterior superior quadrant of the middle ear, disrupted tympanic membrane, slowly progressive sensorineural hearing loss",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. White-yellow mass in anterior superior quadrant of the middle ear, intact tympanic membrane, slowly ...",
+        "order_index": 0
+      },
+      {
+        "text": "White-yellow mass in anterior superior quadrant of the middle ear, intact tympanic membrane, slowly progressive conductive hearing loss",
+        "is_correct": true,
+        "explanation": "White-yellow mass in anterior superior quadrant of the middle ear, intact tympanic membrane, slowly progressive conductive hearing loss. Congenital cholesteatoma usually arises in the middle ear, most commonly in the absence of otorrhea, related to an intact tympanic membrane. Most patients are asymptomatic, although this, in addition to other symptoms, depends on the extent of disease. Over time, patients will develop conductive hearing loss related to cholesteatoma formation. Cholesteatoma",
+        "order_index": 1
+      },
+      {
+        "text": "White-yellow mass in posterior superior retraction pocket, disrupted tympanic membrane, slowly progressive sensorineural hearing loss",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. White-yellow mass in anterior superior quadrant of the middle ear, intact tympanic membrane, slowly ...",
+        "order_index": 2
+      },
+      {
+        "text": "White-yellow mass in posterior superior retraction pocket, intact tympanic membrane, slowly progressive conductive hearing loss",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. White-yellow mass in anterior superior quadrant of the middle ear, intact tympanic membrane, slowly ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "Which histological feature (as seen in the image shown above) best distinguishes an accessory tragus from a hair follicle nevus?",
+    "difficulty": "medium",
+    "teaching_point": ". Presence of a cartilaginous core. An accessory tragus is characterized by the presence of a cartilaginous core, which is a remnant of the normal auricular cartilage. In contrast, a hair follicle nevus lacks a cartilaginous component. This histological distinction helps differentiate between the 2 entities but may not always be present in an accessory tragus. Answers B, C and D are incorrect because a dense connective tissue framework, sebaceous glands and well developed hair follicles can all be found in both entities. Accessory tragi",
+    "question_references": "https://www.pathologyoutlines.com/topic/earaccessorytragi.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Presence of a cartilaginous core",
+        "is_correct": true,
+        "explanation": ". Presence of a cartilaginous core. An accessory tragus is characterized by the presence of a cartilaginous core, which is a remnant of the normal auricular cartilage. In contrast, a hair follicle nevus lacks a cartilaginous component. This histological distinction helps differentiate between the 2 entities but may not always be present in an accessory tragus. Answers B, C and D are incorrect because a dense connective tissue framework, sebaceous glands and well developed hair follicles can all be found in both entities. Accessory tragi",
+        "order_index": 0
+      },
+      {
+        "text": "Presence of dense connective tissue framework",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Presence of a cartilaginous core. An accessory tragus is characterized by the presence of a cartil...",
+        "order_index": 1
+      },
+      {
+        "text": "Presence of sebaceous glands",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Presence of a cartilaginous core. An accessory tragus is characterized by the presence of a cartil...",
+        "order_index": 2
+      },
+      {
+        "text": "Presence of well developed hair follicles",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Presence of a cartilaginous core. An accessory tragus is characterized by the presence of a cartil...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/earaccessorytragiAsadbeigi05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Accessory tragi",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "ear.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  }
+]

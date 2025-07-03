@@ -1,0 +1,3217 @@
+[
+  {
+    "title": "Question 1",
+    "stem": "A 2 year old boy is submitted to orchiectomy. In the figure you may appreciate a histological section of the lesion. Which sentence is true?",
+    "difficulty": "medium",
+    "teaching_point": "The picture represents a prepubertal type yolk sac tumor. This entity does not show 12p gain (contrarily to postpubertal type tumors of the testis). Schiller-Duval bodies are present but may be seen (or not) in both prepubertal type and postpubertal type yolk sac tumors. AFP is variably positive (but many times negative) in yolk sac tumors and OCT 3/4 is invariably negative. Prepubertal type yolk sac tumor is almost always seen in its pure form (contrarily to postpubertal type tumors, which are frequently mixed). Yolk sac tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisyst.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Most likely the tumor has gain of 12p",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. The picture represents a prepubertal type yolk sac tumor. This entity does not show 12p gain (contra...",
+        "order_index": 0
+      },
+      {
+        "text": "Most likely this tumor is present in its pure form and not mixed with other subtypes",
+        "is_correct": true,
+        "explanation": "The picture represents a prepubertal type yolk sac tumor. This entity does not show 12p gain (contrarily to postpubertal type tumors of the testis). Schiller-Duval bodies are present but may be seen (or not) in both prepubertal type and postpubertal type yolk sac tumors. AFP is variably positive (but many times negative) in yolk sac tumors and OCT 3/4 is invariably negative. Prepubertal type yolk sac tumor is almost always seen in its pure form (contrarily to postpubertal type tumors, which are frequently mixed). Yolk sac tumor",
+        "order_index": 1
+      },
+      {
+        "text": "Negative AFP excludes a yolk sac tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. The picture represents a prepubertal type yolk sac tumor. This entity does not show 12p gain (contra...",
+        "order_index": 2
+      },
+      {
+        "text": "OCT 3/4 staining will be positive in this tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. The picture represents a prepubertal type yolk sac tumor. This entity does not show 12p gain (contra...",
+        "order_index": 3
+      },
+      {
+        "text": "Schiller-Duval bodies are present and are definitive proof of a postpubertal type yolk sac tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. The picture represents a prepubertal type yolk sac tumor. This entity does not show 12p gain (contra...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testis/testisystloboBRQ1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 2",
+    "stem": "Which of the following is true regarding yolk sac tumor of the testis?",
+    "difficulty": "medium",
+    "teaching_point": "Yolk sac tumor of the testis can be germ cell neoplasia in situ related (postpubertal type) or germ cell neoplasia in situ unrelated (prepubertal type), showing a bimodal epidemiology (young adults and young children, respectively). Glypican 3 is sensitive but not a specific marker of this tumor type. Differential diagnosis with seminoma occurs when a solid pattern is extensive. There is a strong correlation between the finding of elevated serum AFP and presence of yolk sac tumor elements. Yolk sac tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisyst.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Differential diagnosis with seminoma is particularly problematic in the microcystic pattern",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Yolk sac tumor of the testis can be germ cell neoplasia in situ related (postpubertal type) or germ ...",
+        "order_index": 0
+      },
+      {
+        "text": "Glypican 3 is the most specific marker of this tumor subtype",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Yolk sac tumor of the testis can be germ cell neoplasia in situ related (postpubertal type) or germ ...",
+        "order_index": 1
+      },
+      {
+        "text": "Can be germ cell neoplasia related or unrelated depending on pubertal status",
+        "is_correct": true,
+        "explanation": "Yolk sac tumor of the testis can be germ cell neoplasia in situ related (postpubertal type) or germ cell neoplasia in situ unrelated (prepubertal type), showing a bimodal epidemiology (young adults and young children, respectively). Glypican 3 is sensitive but not a specific marker of this tumor type. Differential diagnosis with seminoma occurs when a solid pattern is extensive. There is a strong correlation between the finding of elevated serum AFP and presence of yolk sac tumor elements. Yolk sac tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Only occurs in adolescents",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Yolk sac tumor of the testis can be germ cell neoplasia in situ related (postpubertal type) or germ ...",
+        "order_index": 3
+      },
+      {
+        "text": "Serum AFP levels are not relevant for the diagnosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Yolk sac tumor of the testis can be germ cell neoplasia in situ related (postpubertal type) or germ ...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "The following tumor is incidentally found on the peritoneum during a cholecystectomy. This tumor should show which immunophenotype?",
+    "difficulty": "medium",
+    "teaching_point": ". BAP1 retained, MTAP retained, calretinin+, WT1+. These images show a well differentiated mesothelial tumor, which should have retained BAP1 and MTAP. Mesothelial markers will be positive. while a well differentiated mesothelial tumor will express mesothelial markers, BAP1 should be retained. mesothelial tumors will express both CK5/6 and D2-40. this immunophenotype is more in keeping with an ovarian type serous tumor. Well differentiated papillary mesothelial tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testismesothelioma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "BAP1 loss, calretinin+, WT1+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . BAP1 retained, MTAP retained, calretinin+, WT1+. These images show a well differentiated mesotheli...",
+        "order_index": 0
+      },
+      {
+        "text": "BAP1 retained, MTAP retained, calretinin+, WT1+",
+        "is_correct": true,
+        "explanation": ". BAP1 retained, MTAP retained, calretinin+, WT1+. These images show a well differentiated mesothelial tumor, which should have retained BAP1 and MTAP. Mesothelial markers will be positive. while a well differentiated mesothelial tumor will express mesothelial markers, BAP1 should be retained. mesothelial tumors will express both CK5/6 and D2-40. this immunophenotype is more in keeping with an ovarian type serous tumor. Well differentiated papillary mesothelial tumor",
+        "order_index": 1
+      },
+      {
+        "text": "Cytokeratin 5/6-, D2-40+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . BAP1 retained, MTAP retained, calretinin+, WT1+. These images show a well differentiated mesotheli...",
+        "order_index": 2
+      },
+      {
+        "text": "p53 null, AE1 / AE3+, PAX8+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . BAP1 retained, MTAP retained, calretinin+, WT1+. These images show a well differentiated mesotheli...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testismesotheliomaValencia_02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Well differentiated papillary mesothelial tumor",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testismesotheliomaValencia_03.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "Well differentiated papillary mesothelial tumor",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testismesotheliomaValencia_04.jpg",
+        "question_section": "stem",
+        "order_index": 2,
+        "alt_text": "Well differentiated papillary mesothelial tumor",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "A patient presents with scrotal swelling that has been persistent over the last few years. An orchiectomy is done. Which of the following immunophenotypes would favor a mesothelioma over a well differentiated papillary mesothelial tumor?",
+    "difficulty": "medium",
+    "teaching_point": ". BAP1 loss, calretinin+, WT1+. These images show a tumor with significant cytologic atypia and invasion into the testis. This is a mesothelioma of the tunica vaginalis. Mesotheliomas will express mesothelial markers and have BAP1 loss. this immunophenotype is in keeping with a benign mesothelial lesion. mesothelial tumors will express both CK5/6 and D2-40. this immunophenotype is more in keeping with an ovarian type serous tumor. Well differentiated papillary mesothelial tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testismesothelioma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "BAP1 loss, calretinin+, WT1+",
+        "is_correct": true,
+        "explanation": ". BAP1 loss, calretinin+, WT1+. These images show a tumor with significant cytologic atypia and invasion into the testis. This is a mesothelioma of the tunica vaginalis. Mesotheliomas will express mesothelial markers and have BAP1 loss. this immunophenotype is in keeping with a benign mesothelial lesion. mesothelial tumors will express both CK5/6 and D2-40. this immunophenotype is more in keeping with an ovarian type serous tumor. Well differentiated papillary mesothelial tumor",
+        "order_index": 0
+      },
+      {
+        "text": "BAP1 retained, MTAP retained, calretinin+, WT1+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . BAP1 loss, calretinin+, WT1+. These images show a tumor with significant cytologic atypia and inva...",
+        "order_index": 1
+      },
+      {
+        "text": "Cytokeratin 5/6-, D2-40+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . BAP1 loss, calretinin+, WT1+. These images show a tumor with significant cytologic atypia and inva...",
+        "order_index": 2
+      },
+      {
+        "text": "p53 null, AE1 / AE3+, PAX8+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . BAP1 loss, calretinin+, WT1+. These images show a tumor with significant cytologic atypia and inva...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testismesotheliomaGordetsky_01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Well differentiated papillary mesothelial tumor",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testismesotheliomaGordetsky_02.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "Well differentiated papillary mesothelial tumor",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testismesotheliomaGordetsky_03.jpg",
+        "question_section": "stem",
+        "order_index": 2,
+        "alt_text": "Well differentiated papillary mesothelial tumor",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testismesotheliomaGordetsky_04.jpg",
+        "question_section": "stem",
+        "order_index": 3,
+        "alt_text": "Well differentiated papillary mesothelial tumor",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 5",
+    "stem": "Which of the following is not associated with varicocele?",
+    "difficulty": "medium",
+    "teaching_point": "Destruction of vessel's external elastic lamina. It is the internal elastic lamina that is destroyed Varicocele",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisvaricocele.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Destruction of vessel's external elastic lamina",
+        "is_correct": true,
+        "explanation": "Destruction of vessel's external elastic lamina. It is the internal elastic lamina that is destroyed Varicocele",
+        "order_index": 0
+      },
+      {
+        "text": "Endothelial cell damage",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Destruction of vessel's external elastic lamina. It is the internal elastic lamina that is destroyed...",
+        "order_index": 1
+      },
+      {
+        "text": "Narrowing or obliteration of the lumen of the vein",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Destruction of vessel's external elastic lamina. It is the internal elastic lamina that is destroyed...",
+        "order_index": 2
+      },
+      {
+        "text": "Thickening of the media by collagen deposition",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Destruction of vessel's external elastic lamina. It is the internal elastic lamina that is destroyed...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "In this orchiectomy specimen in a 30 year old with atrophic testis and varicocele, what is illustrated?",
+    "difficulty": "medium",
+    "teaching_point": "Varicocele on the left and rete testis on the right Varicocele",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisvaricocele.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Hematoma on the left and vas deferens on the right",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Varicocele on the left and rete testis on the right Varicocele",
+        "order_index": 0
+      },
+      {
+        "text": "Hydrocele on the left and testis tubules on the right",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Varicocele on the left and rete testis on the right Varicocele",
+        "order_index": 1
+      },
+      {
+        "text": "Spermatocele on the left and rete testis on the right",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Varicocele on the left and rete testis on the right Varicocele",
+        "order_index": 2
+      },
+      {
+        "text": "Varicocele on the left and rete testis on the right",
+        "is_correct": true,
+        "explanation": "Varicocele on the left and rete testis on the right Varicocele",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisvaricoceleIczkowski03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "A 14 year old boy presents to emergency room with severe left sided testicular pain associated with nausea and vomiting. A Doppler ultrasound shows loss in blood flow in the affected testis. Subsequent orchiectomy reveals red-tan, smooth surfaced testis, with microscopic appearance as seen in the image above. Which of the following can be seen in this condition?",
+    "difficulty": "medium",
+    "teaching_point": ". Initial preservation of germ cells. The patient's presentation, including imaging and pathology, is diagnostic of testicular torsion. Testicular infarct following torsion is initially associated with conservation of germ cells; however, as congestion and hemorrhage increase, these cells slough into the lumens of seminiferous tubules and ultimately the entire tubule undergoes necrosis. hemorrhage surrounded by trophoblastic cells is typically observed in choriocarcinoma. germ cell neoplasia in situ (GCNIS) is associated with undifferentiated malignant cells within seminiferous tubules. clonal population of lymphocytes is seen in lymphoma. although AFP can be elevated in several conditions, including yolk sac tumor and teratoma, it is usually not elevated in torsion. Torsion",
+    "question_references": "https://www.pathologyoutlines.com/topic/testistorsion.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Clonal population of lymphoid cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Initial preservation of germ cells. The patient's presentation, including imaging and pathology, i...",
+        "order_index": 0
+      },
+      {
+        "text": "Elevated alpha fetoprotein (AFP) levels",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Initial preservation of germ cells. The patient's presentation, including imaging and pathology, i...",
+        "order_index": 1
+      },
+      {
+        "text": "Hemorrhage surrounded by trophoblastic cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Initial preservation of germ cells. The patient's presentation, including imaging and pathology, i...",
+        "order_index": 2
+      },
+      {
+        "text": "Initial preservation of germ cells",
+        "is_correct": true,
+        "explanation": ". Initial preservation of germ cells. The patient's presentation, including imaging and pathology, is diagnostic of testicular torsion. Testicular infarct following torsion is initially associated with conservation of germ cells; however, as congestion and hemorrhage increase, these cells slough into the lumens of seminiferous tubules and ultimately the entire tubule undergoes necrosis. hemorrhage surrounded by trophoblastic cells is typically observed in choriocarcinoma. germ cell neoplasia in situ (GCNIS) is associated with undifferentiated malignant cells within seminiferous tubules. clonal population of lymphocytes is seen in lymphoma. although AFP can be elevated in several conditions, including yolk sac tumor and teratoma, it is usually not elevated in torsion. Torsion",
+        "order_index": 3
+      },
+      {
+        "text": "Undifferentiated malignant cells within seminiferous tubules",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Initial preservation of germ cells. The patient's presentation, including imaging and pathology, i...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testistorsionBhalla11.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 8",
+    "stem": "Which of the following is the most common cause of testicular torsion?",
+    "difficulty": "medium",
+    "teaching_point": ". Bell clapper deformity is the most frequent cause of testicular torsion. Tunica vaginalis is normally attached to the testis posterolaterally. In this anomaly, the attachment is abnormally high, which allows the spermatic cord to twist itself within the tunica vaginalis, resulting in testicular torsion. cryptorchidism may also be associated with torsion but not as frequently as bell clapper deformity. Answers B, D and E are incorrect because varicocele, mumps orchitis and choriocarcinoma are typically not associated with testicular torsion. Torsion",
+    "question_references": "https://www.pathologyoutlines.com/topic/testistorsion.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Bell clapper deformity",
+        "is_correct": true,
+        "explanation": ". Bell clapper deformity is the most frequent cause of testicular torsion. Tunica vaginalis is normally attached to the testis posterolaterally. In this anomaly, the attachment is abnormally high, which allows the spermatic cord to twist itself within the tunica vaginalis, resulting in testicular torsion. cryptorchidism may also be associated with torsion but not as frequently as bell clapper deformity. Answers B, D and E are incorrect because varicocele, mumps orchitis and choriocarcinoma are typically not associated with testicular torsion. Torsion",
+        "order_index": 0
+      },
+      {
+        "text": "Choriocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Bell clapper deformity is the most frequent cause of testicular torsion. Tunica vaginalis is norma...",
+        "order_index": 1
+      },
+      {
+        "text": "Cryptorchidism",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Bell clapper deformity is the most frequent cause of testicular torsion. Tunica vaginalis is norma...",
+        "order_index": 2
+      },
+      {
+        "text": "Mumps orchitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Bell clapper deformity is the most frequent cause of testicular torsion. Tunica vaginalis is norma...",
+        "order_index": 3
+      },
+      {
+        "text": "Varicocele",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Bell clapper deformity is the most frequent cause of testicular torsion. Tunica vaginalis is norma...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 9",
+    "stem": "A 35 year old man underwent a left radical orchiectomy that demonstrated a 4.0 cm cystic mass (see image). No serological markers (alpha fetoprotein [AFP], beta human chorionic gonadotropin [beta hCG] or lactate dehydrogenase [LDH]) were elevated. Regarding this entity, which of the following statements is true?",
+    "difficulty": "medium",
+    "teaching_point": "Cystic changes can be seen with teratomatous components. Primary testicular neuroendocrine tumor (NET) can occur as pure NET (75%) or in association with testicular teratoma (25%). Cystic changes in these lesions can be seen with teratomatous components. these tumors mostly exhibit an insular or trabecular growth pattern that can be intermixed with glandular / acinar structures with luminal mucin. most of these cases are not associated with GCNIS and do not show isochromosome 12p or numerical aberrations in the X chromosome, which are commonly seen in GCNIS derived germ cell tumors. Answers C and A are incorrect because testicular NET expresses cytokeratins and is negative for CDX2. Teratoma - neuroendocrine tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testiscarcinoid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CDX2 is usually positive in testicular neuroendocrine tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cystic changes can be seen with teratomatous components. Primary testicular neuroendocrine tumor (NE...",
+        "order_index": 0
+      },
+      {
+        "text": "Cystic changes can be seen with teratomatous components",
+        "is_correct": true,
+        "explanation": "Cystic changes can be seen with teratomatous components. Primary testicular neuroendocrine tumor (NET) can occur as pure NET (75%) or in association with testicular teratoma (25%). Cystic changes in these lesions can be seen with teratomatous components. these tumors mostly exhibit an insular or trabecular growth pattern that can be intermixed with glandular / acinar structures with luminal mucin. most of these cases are not associated with GCNIS and do not show isochromosome 12p or numerical aberrations in the X chromosome, which are commonly seen in GCNIS derived germ cell tumors. Answers C and A are incorrect because testicular NET expresses cytokeratins and is negative for CDX2. Teratoma - neuroendocrine tumor",
+        "order_index": 1
+      },
+      {
+        "text": "Cytokeratins are usually negative in testicular neuroendocrine tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cystic changes can be seen with teratomatous components. Primary testicular neuroendocrine tumor (NE...",
+        "order_index": 2
+      },
+      {
+        "text": "Glandular growth pattern is not observed",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cystic changes can be seen with teratomatous components. Primary testicular neuroendocrine tumor (NE...",
+        "order_index": 3
+      },
+      {
+        "text": "These tumors are mostly found in association with germ cell neoplasia in situ (GCNIS) / isochromosome 12p",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cystic changes can be seen with teratomatous components. Primary testicular neuroendocrine tumor (NE...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testiscarcinoidgupta02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Brq image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 10",
+    "stem": "A 27 year old man presents with a painless enlarging testicular mass. He undergoes appropriate workup and orchiectomy confirms diagnosis of a pure postpubertal teratoma. Which of the following is likely to be true?",
+    "difficulty": "medium",
+    "teaching_point": "Cytogenetic analysis will reveal chromosomal abnormalities Teratoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisteratoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "AFP is likely elevated",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cytogenetic analysis will reveal chromosomal abnormalities Teratoma",
+        "order_index": 0
+      },
+      {
+        "text": "Cytogenetic analysis will reveal chromosomal abnormalities",
+        "is_correct": true,
+        "explanation": "Cytogenetic analysis will reveal chromosomal abnormalities Teratoma",
+        "order_index": 1
+      },
+      {
+        "text": "Few mitotic figures will be identified microscopically",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cytogenetic analysis will reveal chromosomal abnormalities Teratoma",
+        "order_index": 2
+      },
+      {
+        "text": "Hair follicles are likely to be seen microscopically",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cytogenetic analysis will reveal chromosomal abnormalities Teratoma",
+        "order_index": 3
+      },
+      {
+        "text": "He has a poor prognosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cytogenetic analysis will reveal chromosomal abnormalities Teratoma",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisteratomaBRQ1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 11",
+    "stem": "A 37 year old woman gives birth to a male baby who is diagnosed with an undescended testicle. Further workup reveals a large intra abdominal mass, which is resected. Pathology is consistent with a pure teratoma. Which of the following is most likely present on microscopic examination?",
+    "difficulty": "medium",
+    "teaching_point": "Areas with organoid morphology Teratoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisteratoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adjacent areas of germ cell neoplasia in situ",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Areas with organoid morphology Teratoma",
+        "order_index": 0
+      },
+      {
+        "text": "Areas with organoid morphology",
+        "is_correct": true,
+        "explanation": "Areas with organoid morphology Teratoma",
+        "order_index": 1
+      },
+      {
+        "text": "Many mitotic figures and cytologic atypia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Areas with organoid morphology Teratoma",
+        "order_index": 2
+      },
+      {
+        "text": "Sarcomatous elements",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Areas with organoid morphology Teratoma",
+        "order_index": 3
+      },
+      {
+        "text": "Significant areas of testicular tubular atrophy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Areas with organoid morphology Teratoma",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 12",
+    "stem": "Which of the following is a feature of spermatocele?",
+    "difficulty": "medium",
+    "teaching_point": ". May have papillary infoldings with fibrovascular cores lined by vacuolated cuboidal or columnar cells. A benign papilloma consisting of papillary infoldings with fibrovascular cores lined by vacuolated or columnar cells may arise from the epithelial lining of the spermatocele. The lining can be cuboidal, columnar, ciliated or flattened epithelium, not mesothelium (answer A). Spermatocele is cytokeratin positive and can be distinguished from the mesothelial lining of a hydrocele by negative staining for D2-40 or calretinin (answer B). The origin of spermatocele is from rete testis / head of epididymis epithelium, whereas hydrocele originates from the mesothelium of the tunica vaginalis (answer D). Spermatocele",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisspermatocele.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Has a lining of mesothelial cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . May have papillary infoldings with fibrovascular cores lined by vacuolated cuboidal or columnar ce...",
+        "order_index": 0
+      },
+      {
+        "text": "Is cytokeratin negative",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . May have papillary infoldings with fibrovascular cores lined by vacuolated cuboidal or columnar ce...",
+        "order_index": 1
+      },
+      {
+        "text": "May have papillary infoldings with fibrovascular cores lined by vacuolated cuboidal or columnar cells",
+        "is_correct": true,
+        "explanation": ". May have papillary infoldings with fibrovascular cores lined by vacuolated cuboidal or columnar cells. A benign papilloma consisting of papillary infoldings with fibrovascular cores lined by vacuolated or columnar cells may arise from the epithelial lining of the spermatocele. The lining can be cuboidal, columnar, ciliated or flattened epithelium, not mesothelium (answer A). Spermatocele is cytokeratin positive and can be distinguished from the mesothelial lining of a hydrocele by negative staining for D2-40 or calretinin (answer B). The origin of spermatocele is from rete testis / head of epididymis epithelium, whereas hydrocele originates from the mesothelium of the tunica vaginalis (answer D). Spermatocele",
+        "order_index": 2
+      },
+      {
+        "text": "Originates from the same membrane as hydrocele",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . May have papillary infoldings with fibrovascular cores lined by vacuolated cuboidal or columnar ce...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 13",
+    "stem": "A paratesticular lesion is identified. Which of the following is the origin of the entity shown above?",
+    "difficulty": "medium",
+    "teaching_point": ". Spermatoceles often originate from the epithelial lining of the epididymis. Varicoceles commonly originate from the pampiniform venous plexus (answer B). Dermoid cysts commonly originate from totipotential germ cells (answer C). Hydroceles commonly originate from the tunica vaginalis (answer D). Spermatocele",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisspermatocele.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Head of the epididymis or rete testis",
+        "is_correct": true,
+        "explanation": ". Spermatoceles often originate from the epithelial lining of the epididymis. Varicoceles commonly originate from the pampiniform venous plexus (answer B). Dermoid cysts commonly originate from totipotential germ cells (answer C). Hydroceles commonly originate from the tunica vaginalis (answer D). Spermatocele",
+        "order_index": 0
+      },
+      {
+        "text": "Pampiniform venous plexus",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Spermatoceles often originate from the epithelial lining of the epididymis. Varicoceles commonly o...",
+        "order_index": 1
+      },
+      {
+        "text": "Totipotential germ cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Spermatoceles often originate from the epithelial lining of the epididymis. Varicoceles commonly o...",
+        "order_index": 2
+      },
+      {
+        "text": "Tunica vaginalis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Spermatoceles often originate from the epithelial lining of the epididymis. Varicoceles commonly o...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisspermatoceleparwani02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 14",
+    "stem": "Germ cell neoplasia in situ is found adjacent to a scar, consistent with regressed germ cell tumor. Positive expression using which of the following can confirm the germ cell neoplasia in situ?",
+    "difficulty": "medium",
+    "teaching_point": "OCT3 / 4 Regressed germ cell tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisregressedgct.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "AFP",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. OCT3 / 4 Regressed germ cell tumor",
+        "order_index": 0
+      },
+      {
+        "text": "Beta hCG",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. OCT3 / 4 Regressed germ cell tumor",
+        "order_index": 1
+      },
+      {
+        "text": "CD30",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. OCT3 / 4 Regressed germ cell tumor",
+        "order_index": 2
+      },
+      {
+        "text": "CK7",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. OCT3 / 4 Regressed germ cell tumor",
+        "order_index": 3
+      },
+      {
+        "text": "OCT3 / 4",
+        "is_correct": true,
+        "explanation": "OCT3 / 4 Regressed germ cell tumor",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisregressedgctzynger10.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 15",
+    "stem": "What is the most common tumor subtype in a partially regressed testicular germ cell tumor?",
+    "difficulty": "medium",
+    "teaching_point": "Seminoma Regressed germ cell tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisregressedgct.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Choriocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Seminoma Regressed germ cell tumor",
+        "order_index": 0
+      },
+      {
+        "text": "Embryonal carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Seminoma Regressed germ cell tumor",
+        "order_index": 1
+      },
+      {
+        "text": "Seminoma",
+        "is_correct": true,
+        "explanation": "Seminoma Regressed germ cell tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Teratoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Seminoma Regressed germ cell tumor",
+        "order_index": 3
+      },
+      {
+        "text": "Yolk sac tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Seminoma Regressed germ cell tumor",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 16",
+    "stem": "The spindle cells in the paratesticular pseudotumor shown in the photomicrograph are believed to pertain to which line of differentiation?",
+    "difficulty": "medium",
+    "teaching_point": ". Myofibroblastic. Paratesticular pseudotumor is thought to be a reactive lesion composed of myofibroblasts / fibroblasts set in a dense fibrous stroma with a variable, mixed inflammatory infiltrate. while the reactive spindle cells and chronic inflammation can be found infiltrating into adipose tissue, this lesion is not related to an adipocytic proliferation / neoplasm. while histiocytes are present within the lesion, the main reactive, proliferative population is represented by myofibroblasts / fibroblasts. this lesion is not related to a nerve sheath proliferation / neoplasm. this lesion is not related to a vascular proliferation / neoplasm. Pseudotumor / funiculitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/softtissuepf.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adipocytic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Myofibroblastic. Paratesticular pseudotumor is thought to be a reactive lesion composed of myofibr...",
+        "order_index": 0
+      },
+      {
+        "text": "Histiocytic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Myofibroblastic. Paratesticular pseudotumor is thought to be a reactive lesion composed of myofibr...",
+        "order_index": 1
+      },
+      {
+        "text": "Myofibroblastic",
+        "is_correct": true,
+        "explanation": ". Myofibroblastic. Paratesticular pseudotumor is thought to be a reactive lesion composed of myofibroblasts / fibroblasts set in a dense fibrous stroma with a variable, mixed inflammatory infiltrate. while the reactive spindle cells and chronic inflammation can be found infiltrating into adipose tissue, this lesion is not related to an adipocytic proliferation / neoplasm. while histiocytes are present within the lesion, the main reactive, proliferative population is represented by myofibroblasts / fibroblasts. this lesion is not related to a nerve sheath proliferation / neoplasm. this lesion is not related to a vascular proliferation / neoplasm. Pseudotumor / funiculitis",
+        "order_index": 2
+      },
+      {
+        "text": "Nerve sheath",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Myofibroblastic. Paratesticular pseudotumor is thought to be a reactive lesion composed of myofibr...",
+        "order_index": 3
+      },
+      {
+        "text": "Vascular",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Myofibroblastic. Paratesticular pseudotumor is thought to be a reactive lesion composed of myofibr...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/softtissuepfUlici03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 17",
+    "stem": "What is the difference between a mixed germ cell tumor with embryoid bodies and a polyembryoma?",
+    "difficulty": "medium",
+    "teaching_point": "Proportion of embrioid bodies in polyembryomas is 90% or higher of the entire tumor. Polyembryoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/testispolyembryoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Mixed germ cell tumors have components other than embryonal carcinoma and yolk sac tumor, while polyembryomas have only embryonal carcinoma and yolk sac tumor.",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Proportion of embrioid bodies in polyembryomas is 90% or higher of the entire tumor. Polyembryoma",
+        "order_index": 0
+      },
+      {
+        "text": "Polyembryoma is not a germ cell tumor.",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Proportion of embrioid bodies in polyembryomas is 90% or higher of the entire tumor. Polyembryoma",
+        "order_index": 1
+      },
+      {
+        "text": "Polyembryomas have many different types of embryoid bodies.",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Proportion of embrioid bodies in polyembryomas is 90% or higher of the entire tumor. Polyembryoma",
+        "order_index": 2
+      },
+      {
+        "text": "Proportion of embryoid bodies in polyembryomas is 90% or higher of the entire tumor.",
+        "is_correct": true,
+        "explanation": "Proportion of embrioid bodies in polyembryomas is 90% or higher of the entire tumor. Polyembryoma",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 18",
+    "stem": "In a postpubertal testicular germ cell tumor, lymphovascular (shown above), hilar fat, epididymal and tunica vaginalis invasion are all a part of which pT category?",
+    "difficulty": "medium",
+    "teaching_point": "pT2. Lymphovascular, hilar fat, epididymal and tunica vaginalis invasion are all a part of the pT2 category for testicular germ cell tumors. Lymphovascular invasion by embryonal carcinoma is shown in the image. Testis & epididymis - Staging",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisstaging.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "pT1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. pT2. Lymphovascular, hilar fat, epididymal and tunica vaginalis invasion are all a part of the pT2 c...",
+        "order_index": 0
+      },
+      {
+        "text": "pT1a",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. pT2. Lymphovascular, hilar fat, epididymal and tunica vaginalis invasion are all a part of the pT2 c...",
+        "order_index": 1
+      },
+      {
+        "text": "pT1b",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. pT2. Lymphovascular, hilar fat, epididymal and tunica vaginalis invasion are all a part of the pT2 c...",
+        "order_index": 2
+      },
+      {
+        "text": "pT2",
+        "is_correct": true,
+        "explanation": "pT2. Lymphovascular, hilar fat, epididymal and tunica vaginalis invasion are all a part of the pT2 category for testicular germ cell tumors. Lymphovascular invasion by embryonal carcinoma is shown in the image. Testis & epididymis - Staging",
+        "order_index": 3
+      },
+      {
+        "text": "pT3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. pT2. Lymphovascular, hilar fat, epididymal and tunica vaginalis invasion are all a part of the pT2 c...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisstagingzyngerBRQ1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 19",
+    "stem": "The postpubertal teratoma shown in the gross photo is 1.7 cm and is confined to the testis and did not have lymphovascular invasion. Which is the correct pT category?",
+    "difficulty": "medium",
+    "teaching_point": "pT1. Postpubertal germ cell tumors that are confined to the testicular parenchyma and lack lymphovascular invasion are pT1, pT1a or pT1b. Pure seminoma is stratified as pT1a and pT1b based on a 3 cm threshold. Nonpure seminomas are not stratified and therefore this tumor is pT1. Testis & epididymis - Staging",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisstaging.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "pT1",
+        "is_correct": true,
+        "explanation": "pT1. Postpubertal germ cell tumors that are confined to the testicular parenchyma and lack lymphovascular invasion are pT1, pT1a or pT1b. Pure seminoma is stratified as pT1a and pT1b based on a 3 cm threshold. Nonpure seminomas are not stratified and therefore this tumor is pT1. Testis & epididymis - Staging",
+        "order_index": 0
+      },
+      {
+        "text": "pT1a",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. pT1. Postpubertal germ cell tumors that are confined to the testicular parenchyma and lack lymphovas...",
+        "order_index": 1
+      },
+      {
+        "text": "pT1b",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. pT1. Postpubertal germ cell tumors that are confined to the testicular parenchyma and lack lymphovas...",
+        "order_index": 2
+      },
+      {
+        "text": "pT2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. pT1. Postpubertal germ cell tumors that are confined to the testicular parenchyma and lack lymphovas...",
+        "order_index": 3
+      },
+      {
+        "text": "pT3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. pT1. Postpubertal germ cell tumors that are confined to the testicular parenchyma and lack lymphovas...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisstagingZyngerBRQ2.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 20",
+    "stem": "Which of the following is the most common primary site of metastatic carcinoma in the testis?",
+    "difficulty": "medium",
+    "teaching_point": "The most common primary site of metastatic carcinoma in the testis is the prostate Metastases to testes",
+    "question_references": "https://www.pathologyoutlines.com/topic/testismetastases.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Bladder",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. The most common primary site of metastatic carcinoma in the testis is the prostate Metastases to tes...",
+        "order_index": 0
+      },
+      {
+        "text": "Kidney",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. The most common primary site of metastatic carcinoma in the testis is the prostate Metastases to tes...",
+        "order_index": 1
+      },
+      {
+        "text": "Prostate",
+        "is_correct": true,
+        "explanation": "The most common primary site of metastatic carcinoma in the testis is the prostate Metastases to testes",
+        "order_index": 2
+      },
+      {
+        "text": "Lung",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. The most common primary site of metastatic carcinoma in the testis is the prostate Metastases to tes...",
+        "order_index": 3
+      },
+      {
+        "text": "Colon",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. The most common primary site of metastatic carcinoma in the testis is the prostate Metastases to tes...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testismetastasesZyngergross01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 22",
+    "stem": "A 21 year old man had a 2 cm painless mass in the left testicle. Histological features are shown in the image above. Which marker will be positive in this tumor?",
+    "difficulty": "medium",
+    "teaching_point": ". Inhibin A. The diagnosis is Leydig cell tumor. Leydig cell tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisleydig.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "SALL4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Inhibin A. The diagnosis is Leydig cell tumor. Leydig cell tumor",
+        "order_index": 0
+      },
+      {
+        "text": "PLAP",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Inhibin A. The diagnosis is Leydig cell tumor. Leydig cell tumor",
+        "order_index": 1
+      },
+      {
+        "text": "OCT4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Inhibin A. The diagnosis is Leydig cell tumor. Leydig cell tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Inhibin A",
+        "is_correct": true,
+        "explanation": ". Inhibin A. The diagnosis is Leydig cell tumor. Leydig cell tumor",
+        "order_index": 3
+      },
+      {
+        "text": "Cytokeratin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Inhibin A. The diagnosis is Leydig cell tumor. Leydig cell tumor",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisleydig_aron05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 23",
+    "stem": "Malignant potential in Leydig cell tumor is associated with which of the following factors?",
+    "difficulty": "medium",
+    "teaching_point": ". Large tumor size (> 5 cm) Leydig cell tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisleydig.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Younger patient age",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Large tumor size (> 5 cm) Leydig cell tumor",
+        "order_index": 0
+      },
+      {
+        "text": "Diffuse growth pattern",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Large tumor size (> 5 cm) Leydig cell tumor",
+        "order_index": 1
+      },
+      {
+        "text": "Large tumor size (> 5 cm)",
+        "is_correct": true,
+        "explanation": ". Large tumor size (> 5 cm) Leydig cell tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Calcification",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Large tumor size (> 5 cm) Leydig cell tumor",
+        "order_index": 3
+      },
+      {
+        "text": "Reinke crystals",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Large tumor size (> 5 cm) Leydig cell tumor",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 24",
+    "stem": "A 41 year old man was hit in the groin area by a baseball. An ultrasound showed a 3 cm tumor of the testis. On histology, the tumor showed diffuse sheet-like growth of cells with minimal stroma, shown above. The tumor cells were large and polygonal with abundant, slightly granular, eosinophilic cytoplasm. The tumor cell nuclei were round and contained a single prominent nucleolus. Rare intracytoplasmic eosinophilic crystals were identified. The most likely diagnosis of this tumor is which of the following?",
+    "difficulty": "medium",
+    "teaching_point": "Leydig cell tumor Leydig cell tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisleydig.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adult granulosa cell tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Leydig cell tumor Leydig cell tumor",
+        "order_index": 0
+      },
+      {
+        "text": "Juvenile granulosa cell tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Leydig cell tumor Leydig cell tumor",
+        "order_index": 1
+      },
+      {
+        "text": "Leydig cell tumor",
+        "is_correct": true,
+        "explanation": "Leydig cell tumor Leydig cell tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Sertoli cell tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Leydig cell tumor Leydig cell tumor",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testissexcordgeneralmehta002.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 25",
+    "stem": "Which cell type lines a hydrocele?",
+    "difficulty": "medium",
+    "teaching_point": ". Mesothelial cells. Since hydrocele is defined as an accumulation of serous fluid between visceral and parietal layers of tunica vaginalis, its lining is provided by mesothelial cells. Hydrocele",
+    "question_references": "https://www.pathologyoutlines.com/topic/testishydrocele.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Endothelial cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Mesothelial cells. Since hydrocele is defined as an accumulation of serous fluid between visceral ...",
+        "order_index": 0
+      },
+      {
+        "text": "Germinal cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Mesothelial cells. Since hydrocele is defined as an accumulation of serous fluid between visceral ...",
+        "order_index": 1
+      },
+      {
+        "text": "Mesothelial cells",
+        "is_correct": true,
+        "explanation": ". Mesothelial cells. Since hydrocele is defined as an accumulation of serous fluid between visceral and parietal layers of tunica vaginalis, its lining is provided by mesothelial cells. Hydrocele",
+        "order_index": 2
+      },
+      {
+        "text": "Urothelial cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Mesothelial cells. Since hydrocele is defined as an accumulation of serous fluid between visceral ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testishydroceleSanguedolce03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Hydrocele",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 26",
+    "stem": "Which microscopic findings can occur in a hydrocele?",
+    "difficulty": "medium",
+    "teaching_point": ". Chronic inflammation, fibrosis, squamous metaplasia. Longstanding hydrocele may be complicated by inflammation and hemorrhage, resulting in abnormal findings involving both the lining cells and the connective tissue. Hydrocele",
+    "question_references": "https://www.pathologyoutlines.com/topic/testishydrocele.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute inflammation, mucinous metaplasia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Chronic inflammation, fibrosis, squamous metaplasia. Longstanding hydrocele may be complicated by ...",
+        "order_index": 0
+      },
+      {
+        "text": "Chronic inflammation, fibrosis, squamous metaplasia",
+        "is_correct": true,
+        "explanation": ". Chronic inflammation, fibrosis, squamous metaplasia. Longstanding hydrocele may be complicated by inflammation and hemorrhage, resulting in abnormal findings involving both the lining cells and the connective tissue. Hydrocele",
+        "order_index": 1
+      },
+      {
+        "text": "Clear cell hyperplasia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Chronic inflammation, fibrosis, squamous metaplasia. Longstanding hydrocele may be complicated by ...",
+        "order_index": 2
+      },
+      {
+        "text": "Psammoma bodies",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Chronic inflammation, fibrosis, squamous metaplasia. Longstanding hydrocele may be complicated by ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 29",
+    "stem": "Which of the following tumors of the testicle is associated with the finding shown in the image above?",
+    "difficulty": "medium",
+    "teaching_point": "Embryonal carcinoma. Germ cell neoplasia in situ (GCNIS) is associated with type II germ cell tumors (e.g., seminoma, embryonal carcinoma) and of the options listed embryonal carcinoma is the only option that fits this designation. Answers B, C, D and E are incorrect because GCNIS is not known to be associated with other testicular neoplasms such as sex cord stromal tumors (e.g., juvenile granulosa cell tumor), spermatocytic tumor or prepubertal germ cell tumors. Germ cell neoplasia in situ",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisitgcn.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Embryonal carcinoma",
+        "is_correct": true,
+        "explanation": "Embryonal carcinoma. Germ cell neoplasia in situ (GCNIS) is associated with type II germ cell tumors (e.g., seminoma, embryonal carcinoma) and of the options listed embryonal carcinoma is the only option that fits this designation. Answers B, C, D and E are incorrect because GCNIS is not known to be associated with other testicular neoplasms such as sex cord stromal tumors (e.g., juvenile granulosa cell tumor), spermatocytic tumor or prepubertal germ cell tumors. Germ cell neoplasia in situ",
+        "order_index": 0
+      },
+      {
+        "text": "Juvenile granulosa cell tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Embryonal carcinoma. Germ cell neoplasia in situ (GCNIS) is associated with type II germ cell tumors...",
+        "order_index": 1
+      },
+      {
+        "text": "Spermatocytic tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Embryonal carcinoma. Germ cell neoplasia in situ (GCNIS) is associated with type II germ cell tumors...",
+        "order_index": 2
+      },
+      {
+        "text": "Teratoma, prepubertal type",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Embryonal carcinoma. Germ cell neoplasia in situ (GCNIS) is associated with type II germ cell tumors...",
+        "order_index": 3
+      },
+      {
+        "text": "Yolk sac tumor, prepubertal type",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Embryonal carcinoma. Germ cell neoplasia in situ (GCNIS) is associated with type II germ cell tumors...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisitgcnHirschnew1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 30",
+    "stem": "Which of the following histologic features is associated with germ cell neoplasia in situ (GCNIS)?",
+    "difficulty": "medium",
+    "teaching_point": "Thickened seminiferous tubule basement membrane. Of the listed features, only a thickened basement membrane is associated with germ cell neoplasia in situ (GCNIS). a Sertoli only pattern would be found in testicles lacking germ cells and possessing only Sertoli cells (as in some types of infertility). Answers A and C are incorrect because atypical gonocytes invading the interstitium between seminiferous tubules would be diagnostic of invasive disease, while a population of maturing germinal epithelium ranging from spermatogonia to mature spermatids in the lumen of the tubule would be consistent with nonneoplastic, maturing spermatogenesis and unlikely in the context of GCNIS. the presence of i(12p) indicates molecular progression beyond in situ disease (e.g., seminoma) and is therefore absent in the precursor GCNIS lesion. Germ cell neoplasia in situ",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisitgcn.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypical appearing gonocytes filling seminiferous tubules and extending into stroma as single cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Thickened seminiferous tubule basement membrane. Of the listed features, only a thickened basement m...",
+        "order_index": 0
+      },
+      {
+        "text": "Presence of i(12p)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Thickened seminiferous tubule basement membrane. Of the listed features, only a thickened basement m...",
+        "order_index": 1
+      },
+      {
+        "text": "Seminiferous tubules lined with germinal epithelium undergoing maturation from spermatogonia to mature spermatids towards the lumen",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Thickened seminiferous tubule basement membrane. Of the listed features, only a thickened basement m...",
+        "order_index": 2
+      },
+      {
+        "text": "Sertoli only pattern",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Thickened seminiferous tubule basement membrane. Of the listed features, only a thickened basement m...",
+        "order_index": 3
+      },
+      {
+        "text": "Thickened seminiferous tubule basement membrane",
+        "is_correct": true,
+        "explanation": "Thickened seminiferous tubule basement membrane. Of the listed features, only a thickened basement membrane is associated with germ cell neoplasia in situ (GCNIS). a Sertoli only pattern would be found in testicles lacking germ cells and possessing only Sertoli cells (as in some types of infertility). Answers A and C are incorrect because atypical gonocytes invading the interstitium between seminiferous tubules would be diagnostic of invasive disease, while a population of maturing germinal epithelium ranging from spermatogonia to mature spermatids in the lumen of the tubule would be consistent with nonneoplastic, maturing spermatogenesis and unlikely in the context of GCNIS. the presence of i(12p) indicates molecular progression beyond in situ disease (e.g., seminoma) and is therefore absent in the precursor GCNIS lesion. Germ cell neoplasia in situ",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisitgcnSubtelny01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 31",
+    "stem": "A 65 year old man presented with a painless mass in his right testis. An ultrasound demonstrated a solid mass, measuring 5.4 cm in greatest dimension. He was scheduled for a radical orchiectomy. The resected tumor's histology is depicted in the image above. What is the best course of action after this diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Observation Fibroma thecoma group",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisfibroma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chemotherapy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Observation Fibroma thecoma group",
+        "order_index": 0
+      },
+      {
+        "text": "Observation",
+        "is_correct": true,
+        "explanation": "Observation Fibroma thecoma group",
+        "order_index": 1
+      },
+      {
+        "text": "Orchiectomy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Observation Fibroma thecoma group",
+        "order_index": 2
+      },
+      {
+        "text": "Radiation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Observation Fibroma thecoma group",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisfibromaJimenez3.JPG",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 32",
+    "stem": "Which of the following immunohistochemical profiles best supports the diagnosis of a fibrothecoma of the testis?",
+    "difficulty": "medium",
+    "teaching_point": "Inhibin positive, FOXL2 positive, MelanA negative Fibroma thecoma group",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisfibroma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Calretinin positive, S100 negative, CD34 positive",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Inhibin positive, FOXL2 positive, MelanA negative Fibroma thecoma group",
+        "order_index": 0
+      },
+      {
+        "text": "CD56 negative, inhibin negative, smooth muscle actin negative",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Inhibin positive, FOXL2 positive, MelanA negative Fibroma thecoma group",
+        "order_index": 1
+      },
+      {
+        "text": "Inhibin positive, FOXL2 positive, MelanA negative",
+        "is_correct": true,
+        "explanation": "Inhibin positive, FOXL2 positive, MelanA negative Fibroma thecoma group",
+        "order_index": 2
+      },
+      {
+        "text": "MIC2 positive, FOXL2 negative, S100 negative",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Inhibin positive, FOXL2 positive, MelanA negative Fibroma thecoma group",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 33",
+    "stem": "A patient with a history of testicular germ cell tumor treated with chemotherapy now has an enlarged cervical lymph node that is diffusely involved by the tumor (shown above). There is only a minor elevation of serum βhCG. The tumor is formed by large, solid nodules of cells with a squamoid appearance. The cells are homogeneous and intermediate to large in size, consistent with mononucleated trophoblastic cells. The tumor cells express AE1 / AE3, patchy inhibin and p63 and only focal βhCG. What is the best diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Epithelioid trophoblastic tumor (ETT). Essential diagnostic criteria of ETT (WHO 5th edition) include squamoid appearing, mostly mononucleated trophoblastic cells with a variable amount of fibrinoid material surrounding the tumor clusters and vessels. Desirable diagnostic criteria of ETT (WHO 5th edition) include positive staining for p63 and Ki67 index > 10%. choriocarcinoma has a biphasic pattern of syncytiotrophoblastic and mononucleated trophoblast cells and patients with a substantial burden of choriocarcinoma have high serum βhCG. cystic trophoblastic tumors have a degenerative appearance with cysts lined by squamoid appearing cells with smudged, irregular nuclei, abundant eosinophilic cytoplasm with intracytoplasmic lacunae and associated fibrinoid material. myoid gonadal trophoblastic tumor is a pure spindle cell tumor lacking sex cord differentiation and is positive for both actin and S100. Epithelioid trophoblastic tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisepithelioidtrophoblastictumor.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Choriocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Epithelioid trophoblastic tumor (ETT). Essential diagnostic criteria of ETT (WHO 5th edition) includ...",
+        "order_index": 0
+      },
+      {
+        "text": "Cystic trophoblastic tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Epithelioid trophoblastic tumor (ETT). Essential diagnostic criteria of ETT (WHO 5th edition) includ...",
+        "order_index": 1
+      },
+      {
+        "text": "Epithelioid trophoblastic tumor",
+        "is_correct": true,
+        "explanation": "Epithelioid trophoblastic tumor (ETT). Essential diagnostic criteria of ETT (WHO 5th edition) include squamoid appearing, mostly mononucleated trophoblastic cells with a variable amount of fibrinoid material surrounding the tumor clusters and vessels. Desirable diagnostic criteria of ETT (WHO 5th edition) include positive staining for p63 and Ki67 index > 10%. choriocarcinoma has a biphasic pattern of syncytiotrophoblastic and mononucleated trophoblast cells and patients with a substantial burden of choriocarcinoma have high serum βhCG. cystic trophoblastic tumors have a degenerative appearance with cysts lined by squamoid appearing cells with smudged, irregular nuclei, abundant eosinophilic cytoplasm with intracytoplasmic lacunae and associated fibrinoid material. myoid gonadal trophoblastic tumor is a pure spindle cell tumor lacking sex cord differentiation and is positive for both actin and S100. Epithelioid trophoblastic tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Myoid gonadal trophoblastic tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Epithelioid trophoblastic tumor (ETT). Essential diagnostic criteria of ETT (WHO 5th edition) includ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisepithelioidtrophoblastictumorzynger002.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 34",
+    "stem": "A 26 year old man presented with a left testicle mass. A radical orchiectomy was performed. Which is the correct diagnosis for the testicular germ cell tumor component shown in the above image?",
+    "difficulty": "medium",
+    "teaching_point": ". Embryonal carcinoma Embryonal carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisembryonal.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Choriocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Embryonal carcinoma Embryonal carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Embryonal carcinoma",
+        "is_correct": true,
+        "explanation": ". Embryonal carcinoma Embryonal carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Seminoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Embryonal carcinoma Embryonal carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Teratoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Embryonal carcinoma Embryonal carcinoma",
+        "order_index": 3
+      },
+      {
+        "text": "Yolk sac tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Embryonal carcinoma Embryonal carcinoma",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisembryonalmicroBRQ1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 35",
+    "stem": "The H&E image above is a brain metastasis of testicular germ cell tumor with choriocarcinoma and embryonal carcinoma. Which of the following 2 immunostains will be positive in choriocarcinoma but weak or negative in embryonal carcinoma (one of which is shown above)?",
+    "difficulty": "medium",
+    "teaching_point": "CK7, p63. CK7 (shown in the immunostain image above) is strongly and diffusely positive choriocarcinoma. CK7 is weak or negative in embryonal carcinoma. Expression for p63 is seen in mononucleated trophoblast cells in choriocarcinoma. p63 is negative in embryonal carcinoma. AFP is positive in yolk sac tumor and weak to negative in embryonal carcinoma and choriocarcinoma. PLAP is variably positive in embryonal carcinoma and negative in choriocarcinoma. CD30 and OCT 3/4 are positive in embryonal carcinoma and negative in choriocarcinoma. D2-40 and CD117 are positive in seminoma but negative in both choriocarcinoma and embryonal carcinoma. SALL4 and AE1 / AE3 are positive in both choriocarcinoma and embryonal carcinoma. Embryonal carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisembryonal.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "AFP, PLAP",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. CK7, p63. CK7 (shown in the immunostain image above) is strongly and diffusely positive choriocarcin...",
+        "order_index": 0
+      },
+      {
+        "text": "CD30, OCT 3/4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. CK7, p63. CK7 (shown in the immunostain image above) is strongly and diffusely positive choriocarcin...",
+        "order_index": 1
+      },
+      {
+        "text": "CK7, p63",
+        "is_correct": true,
+        "explanation": "CK7, p63. CK7 (shown in the immunostain image above) is strongly and diffusely positive choriocarcinoma. CK7 is weak or negative in embryonal carcinoma. Expression for p63 is seen in mononucleated trophoblast cells in choriocarcinoma. p63 is negative in embryonal carcinoma. AFP is positive in yolk sac tumor and weak to negative in embryonal carcinoma and choriocarcinoma. PLAP is variably positive in embryonal carcinoma and negative in choriocarcinoma. CD30 and OCT 3/4 are positive in embryonal carcinoma and negative in choriocarcinoma. D2-40 and CD117 are positive in seminoma but negative in both choriocarcinoma and embryonal carcinoma. SALL4 and AE1 / AE3 are positive in both choriocarcinoma and embryonal carcinoma. Embryonal carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "D2-40, CD117",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. CK7, p63. CK7 (shown in the immunostain image above) is strongly and diffusely positive choriocarcin...",
+        "order_index": 3
+      },
+      {
+        "text": "SALL4, AE1 / AE3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. CK7, p63. CK7 (shown in the immunostain image above) is strongly and diffusely positive choriocarcin...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisembryonalmicroBRQ2.1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisembryonalmicroBRQ2.2.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 36",
+    "stem": "In a testicular mixed germ cell tumor, increased percentage of which component correlates with a worse prognosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Embryonal carcinoma. In a testicular germ cell tumor, higher percentage of embryonal carcinoma and choriocarcinoma are associated with negative outcomes, such as local and distant metastases. Increased proportions of teratoma and yolk sac tumor are associated with better outcomes. In a mixed germ cell tumor, percentage of seminoma usually does not impact prognosis or management. Spermatocytic tumor is a germ cell tumor unrelated to germ cell neoplasia in situ. Embryonal carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisembryonal.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Embryonal carcinoma",
+        "is_correct": true,
+        "explanation": ". Embryonal carcinoma. In a testicular germ cell tumor, higher percentage of embryonal carcinoma and choriocarcinoma are associated with negative outcomes, such as local and distant metastases. Increased proportions of teratoma and yolk sac tumor are associated with better outcomes. In a mixed germ cell tumor, percentage of seminoma usually does not impact prognosis or management. Spermatocytic tumor is a germ cell tumor unrelated to germ cell neoplasia in situ. Embryonal carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Seminoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Embryonal carcinoma. In a testicular germ cell tumor, higher percentage of embryonal carcinoma and...",
+        "order_index": 1
+      },
+      {
+        "text": "Spermatocytic tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Embryonal carcinoma. In a testicular germ cell tumor, higher percentage of embryonal carcinoma and...",
+        "order_index": 2
+      },
+      {
+        "text": "Teratoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Embryonal carcinoma. In a testicular germ cell tumor, higher percentage of embryonal carcinoma and...",
+        "order_index": 3
+      },
+      {
+        "text": "Yolk sac tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Embryonal carcinoma. In a testicular germ cell tumor, higher percentage of embryonal carcinoma and...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisembryonalmicroBRQ3.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 37",
+    "stem": "Which testicular germ cell tumor component is classically associated with hemorrhage?",
+    "difficulty": "medium",
+    "teaching_point": "Choriocarcinoma Choriocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/testischorio.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Choriocarcinoma",
+        "is_correct": true,
+        "explanation": "Choriocarcinoma Choriocarcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Embryonal carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Choriocarcinoma Choriocarcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Seminoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Choriocarcinoma Choriocarcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Teratoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Choriocarcinoma Choriocarcinoma",
+        "order_index": 3
+      },
+      {
+        "text": "Yolk sac tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Choriocarcinoma Choriocarcinoma",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testischoriozynger16.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 38",
+    "stem": "Which testicular germ cell tumor component is shown in the image?",
+    "difficulty": "medium",
+    "teaching_point": "Choriocarcinoma Choriocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/testischorio.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Choriocarcinoma",
+        "is_correct": true,
+        "explanation": "Choriocarcinoma Choriocarcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Embryonal carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Choriocarcinoma Choriocarcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Seminoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Choriocarcinoma Choriocarcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Teratoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Choriocarcinoma Choriocarcinoma",
+        "order_index": 3
+      },
+      {
+        "text": "Yolk sac tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Choriocarcinoma Choriocarcinoma",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testischoriozynger21.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 39",
+    "stem": "A 35 year old man presents for evaluation of infertility. After several laboratory and radiologic tests, a biopsy of a testicle was performed. The biopsy is shown in the image above. Presence or absence of which of the following would support a diagnosis of testicular atrophy?",
+    "difficulty": "medium",
+    "teaching_point": "Absence of germ cell neoplasia in situ Testicular atrophy",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisatrophy.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Absence of germ cell neoplasia in situ",
+        "is_correct": true,
+        "explanation": "Absence of germ cell neoplasia in situ Testicular atrophy",
+        "order_index": 0
+      },
+      {
+        "text": "A nodule composed of cells containing Reinke crystals",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Absence of germ cell neoplasia in situ Testicular atrophy",
+        "order_index": 1
+      },
+      {
+        "text": "Presence of isochromosome 12p",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Absence of germ cell neoplasia in situ Testicular atrophy",
+        "order_index": 2
+      },
+      {
+        "text": "Presence of necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Absence of germ cell neoplasia in situ Testicular atrophy",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisatrophyZotJimenez02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 40",
+    "stem": "Parents of a 6 month old baby boy bring the child in for evaluation due to a concern for a nonpalpable testicle. On physical exam, there is only one testicle that has descended and is palpable in the scrotum. Imaging studies show no evidence of the second testicle in the abdomen or any other location; however, spermatic cord with a small nodule is present. The nodule is biopsied and shows benign fibrovascular tissue with no evidence of germ cells. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Testicular regression syndrome Testicular atrophy",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisatrophy.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cryptorchidism",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Testicular regression syndrome Testicular atrophy",
+        "order_index": 0
+      },
+      {
+        "text": "Regressed mixed germ cell tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Testicular regression syndrome Testicular atrophy",
+        "order_index": 1
+      },
+      {
+        "text": "Teratoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Testicular regression syndrome Testicular atrophy",
+        "order_index": 2
+      },
+      {
+        "text": "Testicular regression syndrome",
+        "is_correct": true,
+        "explanation": "Testicular regression syndrome Testicular atrophy",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 41",
+    "stem": "A 47 year old man presented with a right testicular swelling. Histologic examination revealed the tumor shown above. This tumor typically shows which of the following immunoprofiles?",
+    "difficulty": "medium",
+    "teaching_point": ". OCT4- / SALL4- / inhibin A+ / FOX2L+. Histology shows Call-Exner bodies, which are pathognomonic for adult granulosa cell tumor. Adult granulosa cell tumor expresses general sex cord stromal tumor immunohistochemical markers, such as inhibin A. FOX2L has also been found to be a marker of sex cord stromal tumors and does not necessarily correlate with a FOX2L gene mutation, which has been identified in a small subset of testicular adult granulosa cell tumors. OCT4 and SALL4 are markers of germ cell tumors. Adult granulosa cell",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisgranulosa.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "OCT4+ / SALL4+ / inhibin A- / FOX2L-",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . OCT4- / SALL4- / inhibin A+ / FOX2L+. Histology shows Call-Exner bodies, which are pathognomonic f...",
+        "order_index": 0
+      },
+      {
+        "text": "OCT4- / SALL4+ / inhibin A+ / FOX2L-",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . OCT4- / SALL4- / inhibin A+ / FOX2L+. Histology shows Call-Exner bodies, which are pathognomonic f...",
+        "order_index": 1
+      },
+      {
+        "text": "OCT4- / SALL4- / inhibin A+ / FOX2L+",
+        "is_correct": true,
+        "explanation": ". OCT4- / SALL4- / inhibin A+ / FOX2L+. Histology shows Call-Exner bodies, which are pathognomonic for adult granulosa cell tumor. Adult granulosa cell tumor expresses general sex cord stromal tumor immunohistochemical markers, such as inhibin A. FOX2L has also been found to be a marker of sex cord stromal tumors and does not necessarily correlate with a FOX2L gene mutation, which has been identified in a small subset of testicular adult granulosa cell tumors. OCT4 and SALL4 are markers of germ cell tumors. Adult granulosa cell",
+        "order_index": 2
+      },
+      {
+        "text": "OCT4- / SALL4- / inhibin A- / FOX2L-",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . OCT4- / SALL4- / inhibin A+ / FOX2L+. Histology shows Call-Exner bodies, which are pathognomonic f...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisAGCTcornejo10.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 45",
+    "stem": "A 68 year old man presents with a 4.7 cm nodule centered around the testicular hilum, with invasion into the testicular parenchyma. Cut surface is heterogeneous, with solid, cystic and hemorrhagic areas. Histologic examination reveals a mixture of architectural patterns, including glandular, cribriform and solid areas. The cells exhibit nuclear pleomorphism, prominent nucleoli and high mitotic activity (see figures above). Clinicoradiologic examination fails to identify any extrascrotal tumors. Based on the constellation of findings, the man is diagnosed with primary adenocarcinoma of rete testis. Regarding this entity, which of the following statements is true?",
+    "difficulty": "medium",
+    "teaching_point": ". CK7, CK AE1 / AE3 and EMA are positive in the majority of the cases Adenocarcinoma of collecting ducts and rete testis",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisreteadeno.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CK7, CK AE1 / AE3 and EMA are positive in the majority of the cases",
+        "is_correct": true,
+        "explanation": ". CK7, CK AE1 / AE3 and EMA are positive in the majority of the cases Adenocarcinoma of collecting ducts and rete testis",
+        "order_index": 0
+      },
+      {
+        "text": "It frequently shows immunoreactivity for CD30, OCT 3/4 and SALL4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . CK7, CK AE1 / AE3 and EMA are positive in the majority of the cases Adenocarcinoma of collecting d...",
+        "order_index": 1
+      },
+      {
+        "text": "Many patients are asymptomatic and these tumors are usually detected incidentally on imaging studies",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . CK7, CK AE1 / AE3 and EMA are positive in the majority of the cases Adenocarcinoma of collecting d...",
+        "order_index": 2
+      },
+      {
+        "text": "These tumors typically follow an indolent course, without metastases",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . CK7, CK AE1 / AE3 and EMA are positive in the majority of the cases Adenocarcinoma of collecting d...",
+        "order_index": 3
+      },
+      {
+        "text": "This entity is typically associated with increased levels of alpha fetoprotein and βhCG",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . CK7, CK AE1 / AE3 and EMA are positive in the majority of the cases Adenocarcinoma of collecting d...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisadenocarcinomacollectingductsjimenez03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisadenocarcinomacollectingductsjimenez06.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisadenocarcinomacollectingductsjimenez07.jpg",
+        "question_section": "stem",
+        "order_index": 2,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisadenocarcinomacollectingductsjimenez09.jpg",
+        "question_section": "stem",
+        "order_index": 3,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 46",
+    "stem": "A 67 year old patient with a history of cirrhosis presents with painless scrotal swelling. An orchiectomy reveals the paratesticular lesion pictured above. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Cystic dilation of epididymis. The image shows a cystically dilated epididymis with proteinaceous luminal accumulation in a cystic space lined by tubal epithelium. the structure is consistent with normal histology in this location rather than teratomatous elements and teratoma would be less common in an elderly patient with a history of hormonal abnormality (i.e., cirrhosis). Answers C and B are incorrect because a mesothelial cyst or hydrocele would be lined by mesothelium. while spermatocele is also an epididymal structure lined by tubal epithelium, there is no evidence of spermatozoa in this image. Cysts",
+    "question_references": "https://www.pathologyoutlines.com/topic/testiscysts.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cystic dilatation of epididymis",
+        "is_correct": true,
+        "explanation": "Cystic dilation of epididymis. The image shows a cystically dilated epididymis with proteinaceous luminal accumulation in a cystic space lined by tubal epithelium. the structure is consistent with normal histology in this location rather than teratomatous elements and teratoma would be less common in an elderly patient with a history of hormonal abnormality (i.e., cirrhosis). Answers C and B are incorrect because a mesothelial cyst or hydrocele would be lined by mesothelium. while spermatocele is also an epididymal structure lined by tubal epithelium, there is no evidence of spermatozoa in this image. Cysts",
+        "order_index": 0
+      },
+      {
+        "text": "Hydrocele",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Cystic dilation of epididymis. The image shows a cystically dilated epididymis with proteinaceous lu...",
+        "order_index": 1
+      },
+      {
+        "text": "Mesothelial cyst",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Cystic dilation of epididymis. The image shows a cystically dilated epididymis with proteinaceous lu...",
+        "order_index": 2
+      },
+      {
+        "text": "Spermatocele",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Cystic dilation of epididymis. The image shows a cystically dilated epididymis with proteinaceous lu...",
+        "order_index": 3
+      },
+      {
+        "text": "Teratoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Cystic dilation of epididymis. The image shows a cystically dilated epididymis with proteinaceous lu...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testiscystsSiegmund04.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 47",
+    "stem": "Which of the following clinical scenarios is most likely to be associated with cystic dysplasia of the rete testis?",
+    "difficulty": "medium",
+    "teaching_point": "6 year old boy with right renal agenesis and unilateral scrotal swelling. Cystic dysplasia of the rete testis is most commonly seen in children (median age is 5 years old) and is frequently associated with ipsilateral urogenital malformations, such as renal agenesis. by contrast, unilateral or bilateral neonatal scrotal swelling is most commonly due to persistent patency of the processus vaginalis with spontaneous resolution by 1 - 2 years of age. Answers E and D are incorrect because scrotal swelling in adults is more frequently due to cysts or cystic dilatation of the epididymis or rete testis secondary to obstruction in the setting of hormonal changes, neoplastic processes, surgery or infection. the presence of a complex scrotal mass rather than uniloculated or multiloculated fluid filled mass raises the possibility of prepubertal teratoma. Cysts",
+    "question_references": "https://www.pathologyoutlines.com/topic/testiscysts.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "4 day old neonate with persistent bilateral scrotal swelling",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. 6 year old boy with right renal agenesis and unilateral scrotal swelling. Cystic dysplasia of the re...",
+        "order_index": 0
+      },
+      {
+        "text": "5 year old boy with a complex solid and cystic scrotal mass",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. 6 year old boy with right renal agenesis and unilateral scrotal swelling. Cystic dysplasia of the re...",
+        "order_index": 1
+      },
+      {
+        "text": "6 year old boy with right renal agenesis and unilateral scrotal swelling",
+        "is_correct": true,
+        "explanation": "6 year old boy with right renal agenesis and unilateral scrotal swelling. Cystic dysplasia of the rete testis is most commonly seen in children (median age is 5 years old) and is frequently associated with ipsilateral urogenital malformations, such as renal agenesis. by contrast, unilateral or bilateral neonatal scrotal swelling is most commonly due to persistent patency of the processus vaginalis with spontaneous resolution by 1 - 2 years of age. Answers E and D are incorrect because scrotal swelling in adults is more frequently due to cysts or cystic dilatation of the epididymis or rete testis secondary to obstruction in the setting of hormonal changes, neoplastic processes, surgery or infection. the presence of a complex scrotal mass rather than uniloculated or multiloculated fluid filled mass raises the possibility of prepubertal teratoma. Cysts",
+        "order_index": 2
+      },
+      {
+        "text": "34 year old man with 2 months of painful unilateral scrotal mass and recent diagnosis of tuberculosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. 6 year old boy with right renal agenesis and unilateral scrotal swelling. Cystic dysplasia of the re...",
+        "order_index": 3
+      },
+      {
+        "text": "67 year old man with metastatic castration resistant prostatic adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. 6 year old boy with right renal agenesis and unilateral scrotal swelling. Cystic dysplasia of the re...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 48",
+    "stem": "Myoid gonadal stromal tumor is a new entity described in the latest WHO classification of testicular tumors. A representative histologic image is shown above. Which of the following is true for these tumors?",
+    "difficulty": "medium",
+    "teaching_point": "Consistent pattern of recurrent chromosome arm level and whole chromosome level copy number gains are indicative of ploidy shifts Myoid gonadal stromal tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testismyoidgonadalstromaltumor.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Consistent pattern of recurrent chromosome arm level and whole chromosome level copy number gains are indicative of ploidy shifts",
+        "is_correct": true,
+        "explanation": "Consistent pattern of recurrent chromosome arm level and whole chromosome level copy number gains are indicative of ploidy shifts Myoid gonadal stromal tumor",
+        "order_index": 0
+      },
+      {
+        "text": "Intermixed primitive germ cells and diffuse broad fascicles are present",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Consistent pattern of recurrent chromosome arm level and whole chromosome level copy number gains ar...",
+        "order_index": 1
+      },
+      {
+        "text": "Mitotic count of > 5/10 high power fields is common",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Consistent pattern of recurrent chromosome arm level and whole chromosome level copy number gains ar...",
+        "order_index": 2
+      },
+      {
+        "text": "Vascular invasion is a defining characteristic of these tumors",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Consistent pattern of recurrent chromosome arm level and whole chromosome level copy number gains ar...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testismyoidgonadalstromaltumorMehta03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 49",
+    "stem": "A 5 month old boy presented with a left testicular mass. An ultrasound of the testis showed a variably solid cystic mass with internal septations. An image from the resection specimen is shown above. Which of the following features will point toward the diagnosis of juvenile granulosa cell tumor?",
+    "difficulty": "medium",
+    "teaching_point": "Variable sized true follicles lined by bland appearing, oval, round cells arranged in single or multiple layers with outer layers resembling theca cells. the features described are found in yolk sac tumors. variable morphologic patterns with biphasic epithelioid and spindle cell components are found in a subset of sertoli cell tumors, NOS. the features described are found in gonadoblastoma. Juvenile granulosa cell tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisgranulosajuvenile.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Presence of intracellular or extracellular eosinophilic hyaline globules, basement membrane material and Schiller-Duval bodies",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Variable sized true follicles lined by bland appearing, oval, round cells arranged in single or mult...",
+        "order_index": 0
+      },
+      {
+        "text": "Round nests and cords composed of germ cells, small sex cord cells and globoid deposits of hyaline basement membrane material",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Variable sized true follicles lined by bland appearing, oval, round cells arranged in single or mult...",
+        "order_index": 1
+      },
+      {
+        "text": "Variable morphologic patterns with biphasic epithelioid and spindle cell components",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Variable sized true follicles lined by bland appearing, oval, round cells arranged in single or mult...",
+        "order_index": 2
+      },
+      {
+        "text": "Variable sized true follicles lined by bland appearing, oval, round cells arranged in single or multiple layers with outer layers resembling theca cells",
+        "is_correct": true,
+        "explanation": "Variable sized true follicles lined by bland appearing, oval, round cells arranged in single or multiple layers with outer layers resembling theca cells. the features described are found in yolk sac tumors. variable morphologic patterns with biphasic epithelioid and spindle cell components are found in a subset of sertoli cell tumors, NOS. the features described are found in gonadoblastoma. Juvenile granulosa cell tumor",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisgranulosajuvenileMicroMehta1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 50",
+    "stem": "Which of the following choices represents the immunoprofile of juvenile granulosa cell tumor of testis?",
+    "difficulty": "medium",
+    "teaching_point": "SF1+, FOXL2+, inhibin+. glypican3+, SALL4+, OCT3/4+ can be seen in immature teratoma. the features listed are consistent with gonadal stromal tumor, myoid. the features listed are consistent with rhabdomyosarcoma. Juvenile granulosa cell tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisgranulosajuvenile.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Desmin+, MyoD1+, myogenin+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. SF1+, FOXL2+, inhibin+. glypican3+, SALL4+, OCT3/4+ can be seen in immature teratoma. the features l...",
+        "order_index": 0
+      },
+      {
+        "text": "Glypican3+, SALL4+, OCT3/4+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. SF1+, FOXL2+, inhibin+. glypican3+, SALL4+, OCT3/4+ can be seen in immature teratoma. the features l...",
+        "order_index": 1
+      },
+      {
+        "text": "S100+, SMA+, SF1+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. SF1+, FOXL2+, inhibin+. glypican3+, SALL4+, OCT3/4+ can be seen in immature teratoma. the features l...",
+        "order_index": 2
+      },
+      {
+        "text": "SF1+, FOXL2+, inhibin+",
+        "is_correct": true,
+        "explanation": "SF1+, FOXL2+, inhibin+. glypican3+, SALL4+, OCT3/4+ can be seen in immature teratoma. the features listed are consistent with gonadal stromal tumor, myoid. the features listed are consistent with rhabdomyosarcoma. Juvenile granulosa cell tumor",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 51",
+    "stem": "Spermatocytic tumor, shown in the image above, is an example of which of the following categories of testicular tumors?",
+    "difficulty": "medium",
+    "teaching_point": "Germ cell tumors unrelated to germ cell neoplasia in situ. Spermatocytic tumor is a germ cell tumor that is not derived from germ cell neoplasia in situ. Most germ cell tumors such as seminoma are thought to be derived from the precursor lesion germ cell neoplasia in situ. Spermatocytic tumor is not a sex cord stromal tumor and does not have sex cord stromal elements. Testis & paratestis - WHO classification",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisspermseminoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Germ cell tumors derived from germ cell neoplasia in situ",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Germ cell tumors unrelated to germ cell neoplasia in situ. Spermatocytic tumor is a germ cell tumor ...",
+        "order_index": 0
+      },
+      {
+        "text": "Germ cell tumors unrelated to germ cell neoplasia in situ",
+        "is_correct": true,
+        "explanation": "Germ cell tumors unrelated to germ cell neoplasia in situ. Spermatocytic tumor is a germ cell tumor that is not derived from germ cell neoplasia in situ. Most germ cell tumors such as seminoma are thought to be derived from the precursor lesion germ cell neoplasia in situ. Spermatocytic tumor is not a sex cord stromal tumor and does not have sex cord stromal elements. Testis & paratestis - WHO classification",
+        "order_index": 1
+      },
+      {
+        "text": "Sex cord stromal tumors",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Germ cell tumors unrelated to germ cell neoplasia in situ. Spermatocytic tumor is a germ cell tumor ...",
+        "order_index": 2
+      },
+      {
+        "text": "Tumor containing both germ cell and sex cord stromal elements",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Germ cell tumors unrelated to germ cell neoplasia in situ. Spermatocytic tumor is a germ cell tumor ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/caseofweek/case448image2hp.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 52",
+    "stem": "Seminoma, shown in the image above, is an example of which of the following categories of testicular tumors?",
+    "difficulty": "medium",
+    "teaching_point": "Germ cell tumors derived from germ cell neoplasia in situ. Seminoma is thought to be derived from the precursor lesion germ cell neoplasia in situ. It is not a sex cord stromal tumor and does not contain sex cord stromal elements. Testis & paratestis - WHO classification",
+    "question_references": "https://www.pathologyoutlines.com/topic/testistestclassif.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Germ cell tumors derived from germ cell neoplasia in situ",
+        "is_correct": true,
+        "explanation": "Germ cell tumors derived from germ cell neoplasia in situ. Seminoma is thought to be derived from the precursor lesion germ cell neoplasia in situ. It is not a sex cord stromal tumor and does not contain sex cord stromal elements. Testis & paratestis - WHO classification",
+        "order_index": 0
+      },
+      {
+        "text": "Germ cell tumors unrelated to germ cell neoplasia in situ",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Germ cell tumors derived from germ cell neoplasia in situ. Seminoma is thought to be derived from th...",
+        "order_index": 1
+      },
+      {
+        "text": "Sex cord stromal tumors",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Germ cell tumors derived from germ cell neoplasia in situ. Seminoma is thought to be derived from th...",
+        "order_index": 2
+      },
+      {
+        "text": "Tumor containing both germ cell and sex cord stromal elements",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Germ cell tumors derived from germ cell neoplasia in situ. Seminoma is thought to be derived from th...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testistestclassifdownes01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 55",
+    "stem": "Which of the following answers is correct about spermatocytic tumor?",
+    "difficulty": "medium",
+    "teaching_point": "It does not derive from germ cell neoplasia in situ Spermatocytic tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisspermseminoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It can be either pure or mixed with postpubertal teratoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. It does not derive from germ cell neoplasia in situ Spermatocytic tumor",
+        "order_index": 0
+      },
+      {
+        "text": "It does not derive from germ cell neoplasia in situ",
+        "is_correct": true,
+        "explanation": "It does not derive from germ cell neoplasia in situ Spermatocytic tumor",
+        "order_index": 1
+      },
+      {
+        "text": "It often presents as an extragonadal neoplasia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. It does not derive from germ cell neoplasia in situ Spermatocytic tumor",
+        "order_index": 2
+      },
+      {
+        "text": "The most frequent location is the mediastinum",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. It does not derive from germ cell neoplasia in situ Spermatocytic tumor",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 56",
+    "stem": "In the case of the above histologic image, which of the following immunophenotypes would confirm a spermatocytic tumor?",
+    "difficulty": "medium",
+    "teaching_point": "CD117+, SALL4+, OCT3/4- Spermatocytic tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisspermseminoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CD117+, SALL4+, AFP+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. CD117+, SALL4+, OCT3/4- Spermatocytic tumor",
+        "order_index": 0
+      },
+      {
+        "text": "CD117+, SALL4-, CD30+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. CD117+, SALL4+, OCT3/4- Spermatocytic tumor",
+        "order_index": 1
+      },
+      {
+        "text": "CD117+, SALL4+, OCT3/4+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. CD117+, SALL4+, OCT3/4- Spermatocytic tumor",
+        "order_index": 2
+      },
+      {
+        "text": "CD117+, SALL4+, OCT3/4-",
+        "is_correct": true,
+        "explanation": "CD117+, SALL4+, OCT3/4- Spermatocytic tumor",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisspermseminomacolecchia03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Prevalent intermediate sized cells",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 57",
+    "stem": "A 60 year old man presents with a 1.1 cm mass in the left testis. The tumor is positive for SF1, nuclear beta catenin, androgen receptor, variable for inhibin A and calretinin and negative for SALL4. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Sertoli cell tumor, NOS Sertoli cell, NOS",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisSertoliNOS.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adenomatoid tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Sertoli cell tumor, NOS Sertoli cell, NOS",
+        "order_index": 0
+      },
+      {
+        "text": "Seminoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Sertoli cell tumor, NOS Sertoli cell, NOS",
+        "order_index": 1
+      },
+      {
+        "text": "Sertoli cell tumor, NOS",
+        "is_correct": true,
+        "explanation": ". Sertoli cell tumor, NOS Sertoli cell, NOS",
+        "order_index": 2
+      },
+      {
+        "text": "Yolk sac tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Sertoli cell tumor, NOS Sertoli cell, NOS",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testissertoliulbright17.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 58",
+    "stem": "What is the characteristic immunoprofile of a testicular Sertoli cell tumor, NOS?",
+    "difficulty": "medium",
+    "teaching_point": ". Positive for SF1, calretinin, inhibin A, beta catenin (nuclear); negative for SALL4, chromogranin, synaptophysin Sertoli cell, NOS",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisSertoliNOS.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Positive for SF1, calretinin, chromogranin, synaptophysin; negative for SALL4 and beta catenin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Positive for SF1, calretinin, inhibin A, beta catenin (nuclear); negative for SALL4, chromogranin,...",
+        "order_index": 0
+      },
+      {
+        "text": "Positive for SALL4; negative for SF1, inhibin A and calretinin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Positive for SF1, calretinin, inhibin A, beta catenin (nuclear); negative for SALL4, chromogranin,...",
+        "order_index": 1
+      },
+      {
+        "text": "Positive for SF1, calretinin, inhibin A, beta catenin (nuclear); negative for SALL4, chromogranin, synaptophysin",
+        "is_correct": true,
+        "explanation": ". Positive for SF1, calretinin, inhibin A, beta catenin (nuclear); negative for SALL4, chromogranin, synaptophysin Sertoli cell, NOS",
+        "order_index": 2
+      },
+      {
+        "text": "Positive for CD45; negative for SF1, inhibin A and SALL4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Positive for SF1, calretinin, inhibin A, beta catenin (nuclear); negative for SALL4, chromogranin,...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testissertoliulbright09.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 59",
+    "stem": "Which of the following features is most consistent with sporadic presentation of large cell calcifying Sertoli cell tumor (LCCSCT), shown in the image, versus a syndromic association (e.g., Carney complex)?",
+    "difficulty": "medium",
+    "teaching_point": "Loss of PRKAR1A by IHC. While PRKAR1A alterations are commonly found in patients with Carney complex, the loss of PRKAR1A is seen in most sporadic as well as syndromic LCCSCT and can frequently be demonstrated by as loss of PRKAR1A by IHC in sporadic tumors. All other listed answers (pediatric onset, bilateral and multifocal disease, sibling(s) with similar presentations) are more commonly associated with LCCSCT occurring in Carney complex patients and would suggest a syndromic association. Large cell calcifying Sertoli cell tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testissertolilargecell.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Bilateral disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Loss of PRKAR1A by IHC. While PRKAR1A alterations are commonly found in patients with Carney complex...",
+        "order_index": 0
+      },
+      {
+        "text": "Loss of PRKAR1A by IHC",
+        "is_correct": true,
+        "explanation": "Loss of PRKAR1A by IHC. While PRKAR1A alterations are commonly found in patients with Carney complex, the loss of PRKAR1A is seen in most sporadic as well as syndromic LCCSCT and can frequently be demonstrated by as loss of PRKAR1A by IHC in sporadic tumors. All other listed answers (pediatric onset, bilateral and multifocal disease, sibling(s) with similar presentations) are more commonly associated with LCCSCT occurring in Carney complex patients and would suggest a syndromic association. Large cell calcifying Sertoli cell tumor",
+        "order_index": 1
+      },
+      {
+        "text": "Multifocal disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Loss of PRKAR1A by IHC. While PRKAR1A alterations are commonly found in patients with Carney complex...",
+        "order_index": 2
+      },
+      {
+        "text": "Pediatric presentation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Loss of PRKAR1A by IHC. While PRKAR1A alterations are commonly found in patients with Carney complex...",
+        "order_index": 3
+      },
+      {
+        "text": "Sibling(s) with similar presentation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Loss of PRKAR1A by IHC. While PRKAR1A alterations are commonly found in patients with Carney complex...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testissertolilargecellsiegmund01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 60",
+    "stem": "Which diagnosis is associated with a 4 year old boy who presents with pigmented macules around the lips and oral mucosa, gynecomastia and the findings shown on the testis biopsy above?",
+    "difficulty": "medium",
+    "teaching_point": "Intratubular large cell hyalinizing Sertoli cell neoplasia (ITLCHSCN). The patient has Peutz-Jeghers syndrome and the testicle shows intratubular large cell hyalinizing Sertoli cell neoplasia. The image shows a tubule composed of large Sertoli cells without normal spermatogonia and spherules of basement membrane-like material characteristic of this entity (Am J Surg Pathol 2007;31:827, Virchows Arch 2024;484:723). gonadoblastoma is associated with disorders of sex development. Tumors are characterized by round islands or nests composed of germ cells admixed with immature sex cord elements and basement membrane deposits (Histopathology 2018;72:545, Hum Pathol 2020;100:47). large cell calcifying Sertoli cell tumor is associated with Carney complex. Tumors are composed of large epithelioid cells arranged in cords, nests, sheets or solid tubules embedded in a myxoid or fibrous stroma with prominent neutrophilic infiltrate and larger, easily visible calcifications (Hum Pathol 2010;41:552, Virchows Arch 2024;484:723). Sertoli cell nodules are typically identified in cryptorchid testes and show spermatogonia. Histologically the nodules are characterized by nonneoplastic immature Sertoli cells within seminiferous tubules with round shaped hyaline material deposits (Am J Surg Pathol 2007;31:827, Diagnostic Histopathology 2019;25:398). Intratubular large cell hyalinizing Sertoli cell neoplasia (ITLCHSCN)",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisitlchscn.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Gonadoblastoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Intratubular large cell hyalinizing Sertoli cell neoplasia (ITLCHSCN). The patient has Peutz-Jeghers...",
+        "order_index": 0
+      },
+      {
+        "text": "Intratubular large cell hyalinizing Sertoli cell neoplasia (ITLCHSCN)",
+        "is_correct": true,
+        "explanation": "Intratubular large cell hyalinizing Sertoli cell neoplasia (ITLCHSCN). The patient has Peutz-Jeghers syndrome and the testicle shows intratubular large cell hyalinizing Sertoli cell neoplasia. The image shows a tubule composed of large Sertoli cells without normal spermatogonia and spherules of basement membrane-like material characteristic of this entity (Am J Surg Pathol 2007;31:827, Virchows Arch 2024;484:723). gonadoblastoma is associated with disorders of sex development. Tumors are characterized by round islands or nests composed of germ cells admixed with immature sex cord elements and basement membrane deposits (Histopathology 2018;72:545, Hum Pathol 2020;100:47). large cell calcifying Sertoli cell tumor is associated with Carney complex. Tumors are composed of large epithelioid cells arranged in cords, nests, sheets or solid tubules embedded in a myxoid or fibrous stroma with prominent neutrophilic infiltrate and larger, easily visible calcifications (Hum Pathol 2010;41:552, Virchows Arch 2024;484:723). Sertoli cell nodules are typically identified in cryptorchid testes and show spermatogonia. Histologically the nodules are characterized by nonneoplastic immature Sertoli cells within seminiferous tubules with round shaped hyaline material deposits (Am J Surg Pathol 2007;31:827, Diagnostic Histopathology 2019;25:398). Intratubular large cell hyalinizing Sertoli cell neoplasia (ITLCHSCN)",
+        "order_index": 1
+      },
+      {
+        "text": "Large cell calcifying Sertoli cell tumor (LCCSCT)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Intratubular large cell hyalinizing Sertoli cell neoplasia (ITLCHSCN). The patient has Peutz-Jeghers...",
+        "order_index": 2
+      },
+      {
+        "text": "Sertoli cell nodule",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Intratubular large cell hyalinizing Sertoli cell neoplasia (ITLCHSCN). The patient has Peutz-Jeghers...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisitlchscnmehta07.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 61",
+    "stem": "A 24 year old man with a history of untreated cryptorchidism presents with a painful abdominal mass. Pathology is most likely to be consistent with which of the following?",
+    "difficulty": "medium",
+    "teaching_point": "Seminoma is the most common malignancy in the setting of cryptorchidism. Cryptorchidism",
+    "question_references": "https://www.pathologyoutlines.com/topic/testiscryptorchidism.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Dermoid cyst",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Seminoma is the most common malignancy in the setting of cryptorchidism. Cryptorchidism",
+        "order_index": 0
+      },
+      {
+        "text": "Germ cell neoplasia in situ",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Seminoma is the most common malignancy in the setting of cryptorchidism. Cryptorchidism",
+        "order_index": 1
+      },
+      {
+        "text": "Mixed germ cell tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Seminoma is the most common malignancy in the setting of cryptorchidism. Cryptorchidism",
+        "order_index": 2
+      },
+      {
+        "text": "Seminoma",
+        "is_correct": true,
+        "explanation": "Seminoma is the most common malignancy in the setting of cryptorchidism. Cryptorchidism",
+        "order_index": 3
+      },
+      {
+        "text": "Sertoli cell tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Seminoma is the most common malignancy in the setting of cryptorchidism. Cryptorchidism",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 62",
+    "stem": "What histological changes are most likely to be observed in a nonneoplastic cryptorchid testis?",
+    "difficulty": "medium",
+    "teaching_point": "Atrophic seminiferous tubules, peritubular fibrosis and nodules of cells containing dark nucleoli and eosinophilic granular cytoplasm are findings consistent with an undescended testicle. B is incorrect because these might be the findings associated with benign glands, such as those seen in endometriosis or endosalpingiosis. C is incorrect because this histology may be associated with teratoma. D is incorrect because these might be the findings of a seminoma, which are more common in undescended testicles. E is incorrect because Leydig cell tumors often contain Reinke crystals, described in this answer choice. Cryptorchidism",
+    "question_references": "https://www.pathologyoutlines.com/topic/testiscryptorchidism.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atrophic seminiferous tubules, peritubular fibrosis and nodules of cells containing dark nucleoli and eosinophilic granular cytoplasm",
+        "is_correct": true,
+        "explanation": "Atrophic seminiferous tubules, peritubular fibrosis and nodules of cells containing dark nucleoli and eosinophilic granular cytoplasm are findings consistent with an undescended testicle. B is incorrect because these might be the findings associated with benign glands, such as those seen in endometriosis or endosalpingiosis. C is incorrect because this histology may be associated with teratoma. D is incorrect because these might be the findings of a seminoma, which are more common in undescended testicles. E is incorrect because Leydig cell tumors often contain Reinke crystals, described in this answer choice. Cryptorchidism",
+        "order_index": 0
+      },
+      {
+        "text": "Bland appearing cysts lined with cuboidal epithelium and ciliated cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Atrophic seminiferous tubules, peritubular fibrosis and nodules of cells containing dark nucleoli an...",
+        "order_index": 1
+      },
+      {
+        "text": "Cysts lined by squamous cells filled with keratin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Atrophic seminiferous tubules, peritubular fibrosis and nodules of cells containing dark nucleoli an...",
+        "order_index": 2
+      },
+      {
+        "text": "Glycogen rich cells with large, irregular nuclei arranged in sheets",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Atrophic seminiferous tubules, peritubular fibrosis and nodules of cells containing dark nucleoli an...",
+        "order_index": 3
+      },
+      {
+        "text": "Rod-like cytoplasmic inclusions with a diffuse growth pattern and rare mitotic cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Atrophic seminiferous tubules, peritubular fibrosis and nodules of cells containing dark nucleoli an...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testiscryptorchidismzynger03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 63",
+    "stem": "A 30 year old man presents for evaluation of a nonpainful right testicular firmness. Ultrasound imaging showed a hyperechogenic lesion and orchiectomy was performed to rule out testicular neoplasm. Gross examination reveals a well circumscribed, white-tan, firm nodule measuring 8 mm in its greatest dimension with microscopic appearance as shown in the images above. What additional intervention is necessary after diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". No additional intervention is necessary. The image reflects a Sertoli cell nodule, referred by some studies as macroscopic, being identified grossly with a size of 8 mm. Answers A, B and D are incorrect because Sertoli cell nodule is a nonneoplastic proliferation of immature Sertoli cells with no reported malignant potential; hence, no other intervention is required after histologic diagnosis. Sertoli cell nodule",
+    "question_references": "https://www.pathologyoutlines.com/topic/testissertolihyperplasia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chemotherapy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . No additional intervention is necessary. The image reflects a Sertoli cell nodule, referred by som...",
+        "order_index": 0
+      },
+      {
+        "text": "Contralateral orchiectomy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . No additional intervention is necessary. The image reflects a Sertoli cell nodule, referred by som...",
+        "order_index": 1
+      },
+      {
+        "text": "No additional intervention is necessary",
+        "is_correct": true,
+        "explanation": ". No additional intervention is necessary. The image reflects a Sertoli cell nodule, referred by some studies as macroscopic, being identified grossly with a size of 8 mm. Answers A, B and D are incorrect because Sertoli cell nodule is a nonneoplastic proliferation of immature Sertoli cells with no reported malignant potential; hence, no other intervention is required after histologic diagnosis. Sertoli cell nodule",
+        "order_index": 2
+      },
+      {
+        "text": "Retroperitoneal lymph node dissection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . No additional intervention is necessary. The image reflects a Sertoli cell nodule, referred by som...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testissertolihyperplasiaBhallaBRQ1a.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testissertolihyperplasiaBhallaBRQ1b.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 64",
+    "stem": "A 25 year old man presents for evaluation of left lower abdominal pain. Imaging reveals the location of the left testicle in the inguinal canal. Subsequent orchiectomy revealed an unremarkable cut surface. Microscopic findings showed multiple, well circumscribed nodules with the appearance as shown in the images above. Which of the following immunohistochemical stains is expected to be positive?",
+    "difficulty": "medium",
+    "teaching_point": ". Inhibin. Sertoli cell nodule is composed mainly of immature Sertoli cells and inhibin helps to highlight and confirm their presence. Answers C, D and A are incorrect because OCT 3/4, PLAP and hCG are negative in Sertoli cell nodule and are helpful to rule out the presence of germ cell neoplasms. Sertoli cell nodule",
+    "question_references": "https://www.pathologyoutlines.com/topic/testissertolihyperplasia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "hCG",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Inhibin. Sertoli cell nodule is composed mainly of immature Sertoli cells and inhibin helps to hig...",
+        "order_index": 0
+      },
+      {
+        "text": "Inhibin",
+        "is_correct": true,
+        "explanation": ". Inhibin. Sertoli cell nodule is composed mainly of immature Sertoli cells and inhibin helps to highlight and confirm their presence. Answers C, D and A are incorrect because OCT 3/4, PLAP and hCG are negative in Sertoli cell nodule and are helpful to rule out the presence of germ cell neoplasms. Sertoli cell nodule",
+        "order_index": 1
+      },
+      {
+        "text": "OCT 3/4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Inhibin. Sertoli cell nodule is composed mainly of immature Sertoli cells and inhibin helps to hig...",
+        "order_index": 2
+      },
+      {
+        "text": "PLAP",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Inhibin. Sertoli cell nodule is composed mainly of immature Sertoli cells and inhibin helps to hig...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testissertolihyperplasiaBhallaBRQ2a.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testissertolihyperplasiaBhallaBRQ2b.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 65",
+    "stem": "Which of the following is a common finding in Sertoli cell nodules?",
+    "difficulty": "medium",
+    "teaching_point": ". Globular hyaline material deposits. Sertoli cells produce an excess of basal lamina that invaginates into the involved tubules. spermatogonia, when present, are scattered. typical mitoses are not a common finding of Sertoli cell nodules and are more common in malignant entities. nuclei in a syncytium (syncytiotrophoblasts) are usually seen in germ cell tumors and are not an expected finding in Sertoli cell nodules. Sertoli cell nodule",
+    "question_references": "https://www.pathologyoutlines.com/topic/testissertolihyperplasia.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypical mitoses",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Globular hyaline material deposits. Sertoli cells produce an excess of basal lamina that invaginat...",
+        "order_index": 0
+      },
+      {
+        "text": "Globular hyaline material deposits",
+        "is_correct": true,
+        "explanation": ". Globular hyaline material deposits. Sertoli cells produce an excess of basal lamina that invaginates into the involved tubules. spermatogonia, when present, are scattered. typical mitoses are not a common finding of Sertoli cell nodules and are more common in malignant entities. nuclei in a syncytium (syncytiotrophoblasts) are usually seen in germ cell tumors and are not an expected finding in Sertoli cell nodules. Sertoli cell nodule",
+        "order_index": 1
+      },
+      {
+        "text": "Nuclei in a syncytium",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Globular hyaline material deposits. Sertoli cells produce an excess of basal lamina that invaginat...",
+        "order_index": 2
+      },
+      {
+        "text": "Numerous spermatogonia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Globular hyaline material deposits. Sertoli cells produce an excess of basal lamina that invaginat...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 66",
+    "stem": "A 70 year old man is found to have an 11 cm cord lipoma during elective surgery for inguinal hernia repair. Representative histologic findings are shown in the image provided above. Which of the following tests would be most helpful in this context?",
+    "difficulty": "medium",
+    "teaching_point": ". FISH for MDM2 amplification. The microscopic image demonstrates variably sized mature adipocytes and small areas of fibrous bands containing spindle cells without significant atypia. MDM2 FISH is recommended for deep / centrally located or large tumors (> 10 cm) with equivocal atypia, concerning clinical / imaging findings and recurrent tumors. MDM2 IHC has low sensitivity in distinguishing between lipoma and lipoma-like well differentiated liposarcoma (WDLPS). HMGA2 is positive in both lipomas and WDLPS. RB1 loss is seen in spindle cell / pleomorphic lipoma and atypical spindle cell pleomorphic lipomatous tumor (ASPLT) and is not a feature of conventional lipomas or WDLPS. although DDIT3 (12q13) may be amplified in some cases of WDLPS, DDIT3 rearrangements are characteristic of myxoid liposarcoma and do not occur in lipomas or WDLPS. Liposarcoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisliposarcoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "FISH for DDIT3 rearrangement",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . FISH for MDM2 amplification. The microscopic image demonstrates variably sized mature adipocytes a...",
+        "order_index": 0
+      },
+      {
+        "text": "FISH for MDM2 amplification",
+        "is_correct": true,
+        "explanation": ". FISH for MDM2 amplification. The microscopic image demonstrates variably sized mature adipocytes and small areas of fibrous bands containing spindle cells without significant atypia. MDM2 FISH is recommended for deep / centrally located or large tumors (> 10 cm) with equivocal atypia, concerning clinical / imaging findings and recurrent tumors. MDM2 IHC has low sensitivity in distinguishing between lipoma and lipoma-like well differentiated liposarcoma (WDLPS). HMGA2 is positive in both lipomas and WDLPS. RB1 loss is seen in spindle cell / pleomorphic lipoma and atypical spindle cell pleomorphic lipomatous tumor (ASPLT) and is not a feature of conventional lipomas or WDLPS. although DDIT3 (12q13) may be amplified in some cases of WDLPS, DDIT3 rearrangements are characteristic of myxoid liposarcoma and do not occur in lipomas or WDLPS. Liposarcoma",
+        "order_index": 1
+      },
+      {
+        "text": "Immunohistochemistry for HMGA2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . FISH for MDM2 amplification. The microscopic image demonstrates variably sized mature adipocytes a...",
+        "order_index": 2
+      },
+      {
+        "text": "Immunohistochemistry for MDM2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . FISH for MDM2 amplification. The microscopic image demonstrates variably sized mature adipocytes a...",
+        "order_index": 3
+      },
+      {
+        "text": "Immunohistochemistry for RB1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . FISH for MDM2 amplification. The microscopic image demonstrates variably sized mature adipocytes a...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisliposarcomabourgeau19.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 67",
+    "stem": "A 75 year old man presents with worsening scrotal swelling. On exam, there is a grossly apparent, large, right inguinal mass with no skin changes or signs of infection. A computerized tomography (CT) scan reveals a right inguinal canal ovoidal soft tissue mass, measuring 6 cm in greatest dimension, that was not present on previous imaging performed 12 months prior for chronic back pain. No other abnormalities are noted. Clinical history is otherwise unremarkable. Representative histologic findings from the resected mass are shown in the provided image. Tumor cells are focally positive for desmin and STAT6. FISH is positive for MDM2 amplification. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Dedifferentiated liposarcoma (DDLPS). The microscopic image demonstrates atypical spindled and multinucleated cells arranged in short fascicles. In this setting, DDLPS is the most likely diagnosis. Identification of a well differentiated liposarcoma (WDLPS) component is the most specific feature but is not identified in all cases. leiomyosarcomas do not have MDM2 amplification; in addition, they usually demonstrate more extensive staining for at least 2 myogenic markers. Focal staining for desmin is seen in DDLPS with and without myogenic differentiation. solitary fibrous tumors are characterized by NAB2::STAT6 fusions and do not have MDM2 amplifications. Focal staining for STAT6 may be related to the close proximity of the STAT6 gene (12q13) to the region amplified in WDLPS / DDLPS (12q13-15). undifferentiated pleomorphic sarcoma is a diagnosis of exclusion and therefore should be negative for MDM2 amplification. the lack of any significant clinical history or other imaging findings, together with the typical location and molecular alteration, makes DDLPS the most likely diagnosis in this case. Liposarcoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisliposarcoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Dedifferentiated liposarcoma",
+        "is_correct": true,
+        "explanation": ". Dedifferentiated liposarcoma (DDLPS). The microscopic image demonstrates atypical spindled and multinucleated cells arranged in short fascicles. In this setting, DDLPS is the most likely diagnosis. Identification of a well differentiated liposarcoma (WDLPS) component is the most specific feature but is not identified in all cases. leiomyosarcomas do not have MDM2 amplification; in addition, they usually demonstrate more extensive staining for at least 2 myogenic markers. Focal staining for desmin is seen in DDLPS with and without myogenic differentiation. solitary fibrous tumors are characterized by NAB2::STAT6 fusions and do not have MDM2 amplifications. Focal staining for STAT6 may be related to the close proximity of the STAT6 gene (12q13) to the region amplified in WDLPS / DDLPS (12q13-15). undifferentiated pleomorphic sarcoma is a diagnosis of exclusion and therefore should be negative for MDM2 amplification. the lack of any significant clinical history or other imaging findings, together with the typical location and molecular alteration, makes DDLPS the most likely diagnosis in this case. Liposarcoma",
+        "order_index": 0
+      },
+      {
+        "text": "Leiomyosarcoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Dedifferentiated liposarcoma (DDLPS). The microscopic image demonstrates atypical spindled and mul...",
+        "order_index": 1
+      },
+      {
+        "text": "Sarcomatoid carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Dedifferentiated liposarcoma (DDLPS). The microscopic image demonstrates atypical spindled and mul...",
+        "order_index": 2
+      },
+      {
+        "text": "Solitary fibrous tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Dedifferentiated liposarcoma (DDLPS). The microscopic image demonstrates atypical spindled and mul...",
+        "order_index": 3
+      },
+      {
+        "text": "Undifferentiated pleomorphic sarcoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Dedifferentiated liposarcoma (DDLPS). The microscopic image demonstrates atypical spindled and mul...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testisliposarcomabourgeau16new.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 68",
+    "stem": "Which of the following is a feature consistent with cystic trophoblastic tumor?",
+    "difficulty": "medium",
+    "teaching_point": ". Normal to mildly elevated serum levels of βhCG is consistent with cystic trophoblastic tumors. Other features are characteristic of choriocarcinoma in which βhCG levels are expected to be highly elevated. choriocarcinoma is biphasic, hemorrhagic and pleomorphic and it displays brisk mitotic activity. choriocarcinoma exhibits an infiltrative and destructive pattern. SALL4 positivity is seen in cytotrophoblasts in choriocarcinoma. Cystic trophoblastic tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisctt.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Biphasic pattern of admixed cytotrophoblasts and syncytiotrophoblasts",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Normal to mildly elevated serum levels of βhCG is consistent with cystic trophoblastic tumors. Oth...",
+        "order_index": 0
+      },
+      {
+        "text": "Infiltrative growth pattern",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Normal to mildly elevated serum levels of βhCG is consistent with cystic trophoblastic tumors. Oth...",
+        "order_index": 1
+      },
+      {
+        "text": "Normal to mildly elevated serum levels of βhCG",
+        "is_correct": true,
+        "explanation": ". Normal to mildly elevated serum levels of βhCG is consistent with cystic trophoblastic tumors. Other features are characteristic of choriocarcinoma in which βhCG levels are expected to be highly elevated. choriocarcinoma is biphasic, hemorrhagic and pleomorphic and it displays brisk mitotic activity. choriocarcinoma exhibits an infiltrative and destructive pattern. SALL4 positivity is seen in cytotrophoblasts in choriocarcinoma. Cystic trophoblastic tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Variable SALL4 expression in mononuclear cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Normal to mildly elevated serum levels of βhCG is consistent with cystic trophoblastic tumors. Oth...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 69",
+    "stem": "Which of the following statements is true for cystic trophoblastic tumors (CTTs)?",
+    "difficulty": "medium",
+    "teaching_point": ". CTTs lack keratohyaline granules and central keratin and often have intracytoplasmic lacunae. the prognosis of CTT is similar to teratoma and requires no further treatment but a close follow up. CTT was first described in retroperitoneal lymph node dissections after chemotherapy; however, it is now known that these tumors can occur as part of primary testicular mixed germ cell tumors and they are occasionally seen in visceral and nonregional lymph node germ cell tumor metastases. Less commonly, these tumors have been described in germ cell tumor patients without chemotherapy. cysts are lined by squamoid appearing cells with smudged irregular nuclei, abundant eosinophilic cytoplasm with intracytoplasmic lacunae and associated fibrinoid material. Cystic trophoblastic tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/testisctt.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CTTs after chemotherapy show a high frequency of progressive disease and warrant additional chemotherapy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . CTTs lack keratohyaline granules and central keratin and often have intracytoplasmic lacunae. the ...",
+        "order_index": 0
+      },
+      {
+        "text": "CTTs are identified exclusively in the setting of postchemotherapy retroperitoneal lymph node dissections of patients with testicular germ cell tumors",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . CTTs lack keratohyaline granules and central keratin and often have intracytoplasmic lacunae. the ...",
+        "order_index": 1
+      },
+      {
+        "text": "CTTs lack keratohyaline granules and central keratin and often have intracytoplasmic lacunae",
+        "is_correct": true,
+        "explanation": ". CTTs lack keratohyaline granules and central keratin and often have intracytoplasmic lacunae. the prognosis of CTT is similar to teratoma and requires no further treatment but a close follow up. CTT was first described in retroperitoneal lymph node dissections after chemotherapy; however, it is now known that these tumors can occur as part of primary testicular mixed germ cell tumors and they are occasionally seen in visceral and nonregional lymph node germ cell tumor metastases. Less commonly, these tumors have been described in germ cell tumor patients without chemotherapy. cysts are lined by squamoid appearing cells with smudged irregular nuclei, abundant eosinophilic cytoplasm with intracytoplasmic lacunae and associated fibrinoid material. Cystic trophoblastic tumor",
+        "order_index": 2
+      },
+      {
+        "text": "CTTs show goblet cells, ciliated cells and other specialized epithelial types",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . CTTs lack keratohyaline granules and central keratin and often have intracytoplasmic lacunae. the ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/testiscttMehta01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Cystic trophoblastic tumor",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "testis.html",
+      "category": "Anatomic Pathology > Genitourinary",
+      "database_set": "Web"
+    }
+  }
+]

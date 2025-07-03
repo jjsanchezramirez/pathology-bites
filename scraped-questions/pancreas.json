@@ -1,0 +1,3581 @@
+[
+  {
+    "title": "Question 1",
+    "stem": "According to the Papanicolaou reporting system for pancreaticobiliary cytology, what is the most likely category of this adequate pancreatic FNA biopsy specimen?",
+    "difficulty": "medium",
+    "teaching_point": "Neoplastic: other. Solid pseudopapillary neoplasm of the pancreas, characterized by small, discohesive cells surrounding branching capillaries, is considered a low grade malignant entity. The neoplastic: other category includes neoplasms that are either premalignant or low grade malignant. Pancreas - Papanicolaou system",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreaspapanicolaousystem.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Negative for malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Neoplastic: other. Solid pseudopapillary neoplasm of the pancreas, characterized by small, discohesi...",
+        "order_index": 0
+      },
+      {
+        "text": "Neoplastic: benign",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Neoplastic: other. Solid pseudopapillary neoplasm of the pancreas, characterized by small, discohesi...",
+        "order_index": 1
+      },
+      {
+        "text": "Neoplastic: other",
+        "is_correct": true,
+        "explanation": "Neoplastic: other. Solid pseudopapillary neoplasm of the pancreas, characterized by small, discohesive cells surrounding branching capillaries, is considered a low grade malignant entity. The neoplastic: other category includes neoplasms that are either premalignant or low grade malignant. Pancreas - Papanicolaou system",
+        "order_index": 2
+      },
+      {
+        "text": "Suspicious for malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Neoplastic: other. Solid pseudopapillary neoplasm of the pancreas, characterized by small, discohesi...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreaspapanicolaousystemAllisonBRQ1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 2",
+    "stem": "Which ancillary test result supports the FNA diagnosis of this pancreatic body mass?",
+    "difficulty": "medium",
+    "teaching_point": "Negative DPC4 / SMAD4 by IHC. Pancreatic adenocarcinoma is supported by DPC4 / SMAD4 loss. The presence of copy number abnormalities in CEP3, CEP7, CEP17 (note the correct chromosomes) and of band 9p21 are characteristic of pancreatic and biliary malignancies. Serous cystadenoma is associated with mutated VHL. Nuclear beta catenin supports a diagnosis of solid pseudopapillary neoplasm. Pancreas - Papanicolaou system",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreaspapanicolaousystem.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Copy number abnormalities in CEP4, CEP10 and CEP14",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Negative DPC4 / SMAD4 by IHC. Pancreatic adenocarcinoma is supported by DPC4 / SMAD4 loss. The prese...",
+        "order_index": 0
+      },
+      {
+        "text": "Negative DPC4 / SMAD4 by IHC",
+        "is_correct": true,
+        "explanation": "Negative DPC4 / SMAD4 by IHC. Pancreatic adenocarcinoma is supported by DPC4 / SMAD4 loss. The presence of copy number abnormalities in CEP3, CEP7, CEP17 (note the correct chromosomes) and of band 9p21 are characteristic of pancreatic and biliary malignancies. Serous cystadenoma is associated with mutated VHL. Nuclear beta catenin supports a diagnosis of solid pseudopapillary neoplasm. Pancreas - Papanicolaou system",
+        "order_index": 1
+      },
+      {
+        "text": "Nuclear beta catenin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Negative DPC4 / SMAD4 by IHC. Pancreatic adenocarcinoma is supported by DPC4 / SMAD4 loss. The prese...",
+        "order_index": 2
+      },
+      {
+        "text": "VHL mutation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Negative DPC4 / SMAD4 by IHC. Pancreatic adenocarcinoma is supported by DPC4 / SMAD4 loss. The prese...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreaspapanicolaousystemAllisonBRQ2.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "Which of the following statements is true regarding the pancreatic lesion seen above?",
+    "difficulty": "medium",
+    "teaching_point": "More likely to be nonsecreting than secreting Well differentiated neuroendocrine tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasWDNET.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Commonly associated with familial adenomatous polyposis (FAP)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. More likely to be nonsecreting than secreting Well differentiated neuroendocrine tumor",
+        "order_index": 0
+      },
+      {
+        "text": "Loss of DAXX / ATRX expression are associated with better outcomes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. More likely to be nonsecreting than secreting Well differentiated neuroendocrine tumor",
+        "order_index": 1
+      },
+      {
+        "text": "More common than pancreatic adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. More likely to be nonsecreting than secreting Well differentiated neuroendocrine tumor",
+        "order_index": 2
+      },
+      {
+        "text": "More likely to be nonsecreting than secreting",
+        "is_correct": true,
+        "explanation": "More likely to be nonsecreting than secreting Well differentiated neuroendocrine tumor",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreascarcinoidKrough24BRQ.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "Which of the following statements is true about the Ki67 stain in a pancreatic neuroendocrine tumor seen above?",
+    "difficulty": "medium",
+    "teaching_point": "Treatment depends on Ki67 interpretation Well differentiated neuroendocrine tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasWDNET.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Can undergo transformation to squamous cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Treatment depends on Ki67 interpretation Well differentiated neuroendocrine tumor",
+        "order_index": 0
+      },
+      {
+        "text": "Does not metastasize",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Treatment depends on Ki67 interpretation Well differentiated neuroendocrine tumor",
+        "order_index": 1
+      },
+      {
+        "text": "Has a high proliferation index",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Treatment depends on Ki67 interpretation Well differentiated neuroendocrine tumor",
+        "order_index": 2
+      },
+      {
+        "text": "Treatment depends on Ki67 interpretation",
+        "is_correct": true,
+        "explanation": "Treatment depends on Ki67 interpretation Well differentiated neuroendocrine tumor",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreascarcinoidKrough05BRQ.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 5",
+    "stem": "A patient presents to his primary care doctor with a 1 month history of constant watery diarrhea that wakes him up several times each night. Laboratory values were remarkable for a potassium of 3.2 mmol/L (normal: 3.6 - 5.2 mmol/L). An abdominal CT showed a solitary, solid, well demarcated and vascular 5 cm lesion in the tail of the pancreas that is consistent with a neoplasm. What is the most likely gene mutation in this lesion?",
+    "difficulty": "medium",
+    "teaching_point": "MEN1. The patient is presenting with WDHA syndrome (watery diarrhea that persists when fasting, hypokalemia and achlorhydria) and a pancreatic mass. This is likely due to a VIPoma, which is a type of pancreatic neuroendocrine tumor (PanNET). The most common mutation in these tumors is MEN1. Well differentiated neuroendocrine tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasWDNET.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "APC",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. MEN1. The patient is presenting with WDHA syndrome (watery diarrhea that persists when fasting, hypo...",
+        "order_index": 0
+      },
+      {
+        "text": "CTNNB1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. MEN1. The patient is presenting with WDHA syndrome (watery diarrhea that persists when fasting, hypo...",
+        "order_index": 1
+      },
+      {
+        "text": "MEN1",
+        "is_correct": true,
+        "explanation": "MEN1. The patient is presenting with WDHA syndrome (watery diarrhea that persists when fasting, hypokalemia and achlorhydria) and a pancreatic mass. This is likely due to a VIPoma, which is a type of pancreatic neuroendocrine tumor (PanNET). The most common mutation in these tumors is MEN1. Well differentiated neuroendocrine tumor",
+        "order_index": 2
+      },
+      {
+        "text": "SMAD4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. MEN1. The patient is presenting with WDHA syndrome (watery diarrhea that persists when fasting, hypo...",
+        "order_index": 3
+      },
+      {
+        "text": "STK11",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. MEN1. The patient is presenting with WDHA syndrome (watery diarrhea that persists when fasting, hypo...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "This is an immunohistochemical slide (CK8/18) from a pancreatic tumor in an elderly woman with jaundice. S100 was negative throughout and the multinucleated cells were CD68 positive. Which of the following is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "This is a pancreatic undifferentiated carcinoma with osteoclast-like giant cells. These tumors may be composed of neoplastic cells that are totally negative for cytokeratin. This finding, which is not uncommon, cannot be used to exclude this tumor entity. Undifferentiated carcinoma with osteoclast-like giant cells",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasosteoclastic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Anaplastic lymphoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. This is a pancreatic undifferentiated carcinoma with osteoclast-like giant cells. These tumors may b...",
+        "order_index": 0
+      },
+      {
+        "text": "Melanoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. This is a pancreatic undifferentiated carcinoma with osteoclast-like giant cells. These tumors may b...",
+        "order_index": 1
+      },
+      {
+        "text": "Pancreatic undifferentiated carcinoma with osteoclast-like giant cells",
+        "is_correct": true,
+        "explanation": "This is a pancreatic undifferentiated carcinoma with osteoclast-like giant cells. These tumors may be composed of neoplastic cells that are totally negative for cytokeratin. This finding, which is not uncommon, cannot be used to exclude this tumor entity. Undifferentiated carcinoma with osteoclast-like giant cells",
+        "order_index": 2
+      },
+      {
+        "text": "Pancreatitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. This is a pancreatic undifferentiated carcinoma with osteoclast-like giant cells. These tumors may b...",
+        "order_index": 3
+      },
+      {
+        "text": "Primitive mesenchymal tumor of the pancreas",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. This is a pancreatic undifferentiated carcinoma with osteoclast-like giant cells. These tumors may b...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasosteoclasticluchini12.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "Which cell types usually form an undifferentiated carcinoma with osteoclast-like giant cells?",
+    "difficulty": "medium",
+    "teaching_point": "Undifferentiated carcinoma of the pancreas with osteoclast-like giant cells typically contains 3 types of cells: tumor cells, histiocytes and osteoclast-like giant cells. Undifferentiated carcinoma with osteoclast-like giant cells",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasosteoclastic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Osteoclast-like giant cells, which are tumor cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Undifferentiated carcinoma of the pancreas with osteoclast-like giant cells typically contains 3 typ...",
+        "order_index": 0
+      },
+      {
+        "text": "Tumor cells and histiocytes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Undifferentiated carcinoma of the pancreas with osteoclast-like giant cells typically contains 3 typ...",
+        "order_index": 1
+      },
+      {
+        "text": "Tumor cells arranged in glands and osteoclast-like giant cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Undifferentiated carcinoma of the pancreas with osteoclast-like giant cells typically contains 3 typ...",
+        "order_index": 2
+      },
+      {
+        "text": "Tumor cells, histiocytes and osteoclast-like giant cells",
+        "is_correct": true,
+        "explanation": "Undifferentiated carcinoma of the pancreas with osteoclast-like giant cells typically contains 3 types of cells: tumor cells, histiocytes and osteoclast-like giant cells. Undifferentiated carcinoma with osteoclast-like giant cells",
+        "order_index": 3
+      },
+      {
+        "text": "Tumor cells, lymphocytes and osteoclast-like giant cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Undifferentiated carcinoma of the pancreas with osteoclast-like giant cells typically contains 3 typ...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 8",
+    "stem": "This is a high magnification field of a tumor within the pancreas. Can the diagnosis of undifferentiated carcinoma be made based on morphology only?",
+    "difficulty": "medium",
+    "teaching_point": "No, immunohistochemistry is mandatory. Morphology is the most important step for the diagnosis; however, immunohistochemistry for keratin and vimentin should be performed in most cases to rule out sarcoma, melanoma and metastasis. This is particularly true for undifferentiated carcinoma with sarcomatoid features, to avoid misdiagnosis with sarcomas and for anaplastic type, to rule out melanoma or metastases. Undifferentiated carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasundifferentiated.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "No, electron microscopy must be used to rule out a melanoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. No, immunohistochemistry is mandatory. Morphology is the most important step for the diagnosis; howe...",
+        "order_index": 0
+      },
+      {
+        "text": "No, immunohistochemistry is mandatory",
+        "is_correct": true,
+        "explanation": "No, immunohistochemistry is mandatory. Morphology is the most important step for the diagnosis; however, immunohistochemistry for keratin and vimentin should be performed in most cases to rule out sarcoma, melanoma and metastasis. This is particularly true for undifferentiated carcinoma with sarcomatoid features, to avoid misdiagnosis with sarcomas and for anaplastic type, to rule out melanoma or metastases. Undifferentiated carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "No, molecular analysis is mandatory",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. No, immunohistochemistry is mandatory. Morphology is the most important step for the diagnosis; howe...",
+        "order_index": 2
+      },
+      {
+        "text": "No, special histochemical stains are mandatory",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. No, immunohistochemistry is mandatory. Morphology is the most important step for the diagnosis; howe...",
+        "order_index": 3
+      },
+      {
+        "text": "Yes, morphology only is sufficient",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. No, immunohistochemistry is mandatory. Morphology is the most important step for the diagnosis; howe...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasundifferentiatedLuchini012.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Missing Image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 9",
+    "stem": "How do the fibrosis and desmoplastic reactions seen in conventional ductal adenocarcinoma of the pancreas compare to that of undifferentiated carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": "Conventional ductal adenocarcinoma usually has much more fibrosis / desmoplasia than undifferentiated carcinoma. This is a major point in the differential diagnosis between the 2 diagnoses. Undifferentiated carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasundifferentiated.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Conventional ductal adenocarcinoma typically has more fibrosis and desmoplasia",
+        "is_correct": true,
+        "explanation": "Conventional ductal adenocarcinoma usually has much more fibrosis / desmoplasia than undifferentiated carcinoma. This is a major point in the differential diagnosis between the 2 diagnoses. Undifferentiated carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Only anaplastic type undifferentiated carcinoma shows more fibrosis / desmoplasia than conventional ductal adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Conventional ductal adenocarcinoma usually has much more fibrosis / desmoplasia than undifferentiate...",
+        "order_index": 1
+      },
+      {
+        "text": "There is always more fibrosis in undifferentiated carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Conventional ductal adenocarcinoma usually has much more fibrosis / desmoplasia than undifferentiate...",
+        "order_index": 2
+      },
+      {
+        "text": "There is the same quantity of fibrosis in both diagnoses",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Conventional ductal adenocarcinoma usually has much more fibrosis / desmoplasia than undifferentiate...",
+        "order_index": 3
+      },
+      {
+        "text": "They are highly variable in both diagnoses",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Conventional ductal adenocarcinoma usually has much more fibrosis / desmoplasia than undifferentiate...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 10",
+    "stem": "Invasion of which of the following structures would upstage a pancreatic neuroendocrine tumor to pT4 disease?",
+    "difficulty": "medium",
+    "teaching_point": ". Spleen. Direction invasion of this organ is specifically noted as upstaging a pancreatic well differentiated neuroendocrine tumor to pT4 disease. Answers A and B are incorrect because invasion of these structures is noted as signifying pT3 disease. invasion of peripancreatic fat does not affect the staging of these tumors. Pancreas - Staging-neuroendocrine",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasneuroendocrinetumorstaging.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Common bile duct",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Spleen. Direction invasion of this organ is specifically noted as upstaging a pancreatic well diff...",
+        "order_index": 0
+      },
+      {
+        "text": "Duodenum",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Spleen. Direction invasion of this organ is specifically noted as upstaging a pancreatic well diff...",
+        "order_index": 1
+      },
+      {
+        "text": "Peripancreatic fat",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Spleen. Direction invasion of this organ is specifically noted as upstaging a pancreatic well diff...",
+        "order_index": 2
+      },
+      {
+        "text": "Spleen",
+        "is_correct": true,
+        "explanation": ". Spleen. Direction invasion of this organ is specifically noted as upstaging a pancreatic well differentiated neuroendocrine tumor to pT4 disease. Answers A and B are incorrect because invasion of these structures is noted as signifying pT3 disease. invasion of peripancreatic fat does not affect the staging of these tumors. Pancreas - Staging-neuroendocrine",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 11",
+    "stem": "Which of the following is true regarding staging and prognosis of pancreatic well differentiated neuroendocrine tumors?",
+    "difficulty": "medium",
+    "teaching_point": ". ARX and PDX1 expression are considered prognostic indicators per the AJCC, among multiple additional factors. there is no pN2 designation for pancreatic neuroendocrine tumors. the regional lymph nodes are different depending on whether the tumor arises in the head or the body / tail. tumor functionality is considered a prognostic indicator. Pancreas - Staging-neuroendocrine",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasneuroendocrinetumorstaging.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "ARX and PDX1 expression are considered prognostic indicators",
+        "is_correct": true,
+        "explanation": ". ARX and PDX1 expression are considered prognostic indicators per the AJCC, among multiple additional factors. there is no pN2 designation for pancreatic neuroendocrine tumors. the regional lymph nodes are different depending on whether the tumor arises in the head or the body / tail. tumor functionality is considered a prognostic indicator. Pancreas - Staging-neuroendocrine",
+        "order_index": 0
+      },
+      {
+        "text": "More than 5 positive lymph nodes indicates pN2 disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . ARX and PDX1 expression are considered prognostic indicators per the AJCC, among multiple addition...",
+        "order_index": 1
+      },
+      {
+        "text": "Regional lymph nodes are the same regardless of tumor location within the pancreas",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . ARX and PDX1 expression are considered prognostic indicators per the AJCC, among multiple addition...",
+        "order_index": 2
+      },
+      {
+        "text": "Tumor functionality is not considered a prognostic indicator",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . ARX and PDX1 expression are considered prognostic indicators per the AJCC, among multiple addition...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 12",
+    "stem": "What is the most common gene mutation in pancreatic solid pseudopapillary neoplasm?",
+    "difficulty": "medium",
+    "teaching_point": "Somatic point mutation of β catenin gene (CTNNB1) is present in > 90% of pancreatic solid pseudopapillary neoplasms Solid pseudopapillary neoplasm",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreassolidpseudo.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CTNNB1 KIT PDGFRA RAS",
+        "is_correct": true,
+        "explanation": "Somatic point mutation of β catenin gene (CTNNB1) is present in > 90% of pancreatic solid pseudopapillary neoplasms Solid pseudopapillary neoplasm",
+        "order_index": 0
+      },
+      {
+        "text": "KIT",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Somatic point mutation of β catenin gene (CTNNB1) is present in > 90% of pancreatic solid pseudopapi...",
+        "order_index": 1
+      },
+      {
+        "text": "PDGFRA",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Somatic point mutation of β catenin gene (CTNNB1) is present in > 90% of pancreatic solid pseudopapi...",
+        "order_index": 2
+      },
+      {
+        "text": "RAS",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Somatic point mutation of β catenin gene (CTNNB1) is present in > 90% of pancreatic solid pseudopapi...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 13",
+    "stem": "What is the composition of intracytoplasmic hyaline globules in solid pseudopapillary neoplasms?",
+    "difficulty": "medium",
+    "teaching_point": "The hyaline globules are immunoreactive for alpha-1-antitrypsin and are also PAS+ and diastase resistant Solid pseudopapillary neoplasm",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreassolidpseudo.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Alpha-1-antitrypsin",
+        "is_correct": true,
+        "explanation": "The hyaline globules are immunoreactive for alpha-1-antitrypsin and are also PAS+ and diastase resistant Solid pseudopapillary neoplasm",
+        "order_index": 0
+      },
+      {
+        "text": "Fibrinogen",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. The hyaline globules are immunoreactive for alpha-1-antitrypsin and are also PAS+ and diastase resis...",
+        "order_index": 1
+      },
+      {
+        "text": "Glycogen",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. The hyaline globules are immunoreactive for alpha-1-antitrypsin and are also PAS+ and diastase resis...",
+        "order_index": 2
+      },
+      {
+        "text": "Mucin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. The hyaline globules are immunoreactive for alpha-1-antitrypsin and are also PAS+ and diastase resis...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreassolidpseudoVyas02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 14",
+    "stem": "Which one of the following stains is positive in sclerosing epithelioid mesenchymal neoplasm of the pancreas in the figure shown above?",
+    "difficulty": "medium",
+    "teaching_point": "CD99 Sclerosing epithelioid mesenchymal neoplasm",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreassclerosingepit.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CD34",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. CD99 Sclerosing epithelioid mesenchymal neoplasm",
+        "order_index": 0
+      },
+      {
+        "text": "CD99",
+        "is_correct": true,
+        "explanation": "CD99 Sclerosing epithelioid mesenchymal neoplasm",
+        "order_index": 1
+      },
+      {
+        "text": "DOG1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. CD99 Sclerosing epithelioid mesenchymal neoplasm",
+        "order_index": 2
+      },
+      {
+        "text": "MUC4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. CD99 Sclerosing epithelioid mesenchymal neoplasm",
+        "order_index": 3
+      },
+      {
+        "text": "S100",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. CD99 Sclerosing epithelioid mesenchymal neoplasm",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreassclerosingepitbasturk01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Overall appearance",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 15",
+    "stem": "Which one of the following microscopic features is seen in sclerosing epithelioid mesenchymal neoplasms of the pancreas?",
+    "difficulty": "medium",
+    "teaching_point": "They have well circumscribed borders. Sclerosing epithelioid mesenchymal neoplasm",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreassclerosingepit.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "No entrapped pancreatic parenchyma is seen within the tumors.",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. They have well circumscribed borders. Sclerosing epithelioid mesenchymal neoplasm",
+        "order_index": 0
+      },
+      {
+        "text": "They are composed of epithelioid cells only.",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. They have well circumscribed borders. Sclerosing epithelioid mesenchymal neoplasm",
+        "order_index": 1
+      },
+      {
+        "text": "They are predominantly hypocellular tumors.",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. They have well circumscribed borders. Sclerosing epithelioid mesenchymal neoplasm",
+        "order_index": 2
+      },
+      {
+        "text": "They have well circumscribed borders.",
+        "is_correct": true,
+        "explanation": "They have well circumscribed borders. Sclerosing epithelioid mesenchymal neoplasm",
+        "order_index": 3
+      },
+      {
+        "text": "True epithelial structures such as glands, papillae and pseudopapillae are common.",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. They have well circumscribed borders. Sclerosing epithelioid mesenchymal neoplasm",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 16",
+    "stem": "Is this histological image of pancreatic parenchyma sufficient to support the diagnosis of pseudocyst?",
+    "difficulty": "medium",
+    "teaching_point": ". No, it is necessary to examine the entire lesion in order to exclude the presence of epithelium. For the diagnosis of pseudocysts, first it is mandatory to exclude the presence of an epithelial cell lining. A random sampling is not sufficient; the sampling should allow the examination of the entire lesion. Pseudocysts",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreaspseudocyst.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "No, it is necessary to examine the entire lesion in order to exclude the presence of epithelium",
+        "is_correct": true,
+        "explanation": ". No, it is necessary to examine the entire lesion in order to exclude the presence of epithelium. For the diagnosis of pseudocysts, first it is mandatory to exclude the presence of an epithelial cell lining. A random sampling is not sufficient; the sampling should allow the examination of the entire lesion. Pseudocysts",
+        "order_index": 0
+      },
+      {
+        "text": "Yes, the image proves the absence of dysplastic epithelium",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . No, it is necessary to examine the entire lesion in order to exclude the presence of epithelium. F...",
+        "order_index": 1
+      },
+      {
+        "text": "Yes, the image proves the presence of a fibrotic wall",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . No, it is necessary to examine the entire lesion in order to exclude the presence of epithelium. F...",
+        "order_index": 2
+      },
+      {
+        "text": "Yes, the image shows a fibrotic wall with bona fide disepithelization",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . No, it is necessary to examine the entire lesion in order to exclude the presence of epithelium. F...",
+        "order_index": 3
+      },
+      {
+        "text": "Yes, the image shows the presence of residual pancreatic parenchyma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . No, it is necessary to examine the entire lesion in order to exclude the presence of epithelium. F...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreaspseudocystmattiololuchini05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 17",
+    "stem": "Which analysis of cystic fluid is most suspicious for pseudocyst?",
+    "difficulty": "medium",
+    "teaching_point": ". Low CEA, high amylase. Typically, the cyst fluid analysis of a pseudocyst usually shows a very low CEA concentration in the cyst fluid (< 5 ng/mL); the amylase activity is usually markedly increased. Pseudocysts",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreaspseudocyst.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "High carcinoembryonic antigen (CEA), high amylase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Low CEA, high amylase. Typically, the cyst fluid analysis of a pseudocyst usually shows a very low...",
+        "order_index": 0
+      },
+      {
+        "text": "High CEA, high lipase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Low CEA, high amylase. Typically, the cyst fluid analysis of a pseudocyst usually shows a very low...",
+        "order_index": 1
+      },
+      {
+        "text": "High CEA, low amylase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Low CEA, high amylase. Typically, the cyst fluid analysis of a pseudocyst usually shows a very low...",
+        "order_index": 2
+      },
+      {
+        "text": "Low CEA, high amylase",
+        "is_correct": true,
+        "explanation": ". Low CEA, high amylase. Typically, the cyst fluid analysis of a pseudocyst usually shows a very low CEA concentration in the cyst fluid (< 5 ng/mL); the amylase activity is usually markedly increased. Pseudocysts",
+        "order_index": 3
+      },
+      {
+        "text": "Low CEA, low amylase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Low CEA, high amylase. Typically, the cyst fluid analysis of a pseudocyst usually shows a very low...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 20",
+    "stem": "Which are the molecular hallmarks of PanNEC?",
+    "difficulty": "medium",
+    "teaching_point": "TP53 and Rb alteration. Indeed, the most typical molecular events in PanNEC are TP53 and Rb alteration. Immunohistochemistry is a good surrogate of their molecular status and in PanNEC it generally shows an aberrant expression pattern (usually a hyperaccumulation) for p53 and Rb loss. Neuroendocrine carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasneuroendocrinecarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CCND1 amplification",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. TP53 and Rb alteration. Indeed, the most typical molecular events in PanNEC are TP53 and Rb alterati...",
+        "order_index": 0
+      },
+      {
+        "text": "DAXX and ATRX mutation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. TP53 and Rb alteration. Indeed, the most typical molecular events in PanNEC are TP53 and Rb alterati...",
+        "order_index": 1
+      },
+      {
+        "text": "EGFR alteration",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. TP53 and Rb alteration. Indeed, the most typical molecular events in PanNEC are TP53 and Rb alterati...",
+        "order_index": 2
+      },
+      {
+        "text": "KRAS mutation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. TP53 and Rb alteration. Indeed, the most typical molecular events in PanNEC are TP53 and Rb alterati...",
+        "order_index": 3
+      },
+      {
+        "text": "TP53 and Rb alteration",
+        "is_correct": true,
+        "explanation": "TP53 and Rb alteration. Indeed, the most typical molecular events in PanNEC are TP53 and Rb alteration. Immunohistochemistry is a good surrogate of their molecular status and in PanNEC it generally shows an aberrant expression pattern (usually a hyperaccumulation) for p53 and Rb loss. Neuroendocrine carcinoma",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 21",
+    "stem": "This photograph shows a primary pancreatic neoplasm. Which of the following histological features, present in the picture above, support the diagnosis of PanNEC?",
+    "difficulty": "medium",
+    "teaching_point": "Focal tumor necrosis and nuclear features. Tumor necrosis is a very important morphological feature for supporting the diagnosis of PanNEC but the immunohistochemical confirmation of the neuroendocrine nature is also very important. Neuroendocrine carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasneuroendocrinecarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acinar-like appearance",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Focal tumor necrosis and nuclear features. Tumor necrosis is a very important morphological feature ...",
+        "order_index": 0
+      },
+      {
+        "text": "Focal tumor necrosis and nuclear features",
+        "is_correct": true,
+        "explanation": "Focal tumor necrosis and nuclear features. Tumor necrosis is a very important morphological feature for supporting the diagnosis of PanNEC but the immunohistochemical confirmation of the neuroendocrine nature is also very important. Neuroendocrine carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Glandular formation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Focal tumor necrosis and nuclear features. Tumor necrosis is a very important morphological feature ...",
+        "order_index": 2
+      },
+      {
+        "text": "Perineural invasion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Focal tumor necrosis and nuclear features. Tumor necrosis is a very important morphological feature ...",
+        "order_index": 3
+      },
+      {
+        "text": "Vascular invasion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Focal tumor necrosis and nuclear features. Tumor necrosis is a very important morphological feature ...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasneuroendocrinecarcinomaLuchini10.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 22",
+    "stem": "A 40 year old man presents with abdominal pain and unintentional weight loss. Subsequent imaging reveals an 8 cm mass in the pancreatic head invading into the duodenum and a likely metastasis in the liver. The patient undergoes neoadjuvant chemoradiation and a pancreaticoduodenectomy. A representative histology section is shown above. The cell population that most definitively identifies this diagnosis would be most specifically highlighted by which of the following immunohistochemical stains?",
+    "difficulty": "medium",
+    "teaching_point": ". Beta catenin. Nuclear staining of beta catenin is a marker of alterations in the APC / beta catenin pathway, which commonly occurs in pancreatoblastoma associated with loss of chromosome 11p. Pancreatoblastoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreaspancreatoblastoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Alpha fetoprotein",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Beta catenin. Nuclear staining of beta catenin is a marker of alterations in the APC / beta cateni...",
+        "order_index": 0
+      },
+      {
+        "text": "Beta catenin",
+        "is_correct": true,
+        "explanation": ". Beta catenin. Nuclear staining of beta catenin is a marker of alterations in the APC / beta catenin pathway, which commonly occurs in pancreatoblastoma associated with loss of chromosome 11p. Pancreatoblastoma",
+        "order_index": 1
+      },
+      {
+        "text": "Chromogranin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Beta catenin. Nuclear staining of beta catenin is a marker of alterations in the APC / beta cateni...",
+        "order_index": 2
+      },
+      {
+        "text": "Trypsin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Beta catenin. Nuclear staining of beta catenin is a marker of alterations in the APC / beta cateni...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreaspancreatoblastomazhang09.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 23",
+    "stem": "A 5 year old boy presents with weight loss, abdominal pain and distention and hepatomegaly. An abdominal ultrasound reveals a pancreatic mass and multiple liver masses. A pancreas biopsy is performed. Based on the findings in the image shown above, what is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Pancreatoblastoma. The characteristic squamoid nest shown in the image is a defining feature of pancreatoblastoma, present in every case. Pancreatoblastoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreaspancreatoblastoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acinar cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Pancreatoblastoma. The characteristic squamoid nest shown in the image is a defining feature of pa...",
+        "order_index": 0
+      },
+      {
+        "text": "Malignant germ cell tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Pancreatoblastoma. The characteristic squamoid nest shown in the image is a defining feature of pa...",
+        "order_index": 1
+      },
+      {
+        "text": "Pancreatic neuroendocrine tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Pancreatoblastoma. The characteristic squamoid nest shown in the image is a defining feature of pa...",
+        "order_index": 2
+      },
+      {
+        "text": "Pancreatoblastoma",
+        "is_correct": true,
+        "explanation": ". Pancreatoblastoma. The characteristic squamoid nest shown in the image is a defining feature of pancreatoblastoma, present in every case. Pancreatoblastoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreaspancreatoblastomazhangBRQ02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 24",
+    "stem": "Which of the following pancreatic neuroendocrine tumors can cause watery diarrhea, hypokalemia and achlorhydria?",
+    "difficulty": "medium",
+    "teaching_point": ". Pancreatic polypeptide secreting tumor (PPoma). Watery diarrhea, hypokalemia, achlorhydria (WDHA) syndrome can also be caused by VIPomas. Pancreatic polypeptide secreting tumors",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasppoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Glucagonoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Pancreatic polypeptide secreting tumor (PPoma). Watery diarrhea, hypokalemia, achlorhydria (WDHA) ...",
+        "order_index": 0
+      },
+      {
+        "text": "Insulinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Pancreatic polypeptide secreting tumor (PPoma). Watery diarrhea, hypokalemia, achlorhydria (WDHA) ...",
+        "order_index": 1
+      },
+      {
+        "text": "Pancreatic polypeptide secreting tumor (PPoma)",
+        "is_correct": true,
+        "explanation": ". Pancreatic polypeptide secreting tumor (PPoma). Watery diarrhea, hypokalemia, achlorhydria (WDHA) syndrome can also be caused by VIPomas. Pancreatic polypeptide secreting tumors",
+        "order_index": 2
+      },
+      {
+        "text": "Somatostatinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Pancreatic polypeptide secreting tumor (PPoma). Watery diarrhea, hypokalemia, achlorhydria (WDHA) ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 25",
+    "stem": "A 65 year old man presents with a pancreatic cyst discovered incidentally on imaging. Fine needle aspiration (FNA) of the cyst reveals highly viscous fluid that forms a stringy connection when drawn out between gloved fingers (positive string sign). Which of the following pancreatic cystic lesions is most strongly associated with this finding?",
+    "difficulty": "medium",
+    "teaching_point": ". Intraductal papillary mucinous neoplasm (IPMN) is characterized by the production of thick, mucinous fluid, which exhibits high viscosity and can form a stringy connection when drawn out between gloved fingers, known as the string sign. This feature is not observed in other pancreatic cystic lesions and is a useful diagnostic clue. serous cystadenomas produce thin, nonmucinous, serous fluid. cystic neuroendocrine tumors contain fluid that is typically hemorrhagic or proteinaceous but not mucinous or highly viscous. these cystic lesions contain necrotic, hemorrhagic and proteinaceous debris rather than mucinous fluid. Pancreatic cystic fluid analysis",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreascysticfluidanalysis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cystic neuroendocrine tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Intraductal papillary mucinous neoplasm (IPMN) is characterized by the production of thick, mucino...",
+        "order_index": 0
+      },
+      {
+        "text": "Intraductal papillary mucinous neoplasm (IPMN)",
+        "is_correct": true,
+        "explanation": ". Intraductal papillary mucinous neoplasm (IPMN) is characterized by the production of thick, mucinous fluid, which exhibits high viscosity and can form a stringy connection when drawn out between gloved fingers, known as the string sign. This feature is not observed in other pancreatic cystic lesions and is a useful diagnostic clue. serous cystadenomas produce thin, nonmucinous, serous fluid. cystic neuroendocrine tumors contain fluid that is typically hemorrhagic or proteinaceous but not mucinous or highly viscous. these cystic lesions contain necrotic, hemorrhagic and proteinaceous debris rather than mucinous fluid. Pancreatic cystic fluid analysis",
+        "order_index": 1
+      },
+      {
+        "text": "Serous cystadenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Intraductal papillary mucinous neoplasm (IPMN) is characterized by the production of thick, mucino...",
+        "order_index": 2
+      },
+      {
+        "text": "Solid pseudopapillary neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Intraductal papillary mucinous neoplasm (IPMN) is characterized by the production of thick, mucino...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/thumb/pancreascysticfluidanalysis_gross1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 26",
+    "stem": "A 58 year old woman underwent endoscopic ultrasound guided aspiration of a pancreatic tail cyst. The fluid analysis revealed the following biochemical markers. Carcinoembryonic antigen (CEA) 1,200 ng/mL Glucose < 10 mg/dL CA 19-9 Elevated Amylase Normal Based on these findings, which pancreatic cystic lesion is most likely?",
+    "difficulty": "medium",
+    "teaching_point": ". Mucinous cystic neoplasms (MCN) are characterized by high CEA levels, often exceeding 200 ng/mL, along with low glucose levels due to mucinous epithelium consumption of glucose. CA 19-9 may be elevated. Amylase levels are typically low to normal as MCNs are not connected with the pancreatic duct. serous cystadenomas typically have low CEA and CA 19-9 levels and their cyst fluid contains glucose in normal ranges. cystic neuroendocrine tumors do not typically produce high CEA levels and their cyst fluid characteristics are more variable. pseudocysts typically show markedly elevated amylase due to pancreatic enzyme leakage and their CEA and CA 19-9 levels are usually undetectable or very low. Pancreatic cystic fluid analysis",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreascysticfluidanalysis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cystic neuroendocrine tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Mucinous cystic neoplasms (MCN) are characterized by high CEA levels, often exceeding 200 ng/mL, a...",
+        "order_index": 0
+      },
+      {
+        "text": "Mucinous cystic neoplasm (MCN)",
+        "is_correct": true,
+        "explanation": ". Mucinous cystic neoplasms (MCN) are characterized by high CEA levels, often exceeding 200 ng/mL, along with low glucose levels due to mucinous epithelium consumption of glucose. CA 19-9 may be elevated. Amylase levels are typically low to normal as MCNs are not connected with the pancreatic duct. serous cystadenomas typically have low CEA and CA 19-9 levels and their cyst fluid contains glucose in normal ranges. cystic neuroendocrine tumors do not typically produce high CEA levels and their cyst fluid characteristics are more variable. pseudocysts typically show markedly elevated amylase due to pancreatic enzyme leakage and their CEA and CA 19-9 levels are usually undetectable or very low. Pancreatic cystic fluid analysis",
+        "order_index": 1
+      },
+      {
+        "text": "Pseudocyst",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Mucinous cystic neoplasms (MCN) are characterized by high CEA levels, often exceeding 200 ng/mL, a...",
+        "order_index": 2
+      },
+      {
+        "text": "Serous cystadenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Mucinous cystic neoplasms (MCN) are characterized by high CEA levels, often exceeding 200 ng/mL, a...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 27",
+    "stem": "A neuroendocrine tumor of the pancreas with a sarcomatous component would be most likely to show what sort of differentiation within that component?",
+    "difficulty": "medium",
+    "teaching_point": ". Leiomyosarcomatous. Additionally, leiomyosarcoma is the most common primary sarcoma of the pancreas. Neuroendocrine tumor with sarcomatous differentiation",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreaspensarcomatous.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Angiosarcomatous",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Leiomyosarcomatous. Additionally, leiomyosarcoma is the most common primary sarcoma of the pancrea...",
+        "order_index": 0
+      },
+      {
+        "text": "Leiomyosarcomatous",
+        "is_correct": true,
+        "explanation": ". Leiomyosarcomatous. Additionally, leiomyosarcoma is the most common primary sarcoma of the pancreas. Neuroendocrine tumor with sarcomatous differentiation",
+        "order_index": 1
+      },
+      {
+        "text": "Liposarcomatous",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Leiomyosarcomatous. Additionally, leiomyosarcoma is the most common primary sarcoma of the pancrea...",
+        "order_index": 2
+      },
+      {
+        "text": "Osteosarcomatous",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Leiomyosarcomatous. Additionally, leiomyosarcoma is the most common primary sarcoma of the pancrea...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 28",
+    "stem": "A 58 year old man presents with a 2.8 cm solid mass in the tail of the pancreas. Based on the morphology below, you suspect a well differentiated neuroendocrine tumor (WDNET). Which of the following immunoprofiles would be most characteristic of pancreatic WDNET?",
+    "difficulty": "medium",
+    "teaching_point": ". Synatophysin+, chromogranin+, BCL10-, trypsin-, beta catenin cytoplasmic Neuroendocrine neoplasms-general",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreaspen.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Synatophysin-, chromogranin-, BCL10+, trypsin+, beta catenin cytoplasmic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Synatophysin+, chromogranin+, BCL10-, trypsin-, beta catenin cytoplasmic Neuroendocrine neoplasms-...",
+        "order_index": 0
+      },
+      {
+        "text": "Synatophysin-, chromogranin-, BCL10-, trypsin-, beta catenin nuclear",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Synatophysin+, chromogranin+, BCL10-, trypsin-, beta catenin cytoplasmic Neuroendocrine neoplasms-...",
+        "order_index": 1
+      },
+      {
+        "text": "Synatophysin+, chromogranin+, BCL10-, trypsin-, beta catenin cytoplasmic",
+        "is_correct": true,
+        "explanation": ". Synatophysin+, chromogranin+, BCL10-, trypsin-, beta catenin cytoplasmic Neuroendocrine neoplasms-general",
+        "order_index": 2
+      },
+      {
+        "text": "Synatophysin+, chromogranin-, BCL10-, trypsin-, cytokeratin-",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Synatophysin+, chromogranin+, BCL10-, trypsin-, beta catenin cytoplasmic Neuroendocrine neoplasms-...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreaspenHutchingsBRQ1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 29",
+    "stem": "A 45 year old woman presents recurrent episodes of dizziness, palpitations and sweating, which she reports usually resolve with drinking orange juice. She is found to have a 2.0 cm solid mass in the body of the pancreas. Resection specimen is shown in the image above. What is the most likely diagnosis based on H&E and congo red stains?",
+    "difficulty": "medium",
+    "teaching_point": ". Insulinoma Neuroendocrine neoplasms-general",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreaspen.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acinar cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Insulinoma Neuroendocrine neoplasms-general",
+        "order_index": 0
+      },
+      {
+        "text": "Gastrinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Insulinoma Neuroendocrine neoplasms-general",
+        "order_index": 1
+      },
+      {
+        "text": "Insulinoma",
+        "is_correct": true,
+        "explanation": ". Insulinoma Neuroendocrine neoplasms-general",
+        "order_index": 2
+      },
+      {
+        "text": "Pancreatic ductal adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Insulinoma Neuroendocrine neoplasms-general",
+        "order_index": 3
+      },
+      {
+        "text": "Well differentiated pancreatic neuroendocrine tumor, nonfunctional",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Insulinoma Neuroendocrine neoplasms-general",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreaspenHutchingsBRQ2.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreaspenHutchingsBRQnew3.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 30",
+    "stem": "A 38 year old man with a history of recurrent duodenal ulcers and nephrolithiasis presents for evaluation of new onset headaches and visual disturbances. His lab results reveal elevated parathyroid hormone (PTH), hypercalcemia, increased gastrin and prolactin levels. Which of the following is the most likely explanation for his symptoms?",
+    "difficulty": "medium",
+    "teaching_point": "Patient with parathyroid adenoma, pituitary adenoma and duodenopancreatic neuroendocrine tumor. This patient's symptoms are most consistent with multiple endocrine neoplasia type 1 (MEN1), which is characterized by tumors of the parathyroid glands, pituitary gland and pancreatic / duodenal neuroendocrine tumors. The elevated PTH and hypercalcemia point toward a parathyroid tumor. The gastrin elevation and duodenal ulcer suggest a gastrinoma (duodenopancreatic neuroendocrine tumor). The elevated prolactin level suggests a pituitary adenoma. ACTH secreting pituitary adenomas lead to Cushing syndrome, not elevated prolactin level. medullary thyroid carcinoma (MTC) can be seen in MEN2, not MEN1. the patient's clinical signs and elevated gastrin, prolactin and PTH indicate the presence of tumors. meningiomas and epididymomas are not characteristic features of MEN1 meningiomas. MEN1 syndrome",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasMEN1.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Medullary thyroid carcinoma associated with RET mutation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Patient with parathyroid adenoma, pituitary adenoma and duodenopancreatic neuroendocrine tumor. This...",
+        "order_index": 0
+      },
+      {
+        "text": "Patient with MEN1 mutation and no tumor development at the time of evaluation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Patient with parathyroid adenoma, pituitary adenoma and duodenopancreatic neuroendocrine tumor. This...",
+        "order_index": 1
+      },
+      {
+        "text": "Patient with parathyroid adenoma, meningioma and epididymoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Patient with parathyroid adenoma, pituitary adenoma and duodenopancreatic neuroendocrine tumor. This...",
+        "order_index": 2
+      },
+      {
+        "text": "Patient with parathyroid adenoma, pituitary adenoma and duodenopancreatic neuroendocrine tumor",
+        "is_correct": true,
+        "explanation": "Patient with parathyroid adenoma, pituitary adenoma and duodenopancreatic neuroendocrine tumor. This patient's symptoms are most consistent with multiple endocrine neoplasia type 1 (MEN1), which is characterized by tumors of the parathyroid glands, pituitary gland and pancreatic / duodenal neuroendocrine tumors. The elevated PTH and hypercalcemia point toward a parathyroid tumor. The gastrin elevation and duodenal ulcer suggest a gastrinoma (duodenopancreatic neuroendocrine tumor). The elevated prolactin level suggests a pituitary adenoma. ACTH secreting pituitary adenomas lead to Cushing syndrome, not elevated prolactin level. medullary thyroid carcinoma (MTC) can be seen in MEN2, not MEN1. the patient's clinical signs and elevated gastrin, prolactin and PTH indicate the presence of tumors. meningiomas and epididymomas are not characteristic features of MEN1 meningiomas. MEN1 syndrome",
+        "order_index": 3
+      },
+      {
+        "text": "Pituitary adenoma secreting adrenocorticotropic hormone (ACTH)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Patient with parathyroid adenoma, pituitary adenoma and duodenopancreatic neuroendocrine tumor. This...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 31",
+    "stem": "A 45 year old woman presents with a history of recurrent kidney stones, fatigue and constipation. Laboratory studies show hypercalcemia, low phosphate levels and an elevated parathyroid hormone (PTH). Imaging evaluation shows an enlargement of the parathyroid gland and a well circumscribed pancreatic mass. Genetic testing confirms a mutation in the MEN1 gene. Which of the following best describes the function of the gene mutated in this patient?",
+    "difficulty": "medium",
+    "teaching_point": "Tumor suppressor gene involved in transcription regulation. The MEN1 gene encodes menin, a tumor suppressor protein that regulates transcription and is involved in cellular proliferation and survival. Mutations in MEN1 lead to the development of endocrine tumors, commonly in the parathyroid glands, pancreas and pituitary glands. The patient's symptoms, including hypercalcemia, elevated PTH, enlargement of the parathyroid gland and a pancreatic mass, are consistent with MEN1 and its associated tumors, such as parathyroid adenomas and pancreatic neuroendocrine tumors. the MEN1 gene is a tumor suppressor gene. MEN1 mutations result in the loss of tumor suppression. oncogenes typically encode proteins that promote cell division or survival via receptor tyrosine kinases or other growth factors. However, MEN1 is a tumor suppressor gene. the MEN1 gene does not directly encode a protein involved in calcium sensing. the MEN1 gene is not directly involved in DNA repair. MEN1 syndrome",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasMEN1.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "DNA repair gene",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Tumor suppressor gene involved in transcription regulation. The MEN1 gene encodes menin, a tumor sup...",
+        "order_index": 0
+      },
+      {
+        "text": "Gene encoding a protein involved in calcium sensing",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Tumor suppressor gene involved in transcription regulation. The MEN1 gene encodes menin, a tumor sup...",
+        "order_index": 1
+      },
+      {
+        "text": "Oncogene encoding a receptor tyrosine kinase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Tumor suppressor gene involved in transcription regulation. The MEN1 gene encodes menin, a tumor sup...",
+        "order_index": 2
+      },
+      {
+        "text": "Proto-oncogene involved in cell cycle progression",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Tumor suppressor gene involved in transcription regulation. The MEN1 gene encodes menin, a tumor sup...",
+        "order_index": 3
+      },
+      {
+        "text": "Tumor suppressor gene involved in transcription regulation",
+        "is_correct": true,
+        "explanation": "Tumor suppressor gene involved in transcription regulation. The MEN1 gene encodes menin, a tumor suppressor protein that regulates transcription and is involved in cellular proliferation and survival. Mutations in MEN1 lead to the development of endocrine tumors, commonly in the parathyroid glands, pancreas and pituitary glands. The patient's symptoms, including hypercalcemia, elevated PTH, enlargement of the parathyroid gland and a pancreatic mass, are consistent with MEN1 and its associated tumors, such as parathyroid adenomas and pancreatic neuroendocrine tumors. the MEN1 gene is a tumor suppressor gene. MEN1 mutations result in the loss of tumor suppression. oncogenes typically encode proteins that promote cell division or survival via receptor tyrosine kinases or other growth factors. However, MEN1 is a tumor suppressor gene. the MEN1 gene does not directly encode a protein involved in calcium sensing. the MEN1 gene is not directly involved in DNA repair. MEN1 syndrome",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasMEN1MicroPowell4.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 32",
+    "stem": "A 55 year old woman presents with a pancreatic cyst incidentally detected on abdominal imaging. The cyst is located in the head of the pancreas and measures ~3 cm in size. Endoscopic ultrasound guided fine needle aspiration (EUS FNA) is performed and analysis of the cyst fluid reveals the following laboratory values: high CEA level, elevated amylase and low viscosity. A picture of the resection specimen is shown above. Which of the following statements is true about the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". This lesion can display multiple histologic subtypes that resemble gastric, intestinal or pancreatobiliary epithelium. This lesion in the head of the pancreas with elevated CEA and amylase levels in the cyst fluid is an intraductal papillary mucinous neoplasm (IPMN). The epithelium in IPMNs most commonly resembles gastric epithelium, with intestinal and pancreatobiliary types being less common. IPMNs connect with the pancreatic duct system, which causes an increase in amylase levels in the cyst fluid. Other pancreatic cysts such as mucinous cystic neoplasm (MCN) and simple mucinous cysts do not typically connect with the pancreatic duct system. invasive carcinomas are found in ~30 - 50% of main duct IPMNs and ~24% of branch duct IPMNs. VHL is commonly mutated in serous cystadenomas, not IPMNs. Mucinous pancreatic tumor overview",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasmucin.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "This lesion can display multiple histologic subtypes that resemble gastric, intestinal or pancreatobiliary epithelium",
+        "is_correct": true,
+        "explanation": ". This lesion can display multiple histologic subtypes that resemble gastric, intestinal or pancreatobiliary epithelium. This lesion in the head of the pancreas with elevated CEA and amylase levels in the cyst fluid is an intraductal papillary mucinous neoplasm (IPMN). The epithelium in IPMNs most commonly resembles gastric epithelium, with intestinal and pancreatobiliary types being less common. IPMNs connect with the pancreatic duct system, which causes an increase in amylase levels in the cyst fluid. Other pancreatic cysts such as mucinous cystic neoplasm (MCN) and simple mucinous cysts do not typically connect with the pancreatic duct system. invasive carcinomas are found in ~30 - 50% of main duct IPMNs and ~24% of branch duct IPMNs. VHL is commonly mutated in serous cystadenomas, not IPMNs. Mucinous pancreatic tumor overview",
+        "order_index": 0
+      },
+      {
+        "text": "This lesion does not commonly connect with the pancreatic duct system",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . This lesion can display multiple histologic subtypes that resemble gastric, intestinal or pancreat...",
+        "order_index": 1
+      },
+      {
+        "text": "This lesion is not a precursor for invasive ductal adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . This lesion can display multiple histologic subtypes that resemble gastric, intestinal or pancreat...",
+        "order_index": 2
+      },
+      {
+        "text": "VHL is the most commonly mutated gene in this lesion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . This lesion can display multiple histologic subtypes that resemble gastric, intestinal or pancreat...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com http://www.pathologyoutlines.com/imgau/pancreasmucinKrogh20new.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 33",
+    "stem": "A 45 year old woman presents with abdominal discomfort and a large cystic lesion in the tail of the pancreas on abdominal imaging. Endoscopic ultrasound guided fine needle aspiration (EUS FNA) is performed and analysis of the cyst fluid reveals elevated levels of CEA, CA 19-9 and low amylase. A picture of the resection specimen is shown above. Which of the following statements about this pancreatic lesion is true?",
+    "difficulty": "medium",
+    "teaching_point": ". This lesion contains ovarian type stroma and is most commonly seen in females. This female patient with a cystic lesion in the tail of the pancreas with elevated CEA, CA 19-9 and low amylase has a mucinous cystic neoplasm (MCN). MCNs are characterized by the presence of ovarian type stroma and are seen almost exclusively in females (> 95%). pancreatic ductal adenocarcinomas are more commonly associated with older men with a history of chronic pancreatitis. MCNs are seen in female patients and are not associated with chronic pancreatitis. serous cystadenomas are benign cystic tumors that contain serous fluid. MCNs contain mucin and are characterized as low grade or high grade lesions with ~16% associated with invasive carcinoma. the cyst fluid of MCNs typically has elevated CEA and CA 19-9 but has low amylase levels because they do not connect to the pancreatic duct system. The presence of elevated amylase and CEA levels in pancreatic cyst fluid is most often associated with an intraductal papillary mucinous neoplasm (IPMN). Mucinous pancreatic tumor overview",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasmucin.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "This lesion contains ovarian type stroma and is most commonly seen in females",
+        "is_correct": true,
+        "explanation": ". This lesion contains ovarian type stroma and is most commonly seen in females. This female patient with a cystic lesion in the tail of the pancreas with elevated CEA, CA 19-9 and low amylase has a mucinous cystic neoplasm (MCN). MCNs are characterized by the presence of ovarian type stroma and are seen almost exclusively in females (> 95%). pancreatic ductal adenocarcinomas are more commonly associated with older men with a history of chronic pancreatitis. MCNs are seen in female patients and are not associated with chronic pancreatitis. serous cystadenomas are benign cystic tumors that contain serous fluid. MCNs contain mucin and are characterized as low grade or high grade lesions with ~16% associated with invasive carcinoma. the cyst fluid of MCNs typically has elevated CEA and CA 19-9 but has low amylase levels because they do not connect to the pancreatic duct system. The presence of elevated amylase and CEA levels in pancreatic cyst fluid is most often associated with an intraductal papillary mucinous neoplasm (IPMN). Mucinous pancreatic tumor overview",
+        "order_index": 0
+      },
+      {
+        "text": "This lesion is most commonly seen in older men with a history of chronic pancreatitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . This lesion contains ovarian type stroma and is most commonly seen in females. This female patient...",
+        "order_index": 1
+      },
+      {
+        "text": "This lesion is typically a benign cystic tumor that contains serous fluid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . This lesion contains ovarian type stroma and is most commonly seen in females. This female patient...",
+        "order_index": 2
+      },
+      {
+        "text": "These lesions are typically associated with elevated levels of amylase and CEA in the cyst fluid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . This lesion contains ovarian type stroma and is most commonly seen in females. This female patient...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasmucinKrogh08nnew.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Mucinous pancreatic tumor overview",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 34",
+    "stem": "Which of the following findings on fine needle aspiration of a pancreatic cyst are most consistent with a mucinous cystic neoplasm?",
+    "difficulty": "medium",
+    "teaching_point": "Mucinous cystic neoplasms have elevated CEA, variable amylase, KRAS mutation and no GNAS mutation. If a GNAS mutation is present, then the findings will favor an IPMN (answer B). Decreased CEA and amylase with no KRAS or GNAS mutations favor a serous cystadenoma (answer A). An elevated CEA and amylase without KRAS or GNAS mutations will favor a pancreatic pseudocyst (answer C). Mucinous cystic neoplasm (MCN)",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasmcn.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Decreased CEA, decreased amylase, no KRAS mutation, no GNAS mutation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Mucinous cystic neoplasms have elevated CEA, variable amylase, KRAS mutation and no GNAS mutation. I...",
+        "order_index": 0
+      },
+      {
+        "text": "Elevated CEA, elevated amylase, KRAS mutation, GNAS mutated",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Mucinous cystic neoplasms have elevated CEA, variable amylase, KRAS mutation and no GNAS mutation. I...",
+        "order_index": 1
+      },
+      {
+        "text": "Elevated CEA, highly elevated amylase, no KRAS mutation, no GNAS mutation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Mucinous cystic neoplasms have elevated CEA, variable amylase, KRAS mutation and no GNAS mutation. I...",
+        "order_index": 2
+      },
+      {
+        "text": "Elevated CEA, variable amylase, KRAS mutation, no GNAS mutation",
+        "is_correct": true,
+        "explanation": "Mucinous cystic neoplasms have elevated CEA, variable amylase, KRAS mutation and no GNAS mutation. If a GNAS mutation is present, then the findings will favor an IPMN (answer B). Decreased CEA and amylase with no KRAS or GNAS mutations favor a serous cystadenoma (answer A). An elevated CEA and amylase without KRAS or GNAS mutations will favor a pancreatic pseudocyst (answer C). Mucinous cystic neoplasm (MCN)",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 35",
+    "stem": "What is an important histologic characteristic associated with the genetic alteration of microsatellite instability in pancreatic cancer?",
+    "difficulty": "medium",
+    "teaching_point": "Mucinous colloid histology is a classic histology encountered in MSI pancreatic cancer. Molecular genetics of pancreatic ductal carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasmolecularaspects.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adenosquamous histology",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Mucinous colloid histology is a classic histology encountered in MSI pancreatic cancer. Molecular ge...",
+        "order_index": 0
+      },
+      {
+        "text": "Hepatoid features",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Mucinous colloid histology is a classic histology encountered in MSI pancreatic cancer. Molecular ge...",
+        "order_index": 1
+      },
+      {
+        "text": "Mucinous colloid histology",
+        "is_correct": true,
+        "explanation": "Mucinous colloid histology is a classic histology encountered in MSI pancreatic cancer. Molecular genetics of pancreatic ductal carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Squamous histology",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Mucinous colloid histology is a classic histology encountered in MSI pancreatic cancer. Molecular ge...",
+        "order_index": 3
+      },
+      {
+        "text": "Undifferentiated anaplastic histology",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Mucinous colloid histology is a classic histology encountered in MSI pancreatic cancer. Molecular ge...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasmolecularaspectsLuchini04.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 36",
+    "stem": "Which is the most important and frequently mutated gene in pancreatic ductal adenocarcinoma?",
+    "difficulty": "medium",
+    "teaching_point": "KRAS is the most important and frequent mutated gene in pancreatic ductal adenocarcinoma. Molecular genetics of pancreatic ductal carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasmolecularaspects.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "ARID1A CDKN2A KRAS SMAD4 TP53",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. KRAS is the most important and frequent mutated gene in pancreatic ductal adenocarcinoma. Molecular ...",
+        "order_index": 0
+      },
+      {
+        "text": "CDKN2A",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. KRAS is the most important and frequent mutated gene in pancreatic ductal adenocarcinoma. Molecular ...",
+        "order_index": 1
+      },
+      {
+        "text": "KRAS",
+        "is_correct": true,
+        "explanation": "KRAS is the most important and frequent mutated gene in pancreatic ductal adenocarcinoma. Molecular genetics of pancreatic ductal carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "SMAD4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. KRAS is the most important and frequent mutated gene in pancreatic ductal adenocarcinoma. Molecular ...",
+        "order_index": 3
+      },
+      {
+        "text": "TP53",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. KRAS is the most important and frequent mutated gene in pancreatic ductal adenocarcinoma. Molecular ...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 37",
+    "stem": "A 55 year old man presented with a 4 cm large pancreatic head mass. The sections from the resected tumor showed a mixed neoplasm with varied histologic findings, as highlighted in the image above. What is the most common component of such neoplasms?",
+    "difficulty": "medium",
+    "teaching_point": "Poorly differentiated neuroendocrine carcinoma. The tumor is likely pancreatic mixed neuroendocrine nonneuroendocrine neoplasms (MiNENs) with ductal adenocarcinoma and poorly differentiated neuroendocrine carcinoma components. Poorly differentiated neuroendocrine carcinoma is the most common component seen in around 90% of MiNENs. Mixed neuroendocrine nonneuroendocrine neoplasms pancreas (MiNENs)",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasmixed.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acinar carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Poorly differentiated neuroendocrine carcinoma. The tumor is likely pancreatic mixed neuroendocrine ...",
+        "order_index": 0
+      },
+      {
+        "text": "Ductal adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Poorly differentiated neuroendocrine carcinoma. The tumor is likely pancreatic mixed neuroendocrine ...",
+        "order_index": 1
+      },
+      {
+        "text": "Poorly differentiated neuroendocrine carcinoma",
+        "is_correct": true,
+        "explanation": "Poorly differentiated neuroendocrine carcinoma. The tumor is likely pancreatic mixed neuroendocrine nonneuroendocrine neoplasms (MiNENs) with ductal adenocarcinoma and poorly differentiated neuroendocrine carcinoma components. Poorly differentiated neuroendocrine carcinoma is the most common component seen in around 90% of MiNENs. Mixed neuroendocrine nonneuroendocrine neoplasms pancreas (MiNENs)",
+        "order_index": 2
+      },
+      {
+        "text": "Squamous cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Poorly differentiated neuroendocrine carcinoma. The tumor is likely pancreatic mixed neuroendocrine ...",
+        "order_index": 3
+      },
+      {
+        "text": "Well differentiated neuroendocrine tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Poorly differentiated neuroendocrine carcinoma. The tumor is likely pancreatic mixed neuroendocrine ...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasmixedZiebell07.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 38",
+    "stem": "In a mixed neuroendocrine nonneuroendocrine neoplasm (MiNEN), what is the lowest percentage of the neoplasm the neuroendocrine component can comprise in order to classify as a MiNEN?",
+    "difficulty": "medium",
+    "teaching_point": "30% Mixed neuroendocrine nonneuroendocrine neoplasms pancreas (MiNENs)",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasmixed.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "20%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. 30% Mixed neuroendocrine nonneuroendocrine neoplasms pancreas (MiNENs)",
+        "order_index": 0
+      },
+      {
+        "text": "30%",
+        "is_correct": true,
+        "explanation": "30% Mixed neuroendocrine nonneuroendocrine neoplasms pancreas (MiNENs)",
+        "order_index": 1
+      },
+      {
+        "text": "40%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. 30% Mixed neuroendocrine nonneuroendocrine neoplasms pancreas (MiNENs)",
+        "order_index": 2
+      },
+      {
+        "text": "50%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. 30% Mixed neuroendocrine nonneuroendocrine neoplasms pancreas (MiNENs)",
+        "order_index": 3
+      },
+      {
+        "text": "60%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. 30% Mixed neuroendocrine nonneuroendocrine neoplasms pancreas (MiNENs)",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 39",
+    "stem": "Which of the following is characteristic of medullary carcinoma in the pancreas?",
+    "difficulty": "medium",
+    "teaching_point": "Pushing borders with syncytial growth pattern, limited to no gland formation and tumor infiltrating lymphocytes. Expansile invasion (pushing borders), poorly defined cell borders (syncytial growth) and little to no glandular formation (poor differentiation) are the 3 main characteristics of medullary carcinoma in the pancreas. Abundant tumor infiltrating lymphocytes are also present. medullary carcinoma of the pancreas is associated with microsatellite instability (MSI), which may aid in the diagnosis. unlike conventional PDAC, medullary carcinoma of the pancreas is associated with wild type KRAS status. EBV encoded RNA (EBER) in situ hybridization positivity describes EBV associated lymphoepithelioma-like carcinoma. medullary carcinoma of the pancreas lacks well formed glands and is defined by syncytial growth pattern. Medullary carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasmedullary.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "EBV encoded RNA (EBER) in situ hybridization positive",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Pushing borders with syncytial growth pattern, limited to no gland formation and tumor infiltrating ...",
+        "order_index": 0
+      },
+      {
+        "text": "Infiltrative growth pattern with well to poorly formed glands",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Pushing borders with syncytial growth pattern, limited to no gland formation and tumor infiltrating ...",
+        "order_index": 1
+      },
+      {
+        "text": "KRAS mutations",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Pushing borders with syncytial growth pattern, limited to no gland formation and tumor infiltrating ...",
+        "order_index": 2
+      },
+      {
+        "text": "MSS (microsatellite stable)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Pushing borders with syncytial growth pattern, limited to no gland formation and tumor infiltrating ...",
+        "order_index": 3
+      },
+      {
+        "text": "Pushing borders with syncytial growth pattern, limited to no gland formation and tumor infiltrating lymphocytes",
+        "is_correct": true,
+        "explanation": "Pushing borders with syncytial growth pattern, limited to no gland formation and tumor infiltrating lymphocytes. Expansile invasion (pushing borders), poorly defined cell borders (syncytial growth) and little to no glandular formation (poor differentiation) are the 3 main characteristics of medullary carcinoma in the pancreas. Abundant tumor infiltrating lymphocytes are also present. medullary carcinoma of the pancreas is associated with microsatellite instability (MSI), which may aid in the diagnosis. unlike conventional PDAC, medullary carcinoma of the pancreas is associated with wild type KRAS status. EBV encoded RNA (EBER) in situ hybridization positivity describes EBV associated lymphoepithelioma-like carcinoma. medullary carcinoma of the pancreas lacks well formed glands and is defined by syncytial growth pattern. Medullary carcinoma",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasmedullarytranahsan01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "circumscribed borders",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 40",
+    "stem": "Which of the following statements about the pancreatic lesion shown above is true?",
+    "difficulty": "medium",
+    "teaching_point": ". This lesion does not undergo malignant transformation. Lymphoepithelial cysts are benign and there have been no reported incidences of malignant transformation. lymphoepithelial cysts of the pancreas are rare (0.5% of resected pancreatic cysts) and are much less common than pancreatic mucinous cystic neoplasms (~8% of resected pancreatic cysts). lymphoepithelial cysts are more common in men than women (80% men). CEA levels (as well as CA 19-9) are commonly elevated in lymphoepithelial cysts. This is a diagnostic pitfall that increases the clinical concern for malignancy. Lymphoepithelial cysts",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreaslymphoepithelial.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Carcinoembryonic antigen (CEA) is never elevated in cyst fluid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . This lesion does not undergo malignant transformation. Lymphoepithelial cysts are benign and there...",
+        "order_index": 0
+      },
+      {
+        "text": "This lesion does not undergo malignant transformation",
+        "is_correct": true,
+        "explanation": ". This lesion does not undergo malignant transformation. Lymphoepithelial cysts are benign and there have been no reported incidences of malignant transformation. lymphoepithelial cysts of the pancreas are rare (0.5% of resected pancreatic cysts) and are much less common than pancreatic mucinous cystic neoplasms (~8% of resected pancreatic cysts). lymphoepithelial cysts are more common in men than women (80% men). CEA levels (as well as CA 19-9) are commonly elevated in lymphoepithelial cysts. This is a diagnostic pitfall that increases the clinical concern for malignancy. Lymphoepithelial cysts",
+        "order_index": 1
+      },
+      {
+        "text": "This lesion is more common than mucinous cystic neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . This lesion does not undergo malignant transformation. Lymphoepithelial cysts are benign and there...",
+        "order_index": 2
+      },
+      {
+        "text": "This lesion is more commonly found in women",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . This lesion does not undergo malignant transformation. Lymphoepithelial cysts are benign and there...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreaslymphoepithelialrytych03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 41",
+    "stem": "Which of the following statements about the pancreatic lesion shown above is true?",
+    "difficulty": "medium",
+    "teaching_point": ". Foamy histiocytes and multinucleated giant cells can be present. Lymphoepithelial cysts are composed of squamous epithelium and reactive lymphoid tissue but may rarely show sebaceous differentiation, keratin granulomas, cholesterol clefts, multinucleated giant cells and foamy histiocytes. lymphoepithelial cysts of the pancreas are rare (0.5% of resected pancreatic cysts). The most common cystic lesion of the pancreas is intraductal papillary mucinous neoplasm (IPMN). while the etiology of lymphoepithelial cysts is not fully understood, it may originate from epithelial remnants within a lymph node, arise through cystic transformation of pancreatic ducts or be derived from a misplaced branchial cleft cyst that fused with the pancreas during embryogenesis. No association with immunosuppression or autoimmune dysfunction has been identified. lymphoepithelial cysts are composed of a squamous epithelial lined cyst with surrounding reactive lymphoid tissue. Mucinous cystic neoplasms (MCN) contain ovarian stroma. Lymphoepithelial cysts",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreaslymphoepithelial.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Foamy histiocytes and multinucleated giant cells can be present",
+        "is_correct": true,
+        "explanation": ". Foamy histiocytes and multinucleated giant cells can be present. Lymphoepithelial cysts are composed of squamous epithelium and reactive lymphoid tissue but may rarely show sebaceous differentiation, keratin granulomas, cholesterol clefts, multinucleated giant cells and foamy histiocytes. lymphoepithelial cysts of the pancreas are rare (0.5% of resected pancreatic cysts). The most common cystic lesion of the pancreas is intraductal papillary mucinous neoplasm (IPMN). while the etiology of lymphoepithelial cysts is not fully understood, it may originate from epithelial remnants within a lymph node, arise through cystic transformation of pancreatic ducts or be derived from a misplaced branchial cleft cyst that fused with the pancreas during embryogenesis. No association with immunosuppression or autoimmune dysfunction has been identified. lymphoepithelial cysts are composed of a squamous epithelial lined cyst with surrounding reactive lymphoid tissue. Mucinous cystic neoplasms (MCN) contain ovarian stroma. Lymphoepithelial cysts",
+        "order_index": 0
+      },
+      {
+        "text": "This lesion is associated with immunosuppression or autoimmune dysfunction",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Foamy histiocytes and multinucleated giant cells can be present. Lymphoepithelial cysts are compos...",
+        "order_index": 1
+      },
+      {
+        "text": "This lesion is associated with ovarian type stroma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Foamy histiocytes and multinucleated giant cells can be present. Lymphoepithelial cysts are compos...",
+        "order_index": 2
+      },
+      {
+        "text": "This lesion is the most common cystic lesion of the pancreas",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Foamy histiocytes and multinucleated giant cells can be present. Lymphoepithelial cysts are compos...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreaslymphoepithelialrytych04.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 42",
+    "stem": "Which morphologic type of intraductal papillary mucinous neoplasm is depicted in the above photo, seen arising from a branch of the main pancreatic duct?",
+    "difficulty": "medium",
+    "teaching_point": ". Gastric. The histologic features are typical of the gastric type of IPMN, no features of intestinal or pancreatobiliary differentiation are seen (choices B and E); choice D is not a morphologic type of IPMN; rather, intraductal oncocytic papillary neoplams are a distinct separate entity. Intraductal papillary mucinous neoplasm (IPMN)",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasipmn.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Gastric",
+        "is_correct": true,
+        "explanation": ". Gastric. The histologic features are typical of the gastric type of IPMN, no features of intestinal or pancreatobiliary differentiation are seen (choices B and E); choice D is not a morphologic type of IPMN; rather, intraductal oncocytic papillary neoplams are a distinct separate entity. Intraductal papillary mucinous neoplasm (IPMN)",
+        "order_index": 0
+      },
+      {
+        "text": "Intestinal",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Gastric. The histologic features are typical of the gastric type of IPMN, no features of intestina...",
+        "order_index": 1
+      },
+      {
+        "text": "Invasive",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Gastric. The histologic features are typical of the gastric type of IPMN, no features of intestina...",
+        "order_index": 2
+      },
+      {
+        "text": "Oncocytic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Gastric. The histologic features are typical of the gastric type of IPMN, no features of intestina...",
+        "order_index": 3
+      },
+      {
+        "text": "Pancreaticobiliary",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Gastric. The histologic features are typical of the gastric type of IPMN, no features of intestina...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasipmn_Agostini01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 43",
+    "stem": "Which of the following clinical scenarios would most likely represent an intraductal papillary mucinous neoplasm (IPMN)?",
+    "difficulty": "medium",
+    "teaching_point": ". 66 year old man with 2 cm cystic pancreatic head mass. IPMNs are more often seen in older men and are cystic; thus choices A - C are incorrect (choice A would be more typical of a solid pseudopapillary neoplasm; choice B would more typical of a mucinous cystic neoplasm; choice C would be more typical of pancreatic ductal adenocarcinoma or a pancreatic neuroendocrine tumor). Intraductal papillary mucinous neoplasm (IPMN)",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasipmn.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "29 year old woman with 8 cm solid and cystic pancreatic tail mass",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . 66 year old man with 2 cm cystic pancreatic head mass. IPMNs are more often seen in older men and ...",
+        "order_index": 0
+      },
+      {
+        "text": "45 year old woman with 3 cm cystic pancreatic tail mass",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . 66 year old man with 2 cm cystic pancreatic head mass. IPMNs are more often seen in older men and ...",
+        "order_index": 1
+      },
+      {
+        "text": "58 year old man with 3 cm solid pancreatic head mass",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . 66 year old man with 2 cm cystic pancreatic head mass. IPMNs are more often seen in older men and ...",
+        "order_index": 2
+      },
+      {
+        "text": "66 year old man with 2 cm cystic pancreatic head mass",
+        "is_correct": true,
+        "explanation": ". 66 year old man with 2 cm cystic pancreatic head mass. IPMNs are more often seen in older men and are cystic; thus choices A - C are incorrect (choice A would be more typical of a solid pseudopapillary neoplasm; choice B would more typical of a mucinous cystic neoplasm; choice C would be more typical of pancreatic ductal adenocarcinoma or a pancreatic neuroendocrine tumor). Intraductal papillary mucinous neoplasm (IPMN)",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 44",
+    "stem": "Which syndrome is associated with multiple insulinomas?",
+    "difficulty": "medium",
+    "teaching_point": "MEN1 Insulinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasinsulinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "MEN1",
+        "is_correct": true,
+        "explanation": "MEN1 Insulinoma",
+        "order_index": 0
+      },
+      {
+        "text": "MEN2A",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. MEN1 Insulinoma",
+        "order_index": 1
+      },
+      {
+        "text": "MEN2B",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. MEN1 Insulinoma",
+        "order_index": 2
+      },
+      {
+        "text": "NF2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. MEN1 Insulinoma",
+        "order_index": 3
+      },
+      {
+        "text": "Peutz-Jeghers",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. MEN1 Insulinoma",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 45",
+    "stem": "A midbody pancreatic enucleation is performed (see image above). Histologically, the neoplasm is positive for insulin, chromogranin and synaptophysin, with a Ki67 of < 2%. The patient has no clinical syndrome of hyperinsulinemic hypoglycemia. What is the most appropriate diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Well differentiated neuroendocrine tumor, G1. In the absence of a clinical syndrome, the term insulinoma should not be used; the Ki67 of < 2% classifies this as a grade 1 neuroendocrine tumor. Insulinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasinsulinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Glucagonoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Well differentiated neuroendocrine tumor, G1. In the absence of a clinical syndrome, the term insuli...",
+        "order_index": 0
+      },
+      {
+        "text": "Insulinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Well differentiated neuroendocrine tumor, G1. In the absence of a clinical syndrome, the term insuli...",
+        "order_index": 1
+      },
+      {
+        "text": "VIPoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Well differentiated neuroendocrine tumor, G1. In the absence of a clinical syndrome, the term insuli...",
+        "order_index": 2
+      },
+      {
+        "text": "Well differentiated neuroendocrine tumor, G1",
+        "is_correct": true,
+        "explanation": "Well differentiated neuroendocrine tumor, G1. In the absence of a clinical syndrome, the term insulinoma should not be used; the Ki67 of < 2% classifies this as a grade 1 neuroendocrine tumor. Insulinoma",
+        "order_index": 3
+      },
+      {
+        "text": "Well differentiated neuroendocrine tumor, G2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Well differentiated neuroendocrine tumor, G1. In the absence of a clinical syndrome, the term insuli...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasinsulinomaagostinivulaj01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 46",
+    "stem": "A 22 year old woman presents with abdominal pain and is found to have an ileal lesion on imaging. A small bowel resection is performed and shows the image above. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Meckel diverticulum with pancreatic and gastric heterotopia Heterotopic pancreas",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasheterotopic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute appendicitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Meckel diverticulum with pancreatic and gastric heterotopia Heterotopic pancreas",
+        "order_index": 0
+      },
+      {
+        "text": "Endometriosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Meckel diverticulum with pancreatic and gastric heterotopia Heterotopic pancreas",
+        "order_index": 1
+      },
+      {
+        "text": "Meckel diverticulum",
+        "is_correct": true,
+        "explanation": ". Meckel diverticulum with pancreatic and gastric heterotopia Heterotopic pancreas",
+        "order_index": 2
+      },
+      {
+        "text": "Well differentiated neuroendocrine tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Meckel diverticulum with pancreatic and gastric heterotopia Heterotopic pancreas",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasheterotopicOjukwuBRQ1_1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Heterotopic pancreas",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 47",
+    "stem": "A 55 year old man presents with persistent anemia, abdominal pain and intermittent melena. Endoscopy reveals a subepithelial gastric antral mass with overlying umbilicated mucosa. Endoscopic mucosal resection shows the images above. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Heterotopic pancreas Heterotopic pancreas",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasheterotopic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Gastric adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Heterotopic pancreas Heterotopic pancreas",
+        "order_index": 0
+      },
+      {
+        "text": "Heterotopic pancreas",
+        "is_correct": true,
+        "explanation": ". Heterotopic pancreas Heterotopic pancreas",
+        "order_index": 1
+      },
+      {
+        "text": "Metastatic adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Heterotopic pancreas Heterotopic pancreas",
+        "order_index": 2
+      },
+      {
+        "text": "Pancreatic metaplasia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Heterotopic pancreas Heterotopic pancreas",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasheterotopicOjukwuBRQ2_1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Heterotopic pancreas",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasheterotopicOjukwuBRQ2_2.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "Heterotopic pancreas",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 48",
+    "stem": "Gross examination of a pancreaticoduodenectomy (Whipple) specimen reveals a white-tan colored, firm, solid mass with ill defined borders, located in the pancreatic head. Which of the following would be included in the initial differential diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Pancreatic ductal adenocarcinoma Pancreas - Grossing",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasgrossing.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acinar cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Pancreatic ductal adenocarcinoma Pancreas - Grossing",
+        "order_index": 0
+      },
+      {
+        "text": "Pancreatic ductal adenocarcinoma",
+        "is_correct": true,
+        "explanation": "Pancreatic ductal adenocarcinoma Pancreas - Grossing",
+        "order_index": 1
+      },
+      {
+        "text": "Solid pseudopapillary tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Pancreatic ductal adenocarcinoma Pancreas - Grossing",
+        "order_index": 2
+      },
+      {
+        "text": "Well differentiated pancreatic neuroendocrine tumor, grade 1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Pancreatic ductal adenocarcinoma Pancreas - Grossing",
+        "order_index": 3
+      },
+      {
+        "text": "Well differentiated pancreatic neuroendocrine tumor, grade 3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Pancreatic ductal adenocarcinoma Pancreas - Grossing",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasgrossingbasturkBRQ01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 53",
+    "stem": "Which of the following is a typical reason for frozen section requests in the surgical management of pancreatic tumors?",
+    "difficulty": "medium",
+    "teaching_point": "To evaluate a suspicious liver lesion Pancreas - Frozen section",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasfrozensection.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "To evaluate a suspicious liver lesion",
+        "is_correct": true,
+        "explanation": "To evaluate a suspicious liver lesion Pancreas - Frozen section",
+        "order_index": 0
+      },
+      {
+        "text": "To evaluate extranodal tumor extension in a metastatic peripancreatic lymph node",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. To evaluate a suspicious liver lesion Pancreas - Frozen section",
+        "order_index": 1
+      },
+      {
+        "text": "To evaluate neoadjuvant treatment response",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. To evaluate a suspicious liver lesion Pancreas - Frozen section",
+        "order_index": 2
+      },
+      {
+        "text": "To evaluate the histologic grade of the tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. To evaluate a suspicious liver lesion Pancreas - Frozen section",
+        "order_index": 3
+      },
+      {
+        "text": "To evaluate the mitotic index of the tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. To evaluate a suspicious liver lesion Pancreas - Frozen section",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasfrozensectionozkan04.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 54",
+    "stem": "Which of the following is a core (mandatory) data element when reporting the resection specimens with pancreatic neuroendocrine tumors according to CAP?",
+    "difficulty": "medium",
+    "teaching_point": "Histologic grade of the tumor Features to report - pancreatectomy",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasfeatures.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Distance of the tumor from all negative margins",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Histologic grade of the tumor Features to report - pancreatectomy",
+        "order_index": 0
+      },
+      {
+        "text": "Functional type of the tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Histologic grade of the tumor Features to report - pancreatectomy",
+        "order_index": 1
+      },
+      {
+        "text": "Histologic grade of the tumor",
+        "is_correct": true,
+        "explanation": "Histologic grade of the tumor Features to report - pancreatectomy",
+        "order_index": 2
+      },
+      {
+        "text": "Patient’s clinical history",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Histologic grade of the tumor Features to report - pancreatectomy",
+        "order_index": 3
+      },
+      {
+        "text": "Tumor necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Histologic grade of the tumor Features to report - pancreatectomy",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 55",
+    "stem": "Among the entities below, which one is considered a precursor lesion for invasive ductal adenocarcinoma of pancreas?",
+    "difficulty": "medium",
+    "teaching_point": "Intraductal papillary mucinous neoplasm Ductal adenocarcinoma, NOS",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasductal.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Intraductal papillary mucinous neoplasm",
+        "is_correct": true,
+        "explanation": "Intraductal papillary mucinous neoplasm Ductal adenocarcinoma, NOS",
+        "order_index": 0
+      },
+      {
+        "text": "Lymphoepithelial cyst",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Intraductal papillary mucinous neoplasm Ductal adenocarcinoma, NOS",
+        "order_index": 1
+      },
+      {
+        "text": "Serous cystadenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Intraductal papillary mucinous neoplasm Ductal adenocarcinoma, NOS",
+        "order_index": 2
+      },
+      {
+        "text": "Solid pseudopapillary neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Intraductal papillary mucinous neoplasm Ductal adenocarcinoma, NOS",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 57",
+    "stem": "An autopsy is requested for a 22 year old man who was found unresponsive in his college dormitory. Pertinent findings include cerebral edema, diffusely thickened glomerular basement membranes and focal lymphocytic inflammatory infiltrate in the pancreas. What is the most likely cause of death?",
+    "difficulty": "medium",
+    "teaching_point": ". Diabetic ketoacidosis. The findings of focal lymphocytic infiltration of the pancreas (or insulitis) and diffusely thickened glomerular basement membranes in a young patient suggest a diagnosis of type 1 diabetes. Diabetic ketoacidosis is a common presenting complication of type 1 diabetes and if unaddressed, can result in severe hypokalemia, pulmonary and cerebral edema, coma and death. while systemic lupus erythematosus can cause glomerular disease and pancreatitis, the findings in this patient are not consistent with a diagnosis of lupus. Lupus glomerulonephritis is characterized by mesangial hypercellularity and vasculopathy, while lupus pancreatitis is often marked by acute inflammation due to vasculopathy. while chronic gallstone pancreatitis can result in lymphocytic infiltrate of pancreatic tissue, one would also expect to see fibrosis, loss of acinar tissue and ductal changes. It would not explain the renal and neurological changes seen in the decedent in this case. the pattern of glomerular injury in glomerulonephritis involves neutrophilic and mononuclear infiltration, along with proliferation of mesangial and endothelial cells with mesangial edema. Acute kidney injury does not account for the cerebral edema and inflammatory changes in the pancreas in the decedent. Diabetes mellitus",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasdmgeneral.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute kidney injury due to glomerulonephritis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Diabetic ketoacidosis. The findings of focal lymphocytic infiltration of the pancreas (or insuliti...",
+        "order_index": 0
+      },
+      {
+        "text": "Chronic pancreatitis due to gallstones",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Diabetic ketoacidosis. The findings of focal lymphocytic infiltration of the pancreas (or insuliti...",
+        "order_index": 1
+      },
+      {
+        "text": "Diabetic ketoacidosis",
+        "is_correct": true,
+        "explanation": ". Diabetic ketoacidosis. The findings of focal lymphocytic infiltration of the pancreas (or insulitis) and diffusely thickened glomerular basement membranes in a young patient suggest a diagnosis of type 1 diabetes. Diabetic ketoacidosis is a common presenting complication of type 1 diabetes and if unaddressed, can result in severe hypokalemia, pulmonary and cerebral edema, coma and death. while systemic lupus erythematosus can cause glomerular disease and pancreatitis, the findings in this patient are not consistent with a diagnosis of lupus. Lupus glomerulonephritis is characterized by mesangial hypercellularity and vasculopathy, while lupus pancreatitis is often marked by acute inflammation due to vasculopathy. while chronic gallstone pancreatitis can result in lymphocytic infiltrate of pancreatic tissue, one would also expect to see fibrosis, loss of acinar tissue and ductal changes. It would not explain the renal and neurological changes seen in the decedent in this case. the pattern of glomerular injury in glomerulonephritis involves neutrophilic and mononuclear infiltration, along with proliferation of mesangial and endothelial cells with mesangial edema. Acute kidney injury does not account for the cerebral edema and inflammatory changes in the pancreas in the decedent. Diabetes mellitus",
+        "order_index": 2
+      },
+      {
+        "text": "Systemic lupus erythematosus",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Diabetic ketoacidosis. The findings of focal lymphocytic infiltration of the pancreas (or insuliti...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 58",
+    "stem": "A patient undergoes pancreaticoduodenectomy for pancreatic adenocarcinoma. The background pancreatic tissue of the pancreatic resection margins appears above. Congo red stain is positive, showing orange colored staining under brightfield microscopy in the pancreatic islets. What conclusion is most likely based on the histology and staining profile above?",
+    "difficulty": "medium",
+    "teaching_point": ". Patient has a history of type 2 diabetes. The images above demonstrate amylin deposition in pancreatic islets, a characteristic finding in type 2 diabetes. The amylin deposits stain positively for Congo red with brightfield microscopy and may show birefringence under polarized light after formation of advanced glycosylation end products. pseudocysts lined by granulation tissue, not amyloid-like islet depositions as seen above, are common in chronic pancreatitis due to alcohol use. there is no evidence of residual adenocarcinoma in the images above. fibrosis would not show positive staining for Congo red. Diabetes mellitus",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasdmgeneral.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Pancreatic resection margin is positive for adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Patient has a history of type 2 diabetes. The images above demonstrate amylin deposition in pancre...",
+        "order_index": 0
+      },
+      {
+        "text": "Patient has a history of alcohol use disorder",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Patient has a history of type 2 diabetes. The images above demonstrate amylin deposition in pancre...",
+        "order_index": 1
+      },
+      {
+        "text": "Patient has a history of type 2 diabetes",
+        "is_correct": true,
+        "explanation": ". Patient has a history of type 2 diabetes. The images above demonstrate amylin deposition in pancreatic islets, a characteristic finding in type 2 diabetes. The amylin deposits stain positively for Congo red with brightfield microscopy and may show birefringence under polarized light after formation of advanced glycosylation end products. pseudocysts lined by granulation tissue, not amyloid-like islet depositions as seen above, are common in chronic pancreatitis due to alcohol use. there is no evidence of residual adenocarcinoma in the images above. fibrosis would not show positive staining for Congo red. Diabetes mellitus",
+        "order_index": 2
+      },
+      {
+        "text": "The islets are showing increased fibrosis due to chronic pancreatitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Patient has a history of type 2 diabetes. The images above demonstrate amylin deposition in pancre...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasdmgeneralCardenas08.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasdmgeneralCardenas07.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 59",
+    "stem": "The above image is an FNA sample from the pancreatic head. Which of the following choices represents the image in the sample?",
+    "difficulty": "medium",
+    "teaching_point": "Ductal cells Pancreas - Cytology",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreascytology.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acinar cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Ductal cells Pancreas - Cytology",
+        "order_index": 0
+      },
+      {
+        "text": "Ductal cells",
+        "is_correct": true,
+        "explanation": "Ductal cells Pancreas - Cytology",
+        "order_index": 1
+      },
+      {
+        "text": "Islet cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Ductal cells Pancreas - Cytology",
+        "order_index": 2
+      },
+      {
+        "text": "Malignant cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Ductal cells Pancreas - Cytology",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreascytologypolicarpionicolas01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 60",
+    "stem": "Which is the method used to procure a cytology sample from a bile duct stricture?",
+    "difficulty": "medium",
+    "teaching_point": "Endoscopic retrograde cholangiopancreatography Pancreas - Cytology",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreascytology.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Endoscopic ultrasound guided",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Endoscopic retrograde cholangiopancreatography Pancreas - Cytology",
+        "order_index": 0
+      },
+      {
+        "text": "CT guided",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Endoscopic retrograde cholangiopancreatography Pancreas - Cytology",
+        "order_index": 1
+      },
+      {
+        "text": "Endoscopic retrograde cholangiopancreatography",
+        "is_correct": true,
+        "explanation": "Endoscopic retrograde cholangiopancreatography Pancreas - Cytology",
+        "order_index": 2
+      },
+      {
+        "text": "MRI guided",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Endoscopic retrograde cholangiopancreatography Pancreas - Cytology",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 63",
+    "stem": "A 62 year old woman presented with a pancreatic head mass. Histologic sections demonstrate areas of irregular mucin pools with suspended clusters of malignant cells and also floating signet ring cells. However, no individual infiltrating signet ring cells are identified in the stroma. There is an intestinal type intraductal papillary mucinous neoplasm (IPMN) in the background; no conventional ductal adenocarcinoma component is seen. What is the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Colloid carcinoma Colloid carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreascolloid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Colloid carcinoma",
+        "is_correct": true,
+        "explanation": "Colloid carcinoma Colloid carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "IPMN with rupture and extruded stromal mucin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Colloid carcinoma Colloid carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Mucinous cystadenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Colloid carcinoma Colloid carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Signet ring cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Colloid carcinoma Colloid carcinoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreascolloidVazzanobrq1.JPG",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 66",
+    "stem": "What are the cardinal features of chronic pancreatitis?",
+    "difficulty": "medium",
+    "teaching_point": "Fibrosis, loss of acinar tissue and duct changes Chronic pancreatitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreaschronic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Fat necrosis, chronic inflammation and loss of Langerhans islets",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Fibrosis, loss of acinar tissue and duct changes Chronic pancreatitis",
+        "order_index": 0
+      },
+      {
+        "text": "Fibrosis, loss of acinar tissue and duct changes",
+        "is_correct": true,
+        "explanation": "Fibrosis, loss of acinar tissue and duct changes Chronic pancreatitis",
+        "order_index": 1
+      },
+      {
+        "text": "Giant cell granulomas, perineural inflammation and plasma cell infiltrate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Fibrosis, loss of acinar tissue and duct changes Chronic pancreatitis",
+        "order_index": 2
+      },
+      {
+        "text": "Intraductal proliferative lesions, lipomatous atrophy and perivenulitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Fibrosis, loss of acinar tissue and duct changes Chronic pancreatitis",
+        "order_index": 3
+      },
+      {
+        "text": "Necrosis, granulocytic epithelial lesions and pseudocysts",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Fibrosis, loss of acinar tissue and duct changes Chronic pancreatitis",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreaschronicMicroLuchini3.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 67",
+    "stem": "Is there a reproducible grading system for chronic pancreatitis?",
+    "difficulty": "medium",
+    "teaching_point": "No, there is no universally accepted grading system. However, classification as mild, moderate or severe may be applied. Chronic pancreatitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreaschronic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "No, there is no universally accepted grading system",
+        "is_correct": true,
+        "explanation": "No, there is no universally accepted grading system. However, classification as mild, moderate or severe may be applied. Chronic pancreatitis",
+        "order_index": 0
+      },
+      {
+        "text": "Yes, grading is based on the degree of acinar tissue loss",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. No, there is no universally accepted grading system. However, classification as mild, moderate or se...",
+        "order_index": 1
+      },
+      {
+        "text": "Yes, grading is based on the entity of fibrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. No, there is no universally accepted grading system. However, classification as mild, moderate or se...",
+        "order_index": 2
+      },
+      {
+        "text": "Yes, grading is based on the presence of pseudocysts",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. No, there is no universally accepted grading system. However, classification as mild, moderate or se...",
+        "order_index": 3
+      },
+      {
+        "text": "Yes, grading is based on the severity of chronic inflammation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. No, there is no universally accepted grading system. However, classification as mild, moderate or se...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 68",
+    "stem": "A 40 year old man presented with jaundice and abdominal imaging showed a pancreatic mass. Serum IgG4 levels were not elevated. Endoscopic ultrasound guided fine needle biopsy was performed and a representative photomicrograph is shown. Which of the following statements is true?",
+    "difficulty": "medium",
+    "teaching_point": ". According to the International Consensus Diagnostic Criteria established in 2011, the definitive diagnosis autoimmune pancreatitis type 2 requires tissue biopsy of the pancreas demonstrating granulocytic infiltration of the pancreatic duct wall [(granulocytic epithelial lesion(s)]. Answer choice A: IgG4 positive cells are absent in autoimmune pancreatitis type 2. This finding is more characteristic of autoimmune pancreatitis type 1. Answer choice B: Both autoimmune pancreatitis types 1 and 2 respond to the steroid therapy. Answer choice D: Autoimmune pancreatitis type 2 is not associated with extra pancreatic organ manifestations. This finding is more characteristic of autoimmune pancreatitis type 1. Autoimmune pancreatitis type 2",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasaiptype2.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Although serum IgG4 levels are not elevated, will have IgG4 positive cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . According to the International Consensus Diagnostic Criteria established in 2011, the definitive d...",
+        "order_index": 0
+      },
+      {
+        "text": "Despite steroid therapy, the patient's symptoms will persist and this will support the most likely diagnosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . According to the International Consensus Diagnostic Criteria established in 2011, the definitive d...",
+        "order_index": 1
+      },
+      {
+        "text": "Histopathologic findings in the photomicrograph are required for definitive diagnosis",
+        "is_correct": true,
+        "explanation": ". According to the International Consensus Diagnostic Criteria established in 2011, the definitive diagnosis autoimmune pancreatitis type 2 requires tissue biopsy of the pancreas demonstrating granulocytic infiltration of the pancreatic duct wall [(granulocytic epithelial lesion(s)]. Answer choice A: IgG4 positive cells are absent in autoimmune pancreatitis type 2. This finding is more characteristic of autoimmune pancreatitis type 1. Answer choice B: Both autoimmune pancreatitis types 1 and 2 respond to the steroid therapy. Answer choice D: Autoimmune pancreatitis type 2 is not associated with extra pancreatic organ manifestations. This finding is more characteristic of autoimmune pancreatitis type 1. Autoimmune pancreatitis type 2",
+        "order_index": 2
+      },
+      {
+        "text": "Most likely diagnosis is associated with systemic inflammation, with frequent involvement of extra pancreatic organs",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . According to the International Consensus Diagnostic Criteria established in 2011, the definitive d...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasaiptype2EscobarBRQ1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 69",
+    "stem": "A 45 year old woman presented with abdominal pain and jaundice. Abdominal imaging showed a diffusely enlarged sausage shaped pancreas and stenosis of the main pancreatic duct. Serum amylase, lipase and IgG4 levels were not elevated. During the workup, endoscopic ultrasound guided fine needle biopsy was performed and histologic sections showed pancreatic duct centric inflammation including ductal epithelium with intra-epithelial neutrophils. Upon further gathering of past medical history, the patient was most likely found to have which of the following?",
+    "difficulty": "medium",
+    "teaching_point": ". There is a known association between autoimmune pancreatitis type 2 and inflammatory bowel disease, especially ulcerative colitis, occurring in 15 - 20% of biopsy proven autoimmune pancreatitis type 2. The basis of this association is unclear. Answer choice A: Ankylosing spondylitis is an inflammatory disease that is associated with HLA-B27 and is not known to be associated with autoimmune pancreatitis type 2. Answer choice C: Autoimmune pancreatitis type 1 is an IgG4 related disease. Patients often present with extra pancreatic manifestations of systemic IgG4 related inflammation including enlarged salivary glands and Riedel thyroiditis or the sclerosing variant of Hashimoto thyroiditis. Answer choice D: Systemic lupus erythematosus is not known to be associated with autoimmune pancreatitis type 2. Autoimmune pancreatitis type 2",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasaiptype2.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Ankylosing spondylitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . There is a known association between autoimmune pancreatitis type 2 and inflammatory bowel disease...",
+        "order_index": 0
+      },
+      {
+        "text": "Inflammatory bowel disease",
+        "is_correct": true,
+        "explanation": ". There is a known association between autoimmune pancreatitis type 2 and inflammatory bowel disease, especially ulcerative colitis, occurring in 15 - 20% of biopsy proven autoimmune pancreatitis type 2. The basis of this association is unclear. Answer choice A: Ankylosing spondylitis is an inflammatory disease that is associated with HLA-B27 and is not known to be associated with autoimmune pancreatitis type 2. Answer choice C: Autoimmune pancreatitis type 1 is an IgG4 related disease. Patients often present with extra pancreatic manifestations of systemic IgG4 related inflammation including enlarged salivary glands and Riedel thyroiditis or the sclerosing variant of Hashimoto thyroiditis. Answer choice D: Systemic lupus erythematosus is not known to be associated with autoimmune pancreatitis type 2. Autoimmune pancreatitis type 2",
+        "order_index": 1
+      },
+      {
+        "text": "Salivary gland enlargement and thyroiditis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . There is a known association between autoimmune pancreatitis type 2 and inflammatory bowel disease...",
+        "order_index": 2
+      },
+      {
+        "text": "Systemic lupus erythematosus",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . There is a known association between autoimmune pancreatitis type 2 and inflammatory bowel disease...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 70",
+    "stem": "Which of the following clinical and histologic features would support a diagnosis of autoimmune pancreatitis (AIP) type 1 over AIP type 2?",
+    "difficulty": "medium",
+    "teaching_point": ". Abundant IgG4 positive plasma cells on histologic section is the most supportive of a diagnosis of AIP type 1. AIP type 1 is the pancreatic manifestation of IgG4 related disease (IgG4 RD) and so patients will typically have elevated IgG4 levels on serology as well as demonstrate abundant IgG4 positive plasma cells on histologic section. Answers A and C are incorrect because AIP type 1 patients are more commonly over 50 years old and male. AIP type 1 also shows characteristic storiform fibrosis, not lobular fibrosis, which can be seen in AIP type 2. Autoimmune pancreatitis type 1",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasaiptype1.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "25 year old patient",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Abundant IgG4 positive plasma cells on histologic section is the most supportive of a diagnosis of...",
+        "order_index": 0
+      },
+      {
+        "text": "Abundant IgG4 positive plasma cells on histologic section",
+        "is_correct": true,
+        "explanation": ". Abundant IgG4 positive plasma cells on histologic section is the most supportive of a diagnosis of AIP type 1. AIP type 1 is the pancreatic manifestation of IgG4 related disease (IgG4 RD) and so patients will typically have elevated IgG4 levels on serology as well as demonstrate abundant IgG4 positive plasma cells on histologic section. Answers A and C are incorrect because AIP type 1 patients are more commonly over 50 years old and male. AIP type 1 also shows characteristic storiform fibrosis, not lobular fibrosis, which can be seen in AIP type 2. Autoimmune pancreatitis type 1",
+        "order_index": 1
+      },
+      {
+        "text": "Female patient",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Abundant IgG4 positive plasma cells on histologic section is the most supportive of a diagnosis of...",
+        "order_index": 2
+      },
+      {
+        "text": "Lobular fibrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Abundant IgG4 positive plasma cells on histologic section is the most supportive of a diagnosis of...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 71",
+    "stem": "Which of the following would most likely accompany the features seen on the pancreas histologic section shown above?",
+    "difficulty": "medium",
+    "teaching_point": ". Elevated IgG4 on serology. The histologic section shows the characteristic findings of autoimmune pancreatitis (AIP) type 1 (storiform fibrosis and a lymphoplasmacytic infiltrate). Most AIP type 1 patients have elevated IgG4 on serology. patients do not present with symptoms of acute pancreatitis (acute abdominal pain with elevated lipase on serology). AIP type 1 patients can present with elevated CA 19-9 on serology but this is not as common as elevated IgG4. inflammatory bowel disease is associated with AIP type 2, not type 1. a pancreas mass can be seen in AIP type 1 but this is variable. Autoimmune pancreatitis type 1",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasaiptype1.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute abdominal pain with elevated lipase on serology",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Elevated IgG4 on serology. The histologic section shows the characteristic findings of autoimmune ...",
+        "order_index": 0
+      },
+      {
+        "text": "Elevated CA 19-9 on serology",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Elevated IgG4 on serology. The histologic section shows the characteristic findings of autoimmune ...",
+        "order_index": 1
+      },
+      {
+        "text": "Elevated IgG4 on serology",
+        "is_correct": true,
+        "explanation": ". Elevated IgG4 on serology. The histologic section shows the characteristic findings of autoimmune pancreatitis (AIP) type 1 (storiform fibrosis and a lymphoplasmacytic infiltrate). Most AIP type 1 patients have elevated IgG4 on serology. patients do not present with symptoms of acute pancreatitis (acute abdominal pain with elevated lipase on serology). AIP type 1 patients can present with elevated CA 19-9 on serology but this is not as common as elevated IgG4. inflammatory bowel disease is associated with AIP type 2, not type 1. a pancreas mass can be seen in AIP type 1 but this is variable. Autoimmune pancreatitis type 1",
+        "order_index": 2
+      },
+      {
+        "text": "Histology of inflammatory bowel disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Elevated IgG4 on serology. The histologic section shows the characteristic findings of autoimmune ...",
+        "order_index": 3
+      },
+      {
+        "text": "Pancreas mass on imaging",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Elevated IgG4 on serology. The histologic section shows the characteristic findings of autoimmune ...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasAIPtype1huber12.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 72",
+    "stem": "Elastase, trypsin and DNAse are placed in the",
+    "difficulty": "medium",
+    "teaching_point": "Eosinophilic granula in the acinic cells. As basic substances, proteins are usually eosinophilic in H&E staining. The eosinophilic granula are called zymogenic in pancreas acinic cells. the basophilic part of the acinic cell cytoplasm contains ribosomes (rough endoplasmic reticulum). vacuoles in the ductal cells contain mucin. beta cells are a major part of Langerhans islets; eosinophilic cytoplasm contains endocrine granula (insulin). Pancreas - Anatomy & histology",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasnormal.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Basophilic basal part of acinic cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Eosinophilic granula in the acinic cells. As basic substances, proteins are usually eosinophilic in ...",
+        "order_index": 0
+      },
+      {
+        "text": "Cytoplasmic vacuoles in the ductal cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Eosinophilic granula in the acinic cells. As basic substances, proteins are usually eosinophilic in ...",
+        "order_index": 1
+      },
+      {
+        "text": "Eosinophilic cytoplasm of beta cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Eosinophilic granula in the acinic cells. As basic substances, proteins are usually eosinophilic in ...",
+        "order_index": 2
+      },
+      {
+        "text": "Eosinophilic granula in the acinic cells",
+        "is_correct": true,
+        "explanation": "Eosinophilic granula in the acinic cells. As basic substances, proteins are usually eosinophilic in H&E staining. The eosinophilic granula are called zymogenic in pancreas acinic cells. the basophilic part of the acinic cell cytoplasm contains ribosomes (rough endoplasmic reticulum). vacuoles in the ductal cells contain mucin. beta cells are a major part of Langerhans islets; eosinophilic cytoplasm contains endocrine granula (insulin). Pancreas - Anatomy & histology",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 73",
+    "stem": "The representative image above is from the pancreas biopsy of a simultaneous pancreas kidney transplant recipient. Biopsy was performed due to elevated serum amylase and lipase. Based on this H&E stained section alone, how would you grade this biopsy?",
+    "difficulty": "medium",
+    "teaching_point": "Acute cell mediated rejection, grade 1. The interlobular septum is diffusely involved with a mononuclear infiltrate containing activated lymphocytes and eosinophils; there is ductitis with significant epithelial damage, defining this process as acute cell mediated rejection, grade 1. the septal infiltrate is active and shows features of acute cell mediated rejection. Answers C and D are incorrect because acute cell mediated rejection grades 2 and 3 require multifocal or severe acinar inflammation. there are no histological (interacinar capillaritis) or laboratory (donor specific antibodies) features of acute antibody mediated rejection. Allograft rejection",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasallograftrejection.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute antibody mediated rejection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Acute cell mediated rejection, grade 1. The interlobular septum is diffusely involved with a mononuc...",
+        "order_index": 0
+      },
+      {
+        "text": "Acute cell mediated rejection, grade 1",
+        "is_correct": true,
+        "explanation": "Acute cell mediated rejection, grade 1. The interlobular septum is diffusely involved with a mononuclear infiltrate containing activated lymphocytes and eosinophils; there is ductitis with significant epithelial damage, defining this process as acute cell mediated rejection, grade 1. the septal infiltrate is active and shows features of acute cell mediated rejection. Answers C and D are incorrect because acute cell mediated rejection grades 2 and 3 require multifocal or severe acinar inflammation. there are no histological (interacinar capillaritis) or laboratory (donor specific antibodies) features of acute antibody mediated rejection. Allograft rejection",
+        "order_index": 1
+      },
+      {
+        "text": "Acute cell mediated rejection, grade 2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Acute cell mediated rejection, grade 1. The interlobular septum is diffusely involved with a mononuc...",
+        "order_index": 2
+      },
+      {
+        "text": "Acute cell mediated rejection, grade 3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Acute cell mediated rejection, grade 1. The interlobular septum is diffusely involved with a mononuc...",
+        "order_index": 3
+      },
+      {
+        "text": "Indeterminate for rejection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Acute cell mediated rejection, grade 1. The interlobular septum is diffusely involved with a mononuc...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasallograftrejectionmikhailov16.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 74",
+    "stem": "A pancreas transplant recipient underwent an allograft biopsy. A representative image of the biopsy core stained with antibodies to CD3 is shown above. Based on this image alone, what is your diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Acute cell mediated rejection, grade 1. Most of the septum shown is occupied by an unremarkable artery and the remaining portion shows only scattered T cells. Focal acinar inflammation (≤ 2 foci of T cells with at least 10 cells in each focus), however, is present, defining this as acute cell mediated rejection, grade 1. Answers D and E are incorrect because the lobule clearly shows several foci of lymphocytic accumulation. Answers B and C are incorrect because ≥ 3 foci of lymphocytic inflammation with at least 10 cells in each focus are not seen. Allograft rejection",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasallograftrejection.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acute cell mediated rejection, grade 1",
+        "is_correct": true,
+        "explanation": "Acute cell mediated rejection, grade 1. Most of the septum shown is occupied by an unremarkable artery and the remaining portion shows only scattered T cells. Focal acinar inflammation (≤ 2 foci of T cells with at least 10 cells in each focus), however, is present, defining this as acute cell mediated rejection, grade 1. Answers D and E are incorrect because the lobule clearly shows several foci of lymphocytic accumulation. Answers B and C are incorrect because ≥ 3 foci of lymphocytic inflammation with at least 10 cells in each focus are not seen. Allograft rejection",
+        "order_index": 0
+      },
+      {
+        "text": "Acute cell mediated rejection, grade 2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Acute cell mediated rejection, grade 1. Most of the septum shown is occupied by an unremarkable arte...",
+        "order_index": 1
+      },
+      {
+        "text": "Acute cell mediated rejection, grade 3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Acute cell mediated rejection, grade 1. Most of the septum shown is occupied by an unremarkable arte...",
+        "order_index": 2
+      },
+      {
+        "text": "Indeterminate for rejection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Acute cell mediated rejection, grade 1. Most of the septum shown is occupied by an unremarkable arte...",
+        "order_index": 3
+      },
+      {
+        "text": "Normal pancreas",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Acute cell mediated rejection, grade 1. Most of the septum shown is occupied by an unremarkable arte...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasallograftrejectionmikhailov017.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 75",
+    "stem": "A patient with diabetes mellitus 1 received a pancreas transplant. Maintenance therapy included tacrolimus; FK506 level was higher than expected. Serum amylase and lipase were normal but the blood glucose level became higher. An allograft biopsy demonstrated islet cell swelling, vacuolization, islet cell dropout and formation of empty spaces; no islet centered inflammation was found. What additional pathological changes were most likely seen on this biopsy?",
+    "difficulty": "medium",
+    "teaching_point": "Weak or absent insulin staining. Isolated β cell damage in the absence of islet centered inflammation is characteristic for calcineurin inhibitor toxicity; note also the high FK506 (tacrolimus) level and high blood glucose in this patient. Answers B and C are incorrect because these are manifestations of acute cell mediated rejection. Selective islet cell damage is not characteristic for acute cell mediated rejection; note also high levels of immunosuppressant tacrolimus and normal pancreatic enzymes. it points to the histological features of pancreatitis and it points to cytomegalovirus pancreatitis; again, selective islet cell damage is not seen under these conditions. Allograft rejection",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasallograftrejection.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acinar cells with enlarged nuclei with viral cytopathic changes",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Weak or absent insulin staining. Isolated β cell damage in the absence of islet centered inflammatio...",
+        "order_index": 0
+      },
+      {
+        "text": "Ductitis, venulitis and acinar inflammation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Weak or absent insulin staining. Isolated β cell damage in the absence of islet centered inflammatio...",
+        "order_index": 1
+      },
+      {
+        "text": "Endarteritis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Weak or absent insulin staining. Isolated β cell damage in the absence of islet centered inflammatio...",
+        "order_index": 2
+      },
+      {
+        "text": "Mixed septal and peripheral lobular inflammatory infiltrate containing polymorphonuclear neutrophils",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Weak or absent insulin staining. Isolated β cell damage in the absence of islet centered inflammatio...",
+        "order_index": 3
+      },
+      {
+        "text": "Weak or absent insulin staining",
+        "is_correct": true,
+        "explanation": "Weak or absent insulin staining. Isolated β cell damage in the absence of islet centered inflammation is characteristic for calcineurin inhibitor toxicity; note also the high FK506 (tacrolimus) level and high blood glucose in this patient. Answers B and C are incorrect because these are manifestations of acute cell mediated rejection. Selective islet cell damage is not characteristic for acute cell mediated rejection; note also high levels of immunosuppressant tacrolimus and normal pancreatic enzymes. it points to the histological features of pancreatitis and it points to cytomegalovirus pancreatitis; again, selective islet cell damage is not seen under these conditions. Allograft rejection",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 76",
+    "stem": "A 65 year old man presented with back pain and severe weight loss. Radiologic images showed a 4 cm relatively round, lobulated mass with extensive central necrosis in the pancreatic body. He underwent resection. Histologic sections demonstrate conventional ductal adenocarcinoma admixed with sheets of squamous cells with keratohyaline granules and intercellular bridges. Which of the following immunohistochemical stains would be positive in this case?",
+    "difficulty": "medium",
+    "teaching_point": ". p63. The histology described in this case is consistent with pancreatic adenosquamous carcinoma. The squamous components should be positive with p63 immunohistochemistry. Neuroendocrine neoplasms are positive for chromogranin and synaptophysin. Beta catenin nuclear expression is observed in solid pseudopapillary neoplasm. Adenosquamous carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasadenosquamous.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Beta catenin nuclear expression",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . p63. The histology described in this case is consistent with pancreatic adenosquamous carcinoma. T...",
+        "order_index": 0
+      },
+      {
+        "text": "Chromogranin A",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . p63. The histology described in this case is consistent with pancreatic adenosquamous carcinoma. T...",
+        "order_index": 1
+      },
+      {
+        "text": "p63",
+        "is_correct": true,
+        "explanation": ". p63. The histology described in this case is consistent with pancreatic adenosquamous carcinoma. The squamous components should be positive with p63 immunohistochemistry. Neuroendocrine neoplasms are positive for chromogranin and synaptophysin. Beta catenin nuclear expression is observed in solid pseudopapillary neoplasm. Adenosquamous carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Synaptophysin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . p63. The histology described in this case is consistent with pancreatic adenosquamous carcinoma. T...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 77",
+    "stem": "Which of the following is true for adenosquamous carcinoma of the pancreas?",
+    "difficulty": "medium",
+    "teaching_point": ". p63 specifically highlights the squamous component. The squamous components of the tumor should be positive with p63 immunohistochemistry. Answer A is incorrect as adenosquamous carcinomas behave worse than pancreatic ductal adenocarcinomas. Answer B is incorrect as pancreatic ductal adenocarcinoma is the most common pancreatic malignancy. Answer C is incorrect as adenosquamous carcinomas occur in elder patients (mean age of 65 years). Adenosquamous carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasadenosquamous.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It has a better prognosis than ordinary pancreatic ductal adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . p63 specifically highlights the squamous component. The squamous components of the tumor should be...",
+        "order_index": 0
+      },
+      {
+        "text": "It is the most common type of pancreatic malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . p63 specifically highlights the squamous component. The squamous components of the tumor should be...",
+        "order_index": 1
+      },
+      {
+        "text": "It usually affects pediatric patients",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . p63 specifically highlights the squamous component. The squamous components of the tumor should be...",
+        "order_index": 2
+      },
+      {
+        "text": "p63 specifically highlights the squamous component",
+        "is_correct": true,
+        "explanation": ". p63 specifically highlights the squamous component. The squamous components of the tumor should be positive with p63 immunohistochemistry. Answer A is incorrect as adenosquamous carcinomas behave worse than pancreatic ductal adenocarcinomas. Answer B is incorrect as pancreatic ductal adenocarcinoma is the most common pancreatic malignancy. Answer C is incorrect as adenosquamous carcinomas occur in elder patients (mean age of 65 years). Adenosquamous carcinoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasadenosquamoustaskin01new.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Adenosquamous carcinoma",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 78",
+    "stem": "Which lab test result would indicate acute pancreatitis?",
+    "difficulty": "medium",
+    "teaching_point": "Elevated serum lipase and amylase levels. Amylase and lipase are digestive enzymes normally released from the acinar cells of the exocrine pancreas into the duodenum. Following injury to the pancreas, these enzymes are released into the circulation and the pancreas will continue to release these enzymes form injured cells even when the normal outflow of these enzymes is obstructed. This will result in elevated serum lipase and amylase levels in the blood. elevated bilirubin is associated with gall stones and acute cholecystitis. high blood alcohol levels have no immediate association with acute pancreatitis and only indicate recent drinking. acute pancreatitis is an inflammatory condition that leads to high white blood count. Acute pancreatitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasacute.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Elevated bilirubin levels",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Elevated serum lipase and amylase levels. Amylase and lipase are digestive enzymes normally released...",
+        "order_index": 0
+      },
+      {
+        "text": "Elevated blood alcohol level",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Elevated serum lipase and amylase levels. Amylase and lipase are digestive enzymes normally released...",
+        "order_index": 1
+      },
+      {
+        "text": "Elevated serum lipase and amylase levels",
+        "is_correct": true,
+        "explanation": "Elevated serum lipase and amylase levels. Amylase and lipase are digestive enzymes normally released from the acinar cells of the exocrine pancreas into the duodenum. Following injury to the pancreas, these enzymes are released into the circulation and the pancreas will continue to release these enzymes form injured cells even when the normal outflow of these enzymes is obstructed. This will result in elevated serum lipase and amylase levels in the blood. elevated bilirubin is associated with gall stones and acute cholecystitis. high blood alcohol levels have no immediate association with acute pancreatitis and only indicate recent drinking. acute pancreatitis is an inflammatory condition that leads to high white blood count. Acute pancreatitis",
+        "order_index": 2
+      },
+      {
+        "text": "Low white blood cell count",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Elevated serum lipase and amylase levels. Amylase and lipase are digestive enzymes normally released...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/acutepancreatitiskisha02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Brq image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 79",
+    "stem": "Why is the body more susceptible to secondary infections during cases of pancreatitis?",
+    "difficulty": "medium",
+    "teaching_point": "Production of anti-inflammatory cytokines and specific cytokine inhibitors. As a result of the systemic inflammatory response during acute pancreatitis, anti-inflammatory cytokines and specific cytokine inhibitors are produced, increasing the body's risk for infection. increased leucocytes lead to activation of the immune response and less susceptibility to infections. pseudocyst cyst formation is a result of the ongoing inflammation and has no relation with susceptibility to infections. cortisol is ordinarily anti-inflammatory and contains the immune response, so acute increase does not increase infection susceptibility. Acute pancreatitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasacute.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Activation of leukocytes in response to proinflammatory cytokine production",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Production of anti-inflammatory cytokines and specific cytokine inhibitors. As a result of the syste...",
+        "order_index": 0
+      },
+      {
+        "text": "Formation of pseudocysts",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Production of anti-inflammatory cytokines and specific cytokine inhibitors. As a result of the syste...",
+        "order_index": 1
+      },
+      {
+        "text": "Production of anti-inflammatory cytokines and specific cytokine inhibitors",
+        "is_correct": true,
+        "explanation": "Production of anti-inflammatory cytokines and specific cytokine inhibitors. As a result of the systemic inflammatory response during acute pancreatitis, anti-inflammatory cytokines and specific cytokine inhibitors are produced, increasing the body's risk for infection. increased leucocytes lead to activation of the immune response and less susceptibility to infections. pseudocyst cyst formation is a result of the ongoing inflammation and has no relation with susceptibility to infections. cortisol is ordinarily anti-inflammatory and contains the immune response, so acute increase does not increase infection susceptibility. Acute pancreatitis",
+        "order_index": 2
+      },
+      {
+        "text": "Release of cortisol in response to stress",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Production of anti-inflammatory cytokines and specific cytokine inhibitors. As a result of the syste...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/acutepancreatitiskisha05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Brq image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 82",
+    "stem": "This is an incidental cyst found in the distal pancreas. On immunohistochemical staining, the cyst epithelium is positive for both CK19 and trypsin. Ki67 proliferation is low (< 3%). What is the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Acinar cystic transformation. The photograph demonstrates a cystic lesion lined by bland nonmucinous epithelium and filled with eosinophilic concretions. The positive CK19 and trypsin indicate ductal and acinar differentiation. The overall histomorphology and immunoprofile support the diagnosis of acinar cystic transformation of the pancreas. the cyst epithelium is nonmucinous. acinar cell carcinoma would have a much higher proliferation rate than 3%. solid pseudopapillary neoplasm should be negative for trypsin. Acinar cystic transformation",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasacinarcellcystadenoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acinar cystic transformation",
+        "is_correct": true,
+        "explanation": "Acinar cystic transformation. The photograph demonstrates a cystic lesion lined by bland nonmucinous epithelium and filled with eosinophilic concretions. The positive CK19 and trypsin indicate ductal and acinar differentiation. The overall histomorphology and immunoprofile support the diagnosis of acinar cystic transformation of the pancreas. the cyst epithelium is nonmucinous. acinar cell carcinoma would have a much higher proliferation rate than 3%. solid pseudopapillary neoplasm should be negative for trypsin. Acinar cystic transformation",
+        "order_index": 0
+      },
+      {
+        "text": "Cystic acinar cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Acinar cystic transformation. The photograph demonstrates a cystic lesion lined by bland nonmucinous...",
+        "order_index": 1
+      },
+      {
+        "text": "Cystic solid pseudopapillary neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Acinar cystic transformation. The photograph demonstrates a cystic lesion lined by bland nonmucinous...",
+        "order_index": 2
+      },
+      {
+        "text": "Intraductal papillary mucinous neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Acinar cystic transformation. The photograph demonstrates a cystic lesion lined by bland nonmucinous...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasacinarcellcystadenomaarolechen01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Incidental microscopic ACT",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 83",
+    "stem": "A high magnification field of a tumor within the pancreas is shown above. Can the diagnosis of acinar cell carcinoma be based on morphology alone or are other analyses required?",
+    "difficulty": "medium",
+    "teaching_point": "Yes, in addition to morphology, the immunohistochemical demonstration of the acinar differentiation represents the diagnostic gold standard. Morphology and immunohistochemistry represent the 2 most important tools for the diagnosis. The acinar differentiation seen at histology should be supported with BCL10 and trypsin positivity. Tumor cells are also positive for PASD. Acinar cell carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasacinar.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "No, morphology alone is always sufficient",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Yes, in addition to morphology, the immunohistochemical demonstration of the acinar differentiation ...",
+        "order_index": 0
+      },
+      {
+        "text": "Yes, electron microscopy is of great help to rule out a neuroendocrine tumor and is always required",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Yes, in addition to morphology, the immunohistochemical demonstration of the acinar differentiation ...",
+        "order_index": 1
+      },
+      {
+        "text": "Yes, in addition to morphology, the immunohistochemical demonstration of the acinar differentiation represents the diagnostic gold standard",
+        "is_correct": true,
+        "explanation": "Yes, in addition to morphology, the immunohistochemical demonstration of the acinar differentiation represents the diagnostic gold standard. Morphology and immunohistochemistry represent the 2 most important tools for the diagnosis. The acinar differentiation seen at histology should be supported with BCL10 and trypsin positivity. Tumor cells are also positive for PASD. Acinar cell carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Yes, molecular analysis is mandatory",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Yes, in addition to morphology, the immunohistochemical demonstration of the acinar differentiation ...",
+        "order_index": 3
+      },
+      {
+        "text": "Yes, the demonstration of a BRAF rearrangement is required for the diagnosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Yes, in addition to morphology, the immunohistochemical demonstration of the acinar differentiation ...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/pancreasacinarLuchini8.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 84",
+    "stem": "Is it important to report the intraductal growth pattern of pancreatic acinar cell carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": "Yes, this pattern is associated with a better prognosis. This pattern represents a potential diagnostic pitfall with intraductal neoplasms (above all, intraductal tubulopapillary neoplasm) and is associated with a better prognosis. Acinar cell carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/pancreasacinar.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "No, it is only a descriptive finding",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Yes, this pattern is associated with a better prognosis. This pattern represents a potential diagnos...",
+        "order_index": 0
+      },
+      {
+        "text": "No, this pattern does not belong to the morphological spectrum of acinar cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Yes, this pattern is associated with a better prognosis. This pattern represents a potential diagnos...",
+        "order_index": 1
+      },
+      {
+        "text": "Yes, this pattern is associated with a better prognosis",
+        "is_correct": true,
+        "explanation": "Yes, this pattern is associated with a better prognosis. This pattern represents a potential diagnostic pitfall with intraductal neoplasms (above all, intraductal tubulopapillary neoplasm) and is associated with a better prognosis. Acinar cell carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Yes, this pattern is associated with a very poor prognosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Yes, this pattern is associated with a better prognosis. This pattern represents a potential diagnos...",
+        "order_index": 3
+      },
+      {
+        "text": "Yes, this pattern is associated with intraductal papillary mucinous neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Yes, this pattern is associated with a better prognosis. This pattern represents a potential diagnos...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "pancreas.html",
+      "category": "Anatomic Pathology > Gastrointestinal",
+      "database_set": "Web"
+    }
+  }
+]

@@ -1,0 +1,1451 @@
+[
+  {
+    "title": "Question 3",
+    "stem": "A 35 year old man presents with a history of episodic headaches, sweating and palpitations. Imaging reveals a left adrenal mass and bilateral renal cysts with a small solid lesion in the right kidney. His family history is significant for similar findings in his father and sister. Genetic testing confirms a pathogenic variant in the VHL gene. Which of the following is most associated with mutations in the VHL gene?",
+    "difficulty": "medium",
+    "teaching_point": "Pheochromocytoma. The VHL gene is a tumor suppressor gene located on chromosome 3p25-26. Mutations in this gene are associated with von Hippel Lindau (VHL) syndrome, an autosomal dominant disorder that predisposes individuals to multiple tumor types, including pheochromocytomas and paragangliomas, renal cell carcinoma (clear cell subtype), hemangioblastomas (in the central nervous system and retina), pancreatic neuroendocrine tumors and endolymphatic sac tumors. Patients with VHL syndrome often present with a family history of these tumors, as seen in this case. medullary thyroid carcinoma is associated with RET mutations in multiple endocrine neoplasia type 2 (MEN2). colonic polyps are associated with APC mutations in familial adenomatous polyposis (FAP). endometrial carcinoma is associated with PTEN mutations in Cowden syndrome. retinoblastoma is associated with RB1 mutations. von Hippel Lindau (VHL)",
+    "question_references": "https://www.pathologyoutlines.com/topic/stainsvhl.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Colonic polyps",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Pheochromocytoma. The VHL gene is a tumor suppressor gene located on chromosome 3p25-26. Mutations i...",
+        "order_index": 0
+      },
+      {
+        "text": "Endometrial carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Pheochromocytoma. The VHL gene is a tumor suppressor gene located on chromosome 3p25-26. Mutations i...",
+        "order_index": 1
+      },
+      {
+        "text": "Medullary thyroid carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Pheochromocytoma. The VHL gene is a tumor suppressor gene located on chromosome 3p25-26. Mutations i...",
+        "order_index": 2
+      },
+      {
+        "text": "Pheochromocytoma",
+        "is_correct": true,
+        "explanation": "Pheochromocytoma. The VHL gene is a tumor suppressor gene located on chromosome 3p25-26. Mutations in this gene are associated with von Hippel Lindau (VHL) syndrome, an autosomal dominant disorder that predisposes individuals to multiple tumor types, including pheochromocytomas and paragangliomas, renal cell carcinoma (clear cell subtype), hemangioblastomas (in the central nervous system and retina), pancreatic neuroendocrine tumors and endolymphatic sac tumors. Patients with VHL syndrome often present with a family history of these tumors, as seen in this case. medullary thyroid carcinoma is associated with RET mutations in multiple endocrine neoplasia type 2 (MEN2). colonic polyps are associated with APC mutations in familial adenomatous polyposis (FAP). endometrial carcinoma is associated with PTEN mutations in Cowden syndrome. retinoblastoma is associated with RB1 mutations. von Hippel Lindau (VHL)",
+        "order_index": 3
+      },
+      {
+        "text": "Retinoblastoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Pheochromocytoma. The VHL gene is a tumor suppressor gene located on chromosome 3p25-26. Mutations i...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/stainsvhlBRQ2Mohebnasab01.png",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "A patient with abnormal uterine bleeding has an endometrial biopsy sent for next generation sequencing. The next generation sequencing report is shown above. Which of the following is true about this patient's tumor?",
+    "difficulty": "medium",
+    "teaching_point": ". High TMB (125 muts/Mb) portends a favorable prognosis. The tumor has 125 mutations/Mb, which is greater than 10 mutations/Mb, qualifying this tumor as TMB H. TMB H tumors are more likely to respond to pembrolizumab (a PD-1 inhibitor) due to neoantigen presentation to the immune system. Additionally, ultra mutated endometrial adenocarcinoma (> 100 mutations/Mb) with pathogenic POLE mutations, seen in this report, have an excellent prognosis regardless of immunotherapy. Although microsatellite instable tumors may have high TMB, this tumor is microsatellite stable, so the likelihood of Lynch syndrome is low. Tumor mutation burden",
+    "question_references": "https://www.pathologyoutlines.com/topic/moleculartumormutation.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "High TMB (125 muts/Mb) portends a favorable prognosis",
+        "is_correct": true,
+        "explanation": ". High TMB (125 muts/Mb) portends a favorable prognosis. The tumor has 125 mutations/Mb, which is greater than 10 mutations/Mb, qualifying this tumor as TMB H. TMB H tumors are more likely to respond to pembrolizumab (a PD-1 inhibitor) due to neoantigen presentation to the immune system. Additionally, ultra mutated endometrial adenocarcinoma (> 100 mutations/Mb) with pathogenic POLE mutations, seen in this report, have an excellent prognosis regardless of immunotherapy. Although microsatellite instable tumors may have high TMB, this tumor is microsatellite stable, so the likelihood of Lynch syndrome is low. Tumor mutation burden",
+        "order_index": 0
+      },
+      {
+        "text": "High TMB (125 muts/Mb) suggests the patient may have Lynch syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . High TMB (125 muts/Mb) portends a favorable prognosis. The tumor has 125 mutations/Mb, which is gr...",
+        "order_index": 1
+      },
+      {
+        "text": "Low TMB (125 muts/Mb) portends a favorable prognosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . High TMB (125 muts/Mb) portends a favorable prognosis. The tumor has 125 mutations/Mb, which is gr...",
+        "order_index": 2
+      },
+      {
+        "text": "Low TMB (125 muts/Mb) portends an unfavorable prognosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . High TMB (125 muts/Mb) portends a favorable prognosis. The tumor has 125 mutations/Mb, which is gr...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/molecularTMBparillaBRQ01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 5",
+    "stem": "Which of the following is a characteristic fusion gene found in this neoplasm?",
+    "difficulty": "medium",
+    "teaching_point": ". SS18::SSX t(X;18)",
+    "question_references": "https://www.pathologyoutlines.com/topic/moleculartX18.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CIC::DUX4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . SS18::SSX t(X;18)",
+        "order_index": 0
+      },
+      {
+        "text": "EWSR1::FL1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . SS18::SSX t(X;18)",
+        "order_index": 1
+      },
+      {
+        "text": "NAB2::STAT6",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . SS18::SSX t(X;18)",
+        "order_index": 2
+      },
+      {
+        "text": "SS18::SSX",
+        "is_correct": true,
+        "explanation": ". SS18::SSX t(X;18)",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/moleculartX18_Yusuke02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Missing Image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "Which of the following is the most common synovial sarcoma specific fusion gene?",
+    "difficulty": "medium",
+    "teaching_point": ". SS18::SSX1 has a frequency of 65%, SS18::SSX2 has a frequency of 35% and SS18::SSX4 has a frequency of less than 1% (Histopathology 2006;48:13). SS18::SSX3 has never been reported. t(X;18)",
+    "question_references": "https://www.pathologyoutlines.com/topic/moleculartX18.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "SS18::SSX1",
+        "is_correct": true,
+        "explanation": ". SS18::SSX1 has a frequency of 65%, SS18::SSX2 has a frequency of 35% and SS18::SSX4 has a frequency of less than 1% (Histopathology 2006;48:13). SS18::SSX3 has never been reported. t(X;18)",
+        "order_index": 0
+      },
+      {
+        "text": "SS18::SSX2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . SS18::SSX1 has a frequency of 65%, SS18::SSX2 has a frequency of 35% and SS18::SSX4 has a frequenc...",
+        "order_index": 1
+      },
+      {
+        "text": "SS18::SSX3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . SS18::SSX1 has a frequency of 65%, SS18::SSX2 has a frequency of 35% and SS18::SSX4 has a frequenc...",
+        "order_index": 2
+      },
+      {
+        "text": "SS18::SSX4",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . SS18::SSX1 has a frequency of 65%, SS18::SSX2 has a frequency of 35% and SS18::SSX4 has a frequenc...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "Which protein is one of the normal chromatin remodeling factors that decomposes and disappears when the fusion protein found in synovial sarcoma binds?",
+    "difficulty": "medium",
+    "teaching_point": ". SMARCB1 (INI1) t(X;18)",
+    "question_references": "https://www.pathologyoutlines.com/topic/moleculartX18.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "ARID1A / B",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . SMARCB1 (INI1) t(X;18)",
+        "order_index": 0
+      },
+      {
+        "text": "BAF60",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . SMARCB1 (INI1) t(X;18)",
+        "order_index": 1
+      },
+      {
+        "text": "BRG / BRM",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . SMARCB1 (INI1) t(X;18)",
+        "order_index": 2
+      },
+      {
+        "text": "SMARCB1 (INI1)",
+        "is_correct": true,
+        "explanation": ". SMARCB1 (INI1) t(X;18)",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/moleculartX18_Yusuke01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Missing Image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 8",
+    "stem": "STK11 is altered in 10 - 30% of lung cancers and associated with a worse prognosis. Which of the following is a common mechanism of STK11 alteration in lung cancer?",
+    "difficulty": "medium",
+    "teaching_point": "Truncating mutations. STK11 is a tumor suppressor gene and biallelic inactivation has been reported in up to 30% of non-small cell lung cancers. Truncating mutations are a frequent cause of inactivation. Answers A, B and C are incorrect because the mutations described are activating and would not be associated with biallelic inactivation. STK11",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularSTK11.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Kinase domain activating mutation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Truncating mutations. STK11 is a tumor suppressor gene and biallelic inactivation has been reported ...",
+        "order_index": 0
+      },
+      {
+        "text": "Kinase domain duplication",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Truncating mutations. STK11 is a tumor suppressor gene and biallelic inactivation has been reported ...",
+        "order_index": 1
+      },
+      {
+        "text": "Oncogenic fusion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Truncating mutations. STK11 is a tumor suppressor gene and biallelic inactivation has been reported ...",
+        "order_index": 2
+      },
+      {
+        "text": "Truncating mutations",
+        "is_correct": true,
+        "explanation": "Truncating mutations. STK11 is a tumor suppressor gene and biallelic inactivation has been reported in up to 30% of non-small cell lung cancers. Truncating mutations are a frequent cause of inactivation. Answers A, B and C are incorrect because the mutations described are activating and would not be associated with biallelic inactivation. STK11",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 9",
+    "stem": "Following presentation for intussusception, a 9 year old boy undergoes a polypectomy showing multiple hamartomatous polyps (see image above). His history is otherwise notable for freckles noted around his mouth and lips, a family history of polyps in his older sister and ovarian cancer in his mother. In your pathology report, you recommend genetic counseling to test for mutations in which gene and its associated genetic presentation?",
+    "difficulty": "medium",
+    "teaching_point": "STK11 / Peutz-Jeghers syndrome. The clinical features described (mucocutaneous pigmentation and small intestinal hamartomatous polyp in a child with family history of hamartomatous polyps and ovarian cancer) are a classic presentation of Peutz-Jeghers syndrome, which is caused by autosomal dominant mutations in the gene STK11. mutations in PTEN are associated with hamartoma syndromes (e.g., Cowden) with skin manifestations but do not typically show mucocutaneous pigmentation and ovarian cancer. although PRKAR1A mutations are associated with cancer predisposition and cutaneous growth and pigmentation, the genetic association is with Carney complex and not juvenile polyposis syndrome. although both MUTYH gene mutations and Gardner syndrome are associated with cancer predisposition and polyposis, they do not represent a gene syndrome dyad. STK11",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularSTK11.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "MUTYH / Gardner syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. STK11 / Peutz-Jeghers syndrome. The clinical features described (mucocutaneous pigmentation and smal...",
+        "order_index": 0
+      },
+      {
+        "text": "PRKAR1A / juvenile polyposis syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. STK11 / Peutz-Jeghers syndrome. The clinical features described (mucocutaneous pigmentation and smal...",
+        "order_index": 1
+      },
+      {
+        "text": "PTEN / Cowden syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. STK11 / Peutz-Jeghers syndrome. The clinical features described (mucocutaneous pigmentation and smal...",
+        "order_index": 2
+      },
+      {
+        "text": "STK11 / Peutz-Jeghers syndrome",
+        "is_correct": true,
+        "explanation": "STK11 / Peutz-Jeghers syndrome. The clinical features described (mucocutaneous pigmentation and small intestinal hamartomatous polyp in a child with family history of hamartomatous polyps and ovarian cancer) are a classic presentation of Peutz-Jeghers syndrome, which is caused by autosomal dominant mutations in the gene STK11. mutations in PTEN are associated with hamartoma syndromes (e.g., Cowden) with skin manifestations but do not typically show mucocutaneous pigmentation and ovarian cancer. although PRKAR1A mutations are associated with cancer predisposition and cutaneous growth and pigmentation, the genetic association is with Carney complex and not juvenile polyposis syndrome. although both MUTYH gene mutations and Gardner syndrome are associated with cancer predisposition and polyposis, they do not represent a gene syndrome dyad. STK11",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/thumb/molecularSTK11ClinTh2.jpeg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 10",
+    "stem": "If short tandem repeat (STR) genotyping was performed on a dispermic (diandric triploid) partial mole, what would be the expected result when the placental tissue is compared to maternal decidua?",
+    "difficulty": "medium",
+    "teaching_point": ". 1 peak matches and 2 peaks do not match. 1 peak matches, corresponding to maternal DNA contribution; 2 nonmaternal peaks do not match, corresponding to 2 separate DNA contributions from sperm with different STR alleles. all peaks matching would support the tissue in question being of maternal origin without extra DNA contribution and might be expected in a specimen identity test of tissue that belongs to this patient. no peaks matching would support no maternal DNA contribution to the tissue in question and might be expected in a specimen identity test of tissue from another patient. 2 peaks matching the maternal sample corresponds to digynic triploidy, which represents a nonmolar gestation. Short tandem repeat genotyping",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularshttandreptgenotyp.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "1 peak matches and 2 peaks do not match",
+        "is_correct": true,
+        "explanation": ". 1 peak matches and 2 peaks do not match. 1 peak matches, corresponding to maternal DNA contribution; 2 nonmaternal peaks do not match, corresponding to 2 separate DNA contributions from sperm with different STR alleles. all peaks matching would support the tissue in question being of maternal origin without extra DNA contribution and might be expected in a specimen identity test of tissue that belongs to this patient. no peaks matching would support no maternal DNA contribution to the tissue in question and might be expected in a specimen identity test of tissue from another patient. 2 peaks matching the maternal sample corresponds to digynic triploidy, which represents a nonmolar gestation. Short tandem repeat genotyping",
+        "order_index": 0
+      },
+      {
+        "text": "2 peaks match and 1 peak does not match",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . 1 peak matches and 2 peaks do not match. 1 peak matches, corresponding to maternal DNA contributio...",
+        "order_index": 1
+      },
+      {
+        "text": "All peaks match",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . 1 peak matches and 2 peaks do not match. 1 peak matches, corresponding to maternal DNA contributio...",
+        "order_index": 2
+      },
+      {
+        "text": "No peaks match",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . 1 peak matches and 2 peaks do not match. 1 peak matches, corresponding to maternal DNA contributio...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 11",
+    "stem": "Which of the following statements is true regarding RAS Q61R?",
+    "difficulty": "medium",
+    "teaching_point": "Positive staining for RAS Q61R can be found in lesions with either NRAS Q61R, KRAS Q61R or HRAS Q61R mutation. NRAS",
+    "question_references": "https://www.pathologyoutlines.com/topic/stainsNRAS.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "NRAS gene encodes for a nuclear transcription factor that promotes cell growth",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Positive staining for RAS Q61R can be found in lesions with either NRAS Q61R, KRAS Q61R or HRAS Q61R...",
+        "order_index": 0
+      },
+      {
+        "text": "Positive staining for RAS Q61R can be found in lesions with either NRAS Q61R, KRAS Q61R or HRAS Q61R mutations",
+        "is_correct": true,
+        "explanation": "Positive staining for RAS Q61R can be found in lesions with either NRAS Q61R, KRAS Q61R or HRAS Q61R mutation. NRAS",
+        "order_index": 1
+      },
+      {
+        "text": "Positive staining for RAS Q61R is specific to NRAS Q61R mutation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Positive staining for RAS Q61R can be found in lesions with either NRAS Q61R, KRAS Q61R or HRAS Q61R...",
+        "order_index": 2
+      },
+      {
+        "text": "RAF is one of the upstream pathways that trigger NRAS",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Positive staining for RAS Q61R can be found in lesions with either NRAS Q61R, KRAS Q61R or HRAS Q61R...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/stainsNRASMoayed2.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 12",
+    "stem": "A 31 year old woman presents to an urgent care with new onset epistaxis and a petechial rash. A CBC found WBC to be 21.3 x 10 9 /L, platelets to be 13 x 10 9 /L and hemoglobin to be 5.8g/dL. Her PT / INR and PTT are elevated. Abnormal circulating cells are found in the peripheral blood smear shown above. Flow cytometry and special staining reveal a population of cells that are positive for MPO and CD33 with dim to negative CD34 expression. In addition to starting presumptive treatment, which of the following tests should be ordered first?",
+    "difficulty": "medium",
+    "teaching_point": "FISH to look for PML::RARA. The cell pictured here is markedly abnormal with more than 1 Auer rod in the cytoplasm, consistent with APL. Auer rods are linear structures and are not to be confused with the round and dark abnormal granules seen in eosinophilic precursors in inv(16) AML (answer choice B). APL is a clinical emergency and treatment should begin as soon as possible. Rapid FISH or RT-PCR for PML::RARA will return positive results fastest, helping to confirm a suspected diagnosis of APL, although treatment should not be delayed while awaiting confirmation. Most cases of APL are driven by PML::RARA, typically the result of t(15;17). t(11;17) (answer choice C) is a much less common cause of APL. SNP array (answer choice D) is not a method for identifying balanced gene fusions. Whole genome sequencing would likely be able to identify PML::RARA but has a much slower turnaround time than FISH or PCR and is more expensive (answer choice E). PML::RARA",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularPMLRARA.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "FISH to look for PML::RARA",
+        "is_correct": true,
+        "explanation": "FISH to look for PML::RARA. The cell pictured here is markedly abnormal with more than 1 Auer rod in the cytoplasm, consistent with APL. Auer rods are linear structures and are not to be confused with the round and dark abnormal granules seen in eosinophilic precursors in inv(16) AML (answer choice B). APL is a clinical emergency and treatment should begin as soon as possible. Rapid FISH or RT-PCR for PML::RARA will return positive results fastest, helping to confirm a suspected diagnosis of APL, although treatment should not be delayed while awaiting confirmation. Most cases of APL are driven by PML::RARA, typically the result of t(15;17). t(11;17) (answer choice C) is a much less common cause of APL. SNP array (answer choice D) is not a method for identifying balanced gene fusions. Whole genome sequencing would likely be able to identify PML::RARA but has a much slower turnaround time than FISH or PCR and is more expensive (answer choice E). PML::RARA",
+        "order_index": 0
+      },
+      {
+        "text": "Karyotype to look for inv(16)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. FISH to look for PML::RARA. The cell pictured here is markedly abnormal with more than 1 Auer rod in...",
+        "order_index": 1
+      },
+      {
+        "text": "Karyotype to look for t(11;17)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. FISH to look for PML::RARA. The cell pictured here is markedly abnormal with more than 1 Auer rod in...",
+        "order_index": 2
+      },
+      {
+        "text": "SNP array to look for t(15;17)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. FISH to look for PML::RARA. The cell pictured here is markedly abnormal with more than 1 Auer rod in...",
+        "order_index": 3
+      },
+      {
+        "text": "Whole genome next generation sequencing",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. FISH to look for PML::RARA. The cell pictured here is markedly abnormal with more than 1 Auer rod in...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/molecularPMLRARABRQParilla01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 13",
+    "stem": "A 6 year old girl presents with an unusually large third toe of the left foot in the absence of other phenotypic abnormalities. Plain radiography reveals enlarged phalanges and metatarsals and an increase in soft tissue of the toe in question. A soft tissue biopsy shows an adipose tumor with a uniform structure, composed of lobularly divided adipose tissue consisting of nonatypical lipocytes, separated by irregularly situated, variably widened fibrotic septa but no cytonuclear atypia or lipoblasts. Molecular analysis using next generation sequencing shows a mutation in PIK3CA (NM_006218.3): c.1633G>A p.(E545K) with 16% variant allele frequency. What is your diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "PIK3CA related overgrowth syndrome (PROS). The clinical presentation of localized macrodactyly of the third toe of the left foot in the absence of other phenotypic abnormalities, in combination with a somatic, activating PIK3CA mutation, leads to a diagnosis of PROS. PI3K / PIK3CA",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularPI3K.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acromegaly",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. PIK3CA related overgrowth syndrome (PROS). The clinical presentation of localized macrodactyly of th...",
+        "order_index": 0
+      },
+      {
+        "text": "Maffucci syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. PIK3CA related overgrowth syndrome (PROS). The clinical presentation of localized macrodactyly of th...",
+        "order_index": 1
+      },
+      {
+        "text": "Osteoid osteoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. PIK3CA related overgrowth syndrome (PROS). The clinical presentation of localized macrodactyly of th...",
+        "order_index": 2
+      },
+      {
+        "text": "PIK3CA related overgrowth syndrome (PROS)",
+        "is_correct": true,
+        "explanation": "PIK3CA related overgrowth syndrome (PROS). The clinical presentation of localized macrodactyly of the third toe of the left foot in the absence of other phenotypic abnormalities, in combination with a somatic, activating PIK3CA mutation, leads to a diagnosis of PROS. PI3K / PIK3CA",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 14",
+    "stem": "Which of the following types of breast cancer are eligible for treatment with alpelisib plus fulvestrant?",
+    "difficulty": "medium",
+    "teaching_point": "Hormone receptor positive (HR+), HER2 negative (HER2-), PIK3CA mutation positive. Alpelisib is a PI3K inhibitor with FDA approval for treating HR+ / HER2- breast cancers with a PIK3CA mutation, in combination with fulvestrant. HR- / HER+ positive breast cancers may be treated with HER2 targeted therapies (such as trastuzumab) and HER2 negative, BRCA1 mutation positive breast cancers may be treated with PARP inhibitors (such as olaparib). PI3K / PIK3CA",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularPI3K.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "HER2 receptor negative (HER2-), BRCA1 mutation positive",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Hormone receptor positive (HR+), HER2 negative (HER2-), PIK3CA mutation positive. Alpelisib is a PI3...",
+        "order_index": 0
+      },
+      {
+        "text": "Hormone receptor negative (HR-), HER2 positive (HER2+), KRAS mutation positive",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Hormone receptor positive (HR+), HER2 negative (HER2-), PIK3CA mutation positive. Alpelisib is a PI3...",
+        "order_index": 1
+      },
+      {
+        "text": "Hormone receptor positive (HR+), HER2 negative (HER2-), PIK3CA mutation positive",
+        "is_correct": true,
+        "explanation": "Hormone receptor positive (HR+), HER2 negative (HER2-), PIK3CA mutation positive. Alpelisib is a PI3K inhibitor with FDA approval for treating HR+ / HER2- breast cancers with a PIK3CA mutation, in combination with fulvestrant. HR- / HER+ positive breast cancers may be treated with HER2 targeted therapies (such as trastuzumab) and HER2 negative, BRCA1 mutation positive breast cancers may be treated with PARP inhibitors (such as olaparib). PI3K / PIK3CA",
+        "order_index": 2
+      },
+      {
+        "text": "Triple negative, p53 overexpressed",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Hormone receptor positive (HR+), HER2 negative (HER2-), PIK3CA mutation positive. Alpelisib is a PI3...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 15",
+    "stem": "A 20 year old man with a 4 cm lump in the scalp underwent a core needle biopsy. H&E and MyoD1 immunostain images are shown above. Which genetic abnormality is most likely seen in this tumor?",
+    "difficulty": "medium",
+    "teaching_point": "MYOD1 p.L122R is the most likely recurrent genetic abnormality in this MyoD1 expressing spindle cell / sclerosing rhabdomyosarcoma. This tumor commonly involves the head and neck region in adolescents and young adults. Congenital / infantile cases are more likely to harbor fusions involving the VGLL2, SRF, TEAD1, NCOA2 and CITED2 genes. MyoD1",
+    "question_references": "https://www.pathologyoutlines.com/topic/stainsmyod1.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "BRAF p.V600E mutation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. MYOD1 p.L122R is the most likely recurrent genetic abnormality in this MyoD1 expressing spindle cell...",
+        "order_index": 0
+      },
+      {
+        "text": "EWSR1::TFCP2 fusion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. MYOD1 p.L122R is the most likely recurrent genetic abnormality in this MyoD1 expressing spindle cell...",
+        "order_index": 1
+      },
+      {
+        "text": "MYOD1 p.L122R mutation",
+        "is_correct": true,
+        "explanation": "MYOD1 p.L122R is the most likely recurrent genetic abnormality in this MyoD1 expressing spindle cell / sclerosing rhabdomyosarcoma. This tumor commonly involves the head and neck region in adolescents and young adults. Congenital / infantile cases are more likely to harbor fusions involving the VGLL2, SRF, TEAD1, NCOA2 and CITED2 genes. MyoD1",
+        "order_index": 2
+      },
+      {
+        "text": "SS18::SSX1 fusion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. MYOD1 p.L122R is the most likely recurrent genetic abnormality in this MyoD1 expressing spindle cell...",
+        "order_index": 3
+      },
+      {
+        "text": "VGLL2::NCOA2 fusion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. MYOD1 p.L122R is the most likely recurrent genetic abnormality in this MyoD1 expressing spindle cell...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/stainsmyod1liu02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/stainsmyod1liu04.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 16",
+    "stem": "Next generation sequencing was performed on a bone marrow aspirate as part of a diagnostic work up for anemia, fatigue and neuropathies. The results are shown in the image above. This finding is considered a diagnostic marker for which of the following?",
+    "difficulty": "medium",
+    "teaching_point": "Waldenström macroglobulinemia. This Integrative Genomics Viewer image provides a visual representation of a single nucleotide variant (T>C) in a leucine within the MYD88 gene. MYD88 activating mutations, such as the MYD88 p.L265P, are seen in > 90% of patients with lymphoplasmacytic lymphoma and Waldenström macroglobulinemia. The presence of a MYD88 activating mutation is a major diagnostic criterion for these entities. CSF3R activating mutations are seen in > 60% of patients with chronic neutrophilic leukemia and the presence of a CSF3R activating mutation is a major diagnostic criterion for this entity. mutations in JAK2, MPL or CALR are diagnostic markers for essential thrombocythemia. multiple (plasma cell) myeloma affects many signaling pathways, the most common being MAPK pathways including KRAS, NRAS and BRAF in ~40% of cases. the KIT p.D816V mutation is present in the vast majority of typical indolent systemic mastocytosis cases. MYD88",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularMYD88.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chronic neutrophilic leukemia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Waldenström macroglobulinemia. This Integrative Genomics Viewer image provides a visual representati...",
+        "order_index": 0
+      },
+      {
+        "text": "Essential thrombocythemia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Waldenström macroglobulinemia. This Integrative Genomics Viewer image provides a visual representati...",
+        "order_index": 1
+      },
+      {
+        "text": "Plasma cell myeloma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Waldenström macroglobulinemia. This Integrative Genomics Viewer image provides a visual representati...",
+        "order_index": 2
+      },
+      {
+        "text": "Systemic mastocytosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Waldenström macroglobulinemia. This Integrative Genomics Viewer image provides a visual representati...",
+        "order_index": 3
+      },
+      {
+        "text": "Waldenström macroglobulinemia",
+        "is_correct": true,
+        "explanation": "Waldenström macroglobulinemia. This Integrative Genomics Viewer image provides a visual representation of a single nucleotide variant (T>C) in a leucine within the MYD88 gene. MYD88 activating mutations, such as the MYD88 p.L265P, are seen in > 90% of patients with lymphoplasmacytic lymphoma and Waldenström macroglobulinemia. The presence of a MYD88 activating mutation is a major diagnostic criterion for these entities. CSF3R activating mutations are seen in > 60% of patients with chronic neutrophilic leukemia and the presence of a CSF3R activating mutation is a major diagnostic criterion for this entity. mutations in JAK2, MPL or CALR are diagnostic markers for essential thrombocythemia. multiple (plasma cell) myeloma affects many signaling pathways, the most common being MAPK pathways including KRAS, NRAS and BRAF in ~40% of cases. the KIT p.D816V mutation is present in the vast majority of typical indolent systemic mastocytosis cases. MYD88",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/molecularMYD88fisher01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 17",
+    "stem": "A 78 year old man with a peripherally enhancing lesion in the right parietal lobe is diagnosed with an IDH wild type CNS WHO grade 4 glioblastoma. MGMT promoter methylation portends which of the following?",
+    "difficulty": "medium",
+    "teaching_point": "Longer progression free and overall survival MGMT promoter hypermethylation",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularmgmtpromoterhypermethylation.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Longer progression free and overall survival",
+        "is_correct": true,
+        "explanation": "Longer progression free and overall survival MGMT promoter hypermethylation",
+        "order_index": 0
+      },
+      {
+        "text": "Shorter progression free and overall survival",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Longer progression free and overall survival MGMT promoter hypermethylation",
+        "order_index": 1
+      },
+      {
+        "text": "Worse response to alkylating agents",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Longer progression free and overall survival MGMT promoter hypermethylation",
+        "order_index": 2
+      },
+      {
+        "text": "Worse response to radiotherapy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Longer progression free and overall survival MGMT promoter hypermethylation",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 18",
+    "stem": "A 63 year old man presents with primary adenocarcinoma of the lung with radiological imaging suggestive of metastases to the bones, liver and lymph nodes. Molecular analysis of a lung biopsy (with 60% tumor cells) using next generation sequencing shows no mutations in EGFR , KRAS or BRAF . However, a splice site mutation is detected in MET [NM_000245.4]: c. 2888-30_2898del p.(?) with 42% variant allele frequency. To our knowledge, this specific variant has not been previously described. What is your next step?",
+    "difficulty": "medium",
+    "teaching_point": "Perform an RNA analysis. This is a deletion mutation within the splice site region of MET intron 13 - exon 14. However, this is not a previously described MET exon 14 skipping inducing mutation. Therefore, confirmation of the expression of an exon 13 - exon 15 fused mRNA transcript is necessary. This can be done using an RNA based analysis. MET",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularMET.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "No additional test; report the detected mutation in the pathology report",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Perform an RNA analysis. This is a deletion mutation within the splice site region of MET intron 13 ...",
+        "order_index": 0
+      },
+      {
+        "text": "Perform an RNA analysis",
+        "is_correct": true,
+        "explanation": "Perform an RNA analysis. This is a deletion mutation within the splice site region of MET intron 13 - exon 14. However, this is not a previously described MET exon 14 skipping inducing mutation. Therefore, confirmation of the expression of an exon 13 - exon 15 fused mRNA transcript is necessary. This can be done using an RNA based analysis. MET",
+        "order_index": 1
+      },
+      {
+        "text": "Perform fluorescent in situ hybridization (FISH)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Perform an RNA analysis. This is a deletion mutation within the splice site region of MET intron 13 ...",
+        "order_index": 2
+      },
+      {
+        "text": "Perform MET immunohistochemistry",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Perform an RNA analysis. This is a deletion mutation within the splice site region of MET intron 13 ...",
+        "order_index": 3
+      },
+      {
+        "text": "Recommend treatment with a MET inhibitor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Perform an RNA analysis. This is a deletion mutation within the splice site region of MET intron 13 ...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 19",
+    "stem": "Which of the following statements regarding KRAS G12C mutation in non small cell lung cancer (NSCLC) is correct?",
+    "difficulty": "medium",
+    "teaching_point": "G>T transversion, a known tobacco smoke induced mutation, is the most common nucleotide change in former and current smokers, as seen in KRAS G12C. KRAS G12C is less common in Asians (A). Lung adenocarcinoma with mucinous features is associated with but not a reliable predictor for KRAS G12C mutation (B). Never smokers are significantly more likely to have G>A transition mutation, as seen in KRAS G12D (C). NSCLC with KRAS G12C is currently considered a poor prognostic factor (E). KRAS",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularKRAS.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "More commonly seen in Asians",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. G>T transversion, a known tobacco smoke induced mutation, is the most common nucleotide change in fo...",
+        "order_index": 0
+      },
+      {
+        "text": "Lung adenocarcinoma with mucinous features is a reliable predictor for KRAS G12C mutation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. G>T transversion, a known tobacco smoke induced mutation, is the most common nucleotide change in fo...",
+        "order_index": 1
+      },
+      {
+        "text": "Never smokers are significantly more likely to have G>A transition mutation, as seen in KRAS G12C",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. G>T transversion, a known tobacco smoke induced mutation, is the most common nucleotide change in fo...",
+        "order_index": 2
+      },
+      {
+        "text": "G>T transversion, a known tobacco smoke induced mutation, is the most common nucleotide change in former and current smokers, as seen in KRAS G12C",
+        "is_correct": true,
+        "explanation": "G>T transversion, a known tobacco smoke induced mutation, is the most common nucleotide change in former and current smokers, as seen in KRAS G12C. KRAS G12C is less common in Asians (A). Lung adenocarcinoma with mucinous features is associated with but not a reliable predictor for KRAS G12C mutation (B). Never smokers are significantly more likely to have G>A transition mutation, as seen in KRAS G12D (C). NSCLC with KRAS G12C is currently considered a poor prognostic factor (E). KRAS",
+        "order_index": 3
+      },
+      {
+        "text": "NSCLC with KRAS G12C is a favorable prognostic factor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. G>T transversion, a known tobacco smoke induced mutation, is the most common nucleotide change in fo...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 20",
+    "stem": "A 25 year old man underwent an abdominal ultrasound for abdominal pain and was found to have a 2.0 cm, round, well circumscribed mass with the histopathology shown in the first image (provided above). The tumor cells are positive for CD117 and DOG1, while negative for S100 and STAT6. The NGS alteration shown in the second image was identified. What can be said about the tumor?",
+    "difficulty": "medium",
+    "teaching_point": ". This in frame deletion mutation is in exon 11 of KIT and thus the tumor should respond well to imatinib. This is a deletion of 6 nucleotides (2 amino acids) and is thus in frame. In frame deletions in the KIT gene are common activating mutations in gastrointestinal stromal tumors (GISTs). KIT exon 11 deletion mutations typically respond well to imatinib. KIT mutations are often mutually exclusive to PDGFRA mutations. Additionally, both KIT exon 11 mutations and PDGFRA mutations (excluding PDGFRA exon 18 mutations) typically respond to imatinib. although KIT mutations are the most common mutation in GISTs, these are not truncating but rather activating in frame deletions or missense mutations. Additionally, the deletion seen here is a multiple of 3 and thus the mutation is in frame. This is not a truncating mutation, which would be inactivating. KIT mutations are expected in GISTs. Additionally, systemic mastocytosis typically has a D816V missense mutation, not an in frame deletion in exon 11, which is more common in GISTs. KIT / CD117 molecular testing",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularKITCD117.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "This gastrointestinal stromal tumor likely has a concurrent PDGFRA mutation and would not respond to imatinib",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . This in frame deletion mutation is in exon 11 of KIT and thus the tumor should respond well to ima...",
+        "order_index": 0
+      },
+      {
+        "text": "This in frame deletion mutation is in exon 11 of KIT and thus the tumor should respond well to imatinib",
+        "is_correct": true,
+        "explanation": ". This in frame deletion mutation is in exon 11 of KIT and thus the tumor should respond well to imatinib. This is a deletion of 6 nucleotides (2 amino acids) and is thus in frame. In frame deletions in the KIT gene are common activating mutations in gastrointestinal stromal tumors (GISTs). KIT exon 11 deletion mutations typically respond well to imatinib. KIT mutations are often mutually exclusive to PDGFRA mutations. Additionally, both KIT exon 11 mutations and PDGFRA mutations (excluding PDGFRA exon 18 mutations) typically respond to imatinib. although KIT mutations are the most common mutation in GISTs, these are not truncating but rather activating in frame deletions or missense mutations. Additionally, the deletion seen here is a multiple of 3 and thus the mutation is in frame. This is not a truncating mutation, which would be inactivating. KIT mutations are expected in GISTs. Additionally, systemic mastocytosis typically has a D816V missense mutation, not an in frame deletion in exon 11, which is more common in GISTs. KIT / CD117 molecular testing",
+        "order_index": 1
+      },
+      {
+        "text": "This is a truncating mutation in KIT, the most common type of mutation seen in GISTs",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . This in frame deletion mutation is in exon 11 of KIT and thus the tumor should respond well to ima...",
+        "order_index": 2
+      },
+      {
+        "text": "This patient has systemic mastocytosis in addition to a gastrointestinal sarcoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . This in frame deletion mutation is in exon 11 of KIT and thus the tumor should respond well to ima...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/molecularKITbatra01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/molecularKITparilla01.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 21",
+    "stem": "A 72 year old patient evaluated for lung embolism showed elevated hemoglobin concentration with reduced erythropoietin level. RT PCR for BCR1::ABL1 on peripheral blood is negative. Bone marrow biopsy is shown above. Which genetic alteration is most likely to be demonstrated in an NGS analysis of marrow?",
+    "difficulty": "medium",
+    "teaching_point": ". JAK2 p.V617F is the correct answer. Based on laboratory findings and marrow histology, the most likely diagnosis is polycythemia vera. About 95% of cases harbor this mutation. PML::RARA fusion is diagnostic of acute promyelocytic leukemia. BRAF p.V600E is typical for hairy cell leukemia but not myeloproliferative neoplasms. KIT p.D816V is among several diagnostic criteria for systemic mastocytosis but not diagnostic for polycythemia vera. JAK2",
+    "question_references": "https://www.pathologyoutlines.com/topic/stainsjak.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "BRAF p.V600E",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . JAK2 p.V617F is the correct answer. Based on laboratory findings and marrow histology, the most li...",
+        "order_index": 0
+      },
+      {
+        "text": "JAK2 p.V617F",
+        "is_correct": true,
+        "explanation": ". JAK2 p.V617F is the correct answer. Based on laboratory findings and marrow histology, the most likely diagnosis is polycythemia vera. About 95% of cases harbor this mutation. PML::RARA fusion is diagnostic of acute promyelocytic leukemia. BRAF p.V600E is typical for hairy cell leukemia but not myeloproliferative neoplasms. KIT p.D816V is among several diagnostic criteria for systemic mastocytosis but not diagnostic for polycythemia vera. JAK2",
+        "order_index": 1
+      },
+      {
+        "text": "KIT p.D816V",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . JAK2 p.V617F is the correct answer. Based on laboratory findings and marrow histology, the most li...",
+        "order_index": 2
+      },
+      {
+        "text": "PML::RARA fusion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . JAK2 p.V617F is the correct answer. Based on laboratory findings and marrow histology, the most li...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/stainsjakMaccio07.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "JAK2",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 22",
+    "stem": "A 76 year old patient has been diagnosed with lung adenocarcinoma with metastasis in the liver and bone (stage IV). Peripheral blood analysis was only significant for mild anemia with increased ferritin and mild leukocytosis. NGS analysis performed on liver biopsy with a tumor cell content of 80% demonstrates following alterations: KRAS p.G12C (VAF 40.5%), JAK2 p.V617F (VAF 1.0%), DNMT3A p.R882H (VAF 0.9%), tumor mutational burden (TMB) 12.7 mutations/megabase, microsatellite stable. Which of the following statements is correct?",
+    "difficulty": "medium",
+    "teaching_point": ". The patient probably has a clonal hematopoiesis of indeterminate potential (CHIP). JAK2 mutations, as well as DNMT3A, are commonly detected in CHIP. although JAK2 mutations can be detected in lung carcinomas, the KRAS mutation is the driver mutation here. VAF and tumor cell content are also concordant in this sense. Moreover, JAK inhibitors are not approved for therapy for lung carcinoma. although the presence of JAK2 mutations is a diagnostic criterion for myeloproliferative neoplasms (MPNs), an MPN is unlikely in the absence of other clinical or laboratory features. although JAK2 mutations can be detected in lung carcinomas, the concomitant presence of a DNMT3A mutation with comparable VAF makes CHIP the most likely interpretation. JAK2",
+    "question_references": "https://www.pathologyoutlines.com/topic/stainsjak.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "JAK2 is a driver mutation for lung carcinomas that can be targeted with a JAK inhibitor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . The patient probably has a clonal hematopoiesis of indeterminate potential (CHIP). JAK2 mutations,...",
+        "order_index": 0
+      },
+      {
+        "text": "JAK2 p.V617F probably represents a subclonal mutation in carcinoma cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . The patient probably has a clonal hematopoiesis of indeterminate potential (CHIP). JAK2 mutations,...",
+        "order_index": 1
+      },
+      {
+        "text": "The patient probably has a clonal hematopoiesis of indeterminate potential (CHIP)",
+        "is_correct": true,
+        "explanation": ". The patient probably has a clonal hematopoiesis of indeterminate potential (CHIP). JAK2 mutations, as well as DNMT3A, are commonly detected in CHIP. although JAK2 mutations can be detected in lung carcinomas, the KRAS mutation is the driver mutation here. VAF and tumor cell content are also concordant in this sense. Moreover, JAK inhibitors are not approved for therapy for lung carcinoma. although the presence of JAK2 mutations is a diagnostic criterion for myeloproliferative neoplasms (MPNs), an MPN is unlikely in the absence of other clinical or laboratory features. although JAK2 mutations can be detected in lung carcinomas, the concomitant presence of a DNMT3A mutation with comparable VAF makes CHIP the most likely interpretation. JAK2",
+        "order_index": 2
+      },
+      {
+        "text": "The patient probably has a myeloproliferative neoplasm and needs a bone marrow biopsy for definitive diagnosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . The patient probably has a clonal hematopoiesis of indeterminate potential (CHIP). JAK2 mutations,...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 23",
+    "stem": "A 17 year old boy presented to clinic with a painless head and neck soft tissue mass. An MRI revealed a 2.5 cm mass with possible meningeal extension. Histopathologic examination revealed uniform round cells arranged in an alveolar pattern with strong nuclear immunoreactivity for myogenin. Which of the following molecular markers, if present, would indicate a more favorable prognosis?",
+    "difficulty": "medium",
+    "teaching_point": ". PAX7::FOXO1 fusion transcripts. The clinical and histopathologic features support the diagnosis of alveolar rhabdomyosarcoma (ARMS). PAX3::FOXO1 and PAX7::FOXO1 fusion transcripts are specific genetic changes associated with ARMS and detection of these fusion transcripts is considered a desirable diagnostic criterion for ARMS. The presence of PAX7::FOX01 fusion transcripts indicates a more favorable prognosis patients with PAX7::FOXO1 ARMS have a more favorable prognosis compared to patients with PAX3::FOXO1 ARMS. Answers A and C are incorrect because MYCN and CDK4 amplification have been correlated with poor outcomes in ARMS. the prognostic impact of rare FGFR4 missense mutations in ARMS is not well established. FOXO1",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularFOXO1.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CDK4 amplification",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . PAX7::FOXO1 fusion transcripts. The clinical and histopathologic features support the diagnosis of...",
+        "order_index": 0
+      },
+      {
+        "text": "FGFR4 missense mutations",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . PAX7::FOXO1 fusion transcripts. The clinical and histopathologic features support the diagnosis of...",
+        "order_index": 1
+      },
+      {
+        "text": "MYCN amplification",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . PAX7::FOXO1 fusion transcripts. The clinical and histopathologic features support the diagnosis of...",
+        "order_index": 2
+      },
+      {
+        "text": "PAX3::FOXO1 fusion transcripts",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . PAX7::FOXO1 fusion transcripts. The clinical and histopathologic features support the diagnosis of...",
+        "order_index": 3
+      },
+      {
+        "text": "PAX7::FOXO1 fusion transcripts",
+        "is_correct": true,
+        "explanation": ". PAX7::FOXO1 fusion transcripts. The clinical and histopathologic features support the diagnosis of alveolar rhabdomyosarcoma (ARMS). PAX3::FOXO1 and PAX7::FOXO1 fusion transcripts are specific genetic changes associated with ARMS and detection of these fusion transcripts is considered a desirable diagnostic criterion for ARMS. The presence of PAX7::FOX01 fusion transcripts indicates a more favorable prognosis patients with PAX7::FOXO1 ARMS have a more favorable prognosis compared to patients with PAX3::FOXO1 ARMS. Answers A and C are incorrect because MYCN and CDK4 amplification have been correlated with poor outcomes in ARMS. the prognostic impact of rare FGFR4 missense mutations in ARMS is not well established. FOXO1",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 24",
+    "stem": "A 19 year old man presented with a rapidly growing mass in the left forearm. Histopathologic examination of the resected tumor specimen revealed uniform round cells arranged in an alveolar pattern with strong nuclear immunoreactivity for myogenin. Which of the following molecular markers is most commonly found in tumors with these histologic characteristics?",
+    "difficulty": "medium",
+    "teaching_point": ". PAX3::FOXO1 fusion transcripts. The clinical and histopathologic features support the diagnosis of alveolar rhabdomyosarcoma (ARMS). ARMS is associated with specific genetic changes, including t(2;13)(q35;q14) PAX3::FOXO1 and t(1;13)(p36;q14) PAX7::FOXO1 fusion transcripts. PAX3::FOXO1 fusion transcripts are reported in a majority (60%) of ARMS cases. PAX7::FOXO1 fusion transcripts are reported in a subset (20%) of ARMS cases. ~20% of ARMS cases are negative for FOXO1 fusions. Answers A, B and E are incorrect because CDK4 amplification, MYCN amplification and TP53 mutation are less common. FOXO1",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularFOXO1.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CDK4 amplification",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . PAX3::FOXO1 fusion transcripts. The clinical and histopathologic features support the diagnosis of...",
+        "order_index": 0
+      },
+      {
+        "text": "MYCN amplification",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . PAX3::FOXO1 fusion transcripts. The clinical and histopathologic features support the diagnosis of...",
+        "order_index": 1
+      },
+      {
+        "text": "PAX3::FOXO1 fusion transcripts",
+        "is_correct": true,
+        "explanation": ". PAX3::FOXO1 fusion transcripts. The clinical and histopathologic features support the diagnosis of alveolar rhabdomyosarcoma (ARMS). ARMS is associated with specific genetic changes, including t(2;13)(q35;q14) PAX3::FOXO1 and t(1;13)(p36;q14) PAX7::FOXO1 fusion transcripts. PAX3::FOXO1 fusion transcripts are reported in a majority (60%) of ARMS cases. PAX7::FOXO1 fusion transcripts are reported in a subset (20%) of ARMS cases. ~20% of ARMS cases are negative for FOXO1 fusions. Answers A, B and E are incorrect because CDK4 amplification, MYCN amplification and TP53 mutation are less common. FOXO1",
+        "order_index": 2
+      },
+      {
+        "text": "PAX7::FOXO1 fusion transcripts",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . PAX3::FOXO1 fusion transcripts. The clinical and histopathologic features support the diagnosis of...",
+        "order_index": 3
+      },
+      {
+        "text": "TP53 mutations",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . PAX3::FOXO1 fusion transcripts. The clinical and histopathologic features support the diagnosis of...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/molecularFOXO1Fisher01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "FOXO1",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 25",
+    "stem": "What is the pattern of a break apart rearrangement?",
+    "difficulty": "medium",
+    "teaching_point": "1 pair of different color signals together and 2 separate color signals. There are 4 signals with 2 different colors. 2 separate color signals (abnormal separate signal) and 2 joint color signals (normal fused signal). 2 pairs of different color signals together would represent the normal 2 fused signals. 3 pair of different color signals together would represent 3 fused signals. 4 different color signals separate would represent 2 pairs of abnormal separate signals. FISH overview",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularpathfishgeneral.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "1 pair of different color signals together and 2 separate color signals",
+        "is_correct": true,
+        "explanation": "1 pair of different color signals together and 2 separate color signals. There are 4 signals with 2 different colors. 2 separate color signals (abnormal separate signal) and 2 joint color signals (normal fused signal). 2 pairs of different color signals together would represent the normal 2 fused signals. 3 pair of different color signals together would represent 3 fused signals. 4 different color signals separate would represent 2 pairs of abnormal separate signals. FISH overview",
+        "order_index": 0
+      },
+      {
+        "text": "2 pairs of different color signals together",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 1 pair of different color signals together and 2 separate color signals. There are 4 signals with 2 ...",
+        "order_index": 1
+      },
+      {
+        "text": "3 different color signals separate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 1 pair of different color signals together and 2 separate color signals. There are 4 signals with 2 ...",
+        "order_index": 2
+      },
+      {
+        "text": "4 different color signals separate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 1 pair of different color signals together and 2 separate color signals. There are 4 signals with 2 ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/molecularpathfishgeneralmolecular20.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Lymph node",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 26",
+    "stem": "What is the pattern of a fusion rearrangement?",
+    "difficulty": "medium",
+    "teaching_point": "1 pair of different color signals together and 2 separate color signals. There are 4 signals with 2 different colors. 2 separate color signals (normal separate signal) and 2 joint color signals (abnormal fused signal). 2 pairs of different color signals together would represent 2 fused signals. 3 pairs of different color signals together would represent 3 fused signals. 4 different color signals separate would represent 2 pairs of normal separate signals. FISH overview",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularpathfishgeneral.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "1 pair of different color signals together and 2 separate color signals",
+        "is_correct": true,
+        "explanation": "1 pair of different color signals together and 2 separate color signals. There are 4 signals with 2 different colors. 2 separate color signals (normal separate signal) and 2 joint color signals (abnormal fused signal). 2 pairs of different color signals together would represent 2 fused signals. 3 pairs of different color signals together would represent 3 fused signals. 4 different color signals separate would represent 2 pairs of normal separate signals. FISH overview",
+        "order_index": 0
+      },
+      {
+        "text": "2 pairs of different color signals together",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 1 pair of different color signals together and 2 separate color signals. There are 4 signals with 2 ...",
+        "order_index": 1
+      },
+      {
+        "text": "3 pairs of different color signals together",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 1 pair of different color signals together and 2 separate color signals. There are 4 signals with 2 ...",
+        "order_index": 2
+      },
+      {
+        "text": "4 different color signals separate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. 1 pair of different color signals together and 2 separate color signals. There are 4 signals with 2 ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 27",
+    "stem": "Next generation sequencing was performed as part of the diagnostic work up for bone marrow hypercellularity and the results are shown in the figure above. This finding is considered a diagnostic marker for which of the following?",
+    "difficulty": "medium",
+    "teaching_point": "Chronic neutrophilic leukemia. This integrative genomics viewer image provides a visual representation of a single nucleotide variant (G > A) in a threonine within the CSF3R gene. CSF3R activating mutations, such as the CSF3R p.T618I, are seen in > 60% of patients with chronic neutrophilic leukemia and the presence of a CSF3R activating mutation is a major diagnostic criterion for this entity. Chronic myeloid leukemia is characterized by BCR::ABL1 fusions detected primarily by Giemsa banding (G banding), fluorescent in situ hybridization (FISH) or reverse transcriptase PCR (RT PCR). The KIT p.D816V mutation is present in the vast majority of typical indolent systemic mastocytosis cases. Juvenile myelomonocytic leukemias typically harbor mutations in RAS pathway genes, such as CBL, KRAS, NF1, NRAS or PTPN11. Polycythemia vera is characteristically associated with mutation of the JAK2 gene. CSF3R",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularCSF3R.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chronic myeloid leukemia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Chronic neutrophilic leukemia. This integrative genomics viewer image provides a visual representati...",
+        "order_index": 0
+      },
+      {
+        "text": "Chronic neutrophilic leukemia",
+        "is_correct": true,
+        "explanation": "Chronic neutrophilic leukemia. This integrative genomics viewer image provides a visual representation of a single nucleotide variant (G > A) in a threonine within the CSF3R gene. CSF3R activating mutations, such as the CSF3R p.T618I, are seen in > 60% of patients with chronic neutrophilic leukemia and the presence of a CSF3R activating mutation is a major diagnostic criterion for this entity. Chronic myeloid leukemia is characterized by BCR::ABL1 fusions detected primarily by Giemsa banding (G banding), fluorescent in situ hybridization (FISH) or reverse transcriptase PCR (RT PCR). The KIT p.D816V mutation is present in the vast majority of typical indolent systemic mastocytosis cases. Juvenile myelomonocytic leukemias typically harbor mutations in RAS pathway genes, such as CBL, KRAS, NF1, NRAS or PTPN11. Polycythemia vera is characteristically associated with mutation of the JAK2 gene. CSF3R",
+        "order_index": 1
+      },
+      {
+        "text": "Juvenile myelomonocytic leukemia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Chronic neutrophilic leukemia. This integrative genomics viewer image provides a visual representati...",
+        "order_index": 2
+      },
+      {
+        "text": "Polycythemia vera",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Chronic neutrophilic leukemia. This integrative genomics viewer image provides a visual representati...",
+        "order_index": 3
+      },
+      {
+        "text": "Systemic mastocytosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Chronic neutrophilic leukemia. This integrative genomics viewer image provides a visual representati...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/molecularCSF3RFisher01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 28",
+    "stem": "Which of the following CALR mutations supports the diagnosis of a myeloproliferative neoplasm?",
+    "difficulty": "medium",
+    "teaching_point": ". 52 base pair deletion mutation in exon 9, CALR c.1099_1150del / p.L367Tfs*46. This is a common oncogenic mutation seen in myeloproliferative disorders (type 1 CALR mutation). Oncogenic CALR mutations support a diagnosis of a myeloproliferative neoplasm. an in frame deletion in CALR would not create the oncogenic 1 base pair frameshift seen in myeloproliferative neoplasms. This variant is a variant of uncertain significance and should not be used as evidence of a myeloproliferative neoplasm. missense alterations in CALR would not create the oncogenic 1 base pair frameshift seen in myeloproliferative neoplasms. Additionally, oncogenic CALR mutations are in exon 9 of the CALR gene. This exon 1 variant is a variant of uncertain significance and should not be used as evidence of a myeloproliferative neoplasm. an in frame insertion in CALR would not create the oncogenic 1 base pair frameshift seen in myeloproliferative neoplasms. Additionally, oncogenic CALR mutations are in exon 9 of the CALR gene. This exon 3 variant is a variant of uncertain significance and should not be used as evidence of a myeloproliferative neoplasm. CALR",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularcalr.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "3 base pair insertion mutation in exon 3, CALR c.252_253insAGG / p.F84_S85insR",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . 52 base pair deletion mutation in exon 9, CALR c.1099_1150del / p.L367Tfs*46. This is a common onc...",
+        "order_index": 0
+      },
+      {
+        "text": "30 base pair deletion mutation in exon 9, CALR c.1099_1128del / p.L367_R376del",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . 52 base pair deletion mutation in exon 9, CALR c.1099_1150del / p.L367Tfs*46. This is a common onc...",
+        "order_index": 1
+      },
+      {
+        "text": "52 base pair deletion mutation in exon 9, CALR c.1099_1150del / p.L367Tfs*46",
+        "is_correct": true,
+        "explanation": ". 52 base pair deletion mutation in exon 9, CALR c.1099_1150del / p.L367Tfs*46. This is a common oncogenic mutation seen in myeloproliferative disorders (type 1 CALR mutation). Oncogenic CALR mutations support a diagnosis of a myeloproliferative neoplasm. an in frame deletion in CALR would not create the oncogenic 1 base pair frameshift seen in myeloproliferative neoplasms. This variant is a variant of uncertain significance and should not be used as evidence of a myeloproliferative neoplasm. missense alterations in CALR would not create the oncogenic 1 base pair frameshift seen in myeloproliferative neoplasms. Additionally, oncogenic CALR mutations are in exon 9 of the CALR gene. This exon 1 variant is a variant of uncertain significance and should not be used as evidence of a myeloproliferative neoplasm. an in frame insertion in CALR would not create the oncogenic 1 base pair frameshift seen in myeloproliferative neoplasms. Additionally, oncogenic CALR mutations are in exon 9 of the CALR gene. This exon 3 variant is a variant of uncertain significance and should not be used as evidence of a myeloproliferative neoplasm. CALR",
+        "order_index": 2
+      },
+      {
+        "text": "Missense mutation in exon 1, CALR c.50C>G / p. A17G",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . 52 base pair deletion mutation in exon 9, CALR c.1099_1150del / p.L367Tfs*46. This is a common onc...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/molecularcalrParillaBRQ.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/molecularcalrParilla07.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 29",
+    "stem": "Which of the following statements regarding BCR::ABL negative myeloproliferative neoplasms (MPN) is true?",
+    "difficulty": "medium",
+    "teaching_point": ". CALR is an oncogene and thus only select frameshift mutations resulting in a neoepitope in the carboxyl terminus can be considered oncogenic. Frameshift mutations in the last exon of CALR, which result in a 1 bp shift and a neoepitope in the carboxyl terminus, should be considered oncogenic. MPN can have alternate driver mutations other than JAK2, including CALR and MPL. Additionally, MPN can be driver negative / triple negative with no mutations identified in all 3 genes. activating mutations in MPL are reported in ~5 - 8% of all patients with myelofibrosis and 1 - 4% of all patients with essential thrombocythemia. Frameshift mutations in exon 9 of CALR are reported in ~20 - 35% of all patients with essential thrombocythemia and myelofibrosis. JAK2, CALR or MPL mutations can aid in the diagnosis of an MPN but are not required for such a diagnosis. CALR is not a tumor suppressor and frameshift mutations outside of exon 9 or alterations that do not result in a neoepitope in the carboxyl terminus are not considered oncogenic. CALR",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularcalr.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Absence of a JAK2 V617F mutation precludes the diagnosis of a myeloproliferative neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . CALR is an oncogene and thus only select frameshift mutations resulting in a neoepitope in the car...",
+        "order_index": 0
+      },
+      {
+        "text": "CALR is a tumor suppressor and thus any frameshift mutation in CALR can be considered oncogenic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . CALR is an oncogene and thus only select frameshift mutations resulting in a neoepitope in the car...",
+        "order_index": 1
+      },
+      {
+        "text": "CALR is an oncogene and thus only select frameshift mutations resulting in a neoepitope in the carboxyl terminus can be considered oncogenic",
+        "is_correct": true,
+        "explanation": ". CALR is an oncogene and thus only select frameshift mutations resulting in a neoepitope in the carboxyl terminus can be considered oncogenic. Frameshift mutations in the last exon of CALR, which result in a 1 bp shift and a neoepitope in the carboxyl terminus, should be considered oncogenic. MPN can have alternate driver mutations other than JAK2, including CALR and MPL. Additionally, MPN can be driver negative / triple negative with no mutations identified in all 3 genes. activating mutations in MPL are reported in ~5 - 8% of all patients with myelofibrosis and 1 - 4% of all patients with essential thrombocythemia. Frameshift mutations in exon 9 of CALR are reported in ~20 - 35% of all patients with essential thrombocythemia and myelofibrosis. JAK2, CALR or MPL mutations can aid in the diagnosis of an MPN but are not required for such a diagnosis. CALR is not a tumor suppressor and frameshift mutations outside of exon 9 or alterations that do not result in a neoepitope in the carboxyl terminus are not considered oncogenic. CALR",
+        "order_index": 2
+      },
+      {
+        "text": "MPL mutations are exclusively seen in essential thrombocythemia and CALR mutations are unique to primary myelofibrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . CALR is an oncogene and thus only select frameshift mutations resulting in a neoepitope in the car...",
+        "order_index": 3
+      },
+      {
+        "text": "MPL, CALR or JAK2 mutation is required for the diagnosis of a myeloproliferative neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . CALR is an oncogene and thus only select frameshift mutations resulting in a neoepitope in the car...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 30",
+    "stem": "Which of the following genes acts as an oncogene?",
+    "difficulty": "medium",
+    "teaching_point": ". BCR::ABL1. All of the rest (APC, BRCA1, NF1 and TP53) are tumor suppressor genes, for which loss of function results in increased cancer risk. BCR::ABL",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularBCRABL.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "APC",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . BCR::ABL1. All of the rest (APC, BRCA1, NF1 and TP53) are tumor suppressor genes, for which loss o...",
+        "order_index": 0
+      },
+      {
+        "text": "BCR::ABL1",
+        "is_correct": true,
+        "explanation": ". BCR::ABL1. All of the rest (APC, BRCA1, NF1 and TP53) are tumor suppressor genes, for which loss of function results in increased cancer risk. BCR::ABL",
+        "order_index": 1
+      },
+      {
+        "text": "BRCA1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . BCR::ABL1. All of the rest (APC, BRCA1, NF1 and TP53) are tumor suppressor genes, for which loss o...",
+        "order_index": 2
+      },
+      {
+        "text": "NF1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . BCR::ABL1. All of the rest (APC, BRCA1, NF1 and TP53) are tumor suppressor genes, for which loss o...",
+        "order_index": 3
+      },
+      {
+        "text": "TP53",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . BCR::ABL1. All of the rest (APC, BRCA1, NF1 and TP53) are tumor suppressor genes, for which loss o...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 31",
+    "stem": "Which of the following is true regarding whole genome sequencing (WGS)?",
+    "difficulty": "medium",
+    "teaching_point": ". It is commonly used to identify constitutional (germline) disorders. Whole genome sequencing covers the entire genome (large sequencing breath); as such, it has low sequencing depth and a limited ability to identify low frequency variants. It is mostly used to identify variants at a VAF of 50% or 100%, as seen in constitutional disorders. targeted sequencing is the most common sequencing done on tumor tissue for biomarker identification. Tumor tissue is never 100% tumor, with inflammatory cells, blood vessels and desmoplastic stroma always found in tumor tissue. Tumor specific mutations are thus diluted by background normal tissue DNA and a greater sequencing depth is required to identify low frequency variants (e.g., VAF 10%). Sequencing depth comes at a trade off of sequencing breath. Answers C and D are incorrect because whole genome sequencing by definition does not target or select any regions of the genome by amplicon or hybrid capture methods. NGS library preparation",
+    "question_references": "https://www.pathologyoutlines.com/topic/molecularNGSlibprep.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It is commonly used to identify constitutional (germline) disorders",
+        "is_correct": true,
+        "explanation": ". It is commonly used to identify constitutional (germline) disorders. Whole genome sequencing covers the entire genome (large sequencing breath); as such, it has low sequencing depth and a limited ability to identify low frequency variants. It is mostly used to identify variants at a VAF of 50% or 100%, as seen in constitutional disorders. targeted sequencing is the most common sequencing done on tumor tissue for biomarker identification. Tumor tissue is never 100% tumor, with inflammatory cells, blood vessels and desmoplastic stroma always found in tumor tissue. Tumor specific mutations are thus diluted by background normal tissue DNA and a greater sequencing depth is required to identify low frequency variants (e.g., VAF 10%). Sequencing depth comes at a trade off of sequencing breath. Answers C and D are incorrect because whole genome sequencing by definition does not target or select any regions of the genome by amplicon or hybrid capture methods. NGS library preparation",
+        "order_index": 0
+      },
+      {
+        "text": "It is the most common sequencing done on tumor tissue for biomarker identification",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . It is commonly used to identify constitutional (germline) disorders. Whole genome sequencing cover...",
+        "order_index": 1
+      },
+      {
+        "text": "It requires amplicon based target selection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . It is commonly used to identify constitutional (germline) disorders. Whole genome sequencing cover...",
+        "order_index": 2
+      },
+      {
+        "text": "It requires hybrid capture target selection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . It is commonly used to identify constitutional (germline) disorders. Whole genome sequencing cover...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/molecularmarkersNGSlibprepparilla01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "molecular.html",
+      "category": "Clinical Pathology > Molecular",
+      "database_set": "Web"
+    }
+  }
+]

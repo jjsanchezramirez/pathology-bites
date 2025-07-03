@@ -61,10 +61,8 @@ export function ReviewQueueTable() {
         .select(`
           *,
           created_by_name:users!questions_created_by_fkey(first_name, last_name),
-          reviewer_name:users!questions_reviewed_by_fkey(first_name, last_name),
-          flagger_name:users!questions_flagged_by_fkey(first_name, last_name),
-          question_set:question_sets(name),
-          answer_options(*),
+          question_set:sets(name),
+          question_options(*),
           question_images(*, image:images(*)),
           reviews:question_reviews(*, reviewer:users(first_name, last_name)),
           flags:question_flags(*, flagged_by_user:users(first_name, last_name))
@@ -79,20 +77,32 @@ export function ReviewQueueTable() {
       }
 
       // Transform the data to match our interface
-      const transformedQuestions: QuestionWithReviewDetails[] = data.map(q => ({
-        ...q,
-        created_by_name: q.created_by_name ? 
-          `${q.created_by_name.first_name} ${q.created_by_name.last_name}`.trim() : 
-          'Unknown',
-        reviewer_name: q.reviewer_name ? 
-          `${q.reviewer_name.first_name} ${q.reviewer_name.last_name}`.trim() : 
-          undefined,
-        flagger_name: q.flagger_name ? 
-          `${q.flagger_name.first_name} ${q.flagger_name.last_name}`.trim() : 
-          undefined,
-        reviews: q.reviews || [],
-        flags: q.flags || []
-      }))
+      const transformedQuestions: QuestionWithReviewDetails[] = data.map(q => {
+        // Get the most recent reviewer from reviews
+        const latestReview = q.reviews && q.reviews.length > 0 ?
+          q.reviews.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] :
+          null;
+
+        // Get the most recent flagger from flags
+        const latestFlag = q.flags && q.flags.length > 0 ?
+          q.flags.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] :
+          null;
+
+        return {
+          ...q,
+          created_by_name: q.created_by_name ?
+            `${q.created_by_name.first_name} ${q.created_by_name.last_name}`.trim() :
+            'Unknown',
+          reviewer_name: latestReview?.reviewer ?
+            `${latestReview.reviewer.first_name} ${latestReview.reviewer.last_name}`.trim() :
+            undefined,
+          flagger_name: latestFlag?.flagged_by_user ?
+            `${latestFlag.flagged_by_user.first_name} ${latestFlag.flagged_by_user.last_name}`.trim() :
+            undefined,
+          reviews: q.reviews || [],
+          flags: q.flags || []
+        };
+      })
 
       setQuestions(transformedQuestions)
     } catch (error) {

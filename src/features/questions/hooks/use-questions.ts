@@ -52,7 +52,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         .from('questions')
         .select(`
           *,
-          question_set:question_sets(
+          question_set:sets(
             id,
             name,
             source_type,
@@ -97,35 +97,33 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         throw new Error(fetchError.message);
       }
 
-      // Fetch categories for all questions
+      // Fetch categories for all questions that have category_id
       const questionIds = (data || []).map(q => q.id);
+      const categoryIds = [...new Set((data || []).map(q => q.category_id).filter(Boolean))];
       let categoriesData: any[] = [];
 
-      if (questionIds.length > 0) {
+      if (categoryIds.length > 0) {
         const { data: categoriesResult } = await supabase
-          .from('question_categories')
+          .from('categories')
           .select(`
-            question_id,
-            categories!inner(
-              id,
-              name,
-              color,
-              level,
-              parent_id,
-              short_form
-            )
+            id,
+            name,
+            color,
+            level,
+            parent_id,
+            short_form
           `)
-          .in('question_id', questionIds);
+          .in('id', categoryIds);
 
         categoriesData = categoriesResult || [];
       }
 
       // Transform the data
       const transformedQuestions: QuestionWithDetails[] = (data || []).map(question => {
-        const questionCategories = categoriesData
-          .filter(qc => qc.question_id === question.id)
-          .map(qc => qc.categories)
-          .filter(Boolean);
+        // Find the category for this question
+        const questionCategory = question.category_id
+          ? categoriesData.find(cat => cat.id === question.category_id)
+          : null;
 
         return {
           ...question,
@@ -133,7 +131,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
             ? `${question.created_by_user.first_name || ''} ${question.created_by_user.last_name || ''}`.trim()
             : 'Unknown',
           image_count: question.question_images?.[0]?.count || 0,
-          categories: questionCategories
+          categories: questionCategory ? [questionCategory] : []
         };
       });
 

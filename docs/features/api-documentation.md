@@ -164,14 +164,14 @@ Create a new question (admin/reviewer only).
   "teaching_point": "Key learning point...",
   "difficulty": "intermediate",
   "question_references": "Reference citations...",
-  "answer_options": [
+  "question_options": [
     {
       "text": "Option A",
       "is_correct": true,
       "explanation": "Why this is correct..."
     }
   ],
-  "category_ids": ["uuid"],
+  "category_id": "uuid",
   "tag_ids": ["uuid"],
   "image_ids": ["uuid"]
 }
@@ -188,6 +188,58 @@ Update an existing question (admin/reviewer only).
 Delete a question (admin only).
 
 **Rate Limited**: Yes (admin limiter)
+
+## 📊 Analytics Endpoints
+
+### GET /api/admin/analytics/questions
+Get question performance analytics (admin only).
+
+**Rate Limited**: Yes (admin limiter)
+
+**Query Parameters**:
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Results per page (default: 20)
+- `sort_by` (optional): Sort field (total_attempts, success_rate, difficulty_score)
+- `sort_order` (optional): asc or desc (default: desc)
+- `min_attempts` (optional): Minimum attempts threshold
+
+**Response**:
+```json
+{
+  "analytics": [
+    {
+      "question_id": "uuid",
+      "question_title": "Question Title",
+      "total_attempts": 150,
+      "correct_attempts": 112,
+      "success_rate": 0.7467,
+      "difficulty_score": 2.5,
+      "avg_time_spent": "00:01:30",
+      "median_time_spent": "00:01:15",
+      "flag_count": 2,
+      "review_count": 1,
+      "last_calculated_at": "2024-01-01T12:00:00Z"
+    }
+  ],
+  "total": 50,
+  "page": 1,
+  "limit": 20
+}
+```
+
+### POST /api/admin/analytics/recalculate
+Recalculate analytics for all questions (admin only).
+
+**Rate Limited**: Yes (admin limiter)
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Analytics recalculated for all questions",
+  "questions_updated": 150
+}
+```
 
 ## 🎯 Quiz Endpoints
 
@@ -219,7 +271,7 @@ Create a new quiz session.
       "id": "uuid",
       "title": "Question Title",
       "stem": "Question content...",
-      "answer_options": [
+      "question_options": [
         {
           "id": "uuid",
           "text": "Option A"

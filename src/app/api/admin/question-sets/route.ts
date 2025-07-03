@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     // Build query
     let query = supabase
-      .from('question_sets')
+      .from('sets')
       .select(`
         *,
         created_by_user:created_by(first_name, last_name)
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
 
     // Create question set with service role to bypass RLS
     const { data, error } = await supabase
-      .from('question_sets')
+      .from('sets')
       .insert({
         name: name.trim(),
         description: description?.trim() || null,
@@ -181,7 +181,7 @@ export async function PATCH(request: NextRequest) {
 
     // Update question set with service role to bypass RLS
     const { data, error } = await supabase
-      .from('question_sets')
+      .from('sets')
       .update(updates)
       .eq('id', setId)
       .select()
@@ -245,7 +245,7 @@ export async function DELETE(request: NextRequest) {
 
     // Delete the question set
     const { error } = await supabase
-      .from('question_sets')
+      .from('sets')
       .delete()
       .eq('id', setId)
 

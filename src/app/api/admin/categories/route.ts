@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     const categoriesWithCounts = await Promise.all(
       (data || []).map(async (category) => {
         const { count: questionCount } = await supabase
-          .from('question_categories')
+          .from('questions')
           .select('*', { count: 'exact', head: true })
           .eq('category_id', category.id)
 
@@ -284,10 +284,10 @@ export async function DELETE(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // First delete all question_categories relationships
+    // First update all questions that reference this category to null
     const { error: relationError } = await supabase
-      .from('question_categories')
-      .delete()
+      .from('questions')
+      .update({ category_id: null })
       .eq('category_id', categoryId)
 
     if (relationError) {

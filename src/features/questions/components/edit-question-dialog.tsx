@@ -51,13 +51,13 @@ async function updateAnswerOptions(questionId: string, answerOptions: any[]) {
   const { createClient } = await import('@/shared/services/client');
   const supabase = createClient();
 
-  // Delete existing answer options
+  // Delete existing question options
   await supabase
-    .from('answer_options')
+    .from('question_options')
     .delete()
     .eq('question_id', questionId);
 
-  // Insert new answer options
+  // Insert new question options
   if (answerOptions.length > 0) {
     const optionsToInsert = answerOptions
       .filter(option => option.text.trim() !== '')
@@ -71,7 +71,7 @@ async function updateAnswerOptions(questionId: string, answerOptions: any[]) {
 
     if (optionsToInsert.length > 0) {
       const { error } = await supabase
-        .from('answer_options')
+        .from('question_options')
         .insert(optionsToInsert);
 
       if (error) throw error;
@@ -131,27 +131,17 @@ async function updateQuestionTags(questionId: string, tagIds: string[]) {
   }
 }
 
-async function updateQuestionCategories(questionId: string, categoryId: string) {
+async function updateQuestionCategory(questionId: string, categoryId: string | null) {
   const { createClient } = await import('@/shared/services/client');
   const supabase = createClient();
 
-  // Delete existing question categories
-  await supabase
-    .from('question_categories')
-    .delete()
-    .eq('question_id', questionId);
+  // Update the category_id directly in the questions table
+  const { error } = await supabase
+    .from('questions')
+    .update({ category_id: categoryId })
+    .eq('id', questionId);
 
-  // Insert new question category (only one category per question)
-  if (categoryId) {
-    const { error } = await supabase
-      .from('question_categories')
-      .insert({
-        question_id: questionId,
-        category_id: categoryId
-      });
-
-    if (error) throw error;
-  }
+  if (error) throw error;
 }
 
 const editQuestionSchema = z.object({
@@ -376,8 +366,8 @@ export function EditQuestionDialog({
       // Update question tags
       await updateQuestionTags(question.id, selectedTagIds);
 
-      // Update question categories
-      await updateQuestionCategories(question.id, selectedCategoryId);
+      // Update question category
+      await updateQuestionCategory(question.id, selectedCategoryId || null);
 
       toast.success('Question updated successfully');
 

@@ -29,7 +29,7 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      answer_options: {
+      question_options: {
         Row: {
           id: string
           question_id: string
@@ -62,7 +62,7 @@ export interface Database {
         }
         Relationships: [
           {
-            foreignKeyName: "answer_options_question_id_fkey"
+            foreignKeyName: "question_options_question_id_fkey"
             columns: ["question_id"]
             referencedRelation: "questions"
             referencedColumns: ["id"]
@@ -176,40 +176,7 @@ export interface Database {
           }
         ]
       }
-      questions_categories: {
-        Row: {
-          id: string
-          question_id: string
-          category_id: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          question_id: string
-          category_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          question_id?: string
-          category_id?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "questions_categories_question_id_fkey"
-            columns: ["question_id"]
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questions_categories_category_id_fkey"
-            columns: ["category_id"]
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
+
       images: {
         Row: {
           id: string
@@ -294,11 +261,7 @@ export interface Database {
           created_by: string
           version: number
           question_set_id: string | null
-          reviewed_by: string | null
-          reviewed_at: string | null
-          flagged_by: string | null
-          flagged_at: string | null
-          flag_reason: string | null
+          category_id: string | null
           created_at: string
           updated_at: string
         }
@@ -313,11 +276,7 @@ export interface Database {
           created_by: string
           version?: number
           question_set_id?: string | null
-          reviewed_by?: string | null
-          reviewed_at?: string | null
-          flagged_by?: string | null
-          flagged_at?: string | null
-          flag_reason?: string | null
+          category_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -332,11 +291,7 @@ export interface Database {
           created_by?: string
           version?: number
           question_set_id?: string | null
-          reviewed_by?: string | null
-          reviewed_at?: string | null
-          flagged_by?: string | null
-          flagged_at?: string | null
-          flag_reason?: string | null
+          category_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -348,14 +303,20 @@ export interface Database {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "questions_question_set_id_fkey"
+            foreignKeyName: "questions_set_id_fkey"
             columns: ["question_set_id"]
-            referencedRelation: "question_sets"
+            referencedRelation: "sets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_category_id_fkey"
+            columns: ["category_id"]
+            referencedRelation: "categories"
             referencedColumns: ["id"]
           }
         ]
       }
-      question_sets: {
+      sets: {
         Row: {
           id: string
           name: string
@@ -391,7 +352,7 @@ export interface Database {
         }
         Relationships: [
           {
-            foreignKeyName: "question_sets_created_by_fkey"
+            foreignKeyName: "sets_created_by_fkey"
             columns: ["created_by"]
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -581,6 +542,61 @@ export interface Database {
             foreignKeyName: "question_reviews_reviewer_id_fkey"
             columns: ["reviewer_id"]
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      question_analytics: {
+        Row: {
+          id: string
+          question_id: string
+          total_attempts: number
+          correct_attempts: number
+          avg_time_spent: string | null
+          median_time_spent: string | null
+          success_rate: number | null
+          difficulty_score: number | null
+          flag_count: number
+          review_count: number
+          last_calculated_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          question_id: string
+          total_attempts?: number
+          correct_attempts?: number
+          avg_time_spent?: string | null
+          median_time_spent?: string | null
+          success_rate?: number | null
+          difficulty_score?: number | null
+          flag_count?: number
+          review_count?: number
+          last_calculated_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          question_id?: string
+          total_attempts?: number
+          correct_attempts?: number
+          avg_time_spent?: string | null
+          median_time_spent?: string | null
+          success_rate?: number | null
+          difficulty_score?: number | null
+          flag_count?: number
+          review_count?: number
+          last_calculated_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_analytics_question_id_fkey"
+            columns: ["question_id"]
+            referencedRelation: "questions"
             referencedColumns: ["id"]
           }
         ]
@@ -880,7 +896,7 @@ export interface Database {
           {
             foreignKeyName: "quiz_attempts_selected_answer_id_fkey"
             columns: ["selected_answer_id"]
-            referencedRelation: "answer_options"
+            referencedRelation: "question_options"
             referencedColumns: ["id"]
           }
         ]

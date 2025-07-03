@@ -1,6 +1,6 @@
 // src/types/questions.ts
 import { Database } from '@/shared/types/supabase';
-import { QuestionSetData } from './question-sets';
+import { SetData, QuestionSetData } from './question-sets';
 import { ImageData } from '@/features/images/types/images';
 
 // Database types
@@ -8,15 +8,25 @@ export type QuestionData = Database['public']['Tables']['questions']['Row'];
 export type QuestionInsert = Database['public']['Tables']['questions']['Insert'];
 export type QuestionUpdate = Database['public']['Tables']['questions']['Update'];
 
-// Answer Options types
-export type AnswerOptionData = Database['public']['Tables']['answer_options']['Row'];
-export type AnswerOptionInsert = Database['public']['Tables']['answer_options']['Insert'];
-export type AnswerOptionUpdate = Database['public']['Tables']['answer_options']['Update'];
+// Question Options types (formerly Answer Options)
+export type QuestionOptionData = Database['public']['Tables']['question_options']['Row'];
+export type QuestionOptionInsert = Database['public']['Tables']['question_options']['Insert'];
+export type QuestionOptionUpdate = Database['public']['Tables']['question_options']['Update'];
+
+// Legacy type aliases for backward compatibility (to be removed after full migration)
+export type AnswerOptionData = QuestionOptionData;
+export type AnswerOptionInsert = QuestionOptionInsert;
+export type AnswerOptionUpdate = QuestionOptionUpdate;
 
 // Question Images types
 export type QuestionImageData = Database['public']['Tables']['question_images']['Row'];
 export type QuestionImageInsert = Database['public']['Tables']['question_images']['Insert'];
 export type QuestionImageUpdate = Database['public']['Tables']['question_images']['Update'];
+
+// Question Analytics types
+export type QuestionAnalyticsData = Database['public']['Tables']['question_analytics']['Row'];
+export type QuestionAnalyticsInsert = Database['public']['Tables']['question_analytics']['Insert'];
+export type QuestionAnalyticsUpdate = Database['public']['Tables']['question_analytics']['Update'];
 
 // Additional types for tags and categories (not in current supabase.ts)
 export interface TagData {
@@ -39,6 +49,8 @@ export interface QuestionTagData {
   tag_id: string;
 }
 
+// QuestionCategoryData is no longer needed since category_id is now directly in questions table
+// Keeping for backward compatibility during migration
 export interface QuestionCategoryData {
   question_id: string;
   category_id: string;
@@ -78,27 +90,34 @@ export interface Question {
 
 // Enhanced question interfaces
 export interface QuestionWithDetails extends QuestionData {
-  question_set?: QuestionSetData;
-  answer_options?: AnswerOptionData[];
+  set?: SetData;
+  question_set?: SetData; // Legacy field name for backward compatibility
+  question_options?: QuestionOptionData[];
+  answer_options?: QuestionOptionData[]; // Legacy field name for backward compatibility
   question_images?: (QuestionImageData & { image?: ImageData })[];
   tags?: TagData[];
   categories?: CategoryData[];
+  analytics?: QuestionAnalyticsData;
   created_by_name?: string;
   image_count?: number;
 }
 
 export interface QuestionWithSet extends QuestionData {
-  question_set?: QuestionSetData;
+  set?: SetData;
+  question_set?: SetData; // Legacy field name for backward compatibility
 }
 
 // Form data interfaces
-export interface AnswerOptionFormData {
+export interface QuestionOptionFormData {
   id?: string;
   text: string;
   is_correct: boolean;
   explanation?: string;
   order_index: number;
 }
+
+// Legacy type alias for backward compatibility
+export interface AnswerOptionFormData extends QuestionOptionFormData {}
 
 export interface QuestionImageFormData {
   id?: string;
@@ -115,10 +134,12 @@ export interface QuestionFormData {
   question_references?: string;
   status: 'draft' | 'under_review' | 'approved_with_edits' | 'rejected' | 'published' | 'flagged' | 'archived';
   question_set_id?: string;
-  answer_options: AnswerOptionFormData[];
+  category_id?: string; // Single category ID since each question has only one category
+  question_options: QuestionOptionFormData[];
+  answer_options?: QuestionOptionFormData[]; // Legacy field for backward compatibility
   question_images: QuestionImageFormData[];
   tag_ids: string[];
-  category_ids: string[];
+  category_ids?: string[]; // Legacy field for backward compatibility
 }
 
 // Interface for question filters including question set

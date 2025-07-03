@@ -1,0 +1,3605 @@
+[
+  {
+    "title": "Question 1",
+    "stem": "A 49 year old man presents with bilateral, slow growing parotid masses. An H&E section of the tumor is pictured above. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Classic Warthin tumor. The photograph shows features of a classic Warthin tumor with papillary structures lined by bilayered oncocytic epithelium. The other entities on the list do not match the entity shown on the H&E photograph provided. Warthin tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandswarthin.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Classic Warthin tumor",
+        "is_correct": true,
+        "explanation": "Classic Warthin tumor. The photograph shows features of a classic Warthin tumor with papillary structures lined by bilayered oncocytic epithelium. The other entities on the list do not match the entity shown on the H&E photograph provided. Warthin tumor",
+        "order_index": 0
+      },
+      {
+        "text": "Lymphoepithelial cyst",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Classic Warthin tumor. The photograph shows features of a classic Warthin tumor with papillary struc...",
+        "order_index": 1
+      },
+      {
+        "text": "Oncocytoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Classic Warthin tumor. The photograph shows features of a classic Warthin tumor with papillary struc...",
+        "order_index": 2
+      },
+      {
+        "text": "Warthin-like variant of mucoepidermoid carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Classic Warthin tumor. The photograph shows features of a classic Warthin tumor with papillary struc...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandswarthinBalgobindBRQ1.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 2",
+    "stem": "Which of the following is a risk factor for developing a Warthin tumor?",
+    "difficulty": "medium",
+    "teaching_point": "Cigarette smoking. The other risk factors listed have not been proven to be associated with Warthin tumor. Warthin tumor",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandswarthin.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Alcohol abuse",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cigarette smoking. The other risk factors listed have not been proven to be associated with Warthin ...",
+        "order_index": 0
+      },
+      {
+        "text": "Cigarette smoking",
+        "is_correct": true,
+        "explanation": "Cigarette smoking. The other risk factors listed have not been proven to be associated with Warthin tumor. Warthin tumor",
+        "order_index": 1
+      },
+      {
+        "text": "Intravenous drug use",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cigarette smoking. The other risk factors listed have not been proven to be associated with Warthin ...",
+        "order_index": 2
+      },
+      {
+        "text": "MAML2 translocation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Cigarette smoking. The other risk factors listed have not been proven to be associated with Warthin ...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "What is the risk of malignancy on excision if a diagnosis of suspicious for malignancy is given on a fine needle aspiration (FNA) of the parotid?",
+    "difficulty": "medium",
+    "teaching_point": ". > 80%. The risk of malignancy is 83%, as per the Milan System for Reporting Salivary Gland Cytopathology. Answers A - C are incorrect because the risk on excision is higher than 80% if reported as suspicious for malignancy on FNA. Suspicious for malignancy",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmilansuspicious.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "< 20%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . > 80%. The risk of malignancy is 83%, as per the Milan System for Reporting Salivary Gland Cytopat...",
+        "order_index": 0
+      },
+      {
+        "text": "~40%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . > 80%. The risk of malignancy is 83%, as per the Milan System for Reporting Salivary Gland Cytopat...",
+        "order_index": 1
+      },
+      {
+        "text": "~60%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . > 80%. The risk of malignancy is 83%, as per the Milan System for Reporting Salivary Gland Cytopat...",
+        "order_index": 2
+      },
+      {
+        "text": "> 80%",
+        "is_correct": true,
+        "explanation": ". > 80%. The risk of malignancy is 83%, as per the Milan System for Reporting Salivary Gland Cytopathology. Answers A - C are incorrect because the risk on excision is higher than 80% if reported as suspicious for malignancy on FNA. Suspicious for malignancy",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "This is a representative image from a parotid gland fine needle aspiration. On cell block immunostaining, the epithelial cell clusters are positive for GATA3, AR and negative for DOG1, while the spindle cells are positive for p63 and SOX10. What category should this aspirate be placed in according to the Milan System for Reporting Salivary Gland Cytopathology?",
+    "difficulty": "medium",
+    "teaching_point": ". Suspicious for malignancy. As mentioned above, on cell block immunostaining the atypical epithelial cell clusters are positive for GATA3, AR and negative for DOG1. These features raise the possibility of carcinoma with oncocytoid / apocrine features, such as salivary duct carcinoma. The background bland spindle myoepithelial cells are positive for p63 and SOX10 suggests a pleomorphic adenoma component. Given the limited cluster of cells with carcinoma morphology and admixed with bland myoepithelial cells, the correct answer is suspicious for malignancy. atypical cells are seen. the degree of atypia seen in these few atypical cell clusters is of high grade and is generally beyond this category. qualitative and quantitative features of atypical cells are insufficient for this category. Suspicious for malignancy",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmilansuspicious.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypia of undetermined significance",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Suspicious for malignancy. As mentioned above, on cell block immunostaining the atypical epithelia...",
+        "order_index": 0
+      },
+      {
+        "text": "Benign neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Suspicious for malignancy. As mentioned above, on cell block immunostaining the atypical epithelia...",
+        "order_index": 1
+      },
+      {
+        "text": "Malignant",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Suspicious for malignancy. As mentioned above, on cell block immunostaining the atypical epithelia...",
+        "order_index": 2
+      },
+      {
+        "text": "Suspicious for malignancy",
+        "is_correct": true,
+        "explanation": ". Suspicious for malignancy. As mentioned above, on cell block immunostaining the atypical epithelial cell clusters are positive for GATA3, AR and negative for DOG1. These features raise the possibility of carcinoma with oncocytoid / apocrine features, such as salivary duct carcinoma. The background bland spindle myoepithelial cells are positive for p63 and SOX10 suggests a pleomorphic adenoma component. Given the limited cluster of cells with carcinoma morphology and admixed with bland myoepithelial cells, the correct answer is suspicious for malignancy. atypical cells are seen. the degree of atypia seen in these few atypical cell clusters is of high grade and is generally beyond this category. qualitative and quantitative features of atypical cells are insufficient for this category. Suspicious for malignancy",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilansuspiciousBundele11.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 5",
+    "stem": "Regarding the following parotid gland primary salivary gland adenocarcinoma, which of the pT category criteria in the 8th edition AJCC staging guide is satisfied by the examination of this gross resection specimen photograph?",
+    "difficulty": "medium",
+    "teaching_point": "pT3 by extraparenchymal extension (white arrows point to border of skeletal muscle, yellow arrows point to border of malignancy, black arrow points to tumor invading skeletal muscle) Staging-major salivary glands",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsTNM.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "pT1 by depth of invasion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. pT3 by extraparenchymal extension (white arrows point to border of skeletal muscle, yellow arrows po...",
+        "order_index": 0
+      },
+      {
+        "text": "pT2 by tumor size",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. pT3 by extraparenchymal extension (white arrows point to border of skeletal muscle, yellow arrows po...",
+        "order_index": 1
+      },
+      {
+        "text": "pT3 by presence of necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. pT3 by extraparenchymal extension (white arrows point to border of skeletal muscle, yellow arrows po...",
+        "order_index": 2
+      },
+      {
+        "text": "pT3 by extraparenchymal extension",
+        "is_correct": true,
+        "explanation": "pT3 by extraparenchymal extension (white arrows point to border of skeletal muscle, yellow arrows point to border of malignancy, black arrow points to tumor invading skeletal muscle) Staging-major salivary glands",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsTNMmagliocca01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "What features on the salivary gland biopsy shown from a patient with Sjögren syndrome are associated with an increased risk of lymphoma?",
+    "difficulty": "medium",
+    "teaching_point": "Focus score ≥ 3. A high focus score, particularly ≥ 3, has a positive predictive value of 16% and negative predictive value of 98% for non-Hodgkin lymphoma (Ann Rheum Dis 2014;73:1537). Answers A, B and C are incorrect because fat infiltration and fibrosis are all features that can be present in salivary gland biopsies of patients with Sjögren syndrome; however, they have not been associated with increased risk of lymphoma in these patients. Sjögren syndrome",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssjogren.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atrophy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Focus score ≥ 3. A high focus score, particularly ≥ 3, has a positive predictive value of 16% and ne...",
+        "order_index": 0
+      },
+      {
+        "text": "Fat infiltration",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Focus score ≥ 3. A high focus score, particularly ≥ 3, has a positive predictive value of 16% and ne...",
+        "order_index": 1
+      },
+      {
+        "text": "Fibrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Focus score ≥ 3. A high focus score, particularly ≥ 3, has a positive predictive value of 16% and ne...",
+        "order_index": 2
+      },
+      {
+        "text": "Focus score ≥ 3",
+        "is_correct": true,
+        "explanation": "Focus score ≥ 3. A high focus score, particularly ≥ 3, has a positive predictive value of 16% and negative predictive value of 98% for non-Hodgkin lymphoma (Ann Rheum Dis 2014;73:1537). Answers A, B and C are incorrect because fat infiltration and fibrosis are all features that can be present in salivary gland biopsies of patients with Sjögren syndrome; however, they have not been associated with increased risk of lymphoma in these patients. Sjögren syndrome",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandssjogrenMarvi03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "What is the most common salivary gland lymphoma occurring in patients with primary Sjögren syndrome?",
+    "difficulty": "medium",
+    "teaching_point": "Extranodal marginal zone of mucosa associated lymphoid tissue (MALT) lymphoma. Answers A and C are incorrect because diffuse large B cell lymphoma and follicular lymphoma have been reported in salivary glands; however, they are not the most common lymphoma in this site. Hodgkin lymphoma is rare in salivary glands (Rheumatology (Oxford) 2022;61:3818). Sjögren syndrome",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssjogren.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Diffuse large B cell lymphoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Extranodal marginal zone of mucosa associated lymphoid tissue (MALT) lymphoma. Answers A and C are i...",
+        "order_index": 0
+      },
+      {
+        "text": "Extranodal marginal zone of mucosa associated lymphoid tissue (MALT) lymphoma",
+        "is_correct": true,
+        "explanation": "Extranodal marginal zone of mucosa associated lymphoid tissue (MALT) lymphoma. Answers A and C are incorrect because diffuse large B cell lymphoma and follicular lymphoma have been reported in salivary glands; however, they are not the most common lymphoma in this site. Hodgkin lymphoma is rare in salivary glands (Rheumatology (Oxford) 2022;61:3818). Sjögren syndrome",
+        "order_index": 1
+      },
+      {
+        "text": "Follicular lymphoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Extranodal marginal zone of mucosa associated lymphoid tissue (MALT) lymphoma. Answers A and C are i...",
+        "order_index": 2
+      },
+      {
+        "text": "Hodgkin lymphoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Extranodal marginal zone of mucosa associated lymphoid tissue (MALT) lymphoma. Answers A and C are i...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 8",
+    "stem": "What is the most common bacterial cause of acute suppurative sialadenitis?",
+    "difficulty": "medium",
+    "teaching_point": ". Staphylococcus aureus Sialadenitis-infectious",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssialadenitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Actinomyces",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Staphylococcus aureus Sialadenitis-infectious",
+        "order_index": 0
+      },
+      {
+        "text": "Escherichia coli",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Staphylococcus aureus Sialadenitis-infectious",
+        "order_index": 1
+      },
+      {
+        "text": "Haemophilus influenzae",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Staphylococcus aureus Sialadenitis-infectious",
+        "order_index": 2
+      },
+      {
+        "text": "Peptostreptococcus species",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Staphylococcus aureus Sialadenitis-infectious",
+        "order_index": 3
+      },
+      {
+        "text": "Staphylococcus aureus",
+        "is_correct": true,
+        "explanation": ". Staphylococcus aureus Sialadenitis-infectious",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 9",
+    "stem": "Acute suppurative sialadenitis most often affects the",
+    "difficulty": "medium",
+    "teaching_point": ". Parotid gland Sialadenitis-infectious",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssialadenitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Minor salivary glands",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Parotid gland Sialadenitis-infectious",
+        "order_index": 0
+      },
+      {
+        "text": "Parotid gland",
+        "is_correct": true,
+        "explanation": ". Parotid gland Sialadenitis-infectious",
+        "order_index": 1
+      },
+      {
+        "text": "Sublingual gland",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Parotid gland Sialadenitis-infectious",
+        "order_index": 2
+      },
+      {
+        "text": "Submandibular gland",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Parotid gland Sialadenitis-infectious",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 10",
+    "stem": "Which of the following is true about mumps?",
+    "difficulty": "medium",
+    "teaching_point": ". Usually affects those less than 15 years old Sialadenitis-infectious",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssialadenitis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Has been eradicated since the introduction of the mumps vaccine",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Usually affects those less than 15 years old Sialadenitis-infectious",
+        "order_index": 0
+      },
+      {
+        "text": "Is caused by double stranded DNA paramyxovirus",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Usually affects those less than 15 years old Sialadenitis-infectious",
+        "order_index": 1
+      },
+      {
+        "text": "Most commonly presents as epididymo-orchitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Usually affects those less than 15 years old Sialadenitis-infectious",
+        "order_index": 2
+      },
+      {
+        "text": "Usually affects those less than 15 years old",
+        "is_correct": true,
+        "explanation": ". Usually affects those less than 15 years old Sialadenitis-infectious",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 11",
+    "stem": "A 48 year old man has a parotid nodule for 9 - 12 months. Which of the following is true?",
+    "difficulty": "medium",
+    "teaching_point": "It is characterized histologically by PAS diastase resistant intraluminal secretions and immunohistochemically by positivity for pan-TRK, S100 and mammaglobin. The image shows a secretory carcinoma with abundant secretions. Secretory carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssecretory.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It is characterized by PAS diastase resistant cytoplasmic zymogenic granules and immunohistochemically by positivity for DOG1 and S100",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. It is characterized histologically by PAS diastase resistant intraluminal secretions and immunohisto...",
+        "order_index": 0
+      },
+      {
+        "text": "It is characterized by PAS diastase resistant cytoplasmic zymogenic granules and immunohistochemically by positivity for ER and PR",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. It is characterized histologically by PAS diastase resistant intraluminal secretions and immunohisto...",
+        "order_index": 1
+      },
+      {
+        "text": "It is characterized histologically by PAS diastase resistant intraluminal secretions and immunohistochemically by positivity for androgen receptor and p63",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. It is characterized histologically by PAS diastase resistant intraluminal secretions and immunohisto...",
+        "order_index": 2
+      },
+      {
+        "text": "It is characterized histologically by PAS diastase resistant intraluminal secretions and immunohistochemically by positivity for pan-TRK, S100 and mammaglobin",
+        "is_correct": true,
+        "explanation": "It is characterized histologically by PAS diastase resistant intraluminal secretions and immunohistochemically by positivity for pan-TRK, S100 and mammaglobin. The image shows a secretory carcinoma with abundant secretions. Secretory carcinoma",
+        "order_index": 3
+      },
+      {
+        "text": "It is generally a highly aggressive malignancy with most patients showing distant solid organ metastases at presentation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. It is characterized histologically by PAS diastase resistant intraluminal secretions and immunohisto...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmammarygupta01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 12",
+    "stem": "A 49 year old woman has a lesion on the floor of the mouth with metastases to lymph nodes. The tumor cells show strong staining with S100 and MUC4. Which of the following genetic changes are likely to be found in this tumor?",
+    "difficulty": "medium",
+    "teaching_point": "ETV6-NTRK3 translocation. The image shows a secretory carcinoma with papilliform architecture. Secretory carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssecretory.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "ETV6-NTRK3 translocation",
+        "is_correct": true,
+        "explanation": "ETV6-NTRK3 translocation. The image shows a secretory carcinoma with papilliform architecture. Secretory carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "HER2 amplification",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. ETV6-NTRK3 translocation. The image shows a secretory carcinoma with papilliform architecture. Secre...",
+        "order_index": 1
+      },
+      {
+        "text": "MAML2-CRTC1 translocation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. ETV6-NTRK3 translocation. The image shows a secretory carcinoma with papilliform architecture. Secre...",
+        "order_index": 2
+      },
+      {
+        "text": "MYB-NFIB translocation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. ETV6-NTRK3 translocation. The image shows a secretory carcinoma with papilliform architecture. Secre...",
+        "order_index": 3
+      },
+      {
+        "text": "PLAG1 translocation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. ETV6-NTRK3 translocation. The image shows a secretory carcinoma with papilliform architecture. Secre...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmammarygupta02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 13",
+    "stem": "A 50 year old woman presents with a slow growing parotid mass. Calponin and p63 immunostains highlighted a subset of the cells. Elsewhere in the lesion, acini containing large, brightly eosinophilic, periodic acid-Schiff positive, intracytoplasmic granules were identified. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Sclerosing polycystic adenoma Sclerosing polycystic adenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssclerosingpolycysticadenoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acinic cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Sclerosing polycystic adenoma Sclerosing polycystic adenoma",
+        "order_index": 0
+      },
+      {
+        "text": "Sclerosing polycystic adenoma",
+        "is_correct": true,
+        "explanation": ". Sclerosing polycystic adenoma Sclerosing polycystic adenoma",
+        "order_index": 1
+      },
+      {
+        "text": "Chronic sclerosing sialadenitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Sclerosing polycystic adenoma Sclerosing polycystic adenoma",
+        "order_index": 2
+      },
+      {
+        "text": "Pleomorphic adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Sclerosing polycystic adenoma Sclerosing polycystic adenoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandssclerosingpolycystic_Liang01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 14",
+    "stem": "Which of the following immunohistochemical patterns support a diagnosis of sclerosing polycystic adenoma?",
+    "difficulty": "medium",
+    "teaching_point": ". p63+ in myoepithelial cells; HER2 / neu- and PR+ in epithelial cells Sclerosing polycystic adenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssclerosingpolycysticadenoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "p63+ in epithelial and myoepithelial cells; HER2 / neu+ and PR- in epithelial cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . p63+ in myoepithelial cells; HER2 / neu- and PR+ in epithelial cells Sclerosing polycystic adenoma",
+        "order_index": 0
+      },
+      {
+        "text": "p63+ in myoepithelial cells; HER2 / neu- and PR+ in epithelial cells",
+        "is_correct": true,
+        "explanation": ". p63+ in myoepithelial cells; HER2 / neu- and PR+ in epithelial cells Sclerosing polycystic adenoma",
+        "order_index": 1
+      },
+      {
+        "text": "p63+ in epithelial and myoepithelial cells; HER2 / neu- and PR-",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . p63+ in myoepithelial cells; HER2 / neu- and PR+ in epithelial cells Sclerosing polycystic adenoma",
+        "order_index": 2
+      },
+      {
+        "text": "p63+ in myoepithelial cells; HER2 / neu+ and PR+ in epithelial cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . p63+ in myoepithelial cells; HER2 / neu- and PR+ in epithelial cells Sclerosing polycystic adenoma",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 15",
+    "stem": "Which of the following immunohistochemical staining patterns support a diagnosis of sclerosing microcystic adenocarcinoma?",
+    "difficulty": "medium",
+    "teaching_point": "CK7 in central ductal / epithelial component; p63 in peripheral myoepithelial cell population. The central ductal component showing positivity for pancytokeratin and CK7 and the peripheral myoepithelial cell population expressing smooth muscle actin, S100, p63 and p40 (Surg Pathol Clin 2021;14:137). Answers B - D are incorrect because these are not the immunohistochemical staining patterns for sclerosing microcystic adenocarcinoma. Sclerosing microcystic adenocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssclerosingmicrocysticadeno.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CK7 in central ductal / epithelial component; p63 in peripheral myoepithelial cell population",
+        "is_correct": true,
+        "explanation": "CK7 in central ductal / epithelial component; p63 in peripheral myoepithelial cell population. The central ductal component showing positivity for pancytokeratin and CK7 and the peripheral myoepithelial cell population expressing smooth muscle actin, S100, p63 and p40 (Surg Pathol Clin 2021;14:137). Answers B - D are incorrect because these are not the immunohistochemical staining patterns for sclerosing microcystic adenocarcinoma. Sclerosing microcystic adenocarcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "p63 in central ductal / epithelial component; CK7 in peripheral myoepithelial cell population",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. CK7 in central ductal / epithelial component; p63 in peripheral myoepithelial cell population. The c...",
+        "order_index": 1
+      },
+      {
+        "text": "S100 in central ductal / epithelial component; pancytokeratin in peripheral myoepithelial cell population",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. CK7 in central ductal / epithelial component; p63 in peripheral myoepithelial cell population. The c...",
+        "order_index": 2
+      },
+      {
+        "text": "SMA in central ductal / epithelial component; pancytokeratin in peripheral myoepithelial cell population",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. CK7 in central ductal / epithelial component; p63 in peripheral myoepithelial cell population. The c...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandssclerosingmicrocysticadenopusztaszeri07.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "BRQ image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 16",
+    "stem": "Sclerosing microcystic adenocarcinoma (SMA) has been seen in association with which of the following?",
+    "difficulty": "medium",
+    "teaching_point": "Immunosuppression. SMA frequently arises in the context of immunosuppression (Anticancer Res 2020;40:6375). Answers A, B and D are incorrect because alcohol, HPV infection and smoking have not been reported as associations with this tumor. Sclerosing microcystic adenocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssclerosingmicrocysticadeno.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Alcohol",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Immunosuppression. SMA frequently arises in the context of immunosuppression (Anticancer Res 2020;40...",
+        "order_index": 0
+      },
+      {
+        "text": "HPV infection",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Immunosuppression. SMA frequently arises in the context of immunosuppression (Anticancer Res 2020;40...",
+        "order_index": 1
+      },
+      {
+        "text": "Immunosuppression",
+        "is_correct": true,
+        "explanation": "Immunosuppression. SMA frequently arises in the context of immunosuppression (Anticancer Res 2020;40:6375). Answers A, B and D are incorrect because alcohol, HPV infection and smoking have not been reported as associations with this tumor. Sclerosing microcystic adenocarcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Smoking",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Immunosuppression. SMA frequently arises in the context of immunosuppression (Anticancer Res 2020;40...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 17",
+    "stem": "Which of the following immunohistochemical stains is characteristic of salivary duct carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": ". Androgen receptor. Although GATA3 is frequently positive in salivary duct carcinoma, it is also positive in other salivary and nonsalivary gland malignancies. DOG1, SOX10 and estrogen receptor are usually negative. Salivary duct carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssalivaryductcarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Androgen receptor",
+        "is_correct": true,
+        "explanation": ". Androgen receptor. Although GATA3 is frequently positive in salivary duct carcinoma, it is also positive in other salivary and nonsalivary gland malignancies. DOG1, SOX10 and estrogen receptor are usually negative. Salivary duct carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "DOG1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Androgen receptor. Although GATA3 is frequently positive in salivary duct carcinoma, it is also po...",
+        "order_index": 1
+      },
+      {
+        "text": "Estrogen receptor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Androgen receptor. Although GATA3 is frequently positive in salivary duct carcinoma, it is also po...",
+        "order_index": 2
+      },
+      {
+        "text": "GATA3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Androgen receptor. Although GATA3 is frequently positive in salivary duct carcinoma, it is also po...",
+        "order_index": 3
+      },
+      {
+        "text": "SOX10",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Androgen receptor. Although GATA3 is frequently positive in salivary duct carcinoma, it is also po...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 18",
+    "stem": "What percentage of salivary duct carcinomas arise from preexisting pleomorphic adenoma (i.e., carcinoma ex pleomorphic adenoma) as seen in the photomicrograph?",
+    "difficulty": "medium",
+    "teaching_point": ". 40 - 50% Salivary duct carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssalivaryductcarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "10 - 20%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . 40 - 50% Salivary duct carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "40 - 50%",
+        "is_correct": true,
+        "explanation": ". 40 - 50% Salivary duct carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "60 - 70%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . 40 - 50% Salivary duct carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "80 - 90%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . 40 - 50% Salivary duct carcinoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandssalivaryductcarcinomajalal15a.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Salivary duct carcinoma",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 21",
+    "stem": "A 2.5 cm parotid tumor is resected. The most common molecular alteration of this tumor is",
+    "difficulty": "medium",
+    "teaching_point": "PLAG1 fusion (this is a pleomorphic adenoma) Pleomorphic adenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandspleomorphicadenoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "ETV6-NTRK3 fusion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. PLAG1 fusion (this is a pleomorphic adenoma) Pleomorphic adenoma",
+        "order_index": 0
+      },
+      {
+        "text": "MYB-NFIB fusion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. PLAG1 fusion (this is a pleomorphic adenoma) Pleomorphic adenoma",
+        "order_index": 1
+      },
+      {
+        "text": "PLAG1 fusion",
+        "is_correct": true,
+        "explanation": "PLAG1 fusion (this is a pleomorphic adenoma) Pleomorphic adenoma",
+        "order_index": 2
+      },
+      {
+        "text": "PRKD1 mutation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. PLAG1 fusion (this is a pleomorphic adenoma) Pleomorphic adenoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandspleomorphicadenomaxu19.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 22",
+    "stem": "Which of the following statements regarding pleomorphic adenoma is true?",
+    "difficulty": "medium",
+    "teaching_point": "Pleomorphic adenoma is the most common salivary gland neoplasm Pleomorphic adenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandspleomorphicadenoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Carries nearly zero risk of recurrence or malignant transformation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Pleomorphic adenoma is the most common salivary gland neoplasm Pleomorphic adenoma",
+        "order_index": 0
+      },
+      {
+        "text": "Characterized by architectural diversity and is composed of one single type of cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Pleomorphic adenoma is the most common salivary gland neoplasm Pleomorphic adenoma",
+        "order_index": 1
+      },
+      {
+        "text": "Is the most common salivary gland neoplasm",
+        "is_correct": true,
+        "explanation": "Pleomorphic adenoma is the most common salivary gland neoplasm Pleomorphic adenoma",
+        "order_index": 2
+      },
+      {
+        "text": "Typically treated with enucleation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Pleomorphic adenoma is the most common salivary gland neoplasm Pleomorphic adenoma",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 23",
+    "stem": "A 45 year old man presented with a 2.8 cm, slow growing mass at left parotid region. He underwent ultrasound guided FNA for evaluation. What is the best diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Pleomorphic adenoma Magenta colored extracellular matrix with feathery / fibrillary borders and intermingled bland myoepithelial cells are characteristic features for a pleomorphic adenoma. Pleomorphic adenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandspleomorphicadenoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Basal cell adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Pleomorphic adenoma Magenta colored extracellular matrix with feathery / fibrillary borders and inte...",
+        "order_index": 0
+      },
+      {
+        "text": "Oncocytoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Pleomorphic adenoma Magenta colored extracellular matrix with feathery / fibrillary borders and inte...",
+        "order_index": 1
+      },
+      {
+        "text": "Pleomorphic adenoma",
+        "is_correct": true,
+        "explanation": "Pleomorphic adenoma Magenta colored extracellular matrix with feathery / fibrillary borders and intermingled bland myoepithelial cells are characteristic features for a pleomorphic adenoma. Pleomorphic adenoma",
+        "order_index": 2
+      },
+      {
+        "text": "Warthin tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Pleomorphic adenoma Magenta colored extracellular matrix with feathery / fibrillary borders and inte...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilandiagnostichang06.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 24",
+    "stem": "A 40 year old patient undergoes ultrasound guided fine needle aspiration (FNA) of a 2.1 cm cystic lesion in the inferior aspect of the parotid gland. The aspirate smear stained with Diff-Quik is shown above. Which of the following would be the appropriate way to characterize this lesion?",
+    "difficulty": "medium",
+    "teaching_point": "Nonneoplastic Nonneoplastic",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmilannonneoplastic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypia of undetermined significance",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Nonneoplastic Nonneoplastic",
+        "order_index": 0
+      },
+      {
+        "text": "Nondiagnostic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Nonneoplastic Nonneoplastic",
+        "order_index": 1
+      },
+      {
+        "text": "Nonneoplastic",
+        "is_correct": true,
+        "explanation": "Nonneoplastic Nonneoplastic",
+        "order_index": 2
+      },
+      {
+        "text": "Salivary gland neoplasm of uncertain malignant potential",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Nonneoplastic Nonneoplastic",
+        "order_index": 3
+      },
+      {
+        "text": "Suspicious for malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Nonneoplastic Nonneoplastic",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilannonneoplasticAmezcua18.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 25",
+    "stem": "Which of the following findings on fine needle aspiration (FNA) would preclude classification of a salivary gland lesion as nonneoplastic?",
+    "difficulty": "medium",
+    "teaching_point": "Abundant mucin with or without epithelial cells Nonneoplastic",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmilannonneoplastic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Abundant mucin with or without epithelial cells",
+        "is_correct": true,
+        "explanation": "Abundant mucin with or without epithelial cells Nonneoplastic",
+        "order_index": 0
+      },
+      {
+        "text": "Granulomas and scattered multinucleated giant cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Abundant mucin with or without epithelial cells Nonneoplastic",
+        "order_index": 1
+      },
+      {
+        "text": "Heterogeneous lymphocytes with tingible body macrophages",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Abundant mucin with or without epithelial cells Nonneoplastic",
+        "order_index": 2
+      },
+      {
+        "text": "Metaplastic ductal cells with calcification and chronic inflammation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Abundant mucin with or without epithelial cells Nonneoplastic",
+        "order_index": 3
+      },
+      {
+        "text": "Nonmucinous background debris with macrophages",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Abundant mucin with or without epithelial cells Nonneoplastic",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 26",
+    "stem": "A 45 year old woman presents with a 2.8 cm right parotid nodule. Ultrasound demonstrates a well defined nodule with heterogeneous echogenicity. Fine needle aspiration is performed. What is the best diagnosis according to the Milan System for Reporting Salivary Gland Cytopathology (MSRSGC)?",
+    "difficulty": "medium",
+    "teaching_point": "Nondiagnostic. The presence of normal nonneoplastic salivary gland acinar cells only in the setting of a clinically and radiologically defined mass should be diagnosed as nondiagnostic. The FNA sample is not considered representative of the lesion detected on clinical and radiologic examination. Repeat FNA under radiologic guidance is recommended if clinically indicated. Nondiagnostic",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmilannondiagnostic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypia of undetermined significance",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Nondiagnostic. The presence of normal nonneoplastic salivary gland acinar cells only in the setting ...",
+        "order_index": 0
+      },
+      {
+        "text": "Benign neoplasm, pleomorphic adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Nondiagnostic. The presence of normal nonneoplastic salivary gland acinar cells only in the setting ...",
+        "order_index": 1
+      },
+      {
+        "text": "Nondiagnostic",
+        "is_correct": true,
+        "explanation": "Nondiagnostic. The presence of normal nonneoplastic salivary gland acinar cells only in the setting of a clinically and radiologically defined mass should be diagnosed as nondiagnostic. The FNA sample is not considered representative of the lesion detected on clinical and radiologic examination. Repeat FNA under radiologic guidance is recommended if clinically indicated. Nondiagnostic",
+        "order_index": 2
+      },
+      {
+        "text": "Nonneoplastic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Nondiagnostic. The presence of normal nonneoplastic salivary gland acinar cells only in the setting ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilandiagnostichang01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 27",
+    "stem": "A 38 year old man presents with a 3.0 cm right parotid mass. Ultrasound demonstrates a mixed solid and cystic tumor. Fine needle aspiration is performed. What is the best diagnosis according to the Milan System for Reporting Salivary Gland Cytopathology (MSRSGC)?",
+    "difficulty": "medium",
+    "teaching_point": "Atypia of undetermined significance, mucinous cystic lesion. This FNA contains abundant mucin without any epithelial cells. The differential diagnosis includes a benign mucinous cyst; however, a low grade mucoepidermoid carcinoma cannot be excluded. Based on the MSRSGC, the most appropriate diagnosis would be atypia of undetermined significance. Clinical and radiological correlations are needed. Aspiration of a residual mass, if present, may help to achieve a more specific diagnosis. Nondiagnostic",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmilannondiagnostic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypia of undetermined significance, mucinous cystic lesion",
+        "is_correct": true,
+        "explanation": "Atypia of undetermined significance, mucinous cystic lesion. This FNA contains abundant mucin without any epithelial cells. The differential diagnosis includes a benign mucinous cyst; however, a low grade mucoepidermoid carcinoma cannot be excluded. Based on the MSRSGC, the most appropriate diagnosis would be atypia of undetermined significance. Clinical and radiological correlations are needed. Aspiration of a residual mass, if present, may help to achieve a more specific diagnosis. Nondiagnostic",
+        "order_index": 0
+      },
+      {
+        "text": "Malignant, low grade mucoepidermoid carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Atypia of undetermined significance, mucinous cystic lesion. This FNA contains abundant mucin withou...",
+        "order_index": 1
+      },
+      {
+        "text": "Nondiagnostic, cyst fluid only",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Atypia of undetermined significance, mucinous cystic lesion. This FNA contains abundant mucin withou...",
+        "order_index": 2
+      },
+      {
+        "text": "Nonneoplastic, compatible with mucocele",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Atypia of undetermined significance, mucinous cystic lesion. This FNA contains abundant mucin withou...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilandiagnostichang04.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 28",
+    "stem": "A 70 year old man presented with an enlarging mass in the left cheek soft tissue. The mass was removed and shows the histology above. The tumor is positive for CK20 (dot-like) and synaptophysin and is negative for CK7. Which of the following features would favor a salivary primary over a metastasis from an occult cutaneous primary tumor?",
+    "difficulty": "medium",
+    "teaching_point": "Adjacent pleomorphic adenoma Neuroendocrine carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsLCNC.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adjacent pleomorphic adenoma",
+        "is_correct": true,
+        "explanation": "Adjacent pleomorphic adenoma Neuroendocrine carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "History of multiple head and neck skin cancers",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Adjacent pleomorphic adenoma Neuroendocrine carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Molecular analysis showing a UV signature",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Adjacent pleomorphic adenoma Neuroendocrine carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Positive immunohistochemistry for MCPyV",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Adjacent pleomorphic adenoma Neuroendocrine carcinoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsLCNCSunCHernockbr.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Missing Image",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 29",
+    "stem": "Which of the following is true about primary neuroendocrine carcinomas of the salivary gland?",
+    "difficulty": "medium",
+    "teaching_point": "They often stain positively with CK20 in a perinuclear dot-like pattern Neuroendocrine carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsLCNC.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "The most common site is in the sublingual gland",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. They often stain positively with CK20 in a perinuclear dot-like pattern Neuroendocrine carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "They do not stain with classical neuroendocrine markers (synaptophysin and chromogranin)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. They often stain positively with CK20 in a perinuclear dot-like pattern Neuroendocrine carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "They have low grade morphology",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. They often stain positively with CK20 in a perinuclear dot-like pattern Neuroendocrine carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "They often stain positively with CK20 in a perinuclear dot-like pattern",
+        "is_correct": true,
+        "explanation": "They often stain positively with CK20 in a perinuclear dot-like pattern Neuroendocrine carcinoma",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 30",
+    "stem": "A 62 year old man presents with a 3.6 cm left parotid nodule. The fine needle aspiration shows a cellular smear, which is composed of fragments of bland looking, basaloid cells intermingled with magenta colored hyaline globules. What is the best diagnosis according to the Milan System for Reporting Salivary Gland Cytopathology?",
+    "difficulty": "medium",
+    "teaching_point": "Category IVB: salivary gland neoplasm of uncertain malignant potential, with basaloid features. Basaloid neoplasms showing overlapping morphology of bland basal cells and extracellular nonfibrillary matrix are better classified as salivary gland neoplasm of uncertain malignant potential, with basaloid features. The final pathology of the same case showed a basal cell adenoma with prominent hyaline globules. Neoplasm-salivary gland neoplasm of uncertain malignant potential (SUMP)",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmilanSUMP.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Category III: atypia of undetermined significance",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Category IVB: salivary gland neoplasm of uncertain malignant potential, with basaloid features. Basa...",
+        "order_index": 0
+      },
+      {
+        "text": "Category IVA: benign neoplasm, pleomorphic adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Category IVB: salivary gland neoplasm of uncertain malignant potential, with basaloid features. Basa...",
+        "order_index": 1
+      },
+      {
+        "text": "Category IVB: salivary gland neoplasm of uncertain malignant potential, with basaloid features",
+        "is_correct": true,
+        "explanation": "Category IVB: salivary gland neoplasm of uncertain malignant potential, with basaloid features. Basaloid neoplasms showing overlapping morphology of bland basal cells and extracellular nonfibrillary matrix are better classified as salivary gland neoplasm of uncertain malignant potential, with basaloid features. The final pathology of the same case showed a basal cell adenoma with prominent hyaline globules. Neoplasm-salivary gland neoplasm of uncertain malignant potential (SUMP)",
+        "order_index": 2
+      },
+      {
+        "text": "Category VI: malignant, adenoid cystic carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Category IVB: salivary gland neoplasm of uncertain malignant potential, with basaloid features. Basa...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilandiagnostichang31.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 31",
+    "stem": "A 49 year old woman presents with a 2.5 cm right parotid nodule. Fine needle aspiration cytology is performed and the result is shown in the figure. What would be the most likely diagnosis if the patient receives surgical excision?",
+    "difficulty": "medium",
+    "teaching_point": "Basal cell adenoma. The figure shows a proliferation of basaloid cells admixed with extracellular matrix. It is consistent with the cytologic diagnosis of SUMP with basaloid features. The differential diagnosis includes matrix producing tumors with basaloid cells, such as basal cell adenoma / adenocarcinoma and adenoid cystic carcinoma. Answers B - D are incorrect because Warthin tumor, mucoepidermoid carcinoma and secretory carcinoma are the less likely options since they usually present with neoplastic cells harboring more abundant cytoplasm and often would be interpreted as SUMP with oncocytic / oncocytoid features. Neoplasm-salivary gland neoplasm of uncertain malignant potential (SUMP)",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmilanSUMP.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Basal cell adenoma",
+        "is_correct": true,
+        "explanation": "Basal cell adenoma. The figure shows a proliferation of basaloid cells admixed with extracellular matrix. It is consistent with the cytologic diagnosis of SUMP with basaloid features. The differential diagnosis includes matrix producing tumors with basaloid cells, such as basal cell adenoma / adenocarcinoma and adenoid cystic carcinoma. Answers B - D are incorrect because Warthin tumor, mucoepidermoid carcinoma and secretory carcinoma are the less likely options since they usually present with neoplastic cells harboring more abundant cytoplasm and often would be interpreted as SUMP with oncocytic / oncocytoid features. Neoplasm-salivary gland neoplasm of uncertain malignant potential (SUMP)",
+        "order_index": 0
+      },
+      {
+        "text": "Mucoepidermoid carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Basal cell adenoma. The figure shows a proliferation of basaloid cells admixed with extracellular ma...",
+        "order_index": 1
+      },
+      {
+        "text": "Secretory carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Basal cell adenoma. The figure shows a proliferation of basaloid cells admixed with extracellular ma...",
+        "order_index": 2
+      },
+      {
+        "text": "Warthin tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Basal cell adenoma. The figure shows a proliferation of basaloid cells admixed with extracellular ma...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilandiagnosticHangnew2.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 32",
+    "stem": "A 45 year old man presented with a 2.8 cm, slow growing mass at left parotid region. He underwent ultrasound guided FNA for evaluation. What is the best diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Pleomorphic adenoma. Magenta colored extracellular matrix with feathery / fibrillary borders and intermingled bland myoepithelial cells are characteristic features of a pleomorphic adenoma. Neoplasm-benign",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsneoplasmbenign.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Basal cell adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Pleomorphic adenoma. Magenta colored extracellular matrix with feathery / fibrillary borders and int...",
+        "order_index": 0
+      },
+      {
+        "text": "Oncocytoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Pleomorphic adenoma. Magenta colored extracellular matrix with feathery / fibrillary borders and int...",
+        "order_index": 1
+      },
+      {
+        "text": "Pleomorphic adenoma",
+        "is_correct": true,
+        "explanation": "Pleomorphic adenoma. Magenta colored extracellular matrix with feathery / fibrillary borders and intermingled bland myoepithelial cells are characteristic features of a pleomorphic adenoma. Neoplasm-benign",
+        "order_index": 2
+      },
+      {
+        "text": "Warthin tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Pleomorphic adenoma. Magenta colored extracellular matrix with feathery / fibrillary borders and int...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilandiagnostichang06.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 33",
+    "stem": "Which salivary gland tumor below should be reported on FNA as \"salivary gland neoplasm of uncertain malignant potential (SUMP)\"?",
+    "difficulty": "medium",
+    "teaching_point": "Basal cell adenoma. Basal cell adenoma shows overlapping morphological features with basal cell adenocarcinoma in FNA. The distinction between these 2 tumors depends on the histological examination to demonstrate tumor invasion. Moreover, pleomorphic adenoma with predominant basal cells and solid / tubular variant of adenoid cystic carcinoma can also cytologically mimic a basal cell adenoma. Therefore, it is recommended to report FNA with basal cell features as SUMP with basaloid features in the Milan system. Neoplasm-benign",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsneoplasmbenign.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Basal cell adenoma",
+        "is_correct": true,
+        "explanation": "Basal cell adenoma. Basal cell adenoma shows overlapping morphological features with basal cell adenocarcinoma in FNA. The distinction between these 2 tumors depends on the histological examination to demonstrate tumor invasion. Moreover, pleomorphic adenoma with predominant basal cells and solid / tubular variant of adenoid cystic carcinoma can also cytologically mimic a basal cell adenoma. Therefore, it is recommended to report FNA with basal cell features as SUMP with basaloid features in the Milan system. Neoplasm-benign",
+        "order_index": 0
+      },
+      {
+        "text": "Oncocytoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Basal cell adenoma. Basal cell adenoma shows overlapping morphological features with basal cell aden...",
+        "order_index": 1
+      },
+      {
+        "text": "Pleomorphic adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Basal cell adenoma. Basal cell adenoma shows overlapping morphological features with basal cell aden...",
+        "order_index": 2
+      },
+      {
+        "text": "Warthin tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Basal cell adenoma. Basal cell adenoma shows overlapping morphological features with basal cell aden...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 34",
+    "stem": "Necrotizing sialometaplasia most commonly affects what site?",
+    "difficulty": "medium",
+    "teaching_point": "Minor salivary glands of the palate. Although necrotizing sialometaplasia can affect any of the given answer choices, it classically involves the minor salivary glands of the hard palate. Answers A, C and D are incorrect because necrotizing sialometaplasia occurs at these sites less frequently than in the minor salivary glands of the palate. Necrotizing sialometaplasia",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsnecrotizingsialo.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Minor salivary glands of the lip",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Minor salivary glands of the palate. Although necrotizing sialometaplasia can affect any of the give...",
+        "order_index": 0
+      },
+      {
+        "text": "Minor salivary glands of the palate",
+        "is_correct": true,
+        "explanation": "Minor salivary glands of the palate. Although necrotizing sialometaplasia can affect any of the given answer choices, it classically involves the minor salivary glands of the hard palate. Answers A, C and D are incorrect because necrotizing sialometaplasia occurs at these sites less frequently than in the minor salivary glands of the palate. Necrotizing sialometaplasia",
+        "order_index": 1
+      },
+      {
+        "text": "Parotid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Minor salivary glands of the palate. Although necrotizing sialometaplasia can affect any of the give...",
+        "order_index": 2
+      },
+      {
+        "text": "Submandibular gland",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Minor salivary glands of the palate. Although necrotizing sialometaplasia can affect any of the give...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsnecrotizingsialodamm08.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Palatal ulceration and erythema",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsnecrotizingsialosmith01.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "Pseudoepitheliomatous hyperplasia",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 35",
+    "stem": "A patient presents to clinic with severe pain and an ulceration on the hard palate. She states that the lesion began after a dental procedure as a swelling that rapidly progressed to an ulceration over the course of a couple weeks. What is the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Necrotizing sialometaplasia. The patient presented with the classic clinical history of acute onset of a rapidly progressing lesion on the hard palate, which began as a swelling that subsequently ulcerated. Biopsy revealed large zones of pseudoepitheliomatous hyperplasia, squamous metaplasia of ducts, lack of overt pleomorphism and areas of acinar necrosis and mucin spillage. Answer A (mucoepidermoid carcinoma) is incorrect because the lobular architecture of the gland is preserved and there is no proliferation of cystic spaces or neoplastic goblet cells. Although T cell lymphomas classically may affect the hard palate, the biopsy did not show an atypical lymphoid infiltrate. Answer C (squamous cell carcinoma) is incorrect as the proliferation of squamous epithelium classically forms the pseudoepitheliomatous hyperplasia type pattern and lacks cellular pleomorphism. Necrotizing sialometaplasia",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsnecrotizingsialo.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Mucoepidermoid carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Necrotizing sialometaplasia. The patient presented with the classic clinical history of acute onset ...",
+        "order_index": 0
+      },
+      {
+        "text": "Necrotizing sialometaplasia",
+        "is_correct": true,
+        "explanation": "Necrotizing sialometaplasia. The patient presented with the classic clinical history of acute onset of a rapidly progressing lesion on the hard palate, which began as a swelling that subsequently ulcerated. Biopsy revealed large zones of pseudoepitheliomatous hyperplasia, squamous metaplasia of ducts, lack of overt pleomorphism and areas of acinar necrosis and mucin spillage. Answer A (mucoepidermoid carcinoma) is incorrect because the lobular architecture of the gland is preserved and there is no proliferation of cystic spaces or neoplastic goblet cells. Although T cell lymphomas classically may affect the hard palate, the biopsy did not show an atypical lymphoid infiltrate. Answer C (squamous cell carcinoma) is incorrect as the proliferation of squamous epithelium classically forms the pseudoepitheliomatous hyperplasia type pattern and lacks cellular pleomorphism. Necrotizing sialometaplasia",
+        "order_index": 1
+      },
+      {
+        "text": "Squamous cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Necrotizing sialometaplasia. The patient presented with the classic clinical history of acute onset ...",
+        "order_index": 2
+      },
+      {
+        "text": "T cell lymphoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Necrotizing sialometaplasia. The patient presented with the classic clinical history of acute onset ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsnecrotizingsialosmith02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Bland cytology",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsnecrotizingsialosmith03.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "Spilled mucin",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 36",
+    "stem": "A 46 year old man presents with swelling close to his right ear. Imaging reveals a well circumscribed 1.8 cm nodule in the parotid gland. Biopsy findings are shown in the picture above. Which of the following statements about this tumor is true?",
+    "difficulty": "medium",
+    "teaching_point": ". Monomorphic tumor cells and absence of chondromyxoid stroma and ducts help to differentiate myoepithelioma from pleomorphic adenoma. The presence of chondromyxoid stroma is consistent with pleomorphic adenoma rather than myoepithelioma. Myoepithelioma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmyoepithelioma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Monomorphic tumor cells and absence of ducts help to differentiate myoepithelioma from pleomorphic adenoma",
+        "is_correct": true,
+        "explanation": ". Monomorphic tumor cells and absence of chondromyxoid stroma and ducts help to differentiate myoepithelioma from pleomorphic adenoma. The presence of chondromyxoid stroma is consistent with pleomorphic adenoma rather than myoepithelioma. Myoepithelioma",
+        "order_index": 0
+      },
+      {
+        "text": "Mucinous features should rule out this entity",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Monomorphic tumor cells and absence of chondromyxoid stroma and ducts help to differentiate myoepi...",
+        "order_index": 1
+      },
+      {
+        "text": "Sometimes the epithelial component can be as high as 30%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Monomorphic tumor cells and absence of chondromyxoid stroma and ducts help to differentiate myoepi...",
+        "order_index": 2
+      },
+      {
+        "text": "This lesion is most common in minor salivary glands of palate",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Monomorphic tumor cells and absence of chondromyxoid stroma and ducts help to differentiate myoepi...",
+        "order_index": 3
+      },
+      {
+        "text": "This tumor is completely benign and no malignant transformation has been reported",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Monomorphic tumor cells and absence of chondromyxoid stroma and ducts help to differentiate myoepi...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmyoepitheliomaBRQ.png",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 37",
+    "stem": "Which of the following is correct about myoepithelioma?",
+    "difficulty": "medium",
+    "teaching_point": ". Positive for PLAG1 abnormalities. Detection of PLAG1 rearrangement by cytogenetics or other methods can be helpful. NTF3-PLAG1, FBXO32-PLAG1 and GEM-PLAG1 fusions have been detected in oncocytic myoepithelioma (Ann Diagn Pathol 2017;28:19, Hum Pathol 2020;103:52). Myoepithelioma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmyoepithelioma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Negative for keratin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Positive for PLAG1 abnormalities. Detection of PLAG1 rearrangement by cytogenetics or other method...",
+        "order_index": 0
+      },
+      {
+        "text": "Negative for nuclear beta catenin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Positive for PLAG1 abnormalities. Detection of PLAG1 rearrangement by cytogenetics or other method...",
+        "order_index": 1
+      },
+      {
+        "text": "Negative for S100",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Positive for PLAG1 abnormalities. Detection of PLAG1 rearrangement by cytogenetics or other method...",
+        "order_index": 2
+      },
+      {
+        "text": "Negative for SMA and HHF35",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Positive for PLAG1 abnormalities. Detection of PLAG1 rearrangement by cytogenetics or other method...",
+        "order_index": 3
+      },
+      {
+        "text": "Positive for PLAG1 translocation",
+        "is_correct": true,
+        "explanation": ". Positive for PLAG1 abnormalities. Detection of PLAG1 rearrangement by cytogenetics or other methods can be helpful. NTF3-PLAG1, FBXO32-PLAG1 and GEM-PLAG1 fusions have been detected in oncocytic myoepithelioma (Ann Diagn Pathol 2017;28:19, Hum Pathol 2020;103:52). Myoepithelioma",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 38",
+    "stem": "A parotid tumor is resected from a 46 year old man. The tumor is positive for S100, cytokeratin AE1 / AE3 and calponin, whereas negative for AR. What is the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". The low power H&E clearly shows invasion, which supports a diagnosis of carcinoma and excludes benign entities, such as pleomorphic adenoma. At high power, the tumor contains one type of tumor cells, which exclude all carcinoma with biphasic patterns (e.g. adenoid cystic carcinoma). The immunohistochemical profile is consistent with myoepithelial phenotype. Therefore, the correct diagnosis is myoepithelial carcinoma. Myoepithelial carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmyoepithelialcarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Adenoid cystic carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . The low power H&E clearly shows invasion, which supports a diagnosis of carcinoma and excludes ben...",
+        "order_index": 0
+      },
+      {
+        "text": "Myoepithelial carcinoma",
+        "is_correct": true,
+        "explanation": ". The low power H&E clearly shows invasion, which supports a diagnosis of carcinoma and excludes benign entities, such as pleomorphic adenoma. At high power, the tumor contains one type of tumor cells, which exclude all carcinoma with biphasic patterns (e.g. adenoid cystic carcinoma). The immunohistochemical profile is consistent with myoepithelial phenotype. Therefore, the correct diagnosis is myoepithelial carcinoma. Myoepithelial carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Pleomorphic adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . The low power H&E clearly shows invasion, which supports a diagnosis of carcinoma and excludes ben...",
+        "order_index": 2
+      },
+      {
+        "text": "Salivary duct carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . The low power H&E clearly shows invasion, which supports a diagnosis of carcinoma and excludes ben...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmyoepithelialcarcinomaSalamaXu02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Myoepithelial carcinoma",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmyoepithelialcarcinomaSalamaXu04.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "Myoepithelial carcinoma",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 39",
+    "stem": "Which of the following statement about the myoepithelial carcinoma of the salivary gland is true?",
+    "difficulty": "medium",
+    "teaching_point": ". Myoepithelial carcinoma contains only one cell type (myoepithelial cells) and does not contain epithelial (ductal) cells. PRKD1 fusion is seen in polymorphous adenocarcinoma / cribriform adenocarcinoma. Myoepithelial carcinoma is relatively aggressive, with approximately 20% risk of distant metastasis. It may arise de novo or ex pleomorphic adenoma. Myoepithelial carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmyoepithelialcarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It harbors PRKD1 fusion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Myoepithelial carcinoma contains only one cell type (myoepithelial cells) and does not contain epi...",
+        "order_index": 0
+      },
+      {
+        "text": "It has negligible risk of distant metastasis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Myoepithelial carcinoma contains only one cell type (myoepithelial cells) and does not contain epi...",
+        "order_index": 1
+      },
+      {
+        "text": "It is biphasic, composed of epithelial (ductal) and myoepithelial elements",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . Myoepithelial carcinoma contains only one cell type (myoepithelial cells) and does not contain epi...",
+        "order_index": 2
+      },
+      {
+        "text": "It may arise de novo or ex pleomorphic adenoma",
+        "is_correct": true,
+        "explanation": ". Myoepithelial carcinoma contains only one cell type (myoepithelial cells) and does not contain epithelial (ductal) cells. PRKD1 fusion is seen in polymorphous adenocarcinoma / cribriform adenocarcinoma. Myoepithelial carcinoma is relatively aggressive, with approximately 20% risk of distant metastasis. It may arise de novo or ex pleomorphic adenoma. Myoepithelial carcinoma",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 40",
+    "stem": "Which of the following is true about mucoepidermoid carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": "Most common malignant salivary tumor in children Mucoepidermoid carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsMEC.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Associated with t(12;15)(p12;q25) and ETV6-NTRK3 gene fusion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Most common malignant salivary tumor in children Mucoepidermoid carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Highly associated with smoking",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Most common malignant salivary tumor in children Mucoepidermoid carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Most common malignant salivary tumor in children",
+        "is_correct": true,
+        "explanation": "Most common malignant salivary tumor in children Mucoepidermoid carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Positive for HER2 and AR by immunohistochemistry",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Most common malignant salivary tumor in children Mucoepidermoid carcinoma",
+        "order_index": 3
+      },
+      {
+        "text": "Prognosis is poor regardlesss of histologic grade",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Most common malignant salivary tumor in children Mucoepidermoid carcinoma",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 41",
+    "stem": "Which of the following histologic features is more commonly seen in low to intermediate grade mucoepidermoid carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": "Intracystic component more than 30% Mucoepidermoid carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsMEC.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "4 or more mitoses",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Intracystic component more than 30% Mucoepidermoid carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Bone invasion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Intracystic component more than 30% Mucoepidermoid carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Intracystic component more than 30%",
+        "is_correct": true,
+        "explanation": "Intracystic component more than 30% Mucoepidermoid carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Intracystic component more than 30% Mucoepidermoid carcinoma",
+        "order_index": 3
+      },
+      {
+        "text": "Perineural invasion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Intracystic component more than 30% Mucoepidermoid carcinoma",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 42",
+    "stem": "The focal clear cell change seen in this mucoepidermoid carcinoma case is due to",
+    "difficulty": "medium",
+    "teaching_point": "Accumulation of glycogen Mucoepidermoid carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsMEC.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Accumulation of glycogen",
+        "is_correct": true,
+        "explanation": "Accumulation of glycogen Mucoepidermoid carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Accumulation of mucin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Accumulation of glycogen Mucoepidermoid carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Degradation of neoplastic cells",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Accumulation of glycogen Mucoepidermoid carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Fixation artifact",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Accumulation of glycogen Mucoepidermoid carcinoma",
+        "order_index": 3
+      },
+      {
+        "text": "High grade transformation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Accumulation of glycogen Mucoepidermoid carcinoma",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsMECasiry17.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 43",
+    "stem": "A 62 year old man presents with a 3.6 cm left parotid nodule. The fine needle aspiration shows a cellular smear, which is composed of fragments of bland looking, basaloid cells intermingled with magenta colored hyaline globules. What is the best diagnosis according to the Milan System for Reporting Salivary Gland Cytopathology?",
+    "difficulty": "medium",
+    "teaching_point": "Category IVB: salivary gland neoplasm of uncertain malignant potential, with basaloid features Basaloid neoplasms showing overlapping morphology of bland basal cells and acellular metachromatic matrix are better classified as salivary gland neoplasm of uncertain malignant potential, with basaloid features. The final pathology of the same case showed a basal cell adenoma with prominent hyaline globules. Milan system",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmilandiagnostic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Category III: atypia of undetermined significance",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Category IVB: salivary gland neoplasm of uncertain malignant potential, with basaloid features Basal...",
+        "order_index": 0
+      },
+      {
+        "text": "Category IVA: benign neoplasm, pleomorphic adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Category IVB: salivary gland neoplasm of uncertain malignant potential, with basaloid features Basal...",
+        "order_index": 1
+      },
+      {
+        "text": "Category IVB: salivary gland neoplasm of uncertain malignant potential, with basaloid features",
+        "is_correct": true,
+        "explanation": "Category IVB: salivary gland neoplasm of uncertain malignant potential, with basaloid features Basaloid neoplasms showing overlapping morphology of bland basal cells and acellular metachromatic matrix are better classified as salivary gland neoplasm of uncertain malignant potential, with basaloid features. The final pathology of the same case showed a basal cell adenoma with prominent hyaline globules. Milan system",
+        "order_index": 2
+      },
+      {
+        "text": "Category VI: malignant, adenoid cystic carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Category IVB: salivary gland neoplasm of uncertain malignant potential, with basaloid features Basal...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilandiagnostichang31.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 44",
+    "stem": "A 39 year old woman presents with multiple submandibular nodules. A 2.3 cm intrasubmandibular gland nodule undergoes ultrasound guided fine needle aspiration. The cytology shows a proliferation of monotonous small lymphocytes and scattered tingible body macrophages. What is the best diagnosis according to the MSRSGC?",
+    "difficulty": "medium",
+    "teaching_point": "Category III: atypia of undetermined significance Bland lymphocytic aspirates showing any evidence of monomorphic population are better classified as atypia of undetermined significance. The subsequent excision of a lymph node adjacent to submandibular gland showed a follicular lymphoma. Milan system",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmilandiagnostic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Category I: nondiagnostic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Category III: atypia of undetermined significance Bland lymphocytic aspirates showing any evidence o...",
+        "order_index": 0
+      },
+      {
+        "text": "Category II: nonneoplastic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Category III: atypia of undetermined significance Bland lymphocytic aspirates showing any evidence o...",
+        "order_index": 1
+      },
+      {
+        "text": "Category III: atypia of undetermined significance",
+        "is_correct": true,
+        "explanation": "Category III: atypia of undetermined significance Bland lymphocytic aspirates showing any evidence of monomorphic population are better classified as atypia of undetermined significance. The subsequent excision of a lymph node adjacent to submandibular gland showed a follicular lymphoma. Milan system",
+        "order_index": 2
+      },
+      {
+        "text": "Category VI: malignant, lymphoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. Category III: atypia of undetermined significance Bland lymphocytic aspirates showing any evidence o...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilandiagnostichang05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 45",
+    "stem": "A 42 year old woman presents for a routine dental cleaning and a small, firm, painless mass involving the hard palate is discovered. At higher power, the tumor cells are monotonous with hyperchromatic nuclei. They show diffuse positivity for S100 and p63 and are negative for p40. Break apart fluorescence in situ hybridization reveals a rearrangement of SS18 . What is the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Microsecretory adenocarcinoma. The image shows a well demarcated mass composed of anastomosing microcysts containing prominent basophilic secretions. polymorphous adenocarcinoma can show tubular and microcribriform architecture with S100 positivity and discordant p63 and p40 staining; however, polymorphous adenocarcinoma typically shows more infiltrative borders and heterogeneous architecture. sclerosing microcystic adenocarcinoma can show microcystic architecture but demonstrates an infiltrative growth pattern and biphasic cell populations with a relatively abundant desmoplastic stromal component. secretory carcinoma demonstrates a microcystic architecture and is positive for S100 but tends to show predominantly eosinophilic secretions and is generally negative for p63. Answer E is incorrrect because tubular adenoid cystic carcinoma often shows some microcystic architecture with basophilic intraluminal secretions but shows widely infiltrative borders and at least focal cribriform architecture. Evidence of SS18 rearrangement is highly specific for microsecretory adenocarcinoma, which has been shown to harbor a unique MEF2C::SS18 fusion. Microsecretory adenocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmicrosecretoryadeno.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Microsecretory adenocarcinoma",
+        "is_correct": true,
+        "explanation": "Microsecretory adenocarcinoma. The image shows a well demarcated mass composed of anastomosing microcysts containing prominent basophilic secretions. polymorphous adenocarcinoma can show tubular and microcribriform architecture with S100 positivity and discordant p63 and p40 staining; however, polymorphous adenocarcinoma typically shows more infiltrative borders and heterogeneous architecture. sclerosing microcystic adenocarcinoma can show microcystic architecture but demonstrates an infiltrative growth pattern and biphasic cell populations with a relatively abundant desmoplastic stromal component. secretory carcinoma demonstrates a microcystic architecture and is positive for S100 but tends to show predominantly eosinophilic secretions and is generally negative for p63. Answer E is incorrrect because tubular adenoid cystic carcinoma often shows some microcystic architecture with basophilic intraluminal secretions but shows widely infiltrative borders and at least focal cribriform architecture. Evidence of SS18 rearrangement is highly specific for microsecretory adenocarcinoma, which has been shown to harbor a unique MEF2C::SS18 fusion. Microsecretory adenocarcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "Polymorphous adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Microsecretory adenocarcinoma. The image shows a well demarcated mass composed of anastomosing micro...",
+        "order_index": 1
+      },
+      {
+        "text": "Sclerosing microcystic adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Microsecretory adenocarcinoma. The image shows a well demarcated mass composed of anastomosing micro...",
+        "order_index": 2
+      },
+      {
+        "text": "Secretory carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Microsecretory adenocarcinoma. The image shows a well demarcated mass composed of anastomosing micro...",
+        "order_index": 3
+      },
+      {
+        "text": "Tubular adenoid cystic carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Microsecretory adenocarcinoma. The image shows a well demarcated mass composed of anastomosing micro...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmicrosecretoryadenoMikula07.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 46",
+    "stem": "Which histological diagnosis most likely corresponds to this cytologic aspirate?",
+    "difficulty": "medium",
+    "teaching_point": ". Mucoepidermoid carcinoma. A fragment of intermediate cells with intermingled mucous cells containing orange colored intracytoplasmic mucin is characteristic for a mucoepidermoid carcinoma. Malignant",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmalignant.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acinic cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Mucoepidermoid carcinoma. A fragment of intermediate cells with intermingled mucous cells containi...",
+        "order_index": 0
+      },
+      {
+        "text": "Adenoid cystic carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Mucoepidermoid carcinoma. A fragment of intermediate cells with intermingled mucous cells containi...",
+        "order_index": 1
+      },
+      {
+        "text": "Mucoepidermoid carcinoma",
+        "is_correct": true,
+        "explanation": ". Mucoepidermoid carcinoma. A fragment of intermediate cells with intermingled mucous cells containing orange colored intracytoplasmic mucin is characteristic for a mucoepidermoid carcinoma. Malignant",
+        "order_index": 2
+      },
+      {
+        "text": "Secretory carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Mucoepidermoid carcinoma. A fragment of intermediate cells with intermingled mucous cells containi...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilandiagnostichang20.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 47",
+    "stem": "Which histological diagnosis most likely corresponds to this cytologic aspirate?",
+    "difficulty": "medium",
+    "teaching_point": ". Adenoid cystic carcinoma. Basaloid tumor cells with prominent hyaline globules arranging in cribriform pattern are characteristic for an adenoid cystic carcinoma. Malignant",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmalignant.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acinic cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Adenoid cystic carcinoma. Basaloid tumor cells with prominent hyaline globules arranging in cribri...",
+        "order_index": 0
+      },
+      {
+        "text": "Adenoid cystic carcinoma",
+        "is_correct": true,
+        "explanation": ". Adenoid cystic carcinoma. Basaloid tumor cells with prominent hyaline globules arranging in cribriform pattern are characteristic for an adenoid cystic carcinoma. Malignant",
+        "order_index": 1
+      },
+      {
+        "text": "Mucoepidermoid carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Adenoid cystic carcinoma. Basaloid tumor cells with prominent hyaline globules arranging in cribri...",
+        "order_index": 2
+      },
+      {
+        "text": "Secretory carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Adenoid cystic carcinoma. Basaloid tumor cells with prominent hyaline globules arranging in cribri...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilandiagnostichang23.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 50",
+    "stem": "A cystic parotid mass measuring 1.5 cm is resected. The lesion can be associated with which of the following?",
+    "difficulty": "medium",
+    "teaching_point": ". HIV associated Lymphoepithelial cyst",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsb9lymphoepithelialcyst.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "EBV associated",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . HIV associated Lymphoepithelial cyst",
+        "order_index": 0
+      },
+      {
+        "text": "HHV8 associated",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . HIV associated Lymphoepithelial cyst",
+        "order_index": 1
+      },
+      {
+        "text": "HIV associated",
+        "is_correct": true,
+        "explanation": ". HIV associated Lymphoepithelial cyst",
+        "order_index": 2
+      },
+      {
+        "text": "HPV associated",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . HIV associated Lymphoepithelial cyst",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandslymphoepithelialcyst_Maleki10.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Lymphoepithelial cyst",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 51",
+    "stem": "FNA of a cystic parotid mass in an 11 year old child is shown here. The most likely diagnosis is",
+    "difficulty": "medium",
+    "teaching_point": ". Lymphoepithelial cyst Lymphoepithelial cyst",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsb9lymphoepithelialcyst.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Granulomatous inflammation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Lymphoepithelial cyst Lymphoepithelial cyst",
+        "order_index": 0
+      },
+      {
+        "text": "Lymphoepithelial cyst",
+        "is_correct": true,
+        "explanation": ". Lymphoepithelial cyst Lymphoepithelial cyst",
+        "order_index": 1
+      },
+      {
+        "text": "Mucoepidermoid carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Lymphoepithelial cyst Lymphoepithelial cyst",
+        "order_index": 2
+      },
+      {
+        "text": "Squamous cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Lymphoepithelial cyst Lymphoepithelial cyst",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandslymphoepithelialcystMaleki02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Lymphoepithelial cyst",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 52",
+    "stem": "Which of the following is true regarding this variant of intraductal carcinoma with the following immunophenotype: S100 and SOX10+; AR-?",
+    "difficulty": "medium",
+    "teaching_point": ". It is the most common variant The photomicrograph shows an intraductal proliferation of bland appearing cuboidal cells arranged in cribriform and clinging patterns. Nuclei are small and oval with a dispersed chromatin distribution. Immunohistochemical studies were positive for S100 and SOX10, while negative for AR (androgen receptor) and GCDFP-15. This constellation of findings is characteristic of the intercalated duct-like variant, which is the most common of the variants. It is frequently associated with RET fusions, commonly NCOA4-RET. HRAS and PIK3CA hotspot mutations are usually seen in the apocrine variant, which is the form more likely to exhibit higher grade atypia. It has the following immunophenotype: S100-, SOX10-, AR+ and GCDFP-15+. This staining pattern is similar to that of salivary duct carcinoma, leading to some to believe that apocrine intraductal carcinoma may be a precursor to conventional salivary duct carcinoma. Intraductal carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsintraductalsalivary.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It is associated with HRAS and PIK3CA hotspot mutations",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . It is the most common variant The photomicrograph shows an intraductal proliferation of bland appe...",
+        "order_index": 0
+      },
+      {
+        "text": "It is the most common variant",
+        "is_correct": true,
+        "explanation": ". It is the most common variant The photomicrograph shows an intraductal proliferation of bland appearing cuboidal cells arranged in cribriform and clinging patterns. Nuclei are small and oval with a dispersed chromatin distribution. Immunohistochemical studies were positive for S100 and SOX10, while negative for AR (androgen receptor) and GCDFP-15. This constellation of findings is characteristic of the intercalated duct-like variant, which is the most common of the variants. It is frequently associated with RET fusions, commonly NCOA4-RET. HRAS and PIK3CA hotspot mutations are usually seen in the apocrine variant, which is the form more likely to exhibit higher grade atypia. It has the following immunophenotype: S100-, SOX10-, AR+ and GCDFP-15+. This staining pattern is similar to that of salivary duct carcinoma, leading to some to believe that apocrine intraductal carcinoma may be a precursor to conventional salivary duct carcinoma. Intraductal carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "It is the type most likely to exhibit high grade nuclear features",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . It is the most common variant The photomicrograph shows an intraductal proliferation of bland appe...",
+        "order_index": 2
+      },
+      {
+        "text": "It is usually GCDFP-15+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . It is the most common variant The photomicrograph shows an intraductal proliferation of bland appe...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsintraductalsalivaryEly03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Intraductal carcinoma",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 53",
+    "stem": "Which of the following is true regarding intraductal carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": ". No purely intraductal carcinomas have definitively recurred or distantly metastasized. Intraductal carcinoma involves the parotid (84.6%), intraparotid lymph nodes (5.1%), accessory parotid gland (2.6%), submandibular gland (2.6%) and minor salivary glands (5.1%). Women and men are almost equally affected, with a female to male ratio of 1.5:1. According to the diagnostic criteria outlined by Cheuk et al., a diagnosis of intraductal carcinoma can be made once an invasive component is excluded. This requires thorough sampling or the demonstration of a myoepithelial layer around the epithelial nest by immunohistochemistry. This is more confidently accomplished on an excisional specimen. When confined by a myoepithelial cell layer, no intraductal (or in situ) carcinomas have definitively recurred or distantly metastasized. Intraductal carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsintraductalsalivary.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "A diagnosis can be made on core biopsy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . No purely intraductal carcinomas have definitively recurred or distantly metastasized. Intraductal...",
+        "order_index": 0
+      },
+      {
+        "text": "Has a marked predilection for women",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . No purely intraductal carcinomas have definitively recurred or distantly metastasized. Intraductal...",
+        "order_index": 1
+      },
+      {
+        "text": "It is most common in the submandibular gland followed by the parotid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . No purely intraductal carcinomas have definitively recurred or distantly metastasized. Intraductal...",
+        "order_index": 2
+      },
+      {
+        "text": "No purely intraductal carcinomas have definitively recurred or distantly metastasized",
+        "is_correct": true,
+        "explanation": ". No purely intraductal carcinomas have definitively recurred or distantly metastasized. Intraductal carcinoma involves the parotid (84.6%), intraparotid lymph nodes (5.1%), accessory parotid gland (2.6%), submandibular gland (2.6%) and minor salivary glands (5.1%). Women and men are almost equally affected, with a female to male ratio of 1.5:1. According to the diagnostic criteria outlined by Cheuk et al., a diagnosis of intraductal carcinoma can be made once an invasive component is excluded. This requires thorough sampling or the demonstration of a myoepithelial layer around the epithelial nest by immunohistochemistry. This is more confidently accomplished on an excisional specimen. When confined by a myoepithelial cell layer, no intraductal (or in situ) carcinomas have definitively recurred or distantly metastasized. Intraductal carcinoma",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 54",
+    "stem": "A 65 year old woman presented with a 3 month history of unilateral cheek lump that recently increased in size. A histologic image of the resection is provided above. What is the most common histological feature associated with this lesion?",
+    "difficulty": "medium",
+    "teaching_point": "Perineural invasion Epithelial myoepithelial carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsepimyocarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Anaplasia",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Perineural invasion Epithelial myoepithelial carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "High proliferation index",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Perineural invasion Epithelial myoepithelial carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Lymphovascular invasion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Perineural invasion Epithelial myoepithelial carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Perineural invasion Epithelial myoepithelial carcinoma",
+        "order_index": 3
+      },
+      {
+        "text": "Perineural invasion",
+        "is_correct": true,
+        "explanation": "Perineural invasion Epithelial myoepithelial carcinoma",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsepimyocarcinomagupta07.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 55",
+    "stem": "Which of the following immunohistochemical combinations is most helpful in diagnosing epithelial myoepithelial carcinoma?",
+    "difficulty": "medium",
+    "teaching_point": "AE1 / AE3, S100 and p63 Epithelial myoepithelial carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsepimyocarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "AE1 / AE3, CD117 and p63",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. AE1 / AE3, S100 and p63 Epithelial myoepithelial carcinoma",
+        "order_index": 0
+      },
+      {
+        "text": "AE1 / AE3, EMA and CK7",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. AE1 / AE3, S100 and p63 Epithelial myoepithelial carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "AE1 / AE3, S100 and p63",
+        "is_correct": true,
+        "explanation": "AE1 / AE3, S100 and p63 Epithelial myoepithelial carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Nuclear beta catenin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. AE1 / AE3, S100 and p63 Epithelial myoepithelial carcinoma",
+        "order_index": 3
+      },
+      {
+        "text": "p63, SMA and calponin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. AE1 / AE3, S100 and p63 Epithelial myoepithelial carcinoma",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 56",
+    "stem": "Which of the following FISH tests is useful in ruling out malignancy in equivocal cases of cystadenoma with mucinous metaplasia?",
+    "difficulty": "medium",
+    "teaching_point": ". MAML2 is positive in up to 80% of low grade mucoepidermoid carcinoma. Mucinous metaplasia may occur in cystadenoma. Typically, these cases will lack intermediate cells and infiltrative edges seen in cases of mucoepidermoid carcinoma. However, for equivocal cases, a negative MAML2 FISH analysis can provide additional support to exclude malignancy. Cystadenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandscystadenoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "ETV6",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . MAML2 is positive in up to 80% of low grade mucoepidermoid carcinoma. Mucinous metaplasia may occu...",
+        "order_index": 0
+      },
+      {
+        "text": "EWSR1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . MAML2 is positive in up to 80% of low grade mucoepidermoid carcinoma. Mucinous metaplasia may occu...",
+        "order_index": 1
+      },
+      {
+        "text": "MAML2",
+        "is_correct": true,
+        "explanation": ". MAML2 is positive in up to 80% of low grade mucoepidermoid carcinoma. Mucinous metaplasia may occur in cystadenoma. Typically, these cases will lack intermediate cells and infiltrative edges seen in cases of mucoepidermoid carcinoma. However, for equivocal cases, a negative MAML2 FISH analysis can provide additional support to exclude malignancy. Cystadenoma",
+        "order_index": 2
+      },
+      {
+        "text": "MYB",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . MAML2 is positive in up to 80% of low grade mucoepidermoid carcinoma. Mucinous metaplasia may occu...",
+        "order_index": 3
+      },
+      {
+        "text": "PLAG1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . MAML2 is positive in up to 80% of low grade mucoepidermoid carcinoma. Mucinous metaplasia may occu...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandscystadenoma_Talwar12.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 57",
+    "stem": "Which immunohistochemical panel would be most useful in supporting the diagnosis of macrocystic secretory carcinoma over that of cystadenoma?",
+    "difficulty": "medium",
+    "teaching_point": ". A panel type approach is often beneficial in salivary gland tumors. GATA3 is a nuclear stain that is positive in many malignancies, particularly breast and urothelial carcinomas. In the salivary gland, GATA3 stains secretory carcinoma, salivary duct carcinoma and other types of salivary gland neoplasms (Head Neck Pathol 2013;7:311). The addition of S100+, SOX10+ and MUC4+, in addition to mammaglobin+ weighs against cystadenoma and with the correct morphology, supports macrocystic secretory carcinoma. Nuclear stains are generally easier to interpret than cytoplasmic stains, like mammaglobin, due to high background staining. S100 stains most salivary gland neoplasms including secretory carcinoma and is not specific for it. KIT is seen in adenoid cystic carcinoma. Cystadenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandscystadenoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "GATA3+, S100+, SOX10+, MUC4+",
+        "is_correct": true,
+        "explanation": ". A panel type approach is often beneficial in salivary gland tumors. GATA3 is a nuclear stain that is positive in many malignancies, particularly breast and urothelial carcinomas. In the salivary gland, GATA3 stains secretory carcinoma, salivary duct carcinoma and other types of salivary gland neoplasms (Head Neck Pathol 2013;7:311). The addition of S100+, SOX10+ and MUC4+, in addition to mammaglobin+ weighs against cystadenoma and with the correct morphology, supports macrocystic secretory carcinoma. Nuclear stains are generally easier to interpret than cytoplasmic stains, like mammaglobin, due to high background staining. S100 stains most salivary gland neoplasms including secretory carcinoma and is not specific for it. KIT is seen in adenoid cystic carcinoma. Cystadenoma",
+        "order_index": 0
+      },
+      {
+        "text": "KIT+, SOX10+, mammaglobin+, MYB+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . A panel type approach is often beneficial in salivary gland tumors. GATA3 is a nuclear stain that ...",
+        "order_index": 1
+      },
+      {
+        "text": "Mammaglobin+, CK20+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . A panel type approach is often beneficial in salivary gland tumors. GATA3 is a nuclear stain that ...",
+        "order_index": 2
+      },
+      {
+        "text": "S100-, p63+, P40+",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . A panel type approach is often beneficial in salivary gland tumors. GATA3 is a nuclear stain that ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandscystadenoma_Talwar13.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 58",
+    "stem": "A mass from the soft palate of a 54 year old woman is resected. A representative image of the tumor is shown above. Which of the following statements is true regarding this entity?",
+    "difficulty": "medium",
+    "teaching_point": "Microscopically, these are characterized by 2 stroma types: dense hypocellular hyalinized tissue, juxtaposed to a desmoplastic stroma that may appear myxoid; this finding is virtually pathognomonic. Most cases of hyalinizing clear cell carcinoma (HCCC) arise from the intraoral minor salivary glands, commonly those of the base of tongue and soft palate. A minority occur in the major salivary glands. Mucinous differentiation can be seen in up to 50% of cases, ranging from focal dot-like to diffuse. This can make the distinction from mucoepidermoid carcinoma challenging. There is no formal grading system for HCCC (Milchgrub first described HCCC, however). While most tumors are low grade, there are a few cases in the literature with high grade transformation. Finally, HCCC is characterized microscopically by cells with abundant clear to variably eosinophilic cytoplasm, which are arranged in long cords, interconnecting trabeculae and nests. The background is remarkable for 2 stroma types: dense hypocellular hyalinized tissue, juxtaposed to a desmoplastic stroma that may appear myxoid. The latter finding is virtually pathognomonic. Hyalinizing clear cell carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsclearcellcarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "By definition, it does not contain mucin, making it distinct from mucoepidermoid carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Microscopically, these are characterized by 2 stroma types: dense hypocellular hyalinized tissue, ju...",
+        "order_index": 0
+      },
+      {
+        "text": "Microscopically, these are characterized by 2 stroma types: dense hypocellular hyalinized tissue, juxtaposed to a desmoplastic stroma that may appear myxoid; this finding is virtually pathognomonic",
+        "is_correct": true,
+        "explanation": "Microscopically, these are characterized by 2 stroma types: dense hypocellular hyalinized tissue, juxtaposed to a desmoplastic stroma that may appear myxoid; this finding is virtually pathognomonic. Most cases of hyalinizing clear cell carcinoma (HCCC) arise from the intraoral minor salivary glands, commonly those of the base of tongue and soft palate. A minority occur in the major salivary glands. Mucinous differentiation can be seen in up to 50% of cases, ranging from focal dot-like to diffuse. This can make the distinction from mucoepidermoid carcinoma challenging. There is no formal grading system for HCCC (Milchgrub first described HCCC, however). While most tumors are low grade, there are a few cases in the literature with high grade transformation. Finally, HCCC is characterized microscopically by cells with abundant clear to variably eosinophilic cytoplasm, which are arranged in long cords, interconnecting trabeculae and nests. The background is remarkable for 2 stroma types: dense hypocellular hyalinized tissue, juxtaposed to a desmoplastic stroma that may appear myxoid. The latter finding is virtually pathognomonic. Hyalinizing clear cell carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Most behave in an aggressive fashion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Microscopically, these are characterized by 2 stroma types: dense hypocellular hyalinized tissue, ju...",
+        "order_index": 2
+      },
+      {
+        "text": "These carcinomas should be graded according to the 3 tiered system described by Milchgrub",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Microscopically, these are characterized by 2 stroma types: dense hypocellular hyalinized tissue, ju...",
+        "order_index": 3
+      },
+      {
+        "text": "While it can arise from the minor salivary glands, the majority occur in the parotid",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Microscopically, these are characterized by 2 stroma types: dense hypocellular hyalinized tissue, ju...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsclearcellcarcinomang14.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 59",
+    "stem": "Hyalinizing clear cell carcinoma of salivary gland is most commonly associated with which of the following gene fusions?",
+    "difficulty": "medium",
+    "teaching_point": "EWSR1::ATF1. Greater than 80% of hyalinizing clear cell carcinomas (HCCCs) have EWSR1::ATF1 fusions. Albeit, anchored multiplex polymerase chain reaction has demonstrated a novel variant EWSR1::CREM fusion in a minority of cases. This finding is biologically justified as CREM and ATF1 both belong to the CREB family of transcription factors. Soft tissue myoepithelial tumors (SMET) also harbor EWSR1 rearrangements. The partner genes in these neoplasms include PBX1, ZNF444 and POU5F1, suggesting that HCCC is not the salivary gland equivalent of soft tissue myoepithelial tumor. HCCC can be difficult to discriminate from mucoepidermoid carcinoma (MEC). Both can have mucinous differentiation. The former, however, possesses a characteristic myxoid appearing stroma that is sharply demarcated from a hyalinized basement membrane-like material. MEC predominantly affects the parotid and has a greater tendency for cysts lined by goblet cells rather than a cord-like or anastomosing trabeculae architecture. Lastly, MEC contains MAML2 fusions. Hyalinizing clear cell carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsclearcellcarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CRTC1 (MECT1)::MAML2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. EWSR1::ATF1. Greater than 80% of hyalinizing clear cell carcinomas (HCCCs) have EWSR1::ATF1 fusions....",
+        "order_index": 0
+      },
+      {
+        "text": "ETV6::NTRK3",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. EWSR1::ATF1. Greater than 80% of hyalinizing clear cell carcinomas (HCCCs) have EWSR1::ATF1 fusions....",
+        "order_index": 1
+      },
+      {
+        "text": "EWSR1::ATF1",
+        "is_correct": true,
+        "explanation": "EWSR1::ATF1. Greater than 80% of hyalinizing clear cell carcinomas (HCCCs) have EWSR1::ATF1 fusions. Albeit, anchored multiplex polymerase chain reaction has demonstrated a novel variant EWSR1::CREM fusion in a minority of cases. This finding is biologically justified as CREM and ATF1 both belong to the CREB family of transcription factors. Soft tissue myoepithelial tumors (SMET) also harbor EWSR1 rearrangements. The partner genes in these neoplasms include PBX1, ZNF444 and POU5F1, suggesting that HCCC is not the salivary gland equivalent of soft tissue myoepithelial tumor. HCCC can be difficult to discriminate from mucoepidermoid carcinoma (MEC). Both can have mucinous differentiation. The former, however, possesses a characteristic myxoid appearing stroma that is sharply demarcated from a hyalinized basement membrane-like material. MEC predominantly affects the parotid and has a greater tendency for cysts lined by goblet cells rather than a cord-like or anastomosing trabeculae architecture. Lastly, MEC contains MAML2 fusions. Hyalinizing clear cell carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "EWSR1::CREM",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. EWSR1::ATF1. Greater than 80% of hyalinizing clear cell carcinomas (HCCCs) have EWSR1::ATF1 fusions....",
+        "order_index": 3
+      },
+      {
+        "text": "EWSR1::PBX1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. EWSR1::ATF1. Greater than 80% of hyalinizing clear cell carcinomas (HCCCs) have EWSR1::ATF1 fusions....",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 60",
+    "stem": "A 55 year old man presents with a history of intermittent pain and swelling of the submandibular gland after eating. A biopsy with immunostains for IgG4 and IgG was performed and demonstrated a positive plasma cell ratio of 20%. Which of the following is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Chronic sialadenitis Chronic sialadenitis / sialolithiasis",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssialolithiasis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Chronic sialadenitis",
+        "is_correct": true,
+        "explanation": ". Chronic sialadenitis Chronic sialadenitis / sialolithiasis",
+        "order_index": 0
+      },
+      {
+        "text": "IgG4 related sialadenitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Chronic sialadenitis Chronic sialadenitis / sialolithiasis",
+        "order_index": 1
+      },
+      {
+        "text": "Lymphoepithelial sialadenitis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Chronic sialadenitis Chronic sialadenitis / sialolithiasis",
+        "order_index": 2
+      },
+      {
+        "text": "Mucoepidermoid carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Chronic sialadenitis Chronic sialadenitis / sialolithiasis",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandssialolithiasisBRQ.JPG",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 61",
+    "stem": "Why is it thought that stones most commonly arise in the submandibular gland?",
+    "difficulty": "medium",
+    "teaching_point": ". Mucinous and viscous nature of its saliva results in a more stagnant flow of secretions Chronic sialadenitis / sialolithiasis",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandssialolithiasis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acid pH of its saliva predisposes to the precipitation of minerals",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Mucinous and viscous nature of its saliva results in a more stagnant flow of secretions Chronic si...",
+        "order_index": 0
+      },
+      {
+        "text": "Caliber of Wharton duct is wide, causing stasis of secretions",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Mucinous and viscous nature of its saliva results in a more stagnant flow of secretions Chronic si...",
+        "order_index": 1
+      },
+      {
+        "text": "Mucinous and viscous nature of its saliva results in a more stagnant flow of secretions",
+        "is_correct": true,
+        "explanation": ". Mucinous and viscous nature of its saliva results in a more stagnant flow of secretions Chronic sialadenitis / sialolithiasis",
+        "order_index": 2
+      },
+      {
+        "text": "Wharton duct descends precipitously leading to pooling of saliva",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Mucinous and viscous nature of its saliva results in a more stagnant flow of secretions Chronic si...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 62",
+    "stem": "A 68 year old man who has a history of longstanding right parotid mass presented with a rapidly enlarging mass of the right parotid. A radical resection is performed. What is the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Carcinosarcoma. The slide shows a mixture of undifferentiated carcinoma and spindle / pleomorphic sarcoma components. Along with the history of longstanding right parotid mass, which is typically associated with pleomorphic adenoma, the histological features are consistent with carcinosarcoma. pleomorphic adenoma does not show carcinoma and sarcoma components. a sarcomatous component is not present in carcinoma ex pleomorphic adenoma. although spindle cell squamous carcinoma can exhibit a sarcomatoid appearance, there is a conventional squamous cell component in the form of intraepithelial dysplasia, carcinoma in situ or invasive squamous cell carcinoma. It is also typically not associated with a longstanding parotid mass. Carcinosarcoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandscarcinosarcoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Carcinoma ex pleomorphic adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Carcinosarcoma. The slide shows a mixture of undifferentiated carcinoma and spindle / pleomorphic sa...",
+        "order_index": 0
+      },
+      {
+        "text": "Carcinosarcoma",
+        "is_correct": true,
+        "explanation": "Carcinosarcoma. The slide shows a mixture of undifferentiated carcinoma and spindle / pleomorphic sarcoma components. Along with the history of longstanding right parotid mass, which is typically associated with pleomorphic adenoma, the histological features are consistent with carcinosarcoma. pleomorphic adenoma does not show carcinoma and sarcoma components. a sarcomatous component is not present in carcinoma ex pleomorphic adenoma. although spindle cell squamous carcinoma can exhibit a sarcomatoid appearance, there is a conventional squamous cell component in the form of intraepithelial dysplasia, carcinoma in situ or invasive squamous cell carcinoma. It is also typically not associated with a longstanding parotid mass. Carcinosarcoma",
+        "order_index": 1
+      },
+      {
+        "text": "Pleomorphic adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Carcinosarcoma. The slide shows a mixture of undifferentiated carcinoma and spindle / pleomorphic sa...",
+        "order_index": 2
+      },
+      {
+        "text": "Spindle cell squamous carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Carcinosarcoma. The slide shows a mixture of undifferentiated carcinoma and spindle / pleomorphic sa...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandscarcinosarcomaBundele19.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 63",
+    "stem": "Which of the following statements is true about salivary carcinosarcoma?",
+    "difficulty": "medium",
+    "teaching_point": "Most common sarcomatous component is chondrosarcoma. The most common sarcomatous component in salivary carcinosarcoma is chondrosarcoma (51.2%). salivary carcinosarcoma is a high grade salivary gland malignancy. salivary carcinosarcoma may arise from pre-existing pleomorphic adenoma and may be suggested by the presence of extensive hyalinized stroma. necrosis and hemorrhage are commonly seen in salivary carcinosarcoma. Carcinosarcoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandscarcinosarcoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "It is a low grade indolent salivary gland malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Most common sarcomatous component is chondrosarcoma. The most common sarcomatous component in saliva...",
+        "order_index": 0
+      },
+      {
+        "text": "Most common sarcomatous component is chondrosarcoma",
+        "is_correct": true,
+        "explanation": "Most common sarcomatous component is chondrosarcoma. The most common sarcomatous component in salivary carcinosarcoma is chondrosarcoma (51.2%). salivary carcinosarcoma is a high grade salivary gland malignancy. salivary carcinosarcoma may arise from pre-existing pleomorphic adenoma and may be suggested by the presence of extensive hyalinized stroma. necrosis and hemorrhage are commonly seen in salivary carcinosarcoma. Carcinosarcoma",
+        "order_index": 1
+      },
+      {
+        "text": "No necrosis and hemorrhage is seen",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Most common sarcomatous component is chondrosarcoma. The most common sarcomatous component in saliva...",
+        "order_index": 2
+      },
+      {
+        "text": "There is no association with pleomorphic adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Most common sarcomatous component is chondrosarcoma. The most common sarcomatous component in saliva...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 64",
+    "stem": "Regarding carcinoma ex pleomorphic adenoma, which of the following statements is true?",
+    "difficulty": "medium",
+    "teaching_point": "It is sometimes not possible to identify the pleomorphic adenoma macroscopically or even microscopically; this is one of the reasons why thorough sampling is required. This is because the malignant component may overgrow and subsume the benign component. In such circumstances, a history of pleomorphic adenoma, particularly if longstanding or recurrent, is vital for correct diagnosis. Like pleomorphic adenoma, carcinoma ex pleomorphic adenoma arises most commonly in the parotid gland. Recurrent pleomorphic adenoma has a higher risk of malignant transformation than primary pleomorphic adenoma. Fine needle aspiration has low sensitivity in the diagnosis of carcinoma ex pleomorphic adenoma, largely due to sampling error. Carcinoma ex pleomorphic adenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmalignantmixedtumor.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Fine needle aspiration is a highly sensitive technique for the diagnosis of this entity",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. It is sometimes not possible to identify the pleomorphic adenoma macroscopically or even microscopic...",
+        "order_index": 0
+      },
+      {
+        "text": "Malignant transformation is equally likely to occur in a primary pleomorphic adenoma as it is in recurrent pleomorphic adenoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. It is sometimes not possible to identify the pleomorphic adenoma macroscopically or even microscopic...",
+        "order_index": 1
+      },
+      {
+        "text": "Not always possible to identify the preexisting pleomorphic adenoma macroscopically",
+        "is_correct": true,
+        "explanation": "It is sometimes not possible to identify the pleomorphic adenoma macroscopically or even microscopically; this is one of the reasons why thorough sampling is required. This is because the malignant component may overgrow and subsume the benign component. In such circumstances, a history of pleomorphic adenoma, particularly if longstanding or recurrent, is vital for correct diagnosis. Like pleomorphic adenoma, carcinoma ex pleomorphic adenoma arises most commonly in the parotid gland. Recurrent pleomorphic adenoma has a higher risk of malignant transformation than primary pleomorphic adenoma. Fine needle aspiration has low sensitivity in the diagnosis of carcinoma ex pleomorphic adenoma, largely due to sampling error. Carcinoma ex pleomorphic adenoma",
+        "order_index": 2
+      },
+      {
+        "text": "Submandibular gland is the most common site of origin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. It is sometimes not possible to identify the pleomorphic adenoma macroscopically or even microscopic...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 65",
+    "stem": "A 57 year old man presents with right facial swelling and paralysis. Following appropriate workup, he undergoes surgical resection of the right facial mass. A representative histological image is provided above. Regarding his diagnosis, which statement is true?",
+    "difficulty": "medium",
+    "teaching_point": "The correct diagnosis is carcinoma ex pleomorphic adenoma. The component on the left is morphologically identical to salivary duct carcinoma, the most common malignant component of carcinoma ex pleomorphic adenoma other than adenocarcinoma NOS. The component on the right is the preexisting pleomorphic adenoma, which is a requirement for diagnosis. PLAG1 and HMGA2 molecular aberrations are encountered in both pleomorphic adenoma and carcinoma ex pleomorphic adenoma. The presence of a tumor capsule is of paramount prognostic significance, as noninvasive or minimally invasive carcinoma ex pleomorphic adenoma is associated with excellent outcomes. Carcinoma ex pleomorphic adenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmalignantmixedtumor.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Component on the left is commonly encountered in this entity",
+        "is_correct": true,
+        "explanation": "The correct diagnosis is carcinoma ex pleomorphic adenoma. The component on the left is morphologically identical to salivary duct carcinoma, the most common malignant component of carcinoma ex pleomorphic adenoma other than adenocarcinoma NOS. The component on the right is the preexisting pleomorphic adenoma, which is a requirement for diagnosis. PLAG1 and HMGA2 molecular aberrations are encountered in both pleomorphic adenoma and carcinoma ex pleomorphic adenoma. The presence of a tumor capsule is of paramount prognostic significance, as noninvasive or minimally invasive carcinoma ex pleomorphic adenoma is associated with excellent outcomes. Carcinoma ex pleomorphic adenoma",
+        "order_index": 0
+      },
+      {
+        "text": "Molecular features of the cellular component are completely distinct from those of the paucicellular component",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. The correct diagnosis is carcinoma ex pleomorphic adenoma. The component on the left is morphologica...",
+        "order_index": 1
+      },
+      {
+        "text": "Paucicellular component on the right is irrelevant to the final diagnosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. The correct diagnosis is carcinoma ex pleomorphic adenoma. The component on the left is morphologica...",
+        "order_index": 2
+      },
+      {
+        "text": "Presence or absence of a complete capsule around the cellular component does not alter the patient’s prognosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. The correct diagnosis is carcinoma ex pleomorphic adenoma. The component on the left is morphologica...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmalignantmixedtumorGupta05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 66",
+    "stem": "Which of the following is true about salivary gland canalicular adenoma?",
+    "difficulty": "medium",
+    "teaching_point": "Is a benign tumor Canalicular adenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandscanalicularadenoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cannot be multifocal",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Is a benign tumor Canalicular adenoma",
+        "order_index": 0
+      },
+      {
+        "text": "Is a benign tumor",
+        "is_correct": true,
+        "explanation": "Is a benign tumor Canalicular adenoma",
+        "order_index": 1
+      },
+      {
+        "text": "Is rare in minor salivary glands",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Is a benign tumor Canalicular adenoma",
+        "order_index": 2
+      },
+      {
+        "text": "Lacks stromal tissue",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Is a benign tumor Canalicular adenoma",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 67",
+    "stem": "Which of the following is true about salivary gland canalicular adenoma?",
+    "difficulty": "medium",
+    "teaching_point": "May contain squamous balls Canalicular adenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandscanalicularadenoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Is a type of adenocarcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. May contain squamous balls Canalicular adenoma",
+        "order_index": 0
+      },
+      {
+        "text": "Is often associated with lymph node metastases",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. May contain squamous balls Canalicular adenoma",
+        "order_index": 1
+      },
+      {
+        "text": "May contain squamous balls",
+        "is_correct": true,
+        "explanation": "May contain squamous balls Canalicular adenoma",
+        "order_index": 2
+      },
+      {
+        "text": "May show vascular emboli",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. May contain squamous balls Canalicular adenoma",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 68",
+    "stem": "A 56 year old woman presents with a nodule close to the left ear. Imaging reveals a well circumscribed 1.6 cm nodule in parotid gland. Biopsy findings are shown in the picture above. Which of the following statements is true about this entity?",
+    "difficulty": "medium",
+    "teaching_point": ". It can be associated with Brooke-Spiegler syndrome. Brooke-Spiegler syndrome is a rare genetic disease characterized as an inherited skin tumor predisposition syndrome presenting with skin appendage tumors (cylindromas, spiradenomas and trichoepitheliomas) and salivary gland tumor. Some patients can have a membranous basal cell adenoma of the salivary gland. It is caused by germline mutations in the CYLD gene (16q12-q13). Basal cell adenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsbasalcelladenoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cystic change is uncommon",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . It can be associated with Brooke-Spiegler syndrome. Brooke-Spiegler syndrome is a rare genetic dis...",
+        "order_index": 0
+      },
+      {
+        "text": "Due to the high recurrence rate, total excision is required for all of these neoplasms",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . It can be associated with Brooke-Spiegler syndrome. Brooke-Spiegler syndrome is a rare genetic dis...",
+        "order_index": 1
+      },
+      {
+        "text": "It is one of the most common neoplasms in the salivary glands",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . It can be associated with Brooke-Spiegler syndrome. Brooke-Spiegler syndrome is a rare genetic dis...",
+        "order_index": 2
+      },
+      {
+        "text": "It occurs more often in younger patients",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . It can be associated with Brooke-Spiegler syndrome. Brooke-Spiegler syndrome is a rare genetic dis...",
+        "order_index": 3
+      },
+      {
+        "text": "It can be associated with Brooke-Spiegler syndrome",
+        "is_correct": true,
+        "explanation": ". It can be associated with Brooke-Spiegler syndrome. Brooke-Spiegler syndrome is a rare genetic disease characterized as an inherited skin tumor predisposition syndrome presenting with skin appendage tumors (cylindromas, spiradenomas and trichoepitheliomas) and salivary gland tumor. Some patients can have a membranous basal cell adenoma of the salivary gland. It is caused by germline mutations in the CYLD gene (16q12-q13). Basal cell adenoma",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsbasalcelladenoma_Wei11.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 69",
+    "stem": "Which of the following markers is most useful to differentiate tubular / trabecular predominant basal cell adenoma from pleomorphic adenoma?",
+    "difficulty": "medium",
+    "teaching_point": ". Beta catenin. Jo et al. reported that nuclear beta catenin staining can be present in 83% of basal cell adenomas. All adenoid cystic carcinomas (0/20) and pleomorphic adenomas (0/20) were negative. 4 of 5 basal cell adenomas had exon 3 CTNNB1 mutations (Am J Surg Pathol 2016;40:1143). Basal cell adenoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsbasalcelladenoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Beta catenin",
+        "is_correct": true,
+        "explanation": ". Beta catenin. Jo et al. reported that nuclear beta catenin staining can be present in 83% of basal cell adenomas. All adenoid cystic carcinomas (0/20) and pleomorphic adenomas (0/20) were negative. 4 of 5 basal cell adenomas had exon 3 CTNNB1 mutations (Am J Surg Pathol 2016;40:1143). Basal cell adenoma",
+        "order_index": 0
+      },
+      {
+        "text": "Calponin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Beta catenin. Jo et al. reported that nuclear beta catenin staining can be present in 83% of basal...",
+        "order_index": 1
+      },
+      {
+        "text": "CMA",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Beta catenin. Jo et al. reported that nuclear beta catenin staining can be present in 83% of basal...",
+        "order_index": 2
+      },
+      {
+        "text": "p63",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Beta catenin. Jo et al. reported that nuclear beta catenin staining can be present in 83% of basal...",
+        "order_index": 3
+      },
+      {
+        "text": "S100",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. . Beta catenin. Jo et al. reported that nuclear beta catenin staining can be present in 83% of basal...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 70",
+    "stem": "A 70 year old man presents with a slow growing, painless lesion in the parotid. On gross examination, the lesion is well circumscribed, with a cream, partly cystic lesion. Which of the following is correct?",
+    "difficulty": "medium",
+    "teaching_point": ". Invasion distinguishes this lesion from its benign counterpart. The tumor is a basal cell adenocarcinoma, a rare, indolent malignant counterpart to basal cell adenoma. Evidence of invasion is essential for diagnosis. Basal cell adenocarcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsbasalcelladenocarcinoma.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cytology is helpful in the diagnosis of this lesion",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Invasion distinguishes this lesion from its benign counterpart. The tumor is a basal cell adenocar...",
+        "order_index": 0
+      },
+      {
+        "text": "Invasion distinguishes this lesion from its benign counterpart",
+        "is_correct": true,
+        "explanation": ". Invasion distinguishes this lesion from its benign counterpart. The tumor is a basal cell adenocarcinoma, a rare, indolent malignant counterpart to basal cell adenoma. Evidence of invasion is essential for diagnosis. Basal cell adenocarcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Molecular features are often used to differentiate this tumor from mimics",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Invasion distinguishes this lesion from its benign counterpart. The tumor is a basal cell adenocar...",
+        "order_index": 2
+      },
+      {
+        "text": "This low grade neoplasm frequently metastasizes to the lung",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Invasion distinguishes this lesion from its benign counterpart. The tumor is a basal cell adenocar...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsbasalcelladenocarcinomamicroProsser13.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 71",
+    "stem": "This aspirate smear contains abundant extracellular mucin without epithelial cells. Under which category should this be placed according to the Milan system for reporting salivary gland cytopathology?",
+    "difficulty": "medium",
+    "teaching_point": "Atypia of undetermined significance. The image shows abundant extracellular mucin. The differential diagnosis of mucin containing cysts includes mucocele, mucus retention cysts and low grade mucoepidermoid carcinoma. Therefore, atypia of undetermined significance is the correct interpretation on FNA. Atypia of undetermined significance (AUS)",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmilanAUS.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Atypia of undetermined significance",
+        "is_correct": true,
+        "explanation": "Atypia of undetermined significance. The image shows abundant extracellular mucin. The differential diagnosis of mucin containing cysts includes mucocele, mucus retention cysts and low grade mucoepidermoid carcinoma. Therefore, atypia of undetermined significance is the correct interpretation on FNA. Atypia of undetermined significance (AUS)",
+        "order_index": 0
+      },
+      {
+        "text": "Nondiagnostic",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Atypia of undetermined significance. The image shows abundant extracellular mucin. The differential ...",
+        "order_index": 1
+      },
+      {
+        "text": "Salivary gland neoplasm of uncertain malignant potential",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Atypia of undetermined significance. The image shows abundant extracellular mucin. The differential ...",
+        "order_index": 2
+      },
+      {
+        "text": "Suspicious for malignancy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Atypia of undetermined significance. The image shows abundant extracellular mucin. The differential ...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilanAUSGolconda03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 72",
+    "stem": "What is the implied risk of malignancy on excision if a diagnosis of atypia of undetermined significance is rendered on a fine needle aspiration (FNA) of the parotid?",
+    "difficulty": "medium",
+    "teaching_point": "20%. The implied risk of malignancy is ~20% as per the Milan system for reporting salivary gland cytopathology (1st edition 2018), based on a limited number of studies. However, subsequent studies using the Milan system criteria have found the risk of malignancy for a diagnosis of atypia of undetermined significance with surgical follow up to be significantly higher (30% on average) with wide variations across institutions that reflect different types of practices. Atypia of undetermined significance (AUS)",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsmilanAUS.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "< 5%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. 20%. The implied risk of malignancy is ~20% as per the Milan system for reporting salivary gland cyt...",
+        "order_index": 0
+      },
+      {
+        "text": "20%",
+        "is_correct": true,
+        "explanation": "20%. The implied risk of malignancy is ~20% as per the Milan system for reporting salivary gland cytopathology (1st edition 2018), based on a limited number of studies. However, subsequent studies using the Milan system criteria have found the risk of malignancy for a diagnosis of atypia of undetermined significance with surgical follow up to be significantly higher (30% on average) with wide variations across institutions that reflect different types of practices. Atypia of undetermined significance (AUS)",
+        "order_index": 1
+      },
+      {
+        "text": "45%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. 20%. The implied risk of malignancy is ~20% as per the Milan system for reporting salivary gland cyt...",
+        "order_index": 2
+      },
+      {
+        "text": "90%",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. 20%. The implied risk of malignancy is ~20% as per the Milan system for reporting salivary gland cyt...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 73",
+    "stem": "Which type of salivary duct, pictured above, is responsible for the ion transport that alters the isotonic secretion produced by acinar cells to hypotonic saliva?",
+    "difficulty": "medium",
+    "teaching_point": "The striated ducts contain abundant mitochondria to provide the energy for ion transport Salivary glands - Anatomy & histology",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsnormalhistology.html\n",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Intercalated duct",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. The striated ducts contain abundant mitochondria to provide the energy for ion transport Salivary gl...",
+        "order_index": 0
+      },
+      {
+        "text": "Interlobular duct",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. The striated ducts contain abundant mitochondria to provide the energy for ion transport Salivary gl...",
+        "order_index": 1
+      },
+      {
+        "text": "Major excretory duct",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. The striated ducts contain abundant mitochondria to provide the energy for ion transport Salivary gl...",
+        "order_index": 2
+      },
+      {
+        "text": "Striated duct",
+        "is_correct": true,
+        "explanation": "The striated ducts contain abundant mitochondria to provide the energy for ion transport Salivary glands - Anatomy & histology",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsnormalhistologymicroHaralabopoulos03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 74",
+    "stem": "Which of the following is true about the parotid gland?",
+    "difficulty": "medium",
+    "teaching_point": "Intraparenchymal lymph nodes may contain glandular inclusions. A is incorrect because the acini are purely of serous type in the parotid gland. C is incorrect since the main excretory duct of the parotid gland is Stensen duct, which emerges from the anterior border of the gland, courses horizontally along the masseter muscle and turns medially to pierce the buccinator muscle. D is incorrect because sebaceous cells may exist within the wall of intercalated or striated ducts. E is incorrect because the facial nerve traverses the body of the gland to divide it into superficial and deep lobes. Salivary glands - Anatomy & histology",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsnormalhistology.html\n",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "The acini are purely of mucous type",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Intraparenchymal lymph nodes may contain glandular inclusions. A is incorrect because the acini are ...",
+        "order_index": 0
+      },
+      {
+        "text": "Intraparenchymal lymph nodes may contain glandular inclusions",
+        "is_correct": true,
+        "explanation": "Intraparenchymal lymph nodes may contain glandular inclusions. A is incorrect because the acini are purely of serous type in the parotid gland. C is incorrect since the main excretory duct of the parotid gland is Stensen duct, which emerges from the anterior border of the gland, courses horizontally along the masseter muscle and turns medially to pierce the buccinator muscle. D is incorrect because sebaceous cells may exist within the wall of intercalated or striated ducts. E is incorrect because the facial nerve traverses the body of the gland to divide it into superficial and deep lobes. Salivary glands - Anatomy & histology",
+        "order_index": 1
+      },
+      {
+        "text": "Wharton duct, the main excretory duct, pierces the masseter muscle to enter the oral cavity",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Intraparenchymal lymph nodes may contain glandular inclusions. A is incorrect because the acini are ...",
+        "order_index": 2
+      },
+      {
+        "text": "Sebaceous cells may be found within fatty tissue",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Intraparenchymal lymph nodes may contain glandular inclusions. A is incorrect because the acini are ...",
+        "order_index": 3
+      },
+      {
+        "text": "The facial nerve traverses the superficial surface of the gland",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Intraparenchymal lymph nodes may contain glandular inclusions. A is incorrect because the acini are ...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 77",
+    "stem": "Which histological diagnosis is most likely to correspond to this cytologic aspirate?",
+    "difficulty": "medium",
+    "teaching_point": "Adenoid cystic carcinoma Basaloid tumor cells with prominent hyaline globules arranging in cribriform pattern are characteristic for an adenoid cystic carcinoma. Adenoid cystic carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsadenoidcystic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acinic cell carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Adenoid cystic carcinoma Basaloid tumor cells with prominent hyaline globules arranging in cribrifor...",
+        "order_index": 0
+      },
+      {
+        "text": "Adenoid cystic carcinoma",
+        "is_correct": true,
+        "explanation": "Adenoid cystic carcinoma Basaloid tumor cells with prominent hyaline globules arranging in cribriform pattern are characteristic for an adenoid cystic carcinoma. Adenoid cystic carcinoma",
+        "order_index": 1
+      },
+      {
+        "text": "Mucoepidermoid carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Adenoid cystic carcinoma Basaloid tumor cells with prominent hyaline globules arranging in cribrifor...",
+        "order_index": 2
+      },
+      {
+        "text": "Secretory carcinoma",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Adenoid cystic carcinoma Basaloid tumor cells with prominent hyaline globules arranging in cribrifor...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsmilandiagnostichang23.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 78",
+    "stem": "Which of the following statements is true regarding acinic cell carcinoma of salivary glands?",
+    "difficulty": "medium",
+    "teaching_point": ". Neoplastic cells express DOG1 and SOX10. DOG1 and SOX10 are expressed in benign acinar cells and intercalated duct cells and other salivary gland neoplasms; however, strong diffuse expression of these markers can help distinguish acinic cell carcinoma from other salivary gland neoplasms. acinic cell carcinoma is considered low intermediate grade malignancy of salivary glands, although high grade transformation may occur. the majority of cases arise in the parotid gland. older age at the onset (> 45) and depletion of lymphocytes within the stroma are linked to worse outcomes. Acinic cell carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsaciniccell.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acinic cell carcinoma is a high grade malignant neoplasm",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Neoplastic cells express DOG1 and SOX10. DOG1 and SOX10 are expressed in benign acinar cells and i...",
+        "order_index": 0
+      },
+      {
+        "text": "Most commonly occurs in minor salivary glands",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Neoplastic cells express DOG1 and SOX10. DOG1 and SOX10 are expressed in benign acinar cells and i...",
+        "order_index": 1
+      },
+      {
+        "text": "Neoplastic cells express DOG1 and SOX10",
+        "is_correct": true,
+        "explanation": ". Neoplastic cells express DOG1 and SOX10. DOG1 and SOX10 are expressed in benign acinar cells and intercalated duct cells and other salivary gland neoplasms; however, strong diffuse expression of these markers can help distinguish acinic cell carcinoma from other salivary gland neoplasms. acinic cell carcinoma is considered low intermediate grade malignancy of salivary glands, although high grade transformation may occur. the majority of cases arise in the parotid gland. older age at the onset (> 45) and depletion of lymphocytes within the stroma are linked to worse outcomes. Acinic cell carcinoma",
+        "order_index": 2
+      },
+      {
+        "text": "Younger age at presentation and presence of tumor associated lymphocytes are associated with a poor prognosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Neoplastic cells express DOG1 and SOX10. DOG1 and SOX10 are expressed in benign acinar cells and i...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 79",
+    "stem": "A 51 year old woman presents with a left parotid mass. CT images show a well circumscribed cystic lesion measuring 3 cm. An excisional biopsy is performed (see image above). The neoplastic cells are positive for periodic acid-Schiff with diastase (PASD). Which of the following statements is true regarding this lesion?",
+    "difficulty": "medium",
+    "teaching_point": ". The most common initial presentation in patients with acinic cell carcinoma is a painless mass without facial nerve involvement. MYB immunohistochemical staining is useful in the diagnosis of adenoid cystic carcinoma. the presence of extracellular mucin in aspirates is a feature of mucoepidermoid carcinoma. acinic cell carcinoma is usually a low grade malignant neoplasm without significant mitosis, necrosis or pleomorphic nuceli. Acinic cell carcinoma",
+    "question_references": "https://www.pathologyoutlines.com/topic/salivaryglandsaciniccell.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cytology aspirates of this tumor can show predominance of extracellular mucin",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . The most common initial presentation in patients with acinic cell carcinoma is a painless mass wit...",
+        "order_index": 0
+      },
+      {
+        "text": "Mitosis, necrosis and significant pleomorphism are usually present",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . The most common initial presentation in patients with acinic cell carcinoma is a painless mass wit...",
+        "order_index": 1
+      },
+      {
+        "text": "MYB immunohistochemical staining in FNA specimens is useful in the diagnosis of this tumor",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . The most common initial presentation in patients with acinic cell carcinoma is a painless mass wit...",
+        "order_index": 2
+      },
+      {
+        "text": "Pain and facial nerve dysfunction are uncommon presenting symptoms",
+        "is_correct": true,
+        "explanation": ". The most common initial presentation in patients with acinic cell carcinoma is a painless mass without facial nerve involvement. MYB immunohistochemical staining is useful in the diagnosis of adenoid cystic carcinoma. the presence of extracellular mucin in aspirates is a feature of mucoepidermoid carcinoma. acinic cell carcinoma is usually a low grade malignant neoplasm without significant mitosis, necrosis or pleomorphic nuceli. Acinic cell carcinoma",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/salivaryglandsaciniccellLahouti002.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Acinic cell carcinoma",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "salivary_gland.html",
+      "category": "Anatomic Pathology > Head and Neck",
+      "database_set": "Web"
+    }
+  }
+]

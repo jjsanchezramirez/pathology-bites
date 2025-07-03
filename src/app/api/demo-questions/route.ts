@@ -25,6 +25,9 @@ interface AnswerOptionData {
   explanation: string | null;
 }
 
+// Legacy alias for backward compatibility
+interface QuestionOptionData extends AnswerOptionData {}
+
 interface QuestionData {
   id: string;
   title: string;
@@ -33,7 +36,8 @@ interface QuestionData {
   question_references: string | null;
   status: string;
   difficulty: string;
-  answer_options: AnswerOptionData[];
+  question_options?: QuestionOptionData[];
+  answer_options?: AnswerOptionData[]; // Legacy field for backward compatibility
   question_images: QuestionImageData[];
 }
 
@@ -123,9 +127,9 @@ export async function GET(request: Request) {
         );
       }
 
-      // Fetch answer options separately
+      // Fetch question options separately
       const { data: answerOptions, error: optionsError } = await supabase
-        .from('answer_options')
+        .from('question_options')
         .select('id, text, is_correct, explanation')
         .eq('question_id', demoData.question_id)
         .order('order_index');
@@ -244,9 +248,9 @@ export async function GET(request: Request) {
         );
       }
 
-      // Fetch answer options separately
+      // Fetch question options separately
       const { data: answerOptions, error: optionsError } = await supabase
-        .from('answer_options')
+        .from('question_options')
         .select('id, text, is_correct, explanation')
         .eq('question_id', selectedDemo.question_id)
         .order('order_index');

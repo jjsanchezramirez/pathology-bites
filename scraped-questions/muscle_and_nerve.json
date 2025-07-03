@@ -1,0 +1,1180 @@
+[
+  {
+    "title": "Question 1",
+    "stem": "Which of the following statements is true regarding the skeletal muscle biopsy image shown above?",
+    "difficulty": "medium",
+    "teaching_point": ". CD8+ T cells are the predominant inflammatory component Polymyositis",
+    "question_references": "https://www.pathologyoutlines.com/topic/musclepolymyositis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CD20+ B cells are the predominant inflammatory component",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . CD8+ T cells are the predominant inflammatory component Polymyositis",
+        "order_index": 0
+      },
+      {
+        "text": "CD8+ T cells are the predominant inflammatory component",
+        "is_correct": true,
+        "explanation": ". CD8+ T cells are the predominant inflammatory component Polymyositis",
+        "order_index": 1
+      },
+      {
+        "text": "Histologic findings are classic for dermatomyositis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . CD8+ T cells are the predominant inflammatory component Polymyositis",
+        "order_index": 2
+      },
+      {
+        "text": "IVIG is the first line therapy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . CD8+ T cells are the predominant inflammatory component Polymyositis",
+        "order_index": 3
+      },
+      {
+        "text": "Presence of rimmed vacuoles favors polymyositis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . CD8+ T cells are the predominant inflammatory component Polymyositis",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/musclepolymyositisMohila05.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Polymyositis",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 2",
+    "stem": "Which of the following statements is true regarding the diagnosis of polymyositis?",
+    "difficulty": "medium",
+    "teaching_point": ". Polymyositis is a diagnosis of exclusion Polymyositis",
+    "question_references": "https://www.pathologyoutlines.com/topic/musclepolymyositis.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Histologic findings alone are characteristic and diagnostic of disease",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Polymyositis is a diagnosis of exclusion Polymyositis",
+        "order_index": 0
+      },
+      {
+        "text": "Patients often present with skin rash",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Polymyositis is a diagnosis of exclusion Polymyositis",
+        "order_index": 1
+      },
+      {
+        "text": "Polymyositis is a diagnosis of exclusion",
+        "is_correct": true,
+        "explanation": ". Polymyositis is a diagnosis of exclusion Polymyositis",
+        "order_index": 2
+      },
+      {
+        "text": "Polymyositis is associated with a specific autoantibody",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Polymyositis is a diagnosis of exclusion Polymyositis",
+        "order_index": 3
+      },
+      {
+        "text": "Sarcolemmal staining for MHC class I antigen is specific for polymyositis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Polymyositis is a diagnosis of exclusion Polymyositis",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 3",
+    "stem": "A 63 year old man presented with bilateral ptosis and difficulty in swallowing. The patient had 5 years of progressive difficulty in swallowing, so now he can barely swallow solid food. The ptosis has been gradually progressive for 3 years. Tests for myasthenia gravis were negative. Aside from ptosis and dysphagia, a neurophysiological examination is also significant for proximal lower extremity weakness. A muscle biopsy shows pathology demonstrated in the image above. Electron microscopy of the muscle revealed rare intranuclear inclusions composed of aggregations of short filaments with diameter of 8.5 nm. Which of the following genetic defects are most likely to be present in this patient?",
+    "difficulty": "medium",
+    "teaching_point": "GCN trinucleotide repeat of PABPN1 gene. The history and pathology are most consistent with OPMD, whose characteristic genetic change is GCN trinucleotide repeat of PABPN1 gene. in frame deletion of the dystrophin (DYS) gene is seen in Becker muscular dystrophy. CTG trinucleotide repeat of the DMPK gene is seen in myotonic dystrophy type 1. missense mutation of the VCP gene is seen in hereditary inclusion body myositis with Paget disease of the bone and frontotemporal dementia (IBMPFD). reduced D4Z4 microsatellite repeats upstream of the DUX4 gene is seen with facioscapulohumeral muscular dystrophy type 1 (FSHD1). Oculopharyngeal muscular dystrophy",
+    "question_references": "https://www.pathologyoutlines.com/topic/muscleOCPmusculardystrophy.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "CTG trinucleotide repeat of the DMPK gene",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. GCN trinucleotide repeat of PABPN1 gene. The history and pathology are most consistent with OPMD, wh...",
+        "order_index": 0
+      },
+      {
+        "text": "GCN trinucleotide repeat of PABPN1 gene",
+        "is_correct": true,
+        "explanation": "GCN trinucleotide repeat of PABPN1 gene. The history and pathology are most consistent with OPMD, whose characteristic genetic change is GCN trinucleotide repeat of PABPN1 gene. in frame deletion of the dystrophin (DYS) gene is seen in Becker muscular dystrophy. CTG trinucleotide repeat of the DMPK gene is seen in myotonic dystrophy type 1. missense mutation of the VCP gene is seen in hereditary inclusion body myositis with Paget disease of the bone and frontotemporal dementia (IBMPFD). reduced D4Z4 microsatellite repeats upstream of the DUX4 gene is seen with facioscapulohumeral muscular dystrophy type 1 (FSHD1). Oculopharyngeal muscular dystrophy",
+        "order_index": 1
+      },
+      {
+        "text": "In frame deletion of the dystrophin (DYS) gene",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. GCN trinucleotide repeat of PABPN1 gene. The history and pathology are most consistent with OPMD, wh...",
+        "order_index": 2
+      },
+      {
+        "text": "Missense mutation of the VCP gene",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. GCN trinucleotide repeat of PABPN1 gene. The history and pathology are most consistent with OPMD, wh...",
+        "order_index": 3
+      },
+      {
+        "text": "Reduced D4Z4 microsatellite repeats upstream of the DUX4 gene",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. GCN trinucleotide repeat of PABPN1 gene. The history and pathology are most consistent with OPMD, wh...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/muscleOCPmusculardystrophyCai03.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 4",
+    "stem": "Which of the following additional stains on muscle biopsy is most helpful in reaching the diagnosis of oculopharyngeal muscular dystrophy?",
+    "difficulty": "medium",
+    "teaching_point": "p62 can highlight myofiber intranuclear inclusions, which are substantially more frequent in oculopharyngeal muscular dystrophy than other mimickers. PAS with and without diastase is used to detect glycogen or polyglucosan bodies. MHC class 1 is an inflammatory marker that is usually diffusely positive in myofibers in sporadic inclusion body myositis. dystrophin epitopes (DYS1 / DYS2 / DYS3) are used in Duchenne / Becker muscular dystrophy. COX and SDH combination stains are used in detecting mitochondria abnormality. Oculopharyngeal muscular dystrophy",
+    "question_references": "https://www.pathologyoutlines.com/topic/muscleOCPmusculardystrophy.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "COX and SDH combination stains",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. p62 can highlight myofiber intranuclear inclusions, which are substantially more frequent in oculoph...",
+        "order_index": 0
+      },
+      {
+        "text": "Dystrophin epitopes (DYS1 / DYS2 / DYS3)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. p62 can highlight myofiber intranuclear inclusions, which are substantially more frequent in oculoph...",
+        "order_index": 1
+      },
+      {
+        "text": "MHC class 1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. p62 can highlight myofiber intranuclear inclusions, which are substantially more frequent in oculoph...",
+        "order_index": 2
+      },
+      {
+        "text": "p62",
+        "is_correct": true,
+        "explanation": "p62 can highlight myofiber intranuclear inclusions, which are substantially more frequent in oculopharyngeal muscular dystrophy than other mimickers. PAS with and without diastase is used to detect glycogen or polyglucosan bodies. MHC class 1 is an inflammatory marker that is usually diffusely positive in myofibers in sporadic inclusion body myositis. dystrophin epitopes (DYS1 / DYS2 / DYS3) are used in Duchenne / Becker muscular dystrophy. COX and SDH combination stains are used in detecting mitochondria abnormality. Oculopharyngeal muscular dystrophy",
+        "order_index": 3
+      },
+      {
+        "text": "PAS with and without diastase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. p62 can highlight myofiber intranuclear inclusions, which are substantially more frequent in oculoph...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 6",
+    "stem": "Myotonic dystrophy type 2 (DM2) is inherited in what pattern?",
+    "difficulty": "medium",
+    "teaching_point": "Both DM1 and DM2 are inherited in an autosomal dominant pattern. Myotonic dystrophy",
+    "question_references": "https://www.pathologyoutlines.com/topic/musclemyotonicdystrophy.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Autosomal dominant",
+        "is_correct": true,
+        "explanation": "Both DM1 and DM2 are inherited in an autosomal dominant pattern. Myotonic dystrophy",
+        "order_index": 0
+      },
+      {
+        "text": "Autosomal recessive",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Both DM1 and DM2 are inherited in an autosomal dominant pattern. Myotonic dystrophy",
+        "order_index": 1
+      },
+      {
+        "text": "Mitochondrial",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Both DM1 and DM2 are inherited in an autosomal dominant pattern. Myotonic dystrophy",
+        "order_index": 2
+      },
+      {
+        "text": "X linked",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Both DM1 and DM2 are inherited in an autosomal dominant pattern. Myotonic dystrophy",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 7",
+    "stem": "Necklace fibers are seen in association with which mutation involved with centronuclear myopathy?",
+    "difficulty": "medium",
+    "teaching_point": "MTM1 Centronuclear myopathy",
+    "question_references": "https://www.pathologyoutlines.com/topic/musclecentronuclearmyopathy.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "BIN1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. MTM1 Centronuclear myopathy",
+        "order_index": 0
+      },
+      {
+        "text": "DNM2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. MTM1 Centronuclear myopathy",
+        "order_index": 1
+      },
+      {
+        "text": "MTM1",
+        "is_correct": true,
+        "explanation": "MTM1 Centronuclear myopathy",
+        "order_index": 2
+      },
+      {
+        "text": "MTMR14",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. MTM1 Centronuclear myopathy",
+        "order_index": 3
+      },
+      {
+        "text": "RYR1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. MTM1 Centronuclear myopathy",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 8",
+    "stem": "The term \"central core\" refers to which of the following:",
+    "difficulty": "medium",
+    "teaching_point": "Areas of reduced oxidative and glycolytic enzymatic activity along the longitudinal axis of skeletal muscle fibers, as seen on enzymatic stains such as NADH Central core disease",
+    "question_references": "https://www.pathologyoutlines.com/topic/musclecentralcoredisease.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Areas of increased oxidative and glycolytic enzymatic activity along the longitudinal axis of skeletal muscle fibers, as seen on enzymatic stains such as NADH",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Areas of reduced oxidative and glycolytic enzymatic activity along the longitudinal axis of skeletal...",
+        "order_index": 0
+      },
+      {
+        "text": "Areas of reduced oxidative and glycolytic enzymatic activity along the longitudinal axis of skeletal muscle fibers, as seen on enzymatic stains such as NADH",
+        "is_correct": true,
+        "explanation": "Areas of reduced oxidative and glycolytic enzymatic activity along the longitudinal axis of skeletal muscle fibers, as seen on enzymatic stains such as NADH Central core disease",
+        "order_index": 1
+      },
+      {
+        "text": "Centrally located accumulation of red to purple, rod-like inclusions within skeletal muscle fibers, visible with Gömöri trichrome stain",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Areas of reduced oxidative and glycolytic enzymatic activity along the longitudinal axis of skeletal...",
+        "order_index": 2
+      },
+      {
+        "text": "Centrally placed, rimmed vacuole within skeletal muscle fibers, visible with Gömöri trichrome stain",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Areas of reduced oxidative and glycolytic enzymatic activity along the longitudinal axis of skeletal...",
+        "order_index": 3
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 9",
+    "stem": "Mutations in what gene, whose product is shown in this immunohistochemical stain, are responsible for the Duchenne and Becker muscular dystrophies?",
+    "difficulty": "medium",
+    "teaching_point": ". DMD Becker and Duchenne muscular dystrophy",
+    "question_references": "https://www.pathologyoutlines.com/topic/musclebeckerduchennemusculardystrophy.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "BKR",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . DMD Becker and Duchenne muscular dystrophy",
+        "order_index": 0
+      },
+      {
+        "text": "DMD",
+        "is_correct": true,
+        "explanation": ". DMD Becker and Duchenne muscular dystrophy",
+        "order_index": 1
+      },
+      {
+        "text": "MTM1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . DMD Becker and Duchenne muscular dystrophy",
+        "order_index": 2
+      },
+      {
+        "text": "NEB",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . DMD Becker and Duchenne muscular dystrophy",
+        "order_index": 3
+      },
+      {
+        "text": "RYR1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . DMD Becker and Duchenne muscular dystrophy",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/musclebeckerduchennemusculardystrophy_Kresak04.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 10",
+    "stem": "What inheritance pattern do Duchenne and Becker muscular dystrophies have?",
+    "difficulty": "medium",
+    "teaching_point": ". X linked recessive Becker and Duchenne muscular dystrophy",
+    "question_references": "https://www.pathologyoutlines.com/topic/musclebeckerduchennemusculardystrophy.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Autosomal dominant",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . X linked recessive Becker and Duchenne muscular dystrophy",
+        "order_index": 0
+      },
+      {
+        "text": "Autosomal recessive",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . X linked recessive Becker and Duchenne muscular dystrophy",
+        "order_index": 1
+      },
+      {
+        "text": "De novo",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . X linked recessive Becker and Duchenne muscular dystrophy",
+        "order_index": 2
+      },
+      {
+        "text": "Mitochondrial",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . X linked recessive Becker and Duchenne muscular dystrophy",
+        "order_index": 3
+      },
+      {
+        "text": "X linked recessive",
+        "is_correct": true,
+        "explanation": ". X linked recessive Becker and Duchenne muscular dystrophy",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 11",
+    "stem": "A 7 year old boy presented with generalized weakness. Per his mother, he had an onset of symptoms at birth but has since been stable. Serum creatine kinase (CK) was normal. A left quadriceps muscle biopsy was performed and appeared unremarkable on H&E stained cryostat sections. However, on NADH stain, the muscle showed changes represented by the image above. What is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Multiminicore myopathy. The history is most consistent with a congenital myopathy. The NADH shows multiple irregular pale areas involving both type I (darker fibers) and type II (lighter fibers) muscle fibers, characteristic of multiminicore myopathy. congenital muscular dystrophy is usually progressive and has high CK. congenital myasthenic syndrome is not associated with core-like changes in muscle fibers. juvenile dermatomyositis is characterized by perifascicular myofiber damage and atrophy, which is not present in the image. nemaline rod myopathy is another type of congenital myopathy characterized by the presence of nemaline rods, best visualized in Gomori trichrome stain. Multiminicore myopathy",
+    "question_references": "https://www.pathologyoutlines.com/topic/musclemultiminicore.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Congenital muscular dystrophy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Multiminicore myopathy. The history is most consistent with a congenital myopathy. The NADH shows mu...",
+        "order_index": 0
+      },
+      {
+        "text": "Congenital myasthenic syndrome",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Multiminicore myopathy. The history is most consistent with a congenital myopathy. The NADH shows mu...",
+        "order_index": 1
+      },
+      {
+        "text": "Juvenile dermatomyositis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Multiminicore myopathy. The history is most consistent with a congenital myopathy. The NADH shows mu...",
+        "order_index": 2
+      },
+      {
+        "text": "Multiminicore myopathy",
+        "is_correct": true,
+        "explanation": "Multiminicore myopathy. The history is most consistent with a congenital myopathy. The NADH shows multiple irregular pale areas involving both type I (darker fibers) and type II (lighter fibers) muscle fibers, characteristic of multiminicore myopathy. congenital muscular dystrophy is usually progressive and has high CK. congenital myasthenic syndrome is not associated with core-like changes in muscle fibers. juvenile dermatomyositis is characterized by perifascicular myofiber damage and atrophy, which is not present in the image. nemaline rod myopathy is another type of congenital myopathy characterized by the presence of nemaline rods, best visualized in Gomori trichrome stain. Multiminicore myopathy",
+        "order_index": 3
+      },
+      {
+        "text": "Nemaline rod myopathy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Multiminicore myopathy. The history is most consistent with a congenital myopathy. The NADH shows mu...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/musclemultiminicoreCaiMicro2.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 12",
+    "stem": "A 7 year old boy presented with generalized weakness. Per his mother, he had an onset of symptoms at birth but has since been stable. Serum creatine kinase (CK) was normal. A left quadriceps muscle biopsy was performed and appeared unremarkable on H&E stained cryostat sections. However, on NADH stain, the muscle showed changes represented by the image above. Subsequent genetic analysis identified a homozygous RYR1 mutation in this patient. Which of the following is indicated in this patient?",
+    "difficulty": "medium",
+    "teaching_point": "Avoid succinylcholine or inhaled anesthetics. The history is most consistent with a congenital myopathy. The NADH shows multiple irregular pale areas involving both type I (darker fibers) and type II (lighter fibers) muscle fibers, characteristic of multiminicore myopathy. Genetic analysis identified RYR1 mutation, which is commonly associated with central core myopathy or multiminicore myopathy. Patients with RYR1 mutations are at high risk for malignant hyperthermia and thus need to avoid trigging anesthetics including succinylcholine or inhaled anesthetics. Answers B and D are incorrect because RYR1 mutations typically do not cause cardiomyopathy or CNS abnormality. respiratory muscle weakness is common in multiminicore myopathy caused by SELENON but not common in RYR1 mutant patients. Therefore, chest CT and respiratory support are not indicated. Multiminicore myopathy",
+    "question_references": "https://www.pathologyoutlines.com/topic/musclemultiminicore.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Avoid succinylcholine or inhaled anesthetics",
+        "is_correct": true,
+        "explanation": "Avoid succinylcholine or inhaled anesthetics. The history is most consistent with a congenital myopathy. The NADH shows multiple irregular pale areas involving both type I (darker fibers) and type II (lighter fibers) muscle fibers, characteristic of multiminicore myopathy. Genetic analysis identified RYR1 mutation, which is commonly associated with central core myopathy or multiminicore myopathy. Patients with RYR1 mutations are at high risk for malignant hyperthermia and thus need to avoid trigging anesthetics including succinylcholine or inhaled anesthetics. Answers B and D are incorrect because RYR1 mutations typically do not cause cardiomyopathy or CNS abnormality. respiratory muscle weakness is common in multiminicore myopathy caused by SELENON but not common in RYR1 mutant patients. Therefore, chest CT and respiratory support are not indicated. Multiminicore myopathy",
+        "order_index": 0
+      },
+      {
+        "text": "Cardiac evaluation and monitoring",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Avoid succinylcholine or inhaled anesthetics. The history is most consistent with a congenital myopa...",
+        "order_index": 1
+      },
+      {
+        "text": "Chest CT and respiratory support",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Avoid succinylcholine or inhaled anesthetics. The history is most consistent with a congenital myopa...",
+        "order_index": 2
+      },
+      {
+        "text": "CNS evaluation",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Avoid succinylcholine or inhaled anesthetics. The history is most consistent with a congenital myopa...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/musclemultiminicoreCaiMicro2.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 13",
+    "stem": "A 55 year old man presented with 2 weeks of proximal muscle weakness and myalgia. Muscle biopsy shows finding in the above image. Which of the following serum autoantibodies is most supportive of the diagnosis of an immune mediated necrotizing myopathy?",
+    "difficulty": "medium",
+    "teaching_point": ". Anti-SRP. Anti-SRP autoantibody is a specific marker for immune mediated necrotizing myopathy. Anti-Mi2 is a specific serum marker for dermatomyositis. Anti-Jo1 is a specific marker for antisynsthetase syndrome associated myositis. Anti-ANA is a nonspecific autoantibody present in many systemic autoimmune diseases. Anti-NT5c1a is an autoantibody most commonly associated with sporadic inclusion body myositis. Immune mediated necrotizing myopathy",
+    "question_references": "https://www.pathologyoutlines.com/topic/muscleimmunemediated.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Anti-ANA",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Anti-SRP. Anti-SRP autoantibody is a specific marker for immune mediated necrotizing myopathy. Ant...",
+        "order_index": 0
+      },
+      {
+        "text": "Anti-Jo1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Anti-SRP. Anti-SRP autoantibody is a specific marker for immune mediated necrotizing myopathy. Ant...",
+        "order_index": 1
+      },
+      {
+        "text": "Anti-Mi2",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Anti-SRP. Anti-SRP autoantibody is a specific marker for immune mediated necrotizing myopathy. Ant...",
+        "order_index": 2
+      },
+      {
+        "text": "Anti-NT5c1a",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. . Anti-SRP. Anti-SRP autoantibody is a specific marker for immune mediated necrotizing myopathy. Ant...",
+        "order_index": 3
+      },
+      {
+        "text": "Anti-SRP",
+        "is_correct": true,
+        "explanation": ". Anti-SRP. Anti-SRP autoantibody is a specific marker for immune mediated necrotizing myopathy. Anti-Mi2 is a specific serum marker for dermatomyositis. Anti-Jo1 is a specific marker for antisynsthetase syndrome associated myositis. Anti-ANA is a nonspecific autoantibody present in many systemic autoimmune diseases. Anti-NT5c1a is an autoantibody most commonly associated with sporadic inclusion body myositis. Immune mediated necrotizing myopathy",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/muscleIMNMcaiBRQ01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 14",
+    "stem": "A 55 year old man presented with 2 weeks of proximal muscle weakness, myalgia and elevated creatine kinase. Muscle biopsy shows necrotizing myopathy. Serology workup is positive for anti-SRP autoantibody. Which of the following additional tests is highly recommended?",
+    "difficulty": "medium",
+    "teaching_point": ". Chest CT. Anti-SRP myopathy is highly associated with interstitial lung disease, therefore a chest CT is highly recommended. Cardiac involvement can be seen in association with anti-SRP myopathy but is uncommon. Anti-SRP myopathy is not associated with occult malignancy. Immune mediated necrotizing myopathy",
+    "question_references": "https://www.pathologyoutlines.com/topic/muscleimmunemediated.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Abdominal CT",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Chest CT. Anti-SRP myopathy is highly associated with interstitial lung disease, therefore a chest...",
+        "order_index": 0
+      },
+      {
+        "text": "Cancer screening tests",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Chest CT. Anti-SRP myopathy is highly associated with interstitial lung disease, therefore a chest...",
+        "order_index": 1
+      },
+      {
+        "text": "Chest CT",
+        "is_correct": true,
+        "explanation": ". Chest CT. Anti-SRP myopathy is highly associated with interstitial lung disease, therefore a chest CT is highly recommended. Cardiac involvement can be seen in association with anti-SRP myopathy but is uncommon. Anti-SRP myopathy is not associated with occult malignancy. Immune mediated necrotizing myopathy",
+        "order_index": 2
+      },
+      {
+        "text": "EKG",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Chest CT. Anti-SRP myopathy is highly associated with interstitial lung disease, therefore a chest...",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/muscleIMNMcaiBRQ01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 15",
+    "stem": "A 63 year old woman presented with progressive weakness over the last 10 years. She initially presented with stooped posture that progressed to head drop followed by proximal arm and leg weakness. No significant distal weakness. She had been treated with steroid therapy for the past few years with no significant improvement. Laboratory study showed mildly elevated creatine kinase (CK, 350 IU). Myositis panel, HMG CoA autoantibody, myasthenia gravis panel were all negative. A muscle biopsy shows a chronic myopathy with inflammation (figure 1) and prominent lobulated myofiber architecture (figure 2). Which of the following is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Facioscapulohumeral muscular dystrophy (FSHD). This case illustrates a typical presentation and muscle pathology of a FSHD patient. sporadic inclusion body myositis (sIBM) patients usually have both proximal and distal weakness. The inflammation on muscle biopsy is usually endomysial predominant, not perimysial / perivascular. these patients usually have high CK and positive HMG CoA or SRP antibodies. Also, muscle usually shows a necrotizing myopathy. These patients usually respond to steroid therapy. neurogenic atrophy usually does not show dystrophic changes and widespread lobulated changes in myofibers. patients with mitochondria abnormality usually present with exercise intolerance or rhabdomyolysis. Muscle pathology is characterized by ragged red fibers on Gomori trichrome and COX deficient fibers on COX / SDH stains but usually no dystrophic changes. Facioscapulohumeral muscular dystrophy",
+    "question_references": "https://www.pathologyoutlines.com/topic/muscleFSH.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Facioscapulohumeral muscular dystrophy",
+        "is_correct": true,
+        "explanation": "Facioscapulohumeral muscular dystrophy (FSHD). This case illustrates a typical presentation and muscle pathology of a FSHD patient. sporadic inclusion body myositis (sIBM) patients usually have both proximal and distal weakness. The inflammation on muscle biopsy is usually endomysial predominant, not perimysial / perivascular. these patients usually have high CK and positive HMG CoA or SRP antibodies. Also, muscle usually shows a necrotizing myopathy. These patients usually respond to steroid therapy. neurogenic atrophy usually does not show dystrophic changes and widespread lobulated changes in myofibers. patients with mitochondria abnormality usually present with exercise intolerance or rhabdomyolysis. Muscle pathology is characterized by ragged red fibers on Gomori trichrome and COX deficient fibers on COX / SDH stains but usually no dystrophic changes. Facioscapulohumeral muscular dystrophy",
+        "order_index": 0
+      },
+      {
+        "text": "Immune mediated necrotizing myopathy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Facioscapulohumeral muscular dystrophy (FSHD). This case illustrates a typical presentation and musc...",
+        "order_index": 1
+      },
+      {
+        "text": "Mitochondria myopathy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Facioscapulohumeral muscular dystrophy (FSHD). This case illustrates a typical presentation and musc...",
+        "order_index": 2
+      },
+      {
+        "text": "Neurogenic atrophy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Facioscapulohumeral muscular dystrophy (FSHD). This case illustrates a typical presentation and musc...",
+        "order_index": 3
+      },
+      {
+        "text": "Sporadic inclusion body myositis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Facioscapulohumeral muscular dystrophy (FSHD). This case illustrates a typical presentation and musc...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/muscleFSHcai09.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Chronic myopathy with inflammation",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/muscleFSHcai11.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "Lobulated internal architecture NADH",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 16",
+    "stem": "A 63 year old woman presented with progressive weakness over the last 10 years. She initially presented with stooped posture that progressed to head drop followed by proximal arm and leg weakness. No significant distal weakness. She had been treated with steroid therapy for the past few years with no significant improvement. Laboratory study showed mildly elevated creatine kinase (CK, 350 IU). Myositis panel, HMG CoA autoantibody, myasthenia gravis panel were all negative. A muscle biopsy shows a chronic myopathy with inflammation (figure 1) and prominent lobulated myofiber architecture (figure 2). What is the next step to confirm the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Specific FSHD gene testing. Diagnosis of FSHD requires a specific genetic test that usually involves restriction enzyme digestion and Southern blot analysis that interrogates the size of the D4Z4 domain. the FSHD protein abnormality (DUX4 aberrant expression) is of very low amount and cannot be detected by immunohistochemistry. most neuromuscular NGS panels cannot detect D4Z4 domain retraction and thus fail to detect FSHD. muscle MRI can only be used to monitor fatty replacement and disease progression once the diagnosis has been confirmed. The MRI finding itself is not specific enough to definitively diagnose FSHD. Facioscapulohumeral muscular dystrophy",
+    "question_references": "https://www.pathologyoutlines.com/topic/muscleFSH.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Muscle MRI",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Specific FSHD gene testing. Diagnosis of FSHD requires a specific genetic test that usually involves...",
+        "order_index": 0
+      },
+      {
+        "text": "Muscular dystrophy immunostaining panel",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Specific FSHD gene testing. Diagnosis of FSHD requires a specific genetic test that usually involves...",
+        "order_index": 1
+      },
+      {
+        "text": "Neuromuscular next generation sequencing (NGS) panel",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. Specific FSHD gene testing. Diagnosis of FSHD requires a specific genetic test that usually involves...",
+        "order_index": 2
+      },
+      {
+        "text": "Specific FSHD gene testing",
+        "is_correct": true,
+        "explanation": "Specific FSHD gene testing. Diagnosis of FSHD requires a specific genetic test that usually involves restriction enzyme digestion and Southern blot analysis that interrogates the size of the D4Z4 domain. the FSHD protein abnormality (DUX4 aberrant expression) is of very low amount and cannot be detected by immunohistochemistry. most neuromuscular NGS panels cannot detect D4Z4 domain retraction and thus fail to detect FSHD. muscle MRI can only be used to monitor fatty replacement and disease progression once the diagnosis has been confirmed. The MRI finding itself is not specific enough to definitively diagnose FSHD. Facioscapulohumeral muscular dystrophy",
+        "order_index": 3
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/muscleFSHcai09.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "Chronic myopathy with inflammation",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/muscleFSHcai11.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "Lobulated internal architecture NADH",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 17",
+    "stem": "A 70 year old man with history of progressive weakness and sensory loss for 4 years has reported several falls. No bulbar or respiratory symptoms are reported. The symptoms progressed despite receiving intravenous immunoglobulin treatment. Electrophysiologic studies demonstrated severe sensory motor polyneuropathy with demyelinating features and evidence of active denervation in proximal and distal limb muscles. A right sural nerve and right quadriceps muscle biopsy demonstrated the findings above. Which of the following is the best choice to confirm the diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": ". Liquid chromatography with tandem mass spectrometry (LC MS / MS). The pathology images demonstrate amyloid deposition in muscle and nerve. The amyloid deposits are strongly positive for transthyretin, which suggests hereditary transthyretin amyloidosis (hATTR) or senile amyloidosis. The next step is to determine the amyloid subtype and treat accordingly. LC MS / MS is the current gold standard for subtyping of amyloid on pathology specimens. SPEP will be useful in identifying serum paraproteins for AL type amyloidosis but not in cases of hATTR or senile amyloidosis. whole body scintigraphy with SPECT / CT is useful in assessing the extent of amyloid deposition in the whole body but has a limited role in differentiating amyloid subtypes. electron microscopy of the nerve can help assess the extent of nerve damage and visualize the amyloid fibrils but cannot determine the type of amyloid by ultrastructural morphology. Answer A is necessary since the heart is often involved in amyloidosis and the extent of cardiac involvement is an important prognostic factor; however, it is not the correct answer since it cannot determine the amyloid subtype. Amyloid neuropathy",
+    "question_references": "https://www.pathologyoutlines.com/topic/muscleamyloid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Cardiac ultrasound",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Liquid chromatography with tandem mass spectrometry (LC MS / MS). The pathology images demonstrate...",
+        "order_index": 0
+      },
+      {
+        "text": "Electron microscopy of the nerve",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Liquid chromatography with tandem mass spectrometry (LC MS / MS). The pathology images demonstrate...",
+        "order_index": 1
+      },
+      {
+        "text": "Liquid chromatography with tandem mass spectrometry (LC MS / MS)",
+        "is_correct": true,
+        "explanation": ". Liquid chromatography with tandem mass spectrometry (LC MS / MS). The pathology images demonstrate amyloid deposition in muscle and nerve. The amyloid deposits are strongly positive for transthyretin, which suggests hereditary transthyretin amyloidosis (hATTR) or senile amyloidosis. The next step is to determine the amyloid subtype and treat accordingly. LC MS / MS is the current gold standard for subtyping of amyloid on pathology specimens. SPEP will be useful in identifying serum paraproteins for AL type amyloidosis but not in cases of hATTR or senile amyloidosis. whole body scintigraphy with SPECT / CT is useful in assessing the extent of amyloid deposition in the whole body but has a limited role in differentiating amyloid subtypes. electron microscopy of the nerve can help assess the extent of nerve damage and visualize the amyloid fibrils but cannot determine the type of amyloid by ultrastructural morphology. Answer A is necessary since the heart is often involved in amyloidosis and the extent of cardiac involvement is an important prognostic factor; however, it is not the correct answer since it cannot determine the amyloid subtype. Amyloid neuropathy",
+        "order_index": 2
+      },
+      {
+        "text": "Serum protein electrophoresis (SPEP)",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Liquid chromatography with tandem mass spectrometry (LC MS / MS). The pathology images demonstrate...",
+        "order_index": 3
+      },
+      {
+        "text": "Whole body scintigraphy with single photon emission computed tomography (SPECT) / CT",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is C. . Liquid chromatography with tandem mass spectrometry (LC MS / MS). The pathology images demonstrate...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/muscleamyloidCaimicro10.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/muscleamyloidCaimicro13.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 18",
+    "stem": "What type of amyloid is the most common cause of amyloid neuropathy in the U.S.?",
+    "difficulty": "medium",
+    "teaching_point": ". AL is the most common cause of amyloid neuropathy (> 50% of patients with amyloidosis) (Lancet 2016;387:2641). ATTR is the most common hereditary form of amyloidosis but only makes up < 10% of all patients with amyloidosis (Lancet 2016;387:2641). Answer A is incorrect as AA amyloidosis usually does not involve peripheral nerves. Answer B is incorrect as Aβ is usually restricted in the central nervous system and does not involve peripheral nerves. Answer C is incorrect as Aβ2 microglobuli is usually associated with dialysis and usually doesn't involve peripheral nerves. Amyloid neuropathy",
+    "question_references": "https://www.pathologyoutlines.com/topic/muscleamyloid.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "AA",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . AL is the most common cause of amyloid neuropathy (> 50% of patients with amyloidosis) (Lancet 201...",
+        "order_index": 0
+      },
+      {
+        "text": "Aβ",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . AL is the most common cause of amyloid neuropathy (> 50% of patients with amyloidosis) (Lancet 201...",
+        "order_index": 1
+      },
+      {
+        "text": "Aβ2 microglobuli",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . AL is the most common cause of amyloid neuropathy (> 50% of patients with amyloidosis) (Lancet 201...",
+        "order_index": 2
+      },
+      {
+        "text": "AL",
+        "is_correct": true,
+        "explanation": ". AL is the most common cause of amyloid neuropathy (> 50% of patients with amyloidosis) (Lancet 2016;387:2641). ATTR is the most common hereditary form of amyloidosis but only makes up < 10% of all patients with amyloidosis (Lancet 2016;387:2641). Answer A is incorrect as AA amyloidosis usually does not involve peripheral nerves. Answer B is incorrect as Aβ is usually restricted in the central nervous system and does not involve peripheral nerves. Answer C is incorrect as Aβ2 microglobuli is usually associated with dialysis and usually doesn't involve peripheral nerves. Amyloid neuropathy",
+        "order_index": 3
+      },
+      {
+        "text": "ATTR",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is D. . AL is the most common cause of amyloid neuropathy (> 50% of patients with amyloidosis) (Lancet 201...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 19",
+    "stem": "GSD II (Pompe disease) is characterized by the deficiency of which of the following enzymes?",
+    "difficulty": "medium",
+    "teaching_point": "Acid maltase. In Pompe disease or GSD II, the accumulation of glycogen is due to a deficiency of lysosomal acid maltase (GAA gene mutation), which hydrolyzes maltose, linear oligosaccharides and the outer chains of glycogen to glucose. Glycogen storage diseases",
+    "question_references": "https://www.pathologyoutlines.com/topic/muscleglycogen.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Acid maltase",
+        "is_correct": true,
+        "explanation": "Acid maltase. In Pompe disease or GSD II, the accumulation of glycogen is due to a deficiency of lysosomal acid maltase (GAA gene mutation), which hydrolyzes maltose, linear oligosaccharides and the outer chains of glycogen to glucose. Glycogen storage diseases",
+        "order_index": 0
+      },
+      {
+        "text": "Debrancher enzyme",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Acid maltase. In Pompe disease or GSD II, the accumulation of glycogen is due to a deficiency of lys...",
+        "order_index": 1
+      },
+      {
+        "text": "Glucose 6 phosphatase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Acid maltase. In Pompe disease or GSD II, the accumulation of glycogen is due to a deficiency of lys...",
+        "order_index": 2
+      },
+      {
+        "text": "Phosphoglucomutase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Acid maltase. In Pompe disease or GSD II, the accumulation of glycogen is due to a deficiency of lys...",
+        "order_index": 3
+      },
+      {
+        "text": "Phosphorylase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Acid maltase. In Pompe disease or GSD II, the accumulation of glycogen is due to a deficiency of lys...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 20",
+    "stem": "Glycogen storage disease type V (GSD V, McArdle disease) causes muscle cramps, muscle fatigue and increased muscle glycogen. Which of the following enzymes is deficient?",
+    "difficulty": "medium",
+    "teaching_point": "Muscle phosphorylase. McArdle disease or GSD V is caused by mutations in the PYGM gene that encodes the muscle associated enzyme glycogen phosphorylase. Glycogen storage diseases",
+    "question_references": "https://www.pathologyoutlines.com/topic/muscleglycogen.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Hepatic hexokinase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Muscle phosphorylase. McArdle disease or GSD V is caused by mutations in the PYGM gene that encodes ...",
+        "order_index": 0
+      },
+      {
+        "text": "Muscle debrancher enzyme",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Muscle phosphorylase. McArdle disease or GSD V is caused by mutations in the PYGM gene that encodes ...",
+        "order_index": 1
+      },
+      {
+        "text": "Muscle hexokinase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Muscle phosphorylase. McArdle disease or GSD V is caused by mutations in the PYGM gene that encodes ...",
+        "order_index": 2
+      },
+      {
+        "text": "Muscle phosphofructokinase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is E. Muscle phosphorylase. McArdle disease or GSD V is caused by mutations in the PYGM gene that encodes ...",
+        "order_index": 3
+      },
+      {
+        "text": "Muscle phosphorylase",
+        "is_correct": true,
+        "explanation": "Muscle phosphorylase. McArdle disease or GSD V is caused by mutations in the PYGM gene that encodes the muscle associated enzyme glycogen phosphorylase. Glycogen storage diseases",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/muscleglycogenNishinoBRQ.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 21",
+    "stem": "A 57 year old man presents with shortness of breath, weakness and elevated creatine kinase levels. Chest CT shows bilateral lung ground glass opacities. Muscle biopsy shows necrotic fibers and myophagocytosis predominantly involving perifascicular fibers. The perimyisial connective tissue appears edematous and fragmented. Which of the following is the most likely diagnosis?",
+    "difficulty": "medium",
+    "teaching_point": "Antisynthetase syndrome Antisynthetase syndrome associated myositis",
+    "question_references": "https://www.pathologyoutlines.com/topic/muscleantisynthetase.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Antisynthetase syndrome",
+        "is_correct": true,
+        "explanation": "Antisynthetase syndrome Antisynthetase syndrome associated myositis",
+        "order_index": 0
+      },
+      {
+        "text": "Dermatomyositis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Antisynthetase syndrome Antisynthetase syndrome associated myositis",
+        "order_index": 1
+      },
+      {
+        "text": "Immune mediated necrotizing myopathy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Antisynthetase syndrome Antisynthetase syndrome associated myositis",
+        "order_index": 2
+      },
+      {
+        "text": "Inclusion body myositis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Antisynthetase syndrome Antisynthetase syndrome associated myositis",
+        "order_index": 3
+      },
+      {
+        "text": "Polymyositis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is A. Antisynthetase syndrome Antisynthetase syndrome associated myositis",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/muscleantisynthetaseCai01.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 22",
+    "stem": "Which of the following is a distinctive pathological feature between antisynthetase syndrome myositis and dermatomyositis?",
+    "difficulty": "medium",
+    "teaching_point": "Intranuclear actin aggregate. In inflammatory myopathies, so far, intranuclear actin aggregate has only been reported in antisynthetase syndrome myositis. All other answer choices can be seen in both antisynthetase syndrome myositis and dermatomyositis. Antisynthetase syndrome associated myositis",
+    "question_references": "https://www.pathologyoutlines.com/topic/muscleantisynthetase.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "Endothelial tubuloreticular inclusions",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Intranuclear actin aggregate. In inflammatory myopathies, so far, intranuclear actin aggregate has o...",
+        "order_index": 0
+      },
+      {
+        "text": "Intranuclear actin aggregate",
+        "is_correct": true,
+        "explanation": "Intranuclear actin aggregate. In inflammatory myopathies, so far, intranuclear actin aggregate has only been reported in antisynthetase syndrome myositis. All other answer choices can be seen in both antisynthetase syndrome myositis and dermatomyositis. Antisynthetase syndrome associated myositis",
+        "order_index": 1
+      },
+      {
+        "text": "Myofiber sarcolemma C5b9 deposition",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Intranuclear actin aggregate. In inflammatory myopathies, so far, intranuclear actin aggregate has o...",
+        "order_index": 2
+      },
+      {
+        "text": "Perifascicular atrophy",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Intranuclear actin aggregate. In inflammatory myopathies, so far, intranuclear actin aggregate has o...",
+        "order_index": 3
+      },
+      {
+        "text": "Perifascicular myofiber necrosis",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. Intranuclear actin aggregate. In inflammatory myopathies, so far, intranuclear actin aggregate has o...",
+        "order_index": 4
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  },
+  {
+    "title": "Question 23",
+    "stem": "A 2 year old with developmental delay and hypotonia presented with elevated creatine kinase in the 1,000s. There is a strong suspicion of a genetic cause, although whole exome sequencing was unrevealing. A quadriceps muscle biopsy was performed and showed aggregation of macrophages with basophilic granular cytoplasm mixed with lymphocytes. EBV in situ hybridization (EBER) shows the findings in the images above. Which of the following additional stains on muscle biopsy is most helpful in reaching the diagnosis of macrophagic myfasciitis (MMF)?",
+    "difficulty": "medium",
+    "teaching_point": ". Morin stain. The diagnosis of MMF relies on demonstration of aluminum particles within the macrophages. Morin (2-[2,4-dihydroxyphenyl]-3,5,7-trihydroxychromen-4-one) is a flavonoid that forms a green-blue fluorescent complex with aluminum visible under fluorescence microscopy. Positive Morin stain in macrophage cytoplasm is diagnostic for MMF on muscle biopsy. Answers C and D are incorrect because while nonspecific esterase and PAS with and without diastase are both strongly positive in the macrophages, these stains do not confirm the presence of aluminum. MHC class 1 is an inflammatory marker and does not detect aluminum. von Kossa stain is used in detecting calcium and does not stain aluminum. Macrophagic myofasciitis",
+    "question_references": "https://www.pathologyoutlines.com/topic/musclemacrophagic.html",
+    "status": "draft",
+    "answer_options": [
+      {
+        "text": "MHC class 1",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Morin stain. The diagnosis of MMF relies on demonstration of aluminum particles within the macroph...",
+        "order_index": 0
+      },
+      {
+        "text": "Morin stain",
+        "is_correct": true,
+        "explanation": ". Morin stain. The diagnosis of MMF relies on demonstration of aluminum particles within the macrophages. Morin (2-[2,4-dihydroxyphenyl]-3,5,7-trihydroxychromen-4-one) is a flavonoid that forms a green-blue fluorescent complex with aluminum visible under fluorescence microscopy. Positive Morin stain in macrophage cytoplasm is diagnostic for MMF on muscle biopsy. Answers C and D are incorrect because while nonspecific esterase and PAS with and without diastase are both strongly positive in the macrophages, these stains do not confirm the presence of aluminum. MHC class 1 is an inflammatory marker and does not detect aluminum. von Kossa stain is used in detecting calcium and does not stain aluminum. Macrophagic myofasciitis",
+        "order_index": 1
+      },
+      {
+        "text": "Nonspecific esterase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Morin stain. The diagnosis of MMF relies on demonstration of aluminum particles within the macroph...",
+        "order_index": 2
+      },
+      {
+        "text": "PAS with and without diastase",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Morin stain. The diagnosis of MMF relies on demonstration of aluminum particles within the macroph...",
+        "order_index": 3
+      },
+      {
+        "text": "Von Kossa stain",
+        "is_correct": false,
+        "explanation": "Incorrect. The correct answer is B. . Morin stain. The diagnosis of MMF relies on demonstration of aluminum particles within the macroph...",
+        "order_index": 4
+      }
+    ],
+    "question_images": [
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/musclemacrophagiccai02.jpg",
+        "question_section": "stem",
+        "order_index": 0,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/musclemacrophagiccai03.jpg",
+        "question_section": "stem",
+        "order_index": 1,
+        "alt_text": "",
+        "caption": ""
+      },
+      {
+        "image_url": "https://www.pathologyoutlines.com/imgau/musclemacrophagiccai17.jpg",
+        "question_section": "stem",
+        "order_index": 2,
+        "alt_text": "",
+        "caption": ""
+      }
+    ],
+    "tag_ids": [],
+    "category_ids": [],
+    "_metadata": {
+      "source": "PathOutlines",
+      "source_file": "muscle_and_nerve.html",
+      "category": "Anatomic Pathology > Musculoskeletal",
+      "database_set": "Web"
+    }
+  }
+]

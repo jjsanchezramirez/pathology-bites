@@ -34,9 +34,9 @@ export async function POST(request: NextRequest) {
     // Debug: Log the received data
     console.log('Received answer options data:', JSON.stringify(answerOptions, null, 2));
 
-    // Insert answer options
+    // Insert question options
     const { data, error } = await supabase
-      .from('answer_options')
+      .from('question_options')
       .insert(answerOptions)
       .select();
 
