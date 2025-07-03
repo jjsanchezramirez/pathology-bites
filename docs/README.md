@@ -15,6 +15,18 @@ System design, database schemas, and technical architecture documents.
 - **[Storage Capacity Analysis](./architecture/STORAGE_CAPACITY_ANALYSIS.md)** - Storage planning and analysis
 - **[Auth Consolidation](./architecture/AUTH_CONSOLIDATION.md)** - Authentication system consolidation
 
+### 🔬 [Technical](./technical/)
+Technical implementation guides and deep-dive documentation.
+
+- **[User Management Implementation](./technical/USER_MANAGEMENT_IMPLEMENTATION.md)** - Technical implementation details for user management
+- **[External Image Exclusion](./technical/EXTERNAL_IMAGE_EXCLUSION.md)** - External image handling implementation
+
+### ✨ [Features](./features/)
+Feature documentation and user guides.
+
+- **[User Management](./features/USER_MANAGEMENT.md)** - User management system with role-based access control
+- **[Image Management System](./features/IMAGE_MANAGEMENT_SYSTEM.md)** - Comprehensive image management and storage
+
 ### 🔧 [Guides](./guides/)
 Development, deployment, and configuration guides.
 
@@ -52,6 +64,7 @@ API documentation and integration guides.
 ### 📝 [Changelog](./changelog/)
 Bug fixes, improvements, and security updates.
 
+- **[User Management Enhancements](./changelog/USER_MANAGEMENT_ENHANCEMENTS.md)** - Comprehensive user management system improvements
 - **[Demo Question Fixes](./changelog/DEMO_QUESTION_FIXES.md)** - Demo question bug fixes
 - **[Demo Question V2 Improvements](./changelog/DEMO_QUESTION_V2_IMPROVEMENTS.md)** - Version 2 improvements
 - **[Database Security Fixes](./changelog/DATABASE_SECURITY_FIXES.md)** - Security patches
@@ -88,6 +101,8 @@ Historical documents and project planning materials.
 ### By Topic
 - **Authentication**: `architecture/AUTHENTICATION_ARCHITECTURE.md`, `guides/testing/AUTH_*`
 - **Database**: `architecture/DATABASE_*`
+- **User Management**: `features/USER_MANAGEMENT.md`, `technical/USER_MANAGEMENT_IMPLEMENTATION.md`
+- **Image Management**: `features/IMAGE_MANAGEMENT_SYSTEM.md`
 - **Testing**: `guides/testing/`
 - **Security**: `guides/SECURITY_GUIDE.md`, `changelog/*SECURITY*`
 - **Deployment**: `guides/BYPASS_DEPLOYMENT_CHECKLIST.md`
