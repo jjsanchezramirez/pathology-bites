@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: true, // Temporarily disabled - will address code quality issues in separate task
+    ignoreDuringBuilds: false, // Enable linting during builds for better code quality
   },
   images: {
     remotePatterns: [

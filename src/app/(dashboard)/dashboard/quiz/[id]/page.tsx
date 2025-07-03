@@ -57,6 +57,25 @@ export default function QuizSessionPage() {
     }
   }, [params.id, router])
 
+  // Timer effect for timed quizzes - must be before early returns
+  useEffect(() => {
+    if (quizSession?.config.mode === 'timed' && quizSession?.config.timePerQuestion) {
+      setTimeRemaining(quizSession.config.timePerQuestion)
+
+      const timer = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev === null || prev <= 1) {
+            // handleAutoSubmit() // Will be defined later
+            return null
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      return () => clearInterval(timer)
+    }
+  }, [quizSession?.currentQuestionIndex, quizSession?.config.mode, quizSession?.config.timePerQuestion])
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
@@ -189,24 +208,7 @@ export default function QuizSessionPage() {
   const isLastQuestion = currentSession.currentQuestionIndex === currentSession.questions.length - 1
   const progress = ((currentSession.currentQuestionIndex + 1) / currentSession.totalQuestions) * 100
 
-  // Timer effect for timed quizzes
-  useEffect(() => {
-    if (currentSession.config.mode === 'timed' && currentSession.config.timePerQuestion) {
-      setTimeRemaining(currentSession.config.timePerQuestion)
 
-      const timer = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev === null || prev <= 1) {
-            handleAutoSubmit()
-            return null
-          }
-          return prev - 1
-        })
-      }, 1000)
-
-      return () => clearInterval(timer)
-    }
-  }, [currentSession.currentQuestionIndex])
 
   const handleAnswerSelect = (answerId: string) => {
     setSelectedAnswerId(answerId)

@@ -18,6 +18,32 @@ export function SimpleCarousel({ images, className = '' }: SimpleCarouselProps) 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
 
+  // Keyboard navigation for fullscreen - must be before early return
+  useEffect(() => {
+    if (!isOpen || !images || images.length === 0) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'Escape':
+          setIsOpen(false)
+          break
+        case 'ArrowLeft':
+          if (images.length > 1) {
+            setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
+          }
+          break
+        case 'ArrowRight':
+          if (images.length > 1) {
+            setCurrentIndex((prev) => (prev + 1) % images.length)
+          }
+          break
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, images])
+
   if (!images || images.length === 0) return null
 
   const nextImage = () => {
@@ -34,27 +60,7 @@ export function SimpleCarousel({ images, className = '' }: SimpleCarouselProps) 
 
   const currentImage = images[currentIndex]
 
-  // Keyboard navigation for fullscreen
-  useEffect(() => {
-    if (!isOpen) return
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case 'Escape':
-          setIsOpen(false)
-          break
-        case 'ArrowLeft':
-          if (images.length > 1) prevImage()
-          break
-        case 'ArrowRight':
-          if (images.length > 1) nextImage()
-          break
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, images.length])
 
   return (
     <>

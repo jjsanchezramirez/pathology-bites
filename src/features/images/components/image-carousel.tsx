@@ -19,6 +19,32 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showModal, setShowModal] = useState(false)
 
+  // Keyboard navigation for fullscreen - must be before early return
+  useEffect(() => {
+    if (!showModal || !images || images.length === 0) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'Escape':
+          setShowModal(false)
+          break
+        case 'ArrowLeft':
+          if (images.length > 1) {
+            setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
+          }
+          break
+        case 'ArrowRight':
+          if (images.length > 1) {
+            setCurrentIndex((prev) => (prev + 1) % images.length)
+          }
+          break
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showModal, images])
+
   if (!images || images.length === 0) return null
 
   const currentImage = images[currentIndex]
@@ -35,27 +61,7 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
   const openModal = () => setShowModal(true)
   const closeModal = () => setShowModal(false)
 
-  // Keyboard navigation for fullscreen
-  useEffect(() => {
-    if (!showModal) return
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case 'Escape':
-          setShowModal(false)
-          break
-        case 'ArrowLeft':
-          if (hasMultiple) prevImage()
-          break
-        case 'ArrowRight':
-          if (hasMultiple) nextImage()
-          break
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [showModal, hasMultiple])
 
   return (
     <>
