@@ -124,9 +124,23 @@ desktop.ini
 # ==============================================================================
 # AUTO-GENERATED DOCUMENTATION (Noise Reduction)
 # ==============================================================================
-docs/api/
 docs/build/
 storybook-static/
+
+# ==============================================================================
+# TEST & DEBUG FILES (Noise Reduction)
+# ==============================================================================
+# Test data files (keep sample files in docs/api/)
+test-*.json
+*-test.json
+*-debug.json
+*-fixed.json
+*-final.json
+*-v*.json
+*.scraped.json
+
+# Scraped content (keep organized scraped-questions/ folder)
+pathoutlines/*.html
 
 # ==============================================================================
 # PACKAGE MANAGER FILES (Optional)

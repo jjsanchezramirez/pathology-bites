@@ -127,3 +127,25 @@ $RECYCLE.BIN/
 *.temp
 .cache/
 .parcel-cache/
+
+# ==============================================================================
+# TEST & DEBUG FILES
+# ==============================================================================
+# Test data files (keep sample files in docs/api/)
+test-*.json
+*-test.json
+*-debug.json
+*-fixed.json
+*-final.json
+*-v*.json
+
+# Scraped data (keep organized scraped-questions/ folder)
+*.scraped.json
+
+# ==============================================================================
+# SCRIPTS & AUTOMATION OUTPUTS
+# ==============================================================================
+# Script outputs and temporary files
+scripts/output/
+scripts/temp/
+*.script.log
