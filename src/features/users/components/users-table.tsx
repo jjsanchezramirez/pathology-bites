@@ -482,7 +482,7 @@ export function UsersTable() {
               </Button>
               <Button
                 onClick={() => selectedUser && handleRoleChange(selectedUser.id, pendingRole)}
-                disabled={isUpdating || !pendingRole || pendingRole === selectedUser?.role || (selectedUser && !canModifyUser(selectedUser))}
+                disabled={isUpdating || !pendingRole || pendingRole === selectedUser?.role || !selectedUser || !canModifyUser(selectedUser)}
               >
                 {isUpdating ? (
                   <>
@@ -530,7 +530,7 @@ export function UsersTable() {
               </Button>
               <Button
                 onClick={() => selectedUser && handleStatusChange(selectedUser.id, pendingStatus)}
-                disabled={isUpdating || !pendingStatus || pendingStatus === selectedUser?.status || (selectedUser && !canModifyUser(selectedUser))}
+                disabled={isUpdating || !pendingStatus || pendingStatus === selectedUser?.status || !selectedUser || !canModifyUser(selectedUser)}
               >
                 {isUpdating ? (
                   <>
@@ -575,7 +575,7 @@ export function UsersTable() {
               </Button>
               <Button
                 onClick={() => selectedUser && handleDeleteUser(selectedUser.id)}
-                disabled={isUpdating || (selectedUser && !canDeleteUser(selectedUser))}
+                disabled={isUpdating || !selectedUser || !canDeleteUser(selectedUser)}
                 variant="destructive"
               >
                 {isUpdating ? (
