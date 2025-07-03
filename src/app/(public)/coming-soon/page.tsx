@@ -8,10 +8,9 @@ import { Label } from "@/shared/components/ui/label"
 import { toast } from 'sonner'
 import DemoQuestion from "@/shared/components/common/demo-question"
 import { ScrollToTopButton } from "@/shared/components/common/scroll-to-top"
-import { FeatureCard } from "@/shared/components/common/feature-card"
-import { BookOpenIcon, BarChartIcon, TestTube2Icon } from "lucide-react"
 import { CountdownTimer } from "@/shared/components/common/countdown-timer"
 import { useEmailSubscription } from "@/shared/hooks/use-email-subscription"
+import { usePublicStats } from "@/shared/hooks/use-public-stats"
 import Link from "next/link"
 
 export default function ComingSoonPage() {
@@ -29,11 +28,13 @@ export default function ComingSoonPage() {
       toast.error(error instanceof Error ? error.message : "Failed to subscribe. Please try again later.")
     }
   })
+
+  const { stats, loading: statsLoading } = usePublicStats()
   
-  const scrollToPreview = () => {
-    const previewSection = document.getElementById('preview-section')
-    if (previewSection) {
-      previewSection.scrollIntoView({ behavior: 'smooth' })
+  const scrollToNext = () => {
+    const nextSection = document.getElementById('learn-more-section')
+    if (nextSection) {
+      nextSection.scrollIntoView({ behavior: 'smooth' })
     }
   }
   
@@ -111,56 +112,56 @@ export default function ComingSoonPage() {
           </div>
           
           {/* Scroll Indicator */}
-          <button 
-            className="absolute bottom-8 left-0 right-0 cursor-pointer flex flex-col items-center" 
-            onClick={scrollToPreview}
-            aria-label="Scroll to preview section"
+          <button
+            className="absolute bottom-8 left-0 right-0 cursor-pointer flex flex-col items-center"
+            onClick={scrollToNext}
+            aria-label="Scroll to next section"
           >
-            <p className="text-sm text-center text-muted-foreground mb-2">See a preview of the site</p>
+            <p className="text-sm text-center text-muted-foreground mb-2">Learn more about Pathology Bites</p>
             <ChevronDown className="h-6 w-6 text-primary mx-auto animate-bounce" />
           </button>
         </div>
       </section>
 
       {/* Navigation Section */}
-      <section className="relative py-16 border-t bg-background/50">
+      <section id="learn-more-section" className="relative py-16 border-t bg-gradient-to-b from-primary/10 via-primary/5 to-background">
         <div className="container mx-auto px-4 max-w-4xl text-center">
           <h2 className="text-2xl font-bold mb-8">Learn More About Pathology Bites</h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Link
               href="/about"
-              className="p-4 rounded-lg border bg-card hover:bg-accent transition-colors text-center group"
+              className="p-6 rounded-xl bg-white/60 backdrop-blur-sm border border-primary/20 hover:bg-white/80 hover:border-primary/40 hover:shadow-lg transition-all duration-300 text-center group"
             >
-              <div className="font-medium group-hover:text-primary transition-colors">About</div>
-              <div className="text-sm text-muted-foreground mt-1">Our mission</div>
+              <div className="font-semibold text-foreground group-hover:text-primary transition-colors">About</div>
+              <div className="text-sm text-muted-foreground mt-2">Our mission</div>
             </Link>
             <Link
               href="/contact"
-              className="p-4 rounded-lg border bg-card hover:bg-accent transition-colors text-center group"
+              className="p-6 rounded-xl bg-white/60 backdrop-blur-sm border border-primary/20 hover:bg-white/80 hover:border-primary/40 hover:shadow-lg transition-all duration-300 text-center group"
             >
-              <div className="font-medium group-hover:text-primary transition-colors">Contact</div>
-              <div className="text-sm text-muted-foreground mt-1">Get in touch</div>
+              <div className="font-semibold text-foreground group-hover:text-primary transition-colors">Contact</div>
+              <div className="text-sm text-muted-foreground mt-2">Get in touch</div>
             </Link>
             <Link
               href="/faq"
-              className="p-4 rounded-lg border bg-card hover:bg-accent transition-colors text-center group"
+              className="p-6 rounded-xl bg-white/60 backdrop-blur-sm border border-primary/20 hover:bg-white/80 hover:border-primary/40 hover:shadow-lg transition-all duration-300 text-center group"
             >
-              <div className="font-medium group-hover:text-primary transition-colors">FAQ</div>
-              <div className="text-sm text-muted-foreground mt-1">Common questions</div>
+              <div className="font-semibold text-foreground group-hover:text-primary transition-colors">FAQ</div>
+              <div className="text-sm text-muted-foreground mt-2">Common questions</div>
             </Link>
             <Link
               href="/terms"
-              className="p-4 rounded-lg border bg-card hover:bg-accent transition-colors text-center group"
+              className="p-6 rounded-xl bg-white/60 backdrop-blur-sm border border-primary/20 hover:bg-white/80 hover:border-primary/40 hover:shadow-lg transition-all duration-300 text-center group"
             >
-              <div className="font-medium group-hover:text-primary transition-colors">Terms</div>
-              <div className="text-sm text-muted-foreground mt-1">Terms of service</div>
+              <div className="font-semibold text-foreground group-hover:text-primary transition-colors">Terms</div>
+              <div className="text-sm text-muted-foreground mt-2">Terms of service</div>
             </Link>
             <Link
               href="/privacy"
-              className="p-4 rounded-lg border bg-card hover:bg-accent transition-colors text-center group"
+              className="p-6 rounded-xl bg-white/60 backdrop-blur-sm border border-primary/20 hover:bg-white/80 hover:border-primary/40 hover:shadow-lg transition-all duration-300 text-center group"
             >
-              <div className="font-medium group-hover:text-primary transition-colors">Privacy</div>
-              <div className="text-sm text-muted-foreground mt-1">Privacy policy</div>
+              <div className="font-semibold text-foreground group-hover:text-primary transition-colors">Privacy</div>
+              <div className="text-sm text-muted-foreground mt-2">Privacy policy</div>
             </Link>
           </div>
         </div>
@@ -183,29 +184,45 @@ export default function ComingSoonPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="relative py-24">
-        <div className="absolute inset-0 bg-linear-to-b from-primary/5 to-transparent" />
+      {/* Stats Section */}
+      <section className="relative py-16">
         <div className="container mx-auto px-4 relative">
-          <h2 className="text-center text-4xl font-bold mb-16">
-            Transform Your Learning Experience
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            <FeatureCard
-              icon={BookOpenIcon}
-              title="Comprehensive Curriculum"
-              description="Expert-curated questions covering all major pathology subspecialties and board exam topics"
-            />
-            <FeatureCard
-              icon={BarChartIcon}
-              title="Smart Analytics"
-              description="Track your progress with detailed performance analytics and competency heatmaps"
-            />
-            <FeatureCard
-              icon={TestTube2Icon}
-              title="Virtual Lab Cases"
-              description="Practice with interactive case simulations featuring real histopathology slides"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            {/* Questions Ready */}
+            <div className="text-center group">
+              <div className="relative">
+                <div className="text-5xl md:text-6xl font-bold text-primary mb-2 group-hover:scale-110 transition-transform duration-300">
+                  {statsLoading ? '...' : stats.questions.toLocaleString()}
+                </div>
+                <div className="absolute -inset-4 bg-primary/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </div>
+              <div className="text-lg font-semibold text-foreground mb-1">Questions Ready</div>
+              <div className="text-sm text-muted-foreground">High-yield pathology content</div>
+            </div>
+
+            {/* Images */}
+            <div className="text-center group">
+              <div className="relative">
+                <div className="text-5xl md:text-6xl font-bold text-primary mb-2 group-hover:scale-110 transition-transform duration-300">
+                  {statsLoading ? '...' : stats.images.toLocaleString()}
+                </div>
+                <div className="absolute -inset-4 bg-primary/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </div>
+              <div className="text-lg font-semibold text-foreground mb-1">Images</div>
+              <div className="text-sm text-muted-foreground">High-resolution pathology images</div>
+            </div>
+
+            {/* Categories */}
+            <div className="text-center group">
+              <div className="relative">
+                <div className="text-5xl md:text-6xl font-bold text-primary mb-2 group-hover:scale-110 transition-transform duration-300">
+                  {statsLoading ? '...' : stats.categories}
+                </div>
+                <div className="absolute -inset-4 bg-primary/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </div>
+              <div className="text-lg font-semibold text-foreground mb-1">Categories</div>
+              <div className="text-sm text-muted-foreground">Complete subspecialty coverage</div>
+            </div>
           </div>
         </div>
       </section>
