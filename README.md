@@ -31,12 +31,20 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 - [Security Guide](docs/development/SECURITY_GUIDE.md) - Environment validation, rate limiting, best practices
 - [Database Performance Guide](docs/development/DATABASE_PERFORMANCE.md) - Indexes, optimization, monitoring
 - [API Documentation](docs/features/api-documentation.md) - Complete API reference with examples
+- [Database Schema](docs/features/DATABASE_SCHEMA.md) - Complete schema documentation with analytics
+- [Storage Capacity Analysis](docs/technical/STORAGE_CAPACITY_ANALYSIS.md) - Capacity planning and optimization
 
 **📈 Quality Metrics**
 - Build: ✅ Successful production build
 - Tests: 93.6% pass rate (73/78 tests passing)
 - TypeScript: ✅ Strict compilation without errors
 - Security: ✅ No hardcoded secrets, proper validation
+
+**📊 Platform Capacity (Supabase Free Tier)**
+- **Questions**: 12,000-15,000 high-quality questions
+- **Active Users**: 2,500-3,000 concurrent users
+- **Quiz Attempts**: 50,000+ total attempts
+- **Storage**: Optimized for 500MB database limit
 
 ## 🔍 Features
 

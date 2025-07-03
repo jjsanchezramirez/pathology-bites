@@ -228,3 +228,17 @@ Complete audit trail of question changes.
 - Auto-update analytics when quiz attempts change
 - Auto-update analytics when flags/reviews change
 - Auto-create question versions on changes
+
+## 📊 **Storage Capacity**
+
+### **Supabase Free Tier (500MB) Estimates**
+- **Recommended capacity**: 12,000-15,000 questions with 2,500-3,000 active users
+- **Storage per question**: ~20KB (including options, analytics, versions)
+- **Storage per active user**: ~46KB (including quiz sessions and attempts)
+
+### **Scaling Thresholds**
+- **Free Tier (500MB)**: Up to 15,000 questions
+- **Pro Tier (8GB)**: Up to 100,000+ questions
+- **Team Tier (100GB)**: Enterprise scale
+
+*See [Storage Capacity Analysis](../technical/STORAGE_CAPACITY_ANALYSIS.md) for detailed breakdown and optimization strategies.*
