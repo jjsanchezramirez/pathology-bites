@@ -67,6 +67,7 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 - **Image Management**: Advanced image viewer with zoom, pan, and annotation support
 - **Tag & Category System**: Organized content by topic, difficulty, and subspecialty
 - **Question Sets**: Curated collections from various sources (AI, Web, Expert, Book)
+- **Version History**: Complete question revision tracking with semantic versioning (major.minor.patch)
 - **User Dashboard**: Personalized learning experience with progress tracking
 
 ### Technical Features
@@ -275,6 +276,18 @@ The platform provides a comprehensive question management system:
 - **Categorization**: Organized by anatomic/clinical pathology subspecialties
 - **Tagging System**: Flexible tagging for topic-based organization
 - **Question Sets**: Curated collections from various sources (AI, Web, Expert, Book, Other)
+
+### Question Version History
+
+Complete revision tracking and change management:
+
+- **Semantic Versioning**: Automatic version numbering using major.minor.patch format
+- **Change Classification**: Categorize updates as patch (typos/formatting), minor (content changes), or major (complete rewrites)
+- **Change Summaries**: Required descriptions for all question modifications
+- **Version Comparison**: Side-by-side comparison of different question versions
+- **Complete History**: Chronological display of all question revisions with timestamps
+- **Rollback Capability**: Ability to view and reference previous versions
+- **Audit Trail**: Full tracking of who made changes and when
 
 ### Advanced Quiz System
 

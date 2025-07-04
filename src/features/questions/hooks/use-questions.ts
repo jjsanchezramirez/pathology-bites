@@ -21,7 +21,18 @@ export interface UseQuestionsReturn {
   error: string | null;
   refetch: () => Promise<void>;
   deleteQuestion: (questionId: string) => Promise<void>;
-  updateQuestion: (questionId: string, data: QuestionUpdate) => Promise<void>;
+  updateQuestion: (
+    questionId: string,
+    data: QuestionUpdate,
+    options?: {
+      updateType?: 'patch' | 'minor' | 'major';
+      changeSummary?: string;
+      answerOptions?: any[];
+      questionImages?: any[];
+      tagIds?: string[];
+      categoryId?: string;
+    }
+  ) => Promise<any>;
   createQuestion: (data: QuestionInsert) => Promise<QuestionData>;
 }
 
@@ -175,45 +186,52 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
     }
   }, [supabase, fetchQuestions]);
 
-  const updateQuestion = useCallback(async (questionId: string, data: QuestionUpdate) => {
+  const updateQuestion = useCallback(async (
+    questionId: string,
+    data: QuestionUpdate,
+    options?: {
+      updateType?: 'patch' | 'minor' | 'major';
+      changeSummary?: string;
+      answerOptions?: any[];
+      questionImages?: any[];
+      tagIds?: string[];
+      categoryId?: string;
+    }
+  ) => {
     try {
-      const { error } = await supabase
-        .from('questions')
-        .update(data)
-        .eq('id', questionId);
+      // Use the new versioning API for comprehensive updates
+      const response = await fetch(`/api/admin/questions/${questionId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          questionData: data,
+          updateType: options?.updateType,
+          changeSummary: options?.changeSummary,
+          answerOptions: options?.answerOptions,
+          questionImages: options?.questionImages,
+          tagIds: options?.tagIds,
+          categoryId: options?.categoryId,
+        }),
+      });
 
-      if (error) {
-        // Handle specific version constraint violation
-        if (error.message.includes('question_versions_question_id_version_number_key')) {
-          console.warn('Version constraint violation detected, retrying update...');
-          // Wait a brief moment and retry once
-          await new Promise(resolve => setTimeout(resolve, 100));
-
-          const { error: retryError } = await supabase
-            .from('questions')
-            .update(data)
-            .eq('id', questionId);
-
-          if (retryError) {
-            throw new Error(retryError.message);
-          }
-        } else {
-          throw new Error(error.message);
-        }
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update question');
       }
 
-      // Don't show toast here - let the calling component handle success messages
-      // toast.success('Question updated successfully');
+      const result = await response.json();
 
-      // Refetch questions
+      // Refetch questions to update the list
       await fetchQuestions();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to update question';
-      // Don't show error toast here either - let the calling component handle it
-      // toast.error(message);
-      throw err;
+
+      return result;
+    } catch (error) {
+      console.error('Error updating question:', error);
+      throw error;
     }
-  }, [supabase, fetchQuestions]);
+  }, [fetchQuestions]);
 
   const createQuestion = useCallback(async (data: QuestionInsert): Promise<QuestionData> => {
     try {

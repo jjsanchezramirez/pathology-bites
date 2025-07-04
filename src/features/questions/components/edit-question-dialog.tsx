@@ -39,105 +39,15 @@ import { CompactAnswerOptions } from './compact-answer-options';
 import { ImageAttachment } from './image-attachment';
 import { SimpleTagsSelector } from './simple-tags-selector';
 import { CategoriesDropdown } from './categories-dropdown';
-import { AnswerOptionFormData, QuestionImageFormData } from '@/features/questions/types/questions';
+import { AnswerOptionFormData, QuestionImageFormData, UpdateType } from '@/features/questions/types/questions';
 
-// Helper functions for updating related question data
-async function updateAnswerOptions(questionId: string, answerOptions: any[]) {
-  const { createClient } = await import('@/shared/services/client');
-  const supabase = createClient();
+// Note: Helper functions removed - now using comprehensive versioning API
 
-  // Delete existing question options
-  await supabase
-    .from('question_options')
-    .delete()
-    .eq('question_id', questionId);
 
-  // Insert new question options
-  if (answerOptions.length > 0) {
-    const optionsToInsert = answerOptions
-      .filter(option => option.text.trim() !== '')
-      .map((option, index) => ({
-        question_id: questionId,
-        text: option.text.trim(),
-        is_correct: option.is_correct,
-        explanation: option.explanation || null,
-        order_index: index
-      }));
 
-    if (optionsToInsert.length > 0) {
-      const { error } = await supabase
-        .from('question_options')
-        .insert(optionsToInsert);
 
-      if (error) throw error;
-    }
-  }
-}
 
-async function updateQuestionImages(questionId: string, questionImages: any[]) {
-  const { createClient } = await import('@/shared/services/client');
-  const supabase = createClient();
 
-  // Delete existing question images
-  await supabase
-    .from('question_images')
-    .delete()
-    .eq('question_id', questionId);
-
-  // Insert new question images
-  if (questionImages.length > 0) {
-    const imagesToInsert = questionImages.map((img) => ({
-      question_id: questionId,
-      image_id: img.image_id,
-      question_section: img.question_section || 'stem',
-      order_index: img.order_index
-    }));
-
-    const { error } = await supabase
-      .from('question_images')
-      .insert(imagesToInsert);
-
-    if (error) throw error;
-  }
-}
-
-async function updateQuestionTags(questionId: string, tagIds: string[]) {
-  const { createClient } = await import('@/shared/services/client');
-  const supabase = createClient();
-
-  // Delete existing question tags
-  await supabase
-    .from('questions_tags')
-    .delete()
-    .eq('question_id', questionId);
-
-  // Insert new question tags
-  if (tagIds.length > 0) {
-    const tagsToInsert = tagIds.map(tagId => ({
-      question_id: questionId,
-      tag_id: tagId
-    }));
-
-    const { error } = await supabase
-      .from('questions_tags')
-      .insert(tagsToInsert);
-
-    if (error) throw error;
-  }
-}
-
-async function updateQuestionCategory(questionId: string, categoryId: string | null) {
-  const { createClient } = await import('@/shared/services/client');
-  const supabase = createClient();
-
-  // Update the category_id directly in the questions table
-  const { error } = await supabase
-    .from('questions')
-    .update({ category_id: categoryId })
-    .eq('id', questionId);
-
-  if (error) throw error;
-}
 
 const editQuestionSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
@@ -466,6 +376,8 @@ export function EditQuestionDialog({
   const [questionImages, setQuestionImages] = useState<QuestionImageFormData[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [updateType, setUpdateType] = useState<UpdateType>('minor');
+  const [changeSummary, setChangeSummary] = useState<string>('');
   const { updateQuestion } = useQuestions();
   const { questionSets } = useQuestionSets();
   const { user } = useAuthStatus();
@@ -697,6 +609,12 @@ export function EditQuestionDialog({
       return;
     }
 
+    // Check admin permissions for published questions
+    if (question.status === 'published' && user.role !== 'admin') {
+      toast.error('Only admins can edit published questions');
+      return;
+    }
+
     // Validate answer options
     const optionErrors = validateAnswerOptions();
     if (Object.keys(optionErrors).length > 0) {
@@ -715,20 +633,15 @@ export function EditQuestionDialog({
 
       console.log('Updating question with data:', updateData);
 
-      // Update all question data in sequence
-      await updateQuestion(question.id, updateData);
-
-      console.log('Updating answer options:', answerOptions);
-      await updateAnswerOptions(question.id, answerOptions);
-
-      console.log('Updating question images:', questionImages);
-      await updateQuestionImages(question.id, questionImages);
-
-      console.log('Updating question tags:', selectedTagIds);
-      await updateQuestionTags(question.id, selectedTagIds);
-
-      console.log('Updating question category:', selectedCategoryId);
-      await updateQuestionCategory(question.id, selectedCategoryId || null);
+      // Use the new versioning-aware update function
+      await updateQuestion(question.id, updateData, {
+        updateType: question.status === 'published' ? updateType : undefined,
+        changeSummary: question.status === 'published' ? changeSummary : undefined,
+        answerOptions,
+        questionImages,
+        tagIds: selectedTagIds,
+        categoryId: selectedCategoryId || undefined,
+      });
 
       toast.success('Question updated successfully');
 
@@ -815,6 +728,67 @@ export function EditQuestionDialog({
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+              {/* Version Selection for Published Questions */}
+              {question?.status === 'published' && user?.role === 'admin' && (
+                <div className="mb-4 p-4 border rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                  <h3 className="text-sm font-medium mb-3">Version Update Type</h3>
+                  <div className="space-y-3">
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="updateType"
+                          value="patch"
+                          checked={updateType === 'patch'}
+                          onChange={(e) => setUpdateType(e.target.value as UpdateType)}
+                          className="text-blue-600"
+                        />
+                        <span className="text-sm">
+                          <strong>Patch</strong> - Typos, formatting, references only
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="updateType"
+                          value="minor"
+                          checked={updateType === 'minor'}
+                          onChange={(e) => setUpdateType(e.target.value as UpdateType)}
+                          className="text-blue-600"
+                        />
+                        <span className="text-sm">
+                          <strong>Minor</strong> - Content changes, options, explanations
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="updateType"
+                          value="major"
+                          checked={updateType === 'major'}
+                          onChange={(e) => setUpdateType(e.target.value as UpdateType)}
+                          className="text-blue-600"
+                        />
+                        <span className="text-sm">
+                          <strong>Major</strong> - Complete rewrite or restructure
+                        </span>
+                      </label>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Change Summary (Optional)
+                      </label>
+                      <Input
+                        value={changeSummary}
+                        onChange={(e) => setChangeSummary(e.target.value)}
+                        placeholder="Describe the changes made..."
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <Tabs defaultValue="basic" className="w-full flex flex-col flex-1">
                 <TabsList className="grid w-full grid-cols-4 flex-shrink-0">
                   <TabsTrigger value="basic">General</TabsTrigger>

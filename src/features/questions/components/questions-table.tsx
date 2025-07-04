@@ -7,7 +7,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { toast } from 'sonner';
-import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, FileText, Flag, ChevronRight } from 'lucide-react';
+import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, FileText, Flag, ChevronRight, History } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -27,11 +27,13 @@ import {
 import { useQuestions } from '@/features/questions/hooks/use-questions';
 import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
+import { useAuthStatus } from '@/features/auth/hooks/use-auth-status';
 import { CreateQuestionDialog } from './create-question-dialog';
 import { EditQuestionDialog } from './edit-question-dialog';
 import { EnhancedImportDialog } from './enhanced-import-dialog';
 import { QuestionFlagDialog } from './question-flag-dialog';
 import { DeleteQuestionDialog } from './delete-question-dialog';
+import { QuestionVersionHistory } from './question-version-history';
 import { getQuestionSetDisplayName, getCategoryDisplayName } from '@/features/questions/utils/display-helpers';
 
 const PAGE_SIZE = 10;
@@ -188,13 +190,20 @@ function RowActions({
   question,
   onEdit,
   onDelete,
-  onFlag
+  onFlag,
+  onViewHistory
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
   onDelete: (question: QuestionWithDetails) => void;
   onFlag?: (question: QuestionWithDetails) => void;
+  onViewHistory?: (question: QuestionWithDetails) => void;
 }) {
+  const { user } = useAuthStatus();
+
+  // Check if user can edit this question
+  const canEdit = question.status !== 'published' || user?.role === 'admin';
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -206,14 +215,27 @@ function RowActions({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => onEdit(question)}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit
-        </DropdownMenuItem>
+        {canEdit ? (
+          <DropdownMenuItem onClick={() => onEdit(question)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem disabled>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit (Admin Only)
+          </DropdownMenuItem>
+        )}
         {question.status === 'published' && onFlag && (
           <DropdownMenuItem onClick={() => onFlag(question)}>
             <Flag className="h-4 w-4 mr-2" />
             Flag for Review
+          </DropdownMenuItem>
+        )}
+        {onViewHistory && (
+          <DropdownMenuItem onClick={() => onViewHistory(question)}>
+            <History className="h-4 w-4 mr-2" />
+            Version History
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
@@ -234,12 +256,14 @@ function ExpandableQuestionRow({
   question,
   onEdit,
   onDelete,
-  onFlag
+  onFlag,
+  onViewHistory
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
   onDelete: (question: QuestionWithDetails) => void;
   onFlag?: (question: QuestionWithDetails) => void;
+  onViewHistory?: (question: QuestionWithDetails) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -296,9 +320,30 @@ function ExpandableQuestionRow({
           </div>
         </TableCell>
         <TableCell>
-          <Badge className={STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.color}>
-            {STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.label || question.status}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge className={STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.color}>
+              {STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.label || question.status}
+            </Badge>
+            {/* Show flagged indicator if question has pending flags */}
+            {question.status === 'published' && question.flag_count && question.flag_count > 0 && (
+              <Badge variant="destructive" className="text-xs">
+                🚩 Flagged
+              </Badge>
+            )}
+          </div>
+        </TableCell>
+        <TableCell>
+          <div className="text-sm">
+            {question.version_string || `${question.version_major || 1}.${question.version_minor || 0}.${question.version_patch || 0}`}
+            {question.change_summary && (
+              <div className="text-xs text-muted-foreground mt-1" title={question.change_summary}>
+                {question.change_summary.length > 30
+                  ? `${question.change_summary.substring(0, 30)}...`
+                  : question.change_summary
+                }
+              </div>
+            )}
+          </div>
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -315,6 +360,7 @@ function ExpandableQuestionRow({
             onEdit={onEdit}
             onDelete={onDelete}
             onFlag={onFlag}
+            onViewHistory={onViewHistory}
           />
         </TableCell>
       </TableRow>
@@ -401,8 +447,10 @@ export function QuestionsTable() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [questionToDelete, setQuestionToDelete] = useState<QuestionWithDetails | null>(null);
   const [questionToFlag, setQuestionToFlag] = useState<QuestionWithDetails | null>(null);
+  const [questionForHistory, setQuestionForHistory] = useState<QuestionWithDetails | null>(null);
 
   // Fetch questions with current filters
   const {
@@ -459,6 +507,11 @@ export function QuestionsTable() {
   const handleFlag = useCallback((question: QuestionWithDetails) => {
     setQuestionToFlag(question);
     setShowFlagDialog(true);
+  }, []);
+
+  const handleViewHistory = useCallback((question: QuestionWithDetails) => {
+    setQuestionForHistory(question);
+    setShowVersionHistory(true);
   }, []);
 
 
@@ -525,6 +578,7 @@ export function QuestionsTable() {
               <TableHead>Question Set</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Version</TableHead>
               <TableHead>Images</TableHead>
               <TableHead className="w-32">Created</TableHead>
               <TableHead className="w-[70px]"></TableHead>
@@ -533,13 +587,13 @@ export function QuestionsTable() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
+                <TableCell colSpan={9} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : questions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                   {searchTerm || difficultyFilter !== 'all' || statusFilter !== 'all' || questionSetFilter !== 'all'
                     ? 'No questions found matching your filters'
                     : 'No questions created yet'
@@ -554,6 +608,7 @@ export function QuestionsTable() {
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                   onFlag={handleFlag}
+                  onViewHistory={handleViewHistory}
                 />
               ))
             )}
@@ -598,6 +653,13 @@ export function QuestionsTable() {
         open={showFlagDialog}
         onOpenChange={setShowFlagDialog}
         onFlagComplete={handleFlagSave}
+      />
+
+      {/* Version History Dialog */}
+      <QuestionVersionHistory
+        questionId={questionForHistory?.id || ''}
+        open={showVersionHistory}
+        onOpenChange={setShowVersionHistory}
       />
 
       {/* Delete Confirmation Dialog */}

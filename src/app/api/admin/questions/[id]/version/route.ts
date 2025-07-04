@@ -1,0 +1,205 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { cookies } from 'next/headers'
+
+// Create Supabase client with service role for admin operations
+async function createAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
+
+// Create regular client for user authentication
+async function createUserClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+  return createClient(supabaseUrl, supabaseAnonKey)
+}
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: questionId } = await params
+    const body = await request.json()
+    const { updateType, changeSummary, questionData } = body
+
+    // Validate required fields
+    if (!updateType || !['patch', 'minor', 'major'].includes(updateType)) {
+      return NextResponse.json(
+        { error: 'Valid update type (patch, minor, major) is required' },
+        { status: 400 }
+      )
+    }
+
+    // Check user authentication and admin role
+    const userClient = await createUserClient()
+    const { data: { user }, error: authError } = await userClient.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await userClient
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || profile?.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'Admin access required' },
+        { status: 403 }
+      )
+    }
+
+    // Use admin client for the actual operations
+    const adminClient = await createAdminClient()
+
+    // Check if question exists and is published (only published questions can be versioned)
+    const { data: question, error: questionError } = await adminClient
+      .from('questions')
+      .select('id, status, version_major, version_minor, version_patch')
+      .eq('id', questionId)
+      .single()
+
+    if (questionError || !question) {
+      return NextResponse.json(
+        { error: 'Question not found' },
+        { status: 404 }
+      )
+    }
+
+    if (question.status !== 'published') {
+      return NextResponse.json(
+        { error: 'Only published questions can be versioned' },
+        { status: 400 }
+      )
+    }
+
+    // Get complete question data for snapshot if not provided
+    let snapshotData = questionData
+    if (!snapshotData) {
+      const { data: snapshot, error: snapshotError } = await adminClient
+        .rpc('get_question_snapshot_data', { question_id_param: questionId })
+
+      if (snapshotError) {
+        console.error('Error getting question snapshot:', snapshotError)
+        return NextResponse.json(
+          { error: 'Failed to create question snapshot' },
+          { status: 500 }
+        )
+      }
+      snapshotData = snapshot
+    }
+
+    // Update question version using the atomic function
+    const { data: versionId, error: versionError } = await adminClient
+      .rpc('update_question_version', {
+        question_id_param: questionId,
+        update_type_param: updateType,
+        change_summary_param: changeSummary || null,
+        question_data_param: snapshotData
+      })
+
+    if (versionError) {
+      console.error('Error updating question version:', versionError)
+      return NextResponse.json(
+        { error: 'Failed to update question version' },
+        { status: 500 }
+      )
+    }
+
+    // Get updated question data
+    const { data: updatedQuestion, error: fetchError } = await adminClient
+      .from('questions')
+      .select('id, version_string, version_major, version_minor, version_patch, updated_at')
+      .eq('id', questionId)
+      .single()
+
+    if (fetchError) {
+      console.error('Error fetching updated question:', fetchError)
+      return NextResponse.json(
+        { error: 'Question updated but failed to fetch updated data' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      versionId,
+      question: updatedQuestion,
+      message: `Question updated to version ${updatedQuestion.version_string}`
+    })
+
+  } catch (error) {
+    console.error('Error in question versioning API:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+// GET endpoint to fetch version history
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: questionId } = await params
+
+    // Check user authentication
+    const userClient = await createUserClient()
+    const { data: { user }, error: authError } = await userClient.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Use admin client to fetch version history
+    const adminClient = await createAdminClient()
+
+    const { data: versions, error: versionsError } = await adminClient
+      .from('question_versions')
+      .select(`
+        id,
+        version_major,
+        version_minor,
+        version_patch,
+        version_string,
+        update_type,
+        change_summary,
+        created_at,
+        changed_by,
+        changer:users!question_versions_changed_by_fkey(first_name, last_name, email)
+      `)
+      .eq('question_id', questionId)
+      .order('version_major', { ascending: false })
+      .order('version_minor', { ascending: false })
+      .order('version_patch', { ascending: false })
+
+    if (versionsError) {
+      console.error('Error fetching version history:', versionsError)
+      return NextResponse.json(
+        { error: 'Failed to fetch version history' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      versions: versions || []
+    })
+
+  } catch (error) {
+    console.error('Error in version history API:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

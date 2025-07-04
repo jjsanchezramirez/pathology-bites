@@ -100,6 +100,13 @@ export interface QuestionWithDetails extends QuestionData {
   analytics?: QuestionAnalyticsData;
   created_by_name?: string;
   image_count?: number;
+  flag_count?: number;
+  latest_flag_date?: string;
+  version_string?: string;
+  version_major?: number;
+  version_minor?: number;
+  version_patch?: number;
+  change_summary?: string;
 }
 
 export interface QuestionWithSet extends QuestionData {
@@ -132,7 +139,7 @@ export interface QuestionFormData {
   difficulty: 'easy' | 'medium' | 'hard';
   teaching_point: string;
   question_references?: string;
-  status: 'draft' | 'under_review' | 'approved_with_edits' | 'rejected' | 'published' | 'flagged' | 'archived';
+  status: 'draft' | 'under_review' | 'published' | 'rejected' | 'pending_major_edits' | 'pending_minor_edits' | 'archived';
   question_set_id?: string;
   category_id?: string; // Single category ID since each question has only one category
   question_options: QuestionOptionFormData[];
@@ -184,9 +191,42 @@ export const DIFFICULTY_CONFIG = {
 
 // Review and workflow types
 export type ReviewAction = 'approve_as_is' | 'approve_with_edits' | 'request_revisions' | 'reject';
-export type QuestionStatus = 'draft' | 'under_review' | 'approved_with_edits' | 'rejected' | 'published' | 'flagged' | 'archived';
+export type QuestionStatus = 'draft' | 'under_review' | 'published' | 'rejected' | 'pending_major_edits' | 'pending_minor_edits' | 'archived';
 export type FlagType = 'incorrect_answer' | 'unclear_question' | 'outdated_content' | 'incorrect_explanations' | 'other';
 export type FlagStatus = 'pending' | 'under_review' | 'resolved' | 'dismissed';
+
+// Versioning types
+export type UpdateType = 'patch' | 'minor' | 'major';
+
+export interface QuestionVersionInfo {
+  version_major: number;
+  version_minor: number;
+  version_patch: number;
+  version_string: string;
+  change_summary?: string;
+  update_type?: UpdateType;
+  original_creator_id: string;
+  current_editor_id: string;
+}
+
+export interface QuestionVersionHistory {
+  id: string;
+  question_id: string;
+  version_major: number;
+  version_minor: number;
+  version_patch: number;
+  version_string: string;
+  question_data: any; // JSONB data
+  update_type: UpdateType;
+  change_summary?: string;
+  changed_by: string;
+  created_at: string;
+  changer?: {
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+}
 
 // Database types for new tables
 export type QuestionReviewData = Database['public']['Tables']['question_reviews']['Row'];
@@ -235,10 +275,15 @@ export const STATUS_CONFIG = {
     color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
     description: 'Question is being reviewed by a reviewer'
   },
-  approved_with_edits: {
-    label: 'Approved with Edits',
-    color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
-    description: 'Question was approved with minor edits and published'
+  pending_major_edits: {
+    label: 'Pending Major Edits',
+    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300',
+    description: 'Question needs significant changes and goes to communal draft pool'
+  },
+  pending_minor_edits: {
+    label: 'Pending Minor Edits',
+    color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
+    description: 'Question needs small edits that reviewer will make and approve'
   },
   rejected: {
     label: 'Rejected',
@@ -250,11 +295,7 @@ export const STATUS_CONFIG = {
     color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300',
     description: 'Question is live and available to users'
   },
-  flagged: {
-    label: 'Flagged',
-    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300',
-    description: 'Published question has been flagged for review'
-  },
+  // Note: flagged is handled differently - it's a published question with pending flags
   archived: {
     label: 'Archived',
     color: 'bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-300',
