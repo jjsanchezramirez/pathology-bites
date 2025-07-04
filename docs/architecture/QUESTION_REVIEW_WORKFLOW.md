@@ -2,200 +2,275 @@
 
 ## Overview
 
-This document describes the enhanced question review workflow system that has been implemented to improve question quality and provide better oversight of content creation and management.
+This document describes the streamlined question review workflow system that ensures quality control while maintaining efficient content management. The system uses a four-role structure and semantic versioning to provide clear workflows for question creation, review, and maintenance.
 
-## New User Role: Reviewer
+## User Roles
 
-### Reviewer Capabilities
-- **Review draft questions**: Can approve, request revisions, or reject questions
-- **Flag published questions**: Can flag problematic published questions for review
-- **Access admin dashboard**: Has access to admin interface with review-specific features
-- **Cannot create questions**: Reviewers focus on review activities only (admins can still create)
+### Four-Role System
+- **Admin**: Full access to all features and system management
+- **Creator**: Can create questions and manage content
+- **Reviewer**: Can review drafts and handle flagged questions
+- **User**: Quiz taking only
 
-### Reviewer vs Admin Permissions
-- **Reviewers**: Can review drafts, flag published questions, view review queue
-- **Admins**: All reviewer permissions + create questions, manage published questions, manage users
+### Role Permissions
+- **Admin**: All capabilities - create, edit, review, manage users, system settings
+- **Creator**: Create questions, manage content, edit draft questions
+- **Reviewer**: Review draft questions, handle flagged questions, access review queues
+- **User**: Take quizzes, flag published questions
 
 ## Question Statuses
 
-The system now supports the following question statuses:
+The system supports the following question statuses:
 
 1. **Draft**: Question is being created or edited
-2. **Under Review**: Question is being reviewed by a reviewer
-3. **Approved with Edits**: Question was approved with minor edits and published
-4. **Rejected**: Question was rejected and needs major revisions
-5. **Published**: Question is live and available to users
-6. **Flagged**: Published question has been flagged for review
-7. **Archived**: Question is no longer active
+2. **Under Review**: Question is submitted and awaiting reviewer decision
+3. **Published**: Question is live and available to users
+4. **Rejected**: Question was rejected and returned to original creator
+5. **Pending Major Edits**: Question needs significant changes, goes to communal draft pool
+6. **Pending Minor Edits**: Reviewer will make small edits and approve immediately
+7. **Published + Flagged**: Live question with user-reported issues
 
-## Review Actions
+## Review Process
 
-When reviewing a draft question, reviewers can take one of four actions:
+### Initial Question Creation
+1. **Creator** creates question and saves as `draft`
+2. Creator can edit multiple times while in draft status
+3. Creator clicks "Submit for Review" → status becomes `under_review`
+4. Question appears in **Review Drafts** queue
 
-### 1. Approve As-Is
-- **Result**: Question is immediately published without changes
-- **Status Change**: Draft → Published
-- **Use Case**: Question is perfect as submitted
+### Review Actions
 
-### 2. Approve with Minor Edits
-- **Result**: Reviewer makes small changes (typos, formatting, clarity) and publishes
-- **Status Change**: Draft → Published
-- **Use Case**: Question is good but needs minor improvements
+When reviewing a draft question, any available reviewer can take one of four actions:
 
-### 3. Request Major Revisions
-- **Result**: Question is sent back to creator with specific feedback
-- **Status Change**: Draft → Draft (stays in draft)
-- **Use Case**: Question needs significant improvements
-- **Required**: Detailed feedback explaining what needs to be changed
+### 1. ✅ Approved
+- **Result**: Question is immediately published as v1.0.0
+- **Status Change**: `under_review` → `published`
+- **Use Case**: Question is ready for publication as-is
+- **Outcome**: JSON snapshot created, question goes live
 
-### 4. Reject with Feedback
-- **Result**: Question is moved to rejected status with explanation
-- **Status Change**: Draft → Rejected
+### 2. ✏️ Pending Minor Edits
+- **Result**: Reviewer immediately makes small edits and publishes as v1.0.0
+- **Status Change**: `under_review` → `pending_minor_edits` → `published`
+- **Use Case**: Question needs small fixes (typos, formatting, minor clarity)
+- **Outcome**: Reviewer edits and publishes in one action
+
+### 3. 🔧 Pending Major Edits
+- **Result**: Question goes to communal draft pool for significant improvements
+- **Status Change**: `under_review` → `pending_major_edits`
+- **Use Case**: Question needs substantial content changes
+- **Outcome**: Any creator/admin can claim, edit, and resubmit for review
+
+### 4. ❌ Rejected
+- **Result**: Question returned to original creator with feedback
+- **Status Change**: `under_review` → `rejected`
 - **Use Case**: Question is fundamentally flawed or inappropriate
-- **Required**: Explanation of why the question is being rejected
+- **Outcome**: Only original creator can edit and resubmit
+
+## Post-Publication Versioning
+
+### Semantic Versioning System
+Published questions use **MAJOR.MINOR.PATCH** versioning:
+
+#### Patch Update (v1.0.0 → v1.0.1)
+- **Typos, formatting, minor wording, reference fixes**
+- **Admin must consciously confirm** this is superficial
+- **No review required** - direct update
+- Question stays `published`
+
+#### Minor Update (v1.0.0 → v1.1.0)
+- **Content changes, answer modifications, teaching point updates**
+- **Admin decides**: Direct update OR send for review
+- May require review for significant changes
+
+#### Major Update (v1.0.0 → v2.0.0)
+- **Complete rewrites, fundamental changes**
+- **Always requires review**
+- Status becomes `under_review`, goes back to Review Drafts queue
 
 ## Question Flagging System
 
 ### Who Can Flag Questions
 - Any authenticated user can flag published questions
-- Reviewers and admins can manage flags
+- Reviewers and admins can resolve flags
 
 ### Flag Types
-1. **Incorrect Answer**: The correct answer or explanations are wrong
-2. **Unclear Question**: The question is confusing or ambiguous
-3. **Outdated Content**: The information is no longer current
-4. **Inappropriate Content**: Content is inappropriate or offensive
-5. **Technical Issue**: Images not loading, formatting problems, etc.
-6. **Other**: Other issues not covered above
+1. **Incorrect Answer**: Wrong correct answer or explanations
+2. **Unclear Question**: Confusing or ambiguous content
+3. **Outdated Content**: Information no longer current
+4. **Incorrect Explanations**: Teaching content is wrong
+5. **Other**: Issues not covered above
 
-### Flag Statuses
-1. **Pending**: Flag has been submitted and awaits review
-2. **Under Review**: Flag is being investigated
-3. **Resolved**: Issue has been fixed
-4. **Dismissed**: Flag was determined to be invalid
+### Flag Resolution Process
+1. User flags published question → status becomes `published + flagged`
+2. Question appears in **Review Flagged** queue
+3. Admin/Reviewer investigates and either:
+   - **Edit Question**: Make corrections using patch/minor/major update rules
+   - **Dismiss Flag**: Mark as invalid, question stays published
 
-## Version Control System
+## JSON Snapshot System
 
-### Automatic Version Creation
-- Every time a question is created or updated, a new version is automatically created
-- Versions store complete question content as JSON
-- Version numbers increment automatically
-- Tracks who made each change and when
+### Complete Question Versioning
+- Every version update creates a complete JSON snapshot
+- Prevents race conditions and data inconsistency
+- Stores entire question with all related data in single file
 
-### Version Content
-Each version stores:
-- Question title, stem, difficulty
-- Teaching point and references
-- Status at time of version creation
-- Question set assignment
-- Timestamp and creator information
+### Snapshot Content
+Each JSON snapshot includes:
+- Complete question data (title, stem, difficulty, teaching point, references)
+- All answer options with explanations
+- All associated images with metadata
+- All tags and category information
+- Version metadata (number, update type, change summary, timestamp, editor)
 
-## Database Schema Changes
+## Database Schema
 
-### New Tables
+### Enhanced Questions Table
+```sql
+ALTER TABLE questions ADD COLUMN version_major INTEGER DEFAULT 1;
+ALTER TABLE questions ADD COLUMN version_minor INTEGER DEFAULT 0;
+ALTER TABLE questions ADD COLUMN version_patch INTEGER DEFAULT 0;
+ALTER TABLE questions ADD COLUMN version_string TEXT GENERATED ALWAYS AS
+  (version_major || '.' || version_minor || '.' || version_patch) STORED;
+ALTER TABLE questions ADD COLUMN is_flagged BOOLEAN DEFAULT FALSE;
+ALTER TABLE questions ADD COLUMN original_creator_id UUID REFERENCES users(id);
+ALTER TABLE questions ADD COLUMN current_editor_id UUID REFERENCES users(id);
+```
 
-#### question_reviews
-- Tracks all review actions taken on questions
-- Links reviewers to questions and their decisions
-- Stores feedback and any changes made
+### Question Versions Table
+```sql
+CREATE TABLE question_versions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  question_id UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+  version_major INTEGER NOT NULL,
+  version_minor INTEGER NOT NULL,
+  version_patch INTEGER NOT NULL,
+  version_string TEXT NOT NULL,
+  question_data JSONB NOT NULL, -- Complete question snapshot
+  update_type TEXT NOT NULL CHECK (update_type IN ('patch', 'minor', 'major')),
+  change_summary TEXT,
+  changed_by UUID NOT NULL REFERENCES users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(question_id, version_major, version_minor, version_patch)
+);
+```
 
-#### question_versions
-- Complete version history of all questions
-- JSON storage of question content at each version
-- Enables rollback and change tracking
+### Supporting Tables
+- **question_reviews**: Tracks all review decisions and feedback
+- **question_flags**: Manages user-reported issues with published questions
+- **question_options**: Answer choices with explanations
+- **question_images**: Associated images with metadata
+- **questions_tags**: Tag associations
 
-#### question_flags
-- Manages flagging of published questions
-- Tracks flag type, description, and resolution
-- Links flaggers and resolvers
+## Admin Panel Structure
 
-### Enhanced questions Table
-The questions table maintains a clean structure with review and flag information stored in dedicated tables:
-- Review information is stored in `question_reviews` table
-- Flag information is stored in `question_flags` table
-- This ensures proper normalization and prevents data duplication
+### Sidebar Navigation
+```
+📊 Dashboard                    [Admin, Creator, Reviewer]
+📝 Questions                    [Admin, Creator]
+   ├── All Questions
+   ├── Create Question
+   ├── Needs Major Edits        [Special filter for pending_major_edits]
+🏷️ Tags/Categories/Sets         [Admin, Creator]
+📋 Review Drafts                [Admin, Reviewer]
+🚩 Review Flagged               [Admin, Reviewer]
+🖼️ Images                       [Admin, Creator]
+👥 Users                        [Admin only]
+📧 Notifications                [Admin only]
+📊 Analytics                    [Admin only]
+⚙️ Settings                     [Admin only]
+```
 
-## User Interface Changes
+### Key Pages
 
-### New Pages
-1. **Review Queue** (`/admin/questions/review-queue`): Central hub for all review activities
-2. **Enhanced Questions Table**: Now includes flag functionality for published questions
+#### Review Drafts (`/admin/review-drafts`)
+- Queue of questions awaiting review decisions
+- Shows new submissions and resubmissions
+- Four-action review interface (approve/pending minor/pending major/reject)
 
-### New Components
-1. **QuestionReviewDialog**: Interface for reviewing draft questions
-2. **QuestionFlagDialog**: Interface for flagging published questions
-3. **ReviewQueueTable**: Displays questions needing review with priority indicators
+#### Review Flagged (`/admin/review-flagged`)
+- Queue of published questions with user-reported issues
+- Flag investigation and resolution interface
+- Edit or dismiss flag options
 
-### Updated Navigation
-- Admin sidebar now includes "Review Queue" link
-- Reviewers see same admin interface as admins
-- Status filters updated to include all new statuses
+#### Questions with Enhanced Filters
+- **Status filters**: Draft, Under Review, Published, Rejected, Needs Major Edits
+- **Flagged questions**: Special view for flagged content
+- **Version history**: Access to complete version timeline
+- **Communal editing**: "Needs Major Edits" section for community improvement
 
-## API Endpoints
+## Workflow Benefits
 
-### Question Reviews
-- `POST /api/question-reviews`: Create a new review
-- `GET /api/question-reviews`: Fetch reviews (with optional question filter)
+### Simplified Review Process
+- **Clear four-option decision tree** for reviewers
+- **No reviewer assignment tracking** - any reviewer can handle any question
+- **Communal editing pool** for questions needing major improvements
+- **Immediate minor edits** by reviewers eliminate review cycles
 
-### Question Flags
-- `POST /api/question-flags`: Create a new flag
-- `GET /api/question-flags`: Fetch flags (with optional filters)
-- `PATCH /api/question-flags`: Update flag status (resolve/dismiss)
+### Efficient Resource Management
+- **Questions don't get stuck** waiting for specific reviewers
+- **Community collaboration** on questions needing major work
+- **Fast patch updates** for minor fixes without bureaucracy
+- **Semantic versioning** provides clear change significance
 
-## Security & Permissions
+### Quality Control
+- **All new questions reviewed** before publication
+- **Appropriate review levels** based on change significance
+- **Complete audit trail** through JSON snapshots
+- **User feedback integration** through flagging system
 
-### Row Level Security (RLS)
-- All new tables have RLS enabled
-- Reviewers can only see reviews/flags they're authorized to view
-- Question creators can see reviews of their own questions
-- Users can see flags they created
+### Race Condition Prevention
+- **Atomic version updates** with database locks
+- **Single JSON snapshots** eliminate complex table relationships
+- **Clear update type selection** prevents ambiguity
+- **Version conflict detection** with retry mechanisms
 
-### Role-Based Access Control
-- Middleware updated to allow reviewer access to admin routes
-- API endpoints check for appropriate permissions
-- Database policies enforce access restrictions
+## Typical Daily Workflows
 
-## Testing
+### Creator Workflow
+1. Check Dashboard for overview and feedback
+2. Create new questions → Save as draft → Submit for review
+3. Check "Needs Major Edits" for community questions to improve
+4. Edit rejected questions based on feedback and resubmit
 
-### Test Data Created
-- Test reviewer user: `subhashis-mitra@uiowa.edu` (role: reviewer)
-- Test draft question with answer options for workflow testing
-- Database constraints updated to allow 'reviewer' role
+### Reviewer Workflow
+1. Check Review Drafts queue for new submissions
+2. Review questions and make four-option decisions
+3. Make immediate minor edits when appropriate
+4. Check Review Flagged queue for user-reported issues
+5. Investigate and resolve flags through editing or dismissal
 
-### How to Test
-1. Log in as reviewer user
-2. Navigate to `/admin/questions/review-queue`
-3. Review the test draft question
-4. Test different review actions
-5. Flag a published question to test flagging workflow
+### Admin Workflow
+- All reviewer capabilities PLUS:
+- Quick patch updates on published questions
+- User management and role assignment
+- System oversight and maintenance
+- Handle escalated issues and policy decisions
 
-## Future Enhancements
+## Implementation Considerations
 
-### Potential Improvements
-1. **Email notifications**: Notify creators when questions are reviewed
-2. **Review assignments**: Assign specific questions to specific reviewers
-3. **Review metrics**: Track reviewer performance and question quality
-4. **Bulk actions**: Allow reviewing multiple questions at once
-5. **Review templates**: Pre-defined feedback templates for common issues
+### Database Migration Strategy
+- Add new version columns to questions table with sensible defaults
+- Create question_versions table for JSON snapshots
+- Update question status constraints to include new states
+- Migrate existing questions to v1.0.0 baseline
+- Create indexes for performance optimization
 
-### Analytics Opportunities
-1. **Review turnaround time**: Track how long reviews take
-2. **Question quality trends**: Monitor rejection/revision rates
-3. **Flag analysis**: Identify common quality issues
-4. **Reviewer workload**: Balance review assignments
+### API Endpoint Updates
+- **Question Reviews**: `POST /api/question-reviews` for review decisions
+- **Question Flags**: `POST /api/question-flags` for user reports
+- **Version Management**: Enhanced question update endpoints with version type selection
+- **Bulk Operations**: Support for batch review actions
 
-## Migration Notes
+### Security & Permissions
+- **Row Level Security (RLS)** on all new tables
+- **Role-based access control** for admin panel sections
+- **API endpoint protection** with role verification
+- **Audit logging** for all review and version actions
 
-### Database Migration
-- All changes are backward compatible
-- Existing questions maintain their current status
-- New fields are nullable and have sensible defaults
-- Triggers automatically create versions for existing questions
+### Performance Optimizations
+- **Indexed version queries** for fast version history access
+- **JSON snapshot compression** for storage efficiency
+- **Cached review queues** for responsive admin interface
+- **Optimistic locking** for concurrent edit prevention
 
-### User Impact
-- Existing admin users retain all permissions
-- Regular users see no changes to their interface
-- New reviewer role provides focused review capabilities
-- Question creators will see review feedback in their questions
-
-This enhanced workflow provides better quality control, clearer accountability, and improved collaboration between question creators and reviewers while maintaining the existing user experience for end users.
+This streamlined workflow system provides robust quality control while maintaining development velocity through clear processes, semantic versioning, and efficient collaboration patterns.

@@ -151,11 +151,11 @@ export async function updateSession(request: NextRequest) {
     if (request.nextUrl.pathname.startsWith('/admin')) {
       const userRole = await getUserRoleWithCache(user.id, user, supabase)
 
-      if (userRole === 'admin' || userRole === 'reviewer') {
-        console.log('Admin/Reviewer access granted:', userRole)
+      if (userRole === 'admin' || userRole === 'creator' || userRole === 'reviewer') {
+        console.log('Admin/Creator/Reviewer access granted:', userRole)
         return supabaseResponse
       } else {
-        console.log('User is not admin or reviewer, redirecting. Role:', userRole)
+        console.log('User is not admin, creator, or reviewer, redirecting. Role:', userRole)
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'
         return NextResponse.redirect(url)
@@ -168,9 +168,9 @@ export async function updateSession(request: NextRequest) {
       // First try to get role from user metadata
       const userRole = user.user_metadata?.role || user.app_metadata?.role
 
-      if (userRole === 'admin' || userRole === 'reviewer') {
-        // User has admin or reviewer role in metadata, redirect to admin dashboard
-        console.log('Redirecting admin/reviewer user from dashboard to admin dashboard (metadata)')
+      if (userRole === 'admin' || userRole === 'creator' || userRole === 'reviewer') {
+        // User has admin, creator, or reviewer role in metadata, redirect to admin dashboard
+        console.log('Redirecting admin/creator/reviewer user from dashboard to admin dashboard (metadata)')
         const url = request.nextUrl.clone()
         url.pathname = '/admin/dashboard'
         return NextResponse.redirect(url)
@@ -183,9 +183,9 @@ export async function updateSession(request: NextRequest) {
         .eq('id', user.id)
         .single()
 
-      if (!roleError && (userData?.role === 'admin' || userData?.role === 'reviewer')) {
-        // User is admin or reviewer in database, redirect to admin dashboard
-        console.log('Redirecting admin/reviewer user from dashboard to admin dashboard (database)')
+      if (!roleError && (userData?.role === 'admin' || userData?.role === 'creator' || userData?.role === 'reviewer')) {
+        // User is admin, creator, or reviewer in database, redirect to admin dashboard
+        console.log('Redirecting admin/creator/reviewer user from dashboard to admin dashboard (database)')
         const url = request.nextUrl.clone()
         url.pathname = '/admin/dashboard'
         return NextResponse.redirect(url)
@@ -239,7 +239,7 @@ async function getUserRoleWithCache(userId: string, user: any, supabase: any): P
 
     // First try to get role from user metadata (faster)
     const metadataRole = user.user_metadata?.role || user.app_metadata?.role
-    if (metadataRole === 'admin' || metadataRole === 'reviewer') {
+    if (metadataRole === 'admin' || metadataRole === 'creator' || metadataRole === 'reviewer') {
       // Cache and return metadata role
       roleCache.set(userId, {
         role: metadataRole,

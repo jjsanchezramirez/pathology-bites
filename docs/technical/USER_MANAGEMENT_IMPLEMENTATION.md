@@ -89,7 +89,7 @@ interface UsersQuery {
   page?: number
   pageSize?: number
   search?: string
-  role?: 'all' | 'admin' | 'reviewer' | 'user'
+  role?: 'all' | 'admin' | 'creator' | 'reviewer' | 'user'
   status?: 'all' | 'active' | 'inactive' | 'suspended'
 }
 
@@ -108,7 +108,7 @@ interface UsersResponse {
 interface UpdateUserRequest {
   userId: string
   updates: {
-    role?: 'admin' | 'reviewer' | 'user'
+    role?: 'admin' | 'creator' | 'reviewer' | 'user'
     status?: 'active' | 'inactive' | 'suspended'
   }
 }
@@ -174,9 +174,10 @@ CREATE TABLE users (
 ```
 
 ### Role Definitions
-- **admin**: Full system access, can manage all users
-- **reviewer**: Can review questions, limited admin access
-- **user**: Standard user access, no admin capabilities
+- **admin**: Full system access, can manage all users and directly edit questions
+- **creator**: Can create questions and manage content, submit for review
+- **reviewer**: Can review questions and approve/reject submissions
+- **user**: Standard user access, can take quizzes and flag questions
 
 ### Status Definitions
 - **active**: User can access the system normally

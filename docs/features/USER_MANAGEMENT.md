@@ -13,7 +13,7 @@ The user management system provides comprehensive administrative controls for ma
 - **Join Date**: Formatted display of when users joined the platform
 
 ### Role Management
-- **Available Roles**: Admin, Reviewer, User
+- **Available Roles**: Admin, Creator, Reviewer, User
 - **Role Change Dialog**: Confirmation-based role changes with Cancel/Confirm buttons
 - **Permission-Based Access**: Only admin users can modify roles
 - **Self-Modification Prevention**: Users cannot change their own role
@@ -57,7 +57,7 @@ Retrieves paginated list of users with filtering and search capabilities.
 - `page`: Page number (default: 0)
 - `pageSize`: Items per page (default: 10)
 - `search`: Search term for name/email
-- `role`: Filter by role (all, admin, reviewer, user)
+- `role`: Filter by role (all, admin, creator, reviewer, user)
 - `status`: Filter by status (all, active, inactive, suspended)
 
 **Response:**
@@ -78,7 +78,7 @@ Updates user role or status.
 {
   "userId": "uuid",
   "updates": {
-    "role": "admin|reviewer|user",
+    "role": "admin|creator|reviewer|user",
     "status": "active|inactive|suspended"
   }
 }

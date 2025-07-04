@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import { createClient } from '@/shared/services/client'
 
-export type UserRole = 'admin' | 'reviewer' | 'user' | null
+export type UserRole = 'admin' | 'creator' | 'reviewer' | 'user' | null
 
 interface UserRoleData {
   role: UserRole
@@ -13,19 +13,17 @@ interface UserRoleData {
   error: string | null
   canAccess: (feature: string) => boolean
   isAdmin: boolean
+  isCreator: boolean
   isReviewer: boolean
   isAdminOrReviewer: boolean
+  isCreatorOrAbove: boolean
 }
 
-// Define feature permissions
+// Define feature permissions based on 4-role system
 const FEATURE_PERMISSIONS: Record<string, UserRole[]> = {
+  // Admin-only permissions
   'users.manage': ['admin'],
   'users.view': ['admin'],
-  'questions.create': ['admin'],
-  'questions.edit': ['admin'],
-  'questions.delete': ['admin'],
-  'questions.view': ['admin', 'reviewer'],
-  'questions.review': ['admin', 'reviewer'],
   'categories.manage': ['admin'],
   'tags.manage': ['admin'],
   'sets.manage': ['admin'],
@@ -33,8 +31,26 @@ const FEATURE_PERMISSIONS: Record<string, UserRole[]> = {
   'inquiries.manage': ['admin'],
   'analytics.view': ['admin'],
   'settings.manage': ['admin'],
-  'dashboard.view': ['admin', 'reviewer'],
-  'system.monitor': ['admin']
+  'system.monitor': ['admin'],
+
+  // Creator permissions - can create and manage content
+  'questions.create': ['admin', 'creator'],
+  'questions.edit.own': ['admin', 'creator'], // Can edit own draft questions
+  'questions.submit': ['admin', 'creator'], // Can submit for review
+
+  // Reviewer permissions - can review and approve
+  'questions.review': ['admin', 'reviewer'],
+  'questions.approve': ['admin', 'reviewer'],
+  'questions.reject': ['admin', 'reviewer'],
+
+  // Admin can edit any question directly
+  'questions.edit': ['admin'],
+  'questions.delete': ['admin'],
+
+  // Shared permissions
+  'questions.view': ['admin', 'creator', 'reviewer'],
+  'dashboard.view': ['admin', 'creator', 'reviewer'],
+  'questions.flag': ['admin', 'creator', 'reviewer', 'user'] // Users can flag questions
 } as const
 
 export function useUserRole(): UserRoleData {
@@ -57,7 +73,7 @@ export function useUserRole(): UserRoleData {
 
         // First try to get role from user metadata
         const metadataRole = user.user_metadata?.role || user.app_metadata?.role
-        if (metadataRole && ['admin', 'reviewer', 'user'].includes(metadataRole)) {
+        if (metadataRole && ['admin', 'creator', 'reviewer', 'user'].includes(metadataRole)) {
           setRole(metadataRole as UserRole)
           setIsLoading(false)
           return
@@ -104,7 +120,9 @@ export function useUserRole(): UserRoleData {
     error,
     canAccess,
     isAdmin: role === 'admin',
+    isCreator: role === 'creator',
     isReviewer: role === 'reviewer',
-    isAdminOrReviewer: role === 'admin' || role === 'reviewer'
+    isAdminOrReviewer: role === 'admin' || role === 'reviewer',
+    isCreatorOrAbove: role === 'admin' || role === 'creator' || role === 'reviewer'
   }
 }

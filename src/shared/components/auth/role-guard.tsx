@@ -146,15 +146,18 @@ export function RequirePermission({
 
 // Hook for conditional rendering
 export function useRoleAccess() {
-  const { isAdmin, isReviewer, canAccess, role } = useUserRole()
-  
+  const { isAdmin, isCreator, isReviewer, canAccess, role, isCreatorOrAbove } = useUserRole()
+
   return {
     isAdmin,
+    isCreator,
     isReviewer,
     canAccess,
     role,
     hasAdminAccess: isAdmin,
+    hasCreatorAccess: isCreator,
     hasReviewerAccess: isReviewer,
-    hasAnyAdminAccess: isAdmin || isReviewer
+    hasAnyAdminAccess: isAdmin || isCreator || isReviewer,
+    isCreatorOrAbove
   }
 }

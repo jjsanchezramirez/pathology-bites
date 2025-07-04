@@ -11,15 +11,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user is admin
+    // Check if user is admin or creator
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
       .single();
 
-    if (userError || userData?.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
+    if (userError || !['admin', 'creator'].includes(userData?.role)) {
+      return NextResponse.json({ error: 'Forbidden - Admin or Creator access required' }, { status: 403 });
     }
 
     const { answerOptions } = await request.json();

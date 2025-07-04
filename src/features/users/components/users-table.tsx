@@ -79,6 +79,7 @@ const PAGE_SIZE = 10
 
 const roleConfig = {
   admin: { label: 'Admin', color: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300' },
+  creator: { label: 'Creator', color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' },
   reviewer: { label: 'Reviewer', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300' },
   user: { label: 'User', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300' },
 }
@@ -289,6 +290,8 @@ export function UsersTable() {
             <SelectContent>
               <SelectItem value="all">All Roles</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
+              <SelectItem value="creator">Creator</SelectItem>
+              <SelectItem value="reviewer">Reviewer</SelectItem>
               <SelectItem value="user">User</SelectItem>
             </SelectContent>
           </Select>
@@ -471,6 +474,7 @@ export function UsersTable() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="creator">Creator</SelectItem>
                   <SelectItem value="reviewer">Reviewer</SelectItem>
                   <SelectItem value="user">User</SelectItem>
                 </SelectContent>
