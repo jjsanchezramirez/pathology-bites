@@ -9,8 +9,8 @@
 4. **[Security Guide](./guides/SECURITY_GUIDE.md)** - Security best practices
 
 ### For System Administrators
-1. **[Database Comprehensive Summary](./DATABASE_COMPREHENSIVE_SUMMARY.md)** - Complete database overview
-2. **[Supabase Security Fixes](./SUPABASE_SECURITY_FIXES_SUMMARY.md)** - Security implementation status
+1. **[Database Comprehensive Summary](../architecture/DATABASE_COMPREHENSIVE_SUMMARY.md)** - Complete database overview
+2. **[Supabase Security Fixes](../security/summaries/SUPABASE_SECURITY_FIXES_SUMMARY.md)** - Security implementation status
 3. **[User Management](./features/USER_MANAGEMENT.md)** - Role-based access control
 4. **[Deployment Checklist](./guides/BYPASS_DEPLOYMENT_CHECKLIST.md)** - Pre-deployment validation
 
@@ -159,19 +159,19 @@
 ## 📞 Getting Help
 
 ### Documentation
-- **Main README**: [docs/README.md](./README.md)
-- **Architecture**: [architecture/](./architecture/)
-- **Guides**: [guides/](./guides/)
+- **Main README**: [docs/README.md](../README.md)
+- **Architecture**: [architecture/](../architecture/)
+- **Guides**: [guides/](../guides/)
 
 ### Debugging
-- **Methodology**: [guides/DEBUGGING_METHODOLOGY.md](./guides/DEBUGGING_METHODOLOGY.md)
-- **Testing**: [guides/testing/](./guides/testing/)
-- **Security**: [SUPABASE_SECURITY_FIXES_SUMMARY.md](./SUPABASE_SECURITY_FIXES_SUMMARY.md)
+- **Methodology**: [guides/DEBUGGING_METHODOLOGY.md](../guides/DEBUGGING_METHODOLOGY.md)
+- **Testing**: [guides/testing/](../guides/testing/)
+- **Security**: [SUPABASE_SECURITY_FIXES_SUMMARY.md](../security/summaries/SUPABASE_SECURITY_FIXES_SUMMARY.md)
 
 ### Development
-- **Setup**: [guides/DEVELOPER_SETUP.md](./guides/DEVELOPER_SETUP.md)
-- **Workflow**: [guides/GITHUB_FLOW_WORKFLOW.md](./guides/GITHUB_FLOW_WORKFLOW.md)
-- **API**: [api/api-documentation.md](./api/api-documentation.md)
+- **Setup**: [guides/DEVELOPER_SETUP.md](../guides/DEVELOPER_SETUP.md)
+- **Workflow**: [guides/GITHUB_FLOW_WORKFLOW.md](../guides/GITHUB_FLOW_WORKFLOW.md)
+- **API**: [api/api-documentation.md](../api/api-documentation.md)
 
 ---
 
