@@ -1,12 +1,12 @@
 // src/components/questions/simple-tags-selector.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { Plus, X, Tag } from 'lucide-react';
+import { Input } from "@/shared/components/ui/input";
+import { X } from 'lucide-react';
 import { useTags } from '@/features/questions/hooks/use-tags';
-import { AddTagsDialog } from './add-tags-dialog';
 
 interface SimpleTagsSelectorProps {
   selectedTagIds: string[];
@@ -17,57 +17,144 @@ export function SimpleTagsSelector({
   selectedTagIds,
   onTagsChange
 }: SimpleTagsSelectorProps) {
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const { tags, refetch } = useTags();
+  const [inputValue, setInputValue] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { tags, createTag } = useTags();
 
-  // Get selected tags, with fallback for newly created tags that might not be in the list yet
-  const selectedTags = selectedTagIds.map(id => {
-    const existingTag = tags.find(tag => tag.id === id);
-    if (existingTag) return existingTag;
-    // Fallback for newly created tags
-    return { id, name: `Loading...`, created_at: '', updated_at: '' };
-  });
+  // Get selected tags
+  const selectedTags = selectedTagIds
+    .filter(id => id) // Filter out any undefined/null IDs
+    .map((id) => {
+      const existingTag = tags.find(tag => tag.id === id);
+      if (existingTag) return existingTag;
+      return { id, name: `Loading...`, created_at: '', updated_at: '' };
+    });
 
-  // Handle dialog close and refetch tags to ensure we have the latest
-  const handleDialogClose = (open: boolean) => {
-    setDialogOpen(open);
-    if (!open) {
-      // Refetch tags when dialog closes to ensure we have any newly created tags
-      refetch();
-    }
-  };
+  // Filter available tags (not already selected)
+  const availableTags = tags.filter(tag =>
+    !selectedTagIds.includes(tag.id) &&
+    tag.name.toLowerCase().includes(inputValue.toLowerCase())
+  ).slice(0, 5);
 
   const handleRemoveTag = (tagId: string) => {
     onTagsChange(selectedTagIds.filter(id => id !== tagId));
   };
 
+  const handleAddTag = async (tagName: string) => {
+    if (selectedTagIds.length >= 5) return;
+
+    // Check if tag already exists
+    const existingTag = tags.find(tag => tag.name.toLowerCase() === tagName.toLowerCase());
+    if (existingTag) {
+      if (!selectedTagIds.includes(existingTag.id)) {
+        onTagsChange([...selectedTagIds, existingTag.id]);
+      }
+    } else {
+      // Create new tag
+      try {
+        const newTag = await createTag(tagName);
+        onTagsChange([...selectedTagIds, newTag.id]);
+      } catch (error) {
+        // Error handled in hook
+      }
+    }
+    setInputValue('');
+    setShowSuggestions(false);
+
+    // Focus back on the input field
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && inputValue.trim()) {
+      e.preventDefault();
+      handleAddTag(inputValue.trim());
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
+      setInputValue('');
+    }
+  };
+
+  const handleInputChange = (value: string) => {
+    setInputValue(value);
+    setShowSuggestions(value.length > 0);
+  };
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <label className="text-sm font-medium flex items-center gap-2">
-          <Tag className="h-4 w-4" />
-          Tags
-        </label>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setDialogOpen(true);
-          }}
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Add Tags
-        </Button>
-      </div>
+      <label className="text-sm font-medium">Tags</label>
 
-      {/* Selected Tags Display - More horizontal layout */}
-      {selectedTags.length > 0 ? (
-        <div className="flex flex-wrap gap-2 min-h-[32px] items-center">
-          {selectedTags.map((tag) => (
-            <Badge key={tag.id} variant="secondary" className="flex items-center gap-1">
+      {/* Input with suggestions */}
+      {selectedTagIds.length < 5 && (
+        <div className="relative" ref={inputRef}>
+          <Input
+            ref={inputRef}
+            placeholder="Type to add tags..."
+            value={inputValue}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={() => inputValue && setShowSuggestions(true)}
+          />
+
+          {/* Suggestions dropdown */}
+          {showSuggestions && (
+            <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-background border rounded-md shadow-lg max-h-40 overflow-y-auto">
+              {availableTags.length > 0 && (
+                <>
+                  {availableTags.map((tag, index) => (
+                    <button
+                      key={tag.id || `available-tag-${index}`}
+                      type="button"
+                      className="w-full text-left px-3 py-2 hover:bg-muted text-sm"
+                      onClick={() => handleAddTag(tag.name)}
+                    >
+                      {tag.name}
+                    </button>
+                  ))}
+                </>
+              )}
+
+              {inputValue.trim() && !tags.find(tag => tag.name.toLowerCase() === inputValue.toLowerCase()) && (
+                <button
+                  key={`create-${inputValue.trim()}`}
+                  type="button"
+                  className="w-full text-left px-3 py-2 hover:bg-muted text-sm border-t"
+                  onClick={() => handleAddTag(inputValue.trim())}
+                >
+                  Create "{inputValue.trim()}"
+                </button>
+              )}
+
+              {availableTags.length === 0 && !inputValue.trim() && (
+                <div className="px-3 py-2 text-sm text-muted-foreground">
+                  No tags found
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Selected Tags */}
+      {selectedTags.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {selectedTags.map((tag, index) => (
+            <Badge key={tag.id || `tag-${index}`} variant="secondary" className="flex items-center gap-1">
               {tag.name}
               <button
                 type="button"
@@ -79,18 +166,7 @@ export function SimpleTagsSelector({
             </Badge>
           ))}
         </div>
-      ) : (
-        <div className="min-h-[32px] flex items-center">
-          <p className="text-sm text-muted-foreground">No tags selected</p>
-        </div>
       )}
-
-      <AddTagsDialog
-        open={dialogOpen}
-        onOpenChange={handleDialogClose}
-        selectedTagIds={selectedTagIds}
-        onTagsChange={onTagsChange}
-      />
     </div>
   );
 }

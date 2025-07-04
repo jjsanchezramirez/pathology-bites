@@ -8,6 +8,8 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogOverlay,
+  DialogPortal,
   DialogTitle,
 } from '@/shared/components/ui/dialog'
 import {
@@ -48,8 +50,8 @@ export function QuestionFlagDialog({
   const supabase = createClient()
 
   const handleSubmit = async () => {
-    if (!question || !selectedFlagType || !description.trim()) {
-      toast.error('Please fill in all required fields')
+    if (!question || !selectedFlagType) {
+      toast.error('Please select an issue type')
       return
     }
 
@@ -90,7 +92,7 @@ export function QuestionFlagDialog({
           question_id: question.id,
           flagged_by: user.id,
           flag_type: selectedFlagType,
-          description: description.trim()
+          description: description.trim() || null
         })
 
       if (flagError) {
@@ -134,7 +136,9 @@ export function QuestionFlagDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogPortal>
+        <DialogOverlay className="backdrop-blur-md bg-black/20" />
+        <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Flag className="h-5 w-5" />
@@ -164,13 +168,10 @@ export function QuestionFlagDialog({
               <SelectContent>
                 {Object.entries(FLAG_TYPE_CONFIG).map(([flagType, config]) => (
                   <SelectItem key={flagType} value={flagType}>
-                    <div className="flex items-center gap-2">
-                      <span>{config.icon}</span>
-                      <div>
-                        <div className="font-medium">{config.label}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {config.description}
-                        </div>
+                    <div>
+                      <div className="font-medium">{config.label}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {config.description}
                       </div>
                     </div>
                   </SelectItem>
@@ -181,7 +182,7 @@ export function QuestionFlagDialog({
 
           {/* Description */}
           <div>
-            <Label htmlFor="description">Description *</Label>
+            <Label htmlFor="description">Description (Optional)</Label>
             <Textarea
               id="description"
               value={description}
@@ -201,13 +202,14 @@ export function QuestionFlagDialog({
           </Button>
           <Button 
             onClick={handleSubmit} 
-            disabled={!selectedFlagType || !description.trim() || isSubmitting}
+            disabled={!selectedFlagType || isSubmitting}
             variant="destructive"
           >
             {isSubmitting ? 'Flagging...' : 'Flag Question'}
           </Button>
         </DialogFooter>
-      </DialogContent>
+        </DialogContent>
+      </DialogPortal>
     </Dialog>
   )
 }

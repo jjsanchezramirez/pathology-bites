@@ -10,6 +10,8 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
+  DialogOverlay,
+  DialogPortal,
   DialogTitle,
 } from '@/shared/components/ui/dialog';
 import {
@@ -387,16 +389,18 @@ export function ImportQuestionDialog({ open, onOpenChange, onSave }: ImportQuest
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-full max-w-[min(85vw,800px)] sm:max-w-[min(85vw,800px)] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Import Question from JSON
-          </DialogTitle>
-          <DialogDescription>
-            Import a question by providing JSON data. The JSON should include all question details, answer options, and related data.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogPortal>
+        <DialogOverlay className="backdrop-blur-md bg-black/20" />
+        <DialogContent className="w-full max-w-[min(85vw,800px)] sm:max-w-[min(85vw,800px)] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Import Question from JSON
+            </DialogTitle>
+            <DialogDescription>
+              Import a question by providing JSON data. The JSON should include all question details, answer options, and related data.
+            </DialogDescription>
+          </DialogHeader>
 
         <div className="mb-4">
           <Button
@@ -564,6 +568,7 @@ export function ImportQuestionDialog({ open, onOpenChange, onSave }: ImportQuest
           </form>
         </Form>
       </DialogContent>
+      </DialogPortal>
     </Dialog>
   );
 }

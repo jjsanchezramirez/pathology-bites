@@ -8,6 +8,8 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogOverlay,
+  DialogPortal,
   DialogTitle,
 } from '@/shared/components/ui/dialog'
 import {
@@ -135,16 +137,18 @@ export function QuestionReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
-            Review Question: {question.title}
-          </DialogTitle>
-          <DialogDescription>
-            Review this question and decide on the appropriate action.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogPortal>
+        <DialogOverlay className="backdrop-blur-md bg-black/20" />
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Review Question: {question.title}
+            </DialogTitle>
+            <DialogDescription>
+              Review this question and decide on the appropriate action.
+            </DialogDescription>
+          </DialogHeader>
 
         <div className="max-h-[60vh] overflow-y-auto">
           <div className="space-y-6">
@@ -300,6 +304,7 @@ export function QuestionReviewDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+      </DialogPortal>
     </Dialog>
   )
 }

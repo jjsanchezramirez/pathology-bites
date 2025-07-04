@@ -87,121 +87,112 @@ export function CompactAnswerOptions({ options, onChange, errors }: CompactAnswe
   const correctAnswerIndex = options.findIndex(opt => opt.is_correct);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Answer Options</h3>
+        <h3 className="text-sm font-medium">Question Options</h3>
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={addOption}
-          disabled={options.length >= 6} // Maximum 6 options
+          disabled={options.length >= 6}
+          className="h-7 px-2 text-xs"
         >
-          <Plus className="h-4 w-4 mr-1" />
-          Add Option
+          <Plus className="h-3 w-3 mr-1" />
+          Add
         </Button>
       </div>
 
       {errors?.options && (
-        <p className="text-sm text-red-600">{errors.options}</p>
+        <p className="text-xs text-red-600">{errors.options}</p>
       )}
 
-      <div className="space-y-2">
-        <RadioGroup
-          value={correctAnswerIndex >= 0 ? correctAnswerIndex.toString() : ""}
-          onValueChange={(value) => setCorrectAnswer(parseInt(value))}
-        >
-          {options.map((option, index) => (
-            <div
-              key={index}
-              className={`border rounded-md p-3 ${
-                option.is_correct ? 'border-green-500 bg-green-50 dark:bg-green-950/20' : 'border-border'
+      <div className="space-y-1">
+        {options.map((option, index) => (
+          <div key={index} className="flex items-start gap-2">
+            {/* Correct Answer Selector - Left Side */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setCorrectAnswer(index)}
+              className={`h-8 w-8 p-0 shrink-0 mt-1 transition-colors ${
+                option.is_correct
+                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
             >
-              <div className="flex items-center gap-3">
-                {/* Reorder buttons */}
-                <div className="flex flex-col gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => moveOption(index, 'up')}
-                    disabled={index === 0}
-                    className="h-6 w-6 p-0"
-                  >
-                    <ArrowUp className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => moveOption(index, 'down')}
-                    disabled={index === options.length - 1}
-                    className="h-6 w-6 p-0"
-                  >
-                    <ArrowDown className="h-3 w-3" />
-                  </Button>
-                </div>
+              <span className="text-xs font-bold">
+                {option.is_correct ? '✓' : '○'}
+              </span>
+            </Button>
 
-                <RadioGroupItem value={index.toString()} id={`option-${index}`} className="shrink-0" />
-                <Label htmlFor={`option-${index}`} className="sr-only">
-                  Mark as correct answer
-                </Label>
+            {/* Option Container */}
+            <div
+              className={`flex-1 border rounded p-2 transition-colors ${
+                option.is_correct
+                  ? 'border-green-200 bg-green-50/50'
+                  : 'border-border hover:border-muted-foreground/30'
+              }`}
+            >
+              {/* Option Text Row */}
+              <div className="flex items-center gap-1">
+                {/* Letter Label */}
+                <span className={`text-sm font-medium min-w-[20px] ${
+                  option.is_correct ? 'text-green-700' : 'text-muted-foreground'
+                }`}>
+                  {String.fromCharCode(65 + index)}.
+                </span>
 
-                <Badge variant={option.is_correct ? 'default' : 'secondary'} className="text-xs shrink-0">
-                  {String.fromCharCode(65 + index)}
-                </Badge>
-                {option.is_correct && (
-                  <Badge variant="outline" className="text-green-600 border-green-600 text-xs shrink-0">
-                    ✓
-                  </Badge>
-                )}
-
-                <div className="flex-1">
-                  <Input
-                    placeholder={`Option ${String.fromCharCode(65 + index)} text...`}
-                    value={option.text}
-                    onChange={(e) => updateOption(index, 'text', e.target.value)}
-                    className={`text-sm h-8 ${errors?.[`option_${index}_text`] ? 'border-red-500' : ''}`}
-                  />
-                  {errors?.[`option_${index}_text`] && (
-                    <p className="text-xs text-red-600 mt-1">{errors[`option_${index}_text`]}</p>
-                  )}
-                </div>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeOption(index)}
-                  disabled={options.length <= 2}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                {/* Option Text */}
+                <Input
+                  placeholder={`Option ${String.fromCharCode(65 + index)}...`}
+                  value={option.text}
+                  onChange={(e) => updateOption(index, 'text', e.target.value)}
+                  className={`border-0 bg-transparent p-0 h-auto text-sm focus-visible:ring-0 focus-visible:ring-offset-0 outline-none flex-1 ${
+                    errors?.[`option_${index}_text`] ? 'text-red-600' : ''
+                  }`}
+                />
               </div>
 
-              {/* Explanation field */}
-              <div className="mt-3 ml-12">
+              {errors?.[`option_${index}_text`] && (
+                <p className="text-xs text-red-600 mt-1 ml-5">{errors[`option_${index}_text`]}</p>
+              )}
+
+              {/* Explanation Row */}
+              <div className="flex items-start gap-1 mt-1">
+                {/* Empty space to align with letter */}
+                <span className="min-w-[20px] text-xs text-muted-foreground">
+
+                </span>
+
+                {/* Explanation */}
                 <Textarea
-                  placeholder={`Explanation ${option.is_correct ? '(optional)' : '(required)'}...`}
+                  placeholder="Explanation..."
                   value={option.explanation || ''}
                   onChange={(e) => updateOption(index, 'explanation', e.target.value)}
-                  className="min-h-[60px] text-sm resize-none"
+                  className="border-0 bg-transparent p-0 text-xs text-muted-foreground resize-none min-h-[32px] focus-visible:ring-0 focus-visible:ring-offset-0 outline-none flex-1"
                 />
-                {errors?.[`option_${index}_explanation`] && (
-                  <p className="text-xs text-red-600 mt-1">{errors[`option_${index}_explanation`]}</p>
-                )}
               </div>
-            </div>
-          ))}
-        </RadioGroup>
-      </div>
 
-      <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded">
-        <p>• Click the radio button to mark the correct answer</p>
-        <p>• Explanations are required for incorrect answers</p>
-        <p>• Use the arrow buttons to reorder options</p>
+              {errors?.[`option_${index}_explanation`] && (
+                <p className="text-xs text-red-600 mt-1 ml-5">{errors[`option_${index}_explanation`]}</p>
+              )}
+            </div>
+
+            {/* Delete Button - Right Side */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => removeOption(index)}
+              disabled={options.length <= 2}
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-red-500 hover:bg-red-50 shrink-0 mt-1"
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { FolderTree } from 'lucide-react';
+
 import { useCategories } from '@/features/questions/hooks/use-categories';
 import { CategoryData } from '@/features/questions/types/questions';
 
@@ -77,8 +77,7 @@ export function CategoriesDropdown({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium flex items-center gap-2">
-        <FolderTree className="h-4 w-4" />
+      <label className="text-sm font-medium">
         Category
       </label>
       <select

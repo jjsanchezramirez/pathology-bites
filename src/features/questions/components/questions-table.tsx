@@ -1,13 +1,13 @@
 // src/components/questions/questions-table.tsx
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { toast } from 'sonner';
-import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, FileText, Flag } from 'lucide-react';
+import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, FileText, Flag, ChevronRight } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -19,18 +19,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/components/ui/alert-dialog";
+
 import { useQuestions } from '@/features/questions/hooks/use-questions';
 import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
@@ -38,6 +31,7 @@ import { CreateQuestionDialog } from './create-question-dialog';
 import { EditQuestionDialog } from './edit-question-dialog';
 import { EnhancedImportDialog } from './enhanced-import-dialog';
 import { QuestionFlagDialog } from './question-flag-dialog';
+import { DeleteQuestionDialog } from './delete-question-dialog';
 import { getQuestionSetDisplayName, getCategoryDisplayName } from '@/features/questions/utils/display-helpers';
 
 const PAGE_SIZE = 10;
@@ -127,7 +121,7 @@ function TableControls({
           </SelectContent>
         </Select>
       </div>
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button>
             <Plus className="h-4 w-4 mr-2" />
@@ -202,7 +196,7 @@ function RowActions({
   onFlag?: (question: QuestionWithDetails) => void;
 }) {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
           <span className="sr-only">Open menu</span>
@@ -210,6 +204,8 @@ function RowActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => onEdit(question)}>
           <Edit className="h-4 w-4 mr-2" />
           Edit
@@ -220,6 +216,7 @@ function RowActions({
             Flag for Review
           </DropdownMenuItem>
         )}
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           className="text-red-600"
           onClick={() => onDelete(question)}
@@ -229,6 +226,166 @@ function RowActions({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+// Expandable Question Row component
+function ExpandableQuestionRow({
+  question,
+  onEdit,
+  onDelete,
+  onFlag
+}: {
+  question: QuestionWithDetails;
+  onEdit: (question: QuestionWithDetails) => void;
+  onDelete: (question: QuestionWithDetails) => void;
+  onFlag?: (question: QuestionWithDetails) => void;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <>
+      {/* Main Row */}
+      <TableRow key={question.id}>
+        <TableCell className="max-w-xs">
+          <div className="flex items-start gap-2">
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-1 p-0.5 hover:bg-muted/50 rounded flex-shrink-0"
+            >
+              {isExpanded ?
+                <ChevronDown className="h-4 w-4 text-muted-foreground" /> :
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              }
+            </button>
+            <div className="flex-1 min-w-0">
+              <p className="line-clamp-2 text-sm font-medium">{question.title}</p>
+            </div>
+          </div>
+        </TableCell>
+        <TableCell>
+          <Badge className={DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.color}>
+            {DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.label || question.difficulty}
+          </Badge>
+        </TableCell>
+        <TableCell className="max-w-xs">
+          <p className="line-clamp-1 text-sm">
+            {question.question_set ? getQuestionSetDisplayName(question.question_set) : 'No set assigned'}
+          </p>
+        </TableCell>
+        <TableCell>
+          <div className="flex flex-wrap gap-1 max-w-[150px]">
+            {question.categories && question.categories.length > 0 ? (
+              question.categories.slice(0, 2).map((category) => (
+                <Badge
+                  key={category.id}
+                  variant="outline"
+                  className="text-[10px] px-1.5 py-0"
+                >
+                  {getCategoryDisplayName(category)}
+                </Badge>
+              ))
+            ) : (
+              <span className="text-xs text-muted-foreground">No category</span>
+            )}
+            {question.categories && question.categories.length > 2 && (
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                +{question.categories.length - 2}
+              </Badge>
+            )}
+          </div>
+        </TableCell>
+        <TableCell>
+          <Badge className={STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.color}>
+            {STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.label || question.status}
+          </Badge>
+        </TableCell>
+        <TableCell>
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <ImageIcon className="h-4 w-4" />
+            {question.image_count || 0}
+          </div>
+        </TableCell>
+        <TableCell className="text-sm text-muted-foreground">
+          {new Date(question.created_at).toLocaleDateString()}
+        </TableCell>
+        <TableCell>
+          <RowActions
+            question={question}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onFlag={onFlag}
+          />
+        </TableCell>
+      </TableRow>
+
+      {/* Expanded Content Row */}
+      {isExpanded && (
+        <TableRow className="bg-muted/50">
+          <TableCell colSpan={8} className="px-6 py-2">
+            <div className="text-sm space-y-2">
+              <div>
+                <div className="font-medium mb-1 text-xs">Question Stem:</div>
+                <p className="text-muted-foreground text-xs leading-relaxed">{question.stem}</p>
+              </div>
+
+              {/* Answer Options - Compact Layout */}
+              {question.question_options && question.question_options.length > 0 && (
+                <div>
+                  <div className="font-medium mb-1 text-xs">Answer Options:</div>
+                  <div className="space-y-1">
+                    {question.question_options
+                      .sort((a, b) => a.order_index - b.order_index)
+                      .map((option, index) => (
+                        <div key={option.id} className="text-xs">
+                          <div className="flex items-start gap-1">
+                            <span className="font-mono font-medium min-w-[16px] mt-0.5">
+                              {String.fromCharCode(65 + index)}.
+                            </span>
+                            <div className="flex-1">
+                              <span className={option.is_correct
+                                ? "font-medium text-green-700 dark:text-green-400"
+                                : "text-muted-foreground"
+                              }>
+                                {option.text}
+                                {option.is_correct && <span className="ml-1 text-green-600">✓</span>}
+                              </span>
+                              {option.explanation && (
+                                <div className="text-muted-foreground/80 mt-0.5 ml-4 italic">
+                                  {option.explanation}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {question.teaching_point && (
+                <div>
+                  <div className="font-medium mb-1 text-xs">Teaching Point:</div>
+                  <p className="text-muted-foreground text-xs">{question.teaching_point}</p>
+                </div>
+              )}
+              {question.question_references && (
+                <div>
+                  <div className="font-medium mb-1 text-xs">References:</div>
+                  <p className="text-muted-foreground text-xs">{question.question_references}</p>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-3 text-xs text-muted-foreground pt-1 mt-1 border-t border-muted/50">
+                {question.created_by_name && <span>By: {question.created_by_name}</span>}
+                <span>Created: {new Date(question.created_at).toLocaleDateString()}</span>
+                <span>Updated: {new Date(question.updated_at).toLocaleDateString()}</span>
+                {question.version && <span>v{question.version}</span>}
+              </div>
+            </div>
+          </TableCell>
+        </TableRow>
+      )}
+    </>
   );
 }
 
@@ -304,17 +461,7 @@ export function QuestionsTable() {
     setShowFlagDialog(true);
   }, []);
 
-  const handleConfirmDelete = useCallback(async () => {
-    if (!questionToDelete) return;
 
-    try {
-      await deleteQuestion(questionToDelete.id);
-      setShowDeleteDialog(false);
-      setQuestionToDelete(null);
-    } catch (error) {
-      // Error is already handled in the hook
-    }
-  }, [questionToDelete, deleteQuestion]);
 
   const handleCreateSave = useCallback(() => {
     setShowCreateDialog(false);
@@ -401,65 +548,13 @@ export function QuestionsTable() {
               </TableRow>
             ) : (
               questions.map((question) => (
-                <TableRow key={question.id}>
-                  <TableCell className="max-w-xs">
-                    <p className="line-clamp-2 text-sm font-medium">{question.title}</p>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.color}>
-                      {DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.label || question.difficulty}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="max-w-xs">
-                    <p className="line-clamp-1 text-sm">
-                      {question.question_set ? getQuestionSetDisplayName(question.question_set) : 'No set assigned'}
-                    </p>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1 max-w-[150px]">
-                      {question.categories && question.categories.length > 0 ? (
-                        question.categories.slice(0, 2).map((category) => (
-                          <Badge
-                            key={category.id}
-                            variant="outline"
-                            className="text-[10px] px-1.5 py-0"
-                          >
-                            {getCategoryDisplayName(category)}
-                          </Badge>
-                        ))
-                      ) : (
-                        <span className="text-xs text-muted-foreground">No category</span>
-                      )}
-                      {question.categories && question.categories.length > 2 && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                          +{question.categories.length - 2}
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.color}>
-                      {STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.label || question.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <ImageIcon className="h-4 w-4" />
-                      {question.image_count || 0}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {new Date(question.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <RowActions
-                      question={question}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                      onFlag={handleFlag}
-                    />
-                  </TableCell>
-                </TableRow>
+                <ExpandableQuestionRow
+                  key={question.id}
+                  question={question}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onFlag={handleFlag}
+                />
               ))
             )}
           </TableBody>
@@ -506,26 +601,16 @@ export function QuestionsTable() {
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Question</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{questionToDelete?.title}"? This action cannot be undone.
-              All associated answer options and images will also be removed.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteQuestionDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        question={questionToDelete}
+        onSuccess={() => {
+          // Refresh the questions list
+          refetch();
+        }}
+        onDelete={deleteQuestion}
+      />
     </div>
   );
 }

@@ -62,7 +62,14 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
             first_name,
             last_name
           ),
-          question_images(count)
+          question_images(count),
+          question_options(
+            id,
+            text,
+            is_correct,
+            explanation,
+            order_index
+          )
         `, { count: 'exact' });
 
       // Apply filters
@@ -176,16 +183,34 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         .eq('id', questionId);
 
       if (error) {
-        throw new Error(error.message);
+        // Handle specific version constraint violation
+        if (error.message.includes('question_versions_question_id_version_number_key')) {
+          console.warn('Version constraint violation detected, retrying update...');
+          // Wait a brief moment and retry once
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          const { error: retryError } = await supabase
+            .from('questions')
+            .update(data)
+            .eq('id', questionId);
+
+          if (retryError) {
+            throw new Error(retryError.message);
+          }
+        } else {
+          throw new Error(error.message);
+        }
       }
 
-      toast.success('Question updated successfully');
+      // Don't show toast here - let the calling component handle success messages
+      // toast.success('Question updated successfully');
 
       // Refetch questions
       await fetchQuestions();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update question';
-      toast.error(message);
+      // Don't show error toast here either - let the calling component handle it
+      // toast.error(message);
       throw err;
     }
   }, [supabase, fetchQuestions]);

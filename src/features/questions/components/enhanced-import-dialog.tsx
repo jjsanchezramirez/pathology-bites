@@ -10,6 +10,8 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
+  DialogOverlay,
+  DialogPortal,
   DialogTitle,
 } from '@/shared/components/ui/dialog';
 import {
@@ -73,8 +75,8 @@ const importQuestionSchema = z.object({
 });
 
 const formSchema = z.object({
-  selectedCategory: z.string().min(1, 'Please select a category'),
-  selectedQuestionSet: z.string().optional(),
+  selectedCategory: z.string().optional(),
+  selectedQuestionSet: z.string().min(1, 'Please select a question set'),
   jsonFile: z.any().optional(),
 });
 
@@ -126,7 +128,7 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
     resolver: zodResolver(formSchema),
     defaultValues: {
       selectedCategory: '',
-      selectedQuestionSet: 'none',
+      selectedQuestionSet: '',
     },
   });
 
@@ -280,8 +282,8 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
     });
 
     try {
-      const selectedCategoryId = data.selectedCategory;
-      const selectedQuestionSetId = data.selectedQuestionSet === 'none' ? null : data.selectedQuestionSet;
+      const selectedCategoryId = data.selectedCategory || null;
+      const selectedQuestionSetId = data.selectedQuestionSet;
 
       for (let i = 0; i < parsedQuestions.length; i++) {
         const questionData = parsedQuestions[i];
@@ -332,20 +334,26 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
             promiseLabels.push('Answer Options');
           }
 
-          // 2. Create question categories (add selected category)
-          const categoryData = [{
-            question_id: newQuestion.id,
-            category_id: selectedCategoryId,
-          }];
+          // 2. Create question categories (JSON category takes precedence over selected category)
+          const categoriesToUse = questionData.category_ids && questionData.category_ids.length > 0
+            ? questionData.category_ids
+            : (selectedCategoryId ? [selectedCategoryId] : []);
 
-          promises.push(
-            fetch('/api/question-categories', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ questionCategories: categoryData }),
-            })
-          );
-          promiseLabels.push('Categories');
+          if (categoriesToUse.length > 0) {
+            const categoryData = categoriesToUse.map(categoryId => ({
+              question_id: newQuestion.id,
+              category_id: categoryId,
+            }));
+
+            promises.push(
+              fetch('/api/question-categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ questionCategories: categoryData }),
+              })
+            );
+            promiseLabels.push('Categories');
+          }
 
           // 3. Handle images (if any) - for now we'll skip external image download
           // TODO: Implement image download and upload functionality
@@ -428,7 +436,9 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="w-full max-w-[min(90vw,600px)] max-h-[90vh] overflow-y-auto">
+      <DialogPortal>
+        <DialogOverlay className="backdrop-blur-md bg-black/20" />
+        <DialogContent className="w-full max-w-[min(90vw,600px)] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
@@ -449,15 +459,16 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
                     <FolderTree className="h-4 w-4" />
-                    Category *
+                    Category (Optional)
                   </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value} disabled={loadingCategories}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={loadingCategories ? "Loading categories..." : "Select a category"} />
+                        <SelectValue placeholder={loadingCategories ? "Loading categories..." : "Select a category (optional)"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      <SelectItem value="">No category</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
                           {formatCategoryName(category)}
@@ -478,16 +489,15 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    Question Set (Optional)
+                    Question Set *
                   </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value} disabled={loadingQuestionSets}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={loadingQuestionSets ? "Loading question sets..." : "Select a question set (optional)"} />
+                        <SelectValue placeholder={loadingQuestionSets ? "Loading question sets..." : "Select a question set"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="none">No question set</SelectItem>
                       {questionSets.map((questionSet) => (
                         <SelectItem key={questionSet.id} value={questionSet.id}>
                           {questionSet.name}
@@ -634,7 +644,8 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
             </div>
           </form>
         </Form>
-      </DialogContent>
+        </DialogContent>
+      </DialogPortal>
     </Dialog>
   );
 }

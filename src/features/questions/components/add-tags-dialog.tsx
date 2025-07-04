@@ -10,6 +10,8 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogOverlay,
+  DialogPortal,
   DialogTitle,
   DialogFooter,
 } from "@/shared/components/ui/dialog";
@@ -90,10 +92,12 @@ export function AddTagsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Add Tags (Max 5)</DialogTitle>
-        </DialogHeader>
+      <DialogPortal>
+        <DialogOverlay className="backdrop-blur-md bg-black/20" />
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Tags (Max 5)</DialogTitle>
+          </DialogHeader>
 
         <form onSubmit={(e) => e.preventDefault()}>
           <div className="space-y-4">
@@ -242,6 +246,7 @@ export function AddTagsDialog({
           </DialogFooter>
         </form>
       </DialogContent>
+      </DialogPortal>
     </Dialog>
   );
 }

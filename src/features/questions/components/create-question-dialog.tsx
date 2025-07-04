@@ -9,19 +9,13 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
+  DialogOverlay,
+  DialogPortal,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/components/ui/alert-dialog";
+// Removed AlertDialog imports - using regular Dialog for consistency
 import {
   Form,
   FormControl,
@@ -369,7 +363,9 @@ export function CreateQuestionDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-full max-w-[min(85vw,1400px)] sm:max-w-[min(85vw,1400px)] max-h-[90vh] overflow-y-auto">
+      <DialogPortal>
+        <DialogOverlay className="backdrop-blur-md bg-black/20" />
+        <DialogContent className="w-full max-w-[min(85vw,1400px)] sm:max-w-[min(85vw,1400px)] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Question</DialogTitle>
           <DialogDescription>
@@ -598,27 +594,31 @@ export function CreateQuestionDialog({
             </div>
           </form>
         </Form>
-      </DialogContent>
+        </DialogContent>
+      </DialogPortal>
 
       {/* Confirmation Dialog */}
-      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have unsaved changes. Are you sure you want to close this dialog? All changes will be lost.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelClose}>
-              Keep Editing
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmClose}>
-              Discard Changes
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogPortal>
+          <DialogOverlay className="backdrop-blur-md bg-black/20" />
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Unsaved Changes</DialogTitle>
+              <DialogDescription>
+                You have unsaved changes. Are you sure you want to close this dialog? All changes will be lost.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleCancelClose}>
+                Keep Editing
+              </Button>
+              <Button onClick={handleConfirmClose} variant="destructive">
+                Discard Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
     </Dialog>
   );
 }

@@ -15,17 +15,16 @@ export async function POST(request: NextRequest) {
     const { question_id, flag_type, description } = body;
 
     // Validate required fields
-    if (!question_id || !flag_type || !description) {
+    if (!question_id || !flag_type) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     // Validate flag type
     const validFlagTypes = [
-      'incorrect_answer', 
-      'unclear_question', 
-      'outdated_content', 
-      'inappropriate_content', 
-      'technical_issue', 
+      'incorrect_answer',
+      'unclear_question',
+      'outdated_content',
+      'incorrect_explanations',
       'other'
     ];
     if (!validFlagTypes.includes(flag_type)) {
@@ -72,7 +71,7 @@ export async function POST(request: NextRequest) {
         question_id,
         flagged_by: user.id,
         flag_type,
-        description: description.trim()
+        description: description ? description.trim() : null
       })
       .select()
       .single();

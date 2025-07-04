@@ -1,7 +1,7 @@
 // src/components/questions/edit-question-dialog.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,19 +9,14 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
+  DialogOverlay,
+  DialogPortal,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+// Removed AlertDialog imports - using regular Dialog for consistency
 import {
   Form,
   FormControl,
@@ -35,7 +30,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, X } from 'lucide-react';
 import { useQuestions } from '@/features/questions/hooks/use-questions';
 import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
@@ -91,11 +86,11 @@ async function updateQuestionImages(questionId: string, questionImages: any[]) {
 
   // Insert new question images
   if (questionImages.length > 0) {
-    const imagesToInsert = questionImages.map((img, index) => ({
+    const imagesToInsert = questionImages.map((img) => ({
       question_id: questionId,
-      image_id: img.id,
-      question_section: img.section || 'question',
-      order_index: index
+      image_id: img.image_id,
+      question_section: img.question_section || 'stem',
+      order_index: img.order_index
     }));
 
     const { error } = await supabase
@@ -112,7 +107,7 @@ async function updateQuestionTags(questionId: string, tagIds: string[]) {
 
   // Delete existing question tags
   await supabase
-    .from('question_tags')
+    .from('questions_tags')
     .delete()
     .eq('question_id', questionId);
 
@@ -124,7 +119,7 @@ async function updateQuestionTags(questionId: string, tagIds: string[]) {
     }));
 
     const { error } = await supabase
-      .from('question_tags')
+      .from('questions_tags')
       .insert(tagsToInsert);
 
     if (error) throw error;
@@ -155,6 +150,292 @@ const editQuestionSchema = z.object({
 });
 
 type EditQuestionFormData = z.infer<typeof editQuestionSchema>;
+
+// MediaSection component for handling images in specific sections
+interface MediaSectionProps {
+  images: QuestionImageFormData[];
+  section: 'stem' | 'explanation';
+  maxImages: number;
+  onImagesChange: (images: QuestionImageFormData[]) => void;
+}
+
+function MediaSection({ images, section, maxImages, onImagesChange }: MediaSectionProps) {
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [availableImages, setAvailableImages] = useState<any[]>([]);
+  const [currentImages, setCurrentImages] = useState<any[]>([]);
+  const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const loadImages = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { fetchImages } = await import('@/features/images/services/images');
+      const result = await fetchImages({
+        page: 0,
+        pageSize: 10, // Load exactly 10 images (2 rows of 5)
+        searchTerm: searchTerm || undefined,
+      });
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      setAvailableImages(result.data);
+    } catch (error) {
+      console.error('Failed to load images:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchTerm]);
+
+  // Load current images data when images prop changes
+  const loadCurrentImages = useCallback(async () => {
+    if (images.length === 0) {
+      setCurrentImages([]);
+      return;
+    }
+
+    try {
+      const { fetchImages } = await import('@/features/images/services/images');
+      const result = await fetchImages({
+        page: 0,
+        pageSize: 100, // Get enough to cover all possible images
+      });
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // Map the current images to their full data
+      const imageData = images.map(img => {
+        const fullImageData = result.data.find(availImg => availImg.id === img.image_id);
+        return {
+          ...img,
+          imageData: fullImageData
+        };
+      });
+
+      setCurrentImages(imageData);
+    } catch (error) {
+      console.error('Failed to load current images:', error);
+      setCurrentImages([]);
+    }
+  }, [images]);
+
+  useEffect(() => {
+    if (showImagePicker) {
+      loadImages();
+      setSelectedImageIds([]); // Reset selection when opening
+    }
+  }, [loadImages, showImagePicker]);
+
+  useEffect(() => {
+    loadCurrentImages();
+  }, [loadCurrentImages]);
+
+  const handleImageToggle = (imageId: string) => {
+    // Check if image is already added to this section
+    const imageAlreadyExists = images.some(img => img.image_id === imageId);
+    if (imageAlreadyExists) {
+      return; // Don't allow selecting already added images
+    }
+
+    setSelectedImageIds(prev => {
+      if (prev.includes(imageId)) {
+        return prev.filter(id => id !== imageId);
+      } else {
+        // Check if we would exceed the limit
+        const remainingSlots = maxImages - images.length;
+        if (prev.length >= remainingSlots) {
+          return prev; // Don't add more if it would exceed limit
+        }
+        return [...prev, imageId];
+      }
+    });
+  };
+
+  const handleSelectImages = () => {
+    const newImages: QuestionImageFormData[] = selectedImageIds.map((imageId, index) => ({
+      image_id: imageId,
+      question_section: section,
+      order_index: images.length + index
+    }));
+
+    onImagesChange([...images, ...newImages]);
+    setSelectedImageIds([]);
+    setShowImagePicker(false);
+  };
+
+  const handleCancelSelection = () => {
+    setSelectedImageIds([]);
+    setShowImagePicker(false);
+  };
+
+  const handleRemoveImage = (imageId: string, indexToRemove?: number) => {
+    let updatedImages;
+
+    if (indexToRemove !== undefined) {
+      // Remove specific instance by index
+      updatedImages = images.filter((img, index) => index !== indexToRemove);
+    } else {
+      // Remove first occurrence of the image (fallback)
+      const imageIndex = images.findIndex(img => img.image_id === imageId);
+      if (imageIndex !== -1) {
+        updatedImages = images.filter((img, index) => index !== imageIndex);
+      } else {
+        return; // Image not found
+      }
+    }
+
+    // Reorder remaining images
+    const reorderedImages = updatedImages.map((img, index) => ({
+      ...img,
+      order_index: index
+    }));
+    onImagesChange(reorderedImages);
+  };
+
+  return (
+    <div>
+      {/* Current Images Grid */}
+      <div className="grid grid-cols-5 gap-2 mb-3">
+        {currentImages.map((imageItem, index) => {
+          const imageInfo = imageItem.imageData;
+          // Create unique key combining section, image_id, and index to handle duplicate images
+          const uniqueKey = `${section}-${imageItem.image_id}-${index}`;
+
+          return (
+            <div key={uniqueKey} className="relative group aspect-square">
+              <div className="w-full h-full bg-muted rounded border flex items-center justify-center">
+                {imageInfo ? (
+                  <img
+                    src={imageInfo.url}
+                    alt={imageInfo.alt_text || ''}
+                    className="w-full h-full object-cover rounded"
+                  />
+                ) : (
+                  <div className="text-xs text-muted-foreground text-center p-1">
+                    Loading...
+                  </div>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => handleRemoveImage(imageItem.image_id, index)}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          );
+        })}
+
+        {/* Add Image Button */}
+        {images.length < maxImages && (
+          <button
+            type="button"
+            onClick={() => setShowImagePicker(true)}
+            className="aspect-square border-2 border-dashed border-muted-foreground/30 rounded flex items-center justify-center hover:border-muted-foreground/50 transition-colors"
+          >
+            <Plus className="h-4 w-4 text-muted-foreground" />
+          </button>
+        )}
+      </div>
+
+      {/* Image Picker Dialog */}
+      <Dialog open={showImagePicker} onOpenChange={handleCancelSelection}>
+        <DialogPortal>
+          <DialogOverlay className="backdrop-blur-md bg-black/20" />
+          <DialogContent className="!max-w-[1090px] !w-[1090px] max-h-[85vh] overflow-hidden border-0">
+            <DialogHeader>
+              <DialogTitle>Select Images for {section === 'stem' ? 'Question Body' : 'Explanation'}</DialogTitle>
+              <DialogDescription>
+                Choose up to {maxImages - images.length} more image{maxImages - images.length !== 1 ? 's' : ''} for this section.
+                {selectedImageIds.length > 0 && ` ${selectedImageIds.length} image${selectedImageIds.length !== 1 ? 's' : ''} selected.`}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 flex-1 overflow-hidden">
+              <Input
+                placeholder="Search images..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+
+              <div className="border rounded-lg p-4">
+                {loading ? (
+                  <div className="flex justify-center items-center h-40">
+                    <div className="text-sm text-muted-foreground">Loading images...</div>
+                  </div>
+                ) : availableImages.length === 0 ? (
+                  <div className="text-center text-sm text-muted-foreground py-12">
+                    <p>No images found</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-5 gap-3">
+                    {availableImages.map((image) => {
+                      const isSelected = selectedImageIds.includes(image.id);
+                      const isAlreadyAdded = images.some(img => img.image_id === image.id);
+                      const canSelect = !isAlreadyAdded && (isSelected || selectedImageIds.length < (maxImages - images.length));
+
+                      return (
+                        <div
+                          key={image.id}
+                          className={`relative cursor-pointer rounded border-2 transition-all w-48 h-48 ${
+                            isAlreadyAdded
+                              ? 'border-muted bg-muted/50 opacity-50 cursor-not-allowed'
+                              : isSelected
+                                ? 'border-primary bg-primary/10'
+                                : canSelect
+                                  ? 'border-border hover:border-primary/50'
+                                  : 'border-muted opacity-50 cursor-not-allowed'
+                          }`}
+                          onClick={() => canSelect && handleImageToggle(image.id)}
+                          title={isAlreadyAdded ? 'Already added to this section' : image.alt_text || ''}
+                        >
+                          <img
+                            src={image.url}
+                            alt={image.alt_text || ''}
+                            className="w-48 h-48 object-cover rounded"
+                          />
+                          {isSelected && (
+                            <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                              ✓
+                            </div>
+                          )}
+                          {isAlreadyAdded && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded">
+                              <span className="text-white text-xs font-medium">Added</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={handleCancelSelection}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSelectImages}
+                disabled={selectedImageIds.length === 0}
+              >
+                Select {selectedImageIds.length > 0 ? `${selectedImageIds.length} ` : ''}Image{selectedImageIds.length !== 1 ? 's' : ''}
+              </Button>
+            </div>
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
+    </div>
+  );
+}
 
 interface EditQuestionDialogProps {
   question: QuestionWithDetails | null;
@@ -225,22 +506,99 @@ export function EditQuestionDialog({
     }
   }, [answerOptions, questionImages, selectedTagIds, selectedCategoryId]);
 
-  // Initialize form when question changes
+  // Fetch complete question data when dialog opens
+  const [fullQuestionData, setFullQuestionData] = useState<QuestionWithDetails | null>(null);
+
+  const fetchCompleteQuestionData = useCallback(async (questionId: string) => {
+    try {
+      const { createClient } = await import('@/shared/services/client');
+      const supabase = createClient();
+
+      // First, get the basic question data
+      const { data: questionData, error: questionError } = await supabase
+        .from('questions')
+        .select('*')
+        .eq('id', questionId)
+        .single();
+
+      if (questionError) {
+        console.error('Error fetching question data:', questionError);
+        return;
+      }
+
+      // Get question options
+      const { data: questionOptions, error: optionsError } = await supabase
+        .from('question_options')
+        .select('*')
+        .eq('question_id', questionId)
+        .order('order_index');
+
+      // Get question images with image data
+      const { data: questionImages, error: imagesError } = await supabase
+        .from('question_images')
+        .select(`
+          *,
+          image:images(*)
+        `)
+        .eq('question_id', questionId)
+        .order('order_index');
+
+      // Get tags
+      const { data: questionTags, error: tagsError } = await supabase
+        .from('question_tags')
+        .select(`
+          tag:tags(*)
+        `)
+        .eq('question_id', questionId);
+
+      // Get categories
+      const { data: questionCategories, error: categoriesError } = await supabase
+        .from('question_categories')
+        .select(`
+          category:categories(*)
+        `)
+        .eq('question_id', questionId);
+
+      // Combine all data
+      const completeData = {
+        ...questionData,
+        question_options: questionOptions || [],
+        question_images: questionImages || [],
+        tags: questionTags || [],
+        categories: questionCategories || []
+      };
+
+      console.log('Complete question data loaded:', completeData);
+      setFullQuestionData(completeData);
+    } catch (error) {
+      console.error('Error fetching complete question data:', error);
+    }
+  }, []);
+
+  // Fetch complete data when question changes and dialog opens
   useEffect(() => {
     if (question && open) {
+      fetchCompleteQuestionData(question.id);
+    }
+  }, [question, open, fetchCompleteQuestionData]);
+
+  // Initialize form when complete question data is loaded
+  useEffect(() => {
+    if (fullQuestionData && open) {
       form.reset({
-        title: question.title || '',
-        stem: question.stem || '',
-        difficulty: question.difficulty as 'easy' | 'medium' | 'hard',
-        teaching_point: question.teaching_point || '',
-        question_references: question.question_references || '',
-        status: question.status as 'draft' | 'published' | 'archived',
-        question_set_id: question.question_set_id || 'none',
+        title: fullQuestionData.title || '',
+        stem: fullQuestionData.stem || '',
+        difficulty: fullQuestionData.difficulty as 'easy' | 'medium' | 'hard',
+        teaching_point: fullQuestionData.teaching_point || '',
+        question_references: fullQuestionData.question_references || '',
+        status: fullQuestionData.status as 'draft' | 'published' | 'archived',
+        question_set_id: fullQuestionData.question_set_id || 'none',
       });
 
-      // Load existing answer options
-      if (question.answer_options && question.answer_options.length > 0) {
-        const sortedOptions = [...question.answer_options].sort((a, b) => a.order_index - b.order_index);
+      // Load existing question options (check both new and legacy field names)
+      const existingOptions = fullQuestionData.question_options || fullQuestionData.answer_options;
+      if (existingOptions && existingOptions.length > 0) {
+        const sortedOptions = [...existingOptions].sort((a, b) => a.order_index - b.order_index);
         setAnswerOptions(sortedOptions.map(option => ({
           text: option.text,
           is_correct: option.is_correct,
@@ -259,8 +617,8 @@ export function EditQuestionDialog({
       }
 
       // Load existing images
-      if (question.question_images && question.question_images.length > 0) {
-        setQuestionImages(question.question_images.map(qi => ({
+      if (fullQuestionData.question_images && fullQuestionData.question_images.length > 0) {
+        setQuestionImages(fullQuestionData.question_images.map(qi => ({
           image_id: qi.image?.id || '',
           question_section: (qi.question_section === 'explanation' ? 'explanation' : 'stem') as 'stem' | 'explanation',
           order_index: qi.order_index || 0
@@ -270,21 +628,21 @@ export function EditQuestionDialog({
       }
 
       // Load existing tags
-      if (question.tags && question.tags.length > 0) {
-        setSelectedTagIds(question.tags.map(tag => tag.id));
+      if (fullQuestionData.tags && fullQuestionData.tags.length > 0) {
+        setSelectedTagIds(fullQuestionData.tags.map(tag => tag.id));
       } else {
         setSelectedTagIds([]);
       }
 
       // Load existing categories
-      if (question.categories && question.categories.length > 0) {
-        setSelectedCategoryId(question.categories[0].id);
+      if (fullQuestionData.categories && fullQuestionData.categories.length > 0) {
+        setSelectedCategoryId(fullQuestionData.categories[0].id);
       } else {
         setSelectedCategoryId('');
       }
       setHasUnsavedChanges(false);
     }
-  }, [question, open, form]);
+  }, [fullQuestionData, open, form]);
 
   // Reset form when dialog opens/closes
   useEffect(() => {
@@ -355,18 +713,21 @@ export function EditQuestionDialog({
         question_references: data.question_references || null,
       };
 
+      console.log('Updating question with data:', updateData);
+
+      // Update all question data in sequence
       await updateQuestion(question.id, updateData);
 
-      // Update answer options
+      console.log('Updating answer options:', answerOptions);
       await updateAnswerOptions(question.id, answerOptions);
 
-      // Update question images
+      console.log('Updating question images:', questionImages);
       await updateQuestionImages(question.id, questionImages);
 
-      // Update question tags
+      console.log('Updating question tags:', selectedTagIds);
       await updateQuestionTags(question.id, selectedTagIds);
 
-      // Update question category
+      console.log('Updating question category:', selectedCategoryId);
       await updateQuestionCategory(question.id, selectedCategoryId || null);
 
       toast.success('Question updated successfully');
@@ -377,7 +738,18 @@ export function EditQuestionDialog({
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to update question:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update question');
+
+      // Provide specific error message for version conflicts
+      let errorMessage = 'Failed to update question';
+      if (error instanceof Error) {
+        if (error.message.includes('question_versions_question_id_version_number_key')) {
+          errorMessage = 'Question update conflict detected. Please try again in a moment.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -431,22 +803,31 @@ export function EditQuestionDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-full max-w-[min(85vw,1400px)] sm:max-w-[min(85vw,1400px)] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Question</DialogTitle>
-          <DialogDescription>
-            Update the question details. You can modify answer options, images, tags, and categories.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogPortal>
+        <DialogOverlay className="backdrop-blur-md bg-black/20" />
+        <DialogContent className="w-full max-w-[min(85vw,1200px)] sm:max-w-[min(85vw,1200px)] h-[75vh] border-0 flex flex-col">
+            <DialogHeader>
+              <DialogTitle>Edit Question</DialogTitle>
+              <DialogDescription>
+                Update the question details. You can modify answer options, images, tags, and categories.
+              </DialogDescription>
+            </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* Section 1: Basic Information */}
-            <div className="space-y-6">
-              <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-foreground">1. Basic Information</h3>
-                <p className="text-sm text-muted-foreground">Update the question details and metadata</p>
-              </div>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+              <Tabs defaultValue="basic" className="w-full flex flex-col flex-1">
+                <TabsList className="grid w-full grid-cols-4 flex-shrink-0">
+                  <TabsTrigger value="basic">General</TabsTrigger>
+                  <TabsTrigger value="content">Content</TabsTrigger>
+                  <TabsTrigger value="references">Teaching & References</TabsTrigger>
+                  <TabsTrigger value="media">Media</TabsTrigger>
+                </TabsList>
+
+                {/* Scrollable content area */}
+                <div className="flex-1 overflow-y-auto min-h-0 py-4">
+
+                {/* Tab 1: Basic Information */}
+                <TabsContent value="basic" className="space-y-4 h-full">
 
               <div className="space-y-4">
                 {/* Title - Full Width */}
@@ -565,93 +946,122 @@ export function EditQuestionDialog({
                   />
                 </div>
 
-                {/* Tags Section - Moved below and made more horizontal */}
-                <div className="space-y-3">
-                  <SimpleTagsSelector
-                    selectedTagIds={selectedTagIds}
-                    onTagsChange={setSelectedTagIds}
+                {/* Tags - Full Width */}
+                <SimpleTagsSelector
+                  selectedTagIds={selectedTagIds}
+                  onTagsChange={setSelectedTagIds}
+                />
+              </div>
+
+              </TabsContent>
+
+                {/* Tab 2: Content */}
+                <TabsContent value="content" className="space-y-4 h-full">
+                <div className="space-y-6">
+                  {/* Question Options - Full Width */}
+                  <CompactAnswerOptions
+                    options={answerOptions}
+                    onChange={setAnswerOptions}
+                    errors={hasAttemptedSubmit ? validateAnswerOptions() : undefined}
                   />
                 </div>
-              </div>
-            </div>
+                </TabsContent>
 
-            {/* Section 2: Answer Options and Content */}
-            <div className="space-y-6">
-              <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-foreground">2. Answer Options & Content</h3>
-                <p className="text-sm text-muted-foreground">Update answer choices, explanations, and teaching points</p>
-              </div>
-
-              <div className="space-y-6">
-                {/* Answer Options - Full Width */}
-                <CompactAnswerOptions
-                  options={answerOptions}
-                  onChange={setAnswerOptions}
-                  errors={hasAttemptedSubmit ? validateAnswerOptions() : undefined}
+                {/* Tab 3: Teaching & References */}
+                <TabsContent value="references" className="space-y-6 h-full">
+                {/* Teaching Point */}
+                <FormField
+                  control={form.control}
+                  name="teaching_point"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Teaching Point</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter the teaching point or explanation..."
+                          className="min-h-[120px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
-                {/* Teaching Point and References - Side by Side */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="teaching_point"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Teaching Point</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Enter the teaching point or explanation..."
-                            className="min-h-[120px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                {/* References */}
+                <FormField
+                  control={form.control}
+                  name="question_references"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>References (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter references or citations..."
+                          className="min-h-[120px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </TabsContent>
 
-                  <FormField
-                    control={form.control}
-                    name="question_references"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>References (Optional)</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Enter references or citations..."
-                            className="min-h-[120px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                {/* Tab 4: Media */}
+                <TabsContent value="media" className="space-y-6 h-full">
+                {/* Question Body Images */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium">Question Body Images</h4>
+                    <span className="text-xs text-muted-foreground">
+                      {questionImages.filter(img => img.question_section === 'stem').length}/3
+                    </span>
+                  </div>
+                  <MediaSection
+                    images={questionImages.filter(img => img.question_section === 'stem')}
+                    section="stem"
+                    maxImages={3}
+                    onImagesChange={(newImages) => {
+                      const explanationImages = questionImages.filter(img => img.question_section === 'explanation');
+                      setQuestionImages([...newImages, ...explanationImages]);
+                    }}
                   />
                 </div>
+
+                {/* Explanation Images */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium">Explanation Images</h4>
+                    <span className="text-xs text-muted-foreground">
+                      {questionImages.filter(img => img.question_section === 'explanation').length}/1
+                    </span>
+                  </div>
+                  <MediaSection
+                    images={questionImages.filter(img => img.question_section === 'explanation')}
+                    section="explanation"
+                    maxImages={1}
+                    onImagesChange={(newImages) => {
+                      const stemImages = questionImages.filter(img => img.question_section === 'stem');
+                      setQuestionImages([...stemImages, ...newImages]);
+                    }}
+                  />
+                </div>
+                </TabsContent>
+                </div>
+              </Tabs>
+
+              <div className="flex justify-between items-center gap-3 pt-6 flex-shrink-0 border-t bg-background">
+              {/* Metadata */}
+              <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                {question.created_by_name && <span>By: {question.created_by_name}</span>}
+                <span>Created: {new Date(question.created_at).toLocaleDateString()}</span>
+                <span>Last Updated: {new Date(question.updated_at).toLocaleDateString()}</span>
+                {question.version && <span>v{question.version}</span>}
               </div>
-            </div>
 
-            {/* Section 3: Images */}
-            <div className="space-y-6">
-              <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold text-foreground">3. Images</h3>
-                <p className="text-sm text-muted-foreground">Update images to support your question and explanations</p>
-              </div>
-
-              <ImageAttachment
-                selectedImages={questionImages}
-                onSelectionChange={setQuestionImages}
-              />
-            </div>
-
-            {/* Question Info */}
-            <div className="text-sm text-muted-foreground space-y-1 pt-4 border-t">
-              <p><strong>Created:</strong> {new Date(question.created_at).toLocaleDateString()}</p>
-              <p><strong>Last Updated:</strong> {new Date(question.updated_at).toLocaleDateString()}</p>
-              <p><strong>Version:</strong> {question.version}</p>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-6 border-t">
+              {/* Action Buttons */}
+              <div className="flex gap-3">
               <Button
                 type="button"
                 variant="outline"
@@ -664,30 +1074,38 @@ export function EditQuestionDialog({
                 {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Update Question
               </Button>
+              </div>
             </div>
-          </form>
-        </Form>
-      </DialogContent>
+            </form>
+          </Form>
+        </DialogContent>
+      </DialogPortal>
 
       {/* Confirmation Dialog */}
-      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have unsaved changes. Are you sure you want to close this dialog? All changes will be lost.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelClose}>
-              Keep Editing
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmClose}>
-              Discard Changes
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogPortal>
+          <DialogOverlay className="backdrop-blur-md bg-black/20" />
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Unsaved Changes</DialogTitle>
+              <DialogDescription>
+                You have unsaved changes. Are you sure you want to close this dialog? All changes will be lost.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleCancelClose}>
+                Keep Editing
+              </Button>
+              <Button
+                onClick={handleConfirmClose}
+                variant="destructive"
+              >
+                Discard Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
     </Dialog>
   );
 }

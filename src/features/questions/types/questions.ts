@@ -185,7 +185,7 @@ export const DIFFICULTY_CONFIG = {
 // Review and workflow types
 export type ReviewAction = 'approve_as_is' | 'approve_with_edits' | 'request_revisions' | 'reject';
 export type QuestionStatus = 'draft' | 'under_review' | 'approved_with_edits' | 'rejected' | 'published' | 'flagged' | 'archived';
-export type FlagType = 'incorrect_answer' | 'unclear_question' | 'outdated_content' | 'inappropriate_content' | 'technical_issue' | 'other';
+export type FlagType = 'incorrect_answer' | 'unclear_question' | 'outdated_content' | 'incorrect_explanations' | 'other';
 export type FlagStatus = 'pending' | 'under_review' | 'resolved' | 'dismissed';
 
 // Database types for new tables
@@ -294,33 +294,23 @@ export const REVIEW_ACTION_CONFIG = {
 export const FLAG_TYPE_CONFIG = {
   incorrect_answer: {
     label: 'Incorrect Answer',
-    description: 'The correct answer or explanations are wrong',
-    icon: '❌'
+    description: 'The correct answer is wrong'
   },
   unclear_question: {
     label: 'Unclear Question',
-    description: 'The question is confusing or ambiguous',
-    icon: '❓'
+    description: 'The question is confusing or ambiguous'
   },
   outdated_content: {
     label: 'Outdated Content',
-    description: 'The information is no longer current',
-    icon: '📅'
+    description: 'The information is no longer current'
   },
-  inappropriate_content: {
-    label: 'Inappropriate Content',
-    description: 'Content is inappropriate or offensive',
-    icon: '⚠️'
-  },
-  technical_issue: {
-    label: 'Technical Issue',
-    description: 'Images not loading, formatting problems, etc.',
-    icon: '🔧'
+  incorrect_explanations: {
+    label: 'Incorrect Explanations',
+    description: 'The explanations for wrong answers are incorrect'
   },
   other: {
     label: 'Other',
-    description: 'Other issues not covered above',
-    icon: '📝'
+    description: 'Other issues not covered above'
   }
 } as const;
 
