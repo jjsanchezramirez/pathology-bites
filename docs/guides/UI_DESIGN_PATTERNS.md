@@ -279,6 +279,48 @@ if (error.message.includes('question_versions_question_id_version_number_key')) 
 6. **Horizontal layouts**: Tags and similar elements display horizontally
 7. **Graceful error handling**: Specific messages for different error types
 
+## Sidebar Components
+
+### Auth Status Component
+
+The sidebar auth status component should integrate seamlessly with navigation items for consistent behavior.
+
+#### ✅ Preferred: Structural Integration
+```typescript
+// Integrate auth status directly into navigation structure
+<div className="space-y-1 px-3 flex flex-col h-full">
+  <div className="flex-1 space-y-1">
+    {/* Navigation items */}
+  </div>
+
+  {/* Auth Status as Navigation Item */}
+  <SidebarAuthStatus isCollapsed={isCollapsed} />
+</div>
+```
+
+**Key Requirements:**
+1. **Fixed height consistency**: Both collapsed (`h-14`) and expanded states use same height
+2. **Perfect text alignment**: Text starts exactly where navigation text starts (no extra margins)
+3. **Icon positioning**: Icons stay centered vertically regardless of text content
+4. **Structural integration**: Component is part of `space-y-1` navigation context
+
+#### Auth Status Dialog Content
+Display essential user information in logical order:
+1. **Name**: Display name from user profile
+2. **Email**: User's email address
+3. **Role**: Properly capitalized role (Admin, Creator, Reviewer, User)
+4. **User ID**: Full UUID in monospace font for easy copying
+
+```typescript
+// Clean dialog content structure
+<div className="px-2 py-1.5 text-sm space-y-1">
+  <div><strong>Name:</strong> {getDisplayName()}</div>
+  <div><strong>Email:</strong> {user.email}</div>
+  <div><strong>Role:</strong> {capitalizedRole}</div>
+  <div><strong>User ID:</strong> <span className="font-mono text-xs">{user.id}</span></div>
+</div>
+```
+
 ## Migration Notes
 
 When updating existing dialogs:
@@ -287,3 +329,9 @@ When updating existing dialogs:
 3. Update button components to use proper variants
 4. Test animations to ensure smooth behavior
 5. Verify consistent styling across all dialogs
+
+When updating sidebar components:
+1. Ensure consistent height across all states
+2. Integrate components into navigation structure rather than separate containers
+3. Match text alignment with existing navigation items
+4. Use proper role capitalization and essential user information only

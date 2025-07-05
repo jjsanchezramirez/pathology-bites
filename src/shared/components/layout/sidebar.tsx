@@ -120,46 +120,46 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 py-4 overflow-y-auto">
-        <div className="space-y-1 px-3">
-          {filteredNavigation.map((item) => {
-            const isActive = pathname === item.href
-            const hasPermission = !item.requiredPermission || canAccess(item.requiredPermission)
-            const isDisabled = !hasPermission && !isLoading
+        <div className="space-y-1 px-3 flex flex-col h-full">
+          <div className="flex-1 space-y-1">
+            {filteredNavigation.map((item) => {
+              const isActive = pathname === item.href
+              const hasPermission = !item.requiredPermission || canAccess(item.requiredPermission)
+              const isDisabled = !hasPermission && !isLoading
 
-            return (
-              <Link
-                key={item.name}
-                href={isDisabled ? '#' : item.href}
-                className={`flex h-10 rounded-lg text-sm font-medium
-                  transition-colors duration-200 relative items-center
-                  ${isDisabled
-                    ? 'text-slate-500 cursor-not-allowed opacity-50'
-                    : isActive
-                      ? 'bg-slate-800 text-slate-100 dark:bg-slate-700 dark:text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100 dark:text-slate-200 dark:hover:bg-slate-700/50 dark:hover:text-white'
-                  }`}
-                title={isCollapsed ? item.name : undefined}
-                onClick={isDisabled ? (e) => e.preventDefault() : undefined}
-              >
-                <div className="flex items-center justify-center w-10 shrink-0">
-                  <item.icon className="h-5 w-5" />
-                </div>
-                {!isCollapsed && (
-                  <span className="truncate">{item.name}</span>
-                )}
-                {!isCollapsed && item.adminOnly && !isAdmin && (
-                  <span className="ml-auto text-xs text-slate-500">Admin</span>
-                )}
-              </Link>
-            )
-          })}
+              return (
+                <Link
+                  key={item.name}
+                  href={isDisabled ? '#' : item.href}
+                  className={`flex h-10 rounded-lg text-sm font-medium
+                    transition-colors duration-200 relative items-center
+                    ${isDisabled
+                      ? 'text-slate-500 cursor-not-allowed opacity-50'
+                      : isActive
+                        ? 'bg-slate-800 text-slate-100 dark:bg-slate-700 dark:text-white'
+                        : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100 dark:text-slate-200 dark:hover:bg-slate-700/50 dark:hover:text-white'
+                    }`}
+                  title={isCollapsed ? item.name : undefined}
+                  onClick={isDisabled ? (e) => e.preventDefault() : undefined}
+                >
+                  <div className="flex items-center justify-center w-10 shrink-0">
+                    <item.icon className="h-5 w-5" />
+                  </div>
+                  {!isCollapsed && (
+                    <span className="truncate">{item.name}</span>
+                  )}
+                  {!isCollapsed && item.adminOnly && !isAdmin && !isLoading && (
+                    <span className="ml-auto text-xs text-slate-500">Admin</span>
+                  )}
+                </Link>
+              )
+            })}
+          </div>
+
+          {/* Auth Status as Navigation Item */}
+          <SidebarAuthStatus isCollapsed={isCollapsed} />
         </div>
       </nav>
-
-      {/* Auth Status at Bottom */}
-      <div className="shrink-0">
-        <SidebarAuthStatus isCollapsed={isCollapsed} />
-      </div>
     </aside>
   )
 }

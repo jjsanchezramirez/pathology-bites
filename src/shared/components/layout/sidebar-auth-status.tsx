@@ -1,7 +1,7 @@
 // src/components/admin/sidebar-auth-status.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { createClient } from '@/shared/services/client'
 import { Button } from '@/shared/components/ui/button'
 import {
@@ -112,18 +112,18 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
 
   const getStatusIcon = () => {
     if (!isHydrated || isLoading || profileLoading) {
-      return <RefreshCw className="h-4 w-4 animate-spin" />
+      return <RefreshCw className="h-5 w-5 animate-spin" />
     }
     if (error) {
-      return <ShieldAlert className="h-4 w-4 text-red-400" />
+      return <ShieldAlert className="h-5 w-5 text-red-400" />
     }
     if (user && userProfile?.role === 'admin') {
-      return <ShieldCheck className="h-4 w-4 text-green-400" />
+      return <ShieldCheck className="h-5 w-5 text-green-400" />
     }
     if (user) {
-      return <Shield className="h-4 w-4 text-blue-400" />
+      return <Shield className="h-5 w-5 text-blue-400" />
     }
-    return <ShieldAlert className="h-4 w-4 text-red-400" />
+    return <ShieldAlert className="h-5 w-5 text-red-400" />
   }
 
   const getDisplayName = () => {
@@ -163,67 +163,63 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
   if (isCollapsed) {
     if (!isAuthenticated || !user) {
       return (
-        <div className="p-3">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="w-full h-10 p-0 text-slate-300 hover:text-slate-100 hover:bg-slate-800"
-            asChild
-          >
-            <a href="/login" title="Login Required">
-              <ShieldAlert className="h-4 w-4 text-red-400" />
-            </a>
-          </Button>
-        </div>
+        <a
+          href="/login"
+          title="Login Required"
+          className="flex h-14 rounded-lg text-sm font-medium transition-colors duration-200 relative items-center text-slate-300 hover:bg-slate-800 hover:text-slate-100 dark:text-slate-200 dark:hover:bg-slate-700/50 dark:hover:text-white"
+        >
+          <div className="flex items-center justify-center w-10 shrink-0">
+            <ShieldAlert className="h-5 w-5 text-red-400" />
+          </div>
+        </a>
       )
     }
 
     return (
-      <div className="p-3">
+      <div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full h-10 p-0 text-slate-300 hover:text-slate-100 hover:bg-slate-800"
+            <button
+              className="flex h-14 rounded-lg text-sm font-medium transition-colors duration-200 relative items-center text-slate-300 hover:bg-slate-800 hover:text-slate-100 dark:text-slate-200 dark:hover:bg-slate-700/50 dark:hover:text-white"
               title={`${getDisplayName()} - ${getStatusText()}`}
             >
-              {getStatusIcon()}
-            </Button>
+              <div className="flex items-center justify-center w-10 shrink-0">
+                {getStatusIcon()}
+              </div>
+            </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="right" align="end" className="w-64 ml-2">
-            <DropdownMenuLabel>Authentication Status</DropdownMenuLabel>
-            <DropdownMenuSeparator />
+        <DropdownMenuContent side="right" align="end" className="w-64 ml-2">
+          <DropdownMenuLabel>Authentication Status</DropdownMenuLabel>
+          <DropdownMenuSeparator />
 
-            <div className="px-2 py-1.5 text-sm">
-              <div><strong>Status:</strong> {getStatusText()}</div>
-              <div><strong>Email:</strong> {user.email}</div>
-              {userProfile && (
-                <div><strong>Role:</strong> {userProfile.role}</div>
-              )}
-            </div>
+          <div className="px-2 py-1.5 text-sm space-y-1">
+            <div><strong>Name:</strong> {getDisplayName()}</div>
+            <div><strong>Email:</strong> {user.email}</div>
+            <div><strong>Role:</strong> {(userProfile?.role || 'User').charAt(0).toUpperCase() + (userProfile?.role || 'User').slice(1).toLowerCase()}</div>
+            <div><strong>User ID:</strong> <span className="font-mono text-xs">{user.id}</span></div>
+          </div>
 
-            {error && (
-              <>
-                <DropdownMenuSeparator />
-                <div className="px-2 py-1.5 text-sm text-red-600">
-                  <strong>Error:</strong> {error.message}
-                </div>
-              </>
-            )}
+          {error && (
+            <>
+              <DropdownMenuSeparator />
+              <div className="px-2 py-1.5 text-sm text-red-600">
+                <strong>Error:</strong> {error.message}
+              </div>
+            </>
+          )}
 
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={refreshAuth} disabled={isLoading}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh Status
-            </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={refreshAuth} disabled={isLoading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh Status
+          </DropdownMenuItem>
 
-            <DropdownMenuItem onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          <DropdownMenuItem onClick={handleSignOut}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       </div>
     )
   }
@@ -231,62 +227,48 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
   // Expanded view
   if (!isAuthenticated || !user) {
     return (
-      <div className="p-3 border-t border-slate-700/50">
-        <Button
-          size="sm"
-          variant="ghost"
-          className="w-full justify-start text-slate-300 hover:text-slate-100 hover:bg-slate-800"
-          asChild
-        >
-          <a href="/login">
-            <ShieldAlert className="h-4 w-4 mr-3 text-red-400" />
-            Login Required
-          </a>
-        </Button>
-      </div>
+      <a
+        href="/login"
+        className="flex h-10 rounded-lg text-sm font-medium transition-colors duration-200 relative items-center text-slate-300 hover:bg-slate-800 hover:text-slate-100 dark:text-slate-200 dark:hover:bg-slate-700/50 dark:hover:text-white"
+      >
+        <div className="flex items-center justify-center w-10 shrink-0">
+          <ShieldAlert className="h-5 w-5 text-red-400" />
+        </div>
+        <span className="truncate">Login Required</span>
+      </a>
     )
   }
 
   return (
-    <div className="border-t border-slate-700/50">
+    <div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="w-full h-auto p-3 justify-between text-left text-slate-300 hover:text-slate-100 hover:bg-slate-800"
-          >
+          <button className="flex h-14 px-0 rounded-lg text-sm font-medium transition-colors duration-200 relative items-center text-slate-300 hover:bg-slate-800 hover:text-slate-100 dark:text-slate-200 dark:hover:bg-slate-700/50 dark:hover:text-white w-full justify-between">
             <div className="flex items-center min-w-0 flex-1">
-              {getStatusIcon()}
-              <div className="ml-3 min-w-0 flex-1">
-                <div className="text-sm font-medium truncate">
+              <div className="flex items-center justify-center w-10 shrink-0">
+                {getStatusIcon()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium truncate text-left">
                   {getDisplayName()}
                 </div>
-                <div className="text-xs text-slate-400 truncate">
-                  {getStatusText()}
+                <div className="text-xs text-slate-400 truncate text-left">
+                  {(userProfile?.role || 'User').charAt(0).toUpperCase() + (userProfile?.role || 'User').slice(1).toLowerCase()}
                 </div>
               </div>
             </div>
-            <ChevronUp className="h-4 w-4 ml-2 shrink-0" />
-          </Button>
+            <ChevronUp className="h-4 w-4 shrink-0" />
+          </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top" align="end" className="w-64 mb-2">
           <DropdownMenuLabel>Authentication Details</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
           <div className="px-2 py-1.5 text-sm space-y-1">
+            <div><strong>Name:</strong> {getDisplayName()}</div>
             <div><strong>Email:</strong> {user.email}</div>
-            <div><strong>Status:</strong> {getStatusText()}</div>
-            {userProfile && (
-              <>
-                <div><strong>Role:</strong> {userProfile.role}</div>
-                {userProfile.first_name && (
-                  <div><strong>Name:</strong> {userProfile.first_name} {userProfile.last_name}</div>
-                )}
-              </>
-            )}
-            <div className="text-xs text-muted-foreground">
-              ID: {user.id.substring(0, 8)}...
-            </div>
+            <div><strong>Role:</strong> {(userProfile?.role || 'User').charAt(0).toUpperCase() + (userProfile?.role || 'User').slice(1).toLowerCase()}</div>
+            <div><strong>User ID:</strong> <span className="font-mono text-xs">{user.id}</span></div>
           </div>
 
           {error && (
