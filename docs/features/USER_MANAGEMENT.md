@@ -79,7 +79,8 @@ Updates user role or status.
   "userId": "uuid",
   "updates": {
     "role": "admin|creator|reviewer|user",
-    "status": "active|inactive|suspended"
+    "status": "active|inactive|suspended",
+    "user_type": "student|resident|fellow|attending|other"
   }
 }
 ```
@@ -109,6 +110,7 @@ Main component handling user display and management actions.
 - Search functionality
 - Role-based action visibility
 - Safety check implementations
+- Color-coded role and status badges
 
 **State Management:**
 - User list and pagination state
@@ -116,9 +118,19 @@ Main component handling user display and management actions.
 - Pending changes for confirmations
 - Loading and updating states
 
+### UserStatsCards Component
+Statistics dashboard displaying comprehensive user metrics.
+
+**Key Features:**
+- Real-time user statistics from database views
+- Internal vs End users breakdown
+- Role-based user counts
+- Auto-refresh on data changes
+
 ### Dialog Components
 - **Role Change Dialog**: Confirmation-based role updates
 - **Status Change Dialog**: Confirmation-based status updates
+- **Type Change Dialog**: Confirmation-based user type updates
 - **Delete Confirmation Dialog**: Warning and confirmation for user deletion
 
 **Styling:**
@@ -148,7 +160,21 @@ Main component handling user display and management actions.
 ### For Administrators
 1. **Changing User Roles**: Select user → Actions → Change Role → Select new role → Confirm
 2. **Updating User Status**: Select user → Actions → Change Status → Select new status → Confirm
-3. **Deleting Users**: Select user → Actions → Delete User → Read warning → Confirm deletion
+3. **Changing User Type**: Select user → Actions → Change Type → Select new type → Confirm
+4. **Deleting Users**: Select user → Actions → Delete User → Read warning → Confirm deletion
+
+### User Statistics Dashboard
+The user management page includes a comprehensive statistics dashboard with 5 cards:
+
+1. **Total Users**: Shows internal vs end users breakdown
+2. **Internal Users**: Admin, Creator, Reviewer counts in single line
+3. **Active End Users**: Active accounts with recent activity
+4. **Inactive End Users**: Inactive accounts with percentage
+5. **Suspended Users**: Suspended accounts with percentage
+
+**Color Coding:**
+- **Roles**: Admin (blue), Creator (yellow), Reviewer (purple), User (gray)
+- **Status**: Active (green), Suspended (red), Inactive (gray)
 
 ### Safety Reminders
 - Always verify user identity before making changes

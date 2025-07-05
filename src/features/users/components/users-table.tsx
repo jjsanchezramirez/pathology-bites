@@ -56,6 +56,7 @@ import {
   MoreVertical,
   Shield,
   UserCheck,
+  GraduationCap,
   RefreshCw,
   Trash2
 } from 'lucide-react'
@@ -78,16 +79,16 @@ interface User {
 const PAGE_SIZE = 10
 
 const roleConfig = {
-  admin: { label: 'Admin', color: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300' },
-  creator: { label: 'Creator', color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' },
+  admin: { label: 'Admin', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300' },
+  creator: { label: 'Creator', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300' },
   reviewer: { label: 'Reviewer', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300' },
-  user: { label: 'User', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300' },
+  user: { label: 'User', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300' },
 }
 
 const statusConfig = {
   active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' },
   inactive: { label: 'Inactive', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300' },
-  suspended: { label: 'Suspended', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300' },
+  suspended: { label: 'Suspended', color: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300' },
 }
 
 const userTypeConfig = {
@@ -98,7 +99,11 @@ const userTypeConfig = {
   other: 'Other',
 }
 
-export function UsersTable() {
+interface UsersTableProps {
+  onUserChange?: () => void;
+}
+
+export function UsersTable({ onUserChange }: UsersTableProps = {}) {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -110,10 +115,12 @@ export function UsersTable() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [showRoleDialog, setShowRoleDialog] = useState(false)
   const [showStatusDialog, setShowStatusDialog] = useState(false)
+  const [showTypeDialog, setShowTypeDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [pendingRole, setPendingRole] = useState<string>('')
   const [pendingStatus, setPendingStatus] = useState<string>('')
+  const [pendingType, setPendingType] = useState<string>('')
 
   const supabase = createClient()
   const { user: currentUser } = useAuthStatus()
@@ -191,6 +198,7 @@ export function UsersTable() {
       toast.success('User role updated successfully')
 
       await loadUsers()
+      onUserChange?.()
     } catch (error) {
       console.error('Error updating role:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to update user role')
@@ -223,12 +231,46 @@ export function UsersTable() {
       toast.success('User status updated successfully')
 
       await loadUsers()
+      onUserChange?.()
     } catch (error) {
       console.error('Error updating status:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to update user status')
     } finally {
       setIsUpdating(false)
       setShowStatusDialog(false)
+      setSelectedUser(null)
+    }
+  }
+
+  const handleTypeChange = async (userId: string, newType: string) => {
+    setIsUpdating(true)
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          updates: { user_type: newType }
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update user type')
+      }
+
+      toast.success('User type updated successfully')
+
+      await loadUsers()
+      onUserChange?.()
+    } catch (error) {
+      console.error('Error updating type:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to update user type')
+    } finally {
+      setIsUpdating(false)
+      setShowTypeDialog(false)
       setSelectedUser(null)
     }
   }
@@ -252,6 +294,7 @@ export function UsersTable() {
       toast.success('User deleted successfully')
 
       await loadUsers()
+      onUserChange?.()
     } catch (error) {
       console.error('Error deleting user:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to delete user')
@@ -403,6 +446,17 @@ export function UsersTable() {
                             <UserCheck className="h-4 w-4 mr-2" />
                             Change Status
                           </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedUser(user)
+                              setPendingType(user.user_type)
+                              setShowTypeDialog(true)
+                            }}
+                            disabled={!canModifyUser(user)}
+                          >
+                            <GraduationCap className="h-4 w-4 mr-2" />
+                            Change Type
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => {
@@ -535,6 +589,56 @@ export function UsersTable() {
               <Button
                 onClick={() => selectedUser && handleStatusChange(selectedUser.id, pendingStatus)}
                 disabled={isUpdating || !pendingStatus || pendingStatus === selectedUser?.status || !selectedUser || !canModifyUser(selectedUser)}
+              >
+                {isUpdating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  'Confirm'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
+
+      {/* Type Change Dialog */}
+      <Dialog open={showTypeDialog} onOpenChange={setShowTypeDialog}>
+        <DialogPortal>
+          <DialogOverlay className="backdrop-blur-md bg-black/20" />
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Change User Type</DialogTitle>
+              <DialogDescription>
+                Select a new type for {selectedUser && getDisplayName(selectedUser)}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Select
+                value={pendingType}
+                onValueChange={setPendingType}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="resident">Resident</SelectItem>
+                  <SelectItem value="fellow">Fellow</SelectItem>
+                  <SelectItem value="attending">Attending</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowTypeDialog(false)} disabled={isUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => selectedUser && handleTypeChange(selectedUser.id, pendingType)}
+                disabled={isUpdating || !pendingType || pendingType === selectedUser?.user_type || !selectedUser || !canModifyUser(selectedUser)}
               >
                 {isUpdating ? (
                   <>

@@ -994,6 +994,32 @@ export interface Database {
         }
         Relationships: []
       }
+      v_user_stats: {
+        Row: {
+          total_users: number
+          active_users: number
+          inactive_users: number
+          suspended_users: number
+          recent_users: number
+          internal_users: number
+          end_users: number
+          active_internal_users: number
+          active_end_users: number
+          total_admins: number
+          total_creators: number
+          total_reviewers: number
+          active_admins: number
+          active_creators: number
+          active_reviewers: number
+          active_percentage: string
+          inactive_percentage: string
+          suspended_percentage: string
+          internal_percentage: string
+          end_users_percentage: string
+          last_updated: string
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
