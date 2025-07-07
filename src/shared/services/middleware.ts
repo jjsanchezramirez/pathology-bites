@@ -91,8 +91,7 @@ export async function updateSession(request: NextRequest) {
   const publicRoutes = [
     '/',
     '/coming-soon',
-    '/bypass',
-    '/demo-comparison',
+    '/debug', // Debug pages (including bypass and demo-comparison)
     '/about',
     '/contact',
     '/faq',

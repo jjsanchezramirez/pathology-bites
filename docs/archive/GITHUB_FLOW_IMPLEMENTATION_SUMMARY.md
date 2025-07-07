@@ -30,8 +30,8 @@
 ### Technical Approach
 - **URL Parameter Method**: `?bypass=true`
 - **Persistent Storage**: localStorage bypass setting
-- **Control Panel**: `/bypass` management interface
-- **Demo Comparison**: `/demo-comparison` testing page
+- **Control Panel**: `/debug/bypass` management interface
+- **Demo Comparison**: `/debug/demo-comparison` testing page
 
 ---
 
@@ -39,8 +39,9 @@
 
 ### Files Created
 ```
-src/app/(public)/bypass/page.tsx                    # Bypass control panel
-src/app/(public)/demo-comparison/page.tsx           # Component comparison
+src/app/debug/bypass/page.tsx                       # Bypass control panel (moved to debug)
+src/app/debug/demo-comparison/page.tsx              # Component comparison (moved to debug)
+src/app/debug/page.tsx                              # Debug index page (reorganized)
 src/shared/components/common/demo-question-v2.tsx  # Reinvented demo component
 src/shared/components/common/simple-image-viewer.tsx # Simple image viewer
 src/shared/components/common/improved-image-dialog.tsx # Enhanced image dialog

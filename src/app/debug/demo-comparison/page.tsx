@@ -2,11 +2,23 @@
 
 import DemoQuestion from "@/shared/components/common/demo-question"
 import DemoQuestionV2 from "@/shared/components/common/demo-question-v2"
+import { Button } from "@/shared/components/ui/button"
+import { ArrowLeft } from "lucide-react"
 
 export default function DemoComparisonPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
+        {/* Navigation */}
+        <div className="mb-6">
+          <Button variant="outline" asChild>
+            <a href="/debug" className="flex items-center gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Debug Index
+            </a>
+          </Button>
+        </div>
+
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4">Demo Question Component Comparison</h1>
           <p className="text-gray-600">Compare the old component (left) with the new reinvented component (right)</p>
@@ -67,16 +79,6 @@ export default function DemoComparisonPage() {
               <li>Overall reliability and performance</li>
             </ul>
           </div>
-        </div>
-
-        {/* Navigation */}
-        <div className="mt-8 text-center">
-          <a 
-            href="/coming-soon" 
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            ← Back to Coming Soon Page
-          </a>
         </div>
       </div>
     </div>

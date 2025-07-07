@@ -4,6 +4,9 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/shared/services/client'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import { Database } from '@/shared/types/supabase'
+import { Button } from "@/shared/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
+import { ArrowLeft, User, Shield, Database as DatabaseIcon } from "lucide-react"
 
 type UserData = Database['public']['Tables']['users']['Row']
 
@@ -40,62 +43,117 @@ export default function UserRoleDebugPage() {
   }, [user, fetchUserData])
 
   if (isLoading) {
-    return <div className="p-8">Loading...</div>
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center">Loading...</div>
+        </div>
+      </div>
+    )
   }
 
   if (!user) {
-    return <div className="p-8">Not authenticated</div>
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center">Not authenticated</div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">User Role Debug Information</h1>
-
-      <div className="space-y-6">
-        <div className="bg-gray-100 p-4 rounded-lg">
-          <h2 className="text-lg font-semibold mb-2">Auth User Object</h2>
-          <pre className="text-sm overflow-auto">
-            {JSON.stringify(user, null, 2)}
-          </pre>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container mx-auto px-4 max-w-4xl">
+        {/* Navigation */}
+        <div className="mb-6">
+          <Button variant="outline" asChild>
+            <a href="/debug" className="flex items-center gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Debug Index
+            </a>
+          </Button>
         </div>
 
-        <div className="bg-gray-100 p-4 rounded-lg">
-          <h2 className="text-lg font-semibold mb-2">User Metadata</h2>
-          <div className="space-y-2">
-            <p><strong>user_metadata.role:</strong> {user.user_metadata?.role || 'Not set'}</p>
-            <p><strong>app_metadata.role:</strong> {user.app_metadata?.role || 'Not set'}</p>
-          </div>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-4 flex items-center justify-center gap-2">
+            <Shield className="w-8 h-8 text-blue-600" />
+            User Role Debug Information
+          </h1>
+          <p className="text-gray-600">Debug user roles, permissions, and metadata</p>
         </div>
 
-        <div className="bg-gray-100 p-4 rounded-lg">
-          <h2 className="text-lg font-semibold mb-2">Database User Record</h2>
-          {error ? (
-            <p className="text-red-600">Error: {error}</p>
-          ) : userData ? (
-            <pre className="text-sm overflow-auto">
-              {JSON.stringify(userData, null, 2)}
-            </pre>
-          ) : (
-            <p>Loading user data...</p>
-          )}
-        </div>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Auth User Object
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre className="text-sm overflow-auto bg-gray-100 p-4 rounded">
+                {JSON.stringify(user, null, 2)}
+              </pre>
+            </CardContent>
+          </Card>
 
-        <div className="bg-blue-100 p-4 rounded-lg">
-          <h2 className="text-lg font-semibold mb-2">Quick Actions</h2>
-          <div className="space-y-2">
-            <button
-              onClick={() => window.location.href = '/admin'}
-              className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
-            >
-              Try Admin Access
-            </button>
-            <button
-              onClick={() => window.location.href = '/dashboard'}
-              className="bg-green-500 text-white px-4 py-2 rounded"
-            >
-              Go to Dashboard
-            </button>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                User Metadata
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">user_metadata.role:</span>
+                  <span className="text-gray-600">{user.user_metadata?.role || 'Not set'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">app_metadata.role:</span>
+                  <span className="text-gray-600">{user.app_metadata?.role || 'Not set'}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DatabaseIcon className="w-5 h-5" />
+                Database User Record
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {error ? (
+                <p className="text-red-600">Error: {error}</p>
+              ) : userData ? (
+                <pre className="text-sm overflow-auto bg-gray-100 p-4 rounded">
+                  {JSON.stringify(userData, null, 2)}
+                </pre>
+              ) : (
+                <p>Loading user data...</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-4">
+                <Button onClick={() => window.location.href = '/admin'}>
+                  Try Admin Access
+                </Button>
+                <Button variant="outline" onClick={() => window.location.href = '/dashboard'}>
+                  Go to Dashboard
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

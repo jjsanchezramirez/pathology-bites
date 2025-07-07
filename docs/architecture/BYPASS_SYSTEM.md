@@ -26,15 +26,15 @@ When Coming Soon mode is enabled:
 Add `?bypass=true` to any URL:
 ```
 http://localhost:3000/?bypass=true
-http://localhost:3000/demo-comparison?bypass=true
-http://localhost:3000/bypass?bypass=true
+http://localhost:3000/debug/demo-comparison?bypass=true
+http://localhost:3000/debug/bypass?bypass=true
 http://localhost:3000/about?bypass=true
 ```
 
 #### 2. Bypass Control Panel
 Visit the bypass management page:
 ```
-http://localhost:3000/bypass
+http://localhost:3000/debug/bypass
 ```
 
 #### 3. Persistent Bypass
@@ -46,7 +46,7 @@ http://localhost:3000/bypass
 ## Access URLs
 
 ### Always Available (No Bypass Needed)
-- `/bypass` - Bypass control panel
+- `/debug/*` - All debug pages (including bypass control panel)
 - `/login` - Authentication pages (shows "Admin Login" in Coming Soon mode)
 - `/forgot-password` - Password reset pages
 - `/auth-error` - Authentication error pages
@@ -63,7 +63,6 @@ http://localhost:3000/bypass
 - `/` - Main landing page (shows Coming Soon page instead)
 - `/signup` - Registration pages (redirects to login)
 - `/verify-email` - Email verification pages
-- `/demo-comparison` - Component comparison page
 
 ### Protected Routes (Require Authentication)
 - `/admin/*` - Admin dashboard and features
@@ -84,7 +83,7 @@ http://localhost:3000/bypass
 NEXT_PUBLIC_COMING_SOON_MODE=true
 
 # Access bypass control panel
-http://localhost:3000/bypass
+http://localhost:3000/debug/bypass
 
 # Enable persistent bypass
 # Then access any feature normally
@@ -96,7 +95,7 @@ http://localhost:3000/bypass
 http://localhost:3000/?bypass=true
 
 # Compare demo components
-http://localhost:3000/demo-comparison?bypass=true
+http://localhost:3000/debug/demo-comparison?bypass=true
 ```
 
 ### For Production
@@ -105,7 +104,7 @@ http://localhost:3000/demo-comparison?bypass=true
 https://yoursite.com/?bypass=true
 
 # Or give them the bypass control panel URL
-https://yoursite.com/bypass
+https://yoursite.com/debug/bypass
 ```
 
 ## Security Notes
@@ -132,7 +131,8 @@ https://yoursite.com/bypass
 
 ### Files Modified
 - `src/app/(public)/page.tsx` - Main bypass logic
-- `src/app/(public)/bypass/page.tsx` - Control panel
+- `src/app/debug/bypass/page.tsx` - Control panel (moved to debug directory)
+- `src/app/debug/demo-comparison/page.tsx` - Demo comparison (moved to debug directory)
 
 ### Code Structure
 ```tsx
@@ -158,10 +158,10 @@ if (isComingSoonMode && !bypassEnabled) {
 1. Check if coming soon mode is actually enabled
 2. Clear browser localStorage and try again
 3. Try the URL parameter method: `?bypass=true`
-4. Visit `/bypass` directly to manage settings
+4. Visit `/debug/bypass` directly to manage settings
 
 ### Can't Access Bypass Page
-- The `/bypass` route is always accessible
+- The `/debug/bypass` route is always accessible
 - Try clearing browser cache
 - Check for JavaScript errors in console
 

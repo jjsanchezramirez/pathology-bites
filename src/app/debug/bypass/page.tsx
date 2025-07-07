@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/shared/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Badge } from "@/shared/components/ui/badge"
-import { Settings, Eye, EyeOff, Home, TestTube, Users, BarChart3 } from "lucide-react"
+import { Settings, Eye, EyeOff, Home, TestTube, Users, BarChart3, ArrowLeft } from "lucide-react"
 
 export default function BypassPage() {
   const [bypassEnabled, setBypassEnabled] = useState(false)
@@ -31,7 +31,7 @@ export default function BypassPage() {
 
   const quickLinks = [
     { name: 'Home', href: '/', icon: Home, description: 'Main landing page' },
-    { name: 'Demo Comparison', href: '/demo-comparison', icon: TestTube, description: 'Compare old vs new demo components' },
+    { name: 'Demo Comparison', href: '/debug/demo-comparison', icon: TestTube, description: 'Compare old vs new demo components' },
     { name: 'Admin Dashboard', href: '/admin/dashboard', icon: BarChart3, description: 'Admin dashboard (requires login)' },
     { name: 'User Dashboard', href: '/dashboard', icon: Users, description: 'User dashboard (requires login)' },
   ]
@@ -39,6 +39,16 @@ export default function BypassPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
+        {/* Navigation */}
+        <div className="mb-6">
+          <Button variant="outline" asChild>
+            <a href="/debug" className="flex items-center gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Debug Index
+            </a>
+          </Button>
+        </div>
+
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4 flex items-center justify-center gap-2">
             <Settings className="w-8 h-8" />
@@ -166,7 +176,7 @@ export default function BypassPage() {
                 <h4 className="font-medium">Method 2: Direct Access</h4>
                 <p className="text-sm text-gray-600">Visit this bypass page directly</p>
                 <code className="text-xs bg-gray-100 p-2 rounded block mt-1">
-                  http://localhost:3000/bypass
+                  http://localhost:3000/debug/bypass
                 </code>
               </div>
               
@@ -177,16 +187,6 @@ export default function BypassPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Back to Home */}
-        <div className="mt-8 text-center">
-          <Button asChild>
-            <a href="/">
-              <Home className="w-4 h-4 mr-2" />
-              Back to Home
-            </a>
-          </Button>
-        </div>
       </div>
     </div>
   )

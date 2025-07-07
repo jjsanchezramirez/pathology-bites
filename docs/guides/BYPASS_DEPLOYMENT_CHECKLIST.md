@@ -45,8 +45,9 @@ git commit -m "feat(bypass): implement coming soon mode bypass system
 
 - Add URL parameter bypass (?bypass=true)
 - Add persistent localStorage bypass
-- Create bypass control panel (/bypass)
-- Add demo comparison page (/demo-comparison)
+- Create bypass control panel (/debug/bypass)
+- Add demo comparison page (/debug/demo-comparison)
+- Reorganize debug pages under /debug directory
 - Maintain all security controls
 - Add comprehensive documentation"
 
@@ -81,10 +82,11 @@ git push origin feature/bypass-system
 ## Post-Deployment Verification
 
 ### Functional Testing
-- [ ] **Bypass control panel**: Visit `/bypass` and verify functionality
+- [ ] **Bypass control panel**: Visit `/debug/bypass` and verify functionality
 - [ ] **URL parameter bypass**: Test `/?bypass=true` works
 - [ ] **Persistent bypass**: Test localStorage bypass works
-- [ ] **Demo comparison**: Test `/demo-comparison` works
+- [ ] **Demo comparison**: Test `/debug/demo-comparison` works
+- [ ] **Debug index**: Test `/debug` shows organized debug tools
 - [ ] **Coming soon mode**: Verify coming soon page still shows when bypass disabled
 
 ### Security Testing

@@ -55,12 +55,12 @@
 ### 3. **Bypass Control Panel Test**
 
 #### Test 3.1: Control Panel Access
-- **URL**: `http://localhost:3000/bypass`
+- **URL**: `http://localhost:3000/debug/bypass`
 - **Expected**: Should always be accessible regardless of coming soon mode
 - **Status**: ⏳ Pending
 
 #### Test 3.2: Status Display
-- **Steps**: Visit `/bypass`
+- **Steps**: Visit `/debug/bypass`
 - **Expected**: Should show correct coming soon mode and bypass status
 - **Status**: ⏳ Pending
 
@@ -72,14 +72,14 @@
 ### 4. **Demo Comparison Test**
 
 #### Test 4.1: Demo Comparison Access
-- **URL**: `http://localhost:3000/demo-comparison`
+- **URL**: `http://localhost:3000/debug/demo-comparison`
 - **Expected**: Should show both demo components side by side
 - **Status**: ⏳ Pending
 
 #### Test 4.2: Demo Comparison with Bypass
 - **Steps**:
   1. Enable bypass
-  2. Visit `/demo-comparison`
+  2. Visit `/debug/demo-comparison`
 - **Expected**: Should work normally
 - **Status**: ⏳ Pending
 
