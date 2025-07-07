@@ -144,6 +144,7 @@ export default function QuizSessionPage() {
       question_references: "Robbins Pathology, 10th edition, Chapter 20",
       status: "published",
       created_by: "expert-1",
+      updated_by: "expert-1",
       version: 1,
       question_set_id: "set-1",
       category_id: "cat-1",

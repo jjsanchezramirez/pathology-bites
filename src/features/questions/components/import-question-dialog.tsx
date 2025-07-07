@@ -227,6 +227,7 @@ export function ImportQuestionDialog({ open, onOpenChange, onSave }: ImportQuest
         question_references: parsedData.question_references || null,
         status: parsedData.status,
         created_by: user.id,
+        updated_by: user.id,
         question_set_id: parsedData.question_set_id || null,
       };
 

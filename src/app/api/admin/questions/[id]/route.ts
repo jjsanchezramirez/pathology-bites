@@ -105,7 +105,7 @@ export async function PATCH(
         ...(questionData.question_references !== undefined && { question_references: questionData.question_references }),
         ...(questionData.status && { status: questionData.status }),
         ...(questionData.question_set_id !== undefined && { question_set_id: questionData.question_set_id }),
-        current_editor_id: user.id,
+        updated_by: user.id,
         updated_at: new Date().toISOString()
       }
 

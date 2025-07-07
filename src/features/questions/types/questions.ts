@@ -99,6 +99,7 @@ export interface QuestionWithDetails extends QuestionData {
   categories?: CategoryData[];
   analytics?: QuestionAnalyticsData;
   created_by_name?: string;
+  updated_by_name?: string;
   image_count?: number;
   flag_count?: number;
   latest_flag_date?: string;
@@ -106,7 +107,6 @@ export interface QuestionWithDetails extends QuestionData {
   version_major?: number;
   version_minor?: number;
   version_patch?: number;
-  change_summary?: string;
 }
 
 export interface QuestionWithSet extends QuestionData {
@@ -203,10 +203,6 @@ export interface QuestionVersionInfo {
   version_minor: number;
   version_patch: number;
   version_string: string;
-  change_summary?: string;
-  update_type?: UpdateType;
-  original_creator_id: string;
-  current_editor_id: string;
 }
 
 export interface QuestionVersionHistory {

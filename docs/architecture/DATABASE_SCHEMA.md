@@ -22,8 +22,12 @@ The central table storing all question data.
 - `teaching_point` (text, required) - Key learning objective
 - `question_references` (text, optional) - Citations and references
 - `status` (text, required) - draft, under_review, published, flagged, archived
-- `created_by` (uuid, foreign key to users)
-- `version` (integer, default 1)
+- `created_by` (uuid, foreign key to users) - Original creator
+- `updated_by` (uuid, foreign key to users) - Last editor
+- `version_major` (integer, default 1) - Major version number
+- `version_minor` (integer, default 0) - Minor version number
+- `version_patch` (integer, default 0) - Patch version number
+- `version_string` (text) - Computed semantic version (e.g., "1.2.3")
 - `question_set_id` (uuid, foreign key to sets)
 - `category_id` (uuid, foreign key to categories) - **Direct relationship, no junction table**
 - `search_vector` (tsvector) - Full-text search index
@@ -209,13 +213,18 @@ User-reported issues with published questions.
 - `resolved_at` (timestamp, optional)
 
 ### Question Versions
-Complete audit trail of question changes.
+Complete audit trail of question changes with semantic versioning.
 
 **Table: `question_versions`**
 - `id` (uuid, primary key)
 - `question_id` (uuid, foreign key to questions)
-- `version_number` (integer, required)
+- `version_major` (integer, required) - Major version number
+- `version_minor` (integer, required) - Minor version number
+- `version_patch` (integer, required) - Patch version number
+- `version_string` (text, required) - Semantic version string (e.g., "1.2.3")
 - `question_data` (jsonb, required) - Complete question snapshot
+- `update_type` (text, required) - Type of change: patch, minor, major
+- `change_summary` (text, optional) - Description of changes made
 - `changed_by` (uuid, foreign key to users)
 - `change_summary` (text, optional)
 - `created_at` (timestamp)
@@ -223,7 +232,9 @@ Complete audit trail of question changes.
 ## 🎯 **Key Improvements from Reorganization**
 
 ### ✅ **Eliminated Redundancy**
-- Removed duplicate fields from questions table (flagged_by, reviewed_by, etc.)
+- Removed duplicate fields from questions table (change_summary, update_type, original_creator_id, current_editor_id)
+- These fields now exist only in question_versions table where they belong
+- Added updated_by column to track last editor directly in questions table
 - Consolidated question_categories into direct foreign key relationship
 - Single source of truth for all data
 

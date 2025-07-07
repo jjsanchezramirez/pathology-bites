@@ -336,14 +336,6 @@ function ExpandableQuestionRow({
         <TableCell>
           <div className="text-sm">
             {question.version_string || `${question.version_major || 1}.${question.version_minor || 0}.${question.version_patch || 0}`}
-            {question.change_summary && (
-              <div className="text-xs text-muted-foreground mt-1" title={question.change_summary}>
-                {question.change_summary.length > 30
-                  ? `${question.change_summary.substring(0, 30)}...`
-                  : question.change_summary
-                }
-              </div>
-            )}
           </div>
         </TableCell>
         <TableCell>

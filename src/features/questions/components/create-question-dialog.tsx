@@ -191,6 +191,7 @@ export function CreateQuestionDialog({
       const questionData = {
         ...data,
         created_by: user.id,
+        updated_by: user.id,
         question_set_id: data.question_set_id === 'none' ? null : data.question_set_id,
         question_references: data.question_references || null,
       };

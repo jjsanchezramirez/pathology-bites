@@ -82,7 +82,7 @@ const editQuestionSchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']),
   teaching_point: z.string().min(10, 'Teaching point must be at least 10 characters').max(1000, 'Teaching point too long'),
   question_references: z.string().max(500, 'References too long').optional(),
-  status: z.enum(['draft', 'under_review', 'approved_with_edits', 'rejected', 'published', 'flagged', 'archived']),
+  status: z.enum(['draft', 'under_review', 'published', 'rejected', 'pending_major_edits', 'pending_minor_edits', 'archived']),
   question_set_id: z.string(),
 });
 
@@ -419,6 +419,7 @@ export function EditQuestionDialog({
   const [answerOptionErrors, setAnswerOptionErrors] = useState<Record<string, string>>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [fullQuestionData, setFullQuestionData] = useState<QuestionWithDetails | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { updateQuestion } = useQuestions();
   const { questionSets } = useQuestionSets();
@@ -457,11 +458,31 @@ export function EditQuestionDialog({
     return () => subscription.unsubscribe();
   }, [form, isInitializing, hasUnsavedChanges]);
 
+  // Track changes to images, tags, and categories (but ignore during initialization)
+  useEffect(() => {
+    if (!isInitializing && fullQuestionData) {
+      // Compare current state with original data to detect changes
+      const originalImages = fullQuestionData.question_images?.map(qi => ({
+        image_id: qi.image?.id || '',
+        question_section: (qi.question_section === 'explanation' ? 'explanation' : 'stem') as 'stem' | 'explanation',
+        order_index: qi.order_index || 0
+      })) || [];
+      const originalTagIds = fullQuestionData.tags?.map(tag => tag.id) || [];
+      const originalCategoryId = fullQuestionData.categories?.[0]?.id || '';
+
+      const imagesChanged = JSON.stringify(questionImages) !== JSON.stringify(originalImages);
+      const tagsChanged = JSON.stringify(selectedTagIds.sort()) !== JSON.stringify(originalTagIds.sort());
+      const categoryChanged = selectedCategoryId !== originalCategoryId;
+
+      if (imagesChanged || tagsChanged || categoryChanged) {
+        console.log('🖼️ Non-form changes detected:', { imagesChanged, tagsChanged, categoryChanged });
+        setHasUnsavedChanges(true);
+      }
+    }
+  }, [questionImages, selectedTagIds, selectedCategoryId, isInitializing, fullQuestionData]);
+
   // Remove this useEffect - it's causing false positives
   // The form watch should be sufficient for detecting changes
-
-  // Fetch complete question data when dialog opens
-  const [fullQuestionData, setFullQuestionData] = useState<QuestionWithDetails | null>(null);
 
   const fetchCompleteQuestionData = useCallback(async (questionId: string) => {
     try {
@@ -496,8 +517,8 @@ export function EditQuestionDialog({
           .from('questions')
           .select(`
             *,
-            created_by_name:users!questions_created_by_fkey(first_name, last_name),
-            current_editor_name:users!questions_current_editor_id_fkey(first_name, last_name)
+            created_by_user:users!created_by(first_name, last_name),
+            updated_by_user:users!updated_by(first_name, last_name)
           `)
           .eq('id', questionId)
           .single(),
@@ -585,12 +606,12 @@ export function EditQuestionDialog({
       console.log('Raw questionTags data:', questionTags);
       console.log('Tags error:', tagsResult.error);
 
-      // Process creator and editor names
-      const createdByName = questionData.created_by_name
-        ? `${questionData.created_by_name.first_name} ${questionData.created_by_name.last_name}`
+      // Process creator and editor names with fallback for empty names
+      const createdByName = questionData.created_by_user
+        ? `${questionData.created_by_user.first_name} ${questionData.created_by_user.last_name}`.trim() || 'System User'
         : null;
-      const currentEditorName = questionData.current_editor_name
-        ? `${questionData.current_editor_name.first_name} ${questionData.current_editor_name.last_name}`
+      const updatedByName = questionData.updated_by_user
+        ? `${questionData.updated_by_user.first_name} ${questionData.updated_by_user.last_name}`.trim() || 'System User'
         : null;
 
       // Process tags - extract the actual tag data from the nested structure
@@ -601,7 +622,7 @@ export function EditQuestionDialog({
       const completeData = {
         ...questionData,
         created_by_name: createdByName,
-        current_editor_name: currentEditorName,
+        updated_by_name: updatedByName,
         question_options: questionOptions || [],
         question_images: questionImages || [],
         tags: processedTags,
@@ -1064,11 +1085,9 @@ export function EditQuestionDialog({
                   </div>
                 </div>
               ) : (
-                <div>
-
-
+                <div className="flex flex-col h-full">
                   <Tabs defaultValue="general" className="flex-1 flex flex-col">
-                    <TabsList className="grid w-full grid-cols-4">
+                    <TabsList className="grid w-full grid-cols-4 flex-shrink-0">
                       <TabsTrigger value="general">General</TabsTrigger>
                       <TabsTrigger value="options">Options</TabsTrigger>
                       <TabsTrigger value="references">References</TabsTrigger>
@@ -1076,7 +1095,7 @@ export function EditQuestionDialog({
                     </TabsList>
 
                     {/* Tab 1: General */}
-                    <TabsContent value="general" className="space-y-4 flex-1">
+                    <TabsContent value="general" className="space-y-4 flex-1 overflow-y-auto">
                       <div className="grid grid-cols-1 gap-4">
                         <FormField
                           control={form.control}
@@ -1125,8 +1144,12 @@ export function EditQuestionDialog({
                                   </FormControl>
                                   <SelectContent>
                                     <SelectItem value="draft">Draft</SelectItem>
-                                    <SelectItem value="review">Under Review</SelectItem>
+                                    <SelectItem value="under_review">Under Review</SelectItem>
                                     <SelectItem value="published">Published</SelectItem>
+                                    <SelectItem value="rejected">Rejected</SelectItem>
+                                    <SelectItem value="pending_major_edits">Pending Major Edits</SelectItem>
+                                    <SelectItem value="pending_minor_edits">Pending Minor Edits</SelectItem>
+                                    <SelectItem value="archived">Archived</SelectItem>
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -1215,7 +1238,7 @@ export function EditQuestionDialog({
                     </TabsContent>
 
                     {/* Tab 2: Answer Options */}
-                    <TabsContent value="options" className="space-y-4 flex-1">
+                    <TabsContent value="options" className="space-y-4 flex-1 overflow-y-auto">
                       <CompactAnswerOptions
                         options={answerOptions}
                         onChange={(newOptions) => {
@@ -1227,7 +1250,7 @@ export function EditQuestionDialog({
                     </TabsContent>
 
                     {/* Tab 3: References & Teaching Point */}
-                    <TabsContent value="references" className="space-y-4 flex-1">
+                    <TabsContent value="references" className="space-y-4 flex-1 overflow-y-auto">
                       <div className="space-y-4">
                         <FormField
                           control={form.control}
@@ -1268,7 +1291,7 @@ export function EditQuestionDialog({
                     </TabsContent>
 
                     {/* Tab 4: Media */}
-                    <TabsContent value="media" className="space-y-6 h-full">
+                    <TabsContent value="media" className="space-y-6 flex-1 overflow-y-auto">
                       {isLoadingImages ? (
                         <div className="space-y-6">
                           {/* Question Body Images Skeleton */}
@@ -1369,10 +1392,10 @@ export function EditQuestionDialog({
 
               <div className="flex justify-between items-center gap-3 pt-6 flex-shrink-0 border-t bg-background">
                 {/* Metadata */}
-                <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                  {question.created_by_name && <span>Created by {question.created_by_name} on {new Date(question.created_at).toLocaleDateString()}</span>}
-                  <span>Last updated on {new Date(question.updated_at).toLocaleDateString()}</span>
-                  {question.version_string && <span>v{question.version_string}</span>}
+                <div className="text-xs text-muted-foreground">
+                  <span>
+                    Created by {fullQuestionData?.created_by_name || 'Unknown'} on {new Date(question.created_at).toLocaleDateString('en-US', { year: '2-digit', month: '2-digit', day: '2-digit' })} &nbsp;&nbsp;&nbsp;&nbsp; Last updated by {fullQuestionData?.updated_by_name || 'Unknown'} on {new Date(question.updated_at).toLocaleDateString('en-US', { year: '2-digit', month: '2-digit', day: '2-digit' })} &nbsp;&nbsp;&nbsp;&nbsp; {question.version_string}
+                  </span>
                 </div>
 
                 {/* Action Buttons */}

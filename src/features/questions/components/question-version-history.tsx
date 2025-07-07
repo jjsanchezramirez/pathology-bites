@@ -31,21 +31,18 @@ interface QuestionVersionHistoryProps {
 }
 
 // Update type configuration for UI
-const UPDATE_TYPE_CONFIG: Record<UpdateType, { label: string; color: string; description: string }> = {
+const UPDATE_TYPE_CONFIG: Record<UpdateType, { label: string; color: string }> = {
   patch: {
     label: 'Patch',
-    color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
-    description: 'Typos, formatting, references'
+    color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
   },
   minor: {
     label: 'Minor',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-    description: 'Content changes, options, explanations'
+    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
   },
   major: {
     label: 'Major',
-    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300',
-    description: 'Complete rewrite or restructure'
+    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300'
   }
 }
 
@@ -105,7 +102,7 @@ export function QuestionVersionHistory({ questionId, open, onOpenChange }: Quest
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <DialogOverlay className="backdrop-blur-md bg-black/20" />
-        <DialogContent className="max-w-[95vw] w-[1400px] max-h-[75vh] overflow-hidden">
+        <DialogContent className="max-w-[95vw] w-[1600px] max-h-[75vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <History className="h-5 w-5" />
@@ -199,13 +196,6 @@ export function QuestionVersionHistory({ questionId, open, onOpenChange }: Quest
                     </p>
                   </div>
                 )}
-
-                <div className="flex-shrink-0">
-                  <span className="font-medium text-sm">Update Type Description:</span>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {UPDATE_TYPE_CONFIG[selectedVersion.update_type].description}
-                  </p>
-                </div>
 
                 {/* Question Data Preview */}
                 <div className="flex-1">

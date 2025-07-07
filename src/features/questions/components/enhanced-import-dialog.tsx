@@ -304,6 +304,7 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
             question_references: questionData.question_references || null,
             status: questionData.status,
             created_by: user.id,
+            updated_by: user.id,
             question_set_id: selectedQuestionSetId || questionData.question_set_id || null,
           };
 

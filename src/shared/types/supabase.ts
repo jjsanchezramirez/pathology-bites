@@ -271,6 +271,7 @@ export interface Database {
           question_references: string | null
           status: string
           created_by: string
+          updated_by: string
           version: number
           question_set_id: string | null
           category_id: string | null
@@ -286,6 +287,7 @@ export interface Database {
           question_references?: string | null
           status?: string
           created_by: string
+          updated_by: string
           version?: number
           question_set_id?: string | null
           category_id?: string | null
@@ -301,6 +303,7 @@ export interface Database {
           question_references?: string | null
           status?: string
           created_by?: string
+          updated_by?: string
           version?: number
           question_set_id?: string | null
           category_id?: string | null
@@ -311,6 +314,12 @@ export interface Database {
           {
             foreignKeyName: "questions_created_by_fkey"
             columns: ["created_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_updated_by_fkey"
+            columns: ["updated_by"]
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -617,25 +626,40 @@ export interface Database {
         Row: {
           id: string
           question_id: string
-          version_number: number
-          content: Json
-          created_by: string
+          version_major: number
+          version_minor: number
+          version_patch: number
+          version_string: string
+          question_data: Json
+          update_type: string
+          change_summary: string | null
+          changed_by: string
           created_at: string
         }
         Insert: {
           id?: string
           question_id: string
-          version_number: number
-          content: Json
-          created_by: string
+          version_major: number
+          version_minor: number
+          version_patch: number
+          version_string: string
+          question_data: Json
+          update_type: string
+          change_summary?: string | null
+          changed_by: string
           created_at?: string
         }
         Update: {
           id?: string
           question_id?: string
-          version_number?: number
-          content?: Json
-          created_by?: string
+          version_major?: number
+          version_minor?: number
+          version_patch?: number
+          version_string?: string
+          question_data?: Json
+          update_type?: string
+          change_summary?: string | null
+          changed_by?: string
           created_at?: string
         }
         Relationships: [
@@ -646,8 +670,8 @@ export interface Database {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "question_versions_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: "question_versions_changed_by_fkey"
+            columns: ["changed_by"]
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
