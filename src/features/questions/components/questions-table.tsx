@@ -414,11 +414,14 @@ function ExpandableQuestionRow({
                   <p className="text-muted-foreground text-xs">{question.question_references}</p>
                 </div>
               )}
-              <div className="flex flex-wrap gap-3 text-xs text-muted-foreground pt-1 mt-1 border-t border-muted/50">
-                {question.created_by_name && <span>By: {question.created_by_name}</span>}
-                <span>Created: {new Date(question.created_at).toLocaleDateString()}</span>
-                <span>Updated: {new Date(question.updated_at).toLocaleDateString()}</span>
-                {question.version && <span>v{question.version}</span>}
+              <div className="text-xs text-muted-foreground pt-1 mt-1 border-t border-muted/50">
+                <span>
+                  Created by {question.created_by_name || 'Unknown'} on {new Date(question.created_at).toLocaleDateString()}
+                  {' '}
+                  Last updated by {question.updated_by_name || question.created_by_name || 'Unknown'} on {new Date(question.updated_at).toLocaleDateString()}
+                  {' '}
+                  {question.version_string || `v${question.version_major || 1}.${question.version_minor || 0}.${question.version_patch || 0}`}
+                </span>
               </div>
             </div>
           </TableCell>

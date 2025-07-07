@@ -101,17 +101,25 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
   const [availableImages, setAvailableImages] = useState<any[]>([]);
   const [currentImages, setCurrentImages] = useState<any[]>([]);
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+
+  // Debounce search term to prevent flickering during fast typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const loadImages = useCallback(async () => {
-    setLoading(true);
     try {
       const { fetchImages } = await import('@/features/images/services/images');
       const result = await fetchImages({
         page: 0,
         pageSize: 10, // Load exactly 10 images (2 rows of 5)
-        searchTerm: searchTerm || undefined,
+        searchTerm: debouncedSearchTerm || undefined,
       });
 
       if (result.error) {
@@ -121,10 +129,8 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
       setAvailableImages(result.data);
     } catch (error) {
       console.error('Failed to load images:', error);
-    } finally {
-      setLoading(false);
     }
-  }, [searchTerm]);
+  }, [debouncedSearchTerm]);
 
   // Load current images data when images prop changes
   const loadCurrentImages = useCallback(async () => {
@@ -283,9 +289,9 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
       </div>
 
       {/* Image Picker Dialog */}
-      <Dialog open={showImagePicker} onOpenChange={handleCancelSelection} modal={false}>
+      <Dialog open={showImagePicker} onOpenChange={handleCancelSelection}>
         <DialogPortal>
-          <DialogOverlay className="backdrop-blur-md bg-black/20" />
+          <DialogOverlay className="backdrop-blur-md bg-black/30" />
           <DialogContent className="!max-w-[1090px] !w-[1090px] max-h-[85vh] overflow-hidden border-0">
             <DialogHeader>
               <DialogTitle>Select Images for {section === 'stem' ? 'Question Body' : 'Explanation'}</DialogTitle>
@@ -303,11 +309,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
               />
 
               <div className="border rounded-lg p-4">
-                {loading ? (
-                  <div className="flex justify-center items-center h-40">
-                    <div className="text-sm text-muted-foreground">Loading images...</div>
-                  </div>
-                ) : availableImages.length === 0 ? (
+                {availableImages.length === 0 ? (
                   <div className="text-center text-sm text-muted-foreground py-12">
                     <p>No images found</p>
                   </div>
