@@ -37,7 +37,7 @@ export function DashboardHeader({ onToggleSidebar }: HeaderProps) {
         </div>
       </div>
       
-      <div className="ml-auto flex items-center gap-4">
+      <div className="ml-auto flex items-center gap-2">
         <ThemeToggle />
         <NotificationsHandler />
         <ProfileDropdown />

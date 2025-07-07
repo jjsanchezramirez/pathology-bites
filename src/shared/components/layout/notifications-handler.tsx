@@ -80,7 +80,16 @@ export function NotificationsHandler() {
 
   // Don't render if not hydrated or authenticated
   if (!isHydrated || !isAuthenticated || !user) {
-    return null
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="relative rounded-full opacity-50"
+        disabled
+      >
+        <Bell className="h-5 w-5" />
+      </Button>
+    )
   }
 
   return (

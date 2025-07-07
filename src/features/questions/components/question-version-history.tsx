@@ -9,6 +9,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogPortal,
+  DialogOverlay,
 } from '@/shared/components/ui/dialog'
 import {
   Table,
@@ -61,13 +63,26 @@ export function QuestionVersionHistory({ questionId, open, onOpenChange }: Quest
   const fetchVersionHistory = async () => {
     try {
       setLoading(true)
-      
-      const response = await fetch(`/api/admin/questions/${questionId}/version`)
+      console.log('Fetching version history for questionId:', questionId)
+
+      if (!questionId) {
+        throw new Error('No question ID provided')
+      }
+
+      const url = `/api/admin/questions/${questionId}/version`
+      console.log('Fetching from URL:', url)
+
+      const response = await fetch(url)
+      console.log('Response status:', response.status)
+
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Response error:', errorText)
         throw new Error('Failed to fetch version history')
       }
 
       const data = await response.json()
+      console.log('Received data:', data)
       setVersions(data.versions || [])
     } catch (error) {
       console.error('Error fetching version history:', error)
@@ -88,20 +103,22 @@ export function QuestionVersionHistory({ questionId, open, onOpenChange }: Quest
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <History className="h-5 w-5" />
-            Question Version History
-          </DialogTitle>
-          <DialogDescription>
-            View the complete version history and changes made to this question.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogPortal>
+        <DialogOverlay className="backdrop-blur-md bg-black/20" />
+        <DialogContent className="max-w-[95vw] w-[1400px] max-h-[75vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Question Version History
+            </DialogTitle>
+            <DialogDescription>
+              View the complete version history and changes made to this question.
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="flex gap-4 h-[70vh]">
+          <div className="flex gap-6 h-[60vh]">
           {/* Version List */}
-          <div className="w-1/2 border-r pr-4">
+          <div className="w-1/3 border-r pr-6">
             <h3 className="text-sm font-medium mb-3">Versions</h3>
             {loading ? (
               <div className="flex items-center justify-center py-8">
@@ -152,11 +169,11 @@ export function QuestionVersionHistory({ questionId, open, onOpenChange }: Quest
           </div>
 
           {/* Version Details */}
-          <div className="w-1/2 pl-4">
+          <div className="w-2/3 pl-6">
             <h3 className="text-sm font-medium mb-3">Version Details</h3>
             {selectedVersion ? (
-              <div className="space-y-4 overflow-y-auto max-h-full">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="flex flex-col h-full space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm flex-shrink-0">
                   <div>
                     <span className="font-medium">Version:</span> v{selectedVersion.version_string}
                   </div>
@@ -175,7 +192,7 @@ export function QuestionVersionHistory({ questionId, open, onOpenChange }: Quest
                 </div>
 
                 {selectedVersion.change_summary && (
-                  <div>
+                  <div className="flex-shrink-0">
                     <span className="font-medium text-sm">Change Summary:</span>
                     <p className="text-sm text-muted-foreground mt-1 p-2 bg-muted/50 rounded">
                       {selectedVersion.change_summary}
@@ -183,7 +200,7 @@ export function QuestionVersionHistory({ questionId, open, onOpenChange }: Quest
                   </div>
                 )}
 
-                <div>
+                <div className="flex-shrink-0">
                   <span className="font-medium text-sm">Update Type Description:</span>
                   <p className="text-sm text-muted-foreground mt-1">
                     {UPDATE_TYPE_CONFIG[selectedVersion.update_type].description}
@@ -191,10 +208,18 @@ export function QuestionVersionHistory({ questionId, open, onOpenChange }: Quest
                 </div>
 
                 {/* Question Data Preview */}
-                <div>
+                <div className="flex-1">
                   <span className="font-medium text-sm">Question Data Snapshot:</span>
-                  <div className="mt-2 p-3 bg-muted/50 rounded text-xs font-mono max-h-64 overflow-y-auto">
-                    <pre>{JSON.stringify(selectedVersion.question_data, null, 2)}</pre>
+                  <div className="mt-2 p-4 bg-muted/50 rounded text-xs font-mono max-h-96 overflow-y-auto border">
+                    {selectedVersion.question_data ? (
+                      <pre className="whitespace-pre-wrap text-xs leading-relaxed">
+                        {JSON.stringify(selectedVersion.question_data, null, 2)}
+                      </pre>
+                    ) : (
+                      <div className="text-muted-foreground italic text-sm">
+                        No question data available for this version
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -204,14 +229,15 @@ export function QuestionVersionHistory({ questionId, open, onOpenChange }: Quest
               </div>
             )}
           </div>
-        </div>
+          </div>
 
-        <div className="flex justify-end pt-4 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
-        </div>
-      </DialogContent>
+          <div className="flex justify-end pt-4 border-t">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </DialogPortal>
     </Dialog>
   )
 }

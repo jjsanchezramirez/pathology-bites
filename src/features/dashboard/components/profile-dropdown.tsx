@@ -113,13 +113,18 @@ export function ProfileDropdown() {
 
   const getInitials = () => {
     if (!isHydrated || !user) return 'G'
-    if (profileLoading) return '•'
-    if (!userProfile) return user.email?.[0]?.toUpperCase() || 'U'
-    if (userProfile.first_name) {
+
+    // Show loading indicator while profile is loading
+    if (profileLoading) return '…'
+
+    // If we have profile data, use it
+    if (userProfile?.first_name) {
       const first = userProfile.first_name[0]?.toUpperCase() || ''
       const last = userProfile.last_name?.[0]?.toUpperCase() || ''
       return first + last
     }
+
+    // Fallback to email first letter
     return user.email?.[0]?.toUpperCase() || 'U'
   }
 
@@ -175,26 +180,28 @@ export function ProfileDropdown() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">
-              {getDisplayName()}
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium leading-none">
+                {getDisplayName()}
+              </p>
+              {userProfile && (
+                <span className="text-xs leading-none text-muted-foreground capitalize">
+                  {userProfile.role}
+                </span>
+              )}
+            </div>
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}
             </p>
-            {userProfile && (
-              <p className="text-xs leading-none text-muted-foreground capitalize">
-                {userProfile.role}
-              </p>
-            )}
           </div>
         </DropdownMenuLabel>
 
         <DropdownMenuSeparator />
 
         <DropdownMenuItem asChild>
-          <a href="/dashboard">
+          <a href="/dashboard/profile">
             <User className="mr-2 h-4 w-4" />
-            <span>Dashboard</span>
+            <span>My Profile</span>
           </a>
         </DropdownMenuItem>
 

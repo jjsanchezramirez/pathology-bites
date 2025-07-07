@@ -1,21 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@/shared/services/server'
 
 // Create Supabase client with service role for admin operations
 async function createAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  return createClient(supabaseUrl, supabaseServiceKey)
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey)
 }
 
-// Create regular client for user authentication
-async function createUserClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-  return createClient(supabaseUrl, supabaseAnonKey)
-}
 
 export async function POST(
   request: NextRequest,
@@ -35,7 +29,7 @@ export async function POST(
     }
 
     // Check user authentication and admin role
-    const userClient = await createUserClient()
+    const userClient = await createClient()
     const { data: { user }, error: authError } = await userClient.auth.getUser()
     
     if (authError || !user) {
@@ -102,7 +96,8 @@ export async function POST(
         question_id_param: questionId,
         update_type_param: updateType,
         change_summary_param: changeSummary || null,
-        question_data_param: snapshotData
+        question_data_param: snapshotData,
+        changed_by_param: user.id
       })
 
     if (versionError) {
@@ -151,9 +146,10 @@ export async function GET(
 ) {
   try {
     const { id: questionId } = await params
+    console.log('Version history API called for question:', questionId)
 
     // Check user authentication
-    const userClient = await createUserClient()
+    const userClient = await createClient()
     const { data: { user }, error: authError } = await userClient.auth.getUser()
     
     if (authError || !user) {
@@ -173,9 +169,9 @@ export async function GET(
         version_string,
         update_type,
         change_summary,
+        question_data,
         created_at,
-        changed_by,
-        changer:users!question_versions_changed_by_fkey(first_name, last_name, email)
+        changed_by
       `)
       .eq('question_id', questionId)
       .order('version_major', { ascending: false })
@@ -190,9 +186,25 @@ export async function GET(
       )
     }
 
+    // Fetch user data for each version
+    const versionsWithUsers = await Promise.all(
+      (versions || []).map(async (version) => {
+        const { data: user } = await adminClient
+          .from('users')
+          .select('first_name, last_name, email')
+          .eq('id', version.changed_by)
+          .single()
+
+        return {
+          ...version,
+          changer: user || { first_name: 'Unknown', last_name: 'User', email: '' }
+        }
+      })
+    )
+
     return NextResponse.json({
       success: true,
-      versions: versions || []
+      versions: versionsWithUsers
     })
 
   } catch (error) {

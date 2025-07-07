@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { createClient } from '@/shared/services/client'
+import { createClient } from '@/shared/services/server'
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -121,7 +121,7 @@ ${data.inquiry}
 }
 
 export async function submitContactForm(formData: ContactFormData) {
-  const supabase = createClient()
+  const supabase = await createClient()
   console.log('Starting form submission...')
   
   try {

@@ -1,0 +1,261 @@
+// src/app/(dashboard)/dashboard/profile/page.tsx
+'use client'
+
+import { useState, useEffect } from 'react'
+import { createClient } from '@/shared/services/client'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Separator } from '@/shared/components/ui/separator'
+import { Badge } from '@/shared/components/ui/badge'
+import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { toast } from 'sonner'
+import { User, Mail, Calendar, Shield, Save, RefreshCw } from 'lucide-react'
+
+interface UserProfile {
+  id: string
+  email: string | null
+  role: string
+  first_name: string | null
+  last_name: string | null
+  status: string
+  created_at: string
+  updated_at: string
+}
+
+export default function MyProfilePage() {
+  const { user, isAuthenticated, isLoading } = useAuthStatus()
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [profileLoading, setProfileLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: ''
+  })
+
+  const supabase = createClient()
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchUserProfile()
+    }
+  }, [isAuthenticated, user])
+
+  const fetchUserProfile = async () => {
+    try {
+      setProfileLoading(true)
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user?.id)
+        .single()
+
+      if (error) throw error
+
+      setUserProfile(data)
+      setFormData({
+        first_name: data.first_name || '',
+        last_name: data.last_name || '',
+        email: data.email || ''
+      })
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+      toast.error('Failed to load profile')
+    } finally {
+      setProfileLoading(false)
+    }
+  }
+
+  const handleSave = async () => {
+    try {
+      setSaving(true)
+      const { error } = await supabase
+        .from('users')
+        .update({
+          first_name: formData.first_name || null,
+          last_name: formData.last_name || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user?.id)
+
+      if (error) throw error
+
+      toast.success('Profile updated successfully')
+      await fetchUserProfile()
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      toast.error('Failed to update profile')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+      case 'creator':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+      case 'reviewer':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+    }
+  }
+
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+      case 'suspended':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+    }
+  }
+
+  if (isLoading || profileLoading) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="flex items-center justify-center h-64">
+          <RefreshCw className="h-8 w-8 animate-spin" />
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated || !user || !userProfile) {
+    return (
+      <div className="container mx-auto py-8">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-center text-muted-foreground">
+              Please log in to view your profile.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className="container mx-auto py-8 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">My Profile</h1>
+        <p className="text-muted-foreground">
+          Manage your account information and preferences.
+        </p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Profile Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Profile Information
+            </CardTitle>
+            <CardDescription>
+              Update your personal information.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="first_name">First Name</Label>
+              <Input
+                id="first_name"
+                value={formData.first_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                placeholder="Enter your first name"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="last_name">Last Name</Label>
+              <Input
+                id="last_name"
+                value={formData.last_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                placeholder="Enter your last name"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                value={formData.email}
+                disabled
+                className="bg-muted"
+              />
+              <p className="text-xs text-muted-foreground">
+                Email cannot be changed. Contact an administrator if needed.
+              </p>
+            </div>
+            <Button onClick={handleSave} disabled={saving} className="w-full">
+              {saving ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Account Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Account Details
+            </CardTitle>
+            <CardDescription>
+              View your account status and role information.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Role</span>
+                <Badge className={getRoleBadgeColor(userProfile.role)}>
+                  {userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1)}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Status</span>
+                <Badge className={getStatusBadgeColor(userProfile.status)}>
+                  {userProfile.status.charAt(0).toUpperCase() + userProfile.status.slice(1)}
+                </Badge>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">User ID</span>
+                <span className="text-xs font-mono text-muted-foreground">
+                  {userProfile.id}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Member Since</span>
+                <span className="text-sm text-muted-foreground">
+                  {new Date(userProfile.created_at).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Last Updated</span>
+                <span className="text-sm text-muted-foreground">
+                  {new Date(userProfile.updated_at).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}

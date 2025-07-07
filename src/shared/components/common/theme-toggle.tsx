@@ -24,7 +24,7 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <Button variant="ghost" size="icon" className="hover:bg-primary/10" disabled>
-        <div className="h-5 w-5" />
+        <Sun size={20} className="transition-all opacity-50" />
       </Button>
     )
   }

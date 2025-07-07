@@ -28,6 +28,7 @@ import { useQuestions } from '@/features/questions/hooks/use-questions';
 import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status';
+import { useUserRole } from '@/shared/hooks/use-user-role';
 import { CreateQuestionDialog } from './create-question-dialog';
 import { EditQuestionDialog } from './edit-question-dialog';
 import { EnhancedImportDialog } from './enhanced-import-dialog';
@@ -199,10 +200,10 @@ function RowActions({
   onFlag?: (question: QuestionWithDetails) => void;
   onViewHistory?: (question: QuestionWithDetails) => void;
 }) {
-  const { user } = useAuthStatus();
+  const { isAdmin } = useUserRole();
 
   // Check if user can edit this question
-  const canEdit = question.status !== 'published' || user?.role === 'admin';
+  const canEdit = question.status !== 'published' || isAdmin;
 
   return (
     <DropdownMenu modal={false}>
@@ -368,7 +369,7 @@ function ExpandableQuestionRow({
       {/* Expanded Content Row */}
       {isExpanded && (
         <TableRow className="bg-muted/50">
-          <TableCell colSpan={8} className="px-6 py-2">
+          <TableCell colSpan={9} className="px-6 py-2">
             <div className="text-sm space-y-2">
               <div>
                 <div className="font-medium mb-1 text-xs">Question Stem:</div>

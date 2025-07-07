@@ -1,20 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@/shared/services/server'
 
 // Create Supabase client with service role for admin operations
 async function createAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  return createClient(supabaseUrl, supabaseServiceKey)
-}
-
-// Create regular client for user authentication
-async function createUserClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-  return createClient(supabaseUrl, supabaseAnonKey)
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey)
 }
 
 export async function PATCH(
@@ -24,9 +16,9 @@ export async function PATCH(
   try {
     const { id: questionId } = await params
     const body = await request.json()
-    const { 
-      questionData, 
-      updateType, 
+    const {
+      questionData,
+      updateType,
       changeSummary,
       answerOptions,
       questionImages,
@@ -34,8 +26,10 @@ export async function PATCH(
       categoryId
     } = body
 
+
+
     // Check user authentication
-    const userClient = await createUserClient()
+    const userClient = await createClient()
     const { data: { user }, error: authError } = await userClient.auth.getUser()
     
     if (authError || !user) {
@@ -102,14 +96,22 @@ export async function PATCH(
 
     // Start transaction-like operations
     try {
-      // Update the main question data
+      // Update the main question data - only include valid question table fields
+      const validQuestionFields = {
+        ...(questionData.title && { title: questionData.title }),
+        ...(questionData.stem && { stem: questionData.stem }),
+        ...(questionData.difficulty && { difficulty: questionData.difficulty }),
+        ...(questionData.teaching_point && { teaching_point: questionData.teaching_point }),
+        ...(questionData.question_references !== undefined && { question_references: questionData.question_references }),
+        ...(questionData.status && { status: questionData.status }),
+        ...(questionData.question_set_id !== undefined && { question_set_id: questionData.question_set_id }),
+        current_editor_id: user.id,
+        updated_at: new Date().toISOString()
+      }
+
       const { error: updateError } = await adminClient
         .from('questions')
-        .update({
-          ...questionData,
-          current_editor_id: user.id,
-          updated_at: new Date().toISOString()
-        })
+        .update(validQuestionFields)
         .eq('id', questionId)
 
       if (updateError) {
@@ -118,30 +120,44 @@ export async function PATCH(
 
       // Update answer options if provided
       if (answerOptions) {
+        console.log('Updating answer options...')
+
         // Delete existing options
-        await adminClient
+        const { error: deleteError } = await adminClient
           .from('question_options')
           .delete()
           .eq('question_id', questionId)
 
+        if (deleteError) {
+          console.error('Error deleting existing options:', deleteError)
+          throw new Error(`Failed to delete existing options: ${deleteError.message}`)
+        }
+
         // Insert new options
         if (answerOptions.length > 0) {
+          const optionsToInsert = answerOptions.map((option: any, index: number) => ({
+            question_id: questionId,
+            text: option.text,
+            is_correct: option.is_correct,
+            explanation: option.explanation || null,
+            order_index: index
+          }))
+
+          console.log('Inserting options:', JSON.stringify(optionsToInsert, null, 2))
+
           const { error: optionsError } = await adminClient
             .from('question_options')
-            .insert(
-              answerOptions.map((option: any, index: number) => ({
-                question_id: questionId,
-                text: option.text,
-                is_correct: option.is_correct,
-                explanation: option.explanation || null,
-                order_index: index
-              }))
-            )
+            .insert(optionsToInsert)
 
           if (optionsError) {
+            console.error('Options insert error:', optionsError)
             throw new Error(`Failed to update answer options: ${optionsError.message}`)
           }
+
+          console.log('Answer options updated successfully')
         }
+      } else {
+        console.log('No answer options to update')
       }
 
       // Update question images if provided
@@ -173,25 +189,46 @@ export async function PATCH(
 
       // Update question tags if provided
       if (tagIds !== undefined) {
+        console.log('Updating tags...')
+
         // Delete existing tags
-        await adminClient
-          .from('questions_tags')
+        const { error: deleteTagsError } = await adminClient
+          .from('question_tags')
           .delete()
           .eq('question_id', questionId)
 
-        // Insert new tags
-        if (tagIds.length > 0) {
-          const { error: tagsError } = await adminClient
-            .from('questions_tags')
-            .insert(
-              tagIds.map((tagId: string) => ({
-                question_id: questionId,
-                tag_id: tagId
-              }))
-            )
+        if (deleteTagsError) {
+          console.error('Error deleting existing tags:', deleteTagsError)
+          throw new Error(`Failed to delete existing tags: ${deleteTagsError.message}`)
+        }
 
-          if (tagsError) {
-            throw new Error(`Failed to update question tags: ${tagsError.message}`)
+        // Insert new tags
+        if (tagIds && tagIds.length > 0) {
+          // Filter out any null/undefined tag IDs
+          const validTagIds = tagIds.filter((tagId: any) =>
+            tagId !== null &&
+            tagId !== undefined &&
+            typeof tagId === 'string' &&
+            tagId.trim() !== ''
+          )
+
+          console.log('Original tagIds:', tagIds)
+          console.log('Filtered validTagIds:', validTagIds)
+
+          if (validTagIds.length > 0) {
+            const { error: tagsError } = await adminClient
+              .from('question_tags')
+              .insert(
+                validTagIds.map((tagId: string) => ({
+                  question_id: questionId,
+                  tag_id: tagId
+                }))
+              )
+
+            if (tagsError) {
+              console.error('Tags update error:', tagsError)
+              throw new Error(`Failed to update question tags: ${tagsError.message || JSON.stringify(tagsError)}`)
+            }
           }
         }
       }
@@ -225,7 +262,8 @@ export async function PATCH(
               question_id_param: questionId,
               update_type_param: updateType,
               change_summary_param: changeSummary || null,
-              question_data_param: snapshotData
+              question_data_param: snapshotData,
+              changed_by_param: user.id
             })
 
           if (versionError) {
@@ -256,7 +294,7 @@ export async function PATCH(
         success: true,
         question: updatedQuestion,
         versionId,
-        message: versionId 
+        message: versionId
           ? `Question updated to version ${updatedQuestion.version_string}`
           : 'Question updated successfully'
       })
