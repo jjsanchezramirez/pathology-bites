@@ -14,7 +14,7 @@ import { Label } from "@/shared/components/ui/label"
 import { Separator } from "@/shared/components/ui/separator"
 import { Check, X, User, Calendar, FileQuestion } from 'lucide-react'
 
-interface DraftQuestion {
+interface PreviewableQuestion {
   id: string
   title: string
   stem: string
@@ -32,11 +32,21 @@ interface DraftQuestion {
   question_set?: {
     name: string
     short_form: string
+  } | {
+    id: string
+    name: string
+    description: string | null
+    source_type: string
+    source_details: any
+    is_active: boolean
+    created_by: string | null
+    created_at: string
+    updated_at: string
   }
 }
 
 interface QuestionPreviewDialogProps {
-  question: DraftQuestion | null
+  question: PreviewableQuestion | null
   open: boolean
   onOpenChange: (open: boolean) => void
   onApprove: (questionId: string) => void
@@ -98,7 +108,10 @@ export function QuestionPreviewDialog({
             </Badge>
             {question.question_set && (
               <Badge variant="secondary">
-                {question.question_set.short_form || question.question_set.name}
+                {'short_form' in question.question_set
+                  ? (question.question_set.short_form || question.question_set.name)
+                  : question.question_set.name
+                }
               </Badge>
             )}
             <span className="text-sm text-muted-foreground">

@@ -195,6 +195,15 @@
 - `Admin Full Access to Questions Table` - Admins can do everything
 - `Anonymous users can read published questions` - Public read access to published questions
 
+### question_reviews table
+- `question_reviews_admin_all` - Admins have full access to all review records
+- `question_reviews_reviewer_insert` - Reviewers can insert reviews for questions under review
+- `question_reviews_reviewer_select` - Reviewers can view all reviews for context
+- `question_reviews_creator_select_own` - Creators can view reviews of their own questions
+- `question_reviews_public_select_published` - Public can view reviews of published questions
+- `Reviewers and admins can create reviews` - Legacy policy for review creation
+- `Users can view question reviews` - Legacy policy for review viewing
+
 ## Known Issues Resolved
 
 1. **Explanation Field Error**: The `update_questions_search_vector()` function was referencing a non-existent `explanation` field on the questions table. ✅ FIXED

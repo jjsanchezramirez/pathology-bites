@@ -58,6 +58,12 @@ export function QuestionReviewDialog({
       return
     }
 
+    // Validate required feedback for certain actions
+    if ((selectedAction === 'request_major_revisions' || selectedAction === 'reject') && !feedback.trim()) {
+      toast.error('Feedback is required for this action')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -74,34 +80,42 @@ export function QuestionReviewDialog({
         case 'approve_as_is':
           newStatus = 'published'
           break
-        case 'approve_with_edits':
-          newStatus = 'published'
+        case 'approve_with_minor_edits':
+          newStatus = 'pending_minor_edits'
           break
-        case 'request_revisions':
-          newStatus = 'draft'
+        case 'request_major_revisions':
+          newStatus = 'pending_major_edits'
           break
         case 'reject':
           newStatus = 'rejected'
           break
       }
 
-      // Create review record
+      // Create review record (RLS policies now allow this)
       const { error: reviewError } = await supabase
         .from('question_reviews')
         .insert({
           question_id: question.id,
           reviewer_id: user.id,
           action: selectedAction,
-          feedback: feedback || null
+          feedback: feedback || null,
+          changes_made: null // No changes made in this dialog
         })
 
       if (reviewError) {
         console.error('Error creating review:', reviewError)
-        toast.error('Failed to create review record')
+        console.error('Review data:', {
+          question_id: question.id,
+          reviewer_id: user.id,
+          action: selectedAction,
+          feedback: feedback || null,
+          changes_made: null
+        })
+        toast.error(`Failed to create review record: ${reviewError.message || 'Unknown error'}`)
         return
       }
 
-      // Update question status
+      // Update question status based on review action
       const { error: updateError } = await supabase
         .from('questions')
         .update({
@@ -116,10 +130,10 @@ export function QuestionReviewDialog({
         return
       }
 
-      toast.success(`Question ${selectedAction.replace('_', ' ')} successfully`)
+      toast.success(`Question ${selectedAction.replace(/_/g, ' ')} successfully`)
       onReviewComplete()
       onOpenChange(false)
-      
+
       // Reset form
       setSelectedAction('')
       setFeedback('')
@@ -270,17 +284,19 @@ export function QuestionReviewDialog({
 
               <div>
                 <Label htmlFor="feedback">
-                  Feedback {selectedAction === 'request_revisions' || selectedAction === 'reject' ? '*' : '(Optional)'}
+                  Feedback {selectedAction === 'request_major_revisions' || selectedAction === 'reject' ? '*' : '(Optional)'}
                 </Label>
                 <Textarea
                   id="feedback"
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
                   placeholder={
-                    selectedAction === 'request_revisions' 
-                      ? 'Explain what changes are needed...'
+                    selectedAction === 'request_major_revisions'
+                      ? 'Explain what major changes are needed...'
                       : selectedAction === 'reject'
                       ? 'Explain why this question is being rejected...'
+                      : selectedAction === 'approve_with_minor_edits'
+                      ? 'Describe the minor edits you will make...'
                       : 'Add any additional comments...'
                   }
                   rows={4}
@@ -294,10 +310,10 @@ export function QuestionReviewDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             disabled={!selectedAction || isSubmitting || (
-              (selectedAction === 'request_revisions' || selectedAction === 'reject') && !feedback.trim()
+              (selectedAction === 'request_major_revisions' || selectedAction === 'reject') && !feedback.trim()
             )}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Review'}

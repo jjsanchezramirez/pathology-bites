@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate action
-    const validActions = ['approve_as_is', 'approve_with_edits', 'request_revisions', 'reject'];
+    const validActions = ['approve_as_is', 'approve_with_minor_edits', 'request_major_revisions', 'reject'];
     if (!validActions.includes(action)) {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
@@ -51,11 +51,13 @@ export async function POST(request: NextRequest) {
     let newStatus = question.status;
     switch (action) {
       case 'approve_as_is':
-      case 'approve_with_edits':
         newStatus = 'published';
         break;
-      case 'request_revisions':
-        newStatus = 'draft';
+      case 'approve_with_minor_edits':
+        newStatus = 'pending_minor_edits';
+        break;
+      case 'request_major_revisions':
+        newStatus = 'pending_major_edits';
         break;
       case 'reject':
         newStatus = 'rejected';

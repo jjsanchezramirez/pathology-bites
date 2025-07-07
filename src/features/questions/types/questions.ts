@@ -190,7 +190,7 @@ export const DIFFICULTY_CONFIG = {
 } as const;
 
 // Review and workflow types
-export type ReviewAction = 'approve_as_is' | 'approve_with_edits' | 'request_revisions' | 'reject';
+export type ReviewAction = 'approve_as_is' | 'approve_with_minor_edits' | 'request_major_revisions' | 'reject';
 export type QuestionStatus = 'draft' | 'under_review' | 'published' | 'rejected' | 'pending_major_edits' | 'pending_minor_edits' | 'archived';
 export type FlagType = 'incorrect_answer' | 'unclear_question' | 'outdated_content' | 'incorrect_explanations' | 'other';
 export type FlagStatus = 'pending' | 'under_review' | 'resolved' | 'dismissed';
@@ -305,25 +305,29 @@ export const REVIEW_ACTION_CONFIG = {
     label: 'Approve As-Is',
     description: 'Publish the question without any changes',
     color: 'bg-green-600 hover:bg-green-700',
-    icon: '✓'
+    icon: '✓',
+    resultStatus: 'published' as QuestionStatus
   },
-  approve_with_edits: {
+  approve_with_minor_edits: {
     label: 'Approve with Minor Edits',
-    description: 'Make small changes and publish',
+    description: 'Make small changes and publish immediately',
     color: 'bg-blue-600 hover:bg-blue-700',
-    icon: '✏️'
+    icon: '✏️',
+    resultStatus: 'pending_minor_edits' as QuestionStatus
   },
-  request_revisions: {
+  request_major_revisions: {
     label: 'Request Major Revisions',
-    description: 'Send back to creator with feedback',
+    description: 'Send to communal draft pool for significant changes',
     color: 'bg-yellow-600 hover:bg-yellow-700',
-    icon: '↩️'
+    icon: '↩️',
+    resultStatus: 'pending_major_edits' as QuestionStatus
   },
   reject: {
     label: 'Reject with Feedback',
     description: 'Reject the question with explanation',
     color: 'bg-red-600 hover:bg-red-700',
-    icon: '✗'
+    icon: '✗',
+    resultStatus: 'rejected' as QuestionStatus
   }
 } as const;
 

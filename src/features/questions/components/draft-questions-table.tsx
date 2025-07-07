@@ -22,8 +22,9 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select"
 import { Checkbox } from "@/shared/components/ui/checkbox"
-import { Eye, Search, Filter, Check, X, CheckSquare, FileQuestion } from 'lucide-react'
+import { Eye, Search, Filter, Check, X, CheckSquare, FileQuestion, Send } from 'lucide-react'
 import { QuestionPreviewDialog } from './question-preview-dialog'
+import { SubmitForReviewButton } from './submit-for-review-button'
 import { toast } from 'sonner'
 
 interface DraftQuestion {
@@ -186,7 +187,7 @@ export function DraftQuestionsTable() {
     setPreviewOpen(true)
   }
 
-  const updateQuestionStatus = async (questionIds: string[], newStatus: 'published' | 'rejected') => {
+  const updateQuestionStatus = async (questionIds: string[], newStatus: 'published' | 'rejected' | 'under_review') => {
     try {
       const { error } = await supabase
         .from('questions')
@@ -202,7 +203,8 @@ export function DraftQuestionsTable() {
         return
       }
 
-      const action = newStatus === 'published' ? 'approved' : 'rejected'
+      const action = newStatus === 'published' ? 'approved' :
+                    newStatus === 'rejected' ? 'rejected' : 'submitted for review'
       toast.success(`${questionIds.length} question(s) ${action} successfully`)
 
       // Refresh the data and clear selections
@@ -222,6 +224,11 @@ export function DraftQuestionsTable() {
   const handleRejectSelected = () => {
     if (selectedQuestions.length === 0) return
     updateQuestionStatus(selectedQuestions, 'rejected')
+  }
+
+  const handleSubmitForReviewSelected = () => {
+    if (selectedQuestions.length === 0) return
+    updateQuestionStatus(selectedQuestions, 'under_review')
   }
 
   const getDifficultyBadge = (difficulty: string) => {
@@ -288,6 +295,15 @@ export function DraftQuestionsTable() {
             <Button
               variant="outline"
               size="sm"
+              onClick={handleSubmitForReviewSelected}
+              className="text-blue-600 border-blue-600 hover:bg-blue-50"
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Submit for Review ({selectedQuestions.length})
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleApproveSelected}
               className="text-green-600 border-green-600 hover:bg-green-50"
             >
@@ -323,7 +339,7 @@ export function DraftQuestionsTable() {
               <TableHead>Difficulty</TableHead>
               <TableHead>Question Set</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
+              <TableHead className="w-[150px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -378,13 +394,22 @@ export function DraftQuestionsTable() {
                     {new Date(question.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handlePreviewQuestion(question)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handlePreviewQuestion(question)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <SubmitForReviewButton
+                        questionId={question.id}
+                        questionTitle={question.title}
+                        onSubmitComplete={fetchDraftQuestions}
+                        variant="ghost"
+                        size="sm"
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

@@ -7,7 +7,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { toast } from 'sonner';
-import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, FileText, Flag, ChevronRight, History } from 'lucide-react';
+import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, FileText, Flag, ChevronRight, History, GitBranch } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -35,6 +35,8 @@ import { EnhancedImportDialog } from './enhanced-import-dialog';
 import { QuestionFlagDialog } from './question-flag-dialog';
 import { DeleteQuestionDialog } from './delete-question-dialog';
 import { QuestionVersionHistory } from './question-version-history';
+import { VersionHistoryDialog } from './version-history-dialog';
+import { AdminVersionUpdateDialog } from './admin-version-update-dialog';
 import { getQuestionSetDisplayName, getCategoryDisplayName } from '@/features/questions/utils/display-helpers';
 
 const PAGE_SIZE = 10;
@@ -192,13 +194,15 @@ function RowActions({
   onEdit,
   onDelete,
   onFlag,
-  onViewHistory
+  onViewHistory,
+  onCreateVersion
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
   onDelete: (question: QuestionWithDetails) => void;
   onFlag?: (question: QuestionWithDetails) => void;
   onViewHistory?: (question: QuestionWithDetails) => void;
+  onCreateVersion?: (question: QuestionWithDetails) => void;
 }) {
   const { isAdmin } = useUserRole();
 
@@ -239,6 +243,12 @@ function RowActions({
             Version History
           </DropdownMenuItem>
         )}
+        {canEdit && question.status === 'published' && onCreateVersion && (
+          <DropdownMenuItem onClick={() => onCreateVersion(question)}>
+            <GitBranch className="h-4 w-4 mr-2" />
+            Create Version
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="text-red-600"
@@ -258,13 +268,15 @@ function ExpandableQuestionRow({
   onEdit,
   onDelete,
   onFlag,
-  onViewHistory
+  onViewHistory,
+  onCreateVersion
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
   onDelete: (question: QuestionWithDetails) => void;
   onFlag?: (question: QuestionWithDetails) => void;
   onViewHistory?: (question: QuestionWithDetails) => void;
+  onCreateVersion?: (question: QuestionWithDetails) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -354,6 +366,7 @@ function ExpandableQuestionRow({
             onDelete={onDelete}
             onFlag={onFlag}
             onViewHistory={onViewHistory}
+            onCreateVersion={onCreateVersion}
           />
         </TableCell>
       </TableRow>
@@ -444,9 +457,11 @@ export function QuestionsTable() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showVersionUpdateDialog, setShowVersionUpdateDialog] = useState(false);
   const [questionToDelete, setQuestionToDelete] = useState<QuestionWithDetails | null>(null);
   const [questionToFlag, setQuestionToFlag] = useState<QuestionWithDetails | null>(null);
   const [questionForHistory, setQuestionForHistory] = useState<QuestionWithDetails | null>(null);
+  const [questionForVersionUpdate, setQuestionForVersionUpdate] = useState<QuestionWithDetails | null>(null);
 
   // Fetch questions with current filters
   const {
@@ -510,6 +525,11 @@ export function QuestionsTable() {
     setShowVersionHistory(true);
   }, []);
 
+  const handleCreateVersion = useCallback((question: QuestionWithDetails) => {
+    setQuestionForVersionUpdate(question);
+    setShowVersionUpdateDialog(true);
+  }, []);
+
 
 
   const handleCreateSave = useCallback(() => {
@@ -531,6 +551,12 @@ export function QuestionsTable() {
   const handleFlagSave = useCallback(() => {
     setShowFlagDialog(false);
     setQuestionToFlag(null);
+    refetch();
+  }, [refetch]);
+
+  const handleVersionUpdateSave = useCallback(() => {
+    setShowVersionUpdateDialog(false);
+    setQuestionForVersionUpdate(null);
     refetch();
   }, [refetch]);
 
@@ -605,6 +631,7 @@ export function QuestionsTable() {
                   onDelete={handleDelete}
                   onFlag={handleFlag}
                   onViewHistory={handleViewHistory}
+                  onCreateVersion={handleCreateVersion}
                 />
               ))
             )}
@@ -652,10 +679,21 @@ export function QuestionsTable() {
       />
 
       {/* Version History Dialog */}
-      <QuestionVersionHistory
-        questionId={questionForHistory?.id || ''}
+      <VersionHistoryDialog
+        questionId={questionForHistory?.id || null}
+        questionTitle={questionForHistory?.title}
         open={showVersionHistory}
         onOpenChange={setShowVersionHistory}
+      />
+
+      {/* Admin Version Update Dialog */}
+      <AdminVersionUpdateDialog
+        questionId={questionForVersionUpdate?.id || null}
+        questionTitle={questionForVersionUpdate?.title}
+        currentVersion={questionForVersionUpdate?.version_string}
+        open={showVersionUpdateDialog}
+        onOpenChange={setShowVersionUpdateDialog}
+        onVersionCreated={handleVersionUpdateSave}
       />
 
       {/* Delete Confirmation Dialog */}

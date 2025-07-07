@@ -12,7 +12,8 @@ import {
   Tags,
   MessageSquare,
   ClipboardCheck,
-  ClipboardList
+  ClipboardList,
+  Flag
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -42,6 +43,12 @@ const navigation = [
     name: "Review Queue",
     href: "/admin/questions/review-queue",
     icon: ClipboardList,
+    requiredPermission: "questions.review"
+  },
+  {
+    name: "Review Flagged",
+    href: "/admin/questions/review-flagged",
+    icon: Flag,
     requiredPermission: "questions.review"
   },
   {
