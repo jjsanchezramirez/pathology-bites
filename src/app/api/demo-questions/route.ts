@@ -208,6 +208,10 @@ export async function GET(request: Request) {
     }
     // If no ID is provided, return a random demo question
     else {
+      // Get current index from query parameter or default to 0
+      const currentIndex = parseInt(url.searchParams.get('index') || '0');
+      console.log(`🔍 Demo Questions API: Fetching question with index ${currentIndex}`);
+
       // Get all active demo questions ordered by display_order
       const { data: demoQuestions, error: demoError } = await supabase
         .from('demo_questions')
@@ -215,8 +219,11 @@ export async function GET(request: Request) {
         .eq('is_active', true)
         .order('display_order', { ascending: true });
 
+      console.log(`📊 Demo Questions API: Found ${demoQuestions?.length || 0} active demo questions`);
+      console.log(`📋 Demo Questions API: Demo questions data:`, demoQuestions);
+
       if (demoError || !demoQuestions || demoQuestions.length === 0) {
-        console.error('Error fetching demo questions:', demoError);
+        console.error('❌ Demo Questions API: Error fetching demo questions:', demoError);
         return NextResponse.json(
           { error: 'No demo questions available. Please add questions to the demo_questions table.' },
           { status: 404 }
@@ -224,13 +231,14 @@ export async function GET(request: Request) {
       }
 
       // Use sequential ordering instead of random selection
-      // Get current index from query parameter or default to 0
-      const currentIndex = parseInt(url.searchParams.get('index') || '0');
       const selectedIndex = currentIndex % demoQuestions.length;
       const selectedDemo = demoQuestions[selectedIndex];
 
       // Include next index in response for client to track
       const nextIndex = (selectedIndex + 1) % demoQuestions.length;
+
+      console.log(`🎯 Demo Questions API: Selected index ${selectedIndex} (from ${currentIndex}), next will be ${nextIndex}`);
+      console.log(`📝 Demo Questions API: Selected demo question:`, selectedDemo);
 
       // Fetch the basic question data
       const { data: questionData, error: questionError } = await supabase
@@ -241,12 +249,15 @@ export async function GET(request: Request) {
         .single();
 
       if (questionError || !questionData) {
-        console.error('Error fetching question data:', questionError);
+        console.error('❌ Demo Questions API: Error fetching question data:', questionError);
+        console.log(`🔍 Demo Questions API: Tried to fetch question ID: ${selectedDemo.question_id}`);
         return NextResponse.json(
           { error: 'Question data not found' },
           { status: 404 }
         );
       }
+
+      console.log(`✅ Demo Questions API: Successfully fetched question: ${questionData.title}`);
 
       // Fetch question options separately
       const { data: answerOptions, error: optionsError } = await supabase
@@ -323,6 +334,12 @@ export async function GET(request: Request) {
             totalQuestions: demoQuestions.length
           }
         };
+
+        console.log(`🚀 Demo Questions API: Returning processed question with metadata:`, {
+          id: processedQuestion.id,
+          title: processedQuestion.title,
+          _metadata: processedQuestion._metadata
+        });
 
         return NextResponse.json(processedQuestion, { status: 200 });
       } catch (processingError) {

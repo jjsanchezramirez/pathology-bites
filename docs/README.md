@@ -79,6 +79,7 @@ Technical implementation guides and deep-dive documentation.
 ### 📝 [Changelog](./changelog/)
 Release notes, bug fixes, and feature updates.
 
+- [Demo Question Fixes](./changelog/DEMO_QUESTION_FIXES.md) - Component fixes and cycling implementation
 - [User Management Enhancements](./changelog/USER_MANAGEMENT_ENHANCEMENTS.md) - User system improvements
 - [Database Security Fixes](./changelog/DATABASE_SECURITY_FIXES.md) - Security patches and updates
 - [Demo Question Improvements](./changelog/DEMO_QUESTION_V2_IMPROVEMENTS.md) - Demo system updates
@@ -165,5 +166,5 @@ Historical documents and project planning materials.
 
 ---
 
-*Documentation last updated: January 4, 2025*
-*Major update: Complete security hardening and 4-role system implementation*
+*Documentation last updated: January 7, 2025*
+*Latest update: Demo question cycling fix and enhanced debugging tools*

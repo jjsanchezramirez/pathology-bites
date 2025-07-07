@@ -42,43 +42,45 @@ export function useDemoQuestions() {
       const response = await fetch(`/api/demo-questions?index=${currentIndex}`);
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch demo question: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data && data.id) {
-        setCurrentQuestion(data);
-        // Update current index for next question
-        if (data._metadata?.nextIndex !== undefined) {
-          setCurrentIndex(data._metadata.nextIndex);
+        // If 404, fall back to hardcoded question instead of throwing error
+        if (response.status === 404) {
+          console.log('No demo questions in database, using fallback question');
+          // Fall through to the fallback question logic below
+        } else {
+          throw new Error(`Failed to fetch demo question: ${response.status}`);
         }
-        // Add to questions array if not already present
-        setQuestions(prev => {
-          const exists = prev.some(q => q.id === data.id);
-          if (!exists) {
-            return [...prev, data];
-          }
-          return prev;
-        });
       } else {
-        throw new Error('Invalid question data received');
+        const data = await response.json();
+
+        if (data && data.id) {
+          setCurrentQuestion(data);
+          // Update current index for next question
+          if (data._metadata?.nextIndex !== undefined) {
+            setCurrentIndex(data._metadata.nextIndex);
+          }
+          // Add to questions array if not already present
+          setQuestions(prev => {
+            const exists = prev.some(q => q.id === data.id);
+            if (!exists) {
+              return [...prev, data];
+            }
+            return prev;
+          });
+          return; // Successfully loaded from API, exit function
+        } else {
+          console.log('Invalid question data received, using fallback question');
+          // Fall through to the fallback question logic below
+        }
       }
     } catch (err) {
       console.error('Error fetching demo question:', err);
+      console.log('Using fallback question due to error');
+      // Fall through to the fallback question logic below
+    }
 
-      let errorMessage = 'Failed to load demo question';
-      if (err instanceof Error) {
-        if (err.message.includes('404')) {
-          errorMessage = 'No demo questions available. Please set up demo questions in the database.';
-        } else {
-          errorMessage = err.message;
-        }
-      }
-
-      setError(errorMessage);
-
-      // Fallback to hardcoded question if API fails
+    // Fallback to hardcoded question when API fails or no demo questions available
+    try {
+      console.log('Loading fallback demo question');
       const fallbackQuestion: Question = {
         id: 'demo-fallback',
         title: "Lymph Node Pathology",
@@ -127,6 +129,10 @@ export function useDemoQuestions() {
 
       setCurrentQuestion(fallbackQuestion);
       setQuestions([fallbackQuestion]);
+      setError(null); // Clear any previous errors since we have a fallback question
+    } catch (fallbackError) {
+      console.error('Error loading fallback question:', fallbackError);
+      setError('Failed to load demo question');
     } finally {
       setLoading(false);
     }

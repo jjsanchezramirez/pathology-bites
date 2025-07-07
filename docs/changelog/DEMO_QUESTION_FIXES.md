@@ -173,3 +173,72 @@
 - **After**: ⭐⭐⭐⭐⭐ (5/5) - Professional, smooth, accessible
 
 The demo question component now provides a professional, consistent, and accessible experience that matches modern web application standards.
+
+---
+
+## 🔄 **Demo Question Cycling Fix** ✅ FIXED
+*Date: 2025-01-07*
+
+### 🐛 **Issue Identified**
+Demo questions were not cycling properly - the "Try Another Question" button always showed the same question instead of rotating through the available demo questions.
+
+### 🔍 **Root Cause Analysis**
+Through comprehensive debugging with enhanced logging, we discovered:
+
+1. **Database Status Issue**: Demo questions in the `demo_questions` table were correctly configured (3 active questions), but the referenced questions in the `questions` table had `status != 'published'`
+2. **API Query Logic**: The demo questions API was filtering for `status = 'published'`, which excluded all demo questions
+3. **Fallback Behavior**: When no published demo questions were found, the system always fell back to the same hardcoded question
+
+### 🛠️ **Debugging Tools Added**
+- **Debug API Endpoint**: `/api/debug/demo-questions` to inspect demo question status
+- **Enhanced Logging**: Comprehensive console logs in both API and hook for troubleshooting
+- **Status Validation**: Real-time checking of demo question and referenced question status
+
+### ✅ **Solution Applied**
+1. **Database Fix**: Updated referenced questions to `status = 'published'`
+2. **Verification**: Confirmed all 3 demo questions now have published status
+3. **Testing**: Verified proper cycling behavior (0 → 1 → 2 → 0...)
+
+### 📊 **Debug Output Analysis**
+```json
+{
+  "total_demo_questions": 3,
+  "active_demo_questions": 3,
+  "published_referenced_questions": 0  // ← This was the issue
+}
+```
+
+After fix:
+```json
+{
+  "total_demo_questions": 3,
+  "active_demo_questions": 3,
+  "published_referenced_questions": 3  // ✅ Fixed
+}
+```
+
+### 🔧 **Technical Implementation**
+- **Sequential Ordering**: Questions cycle in order (0, 1, 2, 0, 1, 2...)
+- **Index Management**: Proper `currentIndex` and `nextIndex` tracking
+- **Metadata Response**: API includes cycling metadata for client-side management
+- **Fallback Handling**: Graceful fallback to hardcoded question if database issues occur
+
+### 📁 **Files Modified**
+- `src/app/api/debug/demo-questions/route.ts` - New debug endpoint
+- `src/app/api/demo-questions/route.ts` - Enhanced logging
+- `src/shared/hooks/use-demo-questions.ts` - Improved error handling
+
+### 🎯 **Benefits Achieved**
+- ✅ **Proper Cycling**: Demo questions now rotate correctly
+- ✅ **Debug Tools**: Easy troubleshooting for future issues
+- ✅ **Better Logging**: Clear visibility into API behavior
+- ✅ **Status Validation**: Real-time verification of demo question status
+
+### 🧪 **Testing Verified**
+- [x] Demo questions cycle through all 3 questions
+- [x] Index management works correctly (0 → 1 → 2 → 0)
+- [x] Debug endpoint provides accurate status information
+- [x] Fallback behavior works when database issues occur
+- [x] Console logging provides clear troubleshooting information
+
+The demo question cycling now works as intended, providing users with variety in the demo questions they see.
