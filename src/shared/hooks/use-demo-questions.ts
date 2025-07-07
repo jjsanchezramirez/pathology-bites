@@ -44,7 +44,6 @@ export function useDemoQuestions() {
       if (!response.ok) {
         // If 404, fall back to hardcoded question instead of throwing error
         if (response.status === 404) {
-          console.log('No demo questions in database, using fallback question');
           // Fall through to the fallback question logic below
         } else {
           throw new Error(`Failed to fetch demo question: ${response.status}`);
@@ -68,19 +67,16 @@ export function useDemoQuestions() {
           });
           return; // Successfully loaded from API, exit function
         } else {
-          console.log('Invalid question data received, using fallback question');
           // Fall through to the fallback question logic below
         }
       }
     } catch (err) {
       console.error('Error fetching demo question:', err);
-      console.log('Using fallback question due to error');
       // Fall through to the fallback question logic below
     }
 
     // Fallback to hardcoded question when API fails or no demo questions available
     try {
-      console.log('Loading fallback demo question');
       const fallbackQuestion: Question = {
         id: 'demo-fallback',
         title: "Lymph Node Pathology",
