@@ -101,21 +101,8 @@ export function QuestionFlagDialog({
         return
       }
 
-      // Update question status to flagged if it's currently published
-      if (question.status === 'published') {
-        const { error: updateError } = await supabase
-          .from('questions')
-          .update({
-            status: 'flagged',
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', question.id)
-
-        if (updateError) {
-          console.error('Error updating question status:', updateError)
-          // Don't return here - the flag was still created successfully
-        }
-      }
+      // Flag metadata is automatically updated by database trigger
+      // No need to manually update question status
 
       toast.success('Question flagged successfully')
       onFlagComplete()

@@ -1,41 +1,23 @@
 // src/app/(admin)/admin/questions/review/page.tsx
-import { Metadata } from 'next'
-import { DraftQuestionsTable } from '@/features/questions/components/draft-questions-table'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from "@/shared/components/ui/card"
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Review Draft Questions - Admin Dashboard',
-  description: 'Review and approve pending draft questions',
-}
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function ReviewDraftQuestionsPage() {
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Review Draft Questions</h1>
-        <p className="text-muted-foreground">
-          Review, approve, or reject questions that are pending publication.
-        </p>
-      </div>
+  const router = useRouter()
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Draft Questions</CardTitle>
-          <CardDescription>
-            Questions with "draft" status that require review before being published.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DraftQuestionsTable />
-        </CardContent>
-      </Card>
+  useEffect(() => {
+    // Redirect to unified review queue
+    router.replace('/admin/review-queue')
+  }, [router])
+
+  return (
+    <div className="flex items-center justify-center py-12">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        <p className="text-sm text-muted-foreground mt-2">Redirecting to Review Queue...</p>
+      </div>
     </div>
   )
 }

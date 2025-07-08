@@ -26,6 +26,7 @@ import { Eye, Search, Filter, Check, X, CheckSquare, FileQuestion, Send } from '
 import { QuestionPreviewDialog } from './question-preview-dialog'
 import { SubmitForReviewButton } from './submit-for-review-button'
 import { toast } from 'sonner'
+import { SetData } from '@/features/questions/types/question-sets'
 
 interface DraftQuestion {
   id: string
@@ -34,19 +35,25 @@ interface DraftQuestion {
   difficulty: string
   status: string
   created_at: string
+  updated_at: string
   created_by: string
+  updated_by: string
   question_set_id: string | null
-  teaching_point: string | null
+  category_id: string | null
+  teaching_point: string
+  question_references: string | null
+  version: number
+  version_major: number
+  version_minor: number
+  version_patch: number
+  version_string: string
   // Joined data
   creator?: {
     first_name: string
     last_name: string
     email: string
   }
-  question_set?: {
-    name: string
-    short_form: string
-  }
+  question_set?: SetData
 }
 
 export function DraftQuestionsTable() {
@@ -78,9 +85,18 @@ export function DraftQuestionsTable() {
           difficulty,
           status,
           created_at,
+          updated_at,
           created_by,
+          updated_by,
           question_set_id,
-          teaching_point
+          category_id,
+          teaching_point,
+          question_references,
+          version,
+          version_major,
+          version_minor,
+          version_patch,
+          version_string
         `)
         .eq('status', 'draft')
         .order('created_at', { ascending: false })
@@ -113,7 +129,7 @@ export function DraftQuestionsTable() {
       if (questionSetIds.length > 0) {
         const { data } = await supabase
           .from('sets')
-          .select('id, name, short_form')
+          .select('*')
           .in('id', questionSetIds)
         questionSetsData = data || []
       }
@@ -130,18 +146,24 @@ export function DraftQuestionsTable() {
           difficulty: question.difficulty,
           status: question.status,
           created_at: question.created_at,
+          updated_at: question.updated_at,
           created_by: question.created_by,
+          updated_by: question.updated_by,
           question_set_id: question.question_set_id,
+          category_id: question.category_id,
           teaching_point: question.teaching_point,
+          question_references: question.question_references,
+          version: question.version,
+          version_major: question.version_major,
+          version_minor: question.version_minor,
+          version_patch: question.version_patch,
+          version_string: question.version_string,
           creator: creator ? {
             first_name: creator.first_name,
             last_name: creator.last_name,
             email: creator.email
           } : undefined,
-          question_set: questionSet ? {
-            name: questionSet.name,
-            short_form: questionSet.short_form
-          } : undefined
+          question_set: questionSet || undefined
         }
       })
 
@@ -384,7 +406,7 @@ export function DraftQuestionsTable() {
                   <TableCell>
                     {question.question_set ? (
                       <Badge variant="secondary">
-                        {question.question_set.short_form || question.question_set.name}
+                        {question.question_set.name}
                       </Badge>
                     ) : (
                       '-'
@@ -423,8 +445,6 @@ export function DraftQuestionsTable() {
         question={selectedQuestion}
         open={previewOpen}
         onOpenChange={setPreviewOpen}
-        onApprove={(questionId) => updateQuestionStatus([questionId], 'published')}
-        onReject={(questionId) => updateQuestionStatus([questionId], 'rejected')}
       />
     </div>
   )

@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Validate action
-    const validActions = ['approve_as_is', 'approve_with_minor_edits', 'request_major_revisions', 'reject'];
+    // Validate action - SIMPLIFIED
+    const validActions = ['approve', 'reject'];
     if (!validActions.includes(action)) {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
@@ -47,17 +47,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Question not found' }, { status: 404 });
     }
 
-    // Determine new status based on action
+    // Determine new status based on action - SIMPLIFIED
     let newStatus = question.status;
     switch (action) {
-      case 'approve_as_is':
+      case 'approve':
         newStatus = 'published';
-        break;
-      case 'approve_with_minor_edits':
-        newStatus = 'pending_minor_edits';
-        break;
-      case 'request_major_revisions':
-        newStatus = 'pending_major_edits';
         break;
       case 'reject':
         newStatus = 'rejected';

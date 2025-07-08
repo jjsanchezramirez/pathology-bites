@@ -6,12 +6,25 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - **Question Review Error**: Resolved `Error creating review: {}` in question review dialog
-- **Missing RLS Policies**: Added comprehensive Row Level Security policies for `question_reviews` table
+- **Database Function Errors**: Fixed `calculate_question_analytics` function column mismatches
+- **RLS Policy Issue**: Fixed restrictive RLS policy that prevented reviews of draft questions
+- **Error Handling**: Improved error messages in review dialog to show specific failure reasons
+- **Duplicate Policies**: Removed conflicting duplicate RLS policies for cleaner security model
 
 ### Added
-- **RLS Migration**: Created migration `14-add-question-reviews-rls-policies.sql` with 7 comprehensive policies
+- **RLS Migration**: Created migration `14-add-question-reviews-rls-policies.sql` with comprehensive policies
+- **Policy Fix Migration**: Added migration `15-fix-question-reviews-rls-policy.sql` to allow draft reviews
+- **Analytics Fix Migration**: Added migration `16-fix-question-analytics-function.sql` to fix column errors
+- **Cache Clearing Tool**: Added cache clearing option to debug menu at `/debug`
 - **Performance Indexes**: Added strategic indexes for question review operations
 - **Security Model**: Implemented role-based access control for review system
+
+### Technical Details
+- Updated RLS policy to allow reviews for questions with status: `draft`, `under_review`, `pending_major_edits`, `pending_minor_edits`
+- Fixed user role retrieval to fetch from database instead of auth metadata
+- Enhanced error handling to provide specific messages for permission denied scenarios
+- Cleaned up duplicate RLS policies to prevent conflicts
+- Application rebuilt and redeployed with fixes
 
 ### Database Changes
 - **question_reviews RLS Policies**:

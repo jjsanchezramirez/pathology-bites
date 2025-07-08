@@ -53,14 +53,19 @@ export function QuestionReviewDialog({
   const supabase = createClient()
 
   const handleSubmit = async () => {
+    // CACHE BUSTER: Force browser to reload this code - v2.0
+    console.log('🔄 Question Review Handler v2.0 - Cache Cleared')
+
     if (!question || !selectedAction) {
       toast.error('Please select a review action')
       return
     }
 
+
+
     // Validate required feedback for certain actions
-    if ((selectedAction === 'request_major_revisions' || selectedAction === 'reject') && !feedback.trim()) {
-      toast.error('Feedback is required for this action')
+    if (selectedAction === 'reject' && !feedback.trim()) {
+      toast.error('Feedback is required for rejection')
       return
     }
 
@@ -74,17 +79,30 @@ export function QuestionReviewDialog({
         return
       }
 
-      // Determine new question status based on action
+      // Get user role from database
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      if (userError || !userData) {
+        console.error('Error fetching user role:', userError)
+        toast.error('Unable to verify user permissions')
+        return
+      }
+
+      const userRole = userData.role
+      if (!['admin', 'reviewer'].includes(userRole)) {
+        toast.error('You do not have permission to review questions')
+        return
+      }
+
+      // Determine new question status based on action - SIMPLIFIED
       let newStatus = question.status
       switch (selectedAction) {
-        case 'approve_as_is':
+        case 'approve':
           newStatus = 'published'
-          break
-        case 'approve_with_minor_edits':
-          newStatus = 'pending_minor_edits'
-          break
-        case 'request_major_revisions':
-          newStatus = 'pending_major_edits'
           break
         case 'reject':
           newStatus = 'rejected'
@@ -92,26 +110,45 @@ export function QuestionReviewDialog({
       }
 
       // Create review record (RLS policies now allow this)
+      const reviewData = {
+        question_id: question.id,
+        reviewer_id: user.id,
+        action: selectedAction,
+        feedback: feedback || null,
+        changes_made: null // No changes made in this dialog
+      }
+
       const { error: reviewError } = await supabase
         .from('question_reviews')
-        .insert({
-          question_id: question.id,
-          reviewer_id: user.id,
-          action: selectedAction,
-          feedback: feedback || null,
-          changes_made: null // No changes made in this dialog
-        })
+        .insert(reviewData)
 
       if (reviewError) {
-        console.error('Error creating review:', reviewError)
-        console.error('Review data:', {
+        console.error('🚨 NEW ERROR HANDLER v2.0 - Error creating review:', reviewError)
+        console.error('📊 DETAILED Review data v2.0:', {
           question_id: question.id,
           reviewer_id: user.id,
           action: selectedAction,
           feedback: feedback || null,
-          changes_made: null
+          changes_made: null,
+          question_status: question.status,
+          user_role: userRole,
+          timestamp: new Date().toISOString(),
+          cache_version: '2.0'
         })
-        toast.error(`Failed to create review record: ${reviewError.message || 'Unknown error'}`)
+
+        // Handle different types of errors
+        let errorMessage = 'Unknown error'
+        if (reviewError.message) {
+          errorMessage = reviewError.message
+        } else if (reviewError.code) {
+          errorMessage = `Database error (${reviewError.code})`
+        } else if (typeof reviewError === 'string') {
+          errorMessage = reviewError
+        } else if (Object.keys(reviewError).length === 0) {
+          errorMessage = 'Permission denied - check if question status allows reviews'
+        }
+
+        toast.error(`Failed to create review record: ${errorMessage}`)
         return
       }
 
@@ -284,20 +321,16 @@ export function QuestionReviewDialog({
 
               <div>
                 <Label htmlFor="feedback">
-                  Feedback {selectedAction === 'request_major_revisions' || selectedAction === 'reject' ? '*' : '(Optional)'}
+                  Feedback {selectedAction === 'reject' ? '*' : '(Optional)'}
                 </Label>
                 <Textarea
                   id="feedback"
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
                   placeholder={
-                    selectedAction === 'request_major_revisions'
-                      ? 'Explain what major changes are needed...'
-                      : selectedAction === 'reject'
-                      ? 'Explain why this question is being rejected...'
-                      : selectedAction === 'approve_with_minor_edits'
-                      ? 'Describe the minor edits you will make...'
-                      : 'Add any additional comments...'
+                    selectedAction === 'reject'
+                      ? 'Explain why this question is being rejected and what needs to be fixed...'
+                      : 'Add any additional comments or suggestions...'
                   }
                   rows={4}
                 />
@@ -312,9 +345,7 @@ export function QuestionReviewDialog({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!selectedAction || isSubmitting || (
-              (selectedAction === 'request_major_revisions' || selectedAction === 'reject') && !feedback.trim()
-            )}
+            disabled={!selectedAction || isSubmitting || (selectedAction === 'reject' && !feedback.trim())}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Review'}
           </Button>

@@ -14,10 +14,32 @@ import {
   Server,
   Database,
   Shield,
-  Zap
+  Zap,
+  RefreshCw
 } from "lucide-react"
+import { toast } from "sonner"
 
 export default function DebugPage() {
+  const clearCache = () => {
+    // Clear various browser caches
+    if ('caches' in window) {
+      caches.keys().then(names => {
+        names.forEach(name => {
+          caches.delete(name)
+        })
+      })
+    }
+
+    // Clear localStorage and sessionStorage
+    localStorage.clear()
+    sessionStorage.clear()
+
+    // Force reload without cache
+    window.location.reload()
+
+    toast.success('Cache cleared! Page will reload...')
+  }
+
   const debugTools = [
     {
       category: "Authentication & Users",
@@ -64,6 +86,12 @@ export default function DebugPage() {
           href: "/debug/bypass",
           icon: Eye,
           description: "Manage coming soon mode bypass settings"
+        },
+        {
+          name: "Clear Cache",
+          action: clearCache,
+          icon: RefreshCw,
+          description: "Clear browser cache and force reload (fixes cached JS issues)"
         }
       ]
     }
@@ -148,19 +176,26 @@ export default function DebugPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {category.tools.map((tool) => (
-                    <a
-                      key={tool.name}
-                      href={tool.href}
-                      className="flex items-start gap-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors group"
-                    >
-                      <tool.icon className="w-5 h-5 text-blue-600 mt-0.5 group-hover:text-blue-700" />
-                      <div className="flex-1">
-                        <div className="font-medium group-hover:text-blue-700">{tool.name}</div>
-                        <div className="text-sm text-gray-600 mt-1">{tool.description}</div>
-                      </div>
-                    </a>
-                  ))}
+                  {category.tools.map((tool) => {
+                    const Component = tool.action ? 'button' : 'a'
+                    const props = tool.action
+                      ? { onClick: tool.action }
+                      : { href: tool.href }
+
+                    return (
+                      <Component
+                        key={tool.name}
+                        {...props}
+                        className="flex items-start gap-3 p-4 border rounded-lg hover:bg-gray-50 transition-colors group text-left w-full"
+                      >
+                        <tool.icon className="w-5 h-5 text-blue-600 mt-0.5 group-hover:text-blue-700" />
+                        <div className="flex-1">
+                          <div className="font-medium group-hover:text-blue-700">{tool.name}</div>
+                          <div className="text-sm text-gray-600 mt-1">{tool.description}</div>
+                        </div>
+                      </Component>
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>

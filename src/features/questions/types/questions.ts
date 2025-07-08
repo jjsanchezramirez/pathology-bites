@@ -189,11 +189,12 @@ export const DIFFICULTY_CONFIG = {
   }
 } as const;
 
-// Review and workflow types
-export type ReviewAction = 'approve_as_is' | 'approve_with_minor_edits' | 'request_major_revisions' | 'reject';
-export type QuestionStatus = 'draft' | 'under_review' | 'published' | 'rejected' | 'pending_major_edits' | 'pending_minor_edits' | 'archived';
+// Review and workflow types - SIMPLIFIED
+export type ReviewAction = 'approve' | 'reject';
+export type QuestionStatus = 'draft' | 'under_review' | 'published' | 'rejected';
 export type FlagType = 'incorrect_answer' | 'unclear_question' | 'outdated_content' | 'incorrect_explanations' | 'other';
-export type FlagStatus = 'pending' | 'under_review' | 'resolved' | 'dismissed';
+export type FlagStatus = 'open' | 'closed';
+export type FlagResolutionType = 'fixed' | 'dismissed';
 
 // Versioning types
 export type UpdateType = 'patch' | 'minor' | 'major';
@@ -259,7 +260,7 @@ export interface FlagFormData {
   description: string;
 }
 
-// Status configuration for UI
+// Status configuration for UI - SIMPLIFIED
 export const STATUS_CONFIG = {
   draft: {
     label: 'Draft',
@@ -271,63 +272,61 @@ export const STATUS_CONFIG = {
     color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
     description: 'Question is being reviewed by a reviewer'
   },
-  pending_major_edits: {
-    label: 'Pending Major Edits',
-    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300',
-    description: 'Question needs significant changes and goes to communal draft pool'
-  },
-  pending_minor_edits: {
-    label: 'Pending Minor Edits',
-    color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
-    description: 'Question needs small edits that reviewer will make and approve'
-  },
-  rejected: {
-    label: 'Rejected',
-    color: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
-    description: 'Question was rejected and needs major revisions'
-  },
   published: {
     label: 'Published',
     color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300',
     description: 'Question is live and available to users'
   },
-  // Note: flagged is handled differently - it's a published question with pending flags
-  archived: {
-    label: 'Archived',
-    color: 'bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-300',
-    description: 'Question is no longer active'
+  rejected: {
+    label: 'Rejected',
+    color: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
+    description: 'Question was rejected and needs revision'
   }
 } as const;
 
-// Review action configuration
+// Review action configuration - SIMPLIFIED
 export const REVIEW_ACTION_CONFIG = {
-  approve_as_is: {
-    label: 'Approve As-Is',
-    description: 'Publish the question without any changes',
+  approve: {
+    label: 'Approve',
+    description: 'Approve and publish the question',
     color: 'bg-green-600 hover:bg-green-700',
     icon: '✓',
     resultStatus: 'published' as QuestionStatus
   },
-  approve_with_minor_edits: {
-    label: 'Approve with Minor Edits',
-    description: 'Make small changes and publish immediately',
-    color: 'bg-blue-600 hover:bg-blue-700',
-    icon: '✏️',
-    resultStatus: 'pending_minor_edits' as QuestionStatus
-  },
-  request_major_revisions: {
-    label: 'Request Major Revisions',
-    description: 'Send to communal draft pool for significant changes',
-    color: 'bg-yellow-600 hover:bg-yellow-700',
-    icon: '↩️',
-    resultStatus: 'pending_major_edits' as QuestionStatus
-  },
   reject: {
-    label: 'Reject with Feedback',
-    description: 'Reject the question with explanation',
+    label: 'Reject',
+    description: 'Reject the question and send back to creator with feedback',
     color: 'bg-red-600 hover:bg-red-700',
     icon: '✗',
     resultStatus: 'rejected' as QuestionStatus
+  }
+} as const;
+
+// Flag status configuration - SIMPLIFIED
+export const FLAG_STATUS_CONFIG = {
+  open: {
+    label: 'Open',
+    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300',
+    description: 'Flag is pending review'
+  },
+  closed: {
+    label: 'Closed',
+    color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300',
+    description: 'Flag has been resolved or dismissed'
+  }
+} as const;
+
+// Flag resolution type configuration
+export const FLAG_RESOLUTION_CONFIG = {
+  fixed: {
+    label: 'Fixed',
+    description: 'Issue was resolved by editing the question',
+    color: 'bg-green-100 text-green-800'
+  },
+  dismissed: {
+    label: 'Dismissed',
+    description: 'Flag was determined to be invalid',
+    color: 'bg-gray-100 text-gray-800'
   }
 } as const;
 

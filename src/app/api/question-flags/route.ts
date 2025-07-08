@@ -81,19 +81,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to flag question' }, { status: 500 });
     }
 
-    // Update question status to flagged
-    const { error: updateError } = await supabase
-      .from('questions')
-      .update({
-        status: 'flagged',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', question_id);
-
-    if (updateError) {
-      console.error('Error updating question status:', updateError);
-      // Don't return error here - the flag was still created successfully
-    }
+    // Update question flag metadata (handled by trigger)
+    // No need to change question status - flags are now metadata
 
     return NextResponse.json({ 
       success: true, 
@@ -199,8 +188,8 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Validate status
-    const validStatuses = ['pending', 'under_review', 'resolved', 'dismissed'];
+    // Validate status - SIMPLIFIED
+    const validStatuses = ['open', 'closed'];
     if (!validStatuses.includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     }
@@ -211,10 +200,12 @@ export async function PATCH(request: NextRequest) {
       updated_at: new Date().toISOString()
     };
 
-    if (status === 'resolved' || status === 'dismissed') {
+    if (status === 'closed') {
       updateData.resolved_by = user.id;
       updateData.resolved_at = new Date().toISOString();
       updateData.resolution_notes = resolution_notes || null;
+      // Determine resolution type based on whether notes indicate a fix
+      updateData.resolution_type = resolution_notes && resolution_notes.trim() ? 'fixed' : 'dismissed';
     }
 
     const { data: flag, error: updateError } = await supabase

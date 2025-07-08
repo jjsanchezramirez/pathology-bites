@@ -1,45 +1,23 @@
 // src/app/(admin)/admin/questions/review-flagged/page.tsx
-import { Metadata } from 'next'
-import { FlaggedQuestionsTable } from '@/features/questions/components/flagged-questions-table'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from "@/shared/components/ui/card"
-import { Flag } from 'lucide-react'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Review Flagged Questions - Admin Dashboard',
-  description: 'Review and resolve user-flagged questions',
-}
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function ReviewFlaggedQuestionsPage() {
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Flag className="h-8 w-8" />
-          Review Flagged Questions
-        </h1>
-        <p className="text-muted-foreground">
-          Investigate and resolve questions that have been flagged by users for issues.
-        </p>
-      </div>
+  const router = useRouter()
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Flagged Questions</CardTitle>
-          <CardDescription>
-            Published questions with pending user-reported issues that require investigation.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FlaggedQuestionsTable />
-        </CardContent>
-      </Card>
+  useEffect(() => {
+    // Redirect to unified review queue with flagged filter
+    router.replace('/admin/review-queue?tab=flagged_question')
+  }, [router])
+
+  return (
+    <div className="flex items-center justify-center py-12">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        <p className="text-sm text-muted-foreground mt-2">Redirecting to Review Queue...</p>
+      </div>
     </div>
   )
 }

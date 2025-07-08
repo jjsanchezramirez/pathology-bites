@@ -28,41 +28,28 @@ const navigation = [
     requiredPermission: "dashboard.view"
   },
   {
-    name: "Questions",
+    name: "All Questions",
     href: "/admin/questions",
     icon: FileQuestion,
     requiredPermission: "questions.view"
   },
   {
-    name: "Review Drafts",
-    href: "/admin/questions/review",
-    icon: ClipboardCheck,
-    requiredPermission: "questions.review"
+    name: "My Questions",
+    href: "/admin/my-questions",
+    icon: FileQuestion,
+    requiredPermission: "questions.create"
   },
   {
     name: "Review Queue",
-    href: "/admin/questions/review-queue",
+    href: "/admin/review-queue",
     icon: ClipboardList,
     requiredPermission: "questions.review"
   },
   {
-    name: "Review Flagged",
-    href: "/admin/questions/review-flagged",
-    icon: Flag,
-    requiredPermission: "questions.review"
-  },
-  {
-    name: "Question Management",
+    name: "Tags, Sets & Categories",
     href: "/admin/question-management",
     icon: Tags,
     requiredPermission: "categories.manage",
-    adminOnly: true
-  },
-  {
-    name: "Inquiries",
-    href: "/admin/inquiries",
-    icon: MessageSquare,
-    requiredPermission: "inquiries.manage",
     adminOnly: true
   },
   {
@@ -84,6 +71,13 @@ const navigation = [
     href: "/admin/analytics",
     icon: BarChart,
     requiredPermission: "analytics.view",
+    adminOnly: true
+  },
+  {
+    name: "Inquiries",
+    href: "/admin/inquiries",
+    icon: MessageSquare,
+    requiredPermission: "inquiries.manage",
     adminOnly: true
   },
   {

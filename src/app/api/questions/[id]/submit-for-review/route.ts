@@ -46,10 +46,10 @@ export async function POST(
       }, { status: 403 });
     }
 
-    // Check if question is in draft status
-    if (question.status !== 'draft') {
-      return NextResponse.json({ 
-        error: `Question cannot be submitted for review. Current status: ${question.status}` 
+    // Check if question is in draft or rejected status (both can be submitted for review)
+    if (question.status !== 'draft' && question.status !== 'rejected') {
+      return NextResponse.json({
+        error: `Question cannot be submitted for review. Current status: ${question.status}`
       }, { status: 400 });
     }
 

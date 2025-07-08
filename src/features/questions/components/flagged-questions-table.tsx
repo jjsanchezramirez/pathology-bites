@@ -36,6 +36,7 @@ import { QuestionPreviewDialog } from './question-preview-dialog'
 import { EditQuestionDialog } from './edit-question-dialog'
 import { toast } from 'sonner'
 import { FLAG_TYPE_CONFIG, QuestionWithDetails } from '@/features/questions/types/questions'
+import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 
 interface FlaggedQuestion extends QuestionWithDetails {
   flag_count: number
@@ -69,6 +70,7 @@ export function FlaggedQuestionsTable() {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
 
+  const { user } = useAuthStatus()
   const supabase = createClient()
 
   useEffect(() => {
@@ -115,7 +117,7 @@ export function FlaggedQuestionsTable() {
           flagged_by_user:users!question_flags_flagged_by_fkey(first_name, last_name)
         `)
         .in('question_id', questionIds)
-        .eq('status', 'pending')
+        .eq('status', 'open')
         .order('created_at', { ascending: false })
 
       // Combine questions with their flags
@@ -171,9 +173,14 @@ export function FlaggedQuestionsTable() {
     try {
       const { error } = await supabase
         .from('question_flags')
-        .update({ status: 'dismissed' })
+        .update({
+          status: 'closed',
+          resolution_type: 'dismissed',
+          resolved_by: user?.id,
+          resolved_at: new Date().toISOString()
+        })
         .eq('question_id', questionId)
-        .eq('status', 'pending')
+        .eq('status', 'open')
 
       if (error) {
         console.error('Error dismissing flags:', error)
@@ -357,8 +364,6 @@ export function FlaggedQuestionsTable() {
         question={selectedQuestion}
         open={previewOpen}
         onOpenChange={setPreviewOpen}
-        onApprove={() => {}} // No approve action for flagged questions
-        onReject={() => {}} // No reject action for flagged questions
       />
 
       {/* Edit Dialog */}
