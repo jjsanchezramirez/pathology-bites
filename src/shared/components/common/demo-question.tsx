@@ -15,32 +15,18 @@ export default function DemoQuestion() {
   const { currentQuestion, loading, refreshQuestion, error } = useDemoQuestions();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
-  const [showContent, setShowContent] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Effect to handle animation timing after data loads
-  useEffect(() => {
-    if (!loading && currentQuestion) {
-      // Short delay before showing content for animation
-      const contentTimer = setTimeout(() => {
-        setShowContent(true);
-      }, 100);
-
-      return () => clearTimeout(contentTimer);
-    }
-  }, [loading, currentQuestion]);
-
-  // Reset state when changing questions
+  // Reset state when changing questions (simplified)
   useEffect(() => {
     if (currentQuestion) {
       setSelectedOption(null);
       setIsAnswered(false);
-      setShowContent(false);
       setShowExplanation(false);
     }
-  }, [currentQuestion?.id]); // Use question ID to detect actual changes
+  }, [currentQuestion?.id]);
 
   const handleOptionClick = (optionId: string) => {
     if (!isAnswered) {
@@ -53,12 +39,7 @@ export default function DemoQuestion() {
 
   const resetQuestion = () => {
     setIsTransitioning(true);
-
-    // First hide content with animation
-    setShowContent(false);
     setShowExplanation(false);
-
-    // Reset all state
     setSelectedOption(null);
     setIsAnswered(false);
 
@@ -102,24 +83,18 @@ export default function DemoQuestion() {
     >
       <Card className="h-full">
         <CardHeader className="py-2">
-          <CardTitle className={`text-lg transform transition-all duration-500 ${
-            showContent ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-          }`}>
+          <CardTitle className="text-lg">
             {currentQuestion.title}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 transition-all duration-300 ease-in-out">
-        <div className={`text-sm text-foreground/90 transform transition-all duration-500 delay-100 ${
-          showContent ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-        }`}>
-          {currentQuestion.body}
-        </div>
+        <CardContent className="space-y-4">
+          <div className="text-sm text-foreground/90">
+            {currentQuestion.body}
+          </div>
 
-        {/* Images */}
-        {currentQuestion.images && currentQuestion.images.length > 0 && (
-          <div className={`transform transition-all duration-500 delay-200 ${
-            showContent ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-          }`}>
+          {/* Images */}
+          {currentQuestion.images && currentQuestion.images.length > 0 && (
+            <div>
             {currentQuestion.images.length === 1 ? (
               <ImprovedImageDialog
                 src={currentQuestion.images[0].url}
@@ -150,8 +125,7 @@ export default function DemoQuestion() {
                 key={option.id}
                 onClick={() => handleOptionClick(option.id)}
                 className={`
-                  p-2 rounded-md text-left border text-sm transition-all duration-500
-                  transform ${showContent ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}
+                  p-2 rounded-md text-left border text-sm
                   ${!isAnswered ? 'hover:border-primary/50 hover:bg-primary/5' : ''}
                   ${isSelected ? 'border-primary' : 'border'}
                   ${showCorrect ? 'bg-green-50 border-green-500 dark:bg-green-950/30' : ''}
