@@ -1,0 +1,122 @@
+{
+  "section": "AP 9: The Placenta",
+  "total_questions": 10,
+  "total_available_topics": 20,
+  "allocation_strategy": "Clinical relevance prioritizing common conditions and high-impact diagnoses",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Chorioamnionitis: acute vs. chronic patterns",
+      "item_locations": ["AP 9-4-b"],
+      "education_objective": "Recognize acute and chronic chorioamnionitis and understand staging",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Gestational trophoblastic disease: complete vs. partial mole",
+      "item_locations": ["AP 9-10-a"],
+      "education_objective": "Distinguish complete from partial hydatidiform mole using morphologic criteria",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Choriocarcinoma: diagnosis & differential",
+      "item_locations": ["AP 9-10-b"],
+      "education_objective": "Diagnose choriocarcinoma and distinguish from other trophoblastic lesions",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Placental abruption: features & grading",
+      "item_locations": ["AP 9-5-a"],
+      "education_objective": "Recognize placental abruption and assess severity",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Placental infarcts vs. intervillous thrombi",
+      "item_locations": ["AP 9-5-b", "AP 9-5-c"],
+      "education_objective": "Distinguish placental infarcts from intervillous thrombi",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Placenta accreta spectrum",
+      "item_locations": ["AP 9-5-e"],
+      "education_objective": "Recognize placenta accreta and understand spectrum of abnormal implantation",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Funisitis & umbilical cord inflammation",
+      "item_locations": ["AP 9-3-b"],
+      "education_objective": "Recognize funisitis and understand relationship to chorioamnionitis",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Villitis vs. intervillositis differential",
+      "item_locations": ["AP 9-5-f"],
+      "education_objective": "Distinguish villitis from intervillositis and understand etiology",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Fetal thrombotic vasculopathy",
+      "item_locations": ["AP 9-9"],
+      "education_objective": "Recognize fetal thrombotic vasculopathy and understand clinical significance",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Pre-eclampsia changes: atherosis & spiral artery pathology",
+      "item_locations": ["AP 9-6"],
+      "education_objective": "Recognize placental changes in pre-eclampsia and eclampsia",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 8,
+      "advanced_resident_only": 2,
+      "combined_c_ar": 0
+    },
+    "by_difficulty": {
+      "easy": 1,
+      "medium": 7,
+      "hard": 2
+    },
+    "by_yield": {
+      "high": 10,
+      "medium": 0,
+      "low": 0
+    },
+    "by_category": {
+      "inflammatory_infectious": 3,
+      "vascular_ischemic": 3,
+      "neoplastic_trophoblastic": 2,
+      "implantation_abnormalities": 1,
+      "maternal_conditions": 1
+    }
+  }
+}

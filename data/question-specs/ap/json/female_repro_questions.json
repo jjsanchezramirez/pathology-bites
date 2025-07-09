@@ -1,0 +1,349 @@
+{
+  "section": "AP 8: Female Reproductive System",
+  "total_questions": 35,
+  "total_available_topics": 105,
+  "allocation_strategy": "High-yield neoplasms and precancerous lesions prioritized with emphasis on crucial differentials",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Cervical squamous intraepithelial lesions: LSIL vs. HSIL",
+      "item_locations": ["AP 8-C-5-b-i"],
+      "education_objective": "Distinguish low-grade from high-grade squamous intraepithelial lesions",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Cervical adenocarcinoma in situ vs. invasive adenocarcinoma",
+      "item_locations": ["AP 8-C-5-b-iii", "AP 8-C-5-b-iv"],
+      "education_objective": "Distinguish adenocarcinoma in situ from invasive endocervical adenocarcinoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Cervical squamous cell carcinoma: grading & staging",
+      "item_locations": ["AP 8-C-5-b-ii"],
+      "education_objective": "Grade and stage cervical squamous cell carcinoma",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Microglandular hyperplasia vs. adenocarcinoma",
+      "item_locations": ["AP 8-C-2-c"],
+      "education_objective": "Distinguish microglandular hyperplasia from adenocarcinoma",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Endometrial hyperplasia: classification & atypia assessment",
+      "item_locations": ["AP 8-D-2-e"],
+      "education_objective": "Classify endometrial hyperplasia and assess for cytologic atypia",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Endometrioid vs. serous endometrial carcinoma",
+      "item_locations": ["AP 8-D-5-b-ii", "AP 8-D-5-b-iii"],
+      "education_objective": "Distinguish endometrioid from serous endometrial carcinoma",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Endometrial carcinoma grading & staging",
+      "item_locations": ["AP 8-D-5-b-ii"],
+      "education_objective": "Grade endometrioid adenocarcinoma and understand staging principles",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Endometrial stromal sarcoma vs. stromal nodule",
+      "item_locations": ["AP 8-D-5-b-vii", "AP 8-D-5-b-viii"],
+      "education_objective": "Distinguish low-grade endometrial stromal sarcoma from stromal nodule",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Carcinosarcoma (malignant mixed müllerian tumor)",
+      "item_locations": ["AP 8-D-5-b-vi"],
+      "education_objective": "Recognize carcinosarcoma and understand prognosis",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Leiomyoma variants vs. leiomyosarcoma",
+      "item_locations": ["AP 8-D-5-a-ii"],
+      "education_objective": "Distinguish leiomyoma variants from leiomyosarcoma",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Arias-Stella reaction vs. secretory endometrium",
+      "item_locations": ["AP 8-D-2-b"],
+      "education_objective": "Recognize Arias-Stella reaction and distinguish from normal secretory phase",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 12,
+      "topic": "Adenomyosis vs. endometrial polyp",
+      "item_locations": ["AP 8-D-2-g", "AP 8-D-5-a-i"],
+      "education_objective": "Distinguish adenomyosis from endometrial polyp",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Ovarian serous tumors: benign vs. borderline vs. malignant",
+      "item_locations": ["AP 8-E-5-b-i-1"],
+      "education_objective": "Distinguish benign, borderline, and malignant serous ovarian tumors",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Ovarian mucinous tumors: primary vs. metastatic",
+      "item_locations": ["AP 8-E-5-b-i-2"],
+      "education_objective": "Distinguish primary from metastatic mucinous ovarian tumors",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Ovarian clear cell carcinoma features",
+      "item_locations": ["AP 8-E-5-b-i-4"],
+      "education_objective": "Recognize clear cell carcinoma morphology and associations",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Ovarian endometrioid carcinoma vs. endometriosis",
+      "item_locations": ["AP 8-E-5-b-i-3"],
+      "education_objective": "Distinguish endometrioid carcinoma from endometriosis",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Granulosa cell tumor: adult vs. juvenile",
+      "item_locations": ["AP 8-E-5-b-ii-1"],
+      "education_objective": "Distinguish adult from juvenile granulosa cell tumor",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 18,
+      "topic": "Sertoli-Leydig cell tumor features",
+      "item_locations": ["AP 8-E-5-b-ii-2"],
+      "education_objective": "Recognize Sertoli-Leydig cell tumor and virilizing effects",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 19,
+      "topic": "Ovarian dysgerminoma vs. other germ cell tumors",
+      "item_locations": ["AP 8-E-5-b-iii-1"],
+      "education_objective": "Distinguish dysgerminoma from other germ cell tumors",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Ovarian teratoma: mature vs. immature",
+      "item_locations": ["AP 8-E-5-b-iii-2"],
+      "education_objective": "Distinguish mature from immature teratoma and grade",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 21,
+      "topic": "Yolk sac tumor morphology & biomarkers",
+      "item_locations": ["AP 8-E-5-b-iii-3"],
+      "education_objective": "Recognize yolk sac tumor patterns and AFP expression",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Ovarian fibrothecoma vs. other stromal tumors",
+      "item_locations": ["AP 8-E-5-a-i"],
+      "education_objective": "Recognize fibrothecoma and distinguish from other stromal tumors",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 23,
+      "topic": "Polycystic ovary syndrome features",
+      "item_locations": ["AP 8-E-3-a"],
+      "education_objective": "Recognize morphologic features of polycystic ovaries",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 24,
+      "topic": "Vulvar intraepithelial neoplasia (VIN) grading",
+      "item_locations": ["AP 8-A-5-b-i"],
+      "education_objective": "Grade vulvar intraepithelial neoplasia and assess HPV association",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 25,
+      "topic": "Vulvar squamous cell carcinoma vs. precursors",
+      "item_locations": ["AP 8-A-5-b-ii"],
+      "education_objective": "Distinguish invasive vulvar SCC from precursor lesions",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 26,
+      "topic": "Lichen sclerosus features & malignant potential",
+      "item_locations": ["AP 8-A-4-a"],
+      "education_objective": "Recognize lichen sclerosus and understand malignant potential",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 27,
+      "topic": "Vaginal clear cell carcinoma (DES-related)",
+      "item_locations": ["AP 8-B-5-b-iii"],
+      "education_objective": "Recognize clear cell carcinoma and DES association",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 28,
+      "topic": "Vaginal intraepithelial neoplasia (VAIN)",
+      "item_locations": ["AP 8-B-5-b-i"],
+      "education_objective": "Recognize and grade vaginal intraepithelial neoplasia",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 29,
+      "topic": "High-grade serous carcinoma & fallopian tube origin",
+      "item_locations": ["AP 8-F-5-b-i"],
+      "education_objective": "Recognize high-grade serous carcinoma and tubal origin theory",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 30,
+      "topic": "Ectopic pregnancy recognition",
+      "item_locations": ["AP 8-F-3-a"],
+      "education_objective": "Recognize tubal ectopic pregnancy and complications",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 31,
+      "topic": "Endometriosis vs. endosalpingiosis",
+      "item_locations": ["AP 8-G-3-a", "AP 8-G-3-b"],
+      "education_objective": "Distinguish endometriosis from endosalpingiosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 32,
+      "topic": "Peritoneal mesothelial hyperplasia vs. malignancy",
+      "item_locations": ["AP 8-G-2-a"],
+      "education_objective": "Distinguish mesothelial hyperplasia from malignancy",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 33,
+      "topic": "Well-differentiated papillary mesothelial tumor",
+      "item_locations": ["AP 8-G-4-b-ii"],
+      "education_objective": "Recognize WDPMT and understand behavior",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 34,
+      "topic": "Atypical polypoid adenomyoma",
+      "item_locations": ["AP 8-D-5-b-v"],
+      "education_objective": "Recognize atypical polypoid adenomyoma and management",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 35,
+      "topic": "Brenner tumor vs. transitional cell carcinoma",
+      "item_locations": ["AP 8-E-5-b-i-5"],
+      "education_objective": "Distinguish benign Brenner tumor from malignant variants",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 19,
+      "advanced_resident_only": 16,
+      "combined_c_ar": 0
+    },
+    "by_difficulty": {
+      "easy": 2,
+      "medium": 26,
+      "hard": 7
+    },
+    "by_yield": {
+      "high": 25,
+      "medium": 10,
+      "low": 0
+    },
+    "by_organ_system": {
+      "cervix": 4,
+      "uterine_corpus": 8,
+      "ovaries": 13,
+      "vulva": 3,
+      "vagina": 2,
+      "fallopian_tubes": 2,
+      "peritoneum": 3
+    }
+  }
+}

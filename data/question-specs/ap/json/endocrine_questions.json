@@ -1,0 +1,211 @@
+{
+  "section": "AP 7: The Endocrine System",
+  "total_questions": 20,
+  "total_available_topics": 49,
+  "allocation_strategy": "Clinical significance prioritizing major neoplasms and crucial differentials",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Thyroid carcinoma differential: papillary vs. follicular vs. medullary",
+      "item_locations": ["AP 7-B-5-b-i", "AP 7-B-5-b-ii", "AP 7-B-5-b-iii"],
+      "education_objective": "Distinguish major thyroid carcinoma types using morphologic and immunohistochemical criteria",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Follicular adenoma vs. follicular carcinoma differential",
+      "item_locations": ["AP 7-B-5-a-i", "AP 7-B-5-b-ii"],
+      "education_objective": "Distinguish follicular adenoma from minimally invasive follicular carcinoma",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Papillary thyroid carcinoma: variants & prognostic features",
+      "item_locations": ["AP 7-B-5-b-i"],
+      "education_objective": "Recognize papillary carcinoma variants and understand prognostic implications",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Medullary thyroid carcinoma: features & biomarkers",
+      "item_locations": ["AP 7-B-5-b-iii"],
+      "education_objective": "Diagnose medullary carcinoma and interpret calcitonin/CEA staining",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Poorly differentiated thyroid carcinoma (insular)",
+      "item_locations": ["AP 7-B-5-b-iv"],
+      "education_objective": "Recognize poorly differentiated thyroid carcinoma and understand prognosis",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Anaplastic thyroid carcinoma",
+      "item_locations": ["AP 7-B-5-b-v"],
+      "education_objective": "Diagnose anaplastic thyroid carcinoma and understand clinical implications",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Thyroiditis patterns: Hashimoto vs. subacute vs. other",
+      "item_locations": ["AP 7-B-4-a"],
+      "education_objective": "Distinguish different patterns of thyroiditis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Graves disease: morphologic features",
+      "item_locations": ["AP 7-B-4-b"],
+      "education_objective": "Recognize histologic features of Graves disease",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Nodular goiter vs. neoplasm",
+      "item_locations": ["AP 7-B-2-a"],
+      "education_objective": "Distinguish nodular goiter from true neoplasms",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Oncocytic thyroid neoplasms",
+      "item_locations": ["AP 7-B-5-a-ii"],
+      "education_objective": "Recognize oncocytic neoplasms and understand diagnostic challenges",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 11,
+      "topic": "Pheochromocytoma: diagnosis & grading",
+      "item_locations": ["AP 7-D-5-b-ii"],
+      "education_objective": "Diagnose pheochromocytoma and assess malignant potential",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Paraganglioma vs. pheochromocytoma differential",
+      "item_locations": ["AP 7-D-5-a-iii", "AP 7-D-5-b-ii"],
+      "education_objective": "Distinguish paraganglioma from pheochromocytoma",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Adrenocortical adenoma vs. carcinoma",
+      "item_locations": ["AP 7-D-5-a-i", "AP 7-D-5-b-iii"],
+      "education_objective": "Distinguish adrenocortical adenoma from carcinoma using morphologic criteria",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Neuroblastoma: morphology & grading",
+      "item_locations": ["AP 7-D-5-b-iv"],
+      "education_objective": "Diagnose neuroblastoma and understand prognostic grading",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Adrenal metastases: patterns & primaries",
+      "item_locations": ["AP 7-D-5-b-i"],
+      "education_objective": "Recognize metastatic patterns to adrenal and identify common primaries",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Adrenal myelolipoma & cystic lesions",
+      "item_locations": ["AP 7-D-5-a-ii", "AP 7-D-5-a-iv"],
+      "education_objective": "Recognize benign adrenal lesions and distinguish from neoplasms",
+      "designation": "C/AR",
+      "difficulty": "easy",
+      "yield": "medium"
+    },
+    {
+      "question_id": 17,
+      "topic": "Pituitary adenoma: classification & invasiveness",
+      "item_locations": ["AP 7-A-5-a-i", "AP 7-A-5-b-ii"],
+      "education_objective": "Classify pituitary adenomas and assess invasive features",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 18,
+      "topic": "Craniopharyngioma: patterns & differential",
+      "item_locations": ["AP 7-A-5-b-i"],
+      "education_objective": "Recognize craniopharyngioma patterns and distinguish from other sellar lesions",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 19,
+      "topic": "Parathyroid adenoma vs. hyperplasia",
+      "item_locations": ["AP 7-C-2-a", "AP 7-C-5-a-i"],
+      "education_objective": "Distinguish parathyroid adenoma from hyperplasia",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Multiple Endocrine Neoplasia syndromes",
+      "item_locations": ["AP 7-A-3-a"],
+      "education_objective": "Recognize MEN syndrome features and associated neoplasms",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 10,
+      "advanced_resident_only": 6,
+      "combined_c_ar": 4
+    },
+    "by_difficulty": {
+      "easy": 2,
+      "medium": 13,
+      "hard": 5
+    },
+    "by_yield": {
+      "high": 16,
+      "medium": 4,
+      "low": 0
+    },
+    "by_organ_system": {
+      "thyroid": 10,
+      "adrenal": 6,
+      "pituitary": 3,
+      "parathyroid": 1
+    }
+  }
+}

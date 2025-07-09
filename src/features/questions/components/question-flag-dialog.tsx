@@ -71,7 +71,7 @@ export function QuestionFlagDialog({
         .select('id')
         .eq('question_id', question.id)
         .eq('flagged_by', user.id)
-        .eq('status', 'pending')
+        .eq('status', 'open')
         .single()
 
       if (checkError && checkError.code !== 'PGRST116') {

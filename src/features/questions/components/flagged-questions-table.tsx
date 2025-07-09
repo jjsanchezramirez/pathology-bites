@@ -20,22 +20,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select"
-import { 
-  Eye, 
-  Search, 
-  Filter, 
+import {
+  Eye,
+  Search,
+  Filter,
   Flag,
   AlertTriangle,
   Clock,
   User,
   FileQuestion,
   Edit,
-  X
+  X,
+  CheckCircle
 } from 'lucide-react'
 import { QuestionPreviewDialog } from './question-preview-dialog'
 import { EditQuestionDialog } from './edit-question-dialog'
+import { FlagResolutionDialog } from './flag-resolution-dialog'
 import { toast } from 'sonner'
-import { FLAG_TYPE_CONFIG, QuestionWithDetails } from '@/features/questions/types/questions'
+import { FLAG_TYPE_CONFIG, QuestionWithDetails, QuestionFlagData } from '@/features/questions/types/questions'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 
 interface FlaggedQuestion extends QuestionWithDetails {
@@ -69,6 +71,9 @@ export function FlaggedQuestionsTable() {
   const [selectedQuestion, setSelectedQuestion] = useState<FlaggedQuestion | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
+  const [resolutionOpen, setResolutionOpen] = useState(false)
+  const [selectedFlags, setSelectedFlags] = useState<QuestionFlagData[]>([])
+  const [selectedQuestionTitle, setSelectedQuestionTitle] = useState('')
 
   const { user } = useAuthStatus()
   const supabase = createClient()
@@ -167,6 +172,27 @@ export function FlaggedQuestionsTable() {
   const handleEditQuestion = (question: FlaggedQuestion) => {
     setSelectedQuestion(question)
     setEditOpen(true)
+  }
+
+  const handleResolveFlags = (question: FlaggedQuestion) => {
+    // Convert the flags to the expected format
+    const flags: QuestionFlagData[] = (question.flags || []).map(flag => ({
+      id: flag.id,
+      question_id: question.id,
+      flagged_by: '', // We don't need this for resolution
+      flag_type: flag.flag_type,
+      description: flag.description,
+      status: flag.status,
+      resolved_by: null,
+      resolved_at: null,
+      resolution_notes: null,
+      created_at: flag.created_at,
+      updated_at: flag.created_at
+    }))
+
+    setSelectedFlags(flags)
+    setSelectedQuestionTitle(question.title)
+    setResolutionOpen(true)
   }
 
   const handleDismissFlags = async (questionId: string) => {
@@ -345,8 +371,18 @@ export function FlaggedQuestionsTable() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => handleResolveFlags(question)}
+                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                        title="Resolve flags"
+                      >
+                        <CheckCircle className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => handleDismissFlags(question.id)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        title="Quick dismiss all flags"
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -375,6 +411,15 @@ export function FlaggedQuestionsTable() {
           onSave={fetchFlaggedQuestions}
         />
       )}
+
+      {/* Flag Resolution Dialog */}
+      <FlagResolutionDialog
+        flags={selectedFlags}
+        questionTitle={selectedQuestionTitle}
+        open={resolutionOpen}
+        onOpenChange={setResolutionOpen}
+        onResolutionComplete={fetchFlaggedQuestions}
+      />
     </div>
   )
 }

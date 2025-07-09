@@ -1,0 +1,295 @@
+{
+  "section": "AP 1: Breast",
+  "total_questions": 30,
+  "total_available_topics": 54,
+  "allocation_strategy": "Clinical judgment and educational efficiency prioritizing high-yield differentials",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "DCIS vs. Atypical Ductal Hyperplasia differential",
+      "item_locations": ["AP 1-7-a", "AP 1-7-e"],
+      "education_objective": "Distinguish between DCIS and ADH using morphologic criteria and clinical significance",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Invasive ductal carcinoma NOS: histologic features & grading",
+      "item_locations": ["AP 1-7-b"],
+      "education_objective": "Recognize morphologic features and apply histologic grading systems for invasive ductal carcinoma",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "LCIS vs. Atypical Lobular Hyperplasia differential",
+      "item_locations": ["AP 1-7-c", "AP 1-7-f"],
+      "education_objective": "Differentiate LCIS from ALH and understand risk stratification implications",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Invasive lobular carcinoma: patterns & E-cadherin staining",
+      "item_locations": ["AP 1-7-d"],
+      "education_objective": "Identify growth patterns of invasive lobular carcinoma and interpret E-cadherin immunostaining",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Tubular carcinoma: features & differential diagnosis",
+      "item_locations": ["AP 1-7-g"],
+      "education_objective": "Recognize tubular carcinoma morphology and distinguish from benign mimics",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Mucinous carcinoma: variants & prognosis",
+      "item_locations": ["AP 1-7-h"],
+      "education_objective": "Identify mucinous carcinoma variants and correlate with prognosis",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Invasive micropapillary carcinoma: staging implications",
+      "item_locations": ["AP 1-7-j"],
+      "education_objective": "Recognize micropapillary carcinoma and understand its staging/prognostic implications",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Inflammatory carcinoma: clinical-pathologic correlation",
+      "item_locations": ["AP 1-7-m"],
+      "education_objective": "Correlate pathologic findings with clinical presentation of inflammatory breast carcinoma",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "ER/PR/HER2 interpretation & reporting",
+      "item_locations": ["AP 1-8-b"],
+      "education_objective": "Interpret and report hormone receptor and HER2 status according to current guidelines",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Axillary lymph node assessment & staging",
+      "item_locations": ["AP 1-8-a"],
+      "education_objective": "Assess lymph node involvement and apply staging criteria for breast carcinoma",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Biomarker patterns in special carcinoma types",
+      "item_locations": ["AP 1-8-b"],
+      "education_objective": "Correlate biomarker expression patterns with specific breast carcinoma subtypes",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Ki-67 and other emerging biomarkers",
+      "item_locations": ["AP 1-8-b"],
+      "education_objective": "Interpret Ki-67 proliferation index and understand emerging prognostic biomarkers",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 13,
+      "topic": "Usual ductal hyperplasia vs. atypical patterns",
+      "item_locations": ["AP 1-6-g", "AP 1-7-e"],
+      "education_objective": "Distinguish usual ductal hyperplasia from atypical ductal hyperplasia",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Sclerosing adenosis vs. tubular carcinoma",
+      "item_locations": ["AP 1-6-d", "AP 1-7-g"],
+      "education_objective": "Differentiate sclerosing adenosis from tubular carcinoma using morphologic and immunohistochemical criteria",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Radial scar: features & malignancy risk",
+      "item_locations": ["AP 1-6-e"],
+      "education_objective": "Recognize radial scar morphology and understand associated malignancy risk",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Epithelial hyperplasia spectrum",
+      "item_locations": ["AP 1-6-f"],
+      "education_objective": "Understand the spectrum of epithelial hyperplasia and its classification",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Fibroadenoma: variants & differential diagnosis",
+      "item_locations": ["AP 1-6-k"],
+      "education_objective": "Identify fibroadenoma variants and distinguish from other stromal lesions",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 18,
+      "topic": "Complex sclerosing lesions & risk assessment",
+      "item_locations": ["AP 1-6-d", "AP 1-6-e"],
+      "education_objective": "Recognize complex sclerosing lesions and assess associated malignancy risk",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 19,
+      "topic": "Phyllodes tumor: grading & differential from fibroadenoma",
+      "item_locations": ["AP 1-7-q"],
+      "education_objective": "Grade phyllodes tumors and distinguish from fibroadenoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Papillary lesions: benign vs. malignant features",
+      "item_locations": ["AP 1-6-m", "AP 1-7-r", "AP 1-7-s"],
+      "education_objective": "Differentiate benign from malignant papillary lesions",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 21,
+      "topic": "Adenomyoepithelioma & myoepithelial lesions",
+      "item_locations": ["AP 1-6-r"],
+      "education_objective": "Recognize adenomyoepithelioma and understand myoepithelial differentiation",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 22,
+      "topic": "Angiosarcoma: primary vs. radiation-induced",
+      "item_locations": ["AP 1-7-p"],
+      "education_objective": "Diagnose angiosarcoma and distinguish primary from radiation-induced forms",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 23,
+      "topic": "Paget disease: morphology & immunostains",
+      "item_locations": ["AP 1-7-o"],
+      "education_objective": "Recognize Paget disease morphology and confirm diagnosis with immunohistochemistry",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 24,
+      "topic": "Metastases to breast: common primaries & patterns",
+      "item_locations": ["AP 1-7-n"],
+      "education_objective": "Identify metastatic carcinoma to breast and recognize common primary sites",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 25,
+      "topic": "Fat necrosis vs. malignancy",
+      "item_locations": ["AP 1-4-a"],
+      "education_objective": "Distinguish fat necrosis from malignancy in various stages of evolution",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 26,
+      "topic": "Granulomatous mastitis: causes & differential",
+      "item_locations": ["AP 1-4-c"],
+      "education_objective": "Recognize granulomatous mastitis and understand differential diagnosis",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 27,
+      "topic": "Gynecomastia: patterns & differential diagnosis",
+      "item_locations": ["AP 1-8-c"],
+      "education_objective": "Identify gynecomastia patterns and distinguish from other male breast lesions",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 28,
+      "topic": "PASH (Pseudoangiomatous Stromal Hyperplasia)",
+      "item_locations": ["AP 1-8-d"],
+      "education_objective": "Recognize PASH morphology and understand its clinical significance",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "medium"
+    },
+    {
+      "question_id": 29,
+      "topic": "Lymphoma of breast: primary vs. secondary",
+      "item_locations": ["AP 1-10-a"],
+      "education_objective": "Diagnose breast lymphoma and distinguish primary from secondary involvement",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 30,
+      "topic": "Therapy-induced changes & male/transgender pathology",
+      "item_locations": ["AP 1-9-a", "AP 1-9"],
+      "education_objective": "Recognize therapy-induced changes and understand male/transgender breast pathology",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "low"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 9,
+      "advanced_resident_only": 11,
+      "combined_c_ar": 10
+    },
+    "by_difficulty": {
+      "easy": 3,
+      "medium": 17,
+      "hard": 10
+    },
+    "by_yield": {
+      "high": 24,
+      "medium": 5,
+      "low": 1
+    }
+  }
+}

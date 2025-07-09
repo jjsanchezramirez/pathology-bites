@@ -1,0 +1,250 @@
+{
+  "section": "AP 5: Head and Neck",
+  "total_questions": 25,
+  "total_available_topics": 90,
+  "allocation_strategy": "Clinical judgment prioritizing salivary gland tumor differentials and head/neck squamous cell carcinoma variants with emphasis on diagnostically challenging entities",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Pleomorphic adenoma vs. myoepithelioma differential",
+      "item_locations": ["AP 5-B-5-a-iii"],
+      "education_objective": "Distinguish pleomorphic adenoma from myoepithelioma and understand malignant transformation risk",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Warthin tumor recognition & differential",
+      "item_locations": ["AP 5-B-5-a-iv"],
+      "education_objective": "Recognize Warthin tumor morphology and distinguish from other cystic salivary lesions",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Mucoepidermoid carcinoma grading",
+      "item_locations": ["AP 5-B-5-a-viii"],
+      "education_objective": "Recognize mucoepidermoid carcinoma and apply grading criteria for prognosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Adenoid cystic carcinoma patterns",
+      "item_locations": ["AP 5-B-5-a-vii"],
+      "education_objective": "Identify adenoid cystic carcinoma patterns and understand perineural invasion tendency",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Acinic cell adenocarcinoma vs. normal acinar tissue",
+      "item_locations": ["AP 5-B-5-a-xi"],
+      "education_objective": "Distinguish acinic cell adenocarcinoma from normal salivary gland acini",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Polymorphous low-grade adenocarcinoma recognition",
+      "item_locations": ["AP 5-B-5-a-xii"],
+      "education_objective": "Recognize PLGA morphology and understand predilection for minor salivary glands",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Salivary duct carcinoma features",
+      "item_locations": ["AP 5-B-5-a-xiii"],
+      "education_objective": "Identify salivary duct carcinoma and understand aggressive behavior",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Necrotizing sialometaplasia vs. carcinoma",
+      "item_locations": ["AP 5-B-4-a"],
+      "education_objective": "Distinguish necrotizing sialometaplasia from squamous cell carcinoma",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Sjögren syndrome in minor salivary gland biopsy",
+      "item_locations": ["AP 5-B-4-b"],
+      "education_objective": "Recognize Sjögren syndrome changes and apply focus scoring criteria",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "HPV-associated vs. conventional oral SCC",
+      "item_locations": ["AP 5-A-5-b-i", "AP 5-A-5-b-ii"],
+      "education_objective": "Distinguish HPV-associated from conventional oral squamous cell carcinoma",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Oral squamous dysplasia grading",
+      "item_locations": ["AP 5-A-5-b-iii"],
+      "education_objective": "Grade oral squamous dysplasia and understand progression risk",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Fibrous dysplasia vs. other fibro-osseous lesions",
+      "item_locations": ["AP 5-A-5-a-i"],
+      "education_objective": "Recognize fibrous dysplasia and distinguish from other fibro-osseous lesions",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 13,
+      "topic": "Pyogenic granuloma vs. peripheral giant cell granuloma",
+      "item_locations": ["AP 5-A-4-a", "AP 5-A-4-d"],
+      "education_objective": "Distinguish pyogenic granuloma from peripheral giant cell granuloma",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Schneiderian papilloma vs. squamous papilloma",
+      "item_locations": ["AP 5-C-5-a-iii", "AP 5-C-5-a-ii"],
+      "education_objective": "Distinguish schneiderian papilloma from squamous papilloma and malignant potential",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Olfactory neuroblastoma recognition & grading",
+      "item_locations": ["AP 5-C-5-b-iii-1"],
+      "education_objective": "Recognize olfactory neuroblastoma and apply Hyams grading system",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Sinonasal undifferentiated carcinoma vs. other undifferentiated tumors",
+      "item_locations": ["AP 5-C-5-b-iii-3"],
+      "education_objective": "Distinguish SNUC from other undifferentiated sinonasal malignancies",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 17,
+      "topic": "Angiofibroma recognition",
+      "item_locations": ["AP 5-C-5-a-iv"],
+      "education_objective": "Recognize juvenile nasopharyngeal angiofibroma and understand clinical context",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 18,
+      "topic": "Laryngeal squamous cell carcinoma & dysplasia",
+      "item_locations": ["AP 5-D-5-b-i", "AP 5-D-5-b-ii"],
+      "education_objective": "Recognize laryngeal SCC and grade associated dysplasia",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 19,
+      "topic": "Vocal cord polyp vs. nodule",
+      "item_locations": ["AP 5-D-5-a-i"],
+      "education_objective": "Distinguish vocal cord polyp from vocal cord nodule morphologically",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "medium"
+    },
+    {
+      "question_id": 20,
+      "topic": "Laryngeal papilloma & malignant transformation",
+      "item_locations": ["AP 5-D-5-a-ii"],
+      "education_objective": "Recognize laryngeal papilloma and assess for malignant transformation",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 21,
+      "topic": "Cholesteatoma recognition",
+      "item_locations": ["AP 5-E-4-a"],
+      "education_objective": "Recognize cholesteatoma morphology and understand clinical significance",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Paraganglioma: jugulotympanic vs. other sites",
+      "item_locations": ["AP 5-E-5-a-ii"],
+      "education_objective": "Recognize paraganglioma morphology and understand site-specific behavior",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 23,
+      "topic": "Granular cell tumor of oral cavity",
+      "item_locations": ["AP 5-A-5-b-v"],
+      "education_objective": "Recognize granular cell tumor and distinguish from other granular lesions",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 24,
+      "topic": "Nasopharyngeal lymphoepithelioma",
+      "item_locations": ["AP 5-C-5-b-i"],
+      "education_objective": "Recognize nasopharyngeal lymphoepithelioma and EBV association",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 25,
+      "topic": "Mucocele vs. ranula",
+      "item_locations": ["AP 5-B-5-a-i"],
+      "education_objective": "Distinguish mucocele from ranula and understand pathogenesis",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "medium"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 14,
+      "advanced_resident_only": 10,
+      "combined_c_ar": 1
+    },
+    "by_difficulty": {
+      "easy": 4,
+      "medium": 18,
+      "hard": 3
+    },
+    "by_yield": {
+      "high": 18,
+      "medium": 7,
+      "low": 0
+    }
+  }
+}

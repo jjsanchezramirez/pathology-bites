@@ -1,0 +1,340 @@
+{
+  "section": "Genitourinary",
+  "total_questions": 35,
+  "total_available_topics": 45,
+  "allocation_strategy": "Clinical judgment prioritizing renal and urothelial neoplasms with emphasis on diagnostically challenging differentials",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Clear cell vs. papillary vs. chromophobe RCC differential",
+      "item_locations": ["AP 2-7-b-i", "AP 2-7-b-ii", "AP 2-7-b-iii"],
+      "education_objective": "Distinguish the three major renal cell carcinoma subtypes using morphologic and immunohistochemical features",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Renal oncocytoma vs. chromophobe RCC",
+      "item_locations": ["AP 2-7-a-i", "AP 2-7-b-iii"],
+      "education_objective": "Differentiate oncocytoma from chromophobe RCC using morphology and immunohistochemistry",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Angiomyolipoma: classic vs. epithelioid variants",
+      "item_locations": ["AP 2-7-a-v"],
+      "education_objective": "Recognize angiomyolipoma variants and distinguish epithelioid form from RCC",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Collecting duct carcinoma features & differential",
+      "item_locations": ["AP 2-7-b-iv"],
+      "education_objective": "Identify collecting duct carcinoma and distinguish from other high-grade renal carcinomas",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Translocation-associated RCC recognition",
+      "item_locations": ["AP 2-7-b-vi"],
+      "education_objective": "Recognize morphologic features suggesting translocation RCC and appropriate molecular testing",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Metanephric adenoma vs. papillary RCC",
+      "item_locations": ["AP 2-7-a-iii"],
+      "education_objective": "Distinguish metanephric adenoma from papillary RCC using morphologic criteria",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 7,
+      "topic": "Mucinous tubular and spindle cell carcinoma",
+      "item_locations": ["AP 2-7-b-v"],
+      "education_objective": "Recognize MTSCC morphology and distinguish from other low-grade renal tumors",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 8,
+      "topic": "Cystic nephroma features & differential",
+      "item_locations": ["AP 2-7-a-ii"],
+      "education_objective": "Identify cystic nephroma and distinguish from other cystic renal lesions",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 9,
+      "topic": "Sarcomatoid urothelial carcinoma recognition",
+      "item_locations": ["AP 2-B-5-b-iii"],
+      "education_objective": "Recognize sarcomatoid urothelial carcinoma and distinguish from primary sarcoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "PUNLMP vs. low-grade papillary urothelial carcinoma",
+      "item_locations": ["AP 2-B-5-b-v"],
+      "education_objective": "Distinguish PUNLMP from low-grade papillary urothelial carcinoma using architectural criteria",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Urothelial carcinoma in situ recognition",
+      "item_locations": ["AP 2-B-5-b-ii"],
+      "education_objective": "Recognize CIS morphology and distinguish from reactive atypia",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Invasive urothelial carcinoma: variants recognition",
+      "item_locations": ["AP 2-B-5-b-iii"],
+      "education_objective": "Identify common variants of invasive urothelial carcinoma and their prognostic significance",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Nested variant vs. adenocarcinoma differential",
+      "item_locations": ["AP 2-B-5-b-iii", "AP 2-B-5-b-vi"],
+      "education_objective": "Distinguish nested variant urothelial carcinoma from adenocarcinoma using morphology and IHC",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Micropapillary urothelial carcinoma: staging implications",
+      "item_locations": ["AP 2-B-5-b-iii"],
+      "education_objective": "Recognize micropapillary variant and understand its aggressive behavior and staging challenges",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Squamous cell carcinoma of bladder",
+      "item_locations": ["AP 2-B-5-b-iv"],
+      "education_objective": "Identify primary squamous cell carcinoma and distinguish from urothelial carcinoma with squamous differentiation",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Urachal adenocarcinoma vs. primary bladder adenocarcinoma",
+      "item_locations": ["AP 2-B-5-b-vii"],
+      "education_objective": "Distinguish urachal adenocarcinoma from other primary bladder adenocarcinomas",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Neuroendocrine carcinoma of bladder",
+      "item_locations": ["AP 2-B-5-b-viii"],
+      "education_objective": "Recognize neuroendocrine carcinoma and understand appropriate immunohistochemical workup",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 18,
+      "topic": "BCG effects vs. carcinoma in situ",
+      "item_locations": ["AP 2-B-4-b", "AP 2-B-5-b-ii"],
+      "education_objective": "Distinguish BCG-induced changes from persistent or recurrent carcinoma in situ",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 19,
+      "topic": "Nephrogenic metaplasia recognition & differential",
+      "item_locations": ["AP 2-B-2-b"],
+      "education_objective": "Recognize nephrogenic metaplasia and distinguish from adenocarcinoma",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Radiation cystitis changes",
+      "item_locations": ["AP 2-B-2-a"],
+      "education_objective": "Identify radiation-induced changes and distinguish from malignancy",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 21,
+      "topic": "Cystitis glandularis vs. adenocarcinoma",
+      "item_locations": ["AP 2-B-3-b"],
+      "education_objective": "Distinguish cystitis glandularis from adenocarcinoma using architectural and cytologic features",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Urothelial papilloma vs. papillary carcinoma",
+      "item_locations": ["AP 2-B-5-a-i"],
+      "education_objective": "Differentiate urothelial papilloma from low-grade papillary carcinoma",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 23,
+      "topic": "Villous adenoma of bladder",
+      "item_locations": ["AP 2-B-5-a-ii"],
+      "education_objective": "Recognize villous adenoma and understand malignant potential",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 24,
+      "topic": "Mesenchymal lesions of urinary tract",
+      "item_locations": ["AP 2-B-5-b-ix"],
+      "education_objective": "Identify common mesenchymal tumors of the urinary tract",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "low"
+    },
+    {
+      "question_id": 25,
+      "topic": "Urethral polyp characteristics",
+      "item_locations": ["AP 2-B-4-a"],
+      "education_objective": "Recognize urethral polyp morphology and understand clinical significance",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "medium"
+    },
+    {
+      "question_id": 26,
+      "topic": "Bladder diverticula: complications & staging",
+      "item_locations": ["AP 2-B-3-a"],
+      "education_objective": "Understand diverticular anatomy and staging implications for carcinoma",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "medium"
+    },
+    {
+      "question_id": 27,
+      "topic": "Small cell carcinoma of bladder",
+      "item_locations": ["AP 2-B-5-b-viii"],
+      "education_objective": "Recognize small cell carcinoma and understand aggressive behavior and treatment implications",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 28,
+      "topic": "Renal neuroendocrine tumors",
+      "item_locations": ["AP 2-7-a-iv"],
+      "education_objective": "Recognize renal neuroendocrine tumors and understand diagnostic approach",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "low"
+    },
+    {
+      "question_id": 29,
+      "topic": "Adult Wilms tumor features",
+      "item_locations": ["AP 2-7-b-vii"],
+      "education_objective": "Identify adult Wilms tumor and distinguish from other renal tumors",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 30,
+      "topic": "Clear cell adenocarcinoma of urethra/bladder",
+      "item_locations": ["AP 2-B-5-b-vi"],
+      "education_objective": "Recognize clear cell adenocarcinoma and distinguish from metastatic renal cell carcinoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 31,
+      "topic": "Lymphoepithelioma-like carcinoma of bladder",
+      "item_locations": ["AP 2-B-5-b-iii"],
+      "education_objective": "Recognize lymphoepithelioma-like carcinoma and understand diagnostic approach",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 32,
+      "topic": "Pyelonephritis: acute vs. chronic patterns",
+      "item_locations": ["AP 2-6-a"],
+      "education_objective": "Distinguish acute from chronic pyelonephritis and recognize complications",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 33,
+      "topic": "Inflammatory pseudotumor vs. sarcomatoid carcinoma",
+      "item_locations": ["AP 2-B-5-b-ix"],
+      "education_objective": "Distinguish inflammatory pseudotumor from sarcomatoid urothelial carcinoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 34,
+      "topic": "Plasmacytoid urothelial carcinoma",
+      "item_locations": ["AP 2-B-5-b-iii"],
+      "education_objective": "Recognize plasmacytoid variant and understand diagnostic challenges",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 35,
+      "topic": "Inverted papilloma vs. malignancy",
+      "item_locations": ["AP 2-B-5-a-i"],
+      "education_objective": "Distinguish inverted papilloma from carcinoma and understand malignant potential",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 8,
+      "advanced_resident_only": 22,
+      "combined_c_ar": 5
+    },
+    "by_difficulty": {
+      "easy": 1,
+      "medium": 21,
+      "hard": 13
+    },
+    "by_yield": {
+      "high": 23,
+      "medium": 11,
+      "low": 1
+    }
+  }
+}

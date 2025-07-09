@@ -1,0 +1,804 @@
+{
+  "section": "Medical Microbiology",
+  "line": 2332,
+  "subsections": [
+    {
+      "number": 1,
+      "title": "Bacteria, including Mycobacteria, Nocardia, and other Aerobic Actinomycetes",
+      "line": 2334,
+      "items": [
+        {
+          "letter": "a",
+          "title": "Optimal Collection Methods",
+          "line": 2335,
+          "subitems": [
+            { "number": "i", "title": "Lower Respiratory Tract Culture", "designation": "AR", "line": 2336 },
+            { "number": "ii", "title": "Sinus Culture", "designation": "AR", "line": 2337 },
+            { "number": "iii", "title": "Urine Culture", "designation": "AR", "line": 2338 },
+            { "number": "iv", "title": "Superficial Wound Culture", "designation": "AR", "line": 2339 },
+            { "number": "v", "title": "Deep Wound Culture", "designation": "AR", "line": 2340 },
+            { "number": "vi", "title": "Stool Culture", "designation": "AR", "line": 2341 },
+            { "number": "vii", "title": "Blood Culture", "designation": "AR", "line": 2342 },
+            { "number": "viii", "title": "Tissue Culture", "designation": "AR", "line": 2343 },
+            { "number": "ix", "title": "Cerebrospinal Fluid Culture", "designation": "AR", "line": 2344 },
+            { "number": "x", "title": "Normally Sterile Fluid Culture", "designation": "AR", "line": 2345 },
+            { "number": "xi", "title": "Genital Cultures", "designation": "AR", "line": 2346 },
+            { "number": "xii", "title": "Anaerobic Cultures", "designation": "AR", "line": 2347 }
+          ]
+        },
+        {
+          "letter": "b",
+          "title": "Principles of Specimen Collection, Transport and Processing",
+          "line": 2348,
+          "subitems": [
+            { "number": "i", "title": "Principles Regarding the Appropriate Use of Swabs for Bacterial Culture", "designation": "AR", "line": 2349 },
+            { "number": "ii", "title": "Principles Regarding the Volume of Specimen Required", "designation": "AR", "line": 2351 },
+            { "number": "iii", "title": "Principles Regarding the Use of Broth Enrichment", "designation": "AR", "line": 2352 },
+            { "number": "iv", "title": "Principles Regarding the Cultivation of Fastidious Microorganisms", "designation": "AR", "line": 2353 },
+            { "number": "v", "title": "Principles Regarding the Maintenance of the Specimen during Transport", "designation": "AR", "line": 2354 }
+          ]
+        },
+        {
+          "letter": "c",
+          "title": "Safety Issues Regarding the Processing of Specimens for Bacteria",
+          "designation": "AR",
+          "line": 2356
+        },
+        {
+          "letter": "d",
+          "title": "Specimen Rejection Criteria",
+          "line": 2357,
+          "subitems": [
+            { "number": "i", "title": "Specimen Rejection Criteria for Respiratory Tract Specimens", "designation": "AR", "line": 2358 },
+            { "number": "ii", "title": "Specimen Rejection Criteria for Stool Specimens", "designation": "AR", "line": 2359 },
+            { "number": "iii", "title": "Specimen Rejection Criteria for Transportation Delay and Specimen Integrity Issues", "designation": "AR", "line": 2360 }
+          ]
+        },
+        {
+          "letter": "e",
+          "title": "Media",
+          "line": 2362,
+          "subitems": [
+            { "number": "i", "title": "Campylobacter Selective Agar", "designation": "AR", "line": 2363 },
+            { "number": "ii", "title": "Cefsulodin-Irgasan Novobiocin (CIN) Agar", "designation": "AR", "line": 2364 },
+            { "number": "iii", "title": "Charcoal Yeast Extract (CYE) Agar", "designation": "AR", "line": 2365 },
+            { "number": "iv", "title": "Chocolate Agar", "designation": "AR", "line": 2366 },
+            { "number": "v", "title": "Colistin-Nalidixic Acid (CNA) Blood Agar", "designation": "AR", "line": 2367 },
+            { "number": "vi", "title": "Hektoen-Enteric (HE) Agar", "designation": "AR", "line": 2368 },
+            { "number": "vii", "title": "MacConkey Agar", "designation": "AR", "line": 2369 },
+            { "number": "viii", "title": "Sheep Blood Agar", "designation": "AR", "line": 2370 },
+            { "number": "ix", "title": "Thayer Martin Agar", "designation": "AR", "line": 2371 },
+            {
+              "number": "x",
+              "title": "Media Selection for:",
+              "line": 2372,
+              "subitems": [
+                { "number": "1", "title": "Lower Respiratory Tract Cultures", "designation": "AR", "line": 2373 },
+                { "number": "2", "title": "Sinus Culture", "designation": "AR", "line": 2374 },
+                { "number": "3", "title": "Urine Culture", "designation": "AR", "line": 2375 },
+                { "number": "4", "title": "Superficial Would Culture", "designation": "AR", "line": 2376 },
+                { "number": "5", "title": "Deep Wound Culture", "designation": "AR", "line": 2377 },
+                { "number": "6", "title": "Stool Culture", "designation": "AR", "line": 2378 },
+                { "number": "7", "title": "Tissue Culture", "designation": "AR", "line": 2379 },
+                { "number": "8", "title": "Cerebrospinal Fluid Culture", "designation": "AR", "line": 2380 },
+                { "number": "9", "title": "Normally Sterile Fluid Culture", "designation": "AR", "line": 2381 },
+                { "number": "10", "title": "Genital Cultures", "designation": "AR", "line": 2382 }
+              ]
+            },
+            { "number": "xi", "title": "Regan-Lowe Agar", "designation": "F", "line": 2383 },
+            { "number": "xii", "title": "Anaerobic Media", "designation": "F", "line": 2384 },
+            { "number": "xiii", "title": "Other Bacteriologic Media", "designation": "F", "line": 2385 }
+          ]
+        },
+        {
+          "letter": "f",
+          "title": "Stains and Direct Examination",
+          "line": 2386,
+          "subitems": [
+            { "number": "i", "title": "Gram stain", "designation": "AR", "line": 2387 },
+            { "number": "ii", "title": "Artifacts (e.g., crystals)", "designation": "AR", "line": 2388 },
+            { "number": "iii", "title": "Dark Field Examination", "designation": "F", "line": 2389 }
+          ]
+        },
+        {
+          "letter": "g",
+          "title": "Identification Methods and Instrumentation",
+          "line": 2390,
+          "subitems": [
+            { "number": "i", "title": "Culture", "designation": "AR", "line": 2391 },
+            { "number": "ii", "title": "Automated Blood Culture Instrumentation", "designation": "AR", "line": 2392 },
+            { "number": "iii", "title": "Automated Bacterial Identification Systems", "designation": "AR", "line": 2393 },
+            { "number": "iv", "title": "Manual and Automated Bacterial Susceptibility Testing", "designation": "AR", "line": 2394 },
+            { "number": "v", "title": "Mass Spectrometry (MALDI TOF)", "designation": "AR", "line": 2395 },
+            { "number": "vi", "title": "Targeted Molecular Assays (e.g., PCR)", "designation": "AR", "line": 2396 },
+            { "number": "vii", "title": "Sequence-Based Identification", "designation": "AR", "line": 2397 }
+          ]
+        },
+        {
+          "letter": "h",
+          "title": "Key Tests in Bacteriology",
+          "line": 2398,
+          "subitems": [
+            { "number": "i", "title": "Beta-lactamase Test", "designation": "AR", "line": 2399 },
+            { "number": "ii", "title": "Bile Solubility", "designation": "AR", "line": 2400 },
+            { "number": "iii", "title": "Catalase Test", "designation": "AR", "line": 2401 },
+            { "number": "iv", "title": "CLO/Urea Breath Test", "designation": "AR", "line": 2402 },
+            { "number": "v", "title": "Coagulase Test", "designation": "AR", "line": 2403 },
+            { "number": "vi", "title": "Optochin Susceptibility", "designation": "AR", "line": 2404 },
+            { "number": "vii", "title": "Oxidase Test", "designation": "AR", "line": 2405 },
+            { "number": "viii", "title": "PYR Test", "designation": "AR", "line": 2406 },
+            { "number": "ix", "title": "Urease Test", "designation": "AR", "line": 2407 },
+            { "number": "x", "title": "Motility", "designation": "AR", "line": 2408 },
+            { "number": "xi", "title": "Indole", "designation": "AR", "line": 2409 },
+            { "number": "xii", "title": "Bacitracin Susceptibility", "designation": "F", "line": 2410 },
+            { "number": "xiii", "title": "Beta-galactosidase Test", "designation": "F", "line": 2411 },
+            { "number": "xiv", "title": "Bile-Esculin Test", "designation": "F", "line": 2412 },
+            { "number": "xv", "title": "CAMP Test", "designation": "F", "line": 2413 },
+            { "number": "xvi", "title": "Esculin Hydrolysis Test", "designation": "F", "line": 2414 },
+            { "number": "xvii", "title": "Hippurate Hydrolysis Test", "designation": "F", "line": 2415 },
+            { "number": "xviii", "title": "Nitrate/Nitrate Reduction Test", "designation": "F", "line": 2416 },
+            { "number": "xix", "title": "Salt Tolerance", "designation": "F", "line": 2417 },
+            { "number": "xx", "title": "TSI/KIA Slant", "designation": "F", "line": 2418 },
+            { "number": "xxi", "title": "Other Key Tests in Bacteriology", "designation": "F", "line": 2419 }
+          ]
+        },
+        {
+          "letter": "i",
+          "title": "Antibacterial Susceptibility Testing",
+          "line": 2420,
+          "subitems": [
+            { "number": "i", "title": "CLSI Standards", "designation": "AR", "line": 2421 },
+            { "number": "ii", "title": "Broth Microdilution", "designation": "AR", "line": 2422 },
+            { "number": "iii", "title": "Kirby-Bauer", "designation": "AR", "line": 2423 },
+            { "number": "iv", "title": "E-Test", "designation": "AR", "line": 2424 },
+            { "number": "v", "title": "Molecular AST Testing", "designation": "AR", "line": 2425 },
+            { "number": "vi", "title": "Interpretation/Reporting AST", "designation": "AR", "line": 2426 }
+          ]
+        },
+        {
+          "letter": "j",
+          "title": "Mechanisms of Antimicrobial Resistance",
+          "line": 2427,
+          "subitems": [
+            { "number": "i", "title": "Beta-Lactamases", "designation": "AR", "line": 2428 },
+            { "number": "ii", "title": "Carbapenemases", "designation": "AR", "line": 2429 },
+            { "number": "iii", "title": "Extended-Spectrum Beta Lactamases", "designation": "AR", "line": 2430 },
+            { "number": "iv", "title": "Inducible Clindamycin Resistance", "designation": "AR", "line": 2431 },
+            { "number": "v", "title": "mecA Associated Resistance", "designation": "AR", "line": 2432 },
+            { "number": "vi", "title": "vanA and vanB Associated Resistance", "designation": "AR", "line": 2433 },
+            { "number": "vii", "title": "AMP C Resistance", "designation": "AR", "line": 2434 }
+          ]
+        },
+        {
+          "letter": "k",
+          "title": "Serologic and Antigenic Tests for Bacteria",
+          "designation": "AR",
+          "line": 2435
+        },
+        {
+          "letter": "l",
+          "title": "Molecular Diagnostics for Bacteria",
+          "designation": "AR",
+          "line": 2436
+        },
+        {
+          "letter": "m",
+          "title": "Quality Control and Infection Prevention Regarding Bacteria",
+          "designation": "AR",
+          "line": 2437
+        },
+        {
+          "letter": "n",
+          "title": "Aerobic Bacteria",
+          "line": 2438,
+          "subitems": [
+            {
+              "number": "i",
+              "title": "Gram Positive Aerobic Bacteria",
+              "line": 2439,
+              "subitems": [
+                { "number": "1", "title": "Abiotrophia spp.", "designation": "AR", "line": 2440 },
+                { "number": "2", "title": "Aerococcus spp.", "designation": "AR", "line": 2441 },
+                { "number": "3", "title": "Arcanobacterium spp.", "designation": "AR", "line": 2442 },
+                { "number": "4", "title": "Bacillus anthracis", "designation": "AR", "line": 2443 },
+                { "number": "5", "title": "Bacillus cereus", "designation": "AR", "line": 2444 },
+                { "number": "6", "title": "Corynebacterium diphtheriae", "designation": "AR", "line": 2445 },
+                { "number": "7", "title": "Enterococcus faecium", "designation": "AR", "line": 2446 },
+                { "number": "8", "title": "Enterococcus faecalis", "designation": "AR", "line": 2447 },
+                { "number": "9", "title": "Erysipelothrix rhusiopathiae", "designation": "AR", "line": 2448 },
+                { "number": "10", "title": "Gardnerella vaginalis", "designation": "AR", "line": 2449 },
+                { "number": "11", "title": "Granulicatella spp.", "designation": "AR", "line": 2450 },
+                { "number": "12", "title": "Lactobacillus spp.", "designation": "AR", "line": 2451 },
+                { "number": "13", "title": "Leuconostoc spp.", "designation": "AR", "line": 2452 },
+                { "number": "14", "title": "Listeria monocytogenes", "designation": "AR", "line": 2453 },
+                { "number": "15", "title": "Pediococcus spp.", "designation": "AR", "line": 2454 },
+                { "number": "16", "title": "Staphylococcus aureus complex", "designation": "AR", "line": 2455 },
+                { "number": "17", "title": "Staphylococcus epidermidis", "designation": "AR", "line": 2456 },
+                { "number": "18", "title": "Staphylococcus saprophyticus", "designation": "AR", "line": 2457 },
+                { "number": "19", "title": "Staphylococcus lugdunensis", "designation": "AR", "line": 2458 },
+                { "number": "20", "title": "Streptococcus pneumoniae", "designation": "AR", "line": 2459 },
+                { "number": "21", "title": "Streptococcus pyogenes", "designation": "AR", "line": 2460 },
+                { "number": "22", "title": "Streptococcus agalactiae", "designation": "AR", "line": 2461 },
+                { "number": "23", "title": "Streptococcus bovis Group", "designation": "AR", "line": 2462 },
+                { "number": "24", "title": "Streptococcus anginosus Group", "designation": "AR", "line": 2463 },
+                { "number": "25", "title": "Actinomadura spp.", "designation": "F", "line": 2464 },
+                { "number": "26", "title": "Bacillus spp.", "designation": "F", "line": 2465 },
+                { "number": "27", "title": "Corynebacterium spp.", "designation": "F", "line": 2466 },
+                { "number": "28", "title": "Enterococcus spp.", "designation": "F", "line": 2467 },
+                { "number": "29", "title": "Facklamia spp.", "designation": "F", "line": 2468 },
+                { "number": "30", "title": "Gemella spp.", "designation": "F", "line": 2469 },
+                { "number": "31", "title": "Kocuria spp.", "designation": "F", "line": 2470 },
+                { "number": "32", "title": "Lactococcus spp.", "designation": "F", "line": 2471 },
+                { "number": "33", "title": "Microbacterium spp.", "designation": "F", "line": 2472 },
+                { "number": "34", "title": "Micrococcus spp.", "designation": "F", "line": 2473 },
+                { "number": "35", "title": "Paracoccus spp.", "designation": "F", "line": 2474 },
+                { "number": "36", "title": "Rothia spp.", "designation": "F", "line": 2475 },
+                { "number": "37", "title": "Other Staphylococcus spp.", "designation": "F", "line": 2476 },
+                { "number": "38", "title": "Stomatococcus spp.", "designation": "F", "line": 2477 },
+                { "number": "39", "title": "Streptococcus mitis Group", "designation": "F", "line": 2478 },
+                { "number": "40", "title": "Streptococcus mutans Group", "designation": "F", "line": 2479 },
+                { "number": "41", "title": "Streptococcus salivarius Group", "designation": "F", "line": 2480 },
+                { "number": "42", "title": "Other Streptococcus spp.", "designation": "F", "line": 2481 }
+              ]
+            },
+            {
+              "number": "ii",
+              "title": "Gram Negative Aerobic Bacteria",
+              "line": 2482,
+              "subitems": [
+                { "number": "1", "title": "Acinetobacter baumannii complex", "designation": "AR", "line": 2483 },
+                { "number": "2", "title": "Aeromonas spp.", "designation": "AR", "line": 2484 },
+                { "number": "3", "title": "Aggregatibacter spp.", "designation": "AR", "line": 2485 },
+                { "number": "4", "title": "Bartonella spp.", "designation": "AR", "line": 2486 },
+                { "number": "5", "title": "Bordetella pertussis", "designation": "AR", "line": 2487 },
+                { "number": "6", "title": "Brucella spp.", "designation": "AR", "line": 2488 },
+                { "number": "7", "title": "Burkholderia pseudomallei", "designation": "AR", "line": 2489 },
+                { "number": "8", "title": "Burkholderia cepacia complex", "designation": "AR", "line": 2490 },
+                { "number": "9", "title": "Campylobacter jejuni", "designation": "AR", "line": 2491 },
+                { "number": "10", "title": "Capnocytophaga spp.", "designation": "AR", "line": 2492 },
+                { "number": "11", "title": "Cardiobacterium spp.", "designation": "AR", "line": 2493 },
+                { "number": "12", "title": "Citrobacter spp.", "designation": "AR", "line": 2494 },
+                { "number": "13", "title": "Eikenella spp.", "designation": "AR", "line": 2495 },
+                { "number": "14", "title": "Elizabethkingia spp.", "designation": "AR", "line": 2496 },
+                { "number": "15", "title": "Enterobacter spp.", "designation": "AR", "line": 2497 },
+                { "number": "16", "title": "Escherichia coli", "designation": "AR", "line": 2498 },
+                { "number": "17", "title": "Francisella tularensis", "designation": "AR", "line": 2499 },
+                { "number": "18", "title": "Haemophilus influenzae", "designation": "AR", "line": 2500 },
+                { "number": "19", "title": "Haemophilus parainfluenzae", "designation": "AR", "line": 2501 },
+                { "number": "20", "title": "Haemophilus ducreyi", "designation": "AR", "line": 2502 },
+                { "number": "21", "title": "Helicobacter pylori", "designation": "AR", "line": 2503 },
+                { "number": "22", "title": "Kingella kingae", "designation": "AR", "line": 2504 },
+                { "number": "23", "title": "Klebsiella spp.", "designation": "AR", "line": 2505 },
+                { "number": "24", "title": "Legionella pneumophila", "designation": "AR", "line": 2506 },
+                { "number": "25", "title": "Moraxella catarrhalis", "designation": "AR", "line": 2507 },
+                { "number": "26", "title": "Neisseria meningitidis", "designation": "AR", "line": 2508 },
+                { "number": "27", "title": "Neisseria gonorrhoeae", "designation": "AR", "line": 2509 },
+                { "number": "28", "title": "Pasteurella multocida", "designation": "AR", "line": 2510 },
+                { "number": "29", "title": "Proteus spp.", "designation": "AR", "line": 2511 },
+                { "number": "30", "title": "Providencia spp.", "designation": "AR", "line": 2512 },
+                { "number": "31", "title": "Pseudomonas aeruginosa", "designation": "AR", "line": 2513 },
+                { "number": "32", "title": "Salmonella Non-Typhi", "designation": "AR", "line": 2514 },
+                { "number": "33", "title": "Salmonella Typhi and ParaTyphi", "designation": "AR", "line": 2515 },
+                { "number": "34", "title": "Serratia marcescens", "designation": "AR", "line": 2516 },
+                { "number": "35", "title": "Shigella spp.", "designation": "AR", "line": 2517 },
+                { "number": "36", "title": "Stenotrophomonas maltophilia", "designation": "AR", "line": 2518 },
+                { "number": "37", "title": "Streptobacillus moniliformis", "designation": "AR", "line": 2519 },
+                { "number": "38", "title": "Vibrio cholerae", "designation": "AR", "line": 2520 },
+                { "number": "39", "title": "Vibrio vulnificus", "designation": "AR", "line": 2521 },
+                { "number": "40", "title": "Vibrio parahaemolyticus", "designation": "AR", "line": 2522 },
+                { "number": "41", "title": "Yersinia pestis", "designation": "AR", "line": 2523 },
+                { "number": "42", "title": "Yersinia enterocolitica", "designation": "AR", "line": 2524 }
+              ]
+            }
+          ]
+        },
+        {
+          "letter": "o",
+          "title": "Procedures for the Isolation and Cultivation of Anaerobic Bacteria",
+          "designation": "F",
+          "line": 2554
+        },
+        {
+          "letter": "p",
+          "title": "Anaerobic Bacteria",
+          "line": 2555,
+          "subitems": [
+            { "number": "i", "title": "Actinomyces and Related Taxa", "designation": "AR", "line": 2556 },
+            { "number": "ii", "title": "Bacteroides fragilis Group", "designation": "AR", "line": 2557 },
+            { "number": "iii", "title": "Clostridium botulinum", "designation": "AR", "line": 2558 },
+            { "number": "iv", "title": "Clostridium perfringens", "designation": "AR", "line": 2559 },
+            { "number": "v", "title": "Clostridium septicum", "designation": "AR", "line": 2560 },
+            { "number": "vi", "title": "Clostridium tetani", "designation": "AR", "line": 2561 },
+            { "number": "vii", "title": "Clostridioides difficile", "designation": "AR", "line": 2562 },
+            { "number": "viii", "title": "Cutibacterium acnes", "designation": "AR", "line": 2563 },
+            { "number": "ix", "title": "Fusobacterium nucleatum", "designation": "AR", "line": 2564 },
+            { "number": "x", "title": "Fusobacterium necrophorum", "designation": "AR", "line": 2565 }
+          ]
+        },
+        {
+          "letter": "q",
+          "title": "Mycoplasma and Ureaplasma",
+          "line": 2581,
+          "subitems": [
+            { "number": "i", "title": "Mycoplasma genitalium", "designation": "AR", "line": 2582 },
+            { "number": "ii", "title": "Mycoplasma pneumoniae", "designation": "AR", "line": 2583 },
+            { "number": "iii", "title": "Mycoplasma hominis", "designation": "F", "line": 2584 },
+            { "number": "iv", "title": "Other Mycoplasma spp.", "designation": "F", "line": 2585 },
+            { "number": "v", "title": "Ureaplasma spp.", "designation": "F", "line": 2586 }
+          ]
+        },
+        {
+          "letter": "r",
+          "title": "Spirochetes",
+          "line": 2587,
+          "subitems": [
+            { "number": "i", "title": "Borrelia burgdorferi", "designation": "AR", "line": 2588 },
+            { "number": "ii", "title": "Leptospira spp.", "designation": "AR", "line": 2589 },
+            { "number": "iii", "title": "Treponema pallidum", "designation": "AR", "line": 2590 },
+            { "number": "iv", "title": "Other Borrelia and Borreliella spp.", "designation": "F", "line": 2591 },
+            { "number": "v", "title": "Brachyspira spp.", "designation": "F", "line": 2592 },
+            { "number": "vi", "title": "Other Treponema species", "designation": "F", "line": 2594 }
+          ]
+        },
+        {
+          "letter": "s",
+          "title": "Intracellular Bacteria",
+          "line": 2595,
+          "subitems": [
+            { "number": "i", "title": "Anaplasma phagocytophilum", "designation": "AR", "line": 2596 },
+            { "number": "ii", "title": "Chlamydia trachomatis", "designation": "AR", "line": 2597 },
+            { "number": "iii", "title": "Chlamydia pneumoniae", "designation": "AR", "line": 2598 },
+            { "number": "iv", "title": "Coxiella burnetti", "designation": "AR", "line": 2599 },
+            { "number": "v", "title": "Ehrlichia spp.", "designation": "AR", "line": 2600 },
+            { "number": "vi", "title": "Rickettsia rickettsii", "designation": "AR", "line": 2601 },
+            { "number": "vii", "title": "Chlamydia psittaci", "designation": "F", "line": 2602 },
+            { "number": "viii", "title": "Orientia tsutsugamushi", "designation": "F", "line": 2603 },
+            { "number": "ix", "title": "Other Rickettsia spp.", "designation": "F", "line": 2604 }
+          ]
+        },
+        {
+          "letter": "t",
+          "title": "Mycobacteria, Nocardia, and Other Aerobic Actinomycetes",
+          "line": 2605,
+          "subitems": [
+            { "number": "i", "title": "Structure and Biology", "designation": "AR", "line": 2606 },
+            { "number": "ii", "title": "Taxonomy, Runyon Classification, & Nomenclature", "designation": "AR", "line": 2607 },
+            {
+              "number": "iii",
+              "title": "Specimen Collection, Handling, and Processing",
+              "line": 2608,
+              "subitems": [
+                { "number": "1", "title": "Optimal Methods for Lower Respiratory Tract Specimen Collection for Mycobacteria", "designation": "AR", "line": 2609 },
+                { "number": "2", "title": "Specimens for Mycobacteria", "designation": "AR", "line": 2611 },
+                { "number": "3", "title": "Decontamination", "designation": "AR", "line": 2612 },
+                { "number": "4", "title": "The Use of PANTA", "designation": "F", "line": 2613 }
+              ]
+            },
+            {
+              "number": "iv",
+              "title": "Media",
+              "line": 2614,
+              "subitems": [
+                { "number": "1", "title": "Principles Regarding the Use of Broth and Solid Media", "designation": "AR", "line": 2615 }
+              ]
+            },
+            {
+              "number": "v",
+              "title": "Stains and Direct Examination",
+              "line": 2616,
+              "subitems": [
+                { "number": "1", "title": "Acid Fast Stain & Modified Acid Fast Stain", "designation": "AR", "line": 2617 },
+                { "number": "2", "title": "Ziehl-Neelsen & Kinyoun Methods", "designation": "AR", "line": 2618 },
+                { "number": "3", "title": "Fluorochrome Staining", "designation": "AR", "line": 2619 }
+              ]
+            },
+            { "number": "vi", "title": "Identification Methods and Instrumentation", "designation": "F", "line": 2620 },
+            { "number": "vii", "title": "Empiric Therapy for Mycobacterial Infections", "designation": "AR", "line": 2621 },
+            { "number": "xi", "title": "Skin, Serologic Assays, & Host Response for Mycobacteria and Related Organisms", "designation": "AR", "line": 2638 },
+            { "number": "xii", "title": "Molecular Diagnostics for Mycobacteria and Related Organisms", "designation": "AR", "line": 2640 },
+            {
+              "number": "xiv",
+              "title": "Mycobacteria, Nocardia, and Aerobic Actinomycetes",
+              "line": 2643,
+              "subitems": [
+                {
+                  "number": "1",
+                  "title": "Mycobacterium spp.",
+                  "line": 2644,
+                  "subitems": [
+                    { "letter": "a", "title": "M. tuberculosis complex", "designation": "AR", "line": 2645 },
+                    { "letter": "b", "title": "M. bovis", "designation": "AR", "line": 2646 },
+                    { "letter": "c", "title": "M. bovis BCG", "designation": "AR", "line": 2647 },
+                    { "letter": "d", "title": "M. avium complex", "designation": "AR", "line": 2648 },
+                    { "letter": "e", "title": "M. intracellulare", "designation": "AR", "line": 2649 },
+                    { "letter": "f", "title": "M. gordonae", "designation": "AR", "line": 2650 },
+                    { "letter": "g", "title": "M. haemophilum", "designation": "AR", "line": 2651 },
+                    { "letter": "h", "title": "M. marinum", "designation": "AR", "line": 2652 },
+                    { "letter": "i", "title": "M. xenopi", "designation": "AR", "line": 2653 },
+                    { "letter": "j", "title": "M. fortuitum", "designation": "AR", "line": 2654 },
+                    { "letter": "k", "title": "M. abscessus", "designation": "AR", "line": 2655 },
+                    { "letter": "l", "title": "M. chelonae", "designation": "AR", "line": 2656 },
+                    { "letter": "m", "title": "M. leprae", "designation": "AR", "line": 2657 },
+                    { "letter": "n", "title": "Other Mycobacterium spp.", "designation": "F", "line": 2658 }
+                  ]
+                },
+                {
+                  "number": "2",
+                  "title": "Nocardia and Other Aerobic Actinomycetes",
+                  "line": 2659,
+                  "subitems": [
+                    { "letter": "a", "title": "Nocardia spp.", "designation": "AR", "line": 2660 },
+                    { "letter": "b", "title": "Rhodococcus equi", "designation": "AR", "line": 2661 },
+                    { "letter": "c", "title": "Tropheryma whipplei", "designation": "AR", "line": 2662 },
+                    { "letter": "d", "title": "Gordonia spp.", "designation": "F", "line": 2663 },
+                    { "letter": "e", "title": "Streptomyces and Other Aerobic Actinomycetes", "designation": "F", "line": 2664 },
+                    { "letter": "f", "title": "Tsukamurella spp.", "designation": "F", "line": 2665 }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "title": "Fungi",
+      "line": 2667,
+      "items": [
+        { "letter": "a", "title": "Structure and Biology", "designation": "AR", "line": 2668 },
+        { "letter": "b", "title": "Specimen Collection, Transport, and Processing", "designation": "AR", "line": 2669 },
+        { "letter": "c", "title": "Media", "designation": "AR", "line": 2670 },
+        {
+          "letter": "d",
+          "title": "Stains and Direct Examination",
+          "line": 2671,
+          "subitems": [
+            { "number": "i", "title": "Gram Stain Appearance", "designation": "AR", "line": 2672 },
+            { "number": "ii", "title": "KOH", "designation": "AR", "line": 2673 },
+            { "number": "iii", "title": "KOH-Calcofluor White", "designation": "AR", "line": 2674 },
+            { "number": "iv", "title": "Wet Mount", "designation": "AR", "line": 2675 },
+            { "number": "v", "title": "Mucicarmine", "designation": "AR", "line": 2676 },
+            { "number": "vi", "title": "Lactophenol Cotton Blue", "designation": "AR", "line": 2677 },
+            { "number": "vii", "title": "India Ink", "designation": "F", "line": 2678 },
+            { "number": "viii", "title": "Other Fungal Stains", "designation": "F", "line": 2679 }
+          ]
+        },
+        {
+          "letter": "e",
+          "title": "Identification Methods and Instrumentation",
+          "line": 2680,
+          "subitems": [
+            { "number": "i", "title": "Automated Blood Culture Instrumentation for Yeasts", "designation": "AR", "line": 2681 },
+            { "number": "ii", "title": "Automated and Manual Identification Systems for Yeasts", "designation": "AR", "line": 2682 },
+            { "number": "iii", "title": "Automated Susceptibility Testing for Yeasts", "designation": "AR", "line": 2683 },
+            { "number": "iv", "title": "Mass Spectrometry", "designation": "AR", "line": 2684 },
+            { "number": "v", "title": "Molecular Identification (e.g., Sequence-Based Identification)", "designation": "AR", "line": 2685 }
+          ]
+        },
+        { "letter": "f", "title": "Antifungal Agents, Susceptibility Testing and Mechanisms of Resistance", "designation": "F", "line": 2686 },
+        { "letter": "g", "title": "Serologic and Antigenic Tests for Fungi", "designation": "AR", "line": 2687 },
+        { "letter": "h", "title": "Molecular Diagnostics for Fungi", "designation": "AR", "line": 2688 },
+        { "letter": "i", "title": "Advanced Topics in Medical Mycology", "designation": "F", "line": 2689 },
+        {
+          "letter": "j",
+          "title": "Specific Fungi",
+          "line": 2690,
+          "subitems": [
+            {
+              "number": "i",
+              "title": "Yeast and Yeast-Like Fungi",
+              "line": 2691,
+              "subitems": [
+                { "number": "1", "title": "Candida albicans", "designation": "AR", "line": 2692 },
+                { "number": "2", "title": "Candida dubliniensis", "designation": "AR", "line": 2693 },
+                { "number": "3", "title": "Candida auris", "designation": "AR", "line": 2694 },
+                { "number": "4", "title": "Candida glabrata (i.e., Nakaseomyces glabrata)", "designation": "AR", "line": 2695 },
+                { "number": "5", "title": "Candida krusei (i.e., Pichia kudriavzevii)", "designation": "AR", "line": 2696 },
+                { "number": "6", "title": "Candida tropicalis", "designation": "AR", "line": 2697 },
+                { "number": "7", "title": "Candida parapsilosis", "designation": "AR", "line": 2698 },
+                { "number": "8", "title": "Candida lusitaniae (i.e., Clavispora lusitaniae)", "designation": "AR", "line": 2699 },
+                { "number": "9", "title": "Candida guilliermondii (i.e., Meyerosyma guilliermondii)", "designation": "AR", "line": 2700 },
+                { "number": "10", "title": "Cryptococcus neoformans", "designation": "AR", "line": 2701 },
+                { "number": "11", "title": "Cryptococcus gattii", "designation": "AR", "line": 2702 },
+                { "number": "12", "title": "Malassezia furfur", "designation": "AR", "line": 2703 },
+                { "number": "13", "title": "Pneumocystis jirovecii", "designation": "AR", "line": 2704 },
+                { "number": "14", "title": "Prototheca spp.", "designation": "AR", "line": 2705 },
+                { "number": "15", "title": "Trichosporon asahii", "designation": "AR", "line": 2706 }
+              ]
+            },
+            {
+              "number": "ii",
+              "title": "Hyaline Septate Molds",
+              "line": 2721,
+              "subitems": [
+                { "number": "1", "title": "Aspergillus fumigatus", "designation": "AR", "line": 2722 },
+                { "number": "2", "title": "Aspergillus flavus", "designation": "AR", "line": 2723 },
+                { "number": "3", "title": "Aspergillus terreus", "designation": "AR", "line": 2724 },
+                { "number": "4", "title": "Aspergillus niger", "designation": "AR", "line": 2725 },
+                { "number": "5", "title": "Aspergillus nidulans", "designation": "AR", "line": 2726 },
+                { "number": "6", "title": "Epidermophyton spp.", "designation": "AR", "line": 2727 },
+                { "number": "7", "title": "Fusarium solani complex", "designation": "AR", "line": 2728 },
+                { "number": "8", "title": "Microsporum canis", "designation": "AR", "line": 2729 },
+                { "number": "9", "title": "Microsporum gypseum (i.e., Nannizzia gypseum)", "designation": "AR", "line": 2730 },
+                { "number": "10", "title": "Paecilomyces spp.", "designation": "AR", "line": 2731 },
+                { "number": "11", "title": "Penicillum spp.", "designation": "AR", "line": 2732 },
+                { "number": "12", "title": "Scedosporium apiospermum complex", "designation": "AR", "line": 2733 },
+                { "number": "13", "title": "Scedosporium boydii complex (i.e. Pseudallescheria boydii)", "designation": "AR", "line": 2734 },
+                { "number": "14", "title": "Trichophyton rubrum", "designation": "AR", "line": 2735 },
+                { "number": "15", "title": "Trichophyton mentagrophytes", "designation": "AR", "line": 2736 },
+                { "number": "16", "title": "Trichophyton tonsurans", "designation": "AR", "line": 2737 }
+              ]
+            },
+            {
+              "number": "iii",
+              "title": "Dimorphic Fungi",
+              "line": 2754,
+              "subitems": [
+                { "number": "1", "title": "Blastomyces spp.", "designation": "AR", "line": 2755 },
+                { "number": "2", "title": "Coccidioides spp.", "designation": "AR", "line": 2756 },
+                { "number": "3", "title": "Histoplasma capsulatum", "designation": "AR", "line": 2757 },
+                { "number": "4", "title": "Penicillium talaromyces (i.e., Talaromyces marneffei)", "designation": "AR", "line": 2758 },
+                { "number": "5", "title": "Sporothrix schenckii complex", "designation": "AR", "line": 2759 },
+                { "number": "6", "title": "Other Histoplasma spp.", "designation": "F", "line": 2760 }
+              ]
+            },
+            {
+              "number": "iv",
+              "title": "Mucoraceous Fungi",
+              "line": 2761,
+              "subitems": [
+                { "number": "1", "title": "Lichtheimia corymbifera complex", "designation": "AR", "line": 2762 },
+                { "number": "2", "title": "Mucor spp.", "designation": "AR", "line": 2763 },
+                { "number": "3", "title": "Rhizomucor spp.", "designation": "AR", "line": 2764 },
+                { "number": "4", "title": "Rhizopus spp.", "designation": "AR", "line": 2765 }
+              ]
+            },
+            {
+              "number": "v",
+              "title": "Dematiaceous Fungi",
+              "line": 2775,
+              "subitems": [
+                { "number": "1", "title": "Alternaria spp.", "designation": "AR", "line": 2776 },
+                { "number": "2", "title": "Bipolaris spp.", "designation": "AR", "line": 2777 },
+                { "number": "3", "title": "Cladosporium spp.", "designation": "AR", "line": 2778 },
+                { "number": "4", "title": "Cladophialophora spp.", "designation": "AR", "line": 2779 },
+                { "number": "5", "title": "Curvularia spp.", "designation": "AR", "line": 2780 },
+                { "number": "6", "title": "Fonsecaea spp.", "designation": "AR", "line": 2781 },
+                { "number": "7", "title": "Phialophora spp.", "designation": "AR", "line": 2782 }
+              ]
+            },
+            { "number": "vi", "title": "Microsporidia", "designation": "AR", "line": 2789 },
+            { "number": "vii", "title": "Rhinosporidium", "designation": "AR", "line": 2790 }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "title": "Viruses and Prions",
+      "line": 2792,
+      "items": [
+        { "letter": "a", "title": "Structure and Biology", "designation": "AR", "line": 2793 },
+        { "letter": "b", "title": "Taxonomy, Classification, and Nomenclature", "designation": "AR", "line": 2794 },
+        { "letter": "c", "title": "Specimen Collection, Transport, and Processing", "designation": "AR", "line": 2795 },
+        { "letter": "d", "title": "Identification Methods and Instrumentation", "designation": "AR", "line": 2796 },
+        { "letter": "e", "title": "Serologic, Immunologic, and Antigenic Assays for Viruses", "designation": "AR", "line": 2797 },
+        { "letter": "f", "title": "Molecular Diagnostics for Viruses", "designation": "AR", "line": 2798 },
+        { "letter": "g", "title": "Prevention and Treatment of Viral Diseases", "designation": "AR", "line": 2799 },
+        { "letter": "h", "title": "Quality Control and Infection Prevention with Respect to Viruses", "designation": "AR", "line": 2800 },
+        { "letter": "i", "title": "Miscellaneous Topics with Respect to Viruses", "designation": "F", "line": 2801 },
+        {
+          "letter": "j",
+          "title": "Specific Viruses",
+          "line": 2802,
+          "subitems": [
+            { "number": "i", "title": "Adenovirus", "designation": "AR", "line": 2803 },
+            { "number": "ii", "title": "Hanta Virus (i.e., Sin Nombre)", "designation": "AR", "line": 2804 },
+            { "number": "iii", "title": "Seasonal Coronaviruses", "designation": "AR", "line": 2805 },
+            { "number": "iv", "title": "SARS-CoV-2", "designation": "AR", "line": 2806 },
+            { "number": "v", "title": "Rhinovirus", "designation": "AR", "line": 2807 },
+            { "number": "vi", "title": "Polio Virus", "designation": "AR", "line": 2808 },
+            { "number": "vii", "title": "Coxsackie Virus", "designation": "AR", "line": 2809 },
+            { "number": "viii", "title": "Enterovirus D-68", "designation": "AR", "line": 2810 },
+            { "number": "ix", "title": "Parechovirus", "designation": "AR", "line": 2811 },
+            { "number": "x", "title": "Ebola Virus", "designation": "AR", "line": 2812 },
+            { "number": "xi", "title": "Hepatitis C Virus", "designation": "AR", "line": 2813 },
+            { "number": "xii", "title": "Yellow Fever Virus", "designation": "AR", "line": 2814 },
+            { "number": "xiii", "title": "Dengue Virus", "designation": "AR", "line": 2815 },
+            { "number": "xiv", "title": "Zika Virus", "designation": "AR", "line": 2816 },
+            { "number": "xv", "title": "West Nile Virus", "designation": "AR", "line": 2817 },
+            {
+              "number": "xvi",
+              "title": "Herpesviridae",
+              "line": 2818,
+              "subitems": [
+                { "number": "1", "title": "HSV", "designation": "AR", "line": 2819 },
+                { "number": "2", "title": "VZV", "designation": "AR", "line": 2820 },
+                { "number": "3", "title": "EBV", "designation": "AR", "line": 2821 },
+                { "number": "4", "title": "CMV", "designation": "AR", "line": 2822 },
+                { "number": "5", "title": "HHV6", "designation": "AR", "line": 2823 },
+                { "number": "6", "title": "HHV8", "designation": "AR", "line": 2824 },
+                { "number": "7", "title": "HHV7", "designation": "F", "line": 2825 }
+              ]
+            },
+            { "number": "xvii", "title": "Hepatitis B Virus", "designation": "AR", "line": 2826 },
+            { "number": "xviii", "title": "Hepatitis D Virus", "designation": "AR", "line": 2827 },
+            { "number": "xix", "title": "Rabies Virus", "designation": "AR", "line": 2828 },
+            { "number": "xx", "title": "Influenza A Virus", "designation": "AR", "line": 2829 },
+            { "number": "xxi", "title": "Influenza B Virus", "designation": "AR", "line": 2830 },
+            { "number": "xxii", "title": "Human Papilloma Viruses", "designation": "AR", "line": 2831 },
+            {
+              "number": "xxiii",
+              "title": "Paramyxoviruses",
+              "line": 2832,
+              "subitems": [
+                { "number": "1", "title": "Parainfluenza Virus", "designation": "AR", "line": 2833 },
+                { "number": "2", "title": "Mumps", "designation": "AR", "line": 2834 },
+                { "number": "3", "title": "Measles", "designation": "AR", "line": 2835 },
+                { "number": "4", "title": "RSV", "designation": "AR", "line": 2836 },
+                { "number": "5", "title": "hMPV", "designation": "AR", "line": 2837 },
+                { "number": "6", "title": "Hendra", "designation": "F", "line": 2838 },
+                { "number": "7", "title": "Nipah", "designation": "F", "line": 2839 }
+              ]
+            },
+            { "number": "xxiv", "title": "Parvovirus B19", "designation": "AR", "line": 2840 },
+            { "number": "xxv", "title": "Hepatitis A Virus", "designation": "AR", "line": 2841 },
+            {
+              "number": "xxvi",
+              "title": "Polyoma Viruses",
+              "line": 2842,
+              "subitems": [
+                { "number": "1", "title": "BK Virus", "designation": "AR", "line": 2843 },
+                { "number": "2", "title": "JC Virus", "designation": "AR", "line": 2844 },
+                { "number": "3", "title": "Merkel Cell Polyoma Virus", "designation": "F", "line": 2845 }
+              ]
+            },
+            {
+              "number": "xxvii",
+              "title": "Variola Viruses",
+              "line": 2846,
+              "subitems": [
+                { "number": "1", "title": "Variola Major", "designation": "AR", "line": 2847 },
+                { "number": "2", "title": "Mpox Virus", "designation": "AR", "line": 2848 },
+                { "number": "3", "title": "Molluscum Contagiosum", "designation": "AR", "line": 2849 },
+                { "number": "4", "title": "Vaccinia Virus", "designation": "F", "line": 2850 }
+              ]
+            },
+            {
+              "number": "xxviii",
+              "title": "Retroviruses",
+              "line": 2851,
+              "subitems": [
+                { "number": "1", "title": "HIV", "designation": "AR", "line": 2852 },
+                { "number": "2", "title": "HTLV", "designation": "AR", "line": 2853 }
+              ]
+            },
+            { "number": "xxix", "title": "Rhinovirus", "designation": "AR", "line": 2854 },
+            { "number": "xxx", "title": "Rotavirus", "designation": "AR", "line": 2855 }
+          ]
+        },
+        { "letter": "k", "title": "Human Prion Diseases", "designation": "AR", "line": 2877 }
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Parasites",
+      "line": 2879,
+      "items": [
+        { "letter": "a", "title": "Structure and Biology", "designation": "AR", "line": 2880 },
+        { "letter": "b", "title": "Specimen Collection, Transport, and Processing", "designation": "AR", "line": 2881 },
+        { "letter": "c", "title": "Stains and Direct Examination", "designation": "AR", "line": 2882 },
+        { "letter": "d", "title": "Identification Methods and Instrumentation", "designation": "AR", "line": 2883 },
+        { "letter": "e", "title": "Geographic Distribution", "designation": "AR", "line": 2884 },
+        { "letter": "f", "title": "Antiparasitic Agents, Susceptibility Testing, and Mechanisms", "designation": "F", "line": 2885 },
+        {
+          "letter": "g",
+          "title": "Specific Parasites",
+          "line": 2899,
+          "subitems": [
+            {
+              "number": "i",
+              "title": "Protozoa",
+              "line": 2900,
+              "subitems": [
+                {
+                  "number": "1",
+                  "title": "Intestinal",
+                  "line": 2901,
+                  "subitems": [
+                    { "letter": "a", "title": "Blastocystis hominis", "designation": "AR", "line": 2902 },
+                    { "letter": "b", "title": "Cryptosporidium spp.", "designation": "AR", "line": 2903 },
+                    { "letter": "c", "title": "Cyclospora sp.", "designation": "AR", "line": 2904 },
+                    { "letter": "d", "title": "Cystoisospora sp.", "designation": "AR", "line": 2905 },
+                    { "letter": "e", "title": "Entamoeba histolytica", "designation": "AR", "line": 2906 },
+                    { "letter": "f", "title": "Entamoeba dispar", "designation": "AR", "line": 2907 },
+                    { "letter": "g", "title": "Entamoeba coli", "designation": "AR", "line": 2908 },
+                    { "letter": "h", "title": "Giardia spp.", "designation": "AR", "line": 2909 },
+                    { "letter": "i", "title": "Leishmania spp.", "designation": "AR", "line": 2910 },
+                    { "letter": "j", "title": "Trichomonas vaginalis", "designation": "AR", "line": 2911 },
+                    { "letter": "k", "title": "Chilomastix sp.", "designation": "F", "line": 2912 },
+                    { "letter": "l", "title": "Dientamoeba sp.", "designation": "AR", "line": 2913 }
+                  ]
+                },
+                {
+                  "number": "2",
+                  "title": "Blood and Tissue",
+                  "line": 2918,
+                  "subitems": [
+                    { "letter": "a", "title": "Acanthamoeba spp.", "designation": "AR", "line": 2919 },
+                    { "letter": "b", "title": "Babesia spp.", "designation": "AR", "line": 2920 },
+                    { "letter": "c", "title": "Leishmania spp.", "designation": "AR", "line": 2921 },
+                    { "letter": "d", "title": "Naegleria fowleri", "designation": "AR", "line": 2922 },
+                    {
+                      "letter": "e",
+                      "title": "Plasmodium",
+                      "line": 2923,
+                      "subitems": [
+                        { "number": "i", "title": "Plasmodium falciparum", "designation": "AR", "line": 2924 },
+                        { "number": "ii", "title": "Plasmodium vivax", "designation": "AR", "line": 2925 },
+                        { "number": "iii", "title": "Plasmodium ovale", "designation": "AR", "line": 2926 },
+                        { "number": "iv", "title": "Plasmodium malariae", "designation": "AR", "line": 2927 },
+                        { "number": "v", "title": "Plasmodium knowlesi", "designation": "F", "line": 2928 }
+                      ]
+                    },
+                    { "letter": "f", "title": "Toxoplasma gondii", "designation": "AR", "line": 2929 },
+                    { "letter": "g", "title": "Trypanosoma brucei", "designation": "AR", "line": 2930 },
+                    { "letter": "h", "title": "Trypanosoma krusei", "designation": "AR", "line": 2931 }
+                  ]
+                }
+              ]
+            },
+            {
+              "number": "ii",
+              "title": "Nematodes (Round Worms)",
+              "line": 2935,
+              "subitems": [
+                { "number": "1", "title": "Ascaris spp.", "designation": "AR", "line": 2936 },
+                { "number": "2", "title": "Enterobius sp.", "designation": "AR", "line": 2937 },
+                { "number": "3", "title": "Filarial Nematodes", "designation": "F", "line": 2938 },
+                { "number": "4", "title": "Hookworms and Cutaneous Larva Migrans", "designation": "AR", "line": 2939 },
+                { "number": "5", "title": "Strongyloides spp.", "designation": "AR", "line": 2940 },
+                { "number": "6", "title": "Trichuris spp.", "designation": "AR", "line": 2941 }
+              ]
+            },
+            {
+              "number": "iii",
+              "title": "Trematodes",
+              "line": 2952,
+              "subitems": [
+                { "number": "1", "title": "Schistosoma spp.", "designation": "AR", "line": 2953 }
+              ]
+            },
+            {
+              "number": "iv",
+              "title": "Cestodes",
+              "line": 2960,
+              "subitems": [
+                { "number": "1", "title": "Dibothriocephalus latus (i.e., Diphyllobothrium latum)", "designation": "AR", "line": 2961 },
+                { "number": "2", "title": "Echinococcus spp.", "designation": "AR", "line": 2962 },
+                { "number": "3", "title": "Taenia saginata", "designation": "AR", "line": 2963 },
+                { "number": "4", "title": "Taenix solium including Cysticercosis", "designation": "AR", "line": 2964 }
+              ]
+            },
+            { "number": "v", "title": "Less Common Parasites", "designation": "F", "line": 2968 },
+            { "number": "vi", "title": "Insects, Arthropods, and Arachnids", "designation": "F", "line": 2969 }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "title": "Microbiology Laboratory Management",
+      "line": 2971,
+      "items": [
+        { "letter": "a", "title": "Safety/Biosafety", "designation": "C", "line": 2972 },
+        { "letter": "b", "title": "Microbiology Laboratory Management", "designation": "F", "line": 2973 },
+        { "letter": "c", "title": "Rules and Regulations", "designation": "F", "line": 2974 },
+        { "letter": "d", "title": "Laboratory Inspections", "designation": "F", "line": 2975 },
+        { "letter": "e", "title": "QA/QC Issues", "designation": "F", "line": 2976 },
+        { "letter": "f", "title": "Other Administration/Laboratory Management Issues", "designation": "F", "line": 2977 }
+      ]
+    }
+  ]
+}

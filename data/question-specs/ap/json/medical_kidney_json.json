@@ -1,0 +1,70 @@
+{
+  "section": "Medical Kidney",
+  "total_questions": 5,
+  "total_available_topics": 25,
+  "allocation_strategy": "Clinical judgment prioritizing common medical renal diseases with high diagnostic yield",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Diabetic nephropathy vs. other proteinuric diseases",
+      "item_locations": ["AP 2-3-c-ii", "AP 2-3-c-iv"],
+      "education_objective": "Recognize diabetic nephropathy features and distinguish from other causes of proteinuria/nephrotic syndrome",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Acute tubular necrosis: patterns & differential diagnosis",
+      "item_locations": ["AP 2-3-i-i"],
+      "education_objective": "Identify ATN morphologic patterns and distinguish from other causes of acute kidney injury",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "IgA nephropathy & hematuria differential",
+      "item_locations": ["AP 2-3-d-i", "AP 2-3-d-iii"],
+      "education_objective": "Recognize IgA nephropathy and differentiate from other causes of isolated hematuria",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Lupus nephritis: classification & patterns",
+      "item_locations": ["AP 2-3-g"],
+      "education_objective": "Classify lupus nephritis patterns and understand prognostic implications",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Membranoproliferative glomerulonephritis & crescentic GN",
+      "item_locations": ["AP 2-3-b-i", "AP 2-3-b-ii"],
+      "education_objective": "Distinguish MPGN patterns from crescentic GN and understand underlying etiologies",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 2,
+      "advanced_resident_only": 3,
+      "combined_c_ar": 0
+    },
+    "by_difficulty": {
+      "easy": 0,
+      "medium": 3,
+      "hard": 2
+    },
+    "by_yield": {
+      "high": 5,
+      "medium": 0,
+      "low": 0
+    }
+  }
+}

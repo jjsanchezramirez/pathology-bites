@@ -34,8 +34,9 @@ import {
 import { QuestionPreviewDialog } from './question-preview-dialog'
 import { QuestionReviewDialog } from './question-review-dialog'
 import { EditQuestionDialog } from './edit-question-dialog'
+import { FlagResolutionDialog } from './flag-resolution-dialog'
 import { toast } from 'sonner'
-import { STATUS_CONFIG, QuestionWithDetails } from '@/features/questions/types/questions'
+import { STATUS_CONFIG, QuestionWithDetails, QuestionFlagData } from '@/features/questions/types/questions'
 
 interface ReviewQueueItem extends QuestionWithDetails {
   creator_name: string
@@ -56,6 +57,9 @@ export function UnifiedReviewQueue() {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [reviewOpen, setReviewOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
+  const [resolutionOpen, setResolutionOpen] = useState(false)
+  const [selectedFlags, setSelectedFlags] = useState<QuestionFlagData[]>([])
+  const [selectedQuestionTitle, setSelectedQuestionTitle] = useState('')
   const [activeTab, setActiveTab] = useState('all')
 
   const searchParams = useSearchParams()
@@ -132,6 +136,32 @@ export function UnifiedReviewQueue() {
   const handleEdit = (item: ReviewQueueItem) => {
     setSelectedItem(item)
     setEditOpen(true)
+  }
+
+  const handleResolveFlags = async (item: ReviewQueueItem) => {
+    if (!item.flag_count || item.flag_count === 0) return
+
+    try {
+      // Fetch the actual flags for this question
+      const { data: flags, error } = await supabase
+        .from('question_flags')
+        .select('*')
+        .eq('question_id', item.id)
+        .eq('status', 'open')
+
+      if (error) {
+        console.error('Error fetching flags:', error)
+        toast.error('Failed to load flags')
+        return
+      }
+
+      setSelectedFlags(flags || [])
+      setSelectedQuestionTitle(item.title)
+      setResolutionOpen(true)
+    } catch (error) {
+      console.error('Error fetching flags:', error)
+      toast.error('Failed to load flags')
+    }
   }
 
   const getItemTypeDisplay = (item: ReviewQueueItem) => {
@@ -300,6 +330,16 @@ export function UnifiedReviewQueue() {
                           >
                             Review
                           </Button>
+                          {item.review_type === 'flagged_question' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleResolveFlags(item)}
+                              className="text-green-600 hover:text-green-700"
+                            >
+                              <Flag className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -330,6 +370,14 @@ export function UnifiedReviewQueue() {
         open={editOpen}
         onOpenChange={setEditOpen}
         onSave={fetchReviewQueue}
+      />
+
+      <FlagResolutionDialog
+        flags={selectedFlags}
+        questionTitle={selectedQuestionTitle}
+        open={resolutionOpen}
+        onOpenChange={setResolutionOpen}
+        onResolutionComplete={fetchReviewQueue}
       />
     </div>
   )

@@ -1,0 +1,250 @@
+{
+  "section": "AP 3: Male Reproductive System",
+  "total_questions": 25,
+  "total_available_topics": 83,
+  "allocation_strategy": "Clinical judgment prioritizing high-yield prostate and testicular pathology with emphasis on Gleason grading and germ cell tumor differentials",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Gleason grading: pattern recognition & scoring",
+      "item_locations": ["AP 3-A-6-a"],
+      "education_objective": "Apply Gleason grading system accurately and recognize challenging patterns",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Prostatic adenocarcinoma vs. benign mimics",
+      "item_locations": ["AP 3-A-5-b-i"],
+      "education_objective": "Distinguish prostatic adenocarcinoma from benign glands and atrophy",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "PIN vs. adenocarcinoma differential",
+      "item_locations": ["AP 3-A-5-b-ii"],
+      "education_objective": "Differentiate high-grade PIN from invasive adenocarcinoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Atrophy patterns vs. adenocarcinoma",
+      "item_locations": ["AP 3-A-2-b", "AP 3-A-2-c"],
+      "education_objective": "Distinguish various atrophy patterns from adenocarcinoma",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Extraprostatic extension assessment",
+      "item_locations": ["AP 3-A-6-b"],
+      "education_objective": "Recognize extraprostatic extension and understand staging implications",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Prostate immunohistochemistry panel interpretation",
+      "item_locations": ["AP 3-A-6-e"],
+      "education_objective": "Interpret immunohistochemical stains for prostate diagnosis (p63, AMACR, PSA)",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Prostatic adenocarcinoma variants",
+      "item_locations": ["AP 3-A-5-b-iv"],
+      "education_objective": "Recognize common variants of prostatic adenocarcinoma and their significance",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Benign prostatic hyperplasia patterns",
+      "item_locations": ["AP 3-A-2-a"],
+      "education_objective": "Recognize BPH patterns and distinguish from adenocarcinoma",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Adenosis vs. adenocarcinoma",
+      "item_locations": ["AP 3-A-5-a-i"],
+      "education_objective": "Distinguish adenosis from low-grade adenocarcinoma",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Basal cell hyperplasia vs. adenocarcinoma",
+      "item_locations": ["AP 3-A-2-g"],
+      "education_objective": "Differentiate basal cell hyperplasia from adenocarcinoma using morphology and IHC",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Seminoma vs. embryonal carcinoma differential",
+      "item_locations": ["AP 3-B-8-b-i-2", "AP 3-B-8-b-i-6"],
+      "education_objective": "Distinguish seminoma from embryonal carcinoma morphologically",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Intratubular germ cell neoplasia recognition",
+      "item_locations": ["AP 3-B-8-b-i-1"],
+      "education_objective": "Recognize ITGCN and understand its significance as precursor lesion",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Yolk sac tumor patterns & AFP correlation",
+      "item_locations": ["AP 3-B-8-b-i-7"],
+      "education_objective": "Identify yolk sac tumor patterns and correlate with AFP elevation",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Mixed germ cell tumor composition",
+      "item_locations": ["AP 3-B-8-b-i-9"],
+      "education_objective": "Identify components in mixed germ cell tumors and understand staging implications",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Teratoma: mature vs. immature features",
+      "item_locations": ["AP 3-B-8-b-i-3"],
+      "education_objective": "Distinguish mature from immature teratoma and recognize malignant transformation",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Leydig cell tumor vs. Sertoli cell tumor",
+      "item_locations": ["AP 3-B-8-b-ii-1", "AP 3-B-8-b-ii-2"],
+      "education_objective": "Differentiate Leydig cell tumor from Sertoli cell tumor morphologically",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 17,
+      "topic": "Spermatocytic seminoma vs. classic seminoma",
+      "item_locations": ["AP 3-B-8-b-i-5"],
+      "education_objective": "Distinguish spermatocytic seminoma from classic seminoma and understand different behavior",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 18,
+      "topic": "Testicular lymphoma recognition",
+      "item_locations": ["AP 3-B-8-b-iv-1"],
+      "education_objective": "Recognize testicular lymphoma and understand age distribution and prognosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 19,
+      "topic": "Choriocarcinoma identification & staging",
+      "item_locations": ["AP 3-B-8-b-i-10"],
+      "education_objective": "Identify choriocarcinoma components and understand staging implications",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Neuroendocrine carcinoma of prostate",
+      "item_locations": ["AP 3-A-5-b-iii"],
+      "education_objective": "Recognize prostatic neuroendocrine carcinoma and understand aggressive behavior",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 21,
+      "topic": "Penile squamous cell carcinoma & grading",
+      "item_locations": ["AP 3-C-5-b-iii"],
+      "education_objective": "Recognize penile SCC patterns and apply grading systems",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Penile intraepithelial neoplasia vs. Bowenoid papulosis",
+      "item_locations": ["AP 3-C-5-b-i", "AP 3-C-5-b-ii"],
+      "education_objective": "Distinguish PeIN from Bowenoid papulosis and understand progression risk",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 23,
+      "topic": "Granulomatous prostatitis patterns",
+      "item_locations": ["AP 3-A-4-b"],
+      "education_objective": "Recognize granulomatous prostatitis patterns and differential diagnosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 24,
+      "topic": "Epidermoid cyst vs. teratoma",
+      "item_locations": ["AP 3-B-8-b-i-4"],
+      "education_objective": "Distinguish epidermoid cyst from teratoma in testicular context",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "medium"
+    },
+    {
+      "question_id": 25,
+      "topic": "Prostatic surgical margin assessment",
+      "item_locations": ["AP 3-A-6-d"],
+      "education_objective": "Assess surgical margins in prostatectomy specimens and understand significance",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 12,
+      "advanced_resident_only": 11,
+      "combined_c_ar": 2
+    },
+    "by_difficulty": {
+      "easy": 2,
+      "medium": 20,
+      "hard": 3
+    },
+    "by_yield": {
+      "high": 19,
+      "medium": 6,
+      "low": 0
+    }
+  }
+}

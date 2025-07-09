@@ -2,9 +2,8 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
-import { ImageIcon, PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
+import { ImageIcon, PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon, Loader2 } from 'lucide-react'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
 import {
@@ -15,11 +14,14 @@ import {
 } from "@/shared/components/ui/tooltip"
 import {
   Question,
+  QuestionWithDetails,
   Category,
   DIFFICULTY_CONFIG,
   YIELD_CONFIG
 } from '@/features/questions/types/questions'
 import { getCategoryDisplayName } from '@/features/questions/utils/display-helpers'
+import { EditQuestionDialog } from './edit-question-dialog'
+import { createClient } from '@/shared/services/client'
 
 interface QuestionRowProps {
   question: Question
@@ -48,6 +50,30 @@ export default function QuestionRow({ question, categoryPaths, onDelete }: Quest
   const [isDeleting, setIsDeleting] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [showImages, setShowImages] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false)
+  const [fullQuestion, setFullQuestion] = useState<QuestionWithDetails | null>(null)
+  const [isLoadingQuestion, setIsLoadingQuestion] = useState(false)
+
+  const supabase = createClient()
+
+  const handleEdit = async () => {
+    setIsLoadingQuestion(true)
+    try {
+      // Fetch the full question details from the API
+      const response = await fetch(`/api/admin/questions/${question.id}`)
+      if (response.ok) {
+        const questionDetails = await response.json()
+        setFullQuestion(questionDetails)
+        setShowEditDialog(true)
+      } else {
+        console.error('Failed to fetch question details')
+      }
+    } catch (error) {
+      console.error('Failed to fetch question details:', error)
+    } finally {
+      setIsLoadingQuestion(false)
+    }
+  }
 
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this question? This action cannot be undone.')) {
@@ -217,11 +243,14 @@ export default function QuestionRow({ question, categoryPaths, onDelete }: Quest
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0 hover:bg-muted/50 dark:hover:bg-muted/20 dark:text-gray-300 dark:hover:text-gray-100"
-              asChild
+              onClick={handleEdit}
+              disabled={isLoadingQuestion}
             >
-              <Link href={`/admin/questions/${question.id}/edit`}>
+              {isLoadingQuestion ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
                 <PencilIcon className="h-3 w-3" />
-              </Link>
+              )}
             </Button>
             <Button
               variant="ghost"
@@ -254,6 +283,21 @@ export default function QuestionRow({ question, categoryPaths, onDelete }: Quest
             </div>
           </td>
         </tr>
+      )}
+
+      {/* Edit Question Dialog */}
+      {showEditDialog && fullQuestion && (
+        <EditQuestionDialog
+          question={fullQuestion}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          onSave={() => {
+            setShowEditDialog(false)
+            setFullQuestion(null)
+            // Note: In a real implementation, you might want to refresh the data
+            // or call a callback to notify the parent component
+          }}
+        />
       )}
     </>
   )

@@ -27,6 +27,7 @@ import {
 } from '@/features/questions/types/questions'
 import { QuestionReviewDialog } from './question-review-dialog'
 import { QuestionFlagDialog } from './question-flag-dialog'
+import { QuestionPreviewDialog } from './question-preview-dialog'
 import { 
   Eye, 
   Search, 
@@ -48,6 +49,8 @@ export function ReviewQueueTable() {
   const [selectedQuestion, setSelectedQuestion] = useState<QuestionWithReviewDetails | null>(null)
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
   const [flagDialogOpen, setFlagDialogOpen] = useState(false)
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false)
+  const [questionToPreview, setQuestionToPreview] = useState<QuestionWithReviewDetails | null>(null)
 
   const supabase = createClient()
 
@@ -129,6 +132,34 @@ export function ReviewQueueTable() {
   const handleFlagQuestion = (question: QuestionWithReviewDetails) => {
     setSelectedQuestion(question)
     setFlagDialogOpen(true)
+  }
+
+  const handlePreviewQuestion = async (question: QuestionWithReviewDetails) => {
+    try {
+      // Fetch complete question data with options and images for preview
+      const { data: fullQuestion, error } = await supabase
+        .from('questions')
+        .select(`
+          *,
+          question_options(*),
+          question_images(*, image:images(*)),
+          categories(*)
+        `)
+        .eq('id', question.id)
+        .single()
+
+      if (error) {
+        console.error('Error fetching full question data:', error)
+        toast.error('Failed to load question details')
+        return
+      }
+
+      setQuestionToPreview(fullQuestion)
+      setPreviewDialogOpen(true)
+    } catch (error) {
+      console.error('Error fetching question for preview:', error)
+      toast.error('Failed to load question preview')
+    }
   }
 
   const getStatusIcon = (status: string) => {
@@ -262,9 +293,16 @@ export function ReviewQueueTable() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleReviewQuestion(question)}
+                          onClick={() => handlePreviewQuestion(question)}
                         >
                           <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleReviewQuestion(question)}
+                        >
+                          <CheckCircle className="h-4 w-4" />
                         </Button>
                         {question.status === 'published' && (
                           <Button
@@ -291,6 +329,13 @@ export function ReviewQueueTable() {
         open={reviewDialogOpen}
         onOpenChange={setReviewDialogOpen}
         onReviewComplete={fetchQuestions}
+      />
+
+      {/* Preview Dialog */}
+      <QuestionPreviewDialog
+        question={questionToPreview}
+        open={previewDialogOpen}
+        onOpenChange={setPreviewDialogOpen}
       />
 
       {/* Flag Dialog */}

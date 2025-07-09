@@ -1,0 +1,115 @@
+{
+  "section": "AP 4: Cardiovascular",
+  "total_questions": 10,
+  "total_available_topics": 43,
+  "allocation_strategy": "Clinical judgment prioritizing common cardiac pathology with emphasis on ischemic disease, cardiomyopathy differentials, and vasculitis recognition",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Myocardial infarction: acute vs. chronic changes & dating",
+      "item_locations": ["AP 4-2-a-i"],
+      "education_objective": "Recognize acute and chronic MI changes and estimate timing of cardiac injury",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Cardiomyopathy differential: dilated vs. hypertrophic vs. restrictive",
+      "item_locations": ["AP 4-2-h-i", "AP 4-2-h-ii", "AP 4-2-h-iii"],
+      "education_objective": "Distinguish between major cardiomyopathy types using morphologic criteria",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Atherosclerosis patterns & complications",
+      "item_locations": ["AP 4-2-e"],
+      "education_objective": "Recognize atherosclerotic plaque morphology and identify vulnerable plaques",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Giant cell arteritis vs. other large vessel vasculitis",
+      "item_locations": ["AP 4-4-a-i", "AP 4-4-a-ii"],
+      "education_objective": "Recognize giant cell arteritis and distinguish from Takayasu arteritis",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Infectious vs. non-infectious endocarditis",
+      "item_locations": ["AP 4-4-b", "AP 4-4-c"],
+      "education_objective": "Distinguish infectious from non-infectious endocarditis and recognize vegetation types",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Myocarditis patterns: lymphocytic vs. giant cell",
+      "item_locations": ["AP 4-4-d-i", "AP 4-4-d-vii"],
+      "education_objective": "Differentiate lymphocytic from giant cell myocarditis and understand prognosis",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Cardiac myxoma: features & differential diagnosis",
+      "item_locations": ["AP 4-6-a-i"],
+      "education_objective": "Recognize cardiac myxoma morphology and distinguish from thrombus",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Cardiac amyloidosis recognition",
+      "item_locations": ["AP 4-5-a"],
+      "education_objective": "Identify cardiac amyloidosis and understand diagnostic approach",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Hypertensive heart disease changes",
+      "item_locations": ["AP 4-2-b"],
+      "education_objective": "Recognize morphologic changes of hypertensive heart disease",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Small-medium vessel vasculitis differential",
+      "item_locations": ["AP 4-4-a-iii", "AP 4-4-a-v", "AP 4-4-a-vii"],
+      "education_objective": "Distinguish polyarteritis nodosa from ANCA-associated vasculitis patterns",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 5,
+      "advanced_resident_only": 1,
+      "combined_c_ar": 4
+    },
+    "by_difficulty": {
+      "easy": 1,
+      "medium": 7,
+      "hard": 2
+    },
+    "by_yield": {
+      "high": 10,
+      "medium": 0,
+      "low": 0
+    }
+  }
+}

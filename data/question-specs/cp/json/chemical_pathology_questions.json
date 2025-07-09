@@ -1,0 +1,610 @@
+{
+  "section": "CP 2: Chemical Pathology",
+  "total_questions": 65,
+  "total_available_topics": 391,
+  "allocation_strategy": "Clinical interpretation focus prioritizing common disorders, practical scenarios, and high-impact laboratory medicine",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Preanalytical errors and specimen handling",
+      "item_locations": ["CP 2-2-a", "CP 2-2-b", "CP 2-2-c"],
+      "education_objective": "Identify and prevent preanalytical errors affecting test results",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Hemolysis effects on analytes",
+      "item_locations": ["CP 2-2-c-i-4"],
+      "education_objective": "Recognize hemolysis interference patterns and affected analytes",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Point-of-care testing implementation",
+      "item_locations": ["CP 2-10-a", "CP 2-10-b"],
+      "education_objective": "Understand POCT applications, limitations, and quality requirements",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Spectrophotometry principles and Beer's Law",
+      "item_locations": ["CP 2-3-b"],
+      "education_objective": "Apply spectrophotometric principles to analytical problems",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 5,
+      "topic": "Immunoassay interferences and hook effect",
+      "item_locations": ["CP 2-9-b-iv", "CP 2-9-b-v"],
+      "education_objective": "Recognize immunoassay interferences including HAMA and hook effect",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Electrophoresis principles and applications",
+      "item_locations": ["CP 2-5-a", "CP 2-5-b"],
+      "education_objective": "Understand electrophoretic separation and clinical applications",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Mass spectrometry clinical applications",
+      "item_locations": ["CP 2-7-b"],
+      "education_objective": "Understand LC-MS/MS and MALDI-TOF applications in clinical chemistry",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 8,
+      "topic": "Protein electrophoresis pattern interpretation",
+      "item_locations": ["CP 2-11-a-i"],
+      "education_objective": "Interpret serum protein electrophoresis patterns in liver disease, inflammation, and other conditions",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Monoclonal gammopathy recognition",
+      "item_locations": ["CP 2-11-a-ii"],
+      "education_objective": "Identify and characterize monoclonal proteins by electrophoresis and immunofixation",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Urine protein electrophoresis patterns",
+      "item_locations": ["CP 2-11-a-iii", "CP 2-11-a-iv"],
+      "education_objective": "Interpret urine protein electrophoresis including Bence Jones proteins",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "CSF protein patterns and oligoclonal bands",
+      "item_locations": ["CP 2-11-a-vi"],
+      "education_objective": "Interpret CSF protein findings in multiple sclerosis and other neurologic conditions",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Cardiac enzymes in myocardial infarction",
+      "item_locations": ["CP 2-12-a-i", "CP 2-24-b-i"],
+      "education_objective": "Interpret cardiac troponin and other cardiac markers in acute coronary syndromes",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Liver enzyme patterns and interpretation",
+      "item_locations": ["CP 2-12-b"],
+      "education_objective": "Distinguish hepatocellular vs. cholestatic patterns using enzyme markers",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Pancreatic enzyme testing",
+      "item_locations": ["CP 2-12-c"],
+      "education_objective": "Interpret amylase and lipase in pancreatic disorders",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Tumor marker interpretation and utility",
+      "item_locations": ["CP 2-13-a", "CP 2-13-b"],
+      "education_objective": "Apply tumor markers appropriately in diagnosis and monitoring",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "PSA testing and interpretation",
+      "item_locations": ["CP 2-13-b-i"],
+      "education_objective": "Interpret PSA results and understand clinical limitations",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Alpha-fetoprotein clinical applications",
+      "item_locations": ["CP 2-13-b-ii"],
+      "education_objective": "Interpret AFP in hepatocellular carcinoma and germ cell tumors",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 18,
+      "topic": "Diabetes mellitus diagnosis and monitoring",
+      "item_locations": ["CP 2-14-d"],
+      "education_objective": "Apply diagnostic criteria for diabetes and interpret monitoring tests",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 19,
+      "topic": "Glycated hemoglobin interpretation",
+      "item_locations": ["CP 2-14-e"],
+      "education_objective": "Interpret HbA1c results and understand limitations",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Hypoglycemia evaluation",
+      "item_locations": ["CP 2-14-g"],
+      "education_objective": "Evaluate hypoglycemia using glucose, insulin, and C-peptide",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 21,
+      "topic": "Diabetic ketoacidosis laboratory findings",
+      "item_locations": ["CP 2-14-f"],
+      "education_objective": "Interpret laboratory findings in diabetic ketoacidosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Microalbuminuria and diabetic nephropathy",
+      "item_locations": ["CP 2-14-i"],
+      "education_objective": "Interpret microalbuminuria testing in diabetes monitoring",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 23,
+      "topic": "Lipid profile interpretation",
+      "item_locations": ["CP 2-15-a"],
+      "education_objective": "Interpret lipid panels and assess cardiovascular risk",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 24,
+      "topic": "Electrolyte disorders and anion gap",
+      "item_locations": ["CP 2-16-a"],
+      "education_objective": "Interpret electrolyte panels and calculate anion gap",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 25,
+      "topic": "Hyponatremia vs. hypernatremia evaluation",
+      "item_locations": ["CP 2-16-a-ii"],
+      "education_objective": "Evaluate sodium disorders using osmolality and clinical context",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 26,
+      "topic": "Blood gas interpretation and acid-base disorders",
+      "item_locations": ["CP 2-16-c", "CP 2-26-b"],
+      "education_objective": "Interpret arterial blood gases and classify acid-base disorders",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 27,
+      "topic": "Osmolality and electrolyte exclusion effect",
+      "item_locations": ["CP 2-16-b", "CP 2-16-a-iv"],
+      "education_objective": "Interpret osmolality results and understand pseudohyponatremia",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 28,
+      "topic": "Pheochromocytoma biochemical diagnosis",
+      "item_locations": ["CP 2-18-a-i"],
+      "education_objective": "Use catecholamine and metanephrine testing for pheochromocytoma diagnosis",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 29,
+      "topic": "Iron studies interpretation",
+      "item_locations": ["CP 2-19-c"],
+      "education_objective": "Interpret iron, TIBC, ferritin, and transferrin saturation",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 30,
+      "topic": "Vitamin B12 and folate deficiency",
+      "item_locations": ["CP 2-19-a-i", "CP 2-19-a-ii"],
+      "education_objective": "Interpret B12 and folate testing in megaloblastic anemia",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 31,
+      "topic": "Hemoglobinopathy testing methods",
+      "item_locations": ["CP 2-19-d"],
+      "education_objective": "Understand HPLC and electrophoretic methods for hemoglobinopathy detection",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 32,
+      "topic": "Porphyria laboratory diagnosis",
+      "item_locations": ["CP 2-20-a", "CP 2-20-b"],
+      "education_objective": "Diagnose acute intermittent porphyria and porphyria cutanea tarda",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 33,
+      "topic": "Therapeutic drug monitoring principles",
+      "item_locations": ["CP 2-21-a"],
+      "education_objective": "Apply pharmacokinetic principles to therapeutic drug monitoring",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 34,
+      "topic": "Antiepileptic drug monitoring",
+      "item_locations": ["CP 2-21-b-i"],
+      "education_objective": "Monitor phenytoin, carbamazepine, and valproic acid therapy",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 35,
+      "topic": "Immunosuppressant monitoring",
+      "item_locations": ["CP 2-21-b-iii"],
+      "education_objective": "Monitor cyclosporine, tacrolimus, and sirolimus levels",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 36,
+      "topic": "Toxicology screening and confirmation",
+      "item_locations": ["CP 2-22-a"],
+      "education_objective": "Understand screening vs. confirmatory testing in toxicology",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 37,
+      "topic": "Alcohol and ethylene glycol poisoning",
+      "item_locations": ["CP 2-22-b-i", "CP 2-22-b-iii"],
+      "education_objective": "Diagnose and monitor alcohol and ethylene glycol intoxication",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 38,
+      "topic": "Drugs of abuse testing",
+      "item_locations": ["CP 2-22-b-iv"],
+      "education_objective": "Interpret workplace and clinical drug abuse testing",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 39,
+      "topic": "Lead poisoning and monitoring",
+      "item_locations": ["CP 2-23-a-ii"],
+      "education_objective": "Interpret blood lead levels and understand exposure sources",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 40,
+      "topic": "Wilson disease copper studies",
+      "item_locations": ["CP 2-23-a-iv"],
+      "education_objective": "Diagnose Wilson disease using copper and ceruloplasmin testing",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 41,
+      "topic": "BNP and NT-proBNP in heart failure",
+      "item_locations": ["CP 2-24-b-ii"],
+      "education_objective": "Interpret natriuretic peptides in heart failure diagnosis and management",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 42,
+      "topic": "High-sensitivity troponin interpretation",
+      "item_locations": ["CP 2-24-b-i"],
+      "education_objective": "Interpret high-sensitivity troponin results and serial testing",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 43,
+      "topic": "Kidney function assessment and GFR",
+      "item_locations": ["CP 2-25-c"],
+      "education_objective": "Calculate and interpret estimated GFR using creatinine and cystatin C",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 44,
+      "topic": "Proteinuria evaluation and significance",
+      "item_locations": ["CP 2-25-c-vii"],
+      "education_objective": "Evaluate proteinuria using protein/creatinine ratios and 24-hour collections",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 45,
+      "topic": "Acute kidney injury vs. chronic kidney disease",
+      "item_locations": ["CP 2-25-b"],
+      "education_objective": "Distinguish AKI from CKD using laboratory markers and clinical context",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 46,
+      "topic": "Urinalysis and microscopy interpretation",
+      "item_locations": ["CP 2-25-c-vi"],
+      "education_objective": "Interpret urinalysis results and microscopic examination findings",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 47,
+      "topic": "Liver function test interpretation",
+      "item_locations": ["CP 2-27-b"],
+      "education_objective": "Interpret hepatic function tests and distinguish injury patterns",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 48,
+      "topic": "Bilirubin metabolism disorders",
+      "item_locations": ["CP 2-27-a-i"],
+      "education_objective": "Evaluate hyperbilirubinemia using direct and indirect bilirubin",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 49,
+      "topic": "Viral hepatitis serologic patterns",
+      "item_locations": ["CP 2-27-a-ii"],
+      "education_objective": "Interpret hepatitis B and C serologic markers",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 50,
+      "topic": "Celiac disease antibody testing",
+      "item_locations": ["CP 2-28-a-i"],
+      "education_objective": "Interpret tissue transglutaminase and deamidated gliadin antibodies",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 51,
+      "topic": "Calcium and parathyroid hormone disorders",
+      "item_locations": ["CP 2-29-a", "CP 2-29-c"],
+      "education_objective": "Evaluate calcium disorders using total/ionized calcium and PTH",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 52,
+      "topic": "Vitamin D metabolism and testing",
+      "item_locations": ["CP 2-29-c-ii"],
+      "education_objective": "Interpret 25(OH) vitamin D and 1,25(OH)2 vitamin D results",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 53,
+      "topic": "Thyroid function test interpretation",
+      "item_locations": ["CP 2-32-c"],
+      "education_objective": "Interpret TSH, free T4, and T3 in thyroid disorders",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 54,
+      "topic": "Thyroid autoantibody patterns",
+      "item_locations": ["CP 2-32-c-vi", "CP 2-32-c-vii", "CP 2-32-c-viii"],
+      "education_objective": "Interpret anti-TPO, anti-thyroglobulin, and TSI antibodies",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 55,
+      "topic": "Hyperthyroidism vs. hypothyroidism patterns",
+      "item_locations": ["CP 2-32-b"],
+      "education_objective": "Distinguish primary, secondary, and subclinical thyroid disorders",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 56,
+      "topic": "Adrenal function testing",
+      "item_locations": ["CP 2-31-a", "CP 2-31-c"],
+      "education_objective": "Evaluate adrenal insufficiency and excess using cortisol and stimulation tests",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 57,
+      "topic": "Reproductive hormone interpretation",
+      "item_locations": ["CP 2-33-c"],
+      "education_objective": "Interpret testosterone, estradiol, and gonadotropin results",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 58,
+      "topic": "Pregnancy testing and complications",
+      "item_locations": ["CP 2-34-e"],
+      "education_objective": "Interpret hCG testing and pregnancy-related complications",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 59,
+      "topic": "Newborn screening interpretation",
+      "item_locations": ["CP 2-35-a-i"],
+      "education_objective": "Interpret newborn screening results for metabolic disorders",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 60,
+      "topic": "Immunoglobulin quantification",
+      "item_locations": ["CP 2-36-a"],
+      "education_objective": "Interpret IgG, IgA, IgM levels and free light chains",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 61,
+      "topic": "Infectious disease serology interpretation",
+      "item_locations": ["CP 2-36-c"],
+      "education_objective": "Interpret serologic patterns for hepatitis, HIV, and other infections",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 62,
+      "topic": "Autoimmune disease testing",
+      "item_locations": ["CP 2-39-a", "CP 2-39-b"],
+      "education_objective": "Interpret ANA patterns and specific autoantibody testing",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 63,
+      "topic": "ANCA testing in vasculitis",
+      "item_locations": ["CP 2-40-a"],
+      "education_objective": "Interpret c-ANCA and p-ANCA patterns in systemic vasculitis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 64,
+      "topic": "Laboratory automation and informatics",
+      "item_locations": ["CP 2-42-b", "CP 2-42-c"],
+      "education_objective": "Understand laboratory automation principles and POCT informatics",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 65,
+      "topic": "Quality control and analytical performance",
+      "item_locations": ["CP 2-42-a"],
+      "education_objective": "Apply quality control principles and performance monitoring",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 45,
+      "advanced_resident_only": 15,
+      "combined_c_ar": 5
+    },
+    "by_difficulty": {
+      "easy": 0,
+      "medium": 46,
+      "hard": 19
+    },
+    "by_yield": {
+      "high": 55,
+      "medium": 10,
+      "low": 0
+    }
+  }
+}

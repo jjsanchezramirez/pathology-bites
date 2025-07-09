@@ -7,7 +7,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { toast } from 'sonner';
-import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, FileText, Flag, ChevronRight, History, GitBranch } from 'lucide-react';
+import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, FileText, Flag, ChevronRight, History, GitBranch, Eye } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -37,7 +37,9 @@ import { DeleteQuestionDialog } from './delete-question-dialog';
 import { QuestionVersionHistory } from './question-version-history';
 import { VersionHistoryDialog } from './version-history-dialog';
 import { AdminVersionUpdateDialog } from './admin-version-update-dialog';
+import { QuestionPreviewDialog } from './question-preview-dialog';
 import { getQuestionSetDisplayName, getCategoryDisplayName } from '@/features/questions/utils/display-helpers';
+import { createClient } from '@/shared/services/client';
 
 const PAGE_SIZE = 10;
 
@@ -195,7 +197,8 @@ function RowActions({
   onDelete,
   onFlag,
   onViewHistory,
-  onCreateVersion
+  onCreateVersion,
+  onPreview
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
@@ -203,6 +206,7 @@ function RowActions({
   onFlag?: (question: QuestionWithDetails) => void;
   onViewHistory?: (question: QuestionWithDetails) => void;
   onCreateVersion?: (question: QuestionWithDetails) => void;
+  onPreview?: (question: QuestionWithDetails) => void;
 }) {
   const { isAdmin } = useUserRole();
 
@@ -220,6 +224,12 @@ function RowActions({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {onPreview && (
+          <DropdownMenuItem onClick={() => onPreview(question)}>
+            <Eye className="h-4 w-4 mr-2" />
+            Preview
+          </DropdownMenuItem>
+        )}
         {canEdit ? (
           <DropdownMenuItem onClick={() => onEdit(question)}>
             <Edit className="h-4 w-4 mr-2" />
@@ -262,14 +272,15 @@ function RowActions({
   );
 }
 
-// Expandable Question Row component
-function ExpandableQuestionRow({
+// Question Row component
+function QuestionRow({
   question,
   onEdit,
   onDelete,
   onFlag,
   onViewHistory,
-  onCreateVersion
+  onCreateVersion,
+  onPreview
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
@@ -277,29 +288,16 @@ function ExpandableQuestionRow({
   onFlag?: (question: QuestionWithDetails) => void;
   onViewHistory?: (question: QuestionWithDetails) => void;
   onCreateVersion?: (question: QuestionWithDetails) => void;
+  onPreview?: (question: QuestionWithDetails) => void;
 }) {
-  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <>
-      {/* Main Row */}
-      <TableRow key={question.id}>
-        <TableCell className="max-w-xs">
-          <div className="flex items-start gap-2">
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-1 p-0.5 hover:bg-muted/50 rounded flex-shrink-0"
-            >
-              {isExpanded ?
-                <ChevronDown className="h-4 w-4 text-muted-foreground" /> :
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              }
-            </button>
-            <div className="flex-1 min-w-0">
-              <p className="line-clamp-2 text-sm font-medium">{question.title}</p>
-            </div>
-          </div>
-        </TableCell>
+    <TableRow key={question.id}>
+      <TableCell className="max-w-xs">
+        <div className="flex-1 min-w-0">
+          <p className="line-clamp-2 text-sm font-medium">{question.title}</p>
+        </div>
+      </TableCell>
         <TableCell>
           <Badge className={DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.color}>
             {DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.label || question.difficulty}
@@ -367,80 +365,10 @@ function ExpandableQuestionRow({
             onFlag={onFlag}
             onViewHistory={onViewHistory}
             onCreateVersion={onCreateVersion}
+            onPreview={onPreview}
           />
         </TableCell>
       </TableRow>
-
-      {/* Expanded Content Row */}
-      {isExpanded && (
-        <TableRow className="bg-muted/50">
-          <TableCell colSpan={9} className="px-6 py-2">
-            <div className="text-sm space-y-2">
-              <div>
-                <div className="font-medium mb-1 text-xs">Question Stem:</div>
-                <p className="text-muted-foreground text-xs leading-relaxed">{question.stem}</p>
-              </div>
-
-              {/* Answer Options - Compact Layout */}
-              {question.question_options && question.question_options.length > 0 && (
-                <div>
-                  <div className="font-medium mb-1 text-xs">Answer Options:</div>
-                  <div className="space-y-1">
-                    {question.question_options
-                      .sort((a, b) => a.order_index - b.order_index)
-                      .map((option, index) => (
-                        <div key={option.id} className="text-xs">
-                          <div className="flex items-start gap-1">
-                            <span className="font-mono font-medium min-w-[16px] mt-0.5">
-                              {String.fromCharCode(65 + index)}.
-                            </span>
-                            <div className="flex-1">
-                              <span className={option.is_correct
-                                ? "font-medium text-green-700 dark:text-green-400"
-                                : "text-muted-foreground"
-                              }>
-                                {option.text}
-                                {option.is_correct && <span className="ml-1 text-green-600">✓</span>}
-                              </span>
-                              {option.explanation && (
-                                <div className="text-muted-foreground/80 mt-0.5 ml-4 italic">
-                                  {option.explanation}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
-
-              {question.teaching_point && (
-                <div>
-                  <div className="font-medium mb-1 text-xs">Teaching Point:</div>
-                  <p className="text-muted-foreground text-xs">{question.teaching_point}</p>
-                </div>
-              )}
-              {question.question_references && (
-                <div>
-                  <div className="font-medium mb-1 text-xs">References:</div>
-                  <p className="text-muted-foreground text-xs">{question.question_references}</p>
-                </div>
-              )}
-              <div className="text-xs text-muted-foreground pt-1 mt-1 border-t border-muted/50">
-                <span>
-                  Created by {question.created_by_name || 'Unknown'} on {new Date(question.created_at).toLocaleDateString()}
-                  {' '}
-                  Last updated by {question.updated_by_name || question.created_by_name || 'Unknown'} on {new Date(question.updated_at).toLocaleDateString()}
-                  {' '}
-                  {question.version_string || `v${question.version_major || 1}.${question.version_minor || 0}.${question.version_patch || 0}`}
-                </span>
-              </div>
-            </div>
-          </TableCell>
-        </TableRow>
-      )}
-    </>
   );
 }
 
@@ -450,6 +378,8 @@ export function QuestionsTable() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [questionSetFilter, setQuestionSetFilter] = useState('all');
   const [page, setPage] = useState(0);
+
+  const supabase = createClient();
   const [selectedQuestion, setSelectedQuestion] = useState<QuestionWithDetails | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -458,9 +388,11 @@ export function QuestionsTable() {
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showVersionUpdateDialog, setShowVersionUpdateDialog] = useState(false);
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [questionToDelete, setQuestionToDelete] = useState<QuestionWithDetails | null>(null);
   const [questionToFlag, setQuestionToFlag] = useState<QuestionWithDetails | null>(null);
   const [questionForHistory, setQuestionForHistory] = useState<QuestionWithDetails | null>(null);
+  const [questionToPreview, setQuestionToPreview] = useState<QuestionWithDetails | null>(null);
   const [questionForVersionUpdate, setQuestionForVersionUpdate] = useState<QuestionWithDetails | null>(null);
 
   // Fetch questions with current filters
@@ -530,7 +462,33 @@ export function QuestionsTable() {
     setShowVersionUpdateDialog(true);
   }, []);
 
+  const handlePreview = useCallback(async (question: QuestionWithDetails) => {
+    try {
+      // Fetch complete question data with options and images for preview
+      const { data: fullQuestion, error } = await supabase
+        .from('questions')
+        .select(`
+          *,
+          question_options(*),
+          question_images(*, image:images(*)),
+          categories(*)
+        `)
+        .eq('id', question.id)
+        .single()
 
+      if (error) {
+        console.error('Error fetching full question data:', error)
+        toast.error('Failed to load question details')
+        return
+      }
+
+      setQuestionToPreview(fullQuestion)
+      setShowPreviewDialog(true)
+    } catch (error) {
+      console.error('Error fetching question for preview:', error)
+      toast.error('Failed to load question preview')
+    }
+  }, []);
 
   const handleCreateSave = useCallback(() => {
     setShowCreateDialog(false);
@@ -624,7 +582,7 @@ export function QuestionsTable() {
               </TableRow>
             ) : (
               questions.map((question) => (
-                <ExpandableQuestionRow
+                <QuestionRow
                   key={question.id}
                   question={question}
                   onEdit={handleEdit}
@@ -632,6 +590,7 @@ export function QuestionsTable() {
                   onFlag={handleFlag}
                   onViewHistory={handleViewHistory}
                   onCreateVersion={handleCreateVersion}
+                  onPreview={handlePreview}
                 />
               ))
             )}
@@ -659,6 +618,13 @@ export function QuestionsTable() {
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
         onSave={handleImportSave}
+      />
+
+      {/* Preview Dialog */}
+      <QuestionPreviewDialog
+        question={questionToPreview}
+        open={showPreviewDialog}
+        onOpenChange={setShowPreviewDialog}
       />
 
       {showEditDialog && selectedQuestion && (

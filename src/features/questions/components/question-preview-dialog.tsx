@@ -23,7 +23,7 @@ export function QuestionPreviewDialog({
 }: QuestionPreviewDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full !max-w-[min(90vw,1100px)] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Question Preview</DialogTitle>
         </DialogHeader>

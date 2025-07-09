@@ -34,7 +34,7 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
   const incorrectOptions = question.question_options?.filter(option => !option.is_correct && option.explanation) || []
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full mx-auto">
       <Card className="h-full">
         <CardHeader className="py-2">
           <CardTitle className="text-lg">

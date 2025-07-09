@@ -77,6 +77,35 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 - **Admin Interface**: Comprehensive content management system
 - **Testing Suite**: Full test coverage with Jest and Playwright
 
+## 📁 Project Structure
+
+```
+pathology-bites/
+├── src/                    # Application source code
+│   ├── app/               # Next.js app router pages
+│   ├── components/        # Reusable UI components
+│   ├── features/          # Feature-specific modules
+│   └── shared/           # Shared utilities and types
+├── data/                  # Data files and content
+│   ├── content-specs/    # Pathology content specifications
+│   └── pathology-outlines/ # Future pathology outline data
+├── tools/                 # Utility scripts and development tools
+│   ├── data-processing/  # Data transformation scripts
+│   ├── validation/       # Data validation scripts
+│   ├── scripts/          # Development and deployment scripts
+│   └── database/         # Database migrations and SQL scripts
+├── docs/                  # Comprehensive documentation
+├── tests/                 # End-to-end and integration tests
+└── public/               # Static assets and public files
+```
+
+For detailed information about each directory, see:
+- [`data/README.md`](data/README.md) - Data directory structure and content specifications
+- [`tools/README.md`](tools/README.md) - Utility scripts, development tools, and database management
+- [`docs/README.md`](docs/README.md) - Comprehensive project documentation
+- [`tests/README.md`](tests/README.md) - Testing framework and end-to-end tests
+- [`public/README.md`](public/README.md) - Static assets and public file management
+
 ## 🚀 Getting Started
 
 ### Prerequisites

@@ -1,0 +1,1060 @@
+{
+  "section": "CP 1: Blood Banking/Transfusion Medicine",
+  "total_questions": 115,
+  "total_available_topics": 597,
+  "allocation_strategy": "Clinical importance and safety focus prioritizing transfusion reactions, compatibility testing, and therapeutic interventions",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Warm vs. Cold AIHA differential diagnosis",
+      "item_locations": ["CP 1-1-a-2", "CP 1-1-a-3"],
+      "education_objective": "Distinguish warm and cold autoimmune hemolytic anemia by clinical features, autoantibodies, and laboratory findings",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Paroxysmal cold hemoglobinuria pathophysiology",
+      "item_locations": ["CP 1-1-a-4"],
+      "education_objective": "Recognize PCH pathophysiology, Donath-Landsteiner test, and clinical significance",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "ITP diagnosis and platelet antibody testing",
+      "item_locations": ["CP 1-1-d-3", "CP 1-1-d-5"],
+      "education_objective": "Diagnose immune thrombocytopenia and interpret platelet antibody assays",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Heparin-induced thrombocytopenia mechanisms",
+      "item_locations": ["CP 1-1-d-6"],
+      "education_objective": "Understand HIT pathogenesis, testing methods, and clinical management",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Platelet transfusion refractoriness causes",
+      "item_locations": ["CP 1-1-d-7-3"],
+      "education_objective": "Identify causes of platelet refractoriness and management strategies",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Neonatal alloimmune thrombocytopenia",
+      "item_locations": ["CP 1-1-d-7-2"],
+      "education_objective": "Recognize NAIT pathophysiology and prenatal management strategies",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "DIC laboratory features and management",
+      "item_locations": ["CP 1-1-e-3"],
+      "education_objective": "Interpret DIC laboratory findings and understand treatment approaches",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Lupus anticoagulant testing interpretation",
+      "item_locations": ["CP 1-1-e-4-1"],
+      "education_objective": "Interpret lupus anticoagulant testing and understand clinical significance",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Factor VIII inhibitors vs. other coagulopathies",
+      "item_locations": ["CP 1-1-e-4-2"],
+      "education_objective": "Distinguish factor VIII inhibitors from other coagulation disorders",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "von Willebrand disease variants",
+      "item_locations": ["CP 1-1-e-7-1"],
+      "education_objective": "Classify von Willebrand disease types and interpret laboratory testing",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Anticoagulant therapy monitoring",
+      "item_locations": ["CP 1-1-e-6"],
+      "education_objective": "Monitor warfarin, heparin, and direct anticoagulants in transfusion settings",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "HLA system and transplantation compatibility",
+      "item_locations": ["CP 1-2-a"],
+      "education_objective": "Understand HLA antigens, antibodies, and their role in transplantation",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Tissue banking and transplant support",
+      "item_locations": ["CP 1-2-b"],
+      "education_objective": "Understand transfusion service support for tissue transplantation",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 14,
+      "topic": "Adoptive immunotherapy principles",
+      "item_locations": ["CP 1-2-c"],
+      "education_objective": "Understand immunotherapy targets and transfusion medicine support",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 15,
+      "topic": "ABO typing discrepancies and resolution",
+      "item_locations": ["CP 1-3-d-2-b"],
+      "education_objective": "Resolve ABO typing discrepancies and understand variant phenotypes",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Antibody identification strategies",
+      "item_locations": ["CP 1-3-d-3"],
+      "education_objective": "Apply systematic approaches to antibody identification",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Electronic vs. serologic crossmatch",
+      "item_locations": ["CP 1-3-d-4-c", "CP 1-3-d-4-d"],
+      "education_objective": "Understand crossmatch methods and their appropriate applications",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 18,
+      "topic": "Emergency release protocols",
+      "item_locations": ["CP 1-3-d-4-g"],
+      "education_objective": "Implement emergency blood release procedures and documentation",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 19,
+      "topic": "ABH antigen biochemistry and variants",
+      "item_locations": ["CP 1-3-e-1"],
+      "education_objective": "Understand ABH antigen structure, synthesis, and genetic variants",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Rh system genetics and phenotyping",
+      "item_locations": ["CP 1-3-f"],
+      "education_objective": "Interpret Rh phenotypes, genotypes, and predict HDFN risk",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 21,
+      "topic": "Kell system and transfusion implications",
+      "item_locations": ["CP 1-3-g-1"],
+      "education_objective": "Understand Kell antigens and their clinical significance in transfusion",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Duffy and malaria resistance",
+      "item_locations": ["CP 1-3-g-2"],
+      "education_objective": "Correlate Duffy phenotypes with malaria resistance and antibody significance",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 23,
+      "topic": "Kidd antibodies and delayed reactions",
+      "item_locations": ["CP 1-3-g-3"],
+      "education_objective": "Recognize Kidd antibody characteristics and delayed hemolytic reactions",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 24,
+      "topic": "Anemia physiology and transfusion triggers",
+      "item_locations": ["CP 1-4-a", "CP 1-4-d"],
+      "education_objective": "Apply physiologic principles to transfusion decision-making",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 25,
+      "topic": "Therapeutic plasma exchange indications",
+      "item_locations": ["CP 1-5-b-1"],
+      "education_objective": "Select appropriate TPE indications and calculate treatment intensity",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 26,
+      "topic": "TTP diagnosis and management",
+      "item_locations": ["CP 1-5-b-3-1"],
+      "education_objective": "Diagnose TTP and understand urgent plasma exchange requirements",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 27,
+      "topic": "Neurologic disorders requiring apheresis",
+      "item_locations": ["CP 1-5-b-2"],
+      "education_objective": "Identify neurologic conditions benefiting from therapeutic apheresis",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 28,
+      "topic": "Red cell exchange for sickle cell disease",
+      "item_locations": ["CP 1-5-c-2"],
+      "education_objective": "Apply red cell exchange protocols for sickle cell complications",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 29,
+      "topic": "Therapeutic phlebotomy indications",
+      "item_locations": ["CP 1-5-c-1"],
+      "education_objective": "Identify conditions requiring therapeutic phlebotomy and protocols",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 30,
+      "topic": "Extracorporeal photochemotherapy",
+      "item_locations": ["CP 1-5-c-3"],
+      "education_objective": "Understand ECP indications for CTCL and GVHD",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "low"
+    },
+    {
+      "question_id": 31,
+      "topic": "Acute hemolytic transfusion reactions",
+      "item_locations": ["CP 1-6-a"],
+      "education_objective": "Recognize, investigate, and manage acute hemolytic transfusion reactions",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 32,
+      "topic": "TRALI pathophysiology and prevention",
+      "item_locations": ["CP 1-6-e"],
+      "education_objective": "Understand TRALI mechanisms, diagnosis, and prevention strategies",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 33,
+      "topic": "TACO vs. TRALI differential",
+      "item_locations": ["CP 1-6-b-3", "CP 1-6-e"],
+      "education_objective": "Distinguish TACO from TRALI using clinical and laboratory criteria",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 34,
+      "topic": "Febrile non-hemolytic reactions",
+      "item_locations": ["CP 1-6-b-1"],
+      "education_objective": "Diagnose and prevent febrile non-hemolytic transfusion reactions",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 35,
+      "topic": "Allergic reaction prevention strategies",
+      "item_locations": ["CP 1-6-b-2"],
+      "education_objective": "Prevent and treat allergic transfusion reactions including anaphylaxis",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 36,
+      "topic": "TA-GVHD risk factors and prevention",
+      "item_locations": ["CP 1-6-c"],
+      "education_objective": "Identify TA-GVHD risk factors and implement irradiation protocols",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 37,
+      "topic": "Massive transfusion complications",
+      "item_locations": ["CP 1-6-b-5"],
+      "education_objective": "Recognize and manage complications of massive transfusion",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 38,
+      "topic": "Transfusion iron overload management",
+      "item_locations": ["CP 1-6-d"],
+      "education_objective": "Monitor and manage transfusion-induced iron overload",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 39,
+      "topic": "Post-transfusion purpura pathophysiology",
+      "item_locations": ["CP 1-6-f"],
+      "education_objective": "Recognize PTP clinical features and understand treatment approaches",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 40,
+      "topic": "Transfusion-associated dyspnea",
+      "item_locations": ["CP 1-6-g"],
+      "education_objective": "Differentiate various causes of transfusion-associated dyspnea",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 41,
+      "topic": "Plasma component indications",
+      "item_locations": ["CP 1-7-c-1"],
+      "education_objective": "Apply evidence-based guidelines for plasma component transfusion",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 42,
+      "topic": "Cryoprecipitate composition and use",
+      "item_locations": ["CP 1-7-c-2"],
+      "education_objective": "Understand cryoprecipitate contents and appropriate clinical uses",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 43,
+      "topic": "Factor concentrates vs. plasma products",
+      "item_locations": ["CP 1-7-b-1"],
+      "education_objective": "Select appropriate factor concentrates and understand advantages over plasma",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 44,
+      "topic": "Albumin clinical indications",
+      "item_locations": ["CP 1-7-c-3"],
+      "education_objective": "Apply evidence-based albumin use guidelines and avoid inappropriate use",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 45,
+      "topic": "RhIG administration and monitoring",
+      "item_locations": ["CP 1-7-c-4"],
+      "education_objective": "Calculate RhIG dosing and monitor effectiveness in pregnancy",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 46,
+      "topic": "IVIG indications and adverse effects",
+      "item_locations": ["CP 1-7-c-5"],
+      "education_objective": "Understand IVIG clinical uses and recognize adverse reactions",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 47,
+      "topic": "Pathogen inactivation methods",
+      "item_locations": ["CP 1-7-h"],
+      "education_objective": "Compare pathogen inactivation technologies and their applications",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 48,
+      "topic": "Warfarin reversal strategies",
+      "item_locations": ["CP 1-7-c-1-e"],
+      "education_objective": "Select appropriate products for urgent warfarin reversal",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 49,
+      "topic": "Fibrinogen replacement therapy",
+      "item_locations": ["CP 1-7-c-6"],
+      "education_objective": "Use fibrinogen concentrates vs. cryoprecipitate appropriately",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 50,
+      "topic": "Hepatitis B and C transmission risk",
+      "item_locations": ["CP 1-8-a-2", "CP 1-8-a-3"],
+      "education_objective": "Assess hepatitis transmission risk and understand testing strategies",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 51,
+      "topic": "HIV window period and testing",
+      "item_locations": ["CP 1-8-b-2"],
+      "education_objective": "Understand HIV transmission risk and NAT testing impact",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 52,
+      "topic": "CMV prevention strategies",
+      "item_locations": ["CP 1-8-c"],
+      "education_objective": "Implement CMV prevention for high-risk patients",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 53,
+      "topic": "Bacterial contamination of platelets",
+      "item_locations": ["CP 1-8-f-5"],
+      "education_objective": "Recognize bacterial contamination and implement detection strategies",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 54,
+      "topic": "Parasitic transmission prevention",
+      "item_locations": ["CP 1-8-e"],
+      "education_objective": "Understand Chagas, malaria, and babesiosis transmission risk",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 55,
+      "topic": "West Nile virus testing",
+      "item_locations": ["CP 1-8-d-2"],
+      "education_objective": "Understand seasonal WNV testing and transmission risk",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 56,
+      "topic": "Syphilis testing in blood banking",
+      "item_locations": ["CP 1-8-g"],
+      "education_objective": "Interpret syphilis testing results and understand screening requirements",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "low"
+    },
+    {
+      "question_id": 57,
+      "topic": "Platelet pathogen inactivation",
+      "item_locations": ["CP 1-8-h-3"],
+      "education_objective": "Compare platelet pathogen inactivation technologies",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 58,
+      "topic": "Plasma pathogen inactivation",
+      "item_locations": ["CP 1-8-h-2"],
+      "education_objective": "Understand plasma pathogen inactivation methods and efficacy",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 59,
+      "topic": "Donor deferral criteria",
+      "item_locations": ["CP 1-9-a-3-1-d"],
+      "education_objective": "Apply donor deferral criteria for safety and regulatory compliance",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 60,
+      "topic": "Donor adverse events management",
+      "item_locations": ["CP 1-9-a-4"],
+      "education_objective": "Recognize and manage donor adverse events during collection",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 61,
+      "topic": "Component separation and testing",
+      "item_locations": ["CP 1-9-a-3-2", "CP 1-9-a-3-3"],
+      "education_objective": "Understand component preparation and mandatory testing requirements",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 62,
+      "topic": "Leukocyte reduction benefits",
+      "item_locations": ["CP 1-9-a-3-2-c"],
+      "education_objective": "Understand leukocyte reduction indications and effectiveness",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 63,
+      "topic": "Source plasma vs. recovered plasma",
+      "item_locations": ["CP 1-9-a-3-5"],
+      "education_objective": "Distinguish source plasma from recovered plasma and their uses",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "low"
+    },
+    {
+      "question_id": 64,
+      "topic": "Autologous blood donation programs",
+      "item_locations": ["CP 1-10-a-1-1"],
+      "education_objective": "Evaluate autologous donation appropriateness and limitations",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 65,
+      "topic": "Preoperative anemia optimization",
+      "item_locations": ["CP 1-10-a-1-2"],
+      "education_objective": "Implement preoperative anemia management with iron and EPO",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 66,
+      "topic": "Cell salvage indications and contraindications",
+      "item_locations": ["CP 1-10-a-2-2"],
+      "education_objective": "Apply cell salvage technology appropriately in surgical settings",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 67,
+      "topic": "Preoperative coagulation testing",
+      "item_locations": ["CP 1-10-b-1"],
+      "education_objective": "Interpret preoperative hemostasis tests and predict bleeding risk",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 68,
+      "topic": "Procedure-specific bleeding risks",
+      "item_locations": ["CP 1-10-b-2"],
+      "education_objective": "Assess bleeding risk for various invasive procedures",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 69,
+      "topic": "Trauma resuscitation protocols",
+      "item_locations": ["CP 1-10-c-3"],
+      "education_objective": "Apply trauma resuscitation and massive transfusion protocols",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 70,
+      "topic": "Damage control resuscitation",
+      "item_locations": ["CP 1-10-c-3-a"],
+      "education_objective": "Implement damage control principles in massive transfusion",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 71,
+      "topic": "Hemostatic agents in trauma",
+      "item_locations": ["CP 1-10-c-3-c", "CP 1-10-c-3-f"],
+      "education_objective": "Use hemostatic agents and pharmacologic interventions in trauma",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 72,
+      "topic": "Massive transfusion definition and management",
+      "item_locations": ["CP 1-10-c-3-d"],
+      "education_objective": "Define massive transfusion and implement protocol-based management",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 73,
+      "topic": "Solid organ transplant support",
+      "item_locations": ["CP 1-10-d"],
+      "education_objective": "Provide transfusion support for various organ transplants",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 74,
+      "topic": "ABO incompatible transplant management",
+      "item_locations": ["CP 1-10-d-2"],
+      "education_objective": "Manage ABO incompatible organ transplantation protocols",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 75,
+      "topic": "Passenger lymphocyte antibodies",
+      "item_locations": ["CP 1-10-d-3-b"],
+      "education_objective": "Recognize and manage passenger lymphocyte syndrome",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 76,
+      "topic": "Biovigilance and hemovigilance",
+      "item_locations": ["CP 1-3-d-4-i"],
+      "education_objective": "Implement surveillance systems for transfusion safety monitoring",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 77,
+      "topic": "Platelet production and kinetics",
+      "item_locations": ["CP 1-12-a"],
+      "education_objective": "Understand thrombopoiesis and factors affecting platelet production",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 78,
+      "topic": "Platelet function disorders",
+      "item_locations": ["CP 1-12-b"],
+      "education_objective": "Diagnose congenital and acquired platelet function disorders",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 79,
+      "topic": "Platelet transfusion thresholds",
+      "item_locations": ["CP 1-12-c-2"],
+      "education_objective": "Apply evidence-based platelet transfusion thresholds",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 80,
+      "topic": "Platelet storage and quality",
+      "item_locations": ["CP 1-12-c-1"],
+      "education_objective": "Understand platelet storage requirements and quality measures",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 81,
+      "topic": "HLA and platelet-specific antigens",
+      "item_locations": ["CP 1-12-d-1"],
+      "education_objective": "Understand platelet antigen systems and their clinical significance",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 82,
+      "topic": "Platelet alloimmunization management",
+      "item_locations": ["CP 1-12-d-2"],
+      "education_objective": "Manage platelet alloimmunization and provide compatible platelets",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 83,
+      "topic": "Thrombopoietic growth factors",
+      "item_locations": ["CP 1-12-c-3"],
+      "education_objective": "Understand alternatives to platelet transfusion including TPO agonists",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 84,
+      "topic": "Platelet survival studies",
+      "item_locations": ["CP 1-12-e"],
+      "education_objective": "Interpret platelet kinetic studies and survival measurements",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "low"
+    },
+    {
+      "question_id": 85,
+      "topic": "Granulocyte transfusion indications",
+      "item_locations": ["CP 1-13-a"],
+      "education_objective": "Evaluate granulocyte transfusion appropriateness and alternatives",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "low"
+    },
+    {
+      "question_id": 86,
+      "topic": "Cell kinetics in disease states",
+      "item_locations": ["CP 1-12-e", "CP 1-13"],
+      "education_objective": "Understand cellular kinetics in various hematologic conditions",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "low"
+    },
+    {
+      "question_id": 87,
+      "topic": "ABO hemolytic disease management",
+      "item_locations": ["CP 1-15-a-1"],
+      "education_objective": "Manage ABO HDFN and distinguish from Rh disease",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 88,
+      "topic": "Rh HDFN prevention and treatment",
+      "item_locations": ["CP 1-15-a-2"],
+      "education_objective": "Implement Rh HDFN prevention protocols and manage severe cases",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 89,
+      "topic": "Fetal surveillance and intervention",
+      "item_locations": ["CP 1-15-a-3"],
+      "education_objective": "Monitor fetal anemia and perform intrauterine transfusions",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 90,
+      "topic": "Maternal hemorrhage management",
+      "item_locations": ["CP 1-15-b-2"],
+      "education_objective": "Manage obstetric hemorrhage and massive transfusion in pregnancy",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 91,
+      "topic": "Neonatal hemophilia management",
+      "item_locations": ["CP 1-15-c-2"],
+      "education_objective": "Manage bleeding disorders in neonates including factor deficiencies",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 92,
+      "topic": "Sickle cell disease in children",
+      "item_locations": ["CP 1-15-d-1"],
+      "education_objective": "Manage sickle cell disease complications requiring transfusion",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 93,
+      "topic": "Anemia of prematurity",
+      "item_locations": ["CP 1-15-e-1"],
+      "education_objective": "Manage anemia of prematurity with transfusion and EPO",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 94,
+      "topic": "Neonatal blood banking practices",
+      "item_locations": ["CP 1-15-e-3"],
+      "education_objective": "Implement special requirements for neonatal transfusions",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 95,
+      "topic": "Thrombocytopenia of prematurity",
+      "item_locations": ["CP 1-15-e-2"],
+      "education_objective": "Manage neonatal thrombocytopenia and platelet transfusion",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 96,
+      "topic": "HLA typing for HPC transplant",
+      "item_locations": ["CP 1-16-b-1"],
+      "education_objective": "Understand HLA matching requirements for stem cell transplant",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 97,
+      "topic": "ABO incompatible HPC transplant",
+      "item_locations": ["CP 1-16-f-1"],
+      "education_objective": "Manage ABO incompatible stem cell transplantation",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 98,
+      "topic": "Passenger lymphocyte syndrome",
+      "item_locations": ["CP 1-16-f-2"],
+      "education_objective": "Recognize and manage PLS in stem cell transplant recipients",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 99,
+      "topic": "Stem cell mobilization and collection",
+      "item_locations": ["CP 1-16-c-1"],
+      "education_objective": "Understand stem cell mobilization regimens and apheresis protocols",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 100,
+      "topic": "Cord blood banking and characteristics",
+      "item_locations": ["CP 1-16-c-3"],
+      "education_objective": "Understand cord blood collection, banking, and transplant applications",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 101,
+      "topic": "FDA regulations and cGMP",
+      "item_locations": ["CP 1-17-b"],
+      "education_objective": "Apply FDA regulations and cGMP principles to blood banking",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 102,
+      "topic": "Transfusion committee functions",
+      "item_locations": ["CP 1-17-c-4"],
+      "education_objective": "Understand transfusion committee oversight and quality improvement",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 103,
+      "topic": "Medical director responsibilities",
+      "item_locations": ["CP 1-17-c-1"],
+      "education_objective": "Understand blood bank medical director administrative and clinical roles",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 104,
+      "topic": "Quality assurance and error management",
+      "item_locations": ["CP 1-17-c-2"],
+      "education_objective": "Implement QA programs and manage blood banking errors",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 105,
+      "topic": "Informed consent for transfusion",
+      "item_locations": ["CP 1-17-a-1"],
+      "education_objective": "Understand legal requirements for transfusion informed consent",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 106,
+      "topic": "HIPAA and blood banking",
+      "item_locations": ["CP 1-17-a-2"],
+      "education_objective": "Apply HIPAA privacy rules to blood banking operations",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "medium"
+    },
+    {
+      "question_id": 107,
+      "topic": "Accreditation requirements",
+      "item_locations": ["CP 1-17-c-3"],
+      "education_objective": "Understand AABB, CAP, and Joint Commission requirements",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 108,
+      "topic": "Blood shortage management",
+      "item_locations": ["CP 1-17-c-5"],
+      "education_objective": "Implement blood shortage protocols and allocation strategies",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 109,
+      "topic": "Recalls and FDA enforcement",
+      "item_locations": ["CP 1-17-b-3"],
+      "education_objective": "Manage product recalls and FDA enforcement activities",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 110,
+      "topic": "Validation and calibration",
+      "item_locations": ["CP 1-17-b-6-5"],
+      "education_objective": "Implement validation protocols and equipment calibration",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 111,
+      "topic": "Personnel training requirements",
+      "item_locations": ["CP 1-17-b-6-3"],
+      "education_objective": "Develop training programs and competency assessment",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 112,
+      "topic": "Record keeping and documentation",
+      "item_locations": ["CP 1-17-b-6-2"],
+      "education_objective": "Maintain required records and documentation systems",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 113,
+      "topic": "Labeling requirements and errors",
+      "item_locations": ["CP 1-17-b-6-6"],
+      "education_objective": "Ensure proper labeling and prevent labeling errors",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 114,
+      "topic": "Information management systems",
+      "item_locations": ["CP 1-17-b-6-7"],
+      "education_objective": "Implement and validate blood bank information systems",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 115,
+      "topic": "Process and production controls",
+      "item_locations": ["CP 1-17-b-6-10"],
+      "education_objective": "Establish production controls and monitoring systems",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 28,
+      "advanced_resident_only": 71,
+      "combined_c_ar": 16
+    },
+    "by_difficulty": {
+      "easy": 2,
+      "medium": 81,
+      "hard": 32
+    },
+    "by_yield": {
+      "high": 85,
+      "medium": 25,
+      "low": 5
+    }
+  }
+}

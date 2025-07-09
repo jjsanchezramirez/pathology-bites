@@ -1,0 +1,480 @@
+{
+  "section": "AP 6: The Digestive System (GI/Hepatobiliary)",
+  "total_questions": 50,
+  "total_available_topics": 171,
+  "allocation_strategy": "Clinical judgment prioritizing high-yield differentials and common diagnostic challenges",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Barrett esophagus: metaplasia vs. dysplasia differential",
+      "item_locations": ["AP 6-A-2-a", "AP 6-A-5-b-ii"],
+      "education_objective": "Distinguish non-dysplastic Barrett esophagus from low-grade and high-grade dysplasia",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Esophagitis differential: reflux vs. eosinophilic vs. infectious",
+      "item_locations": ["AP 6-A-4-a", "AP 6-A-4-b", "AP 6-A-4-e"],
+      "education_objective": "Differentiate major causes of esophagitis using morphologic criteria",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Esophageal carcinoma: squamous vs. adenocarcinoma",
+      "item_locations": ["AP 6-A-5-b-i", "AP 6-A-5-b-ii"],
+      "education_objective": "Distinguish squamous cell carcinoma from adenocarcinoma of esophagus",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Helicobacter pylori gastritis: features & complications",
+      "item_locations": ["AP 6-A-4-e"],
+      "education_objective": "Recognize H. pylori gastritis and understand associated complications",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Autoimmune gastritis vs. H. pylori gastritis",
+      "item_locations": ["AP 6-A-4-b", "AP 6-A-4-e"],
+      "education_objective": "Differentiate autoimmune gastritis from H. pylori gastritis",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Gastric polyp differential: fundic gland vs. hyperplastic vs. adenoma",
+      "item_locations": ["AP 6-A-5-a-i", "AP 6-A-5-a-ii", "AP 6-A-5-a-iii"],
+      "education_objective": "Distinguish types of gastric polyps and assess malignant potential",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Gastric adenocarcinoma: types & dysplasia spectrum",
+      "item_locations": ["AP 6-A-5-b-i", "AP 6-A-5-b-ii"],
+      "education_objective": "Recognize gastric adenocarcinoma subtypes and grade dysplasia",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Gastrointestinal stromal tumor (GIST): diagnosis & grading",
+      "item_locations": ["AP 6-A-5-b-v"],
+      "education_objective": "Diagnose GIST and understand prognostic factors",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Gastric neuroendocrine tumors: types & grading",
+      "item_locations": ["AP 6-A-5-b-iii"],
+      "education_objective": "Classify gastric neuroendocrine tumors and apply grading systems",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Celiac disease: histologic features & grading",
+      "item_locations": ["AP 6-A-4-a"],
+      "education_objective": "Recognize celiac disease and apply Marsh grading system",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Meckel diverticulum & gastric heterotopia",
+      "item_locations": ["AP 6-A-3-b", "AP 6-A-3-c"],
+      "education_objective": "Identify Meckel diverticulum and recognize gastric heterotopia",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Small intestinal adenocarcinoma & neuroendocrine tumors",
+      "item_locations": ["AP 6-A-5-b-i", "AP 6-A-5-b-ii"],
+      "education_objective": "Diagnose small intestinal neoplasms and understand their characteristics",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Whipple disease: morphology & confirmation",
+      "item_locations": ["AP 6-A-4-h"],
+      "education_objective": "Recognize Whipple disease and confirm with appropriate stains",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 14,
+      "topic": "IBD differential: ulcerative colitis vs. Crohn disease",
+      "item_locations": ["AP 6-A-5-b-i", "AP 6-A-5-b-ii", "AP 6-A-4-c"],
+      "education_objective": "Differentiate ulcerative colitis from Crohn disease using histologic criteria",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Colorectal adenomatous vs. serrated polyps",
+      "item_locations": ["AP 6-A-6-a-i", "AP 6-A-6-a-ii"],
+      "education_objective": "Distinguish adenomatous from serrated polyps and assess malignant potential",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Colorectal adenocarcinoma: staging & grading",
+      "item_locations": ["AP 6-A-6-b-i", "AP 6-A-6-b-ii"],
+      "education_objective": "Stage and grade colorectal adenocarcinoma",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Familial adenomatous polyposis & Lynch syndrome",
+      "item_locations": ["AP 6-A-4-a", "AP 6-A-4-b"],
+      "education_objective": "Recognize features of hereditary colorectal cancer syndromes",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 18,
+      "topic": "IBD-associated dysplasia & adenocarcinoma",
+      "item_locations": ["AP 6-A-6-b-iv"],
+      "education_objective": "Recognize and grade dysplasia in IBD and distinguish from carcinoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 19,
+      "topic": "Pseudomembranous colitis (C. difficile)",
+      "item_locations": ["AP 6-A-5-f"],
+      "education_objective": "Recognize pseudomembranous colitis and understand pathogenesis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Diverticular disease & complications",
+      "item_locations": ["AP 6-A-5-a"],
+      "education_objective": "Recognize diverticular disease and its complications",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 21,
+      "topic": "Acute infectious colitis patterns",
+      "item_locations": ["AP 6-A-5-d", "AP 6-A-5-g"],
+      "education_objective": "Recognize patterns of acute infectious colitis including amebic colitis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Appendicitis: acute vs. chronic patterns",
+      "item_locations": ["AP 6-A-4-a"],
+      "education_objective": "Recognize acute and chronic appendicitis",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 23,
+      "topic": "Appendiceal neuroendocrine tumors",
+      "item_locations": ["AP 6-A-5-b-i"],
+      "education_objective": "Diagnose appendiceal neuroendocrine tumors and understand prognostic factors",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 24,
+      "topic": "Appendiceal mucinous neoplasms & pseudomyxoma peritonei",
+      "item_locations": ["AP 6-A-5-b-ii", "AP 6-A-5-b-iv"],
+      "education_objective": "Classify appendiceal mucinous neoplasms and recognize pseudomyxoma peritonei",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 25,
+      "topic": "Anal squamous cell carcinoma & precursors",
+      "item_locations": ["AP 6-A-5-a-i", "AP 6-A-5-a-ii"],
+      "education_objective": "Diagnose anal squamous cell carcinoma and grade anal intraepithelial neoplasia",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 26,
+      "topic": "Condyloma vs. squamous cell carcinoma",
+      "item_locations": ["AP 6-A-4-b", "AP 6-A-5-a-i"],
+      "education_objective": "Differentiate condyloma from invasive squamous cell carcinoma",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 27,
+      "topic": "Steatohepatitis: alcoholic vs. NASH",
+      "item_locations": ["AP 6-B-4-a", "AP 6-B-4-b", "AP 6-B-4-c"],
+      "education_objective": "Distinguish alcoholic liver disease from NASH and grade steatohepatitis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 28,
+      "topic": "Cirrhosis: patterns & etiology assessment",
+      "item_locations": ["AP 6-B-4-d"],
+      "education_objective": "Recognize cirrhosis patterns and assess likely etiology",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 29,
+      "topic": "Viral hepatitis: acute vs. chronic patterns",
+      "item_locations": ["AP 6-B-4-l"],
+      "education_objective": "Recognize patterns of viral hepatitis and assess activity/fibrosis",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 30,
+      "topic": "Autoimmune hepatitis & overlap syndromes",
+      "item_locations": ["AP 6-B-4-k"],
+      "education_objective": "Diagnose autoimmune hepatitis and recognize overlap syndromes",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 31,
+      "topic": "Primary sclerosing cholangitis",
+      "item_locations": ["AP 6-B-4-h"],
+      "education_objective": "Recognize primary sclerosing cholangitis and understand complications",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 32,
+      "topic": "Hemochromatosis & Wilson disease",
+      "item_locations": ["AP 6-B-3-b", "AP 6-B-3-c"],
+      "education_objective": "Diagnose inherited metabolic liver diseases using morphology and special stains",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 33,
+      "topic": "Alpha-1-antitrypsin deficiency",
+      "item_locations": ["AP 6-B-3-d"],
+      "education_objective": "Recognize alpha-1-antitrypsin deficiency and confirm with immunostains",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 34,
+      "topic": "Hepatocellular carcinoma vs. fibrolamellar variant",
+      "item_locations": ["AP 6-B-6-a", "AP 6-B-6-a-i"],
+      "education_objective": "Distinguish conventional from fibrolamellar hepatocellular carcinoma",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 35,
+      "topic": "Cholangiocarcinoma: intrahepatic vs. extrahepatic",
+      "item_locations": ["AP 6-B-6-c", "AP 6-B-5-b-iv"],
+      "education_objective": "Diagnose cholangiocarcinoma and distinguish intrahepatic from extrahepatic forms",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 36,
+      "topic": "Focal nodular hyperplasia vs. hepatocellular adenoma",
+      "item_locations": ["AP 6-B-5-a-ii", "AP 6-B-5-c-i"],
+      "education_objective": "Differentiate focal nodular hyperplasia from hepatocellular adenoma",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 37,
+      "topic": "Hepatic hemangioma & vascular lesions",
+      "item_locations": ["AP 6-B-5-b"],
+      "education_objective": "Recognize hepatic hemangioma and other vascular lesions",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 38,
+      "topic": "Metastases to liver: patterns & primaries",
+      "item_locations": ["AP 6-B-6-f"],
+      "education_objective": "Recognize metastatic patterns and identify likely primary sites",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 39,
+      "topic": "Bile duct hamartoma (Von Meyenburg complex)",
+      "item_locations": ["AP 6-B-3-a"],
+      "education_objective": "Recognize bile duct hamartomas and distinguish from other cystic lesions",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 40,
+      "topic": "Cholecystitis: acute vs. chronic features",
+      "item_locations": ["AP 6-B-4-a"],
+      "education_objective": "Distinguish acute from chronic cholecystitis",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 41,
+      "topic": "Gallbladder adenocarcinoma & dysplasia",
+      "item_locations": ["AP 6-B-5-b-i", "AP 6-B-5-b-iii"],
+      "education_objective": "Diagnose gallbladder adenocarcinoma and grade dysplasia",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 42,
+      "topic": "Primary biliary cholangitis",
+      "item_locations": ["AP 6-B-4-d"],
+      "education_objective": "Recognize primary biliary cholangitis and understand staging",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 43,
+      "topic": "Large duct obstruction patterns",
+      "item_locations": ["AP 6-B-4-c"],
+      "education_objective": "Recognize patterns of large duct obstruction",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 44,
+      "topic": "Acute vs. chronic pancreatitis",
+      "item_locations": ["AP 6-C-4-a"],
+      "education_objective": "Distinguish acute from chronic pancreatitis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 45,
+      "topic": "Pancreatic ductal adenocarcinoma",
+      "item_locations": ["AP 6-C-5-b-i"],
+      "education_objective": "Diagnose pancreatic ductal adenocarcinoma and understand prognostic factors",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 46,
+      "topic": "Pancreatic cystic lesions: serous vs. mucinous",
+      "item_locations": ["AP 6-C-5-a-i", "AP 6-C-5-b-ii"],
+      "education_objective": "Differentiate pancreatic cystic lesions and assess malignant potential",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 47,
+      "topic": "Pancreatic neuroendocrine tumors: grading & staging",
+      "item_locations": ["AP 6-C-5-b-vii"],
+      "education_objective": "Grade pancreatic neuroendocrine tumors and understand prognostic factors",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 48,
+      "topic": "Autoimmune pancreatitis: types & features",
+      "item_locations": ["AP 6-C-4-c"],
+      "education_objective": "Recognize autoimmune pancreatitis and distinguish types",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 49,
+      "topic": "Solid pseudopapillary neoplasm",
+      "item_locations": ["AP 6-C-5-b-vi"],
+      "education_objective": "Recognize solid pseudopapillary neoplasm and understand demographics",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 50,
+      "topic": "PanIN (Pancreatic Intraepithelial Neoplasia)",
+      "item_locations": ["AP 6-C-5-b-iii"],
+      "education_objective": "Grade pancreatic intraepithelial neoplasia and understand progression",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 16,
+      "advanced_resident_only": 25,
+      "combined_c_ar": 9
+    },
+    "by_difficulty": {
+      "easy": 4,
+      "medium": 29,
+      "hard": 17
+    },
+    "by_yield": {
+      "high": 42,
+      "medium": 8,
+      "low": 0
+    },
+    "by_anatomic_section": {
+      "gastrointestinal_tract": 26,
+      "liver_biliary": 18,
+      "pancreas": 6
+    }
+  }
+}
