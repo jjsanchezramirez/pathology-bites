@@ -17,7 +17,9 @@ export default function DemoQuestion() {
   const [isAnswered, setIsAnswered] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+
+
+
 
   // Reset state when changing questions (simplified)
   useEffect(() => {
@@ -38,16 +40,10 @@ export default function DemoQuestion() {
   };
 
   const resetQuestion = () => {
-    setIsTransitioning(true);
     setShowExplanation(false);
     setSelectedOption(null);
     setIsAnswered(false);
-
-    // Fetch new question after animation
-    setTimeout(() => {
-      refreshQuestion();
-      setIsTransitioning(false);
-    }, 300);
+    refreshQuestion();
   };
 
   // Helper to get a letter label for an option ID
@@ -67,18 +63,27 @@ export default function DemoQuestion() {
   }
 
   if (!currentQuestion) {
-    return <DemoQuestionError
-      message="No questions available at this time."
-      onRetry={refreshQuestion}
-    />;
+    return (
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardContent className="p-6">
+          <div className="text-center">
+            <div className="text-lg font-medium mb-2">❌ No Question Available</div>
+            <div className="text-sm text-muted-foreground space-y-1">
+              <div>loading: {loading.toString()}</div>
+              <div>currentQuestion: {currentQuestion ? 'exists' : 'null'}</div>
+              <div>error: {error || 'none'}</div>
+            </div>
+            <Button onClick={refreshQuestion} className="mt-4">Retry</Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
     <div
       ref={containerRef}
-      className={`w-full max-w-4xl mx-auto transition-all duration-300 ease-in-out ${
-        isTransitioning ? 'opacity-50' : 'opacity-100'
-      }`}
+      className="w-full max-w-4xl mx-auto"
       style={{ minHeight: '600px' }} // Consistent minimum height
     >
       <Card className="h-full">
