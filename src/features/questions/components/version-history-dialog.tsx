@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -10,16 +10,7 @@ import {
   DialogPortal,
   DialogTitle,
 } from "@/shared/components/ui/dialog"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/components/ui/table"
 import { Button } from "@/shared/components/ui/button"
-import { Separator } from "@/shared/components/ui/separator"
 import {
   History,
   User,
@@ -28,217 +19,13 @@ import {
   Eye,
   ChevronDown,
   ChevronRight,
-  Check
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { createClient } from '@/shared/services/client'
-import { ImprovedImageDialog } from "@/shared/components/common/improved-image-dialog"
-import { ImageCarousel } from "@/features/images/components/image-carousel"
+import { VersionSnapshotView } from './version-history/version-snapshot-view'
+import { VersionComparisonView } from './version-history/version-comparison-view'
 import { Badge } from "@/shared/components/ui/badge"
 
-// Utility function to compare two objects and find differences
-function getChanges(oldData: any, newData: any): string[] {
-  const changes: string[] = []
-
-  if (!oldData || !newData) return changes
-
-  // Compare basic fields
-  const fieldsToCompare = ['title', 'stem', 'difficulty', 'teaching_point', 'question_references']
-
-  fieldsToCompare.forEach(field => {
-    if (oldData[field] !== newData[field]) {
-      changes.push(`${field.replace('_', ' ')} changed`)
-    }
-  })
-
-  // Compare answer options
-  const oldOptions = oldData.answer_options || []
-  const newOptions = newData.answer_options || []
-
-  if (oldOptions.length !== newOptions.length) {
-    changes.push(`Number of answer options changed (${oldOptions.length} → ${newOptions.length})`)
-  } else {
-    oldOptions.forEach((oldOption: any, index: number) => {
-      const newOption = newOptions[index]
-      if (oldOption?.text !== newOption?.text) {
-        changes.push(`Answer option ${index + 1} text changed`)
-      }
-      if (oldOption?.is_correct !== newOption?.is_correct) {
-        changes.push(`Answer option ${index + 1} correctness changed`)
-      }
-      if (oldOption?.explanation !== newOption?.explanation) {
-        changes.push(`Answer option ${index + 1} explanation changed`)
-      }
-    })
-  }
-
-  // Compare images
-  const oldImages = oldData.question_images || []
-  const newImages = newData.question_images || []
-
-  if (oldImages.length !== newImages.length) {
-    changes.push(`Number of images changed (${oldImages.length} → ${newImages.length})`)
-  }
-
-  // Compare tags
-  const oldTags = oldData.tag_ids || []
-  const newTags = newData.tag_ids || []
-
-  if (oldTags.length !== newTags.length) {
-    changes.push(`Number of tags changed (${oldTags.length} → ${newTags.length})`)
-  } else if (JSON.stringify(oldTags.sort()) !== JSON.stringify(newTags.sort())) {
-    changes.push('Tags changed')
-  }
-
-  return changes
-}
-
-// Component to display a version snapshot
-function VersionSnapshotView({ version }: { version: QuestionVersion }) {
-  const questionData = version.question_snapshot
-
-  if (!questionData) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        No question data available for this version
-      </div>
-    )
-  }
-
-  // Transform the snapshot data using the helper function
-  const transformedQuestion = transformQuestionData(version)
-
-  return (
-    <div className="space-y-4">
-      {/* Version Info */}
-      <div className="bg-muted/50 p-3 rounded text-sm">
-        <div className="grid grid-cols-2 gap-4">
-          <div><span className="font-medium">Version:</span> {version.version_string}</div>
-          <div><span className="font-medium">Created:</span> {new Date(version.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}</div>
-          <div><span className="font-medium">Update Type:</span> {version.update_type.charAt(0).toUpperCase() + version.update_type.slice(1)}</div>
-          <div><span className="font-medium">{version.version_string === 'v1.0.0' ? 'Created by' : 'Last updated by'}:</span> {
-            version.creator ?
-              `${version.creator.first_name} ${version.creator.last_name}` :
-              'Unknown'
-          }</div>
-        </div>
-        {version.change_summary && (
-          <div className="mt-3 pt-3 border-t">
-            <span className="font-medium">Change Summary:</span> {version.change_summary}
-          </div>
-        )}
-      </div>
-
-      {/* Question Preview */}
-      <div className="border rounded-lg p-4">
-        <h3 className="font-medium mb-4">Question Preview</h3>
-        <QuestionSnapshotPreview question={transformedQuestion} />
-      </div>
-    </div>
-  )
-}
-
-// Component to display version comparison
-function VersionComparisonView({
-  currentVersion,
-  previousVersion
-}: {
-  currentVersion: QuestionVersion
-  previousVersion: QuestionVersion
-}) {
-  const changes = getChanges(previousVersion.question_snapshot, currentVersion.question_snapshot)
-
-  return (
-    <div className="space-y-6">
-      {/* Comparison Header */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-red-50 border border-red-200 p-3 rounded">
-          <h3 className="font-medium text-red-800 mb-2">Previous Version ({previousVersion.version_string})</h3>
-          <div className="text-sm text-red-700">
-            <div>Created: {new Date(previousVersion.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}</div>
-            <div>{previousVersion.version_string === 'v1.0.0' ? 'Created by' : 'Last updated by'}: {previousVersion.creator ? `${previousVersion.creator.first_name} ${previousVersion.creator.last_name}` : 'Unknown'}</div>
-          </div>
-        </div>
-        <div className="bg-green-50 border border-green-200 p-3 rounded">
-          <h3 className="font-medium text-green-800 mb-2">Current Version ({currentVersion.version_string})</h3>
-          <div className="text-sm text-green-700">
-            <div>Created: {new Date(currentVersion.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}</div>
-            <div>{currentVersion.version_string === 'v1.0.0' ? 'Created by' : 'Last updated by'}: {currentVersion.creator ? `${currentVersion.creator.first_name} ${currentVersion.creator.last_name}` : 'Unknown'}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Changes Summary */}
-      {changes.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded">
-          <h3 className="font-medium text-blue-800 mb-3">Changes Made</h3>
-          <ul className="space-y-2">
-            {changes.map((change, index) => (
-              <li key={index} className="flex items-center gap-2 text-sm text-blue-700">
-                <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
-                {change}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Side-by-side comparison */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="border rounded-lg">
-          <div className="bg-red-50 border-b border-red-200 p-3">
-            <h4 className="font-medium text-red-800">Previous Version</h4>
-          </div>
-          <div className="p-4">
-            <QuestionSnapshotPreview
-              question={transformQuestionData(previousVersion)}
-              isComparison={true}
-            />
-          </div>
-        </div>
-        <div className="border rounded-lg">
-          <div className="bg-green-50 border-b border-green-200 p-3">
-            <h4 className="font-medium text-green-800">Current Version</h4>
-          </div>
-          <div className="p-4">
-            <QuestionSnapshotPreview
-              question={transformQuestionData(currentVersion)}
-              isComparison={true}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Helper function to transform version data to question format
-function transformQuestionData(version: QuestionVersion) {
-  const questionData = version.question_snapshot
-
-  // Handle both old and new data structures
-  const question = questionData?.question || questionData
-  const questionOptions = questionData?.question_options || question?.question_options || questionData?.answer_options || []
-  const questionImages = questionData?.question_images || question?.question_images || []
-  const categories = questionData?.categories || question?.categories || []
-  const tags = questionData?.tags || question?.tags || []
-
-  return {
-    id: version.question_id,
-    title: question?.title || questionData?.title || 'Untitled Question',
-    stem: question?.stem || questionData?.stem || '',
-    difficulty: question?.difficulty || questionData?.difficulty || 'Medium',
-    teaching_point: question?.teaching_point || questionData?.teaching_point || '',
-    question_references: question?.question_references || questionData?.question_references || '',
-    status: question?.status || questionData?.status || 'published',
-    created_at: version.created_at,
-    question_options: questionOptions,
-    question_images: questionImages,
-    categories: categories,
-    tags: tags
-  }
-}
-
+// Types
 interface QuestionVersion {
   id: string
   question_id: string
@@ -246,195 +33,24 @@ interface QuestionVersion {
   version_minor: number
   version_patch: number
   version_string: string
-  update_type: 'major' | 'minor' | 'patch'
-  change_summary: string
+  update_type: string
+  change_summary?: string
   question_snapshot: any
   created_by: string
   created_at: string
-  // Joined data
   creator?: {
     first_name: string
     last_name: string
-    email: string
   }
 }
 
-// Component to preview question snapshot data
-function QuestionSnapshotPreview({
-  question,
-  isComparison = false
-}: {
-  question: any
-  isComparison?: boolean
-}) {
-  const optionLabels = ['A', 'B', 'C', 'D', 'E']
 
-  // Get question images for the stem and explanation
-  const stemImages = question.question_images?.filter((qi: any) => qi.question_section === 'stem') || []
-  const explanationImages = question.question_images?.filter((qi: any) => qi.question_section === 'explanation') || []
 
-  // Get incorrect options with explanations
-  const incorrectOptions = question.question_options?.filter((option: any) => !option.is_correct && option.explanation) || []
 
-  return (
-    <div className={`space-y-4 ${isComparison ? 'text-sm' : ''}`}>
-      {/* Title */}
-      <div>
-        <h4 className={`font-medium ${isComparison ? 'text-sm' : 'text-lg'} mb-2`}>
-          {question.title}
-        </h4>
-      </div>
 
-      {/* Question Stem */}
-      <div className={`${isComparison ? 'text-xs' : 'text-sm'} text-foreground/90`}>
-        {question.stem}
-      </div>
 
-      {/* Stem Images */}
-      {stemImages.length > 0 && (
-        <div>
-          {stemImages.length === 1 ? (
-            <ImprovedImageDialog
-              src={stemImages[0].image?.url || ''}
-              alt={stemImages[0].image?.alt_text || ''}
-              caption={stemImages[0].image?.description || ''}
-              className="border rounded-lg"
-              aspectRatio="16/10"
-            />
-          ) : (
-            <ImageCarousel
-              images={stemImages.map((si: any) => ({
-                id: si.image?.id || '',
-                url: si.image?.url || '',
-                alt: si.image?.alt_text || '',
-                caption: si.image?.description || ''
-              }))}
-              className="border rounded-lg"
-            />
-          )}
-        </div>
-      )}
 
-      {/* Answer Options */}
-      <div className="space-y-2">
-        <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'}`}>Answer Options</h5>
-        {question.question_options && question.question_options.length > 0 ? (
-          question.question_options.map((option: any, index: number) => {
-            const optionLabel = optionLabels[index] || (index + 1).toString()
-            const isCorrect = option.is_correct
 
-            return (
-              <div
-                key={option.id || index}
-                className={`
-                  p-2 rounded-md border ${isComparison ? 'text-xs' : 'text-sm'}
-                  ${isCorrect ? 'bg-green-50 border-green-500 dark:bg-green-950/30' : 'border-muted'}
-                `}
-              >
-                <div className="flex items-center gap-2">
-                  <span className={`
-                    flex items-center justify-center w-4 h-4 rounded-full border text-xs
-                    ${isCorrect ? 'border-green-500' : 'border-muted-foreground/30'}
-                  `}>
-                    {optionLabel}
-                  </span>
-                  <span className="flex-1">{option.text}</span>
-                  {isCorrect && <Check className="w-3 h-3 text-green-500" />}
-                </div>
-              </div>
-            )
-          })
-        ) : (
-          <div className={`p-3 text-center text-muted-foreground ${isComparison ? 'text-xs' : 'text-sm'}`}>
-            No answer options available
-          </div>
-        )}
-      </div>
-
-      {/* Teaching Point and Explanation Section */}
-      {(question.teaching_point || explanationImages.length > 0 || question.question_references || incorrectOptions.length > 0) && (
-        <div className="p-3 rounded-lg bg-muted/50 space-y-4">
-          {/* Teaching Point */}
-          {question.teaching_point && (
-            <div>
-              <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} uppercase mb-1`}>Teaching Point</h5>
-              <div className={`text-muted-foreground ${isComparison ? 'text-xs' : 'text-sm'}`}>
-                {question.teaching_point}
-              </div>
-            </div>
-          )}
-
-          {/* Incorrect Option Explanations */}
-          {incorrectOptions.length > 0 && (
-            <div>
-              <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} uppercase mb-2`}>Incorrect Option Explanations</h5>
-              <div className="space-y-2">
-                {incorrectOptions.map((option: any, index: number) => {
-                  const originalIndex = question.question_options?.findIndex((opt: any) => opt.id === option.id) || 0
-                  const optionLabel = optionLabels[originalIndex] || (originalIndex + 1).toString()
-
-                  return (
-                    <div key={option.id} className={`${isComparison ? 'text-xs' : 'text-sm'}`}>
-                      <span className="font-medium">Option {optionLabel}:</span>
-                      <span className="text-muted-foreground ml-2">{option.explanation}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Explanation Images */}
-          {explanationImages.length > 0 && (
-            <div>
-              <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} uppercase mb-1`}>Reference Images</h5>
-              {explanationImages.length === 1 ? (
-                <ImprovedImageDialog
-                  src={explanationImages[0].image?.url || ''}
-                  alt={explanationImages[0].image?.alt_text || ''}
-                  caption={explanationImages[0].image?.description || ''}
-                  className="border rounded-lg"
-                  aspectRatio="16/10"
-                />
-              ) : (
-                <ImageCarousel
-                  images={explanationImages.map((ei: any) => ({
-                    id: ei.image?.id || '',
-                    url: ei.image?.url || '',
-                    alt: ei.image?.alt_text || '',
-                    caption: ei.image?.description || ''
-                  }))}
-                  className="border rounded-lg"
-                />
-              )}
-            </div>
-          )}
-
-          {/* References */}
-          {question.question_references && (
-            <div>
-              <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} uppercase mb-1`}>References</h5>
-              <div className={`text-muted-foreground ${isComparison ? 'text-xs' : 'text-sm'}`}>
-                {question.question_references}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Metadata */}
-      <div className={`flex items-center gap-4 pt-2 border-t ${isComparison ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
-        <Badge variant="outline" className={isComparison ? 'text-xs' : ''}>
-          {question.difficulty?.charAt(0).toUpperCase() + question.difficulty?.slice(1) || 'Medium'}
-        </Badge>
-        <span>Status: {question.status?.charAt(0).toUpperCase() + question.status?.slice(1) || 'Published'}</span>
-        {question.categories && question.categories.length > 0 && (
-          <span>Category: {question.categories[0].name}</span>
-        )}
-      </div>
-    </div>
-  )
-}
 
 interface VersionHistoryDialogProps {
   questionId: string | null
@@ -456,11 +72,16 @@ export function VersionHistoryDialog({
   const [compareDialogOpen, setCompareDialogOpen] = useState(false)
   const [selectedVersion, setSelectedVersion] = useState<QuestionVersion | null>(null)
   const [compareVersions, setCompareVersions] = useState<{ current: QuestionVersion | null, previous: QuestionVersion | null }>({ current: null, previous: null })
-  const supabase = createClient()
+  const isOpeningRef = useRef(false)
 
   useEffect(() => {
     if (open && questionId) {
+      isOpeningRef.current = true
       fetchVersionHistory()
+      // Reset the opening flag after a short delay
+      setTimeout(() => {
+        isOpeningRef.current = false
+      }, 500)
     }
   }, [open, questionId])
 
@@ -474,8 +95,8 @@ export function VersionHistoryDialog({
 
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('API Error:', errorText)
-        toast.error('Failed to load version history')
+        console.error('API Error:', response.status, errorText)
+        toast.error(`Failed to load version history: ${response.status} ${response.statusText}`)
         return
       }
 
@@ -504,7 +125,7 @@ export function VersionHistoryDialog({
       }
     } catch (error) {
       console.error('Error fetching version history:', error)
-      toast.error('An unexpected error occurred')
+      toast.error(`Failed to load version history: ${error}`)
     } finally {
       setLoading(false)
     }
@@ -552,10 +173,17 @@ export function VersionHistoryDialog({
     setCompareDialogOpen(true)
   }
 
-  if (!open) return null
+  const handleOpenChange = (newOpen: boolean) => {
+    // Ignore close events if we're still in the opening phase
+    if (!newOpen && isOpeningRef.current) {
+      return
+    }
+
+    onOpenChange(newOpen)
+  }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange} modal={false}>
       <DialogPortal>
         <DialogOverlay className="backdrop-blur-md bg-black/20" />
         <DialogContent className="w-full !max-w-[min(90vw,1200px)] max-h-[85vh]">
@@ -678,28 +306,7 @@ export function VersionHistoryDialog({
                               )}
                             </div>
 
-                            {/* Show changes compared to previous version */}
-                            {index < versions.length - 1 && (() => {
-                              const previousVersion = versions[index + 1]
-                              const changes = getChanges(previousVersion.question_snapshot, version.question_snapshot)
 
-                              return changes.length > 0 && (
-                                <div className="bg-blue-50 border border-blue-200 p-3 rounded">
-                                  <div className="flex items-center gap-2 text-sm font-medium text-blue-800 mb-2">
-                                    <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
-                                    Changes from v{formatVersionNumber(previousVersion)}
-                                  </div>
-                                  <ul className="text-xs text-blue-700 space-y-1">
-                                    {changes.map((change, changeIndex) => (
-                                      <li key={changeIndex} className="flex items-center gap-2">
-                                        <div className="h-1 w-1 bg-blue-500 rounded-full"></div>
-                                        {change}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )
-                            })()}
 
                             <div className="flex gap-2">
                               <Button
@@ -733,7 +340,7 @@ export function VersionHistoryDialog({
       </DialogPortal>
 
       {/* Version Snapshot Dialog */}
-      <Dialog open={snapshotDialogOpen} onOpenChange={setSnapshotDialogOpen}>
+      <Dialog open={snapshotDialogOpen} onOpenChange={setSnapshotDialogOpen} modal={false}>
         <DialogPortal>
           <DialogOverlay className="backdrop-blur-md bg-black/20" />
           <DialogContent className="w-full !max-w-[min(95vw,1400px)] max-h-[90vh] overflow-y-auto">
@@ -755,7 +362,7 @@ export function VersionHistoryDialog({
       </Dialog>
 
       {/* Version Comparison Dialog */}
-      <Dialog open={compareDialogOpen} onOpenChange={setCompareDialogOpen}>
+      <Dialog open={compareDialogOpen} onOpenChange={setCompareDialogOpen} modal={false}>
         <DialogPortal>
           <DialogOverlay className="backdrop-blur-md bg-black/20" />
           <DialogContent className="w-full !max-w-[min(95vw,1400px)] max-h-[90vh] overflow-y-auto">
