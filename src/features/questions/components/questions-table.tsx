@@ -209,7 +209,7 @@ function RowActions({
   const canEdit = question.status !== 'published' || isAdmin;
 
   return (
-    <DropdownMenu modal={false}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
           <span className="sr-only">Open menu</span>
@@ -427,12 +427,15 @@ export function QuestionsTable() {
     try {
       // Fetch the full question details from the API to ensure we have all related data
       const response = await fetch(`/api/admin/questions/${question.id}`)
+
       if (response.ok) {
-        const { question: questionDetails } = await response.json()
+        const data = await response.json()
+        const { question: questionDetails } = data
         setSelectedQuestion(questionDetails)
         setShowEditDialog(true)
       } else {
-        console.error('Failed to fetch question details')
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Failed to fetch question details:', response.status, errorData)
         toast.error('Failed to load question details')
       }
     } catch (error) {
@@ -626,14 +629,12 @@ export function QuestionsTable() {
         onOpenChange={setShowPreviewDialog}
       />
 
-      {showEditDialog && selectedQuestion && (
-        <EditQuestionDialog
-          question={selectedQuestion}
-          open={showEditDialog}
-          onOpenChange={setShowEditDialog}
-          onSave={handleEditSave}
-        />
-      )}
+      <EditQuestionDialog
+        question={selectedQuestion}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSave={handleEditSave}
+      />
 
       {/* Flag Dialog */}
       <QuestionFlagDialog
