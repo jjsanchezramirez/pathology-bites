@@ -14,7 +14,36 @@ Use a ref-based protection mechanism that ignores close events during the initia
 
 ## Implementation Pattern
 
-### 1. Basic Setup
+### Option 1: Using the Custom Hook (Recommended)
+
+```typescript
+import { useState, useEffect } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
+import { useProtectedDialog } from '@/shared/hooks/use-protected-dialog'
+
+interface MyDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  // ... other props
+}
+
+export function MyDialog({ open, onOpenChange, ...props }: MyDialogProps) {
+  // Use the custom hook for protection
+  const handleOpenChange = useProtectedDialog(open, onOpenChange)
+
+  // ... other state and logic
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange} modal={false}>
+      <DialogContent className="w-full !max-w-[min(90vw,1200px)] max-h-[85vh]">
+        {/* Dialog content */}
+      </DialogContent>
+    </Dialog>
+  )
+}
+```
+
+### Option 2: Manual Implementation
 
 ```typescript
 import { useState, useEffect, useRef } from 'react'
@@ -28,62 +57,49 @@ interface MyDialogProps {
 
 export function MyDialog({ open, onOpenChange, ...props }: MyDialogProps) {
   const isOpeningRef = useRef(false)
-  
-  // ... other state and logic
+
+  useEffect(() => {
+    if (open && someCondition) {
+      // Set protection flag when dialog opens
+      isOpeningRef.current = true
+
+      // Perform any initialization (API calls, etc.)
+      initializeDialog()
+
+      // Reset protection after 500ms
+      setTimeout(() => {
+        isOpeningRef.current = false
+      }, 500)
+    }
+  }, [open, someCondition])
+
+  const handleOpenChange = (newOpen: boolean) => {
+    // Ignore close events during opening phase
+    if (!newOpen && isOpeningRef.current) {
+      return
+    }
+
+    onOpenChange(newOpen)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange} modal={false}>
+      <DialogContent className="w-full !max-w-[min(90vw,1200px)] max-h-[85vh]">
+        {/* Dialog content */}
+      </DialogContent>
+    </Dialog>
+  )
 }
 ```
 
-### 2. Opening Protection
-
-```typescript
-useEffect(() => {
-  if (open && someCondition) {
-    // Set protection flag when dialog opens
-    isOpeningRef.current = true
-    
-    // Perform any initialization (API calls, etc.)
-    initializeDialog()
-    
-    // Reset protection after 500ms
-    setTimeout(() => {
-      isOpeningRef.current = false
-    }, 500)
-  }
-}, [open, someCondition])
-```
-
-### 3. Protected onOpenChange Handler
-
-```typescript
-const handleOpenChange = (newOpen: boolean) => {
-  // Ignore close events during opening phase
-  if (!newOpen && isOpeningRef.current) {
-    return
-  }
-  
-  onOpenChange(newOpen)
-}
-```
-
-### 4. Dialog Component
-
-```typescript
-return (
-  <Dialog open={open} onOpenChange={handleOpenChange} modal={false}>
-    <DialogContent className="w-full !max-w-[min(90vw,1200px)] max-h-[85vh]">
-      {/* Dialog content */}
-    </DialogContent>
-  </Dialog>
-)
-```
-
-## Complete Example
+## Complete Example (Using Custom Hook)
 
 ```typescript
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
+import { useProtectedDialog } from '@/shared/hooks/use-protected-dialog'
 
 interface ExampleDialogProps {
   open: boolean
@@ -94,11 +110,13 @@ interface ExampleDialogProps {
 export function ExampleDialog({ open, onOpenChange, itemId }: ExampleDialogProps) {
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState(null)
-  const isOpeningRef = useRef(false)
+
+  // Use the custom hook for protection
+  const handleOpenChange = useProtectedDialog(open, onOpenChange)
 
   const fetchData = async () => {
     if (!itemId) return
-    
+
     try {
       setLoading(true)
       const response = await fetch(`/api/items/${itemId}`)
@@ -113,24 +131,9 @@ export function ExampleDialog({ open, onOpenChange, itemId }: ExampleDialogProps
 
   useEffect(() => {
     if (open && itemId) {
-      isOpeningRef.current = true
       fetchData()
-      
-      // Reset protection after 500ms
-      setTimeout(() => {
-        isOpeningRef.current = false
-      }, 500)
     }
   }, [open, itemId])
-
-  const handleOpenChange = (newOpen: boolean) => {
-    // Ignore close events during opening phase
-    if (!newOpen && isOpeningRef.current) {
-      return
-    }
-    
-    onOpenChange(newOpen)
-  }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange} modal={false}>
@@ -138,7 +141,7 @@ export function ExampleDialog({ open, onOpenChange, itemId }: ExampleDialogProps
         <DialogHeader>
           <DialogTitle>Example Dialog</DialogTitle>
         </DialogHeader>
-        
+
         {loading ? (
           <div>Loading...</div>
         ) : (
@@ -157,19 +160,33 @@ export function ExampleDialog({ open, onOpenChange, itemId }: ExampleDialogProps
 For nested dialogs (dialogs within dialogs), apply the same pattern to each dialog:
 
 ```typescript
-{/* Parent Dialog */}
-<Dialog open={parentOpen} onOpenChange={handleParentOpenChange} modal={false}>
-  <DialogContent>
-    {/* Parent content */}
-    
-    {/* Child Dialog */}
-    <Dialog open={childOpen} onOpenChange={handleChildOpenChange} modal={false}>
-      <DialogContent>
-        {/* Child content */}
-      </DialogContent>
-    </Dialog>
-  </DialogContent>
-</Dialog>
+function ParentComponent() {
+  const [parentOpen, setParentOpen] = useState(false)
+  const [childOpen, setChildOpen] = useState(false)
+
+  // Use the hook for both dialogs
+  const handleParentOpenChange = useProtectedDialog(parentOpen, setParentOpen)
+  const handleChildOpenChange = useProtectedDialog(childOpen, setChildOpen)
+
+  return (
+    <>
+      {/* Parent Dialog */}
+      <Dialog open={parentOpen} onOpenChange={handleParentOpenChange} modal={false}>
+        <DialogContent>
+          {/* Parent content */}
+          <Button onClick={() => setChildOpen(true)}>Open Child Dialog</Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Child Dialog */}
+      <Dialog open={childOpen} onOpenChange={handleChildOpenChange} modal={false}>
+        <DialogContent>
+          {/* Child content */}
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
 ```
 
 ## Key Points
@@ -195,7 +212,16 @@ For nested dialogs (dialogs within dialogs), apply the same pattern to each dial
 - Any dialog experiencing immediate closing issues
 - Nested dialog scenarios
 
+## Quick Start
+
+1. **Copy the template**: Use `docs/ui-patterns/dialog-template.tsx` as a starting point
+2. **Import the hook**: `import { useProtectedDialog } from '@/shared/hooks/use-protected-dialog'`
+3. **Use the hook**: `const handleOpenChange = useProtectedDialog(open, onOpenChange)`
+4. **Add modal={false}**: `<Dialog open={open} onOpenChange={handleOpenChange} modal={false}>`
+
 ## Related Files
 
+- `src/shared/hooks/use-protected-dialog.ts` - Custom hook implementation
+- `docs/ui-patterns/dialog-template.tsx` - Copy-paste template
 - `src/features/questions/components/version-history-dialog.tsx` - Reference implementation
 - `src/features/questions/components/version-history/` - Modular component structure

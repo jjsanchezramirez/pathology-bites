@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ import { toast } from 'sonner'
 import { VersionSnapshotView } from './version-history/version-snapshot-view'
 import { VersionComparisonView } from './version-history/version-comparison-view'
 import { Badge } from "@/shared/components/ui/badge"
+import { useProtectedDialog } from '@/shared/hooks/use-protected-dialog'
 
 // Types
 interface QuestionVersion {
@@ -72,16 +73,13 @@ export function VersionHistoryDialog({
   const [compareDialogOpen, setCompareDialogOpen] = useState(false)
   const [selectedVersion, setSelectedVersion] = useState<QuestionVersion | null>(null)
   const [compareVersions, setCompareVersions] = useState<{ current: QuestionVersion | null, previous: QuestionVersion | null }>({ current: null, previous: null })
-  const isOpeningRef = useRef(false)
+
+  // Use protected dialog hook to prevent immediate closing
+  const handleOpenChange = useProtectedDialog(open, onOpenChange)
 
   useEffect(() => {
     if (open && questionId) {
-      isOpeningRef.current = true
       fetchVersionHistory()
-      // Reset the opening flag after a short delay
-      setTimeout(() => {
-        isOpeningRef.current = false
-      }, 500)
     }
   }, [open, questionId])
 
@@ -173,14 +171,7 @@ export function VersionHistoryDialog({
     setCompareDialogOpen(true)
   }
 
-  const handleOpenChange = (newOpen: boolean) => {
-    // Ignore close events if we're still in the opening phase
-    if (!newOpen && isOpeningRef.current) {
-      return
-    }
 
-    onOpenChange(newOpen)
-  }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange} modal={false}>
