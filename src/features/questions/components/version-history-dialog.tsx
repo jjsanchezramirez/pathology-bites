@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/shared/services/client'
+import { Check } from "lucide-react"
 
 // Utility function to compare two objects and find differences
 function getChanges(oldData: any, newData: any): string[] {
@@ -90,12 +91,165 @@ function getChanges(oldData: any, newData: any): string[] {
   return changes
 }
 
+// Component to display a version snapshot
+function VersionSnapshotView({ version }: { version: QuestionVersion }) {
+  const questionData = version.question_snapshot
+
+  if (!questionData) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        No question data available for this version
+      </div>
+    )
+  }
+
+  // Transform the snapshot data to match QuestionWithDetails format
+  const transformedQuestion = {
+    id: version.question_id,
+    title: questionData.title || 'Untitled Question',
+    stem: questionData.stem || '',
+    difficulty: questionData.difficulty || 'Medium',
+    teaching_point: questionData.teaching_point || '',
+    question_references: questionData.question_references || '',
+    status: 'published',
+    created_at: version.created_at,
+    question_options: questionData.answer_options || [],
+    question_images: questionData.question_images || [],
+    categories: questionData.categories || [],
+    tags: questionData.tags || []
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Version Info */}
+      <div className="bg-muted/50 p-3 rounded text-sm">
+        <div className="grid grid-cols-2 gap-4">
+          <div><span className="font-medium">Version:</span> {version.version_string}</div>
+          <div><span className="font-medium">Created:</span> {new Date(version.created_at).toLocaleString()}</div>
+          <div><span className="font-medium">Update Type:</span> {version.update_type}</div>
+          <div><span className="font-medium">Creator:</span> {
+            version.creator ?
+              `${version.creator.first_name} ${version.creator.last_name}` :
+              'Unknown'
+          }</div>
+        </div>
+        {version.change_summary && (
+          <div className="mt-3 pt-3 border-t">
+            <span className="font-medium">Change Summary:</span> {version.change_summary}
+          </div>
+        )}
+      </div>
+
+      {/* Question Preview */}
+      <div className="border rounded-lg p-4">
+        <h3 className="font-medium mb-4">Question Preview</h3>
+        <QuestionSnapshotPreview question={transformedQuestion} />
+      </div>
+    </div>
+  )
+}
+
+// Component to display version comparison
+function VersionComparisonView({
+  currentVersion,
+  previousVersion
+}: {
+  currentVersion: QuestionVersion
+  previousVersion: QuestionVersion
+}) {
+  const changes = getChanges(previousVersion.question_snapshot, currentVersion.question_snapshot)
+
+  return (
+    <div className="space-y-6">
+      {/* Comparison Header */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-red-50 border border-red-200 p-3 rounded">
+          <h3 className="font-medium text-red-800 mb-2">Previous Version ({previousVersion.version_string})</h3>
+          <div className="text-sm text-red-700">
+            <div>Created: {new Date(previousVersion.created_at).toLocaleString()}</div>
+            <div>By: {previousVersion.creator ? `${previousVersion.creator.first_name} ${previousVersion.creator.last_name}` : 'Unknown'}</div>
+          </div>
+        </div>
+        <div className="bg-green-50 border border-green-200 p-3 rounded">
+          <h3 className="font-medium text-green-800 mb-2">Current Version ({currentVersion.version_string})</h3>
+          <div className="text-sm text-green-700">
+            <div>Created: {new Date(currentVersion.created_at).toLocaleString()}</div>
+            <div>By: {currentVersion.creator ? `${currentVersion.creator.first_name} ${currentVersion.creator.last_name}` : 'Unknown'}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Changes Summary */}
+      {changes.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded">
+          <h3 className="font-medium text-blue-800 mb-3">Changes Made</h3>
+          <ul className="space-y-2">
+            {changes.map((change, index) => (
+              <li key={index} className="flex items-center gap-2 text-sm text-blue-700">
+                <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                {change}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Side-by-side comparison */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="border rounded-lg">
+          <div className="bg-red-50 border-b border-red-200 p-3">
+            <h4 className="font-medium text-red-800">Previous Version</h4>
+          </div>
+          <div className="p-4">
+            <QuestionSnapshotPreview
+              question={transformQuestionData(previousVersion)}
+              isComparison={true}
+            />
+          </div>
+        </div>
+        <div className="border rounded-lg">
+          <div className="bg-green-50 border-b border-green-200 p-3">
+            <h4 className="font-medium text-green-800">Current Version</h4>
+          </div>
+          <div className="p-4">
+            <QuestionSnapshotPreview
+              question={transformQuestionData(currentVersion)}
+              isComparison={true}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Helper function to transform version data to question format
+function transformQuestionData(version: QuestionVersion) {
+  const questionData = version.question_snapshot
+
+  return {
+    id: version.question_id,
+    title: questionData?.title || 'Untitled Question',
+    stem: questionData?.stem || '',
+    difficulty: questionData?.difficulty || 'Medium',
+    teaching_point: questionData?.teaching_point || '',
+    question_references: questionData?.question_references || '',
+    status: 'published',
+    created_at: version.created_at,
+    question_options: questionData?.answer_options || [],
+    question_images: questionData?.question_images || [],
+    categories: questionData?.categories || [],
+    tags: questionData?.tags || []
+  }
+}
+
 interface QuestionVersion {
   id: string
   question_id: string
   version_major: number
   version_minor: number
   version_patch: number
+  version_string: string
   update_type: 'major' | 'minor' | 'patch'
   change_summary: string
   question_snapshot: any
@@ -107,6 +261,100 @@ interface QuestionVersion {
     last_name: string
     email: string
   }
+}
+
+// Component to preview question snapshot data
+function QuestionSnapshotPreview({
+  question,
+  isComparison = false
+}: {
+  question: any
+  isComparison?: boolean
+}) {
+  const optionLabels = ['A', 'B', 'C', 'D', 'E']
+
+  return (
+    <div className={`space-y-4 ${isComparison ? 'text-sm' : ''}`}>
+      {/* Title */}
+      <div>
+        <h4 className={`font-medium ${isComparison ? 'text-sm' : 'text-lg'} mb-2`}>
+          {question.title}
+        </h4>
+      </div>
+
+      {/* Question Stem */}
+      <div className={`${isComparison ? 'text-xs' : 'text-sm'} text-foreground/90`}>
+        {question.stem}
+      </div>
+
+      {/* Answer Options */}
+      <div className="space-y-2">
+        <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'}`}>Answer Options</h5>
+        {question.question_options && question.question_options.length > 0 ? (
+          question.question_options.map((option: any, index: number) => {
+            const optionLabel = optionLabels[index] || (index + 1).toString()
+            const isCorrect = option.is_correct
+
+            return (
+              <div
+                key={option.id || index}
+                className={`
+                  p-2 rounded-md border ${isComparison ? 'text-xs' : 'text-sm'}
+                  ${isCorrect ? 'bg-green-50 border-green-500 dark:bg-green-950/30' : 'border-muted'}
+                `}
+              >
+                <div className="flex items-center gap-2">
+                  <span className={`
+                    flex items-center justify-center w-4 h-4 rounded-full border text-xs
+                    ${isCorrect ? 'border-green-500' : 'border-muted-foreground/30'}
+                  `}>
+                    {optionLabel}
+                  </span>
+                  <span className="flex-1">{option.text}</span>
+                  {isCorrect && <Check className="w-3 h-3 text-green-500" />}
+                </div>
+              </div>
+            )
+          })
+        ) : (
+          <div className={`p-3 text-center text-muted-foreground ${isComparison ? 'text-xs' : 'text-sm'}`}>
+            No answer options available
+          </div>
+        )}
+      </div>
+
+      {/* Teaching Point */}
+      {question.teaching_point && (
+        <div className="bg-muted/50 p-3 rounded">
+          <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} mb-2`}>Teaching Point</h5>
+          <div className={`text-muted-foreground ${isComparison ? 'text-xs' : 'text-sm'}`}>
+            {question.teaching_point}
+          </div>
+        </div>
+      )}
+
+      {/* References */}
+      {question.question_references && (
+        <div className="bg-muted/50 p-3 rounded">
+          <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} mb-2`}>References</h5>
+          <div className={`text-muted-foreground ${isComparison ? 'text-xs' : 'text-sm'}`}>
+            {question.question_references}
+          </div>
+        </div>
+      )}
+
+      {/* Metadata */}
+      <div className={`flex items-center gap-4 pt-2 border-t ${isComparison ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
+        <Badge variant="outline" className={isComparison ? 'text-xs' : ''}>
+          {question.difficulty}
+        </Badge>
+        <span>Status: {question.status}</span>
+        {question.categories && question.categories.length > 0 && (
+          <span>Category: {question.categories[0].name}</span>
+        )}
+      </div>
+    </div>
+  )
 }
 
 interface VersionHistoryDialogProps {
@@ -125,6 +373,10 @@ export function VersionHistoryDialog({
   const [versions, setVersions] = useState<QuestionVersion[]>([])
   const [loading, setLoading] = useState(false)
   const [expandedVersions, setExpandedVersions] = useState<Set<string>>(new Set())
+  const [snapshotDialogOpen, setSnapshotDialogOpen] = useState(false)
+  const [compareDialogOpen, setCompareDialogOpen] = useState(false)
+  const [selectedVersion, setSelectedVersion] = useState<QuestionVersion | null>(null)
+  const [compareVersions, setCompareVersions] = useState<{ current: QuestionVersion | null, previous: QuestionVersion | null }>({ current: null, previous: null })
   const supabase = createClient()
 
   useEffect(() => {
@@ -208,6 +460,17 @@ export function VersionHistoryDialog({
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString()
+  }
+
+  const handleViewSnapshot = (version: QuestionVersion) => {
+    setSelectedVersion(version)
+    setSnapshotDialogOpen(true)
+  }
+
+  const handleCompareWithPrevious = (currentVersion: QuestionVersion, index: number) => {
+    const previousVersion = versions[index + 1]
+    setCompareVersions({ current: currentVersion, previous: previousVersion })
+    setCompareDialogOpen(true)
   }
 
   if (!open) return null
@@ -360,12 +623,20 @@ export function VersionHistoryDialog({
                             })()}
 
                             <div className="flex gap-2">
-                              <Button variant="outline" size="sm">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewSnapshot(version)}
+                              >
                                 <Eye className="h-3 w-3 mr-1" />
                                 View Snapshot
                               </Button>
-                              {index > 0 && (
-                                <Button variant="outline" size="sm">
+                              {index < versions.length - 1 && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleCompareWithPrevious(version, index)}
+                                >
                                   Compare with Previous
                                 </Button>
                               )}
@@ -381,6 +652,53 @@ export function VersionHistoryDialog({
           </div>
         </DialogContent>
       </DialogPortal>
+
+      {/* Version Snapshot Dialog */}
+      <Dialog open={snapshotDialogOpen} onOpenChange={setSnapshotDialogOpen}>
+        <DialogPortal>
+          <DialogOverlay className="backdrop-blur-md bg-black/20" />
+          <DialogContent className="w-full !max-w-[min(90vw,1100px)] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Eye className="h-5 w-5" />
+                Version Snapshot - {selectedVersion ? formatVersionNumber(selectedVersion) : ''}
+              </DialogTitle>
+              <DialogDescription>
+                View the complete question as it appeared in this version
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedVersion && (
+              <VersionSnapshotView version={selectedVersion} />
+            )}
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
+
+      {/* Version Comparison Dialog */}
+      <Dialog open={compareDialogOpen} onOpenChange={setCompareDialogOpen}>
+        <DialogPortal>
+          <DialogOverlay className="backdrop-blur-md bg-black/20" />
+          <DialogContent className="w-full !max-w-[min(95vw,1400px)] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Version Comparison
+              </DialogTitle>
+              <DialogDescription>
+                Compare changes between {compareVersions.previous ? formatVersionNumber(compareVersions.previous) : ''} and {compareVersions.current ? formatVersionNumber(compareVersions.current) : ''}
+              </DialogDescription>
+            </DialogHeader>
+
+            {compareVersions.current && compareVersions.previous && (
+              <VersionComparisonView
+                currentVersion={compareVersions.current}
+                previousVersion={compareVersions.previous}
+              />
+            )}
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
     </Dialog>
   )
 }
