@@ -114,9 +114,9 @@ function VersionSnapshotView({ version }: { version: QuestionVersion }) {
       <div className="bg-muted/50 p-3 rounded text-sm">
         <div className="grid grid-cols-2 gap-4">
           <div><span className="font-medium">Version:</span> {version.version_string}</div>
-          <div><span className="font-medium">Created:</span> {new Date(version.created_at).toLocaleString()}</div>
+          <div><span className="font-medium">Created:</span> {new Date(version.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}</div>
           <div><span className="font-medium">Update Type:</span> {version.update_type.charAt(0).toUpperCase() + version.update_type.slice(1)}</div>
-          <div><span className="font-medium">Creator:</span> {
+          <div><span className="font-medium">{version.version_string === 'v1.0.0' ? 'Created by' : 'Last updated by'}:</span> {
             version.creator ?
               `${version.creator.first_name} ${version.creator.last_name}` :
               'Unknown'
@@ -155,15 +155,15 @@ function VersionComparisonView({
         <div className="bg-red-50 border border-red-200 p-3 rounded">
           <h3 className="font-medium text-red-800 mb-2">Previous Version ({previousVersion.version_string})</h3>
           <div className="text-sm text-red-700">
-            <div>Created: {new Date(previousVersion.created_at).toLocaleString()}</div>
-            <div>By: {previousVersion.creator ? `${previousVersion.creator.first_name} ${previousVersion.creator.last_name}` : 'Unknown'}</div>
+            <div>Created: {new Date(previousVersion.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}</div>
+            <div>{previousVersion.version_string === 'v1.0.0' ? 'Created by' : 'Last updated by'}: {previousVersion.creator ? `${previousVersion.creator.first_name} ${previousVersion.creator.last_name}` : 'Unknown'}</div>
           </div>
         </div>
         <div className="bg-green-50 border border-green-200 p-3 rounded">
           <h3 className="font-medium text-green-800 mb-2">Current Version ({currentVersion.version_string})</h3>
           <div className="text-sm text-green-700">
-            <div>Created: {new Date(currentVersion.created_at).toLocaleString()}</div>
-            <div>By: {currentVersion.creator ? `${currentVersion.creator.first_name} ${currentVersion.creator.last_name}` : 'Unknown'}</div>
+            <div>Created: {new Date(currentVersion.created_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}</div>
+            <div>{currentVersion.version_string === 'v1.0.0' ? 'Created by' : 'Last updated by'}: {currentVersion.creator ? `${currentVersion.creator.first_name} ${currentVersion.creator.last_name}` : 'Unknown'}</div>
           </div>
         </div>
       </div>
@@ -324,7 +324,7 @@ function QuestionSnapshotPreview({
             const isCorrect = option.is_correct
 
             return (
-              <div
+              <div key={option.id || index}
                 key={option.id || index}
                 className={`
                   p-2 rounded-md border ${isComparison ? 'text-xs' : 'text-sm'}
@@ -558,7 +558,7 @@ export function VersionHistoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <DialogOverlay className="backdrop-blur-md bg-black/20" />
-        <DialogContent className="w-full !max-w-[min(95vw,1600px)] max-h-[85vh]">
+        <DialogContent className="w-full !max-w-[min(90vw,1200px)] max-h-[85vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <History className="h-5 w-5" />

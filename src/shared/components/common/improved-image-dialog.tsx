@@ -48,13 +48,19 @@ export function ImprovedImageDialog({
         style={{ aspectRatio }}
         onClick={openDialog}
       >
-        <img
-          src={src}
-          alt={alt}
-          className="w-full h-full object-contain hover:opacity-90 transition-opacity"
-          onLoad={() => setIsLoading(false)}
-          loading="lazy"
-        />
+        {src ? (
+          <img
+            src={src}
+            alt={alt}
+            className="w-full h-full object-contain hover:opacity-90 transition-opacity"
+            onLoad={() => setIsLoading(false)}
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
+            No image available
+          </div>
+        )}
         {isLoading && (
           <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -69,12 +75,18 @@ export function ImprovedImageDialog({
           onClick={() => setIsOpen(false)}
         >
           {/* Image fills entire screen */}
-          <img
-            src={src}
-            alt={alt}
-            className="w-screen h-screen object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
+          {src ? (
+            <img
+              src={src}
+              alt={alt}
+              className="w-screen h-screen object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <div className="w-screen h-screen flex items-center justify-center text-white/70">
+              No image available
+            </div>
+          )}
 
           {/* Close button */}
           <button

@@ -73,11 +73,17 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
           style={{ aspectRatio: '16/10' }}
           onClick={openModal}
         >
-          <img
-            src={currentImage.url}
-            alt={currentImage.alt}
-            className="w-full h-full object-contain hover:opacity-90 transition-opacity"
-          />
+          {currentImage.url ? (
+            <img
+              src={currentImage.url}
+              alt={currentImage.alt}
+              className="w-full h-full object-contain hover:opacity-90 transition-opacity"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
+              No image available
+            </div>
+          )}
 
           {/* Navigation arrows */}
           {hasMultiple && (
@@ -135,12 +141,18 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
         >
           {/* Image container - slightly smaller than fullscreen */}
           <div className="relative max-w-[90vw] max-h-[90vh] bg-white/5 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
-            <img
-              src={currentImage.url}
-              alt={currentImage.alt}
-              className="w-full h-full object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
+            {currentImage.url ? (
+              <img
+                src={currentImage.url}
+                alt={currentImage.alt}
+                className="w-full h-full object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white/70">
+                No image available
+              </div>
+            )}
 
             {/* Close button */}
             <button
