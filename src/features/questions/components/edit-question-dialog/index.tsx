@@ -37,7 +37,7 @@ const editQuestionSchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']),
   teaching_point: z.string().min(10, 'Teaching point must be at least 10 characters').max(1000, 'Teaching point too long'),
   question_references: z.string().max(500, 'References too long').optional(),
-  status: z.enum(['draft', 'under_review', 'published', 'rejected']),
+  status: z.enum(['draft', 'pending', 'approved']),
   question_set_id: z.string(),
   category_id: z.string().nullable().optional(),
 });
@@ -108,7 +108,7 @@ export function EditQuestionDialog({
         difficulty: question.difficulty as 'easy' | 'medium' | 'hard' || 'medium',
         teaching_point: question.teaching_point || '',
         question_references: question.question_references || '',
-        status: question.status as any || 'draft',
+        status: (question.status as 'draft' | 'pending' | 'approved') || 'draft',
         question_set_id: question.question_set_id || 'none',
         category_id: question.categories?.[0]?.id || null,
       });
@@ -172,8 +172,8 @@ export function EditQuestionDialog({
       return;
     }
 
-    if (question.status === 'published' && !isAdmin) {
-      toast.error('Only admins can edit published questions');
+    if (question.status === 'approved' && !isAdmin) {
+      toast.error('Only admins can edit approved questions');
       return;
     }
 
@@ -184,8 +184,6 @@ export function EditQuestionDialog({
         question_set_id: data.question_set_id === 'none' ? null : data.question_set_id,
         question_references: data.question_references || null,
       };
-
-
 
       await updateQuestion(question.id, updateData, {
         answerOptions: answerOptions,
