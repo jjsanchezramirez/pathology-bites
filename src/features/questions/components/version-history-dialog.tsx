@@ -33,6 +33,63 @@ import {
 import { toast } from 'sonner'
 import { createClient } from '@/shared/services/client'
 
+// Utility function to compare two objects and find differences
+function getChanges(oldData: any, newData: any): string[] {
+  const changes: string[] = []
+
+  if (!oldData || !newData) return changes
+
+  // Compare basic fields
+  const fieldsToCompare = ['title', 'stem', 'difficulty', 'teaching_point', 'question_references']
+
+  fieldsToCompare.forEach(field => {
+    if (oldData[field] !== newData[field]) {
+      changes.push(`${field.replace('_', ' ')} changed`)
+    }
+  })
+
+  // Compare answer options
+  const oldOptions = oldData.answer_options || []
+  const newOptions = newData.answer_options || []
+
+  if (oldOptions.length !== newOptions.length) {
+    changes.push(`Number of answer options changed (${oldOptions.length} → ${newOptions.length})`)
+  } else {
+    oldOptions.forEach((oldOption: any, index: number) => {
+      const newOption = newOptions[index]
+      if (oldOption?.text !== newOption?.text) {
+        changes.push(`Answer option ${index + 1} text changed`)
+      }
+      if (oldOption?.is_correct !== newOption?.is_correct) {
+        changes.push(`Answer option ${index + 1} correctness changed`)
+      }
+      if (oldOption?.explanation !== newOption?.explanation) {
+        changes.push(`Answer option ${index + 1} explanation changed`)
+      }
+    })
+  }
+
+  // Compare images
+  const oldImages = oldData.question_images || []
+  const newImages = newData.question_images || []
+
+  if (oldImages.length !== newImages.length) {
+    changes.push(`Number of images changed (${oldImages.length} → ${newImages.length})`)
+  }
+
+  // Compare tags
+  const oldTags = oldData.tag_ids || []
+  const newTags = newData.tag_ids || []
+
+  if (oldTags.length !== newTags.length) {
+    changes.push(`Number of tags changed (${oldTags.length} → ${newTags.length})`)
+  } else if (JSON.stringify(oldTags.sort()) !== JSON.stringify(newTags.sort())) {
+    changes.push('Tags changed')
+  }
+
+  return changes
+}
+
 interface QuestionVersion {
   id: string
   question_id: string
@@ -81,25 +138,41 @@ export function VersionHistoryDialog({
 
     try {
       setLoading(true)
-      
-      const { data, error } = await supabase
-        .from('question_versions')
-        .select(`
-          *,
-          creator:users!question_versions_created_by_fkey(first_name, last_name, email)
-        `)
-        .eq('question_id', questionId)
-        .order('created_at', { ascending: false })
 
-      if (error) {
-        console.error('Error fetching version history:', error)
+      const response = await fetch(`/api/admin/questions/${questionId}/version`)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('API Error:', errorText)
         toast.error('Failed to load version history')
         return
       }
 
-      setVersions(data || [])
+      const result = await response.json()
+
+      if (result.success && result.versions) {
+        // Transform the API response to match our interface
+        const transformedVersions = result.versions.map((version: any) => ({
+          id: version.id,
+          question_id: questionId,
+          version_major: version.version_major,
+          version_minor: version.version_minor,
+          version_patch: version.version_patch,
+          version_string: version.version_string,
+          update_type: version.update_type,
+          change_summary: version.change_summary,
+          question_snapshot: version.question_data,
+          created_by: version.changed_by,
+          created_at: version.created_at,
+          creator: version.changer
+        }))
+
+        setVersions(transformedVersions)
+      } else {
+        setVersions([])
+      }
     } catch (error) {
-      console.error('Unexpected error fetching version history:', error)
+      console.error('Error fetching version history:', error)
       toast.error('An unexpected error occurred')
     } finally {
       setLoading(false)
@@ -234,7 +307,7 @@ export function VersionHistoryDialog({
                               <FileText className="h-4 w-4" />
                               Version Details
                             </div>
-                            
+
                             <div className="bg-muted/50 p-3 rounded text-xs">
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -248,13 +321,13 @@ export function VersionHistoryDialog({
                                 </div>
                                 <div>
                                   <span className="font-medium">Creator:</span> {
-                                    version.creator ? 
-                                      `${version.creator.first_name} ${version.creator.last_name}` : 
+                                    version.creator ?
+                                      `${version.creator.first_name} ${version.creator.last_name}` :
                                       'Unknown'
                                   }
                                 </div>
                               </div>
-                              
+
                               {version.change_summary && (
                                 <div className="mt-3 pt-3 border-t border-muted">
                                   <div className="font-medium mb-1">Change Summary:</div>
@@ -262,6 +335,29 @@ export function VersionHistoryDialog({
                                 </div>
                               )}
                             </div>
+
+                            {/* Show changes compared to previous version */}
+                            {index < versions.length - 1 && (() => {
+                              const previousVersion = versions[index + 1]
+                              const changes = getChanges(previousVersion.question_snapshot, version.question_snapshot)
+
+                              return changes.length > 0 && (
+                                <div className="bg-blue-50 border border-blue-200 p-3 rounded">
+                                  <div className="flex items-center gap-2 text-sm font-medium text-blue-800 mb-2">
+                                    <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
+                                    Changes from v{formatVersionNumber(previousVersion)}
+                                  </div>
+                                  <ul className="text-xs text-blue-700 space-y-1">
+                                    {changes.map((change, changeIndex) => (
+                                      <li key={changeIndex} className="flex items-center gap-2">
+                                        <div className="h-1 w-1 bg-blue-500 rounded-full"></div>
+                                        {change}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )
+                            })()}
 
                             <div className="flex gap-2">
                               <Button variant="outline" size="sm">
