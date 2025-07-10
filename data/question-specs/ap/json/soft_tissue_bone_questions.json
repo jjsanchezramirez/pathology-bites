@@ -1,0 +1,205 @@
+{
+  "section": "AP 11: Soft Tissue, Bones, and Joints",
+  "total_questions": 20,
+  "total_available_topics": 78,
+  "allocation_strategy": "Clinical judgment emphasizing high-yield sarcoma and bone tumor differentials",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Liposarcoma vs. lipoma differential: morphologic variants",
+      "item_locations": ["AP 11-6-a", "AP 11-5-a-i"],
+      "education_objective": "Distinguish liposarcoma subtypes from benign lipomatous lesions using morphologic criteria",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Leiomyosarcoma vs. leiomyoma: mitotic criteria & immunostains",
+      "item_locations": ["AP 11-6-b", "AP 11-5-a-ii"],
+      "education_objective": "Differentiate leiomyosarcoma from leiomyoma using mitotic count and smooth muscle markers",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Synovial sarcoma: biphasic vs. monophasic patterns & translocations",
+      "item_locations": ["AP 11-6-c"],
+      "education_objective": "Recognize synovial sarcoma patterns and confirm with molecular studies",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Ewing sarcoma: morphology & immunophenotype differential",
+      "item_locations": ["AP 11-6-d"],
+      "education_objective": "Diagnose Ewing sarcoma and distinguish from other small round cell tumors",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Pleomorphic undifferentiated sarcoma: diagnosis of exclusion",
+      "item_locations": ["AP 11-6-e"],
+      "education_objective": "Apply criteria for pleomorphic undifferentiated sarcoma as diagnosis of exclusion",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Rhabdomyosarcoma: embryonal vs. alveolar subtypes",
+      "item_locations": ["AP 11-6-g"],
+      "education_objective": "Classify rhabdomyosarcoma subtypes and correlate with prognosis",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Solitary fibrous tumor vs. other spindle cell lesions",
+      "item_locations": ["AP 11-5-a-vi"],
+      "education_objective": "Recognize solitary fibrous tumor and confirm with CD34/STAT6 staining",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Reactive lesions simulating sarcomas",
+      "item_locations": ["AP 11-2-a"],
+      "education_objective": "Distinguish reactive pseudosarcomatous lesions from true sarcomas",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Osteosarcoma: conventional vs. variants & staging",
+      "item_locations": ["AP 11-6-a"],
+      "education_objective": "Recognize osteosarcoma variants and apply staging criteria",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Chondrosarcoma: grading & differential from enchondroma",
+      "item_locations": ["AP 11-6-b", "AP 11-5-a-iii"],
+      "education_objective": "Grade chondrosarcoma and distinguish from benign enchondroma",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Giant cell tumor vs. other giant cell lesions",
+      "item_locations": ["AP 11-5-a-iv"],
+      "education_objective": "Differentiate giant cell tumor from other giant cell-containing lesions",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Metastatic tumors to bone: patterns & common primaries",
+      "item_locations": ["AP 11-5-a-vii"],
+      "education_objective": "Recognize metastatic patterns and identify likely primary sites",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Paget disease: phases & malignant transformation",
+      "item_locations": ["AP 11-2-a"],
+      "education_objective": "Identify Paget disease phases and recognize sarcomatous transformation",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Fibrous dysplasia vs. other fibro-osseous lesions",
+      "item_locations": ["AP 11-2-f"],
+      "education_objective": "Distinguish fibrous dysplasia from other fibro-osseous lesions",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Osteochondroma: morphology & malignant transformation",
+      "item_locations": ["AP 11-5-a-ii"],
+      "education_objective": "Recognize osteochondroma and assess for malignant transformation",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Tenosynovial giant cell tumor: localized vs. diffuse",
+      "item_locations": ["AP 11-5-a-ii"],
+      "education_objective": "Classify tenosynovial giant cell tumor variants and prognosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Crystal arthropathies: gout vs. CPPD morphology",
+      "item_locations": ["AP 11-2-b", "AP 11-2-c"],
+      "education_objective": "Distinguish uric acid from calcium pyrophosphate crystal deposits",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 18,
+      "topic": "Myeloma vs. metastatic carcinoma in bone",
+      "item_locations": ["AP 11-6-d"],
+      "education_objective": "Distinguish myeloma from metastatic carcinoma using morphology and immunostains",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 19,
+      "topic": "Epithelioid sarcoma: conventional vs. proximal type",
+      "item_locations": ["AP 11-6-l"],
+      "education_objective": "Recognize epithelioid sarcoma variants and immunophenotype",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 20,
+      "topic": "Clear cell sarcoma vs. malignant melanoma",
+      "item_locations": ["AP 11-6-n"],
+      "education_objective": "Distinguish clear cell sarcoma from melanoma using molecular markers",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 16,
+      "advanced_resident_only": 4,
+      "combined_c_ar": 0
+    },
+    "by_difficulty": {
+      "easy": 1,
+      "medium": 12,
+      "hard": 7
+    },
+    "by_yield": {
+      "high": 18,
+      "medium": 2,
+      "low": 0
+    }
+  }
+}

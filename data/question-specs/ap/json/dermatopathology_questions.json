@@ -1,0 +1,347 @@
+{
+  "section": "AP 13: Dermatopathology Topics for Anatomic Pathology Residents",
+  "total_questions": 35,
+  "total_available_topics": 213,
+  "allocation_strategy": "Clinical judgment prioritizing pattern recognition, major tumors, and high-yield inflammatory conditions",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Interface dermatitis pattern recognition",
+      "item_locations": ["AP 13-1-a-i"],
+      "education_objective": "Recognize the interface dermatitis reaction pattern and understand its differential diagnosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Lichen planus vs. lichenoid drug eruption",
+      "item_locations": ["AP 13-1-a-ii", "AP 13-1-a-iv"],
+      "education_objective": "Distinguish lichen planus from drug-induced lichenoid reactions using morphologic criteria",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Erythema multiforme vs. toxic epidermal necrolysis",
+      "item_locations": ["AP 13-1-a-v", "AP 13-1-a-vi"],
+      "education_objective": "Differentiate erythema multiforme from Stevens-Johnson syndrome/TEN using histologic features",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Psoriasiform reaction pattern recognition",
+      "item_locations": ["AP 13-1-b-i"],
+      "education_objective": "Identify the psoriasiform reaction pattern and its characteristic features",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Psoriasis vs. lichen simplex chronicus",
+      "item_locations": ["AP 13-1-b-ii", "AP 13-1-b-iii"],
+      "education_objective": "Distinguish psoriasis from lichen simplex chronicus using architectural and cellular features",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Spongiotic reaction pattern recognition",
+      "item_locations": ["AP 13-1-c-i"],
+      "education_objective": "Recognize the spongiotic reaction pattern and understand eczematous processes",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Pemphigus vulgaris vs. bullous pemphigoid",
+      "item_locations": ["AP 13-1-d-ii-3", "AP 13-1-d-iii-1"],
+      "education_objective": "Differentiate pemphigus vulgaris from bullous pemphigoid based on blister location and morphology",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Acantholysis vs. acantholytic dyskeratosis",
+      "item_locations": ["AP 13-1-d-ii-1", "AP 13-1-d-ii-2"],
+      "education_objective": "Distinguish true acantholysis from acantholytic dyskeratosis and understand their significance",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Granulomatous reaction patterns: sarcoidal vs. necrobiotic",
+      "item_locations": ["AP 13-1-e-i", "AP 13-1-e-ii"],
+      "education_objective": "Classify granulomatous reaction patterns and correlate with specific diseases",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Granuloma annulare vs. necrobiosis lipoidica",
+      "item_locations": ["AP 13-1-e-ii-1", "AP 13-1-e-ii-2"],
+      "education_objective": "Differentiate granuloma annulare from necrobiosis lipoidica using histologic features",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Vasculopathic reaction pattern recognition",
+      "item_locations": ["AP 13-1-f-i"],
+      "education_objective": "Recognize vasculopathic changes and classify vascular pathology in skin",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Leukocytoclastic vasculitis features",
+      "item_locations": ["AP 13-1-f-v-1"],
+      "education_objective": "Identify leukocytoclastic vasculitis and understand its clinical associations",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Basal cell carcinoma: nodular vs. infiltrative subtypes",
+      "item_locations": ["AP 13-11-a-iii-1-a", "AP 13-11-a-iii-1-c"],
+      "education_objective": "Classify basal cell carcinoma subtypes and understand their prognostic implications",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Superficial vs. micronodular basal cell carcinoma",
+      "item_locations": ["AP 13-11-a-iii-1-b", "AP 13-11-a-iii-1-d"],
+      "education_objective": "Distinguish superficial from micronodular BCC and correlate with treatment planning",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Squamous cell carcinoma in situ vs. invasive SCC",
+      "item_locations": ["AP 13-11-a-iii-3-a", "AP 13-11-a-iii-3-c"],
+      "education_objective": "Distinguish in situ from invasive squamous cell carcinoma and assess invasion depth",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Keratoacanthoma vs. squamous cell carcinoma",
+      "item_locations": ["AP 13-11-a-iii-3-b", "AP 13-11-a-iii-3-c"],
+      "education_objective": "Differentiate keratoacanthoma from conventional squamous cell carcinoma",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Actinic keratosis vs. squamous cell carcinoma in situ",
+      "item_locations": ["AP 13-11-a-ii-1", "AP 13-11-a-iii-3-a"],
+      "education_objective": "Distinguish actinic keratosis from squamous cell carcinoma in situ using degree of atypia",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 18,
+      "topic": "Seborrheic keratosis vs. melanoma",
+      "item_locations": ["AP 13-11-a-i-1-a"],
+      "education_objective": "Recognize seborrheic keratosis features and distinguish from pigmented melanoma",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 19,
+      "topic": "Melanocytic nevi: junctional vs. compound vs. intradermal",
+      "item_locations": ["AP 13-11-b-i-2-a"],
+      "education_objective": "Classify melanocytic nevi by location and understand nevus maturation",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Dysplastic nevus vs. melanoma in situ",
+      "item_locations": ["AP 13-11-b-i-4"],
+      "education_objective": "Distinguish dysplastic nevus from early melanoma using architectural and cytologic criteria",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 21,
+      "topic": "Spitz nevus vs. spitzoid melanoma",
+      "item_locations": ["AP 13-11-b-i-2-h"],
+      "education_objective": "Recognize Spitz nevus features and distinguish from spitzoid melanoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Melanoma subtypes: superficial spreading vs. nodular",
+      "item_locations": ["AP 13-11-b-iii-1-a", "AP 13-11-b-iii-1-d"],
+      "education_objective": "Classify melanoma subtypes and correlate with prognosis and staging",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 23,
+      "topic": "Desmoplastic melanoma recognition",
+      "item_locations": ["AP 13-11-b-iii-1-c"],
+      "education_objective": "Recognize desmoplastic melanoma and understand its diagnostic challenges",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 24,
+      "topic": "Viral infections: molluscum vs. verruca vulgaris",
+      "item_locations": ["AP 13-10-c-i-1", "AP 13-10-c-iii-1"],
+      "education_objective": "Distinguish molluscum contagiosum from verruca vulgaris using morphologic features",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 25,
+      "topic": "Herpes simplex vs. herpes zoster",
+      "item_locations": ["AP 13-10-c-ii-1", "AP 13-10-c-ii-2"],
+      "education_objective": "Differentiate herpes simplex from herpes zoster infections histologically",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 26,
+      "topic": "Dermatophyte infections: PAS stain interpretation",
+      "item_locations": ["AP 13-10-b-i-1"],
+      "education_objective": "Identify dermatophyte infections using PAS staining and morphologic features",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 27,
+      "topic": "Epidermal vs. trichilemmal cysts",
+      "item_locations": ["AP 13-7-a", "AP 13-7-b"],
+      "education_objective": "Distinguish epidermal cysts from trichilemmal cysts using wall characteristics",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 28,
+      "topic": "Hypertrophic scar vs. keloid",
+      "item_locations": ["AP 13-3-a-i"],
+      "education_objective": "Differentiate hypertrophic scars from keloids histologically and clinically",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 29,
+      "topic": "Solar elastosis recognition",
+      "item_locations": ["AP 13-3-b-i-1"],
+      "education_objective": "Recognize solar elastosis and understand its significance in skin pathology",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 30,
+      "topic": "Hidradenitis suppurativa features",
+      "item_locations": ["AP 13-6-a-v"],
+      "education_objective": "Recognize hidradenitis suppurativa histologic features and clinical correlation",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 31,
+      "topic": "Erythema nodosum panniculitis pattern",
+      "item_locations": ["AP 13-8-a-i"],
+      "education_objective": "Identify erythema nodosum as a septal panniculitis and understand its associations",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 32,
+      "topic": "Sweet syndrome vs. pyoderma gangrenosum",
+      "item_locations": ["AP 13-1-f-vi-1", "AP 13-1-f-vi-2"],
+      "education_objective": "Distinguish neutrophilic dermatoses and correlate with systemic associations",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 33,
+      "topic": "Systemic mycoses: blastomycosis vs. histoplasmosis",
+      "item_locations": ["AP 13-10-b-iii-1", "AP 13-10-b-iii-3"],
+      "education_objective": "Identify systemic fungal infections in skin and distinguish morphologic features",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 34,
+      "topic": "Blue nevus vs. melanoma",
+      "item_locations": ["AP 13-11-b-i-2-c"],
+      "education_objective": "Distinguish blue nevus from melanoma using architectural and cytologic criteria",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 35,
+      "topic": "Porokeratosis variants and features",
+      "item_locations": ["AP 13-2-a-i"],
+      "education_objective": "Recognize porokeratosis morphology and understand its spectrum of variants",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 13,
+      "advanced_resident_only": 19,
+      "combined_c_ar": 3
+    },
+    "by_difficulty": {
+      "easy": 4,
+      "medium": 23,
+      "hard": 8
+    },
+    "by_yield": {
+      "high": 31,
+      "medium": 4,
+      "low": 0
+    },
+    "by_category": {
+      "inflammatory_patterns": 15,
+      "tumors_melanocytic": 6,
+      "tumors_nonmelanocytic": 6,
+      "infections": 4,
+      "cysts_benign_lesions": 4
+    }
+  }
+}

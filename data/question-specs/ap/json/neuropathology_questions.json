@@ -1,0 +1,167 @@
+{
+  "section": "AP 17: Neuropathology Topics for Anatomic Pathology Residents",
+  "total_questions": 15,
+  "total_available_topics": 151,
+  "allocation_strategy": "Clinical judgment prioritizing major brain tumors, vascular disorders, and essential diagnostic recognition",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Basic neuroanatomy: cortex, white matter, deep nuclei",
+      "item_locations": ["AP 17-1-a-1", "AP 17-1-a-2"],
+      "education_objective": "Identify basic neuroanatomic structures and understand their pathologic significance",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "CNS cell types: neurons, astrocytes, oligodendroglia",
+      "item_locations": ["AP 17-1-b-1"],
+      "education_objective": "Distinguish major CNS cell types and recognize their morphologic features",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Reactive gliosis and astrocytic responses",
+      "item_locations": ["AP 17-1-g-1"],
+      "education_objective": "Recognize reactive astrocytic changes and distinguish from neoplastic proliferation",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Glioblastoma: morphology and WHO grading",
+      "item_locations": ["AP 17-11-a-5"],
+      "education_objective": "Recognize glioblastoma morphologic features and apply WHO classification criteria",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "IDH-mutant astrocytoma vs. glioblastoma",
+      "item_locations": ["AP 17-11-a-1", "AP 17-11-a-4"],
+      "education_objective": "Distinguish IDH-mutant astrocytomas from glioblastoma and understand molecular classification",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Meningioma: variants and grading",
+      "item_locations": ["AP 17-11-j-1", "AP 17-11-j-2"],
+      "education_objective": "Classify meningioma variants and apply WHO grading criteria",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Metastatic tumors to brain: patterns and primaries",
+      "item_locations": ["AP 17-11-q-3"],
+      "education_objective": "Recognize metastatic tumor patterns and identify likely primary sites",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Pilocytic astrocytoma vs. diffuse astrocytoma",
+      "item_locations": ["AP 17-11-b-1"],
+      "education_objective": "Distinguish pilocytic astrocytoma from diffuse astrocytic tumors in pediatric cases",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Schwannoma vs. neurofibroma differential",
+      "item_locations": ["AP 17-11-i-1", "AP 17-11-i-2-1"],
+      "education_objective": "Differentiate schwannoma from neurofibroma using morphologic criteria",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Cerebral infarction: acute vs. chronic changes",
+      "item_locations": ["AP 17-4-f-1"],
+      "education_objective": "Recognize temporal evolution of cerebral infarction and understand vascular territories",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Subarachnoid hemorrhage and berry aneurysms",
+      "item_locations": ["AP 17-4-g-2", "AP 17-4-i-1"],
+      "education_objective": "Recognize subarachnoid hemorrhage patterns and identify berry aneurysms",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Hypertensive brain hemorrhage locations",
+      "item_locations": ["AP 17-4-g-3"],
+      "education_objective": "Identify typical locations of hypertensive brain hemorrhage and understand mechanisms",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Herpes simplex encephalitis features",
+      "item_locations": ["AP 17-6-a-1"],
+      "education_objective": "Recognize HSV encephalitis morphology and understand temporal lobe predilection",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Bacterial meningitis vs. viral meningitis",
+      "item_locations": ["AP 17-6-d-1"],
+      "education_objective": "Distinguish bacterial from viral meningitis using morphologic criteria",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Traumatic brain injury: coup vs. contrecoup",
+      "item_locations": ["AP 17-5-b-1", "AP 17-5-b-2"],
+      "education_objective": "Recognize traumatic brain injury patterns and understand biomechanical principles",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 2,
+      "advanced_resident_only": 13,
+      "combined_c_ar": 0
+    },
+    "by_difficulty": {
+      "easy": 0,
+      "medium": 14,
+      "hard": 1
+    },
+    "by_yield": {
+      "high": 15,
+      "medium": 0,
+      "low": 0
+    },
+    "by_category": {
+      "basic_anatomy_histology": 3,
+      "brain_tumors": 6,
+      "vascular_disorders": 3,
+      "infections": 2,
+      "trauma": 1
+    }
+  }
+}

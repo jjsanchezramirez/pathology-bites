@@ -1,0 +1,672 @@
+{
+  "section": "AP 12: Cytopathology Topics for Anatomic Pathology Residents",
+  "total_questions": 70,
+  "total_available_topics": 290,
+  "allocation_strategy": "Clinical judgment prioritizing high-volume, high-impact cytopathology diagnoses",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Cervical cytology: LSIL vs. HSIL differential",
+      "item_locations": ["AP 12-1-f-i", "AP 12-1-f-ii"],
+      "education_objective": "Distinguish low-grade from high-grade squamous intraepithelial lesions",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "ASC-US vs. ASC-H: atypical squamous cell categories",
+      "item_locations": ["AP 12-1-e-i", "AP 12-1-e-ii"],
+      "education_objective": "Differentiate atypical squamous cell categories and management implications",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Cervical squamous carcinoma: keratinizing vs. non-keratinizing",
+      "item_locations": ["AP 12-1-g"],
+      "education_objective": "Recognize invasive squamous carcinoma patterns in cervical cytology",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Cervical infections: Trichomonas, Candida, bacterial vaginosis",
+      "item_locations": ["AP 12-1-d-i", "AP 12-1-d-ii", "AP 12-1-d-iii"],
+      "education_objective": "Identify common cervical infections in cytologic preparations",
+      "designation": "C/AR",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Cervical specimen adequacy: satisfactory vs. unsatisfactory",
+      "item_locations": ["AP 12-1-b-i"],
+      "education_objective": "Apply adequacy criteria for cervical cytology specimens",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Reactive/reparative changes vs. LSIL",
+      "item_locations": ["AP 12-1-e"],
+      "education_objective": "Distinguish reactive changes from low-grade dysplasia",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "HPV testing correlation with cytologic findings",
+      "item_locations": ["AP 12-1-a-ii"],
+      "education_objective": "Correlate HPV results with cytologic interpretations",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Thyroid FNA: Bethesda system categories",
+      "item_locations": ["AP 19-h"],
+      "education_objective": "Apply Bethesda system classification for thyroid FNA",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Papillary thyroid carcinoma: nuclear features & variants",
+      "item_locations": ["AP 19-e-v"],
+      "education_objective": "Recognize PTC nuclear features and common variants",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Follicular neoplasm vs. nodular goiter",
+      "item_locations": ["AP 19-e-ii", "AP 19-d-i"],
+      "education_objective": "Distinguish follicular neoplasm from benign follicular nodular disease",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Medullary carcinoma: cytologic features & calcitonin",
+      "item_locations": ["AP 19-e-iv"],
+      "education_objective": "Recognize medullary carcinoma and correlate with clinical markers",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Thyroid adequacy assessment",
+      "item_locations": ["AP 19-a"],
+      "education_objective": "Apply adequacy criteria for thyroid FNA specimens",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Hashimoto thyroiditis vs. lymphoma",
+      "item_locations": ["AP 19-d-ii", "AP 19-f"],
+      "education_objective": "Distinguish chronic lymphocytic thyroiditis from thyroid lymphoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Lung FNA: adenocarcinoma vs. squamous carcinoma",
+      "item_locations": ["AP 12-g-i-1", "AP 12-g-i-2"],
+      "education_objective": "Differentiate primary lung carcinoma subtypes in FNA",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Small cell carcinoma: cytologic features & differential",
+      "item_locations": ["AP 12-g-i-3"],
+      "education_objective": "Recognize small cell carcinoma and distinguish from mimics",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Lung FNA: metastatic carcinoma vs. primary",
+      "item_locations": ["AP 12-g-iii-1"],
+      "education_objective": "Distinguish metastatic from primary lung carcinoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Pulmonary lymphoma vs. carcinoma in FNA",
+      "item_locations": ["AP 12-g-ii-1"],
+      "education_objective": "Differentiate lymphoma from carcinoma in lung FNA",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 18,
+      "topic": "Lung infections: fungal organisms in FNA",
+      "item_locations": ["AP 12-d-ii"],
+      "education_objective": "Identify common fungal organisms in lung FNA",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 19,
+      "topic": "Pleural effusion: mesothelioma vs. adenocarcinoma",
+      "item_locations": ["AP 4-e-i", "AP 4-e-ii"],
+      "education_objective": "Distinguish mesothelioma from metastatic adenocarcinoma in effusions",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Effusion cytology: reactive mesothelial cells",
+      "item_locations": ["AP 4-c-i"],
+      "education_objective": "Recognize reactive mesothelial cells and distinguish from malignancy",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 21,
+      "topic": "Peritoneal effusion: ovarian vs. GI primary",
+      "item_locations": ["AP 5-e-ii-4", "AP 5-e-ii-3"],
+      "education_objective": "Distinguish gynecologic from GI primaries in peritoneal effusions",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Lymph node FNA: reactive vs. lymphoma",
+      "item_locations": ["AP 20-c"],
+      "education_objective": "Distinguish reactive lymphoid hyperplasia from lymphoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 23,
+      "topic": "Large cell lymphoma vs. carcinoma in FNA",
+      "item_locations": ["AP 20-e-iii"],
+      "education_objective": "Differentiate large cell lymphoma from poorly differentiated carcinoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 24,
+      "topic": "Hodgkin lymphoma: Reed-Sternberg cells in FNA",
+      "item_locations": ["AP 20-d"],
+      "education_objective": "Recognize Hodgkin lymphoma in FNA preparations",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 25,
+      "topic": "Metastatic carcinoma: identifying primary site",
+      "item_locations": ["AP 20-f-i"],
+      "education_objective": "Use morphologic clues to suggest primary site in metastatic carcinoma",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 26,
+      "topic": "Granulomatous inflammation in lymph nodes",
+      "item_locations": ["AP 20-c-iii"],
+      "education_objective": "Recognize granulomatous inflammation and differential diagnosis",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 27,
+      "topic": "Salivary gland: pleomorphic adenoma features",
+      "item_locations": ["AP 18-f-iv"],
+      "education_objective": "Recognize pleomorphic adenoma cytologic features",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 28,
+      "topic": "Warthin tumor vs. other cystic lesions",
+      "item_locations": ["AP 18-f-vi"],
+      "education_objective": "Distinguish Warthin tumor from other cystic salivary lesions",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 29,
+      "topic": "Mucoepidermoid vs. adenoid cystic carcinoma",
+      "item_locations": ["AP 18-f-ii", "AP 18-f-i"],
+      "education_objective": "Differentiate salivary gland malignancies in FNA",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 30,
+      "topic": "Acinic cell carcinoma vs. normal acinar cells",
+      "item_locations": ["AP 18-a"],
+      "education_objective": "Distinguish acinic cell carcinoma from normal salivary tissue",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 31,
+      "topic": "Pancreatic ductal adenocarcinoma vs. chronic pancreatitis",
+      "item_locations": ["AP 17-f-i"],
+      "education_objective": "Distinguish pancreatic adenocarcinoma from reactive changes",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 32,
+      "topic": "Pancreatic neuroendocrine tumor features",
+      "item_locations": ["AP 17-e-i"],
+      "education_objective": "Recognize pancreatic neuroendocrine tumor cytologic features",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 33,
+      "topic": "Pancreatic cyst fluid analysis: IPMN vs. MCN",
+      "item_locations": ["AP 17-e-iii-2", "AP 17-e-iii-1"],
+      "education_objective": "Correlate cyst fluid analysis with cytologic findings",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 34,
+      "topic": "Solid pseudopapillary neoplasm features",
+      "item_locations": ["AP 17-e-ii"],
+      "education_objective": "Recognize solid pseudopapillary neoplasm morphology",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 35,
+      "topic": "Liver FNA: hepatocellular carcinoma vs. metastases",
+      "item_locations": ["AP 15-d-iii-1", "AP 15-f-i"],
+      "education_objective": "Distinguish primary hepatocellular carcinoma from metastatic disease",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 36,
+      "topic": "Cholangiocarcinoma vs. adenocarcinoma metastases",
+      "item_locations": ["AP 15-d-iii-2"],
+      "education_objective": "Differentiate cholangiocarcinoma from metastatic adenocarcinoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 37,
+      "topic": "Urinary cytology: high-grade urothelial carcinoma",
+      "item_locations": ["AP 10-e-iv"],
+      "education_objective": "Recognize high-grade urothelial carcinoma in urine cytology",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 38,
+      "topic": "Paris system: NHGUC vs. AUC vs. SHGUC",
+      "item_locations": ["AP 10-e-i", "AP 10-e-ii", "AP 10-e-iii"],
+      "education_objective": "Apply Paris system categories for urinary cytology",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 39,
+      "topic": "Urothelial vs. squamous cell carcinoma",
+      "item_locations": ["AP 10-e-v"],
+      "education_objective": "Distinguish urothelial from squamous cell carcinoma in urine",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 40,
+      "topic": "Polyoma virus changes vs. urothelial carcinoma",
+      "item_locations": ["AP 10-d-iii"],
+      "education_objective": "Distinguish viral cytopathic effects from malignancy",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 41,
+      "topic": "Respiratory cytology: squamous metaplasia vs. carcinoma",
+      "item_locations": ["AP 11-d-i", "AP 11-f-ii"],
+      "education_objective": "Distinguish squamous metaplasia from invasive carcinoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 42,
+      "topic": "Sputum adequacy and contaminants",
+      "item_locations": ["AP 11-a-iii"],
+      "education_objective": "Assess sputum specimen adequacy and recognize contaminants",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 43,
+      "topic": "Pneumocystis and other fungal organisms",
+      "item_locations": ["AP 11-c-ii"],
+      "education_objective": "Identify Pneumocystis and common fungal organisms in respiratory specimens",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 44,
+      "topic": "Breast FNA: ductal carcinoma vs. fibroadenoma",
+      "item_locations": ["AP 22-e-i", "AP 22-d-i"],
+      "education_objective": "Distinguish invasive ductal carcinoma from fibroadenoma",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 45,
+      "topic": "CSF cytology: malignant cells vs. reactive changes",
+      "item_locations": ["AP 8-d"],
+      "education_objective": "Distinguish malignant cells from reactive changes in CSF",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 46,
+      "topic": "CSF lymphoma vs. reactive lymphocytes",
+      "item_locations": ["AP 8-c-ii"],
+      "education_objective": "Differentiate CNS lymphoma from reactive lymphoid cells",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 47,
+      "topic": "Soft tissue FNA: lipoma vs. liposarcoma",
+      "item_locations": ["AP 26-e-ii", "AP 26-f-iii"],
+      "education_objective": "Distinguish benign from malignant adipocytic lesions",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 48,
+      "topic": "Melanoma vs. other pigmented lesions",
+      "item_locations": ["AP 26-f-i"],
+      "education_objective": "Recognize melanoma and distinguish from other pigmented lesions",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 49,
+      "topic": "Schwannoma vs. other spindle cell lesions",
+      "item_locations": ["AP 26-e-iv"],
+      "education_objective": "Identify schwannoma and distinguish from other spindle cell tumors",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 50,
+      "topic": "Epidermal inclusion cyst features",
+      "item_locations": ["AP 26-d-iv"],
+      "education_objective": "Recognize epidermal inclusion cyst cytologic features",
+      "designation": "AR",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 51,
+      "topic": "Renal cell carcinoma: clear cell vs. papillary",
+      "item_locations": ["AP 24-f-i"],
+      "education_objective": "Distinguish renal cell carcinoma subtypes in FNA",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 52,
+      "topic": "Head and neck: squamous carcinoma HPV status",
+      "item_locations": ["AP 21-e-i-1", "AP 21-e-i-2"],
+      "education_objective": "Correlate morphology with HPV status in head and neck cancers",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 53,
+      "topic": "Branchial cleft cyst vs. metastatic carcinoma",
+      "item_locations": ["AP 21-d-i"],
+      "education_objective": "Distinguish developmental cysts from cystic metastases",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 54,
+      "topic": "Mediastinal germ cell tumors: seminoma features",
+      "item_locations": ["AP 23-h-i"],
+      "education_objective": "Recognize seminoma cytologic features in mediastinal FNA",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 55,
+      "topic": "Biliary cytology: adenocarcinoma vs. reactive",
+      "item_locations": ["AP 16-e-i"],
+      "education_objective": "Distinguish biliary adenocarcinoma from reactive epithelium",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 56,
+      "topic": "Gastric cytology: adenocarcinoma subtypes",
+      "item_locations": ["AP 14-c-i-1", "AP 14-c-i-2"],
+      "education_objective": "Recognize gastric adenocarcinoma morphologic variants",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 57,
+      "topic": "GIST vs. smooth muscle tumors",
+      "item_locations": ["AP 14-c-ii"],
+      "education_objective": "Distinguish GIST from smooth muscle tumors in FNA",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 58,
+      "topic": "Esophageal squamous vs. adenocarcinoma",
+      "item_locations": ["AP 13-c-i", "AP 13-c-ii"],
+      "education_objective": "Differentiate esophageal carcinoma subtypes",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 59,
+      "topic": "Synovial fluid: gout crystals vs. CPPD",
+      "item_locations": ["AP 7-c-ii"],
+      "education_objective": "Identify and distinguish crystal types in synovial fluid",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 60,
+      "topic": "Pelvic washings: endometrial vs. ovarian carcinoma",
+      "item_locations": ["AP 6-e-i-1", "AP 6-e-i-2"],
+      "education_objective": "Distinguish primary sites in positive pelvic washings",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 61,
+      "topic": "Bone FNA: chordoma features",
+      "item_locations": ["AP 27-d-i"],
+      "education_objective": "Recognize chordoma cytologic features",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 62,
+      "topic": "Plasma cell neoplasm vs. reactive plasmacytosis",
+      "item_locations": ["AP 27-e-ii"],
+      "education_objective": "Distinguish neoplastic from reactive plasma cells",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 63,
+      "topic": "Adrenal myelolipoma features",
+      "item_locations": ["AP 25-b"],
+      "education_objective": "Recognize myelolipoma cytologic appearance",
+      "designation": "AR",
+      "difficulty": "easy",
+      "yield": "medium"
+    },
+    {
+      "question_id": 64,
+      "topic": "Immediate evaluation techniques and adequacy",
+      "item_locations": ["AP 28-b-ii-4"],
+      "education_objective": "Apply rapid on-site evaluation techniques for FNA adequacy",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 65,
+      "topic": "Cytologic-histologic correlation and discrepancies",
+      "item_locations": ["AP 28-d-i"],
+      "education_objective": "Understand cytologic-histologic correlation and quality assurance",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 66,
+      "topic": "FNA complications and safety measures",
+      "item_locations": ["AP 28-a-i"],
+      "education_objective": "Understand FNA safety considerations and complication management",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 67,
+      "topic": "Ancillary testing: IHC applications in cytology",
+      "item_locations": ["AP 4-a-i", "AP 12-b-iv"],
+      "education_objective": "Apply immunohistochemistry appropriately in cytologic specimens",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 68,
+      "topic": "Molecular testing in cytology specimens",
+      "item_locations": ["AP 12-b-v", "AP 17-b-iv"],
+      "education_objective": "Understand molecular testing applications and limitations in cytology",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 69,
+      "topic": "Flow cytometry applications in FNA",
+      "item_locations": ["AP 20-b-ii"],
+      "education_objective": "Apply flow cytometry appropriately for lymphoid lesions in FNA",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 70,
+      "topic": "Specimen processing: fixation and preparation",
+      "item_locations": ["AP 28-b-ii-1", "AP 28-b-ii-2"],
+      "education_objective": "Understand optimal specimen processing techniques for cytology",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 2,
+      "advanced_resident_only": 65,
+      "combined_c_ar": 3
+    },
+    "by_difficulty": {
+      "easy": 3,
+      "medium": 45,
+      "hard": 22
+    },
+    "by_yield": {
+      "high": 54,
+      "medium": 16,
+      "low": 0
+    },
+    "by_specimen_type": {
+      "cervical_cytology": 7,
+      "thyroid_fna": 6,
+      "lung_fna": 5,
+      "lymph_node_fna": 6,
+      "effusions": 3,
+      "salivary_gland": 4,
+      "pancreatic_fna": 4,
+      "liver_fna": 2,
+      "urinary_cytology": 4,
+      "respiratory_cytology": 3,
+      "breast_fna": 1,
+      "csf": 2,
+      "soft_tissue_fna": 4,
+      "other_sites": 10,
+      "laboratory_management": 9
+    }
+  }
+}

@@ -1,0 +1,250 @@
+{
+  "section": "AP 10: The Respiratory Tract, Pleura, and Mediastinum",
+  "total_questions": 25,
+  "total_available_topics": 63,
+  "allocation_strategy": "Clinical judgment and educational efficiency prioritizing high-yield lung pathology",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Squamous cell carcinoma: keratinization patterns & staging",
+      "item_locations": ["AP 10-5-b-i"],
+      "education_objective": "Recognize squamous cell carcinoma morphologic variants and apply staging criteria",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Adenocarcinoma: growth patterns & molecular correlation",
+      "item_locations": ["AP 10-5-b-ii"],
+      "education_objective": "Identify adenocarcinoma patterns and correlate with molecular markers",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Small cell vs. large cell neuroendocrine differential",
+      "item_locations": ["AP 10-5-b-iii", "AP 10-5-b-xi"],
+      "education_objective": "Distinguish small cell from large cell neuroendocrine carcinoma using morphology and markers",
+      "designation": "C/AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Carcinoid vs. atypical carcinoid differential",
+      "item_locations": ["AP 10-5-b-iv", "AP 10-5-b-v"],
+      "education_objective": "Differentiate typical from atypical carcinoid using mitotic count and necrosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Metastatic tumors to lung: common patterns & primaries",
+      "item_locations": ["AP 10-5-b-vi"],
+      "education_objective": "Identify metastatic patterns and determine likely primary sites using morphology",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Sarcomatoid carcinoma vs. true pulmonary sarcoma",
+      "item_locations": ["AP 10-5-b-viii"],
+      "education_objective": "Distinguish sarcomatoid carcinoma from primary sarcoma using immunohistochemistry",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Diffuse alveolar damage: acute vs. organizing phases",
+      "item_locations": ["AP 10-4-b"],
+      "education_objective": "Recognize DAD temporal phases and understand clinical correlation",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Sarcoidosis: morphology & differential diagnosis",
+      "item_locations": ["AP 10-4-d"],
+      "education_objective": "Identify sarcoid granulomas and distinguish from other granulomatous diseases",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "BOOP vs. other organizing pneumonia patterns",
+      "item_locations": ["AP 10-4-c"],
+      "education_objective": "Recognize BOOP morphology and distinguish from other organizing patterns",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "UIP vs. NSIP: pattern recognition & prognosis",
+      "item_locations": ["AP 10-4-h-i", "AP 10-4-h-iii"],
+      "education_objective": "Differentiate UIP from NSIP patterns and correlate with prognosis",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Hypersensitivity pneumonitis: acute vs. chronic",
+      "item_locations": ["AP 10-4-f"],
+      "education_objective": "Recognize HP patterns and correlate with exposure history",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Mesothelioma: epithelioid vs. sarcomatoid patterns",
+      "item_locations": ["AP 10-4-o", "AP 11-5-b-ii"],
+      "education_objective": "Differentiate mesothelioma subtypes and apply diagnostic criteria",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Mesothelioma vs. metastatic adenocarcinoma",
+      "item_locations": ["AP 10-4-o", "AP 11-5-b-i"],
+      "education_objective": "Distinguish pleural mesothelioma from metastatic adenocarcinoma using immunomarkers",
+      "designation": "AR/C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Sclerosing pneumocytoma features & differential",
+      "item_locations": ["AP 10-5-a-iii"],
+      "education_objective": "Recognize sclerosing pneumocytoma morphology and confirm diagnosis",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Pulmonary hypertension: vascular remodeling patterns",
+      "item_locations": ["AP 10-4-n"],
+      "education_objective": "Identify pulmonary hypertension morphologic changes and grade severity",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Hamartoma vs. other benign lung tumors",
+      "item_locations": ["AP 10-3-a"],
+      "education_objective": "Diagnose pulmonary hamartoma and distinguish from other benign lesions",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Pulmonary lymphomas: MALToma vs. other types",
+      "item_locations": ["AP 10-5-b-xii"],
+      "education_objective": "Classify pulmonary lymphomas and recognize MALToma patterns",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 18,
+      "topic": "Eosinophilic pneumonia: patterns & differential",
+      "item_locations": ["AP 10-4-g"],
+      "education_objective": "Recognize eosinophilic pneumonia and distinguish causes",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 19,
+      "topic": "Respiratory bronchiolitis vs. DIP",
+      "item_locations": ["AP 10-4-j-i", "AP 10-4-h-ii"],
+      "education_objective": "Differentiate respiratory bronchiolitis from desquamative interstitial pneumonia",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 20,
+      "topic": "Solitary fibrous tumor of pleura",
+      "item_locations": ["AP 11-5-a-i"],
+      "education_objective": "Recognize solitary fibrous tumor morphology and immunophenotype",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 21,
+      "topic": "Thymoma vs. thymic carcinoma differential",
+      "item_locations": ["AP 12-6-b-i", "AP 12-7-a"],
+      "education_objective": "Distinguish thymoma from thymic carcinoma and apply WHO classification",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Mediastinal germ cell tumors: classification",
+      "item_locations": ["AP 12-7-c"],
+      "education_objective": "Classify mediastinal germ cell tumors and correlate with serum markers",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 23,
+      "topic": "Langerhans cell histiocytosis of lung",
+      "item_locations": ["AP 10-4-k"],
+      "education_objective": "Recognize pulmonary LCH and confirm with immunohistochemistry",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 24,
+      "topic": "Pulmonary alveolar proteinosis patterns",
+      "item_locations": ["AP 10-4-e"],
+      "education_objective": "Identify PAP morphology and understand pathogenesis variants",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 25,
+      "topic": "Neurogenic tumors of mediastinum",
+      "item_locations": ["AP 12-6-b-ii"],
+      "education_objective": "Classify mediastinal neurogenic tumors and recognize schwannoma features",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 7,
+      "advanced_resident_only": 14,
+      "combined_c_ar": 4
+    },
+    "by_difficulty": {
+      "easy": 1,
+      "medium": 17,
+      "hard": 7
+    },
+    "by_yield": {
+      "high": 17,
+      "medium": 8,
+      "low": 0
+    }
+  }
+}

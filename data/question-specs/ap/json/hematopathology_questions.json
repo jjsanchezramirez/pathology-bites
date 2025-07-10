@@ -1,0 +1,399 @@
+{
+  "section": "AP 15: Hematopathology Topics for Anatomic Pathology Residents",
+  "total_questions": 40,
+  "total_available_topics": 197,
+  "allocation_strategy": "Clinical judgment prioritizing major hematologic malignancies, morphologic recognition, and essential diagnostic skills",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Diffuse large B-cell lymphoma: morphologic variants",
+      "item_locations": ["AP 15-14-c-v-1"],
+      "education_objective": "Recognize DLBCL morphologic patterns and apply diagnostic criteria",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Follicular lymphoma: grading and staging",
+      "item_locations": ["AP 15-14-c-iii"],
+      "education_objective": "Grade follicular lymphoma and understand prognostic implications",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Mantle cell lymphoma: morphology and immunophenotype",
+      "item_locations": ["AP 15-14-c-iv"],
+      "education_objective": "Recognize mantle cell lymphoma features and confirm with cyclin D1",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Burkitt lymphoma: morphology and cytogenetics",
+      "item_locations": ["AP 15-14-c-vi"],
+      "education_objective": "Identify Burkitt lymphoma morphology and correlate with MYC translocations",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "CLL/SLL vs. other small B-cell lymphomas",
+      "item_locations": ["AP 15-14-c-i"],
+      "education_objective": "Distinguish CLL/SLL from other small lymphocytic proliferations",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "MALT lymphoma: morphology and H. pylori association",
+      "item_locations": ["AP 15-14-c-ii"],
+      "education_objective": "Recognize MALT lymphoma features and understand infectious associations",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Classical Hodgkin lymphoma: Reed-Sternberg cell variants",
+      "item_locations": ["AP 15-14-e-ii"],
+      "education_objective": "Identify Reed-Sternberg cells and classify Hodgkin lymphoma subtypes",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Nodular lymphocyte predominant Hodgkin lymphoma",
+      "item_locations": ["AP 15-14-e-i"],
+      "education_objective": "Distinguish NLPHL from classical Hodgkin lymphoma",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "T-lymphoblastic leukemia/lymphoma features",
+      "item_locations": ["AP 15-14-b"],
+      "education_objective": "Recognize T-ALL/LBL morphology and immunophenotype",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Anaplastic large cell lymphoma: ALK+ vs. ALK-",
+      "item_locations": ["AP 15-14-d-iii"],
+      "education_objective": "Classify ALCL subtypes and correlate ALK status with prognosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Extranodal NK/T-cell lymphoma features",
+      "item_locations": ["AP 15-14-d-ii"],
+      "education_objective": "Recognize NK/T-cell lymphoma morphology and EBV association",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "CML: chronic vs. accelerated vs. blast phase",
+      "item_locations": ["AP 15-12-a-i"],
+      "education_objective": "Recognize CML phases and apply diagnostic criteria for progression",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Acute promyelocytic leukemia: morphology and PML-RARA",
+      "item_locations": ["AP 15-12-e-i-3"],
+      "education_objective": "Recognize APL morphologic features and understand molecular pathogenesis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "AML with recurrent genetic abnormalities",
+      "item_locations": ["AP 15-12-e-i-1", "AP 15-12-e-i-2"],
+      "education_objective": "Correlate AML morphology with specific cytogenetic abnormalities",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "CMML: morphologic and clinical features",
+      "item_locations": ["AP 15-12-c-i"],
+      "education_objective": "Recognize CMML diagnostic criteria and distinguish from other MDS/MPN",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Polycythemia vera vs. secondary erythrocytosis",
+      "item_locations": ["AP 15-12-a-ii"],
+      "education_objective": "Distinguish primary from secondary erythrocytosis using clinical and laboratory data",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Primary myelofibrosis: morphologic stages",
+      "item_locations": ["AP 15-12-a-iii"],
+      "education_objective": "Recognize myelofibrosis morphologic progression and grading systems",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 18,
+      "topic": "Plasma cell myeloma vs. MGUS",
+      "item_locations": ["AP 15-15-a"],
+      "education_objective": "Distinguish plasma cell myeloma from MGUS using morphologic and clinical criteria",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 19,
+      "topic": "Amyloidosis: typing and organ involvement",
+      "item_locations": ["AP 15-15-b"],
+      "education_objective": "Recognize amyloid deposits and understand classification systems",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Flow cytometry: B-cell vs. T-cell markers",
+      "item_locations": ["AP 15-1-f-iii"],
+      "education_objective": "Interpret basic flow cytometry panels for lymphoid lineage determination",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 21,
+      "topic": "Flow cytometry: myeloid markers and blast assessment",
+      "item_locations": ["AP 15-1-f-iv"],
+      "education_objective": "Apply flow cytometry for myeloid blast identification and immunophenotyping",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Iron deficiency anemia: morphology and iron studies",
+      "item_locations": ["AP 15-3-a-i"],
+      "education_objective": "Recognize iron deficiency morphology and interpret iron studies",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 23,
+      "topic": "Sickle cell disease: morphology and complications",
+      "item_locations": ["AP 15-3-a-x-1"],
+      "education_objective": "Identify sickle cell morphology and understand clinical complications",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 24,
+      "topic": "Thalassemia: alpha vs. beta types",
+      "item_locations": ["AP 15-3-a-xi"],
+      "education_objective": "Distinguish alpha from beta thalassemia using morphologic and laboratory findings",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 25,
+      "topic": "Megaloblastic anemia: B12 vs. folate deficiency",
+      "item_locations": ["AP 15-3-a-vi"],
+      "education_objective": "Recognize megaloblastic morphology and distinguish B12 from folate deficiency",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 26,
+      "topic": "Aplastic anemia: diagnosis and differential",
+      "item_locations": ["AP 15-3-a-vii"],
+      "education_objective": "Recognize aplastic anemia and distinguish from other causes of pancytopenia",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 27,
+      "topic": "Immune hemolytic anemia: warm vs. cold types",
+      "item_locations": ["AP 15-3-a-v-1"],
+      "education_objective": "Classify immune hemolytic anemias and correlate with laboratory findings",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 28,
+      "topic": "Microangiopathic hemolytic anemia recognition",
+      "item_locations": ["AP 15-3-a-v-3"],
+      "education_objective": "Identify schistocytes and understand MAHA differential diagnosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 29,
+      "topic": "TTP vs. HUS: clinical and laboratory distinction",
+      "item_locations": ["AP 15-11-c-ii"],
+      "education_objective": "Distinguish TTP from HUS using clinical and laboratory criteria",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 30,
+      "topic": "DIC: acute vs. chronic patterns",
+      "item_locations": ["AP 15-11-c-iii"],
+      "education_objective": "Recognize DIC laboratory patterns and understand underlying mechanisms",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 31,
+      "topic": "von Willebrand disease: types and testing",
+      "item_locations": ["AP 15-11-b-iv"],
+      "education_objective": "Classify von Willebrand disease types and interpret specialized testing",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 32,
+      "topic": "Immune thrombocytopenic purpura diagnosis",
+      "item_locations": ["AP 15-11-b-iii-1"],
+      "education_objective": "Recognize ITP and distinguish from other causes of thrombocytopenia",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 33,
+      "topic": "Infectious mononucleosis: morphologic patterns",
+      "item_locations": ["AP 15-6-b-i"],
+      "education_objective": "Recognize atypical lymphocytes and correlate with infectious mononucleosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 34,
+      "topic": "Malaria: parasite identification",
+      "item_locations": ["AP 15-6-a-i"],
+      "education_objective": "Identify malaria parasites and distinguish species",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 35,
+      "topic": "Hemophagocytic lymphohistiocytosis features",
+      "item_locations": ["AP 15-4-d-i"],
+      "education_objective": "Recognize HLH morphologic features and understand diagnostic criteria",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 36,
+      "topic": "Castleman disease: morphologic variants",
+      "item_locations": ["AP 15-8-a-viii"],
+      "education_objective": "Recognize Castleman disease morphology and classify variants",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 37,
+      "topic": "Metastatic carcinoma to bone marrow",
+      "item_locations": ["AP 15-17-a"],
+      "education_objective": "Identify metastatic carcinoma in bone marrow and suggest primary sites",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 38,
+      "topic": "Metastatic carcinoma to lymph nodes",
+      "item_locations": ["AP 15-17-b"],
+      "education_objective": "Recognize metastatic carcinoma patterns and determine primary sites",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 39,
+      "topic": "Peripheral blood smear interpretation principles",
+      "item_locations": ["AP 15-1-c-ii"],
+      "education_objective": "Apply systematic approach to peripheral blood smear evaluation",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 40,
+      "topic": "Bone marrow evaluation: cellularity and morphology",
+      "item_locations": ["AP 15-1-c-iv"],
+      "education_objective": "Assess bone marrow cellularity and recognize normal vs. abnormal morphology",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 35,
+      "advanced_resident_only": 5,
+      "combined_c_ar": 0
+    },
+    "by_difficulty": {
+      "easy": 1,
+      "medium": 37,
+      "hard": 2
+    },
+    "by_yield": {
+      "high": 37,
+      "medium": 3,
+      "low": 0
+    },
+    "by_category": {
+      "b_cell_lymphomas": 6,
+      "t_cell_lymphomas": 3,
+      "hodgkin_lymphoma": 2,
+      "myeloid_neoplasms": 5,
+      "plasma_cell_disorders": 2,
+      "flow_cytometry": 2,
+      "anemias": 6,
+      "hemostasis_disorders": 4,
+      "infections": 2,
+      "benign_disorders": 3,
+      "metastases": 2,
+      "laboratory_methods": 3
+    }
+  }
+}

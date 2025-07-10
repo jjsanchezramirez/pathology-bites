@@ -1,0 +1,264 @@
+{
+  "section": "AP 14: Forensic Pathology Topics for Anatomic Pathology Residents",
+  "total_questions": 25,
+  "total_available_topics": 160,
+  "allocation_strategy": "Clinical judgment prioritizing natural death causes, basic trauma, and death certification principles",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Death certification: proximate cause vs. contributory conditions",
+      "item_locations": ["AP 14-44-b", "AP 14-44-c"],
+      "education_objective": "Distinguish proximate cause of death from contributory conditions and complete accurate death certificates",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Manner of death determination principles",
+      "item_locations": ["AP 14-44-e"],
+      "education_objective": "Apply criteria for determining manner of death classification in forensic cases",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Myocardial infarction: acute vs. chronic changes",
+      "item_locations": ["AP 14-3-c"],
+      "education_objective": "Recognize acute and chronic myocardial infarction morphology in autopsy cases",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Atherosclerosis and plaque complications",
+      "item_locations": ["AP 14-3-b"],
+      "education_objective": "Identify atherosclerotic plaque morphology and complications leading to sudden death",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Hypertrophic vs. dilated cardiomyopathy",
+      "item_locations": ["AP 14-3-l", "AP 14-3-k"],
+      "education_objective": "Distinguish cardiomyopathy types and correlate with sudden cardiac death mechanisms",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Aortic dissection: type A vs. type B",
+      "item_locations": ["AP 14-3-f"],
+      "education_objective": "Classify aortic dissection types and understand lethal complications",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Valvular diseases causing sudden death",
+      "item_locations": ["AP 14-3-e"],
+      "education_objective": "Identify valvular pathology that can result in sudden cardiac death",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Cerebrovascular disease: hemorrhage vs. infarction",
+      "item_locations": ["AP 14-5-a"],
+      "education_objective": "Distinguish cerebral hemorrhage from infarction and determine underlying causes",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Intracranial aneurysm rupture",
+      "item_locations": ["AP 14-5-b"],
+      "education_objective": "Recognize ruptured intracranial aneurysms and understand fatal complications",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Hypertensive intracerebral hemorrhage patterns",
+      "item_locations": ["AP 14-5-c"],
+      "education_objective": "Identify typical locations and patterns of hypertensive brain hemorrhage",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Pulmonary thromboembolism: acute vs. chronic",
+      "item_locations": ["AP 14-6-b"],
+      "education_objective": "Distinguish acute from chronic pulmonary embolism and assess severity",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Diffuse alveolar damage patterns",
+      "item_locations": ["AP 14-6-c"],
+      "education_objective": "Recognize diffuse alveolar damage and understand various etiologies",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Pneumonia: bacterial vs. viral patterns",
+      "item_locations": ["AP 14-6-a"],
+      "education_objective": "Distinguish bacterial from viral pneumonia patterns in fatal cases",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Alcoholic liver disease progression",
+      "item_locations": ["AP 14-4-a", "AP 14-4-b"],
+      "education_objective": "Recognize stages of alcoholic liver disease from steatosis to cirrhosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Esophageal varices and portal hypertension",
+      "item_locations": ["AP 14-4-c"],
+      "education_objective": "Identify esophageal varices and understand lethal hemorrhage mechanisms",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Postmortem changes: rigor vs. livor mortis",
+      "item_locations": ["AP 14-35-a", "AP 14-35-b"],
+      "education_objective": "Distinguish postmortem changes and understand timing implications",
+      "designation": "C",
+      "difficulty": "easy",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Blunt trauma: head injury patterns",
+      "item_locations": ["AP 14-19-b", "AP 14-19-c"],
+      "education_objective": "Recognize epidural and subdural hematoma patterns and complications",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 18,
+      "topic": "Gunshot wounds: entrance vs. exit characteristics",
+      "item_locations": ["AP 14-21-a", "AP 14-21-b"],
+      "education_objective": "Distinguish entrance from exit gunshot wounds and assess range of fire",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 19,
+      "topic": "Carbon monoxide poisoning",
+      "item_locations": ["AP 14-28-a"],
+      "education_objective": "Recognize carbon monoxide poisoning and understand lethal mechanisms",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Common illicit drug toxicity",
+      "item_locations": ["AP 14-30-c"],
+      "education_objective": "Identify morphologic changes associated with common drug overdoses",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 21,
+      "topic": "Ethanol-related deaths",
+      "item_locations": ["AP 14-30-b"],
+      "education_objective": "Understand ethanol toxicity and correlate blood levels with clinical effects",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Pregnancy-related deaths: embolism",
+      "item_locations": ["AP 14-38-a", "AP 14-38-b"],
+      "education_objective": "Distinguish pulmonary thromboembolism from amniotic fluid embolism",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 23,
+      "topic": "Natural deaths in infants: SIDS vs. other causes",
+      "item_locations": ["AP 14-2-a"],
+      "education_objective": "Understand sudden infant death syndrome and differential diagnosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 24,
+      "topic": "Infectious disease deaths: sepsis recognition",
+      "item_locations": ["AP 14-14-b"],
+      "education_objective": "Recognize morphologic patterns of fatal bacterial infections",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 25,
+      "topic": "Resuscitation artifacts vs. trauma",
+      "item_locations": ["AP 14-40-a"],
+      "education_objective": "Distinguish resuscitation-related injuries from ante-mortem trauma",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 14,
+      "advanced_resident_only": 11,
+      "combined_c_ar": 0
+    },
+    "by_difficulty": {
+      "easy": 1,
+      "medium": 23,
+      "hard": 1
+    },
+    "by_yield": {
+      "high": 23,
+      "medium": 2,
+      "low": 0
+    },
+    "by_category": {
+      "cardiovascular_deaths": 5,
+      "neurologic_deaths": 3,
+      "respiratory_deaths": 3,
+      "death_certification": 2,
+      "trauma": 2,
+      "toxicology": 3,
+      "liver_disease": 2,
+      "postmortem_changes": 1,
+      "infectious_deaths": 1,
+      "pregnancy_deaths": 1,
+      "pediatric_deaths": 1,
+      "artifacts": 1
+    }
+  }
+}

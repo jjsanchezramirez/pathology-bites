@@ -2,82 +2,10 @@
   "section": "CP 3: Hematopathology for Clinical Pathology",
   "total_questions": 84,
   "total_available_topics": 197,
-  "allocation_strategy": "Laboratory interpretation focus prioritizing common disorders, diagnostic patterns, and high-impact hematologic conditions",
+  "allocation_strategy": "Clinical interpretation focus prioritizing common disorders, diagnostic patterns, and high-impact hematologic conditions",
   "questions": [
     {
       "question_id": 1,
-      "topic": "Complete blood count interpretation",
-      "item_locations": ["CP 3-1-a"],
-      "education_objective": "Interpret CBC parameters and recognize common abnormal patterns",
-      "designation": "C",
-      "difficulty": "medium",
-      "yield": "high"
-    },
-    {
-      "question_id": 2,
-      "topic": "Peripheral blood smear review techniques",
-      "item_locations": ["CP 3-1-c-ii"],
-      "education_objective": "Apply systematic approach to peripheral blood smear interpretation",
-      "designation": "C",
-      "difficulty": "medium",
-      "yield": "high"
-    },
-    {
-      "question_id": 3,
-      "topic": "Flow cytometry applications and interpretation",
-      "item_locations": ["CP 3-1-f"],
-      "education_objective": "Interpret flow cytometry results for lymphoid and myeloid disorders",
-      "designation": "C",
-      "difficulty": "hard",
-      "yield": "high"
-    },
-    {
-      "question_id": 4,
-      "topic": "Hemoglobinopathy testing methods",
-      "item_locations": ["CP 3-1-b"],
-      "education_objective": "Compare HPLC, electrophoresis, and capillary electrophoresis for hemoglobin analysis",
-      "designation": "AR",
-      "difficulty": "medium",
-      "yield": "high"
-    },
-    {
-      "question_id": 5,
-      "topic": "Coagulation testing interpretation",
-      "item_locations": ["CP 3-1-d"],
-      "education_objective": "Interpret PT, PTT, and specialized coagulation studies",
-      "designation": "C/AR",
-      "difficulty": "medium",
-      "yield": "high"
-    },
-    {
-      "question_id": 6,
-      "topic": "Bone marrow evaluation techniques",
-      "item_locations": ["CP 3-1-c-iv"],
-      "education_objective": "Interpret bone marrow aspirate and biopsy findings",
-      "designation": "C",
-      "difficulty": "hard",
-      "yield": "high"
-    },
-    {
-      "question_id": 7,
-      "topic": "Molecular testing in hematopathology",
-      "item_locations": ["CP 3-1-h"],
-      "education_objective": "Understand clonality testing and mutation analysis applications",
-      "designation": "AR",
-      "difficulty": "hard",
-      "yield": "high"
-    },
-    {
-      "question_id": 8,
-      "topic": "Normal hematopoiesis and cell maturation",
-      "item_locations": ["CP 3-2-e"],
-      "education_objective": "Recognize normal hematopoietic cell development and maturation",
-      "designation": "C",
-      "difficulty": "medium",
-      "yield": "medium"
-    },
-    {
-      "question_id": 9,
       "topic": "Iron deficiency anemia diagnosis",
       "item_locations": ["CP 3-3-a-i"],
       "education_objective": "Diagnose iron deficiency using laboratory parameters and morphology",
@@ -86,7 +14,7 @@
       "yield": "high"
     },
     {
-      "question_id": 10,
+      "question_id": 2,
       "topic": "Megaloblastic anemia evaluation",
       "item_locations": ["CP 3-3-a-vi"],
       "education_objective": "Distinguish B12 and folate deficiency using laboratory and morphologic findings",
@@ -95,7 +23,7 @@
       "yield": "high"
     },
     {
-      "question_id": 11,
+      "question_id": 3,
       "topic": "Hemolytic anemia classification",
       "item_locations": ["CP 3-3-a-v"],
       "education_objective": "Classify hemolytic anemias using laboratory parameters and blood smear findings",
@@ -104,7 +32,7 @@
       "yield": "high"
     },
     {
-      "question_id": 12,
+      "question_id": 4,
       "topic": "Microangiopathic hemolytic anemia",
       "item_locations": ["CP 3-3-a-v-3"],
       "education_objective": "Recognize MAHA and distinguish from other hemolytic processes",
@@ -113,7 +41,7 @@
       "yield": "high"
     },
     {
-      "question_id": 13,
+      "question_id": 5,
       "topic": "Sickle cell disease and variants",
       "item_locations": ["CP 3-3-a-x-1"],
       "education_objective": "Diagnose sickle cell disease and recognize variant hemoglobinopathies",
@@ -122,7 +50,7 @@
       "yield": "high"
     },
     {
-      "question_id": 14,
+      "question_id": 6,
       "topic": "Thalassemia syndromes",
       "item_locations": ["CP 3-3-a-xi"],
       "education_objective": "Distinguish alpha and beta thalassemia using laboratory findings",
@@ -131,7 +59,7 @@
       "yield": "high"
     },
     {
-      "question_id": 15,
+      "question_id": 7,
       "topic": "Aplastic anemia diagnosis",
       "item_locations": ["CP 3-3-a-vii"],
       "education_objective": "Diagnose aplastic anemia and distinguish from other cytopenias",
@@ -140,7 +68,7 @@
       "yield": "high"
     },
     {
-      "question_id": 16,
+      "question_id": 8,
       "topic": "Anemia of chronic disease",
       "item_locations": ["CP 3-3-a-viii"],
       "education_objective": "Recognize anemia of chronic disease and distinguish from iron deficiency",
@@ -149,7 +77,7 @@
       "yield": "high"
     },
     {
-      "question_id": 17,
+      "question_id": 9,
       "topic": "Hereditary spherocytosis",
       "item_locations": ["CP 3-3-a-iii-1"],
       "education_objective": "Diagnose hereditary spherocytosis using osmotic fragility and family history",
@@ -158,7 +86,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 18,
+      "question_id": 10,
       "topic": "G6PD deficiency",
       "item_locations": ["CP 3-3-a-iv-1"],
       "education_objective": "Recognize G6PD deficiency triggers and laboratory findings",
@@ -167,7 +95,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 19,
+      "question_id": 11,
       "topic": "Paroxysmal nocturnal hemoglobinuria",
       "item_locations": ["CP 3-3-a-xii"],
       "education_objective": "Diagnose PNH using flow cytometry and clinical correlation",
@@ -176,7 +104,7 @@
       "yield": "high"
     },
     {
-      "question_id": 20,
+      "question_id": 12,
       "topic": "Sideroblastic anemia",
       "item_locations": ["CP 3-3-a-ii"],
       "education_objective": "Recognize sideroblastic anemia patterns and underlying causes",
@@ -185,7 +113,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 21,
+      "question_id": 13,
       "topic": "Polycythemia evaluation",
       "item_locations": ["CP 3-3-b"],
       "education_objective": "Distinguish primary from secondary polycythemia using laboratory studies",
@@ -194,7 +122,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 22,
+      "question_id": 14,
       "topic": "Cold agglutinin disease",
       "item_locations": ["CP 3-3-c"],
       "education_objective": "Diagnose cold agglutinin disease and understand testing limitations",
@@ -203,7 +131,25 @@
       "yield": "medium"
     },
     {
-      "question_id": 23,
+      "question_id": 15,
+      "topic": "Autoimmune hemolytic anemia",
+      "item_locations": ["CP 3-3-a-v-1"],
+      "education_objective": "Distinguish warm from cold autoimmune hemolytic anemia",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Hemoglobin C and E disorders",
+      "item_locations": ["CP 3-3-a-x-2", "CP 3-3-a-x-3"],
+      "education_objective": "Recognize hemoglobin C and E variant patterns and clinical significance",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 17,
       "topic": "Neutrophil disorders and left shift",
       "item_locations": ["CP 3-4-b"],
       "education_objective": "Interpret neutrophil counts and morphologic changes in infection",
@@ -212,7 +158,7 @@
       "yield": "high"
     },
     {
-      "question_id": 24,
+      "question_id": 18,
       "topic": "Pelger-Huet anomaly recognition",
       "item_locations": ["CP 3-4-a-i"],
       "education_objective": "Distinguish Pelger-Huet anomaly from left shift",
@@ -221,7 +167,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 25,
+      "question_id": 19,
       "topic": "Eosinophilia evaluation",
       "item_locations": ["CP 3-4-g"],
       "education_objective": "Evaluate eosinophilia causes and recognize hypereosinophilic syndromes",
@@ -230,7 +176,7 @@
       "yield": "high"
     },
     {
-      "question_id": 26,
+      "question_id": 20,
       "topic": "Lymphocytosis interpretation",
       "item_locations": ["CP 3-4-f"],
       "education_objective": "Distinguish reactive from neoplastic lymphocytosis",
@@ -239,7 +185,7 @@
       "yield": "high"
     },
     {
-      "question_id": 27,
+      "question_id": 21,
       "topic": "Hemophagocytic lymphohistiocytosis",
       "item_locations": ["CP 3-4-d-i"],
       "education_objective": "Recognize HLH clinical and laboratory features",
@@ -248,7 +194,16 @@
       "yield": "high"
     },
     {
-      "question_id": 28,
+      "question_id": 22,
+      "topic": "Chediak-Higashi syndrome",
+      "item_locations": ["CP 3-4-a-iii"],
+      "education_objective": "Recognize Chediak-Higashi granules and clinical associations",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "low"
+    },
+    {
+      "question_id": 23,
       "topic": "Malaria parasite identification",
       "item_locations": ["CP 3-6-a-i"],
       "education_objective": "Identify malaria parasites on blood smear and understand species differences",
@@ -257,7 +212,7 @@
       "yield": "high"
     },
     {
-      "question_id": 29,
+      "question_id": 24,
       "topic": "Infectious mononucleosis patterns",
       "item_locations": ["CP 3-6-b-i"],
       "education_objective": "Recognize atypical lymphocytes and correlate with serology",
@@ -266,7 +221,7 @@
       "yield": "high"
     },
     {
-      "question_id": 30,
+      "question_id": 25,
       "topic": "Babesia parasite recognition",
       "item_locations": ["CP 3-6-a-ii"],
       "education_objective": "Distinguish Babesia from malaria on blood smear",
@@ -275,7 +230,16 @@
       "yield": "medium"
     },
     {
-      "question_id": 31,
+      "question_id": 26,
+      "topic": "Ehrlichia and Anaplasma",
+      "item_locations": ["CP 3-6-b-ii"],
+      "education_objective": "Recognize intracellular inclusions in neutrophils and monocytes",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 27,
       "topic": "CSF analysis in hematologic disorders",
       "item_locations": ["CP 3-9-a"],
       "education_objective": "Interpret CSF findings in CNS involvement by hematologic malignancies",
@@ -284,7 +248,7 @@
       "yield": "high"
     },
     {
-      "question_id": 32,
+      "question_id": 28,
       "topic": "Body fluid analysis interpretation",
       "item_locations": ["CP 3-9-b"],
       "education_objective": "Evaluate body fluids for malignant cells and inflammatory processes",
@@ -293,7 +257,7 @@
       "yield": "high"
     },
     {
-      "question_id": 33,
+      "question_id": 29,
       "topic": "Factor deficiency evaluation",
       "item_locations": ["CP 3-11-a-i"],
       "education_objective": "Diagnose factor deficiencies using mixing studies and specific assays",
@@ -302,7 +266,7 @@
       "yield": "high"
     },
     {
-      "question_id": 34,
+      "question_id": 30,
       "topic": "von Willebrand disease diagnosis",
       "item_locations": ["CP 3-11-b-iv"],
       "education_objective": "Diagnose vWD types using aggregometry and factor studies",
@@ -311,7 +275,7 @@
       "yield": "high"
     },
     {
-      "question_id": 35,
+      "question_id": 31,
       "topic": "Platelet function disorders",
       "item_locations": ["CP 3-11-b-i"],
       "education_objective": "Evaluate platelet function using aggregometry and clinical correlation",
@@ -320,7 +284,7 @@
       "yield": "high"
     },
     {
-      "question_id": 36,
+      "question_id": 32,
       "topic": "Immune thrombocytopenia diagnosis",
       "item_locations": ["CP 3-11-b-iii-1"],
       "education_objective": "Diagnose ITP and distinguish from other thrombocytopenic disorders",
@@ -329,7 +293,7 @@
       "yield": "high"
     },
     {
-      "question_id": 37,
+      "question_id": 33,
       "topic": "Heparin-induced thrombocytopenia",
       "item_locations": ["CP 3-11-c-i"],
       "education_objective": "Diagnose HIT using clinical scoring and laboratory testing",
@@ -338,7 +302,7 @@
       "yield": "high"
     },
     {
-      "question_id": 38,
+      "question_id": 34,
       "topic": "TTP vs. HUS differential",
       "item_locations": ["CP 3-11-c-ii"],
       "education_objective": "Distinguish TTP from HUS using clinical and laboratory criteria",
@@ -347,7 +311,7 @@
       "yield": "high"
     },
     {
-      "question_id": 39,
+      "question_id": 35,
       "topic": "DIC laboratory patterns",
       "item_locations": ["CP 3-11-c-iii"],
       "education_objective": "Recognize DIC laboratory patterns and distinguish from liver disease",
@@ -356,7 +320,7 @@
       "yield": "high"
     },
     {
-      "question_id": 40,
+      "question_id": 36,
       "topic": "Thrombophilia testing interpretation",
       "item_locations": ["CP 3-11-c-iv"],
       "education_objective": "Interpret thrombophilia studies and understand testing limitations",
@@ -365,7 +329,7 @@
       "yield": "high"
     },
     {
-      "question_id": 41,
+      "question_id": 37,
       "topic": "Warfarin monitoring and reversal",
       "item_locations": ["CP 3-11-d-i"],
       "education_objective": "Monitor warfarin therapy and manage urgent reversal",
@@ -374,7 +338,7 @@
       "yield": "high"
     },
     {
-      "question_id": 42,
+      "question_id": 38,
       "topic": "Direct anticoagulant monitoring",
       "item_locations": ["CP 3-11-d-iii"],
       "education_objective": "Monitor direct thrombin and factor Xa inhibitors",
@@ -383,7 +347,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 43,
+      "question_id": 39,
       "topic": "Factor inhibitor detection",
       "item_locations": ["CP 3-11-a-ii"],
       "education_objective": "Detect and quantify factor inhibitors using mixing studies",
@@ -392,7 +356,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 44,
+      "question_id": 40,
       "topic": "Thrombocytosis evaluation",
       "item_locations": ["CP 3-11-b-ii"],
       "education_objective": "Distinguish reactive from essential thrombocytosis",
@@ -401,7 +365,25 @@
       "yield": "high"
     },
     {
-      "question_id": 45,
+      "question_id": 41,
+      "topic": "Inherited thrombocytopenia",
+      "item_locations": ["CP 3-11-b-iii-2"],
+      "education_objective": "Recognize inherited thrombocytopenia patterns and family history",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 42,
+      "topic": "Antiphospholipid antibody syndrome",
+      "item_locations": ["CP 3-11-c-vi"],
+      "education_objective": "Diagnose APS using clinical and laboratory criteria",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 43,
       "topic": "Chronic myeloid leukemia diagnosis",
       "item_locations": ["CP 3-12-a-i"],
       "education_objective": "Diagnose CML using morphology, cytogenetics, and molecular studies",
@@ -410,7 +392,7 @@
       "yield": "high"
     },
     {
-      "question_id": 46,
+      "question_id": 44,
       "topic": "Polycythemia vera diagnosis",
       "item_locations": ["CP 3-12-a-ii"],
       "education_objective": "Diagnose PV using WHO criteria and JAK2 testing",
@@ -419,7 +401,7 @@
       "yield": "high"
     },
     {
-      "question_id": 47,
+      "question_id": 45,
       "topic": "Essential thrombocythemia",
       "item_locations": ["CP 3-12-a-iv"],
       "education_objective": "Diagnose ET and distinguish from reactive thrombocytosis",
@@ -428,7 +410,7 @@
       "yield": "high"
     },
     {
-      "question_id": 48,
+      "question_id": 46,
       "topic": "Primary myelofibrosis",
       "item_locations": ["CP 3-12-a-iii"],
       "education_objective": "Recognize PMF morphologic and clinical features",
@@ -437,7 +419,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 49,
+      "question_id": 47,
       "topic": "Chronic myelomonocytic leukemia",
       "item_locations": ["CP 3-12-c-i"],
       "education_objective": "Diagnose CMML and distinguish from reactive monocytosis",
@@ -446,7 +428,7 @@
       "yield": "high"
     },
     {
-      "question_id": 50,
+      "question_id": 48,
       "topic": "Myelodysplastic syndromes",
       "item_locations": ["CP 3-12-d"],
       "education_objective": "Recognize MDS morphologic features and grading systems",
@@ -455,7 +437,7 @@
       "yield": "high"
     },
     {
-      "question_id": 51,
+      "question_id": 49,
       "topic": "Acute promyelocytic leukemia",
       "item_locations": ["CP 3-12-e-i-3"],
       "education_objective": "Recognize APL morphology and understand urgent treatment implications",
@@ -464,7 +446,7 @@
       "yield": "high"
     },
     {
-      "question_id": 52,
+      "question_id": 50,
       "topic": "AML with favorable cytogenetics",
       "item_locations": ["CP 3-12-e-i-1", "CP 3-12-e-i-2"],
       "education_objective": "Recognize AML with t(8;21) and inv(16) morphologic features",
@@ -473,7 +455,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 53,
+      "question_id": 51,
       "topic": "Acute monocytic leukemia",
       "item_locations": ["CP 3-12-e-iv-1"],
       "education_objective": "Recognize acute monocytic leukemia morphology and immunophenotype",
@@ -482,7 +464,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 54,
+      "question_id": 52,
       "topic": "Therapy-related myeloid neoplasms",
       "item_locations": ["CP 3-12-e-iii"],
       "education_objective": "Recognize therapy-related AML and MDS patterns",
@@ -491,34 +473,25 @@
       "yield": "medium"
     },
     {
+      "question_id": 53,
+      "topic": "Atypical chronic myeloid leukemia",
+      "item_locations": ["CP 3-12-c-ii-1"],
+      "education_objective": "Distinguish atypical CML from BCR-ABL1+ CML",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 54,
+      "topic": "Chronic eosinophilic leukemia",
+      "item_locations": ["CP 3-12-a-v"],
+      "education_objective": "Diagnose CEL-NOS and distinguish from reactive eosinophilia",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
       "question_id": 55,
-      "topic": "Myeloid sarcoma",
-      "item_locations": ["CP 3-12-e-v"],
-      "education_objective": "Diagnose myeloid sarcoma using immunohistochemistry",
-      "designation": "AR",
-      "difficulty": "hard",
-      "yield": "low"
-    },
-    {
-      "question_id": 56,
-      "topic": "Mastocytosis diagnosis",
-      "item_locations": ["CP 3-12-a-vi"],
-      "education_objective": "Recognize systemic mastocytosis criteria and KIT mutations",
-      "designation": "AR",
-      "difficulty": "hard",
-      "yield": "low"
-    },
-    {
-      "question_id": 57,
-      "topic": "Blastic plasmacytoid dendritic cell neoplasm",
-      "item_locations": ["CP 3-12-e-vii"],
-      "education_objective": "Recognize BPDCN immunophenotype and clinical presentation",
-      "designation": "AR",
-      "difficulty": "hard",
-      "yield": "low"
-    },
-    {
-      "question_id": 58,
       "topic": "T-lymphoblastic leukemia/lymphoma",
       "item_locations": ["CP 3-14-b"],
       "education_objective": "Distinguish T-ALL from reactive T-lymphoblasts",
@@ -527,7 +500,7 @@
       "yield": "high"
     },
     {
-      "question_id": 59,
+      "question_id": 56,
       "topic": "Chronic lymphocytic leukemia",
       "item_locations": ["CP 3-14-c-i"],
       "education_objective": "Diagnose CLL using morphology, flow cytometry, and staging",
@@ -536,7 +509,7 @@
       "yield": "high"
     },
     {
-      "question_id": 60,
+      "question_id": 57,
       "topic": "Follicular lymphoma",
       "item_locations": ["CP 3-14-c-iii"],
       "education_objective": "Recognize follicular lymphoma patterns and grading",
@@ -545,7 +518,7 @@
       "yield": "high"
     },
     {
-      "question_id": 61,
+      "question_id": 58,
       "topic": "Diffuse large B-cell lymphoma",
       "item_locations": ["CP 3-14-c-v-1"],
       "education_objective": "Diagnose DLBCL and understand prognostic factors",
@@ -554,7 +527,7 @@
       "yield": "high"
     },
     {
-      "question_id": 62,
+      "question_id": 59,
       "topic": "Mantle cell lymphoma",
       "item_locations": ["CP 3-14-c-iv"],
       "education_objective": "Recognize MCL morphology and cyclin D1 expression",
@@ -563,7 +536,7 @@
       "yield": "high"
     },
     {
-      "question_id": 63,
+      "question_id": 60,
       "topic": "Burkitt lymphoma",
       "item_locations": ["CP 3-14-c-vi"],
       "education_objective": "Diagnose Burkitt lymphoma using morphology and MYC rearrangement",
@@ -572,7 +545,7 @@
       "yield": "high"
     },
     {
-      "question_id": 64,
+      "question_id": 61,
       "topic": "MALT lymphoma",
       "item_locations": ["CP 3-14-c-ii"],
       "education_objective": "Recognize MALT lymphoma and association with H. pylori",
@@ -581,7 +554,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 65,
+      "question_id": 62,
       "topic": "Hairy cell leukemia",
       "item_locations": ["CP 3-14-c-viii"],
       "education_objective": "Diagnose hairy cell leukemia using morphology and TRAP staining",
@@ -590,7 +563,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 66,
+      "question_id": 63,
       "topic": "Large granular lymphocyte leukemia",
       "item_locations": ["CP 3-14-d-i"],
       "education_objective": "Recognize T-LGL and NK-LGL patterns and associated cytopenias",
@@ -599,7 +572,7 @@
       "yield": "high"
     },
     {
-      "question_id": 67,
+      "question_id": 64,
       "topic": "Anaplastic large cell lymphoma",
       "item_locations": ["CP 3-14-d-iii"],
       "education_objective": "Distinguish ALK+ from ALK- ALCL and recognize CD30 expression",
@@ -608,7 +581,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 68,
+      "question_id": 65,
       "topic": "Mycosis fungoides recognition",
       "item_locations": ["CP 3-14-d-vii"],
       "education_objective": "Recognize mycosis fungoides in peripheral blood and skin",
@@ -617,7 +590,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 69,
+      "question_id": 66,
       "topic": "Peripheral T-cell lymphoma NOS",
       "item_locations": ["CP 3-14-d-viii"],
       "education_objective": "Recognize PTCL-NOS as diagnosis of exclusion",
@@ -626,7 +599,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 70,
+      "question_id": 67,
       "topic": "Classical Hodgkin lymphoma",
       "item_locations": ["CP 3-14-e-ii"],
       "education_objective": "Recognize Reed-Sternberg cells and classify HL subtypes",
@@ -635,7 +608,7 @@
       "yield": "high"
     },
     {
-      "question_id": 71,
+      "question_id": 68,
       "topic": "Nodular lymphocyte predominant HL",
       "item_locations": ["CP 3-14-e-i"],
       "education_objective": "Distinguish NLPHL from classical HL using LP cells",
@@ -644,7 +617,7 @@
       "yield": "medium"
     },
     {
-      "question_id": 72,
+      "question_id": 69,
       "topic": "B-lymphoblastic leukemia",
       "item_locations": ["CP 3-14-a"],
       "education_objective": "Diagnose B-ALL and recognize high-risk cytogenetic abnormalities",
@@ -653,88 +626,16 @@
       "yield": "medium"
     },
     {
-      "question_id": 73,
-      "topic": "Plasma cell myeloma diagnosis",
-      "item_locations": ["CP 3-15-a"],
-      "education_objective": "Diagnose multiple myeloma using bone marrow and serum studies",
-      "designation": "C",
-      "difficulty": "medium",
-      "yield": "high"
-    },
-    {
-      "question_id": 74,
-      "topic": "MGUS vs. myeloma differential",
-      "item_locations": ["CP 3-15-a"],
-      "education_objective": "Distinguish MGUS from multiple myeloma using established criteria",
-      "designation": "C",
-      "difficulty": "medium",
-      "yield": "high"
-    },
-    {
-      "question_id": 75,
-      "topic": "Amyloidosis diagnosis",
-      "item_locations": ["CP 3-15-b"],
-      "education_objective": "Recognize amyloidosis and classify AL vs. other types",
-      "designation": "C",
-      "difficulty": "hard",
-      "yield": "high"
-    },
-    {
-      "question_id": 76,
-      "topic": "Cryoglobulinemia",
-      "item_locations": ["CP 3-15-c"],
-      "education_objective": "Diagnose cryoglobulinemia and understand clinical associations",
-      "designation": "AR",
-      "difficulty": "medium",
-      "yield": "low"
-    },
-    {
-      "question_id": 77,
-      "topic": "Langerhans cell histiocytosis",
-      "item_locations": ["CP 3-16-a"],
-      "education_objective": "Diagnose LCH using CD1a and Langerin staining",
-      "designation": "AR",
-      "difficulty": "medium",
-      "yield": "low"
-    },
-    {
-      "question_id": 78,
-      "topic": "Bone marrow metastases",
-      "item_locations": ["CP 3-17-a"],
-      "education_objective": "Recognize metastatic carcinoma in bone marrow",
-      "designation": "C",
-      "difficulty": "medium",
-      "yield": "high"
-    },
-    {
-      "question_id": 79,
-      "topic": "Lymph node metastases",
-      "item_locations": ["CP 3-17-b"],
-      "education_objective": "Distinguish metastatic carcinoma from lymphoma in lymph nodes",
-      "designation": "C",
-      "difficulty": "medium",
-      "yield": "high"
-    },
-    {
-      "question_id": 80,
-      "topic": "Monoclonal B-cell lymphocytosis",
-      "item_locations": ["CP 3-14-c-i"],
-      "education_objective": "Distinguish MBL from CLL and understand monitoring",
-      "designation": "C",
-      "difficulty": "medium",
-      "yield": "medium"
-    },
-    {
-      "question_id": 81,
-      "topic": "Post-transplant lymphoproliferative disorder",
-      "item_locations": ["CP 3-10-c-ii"],
-      "education_objective": "Recognize PTLD and understand EBV association",
+      "question_id": 70,
+      "topic": "Splenic marginal zone lymphoma",
+      "item_locations": ["CP 3-14-c-vii"],
+      "education_objective": "Recognize SMZL morphology and clinical presentation",
       "designation": "AR",
       "difficulty": "hard",
       "yield": "medium"
     },
     {
-      "question_id": 82,
+      "question_id": 71,
       "topic": "Lymphoplasmacytic lymphoma",
       "item_locations": ["CP 3-14-c-ix"],
       "education_objective": "Diagnose LPL and understand Waldenström macroglobulinemia",
@@ -743,39 +644,138 @@
       "yield": "medium"
     },
     {
-      "question_id": 83,
-      "topic": "Primary mediastinal large B-cell lymphoma",
-      "item_locations": ["CP 3-14-c-v-2"],
-      "education_objective": "Recognize PMBCL clinical presentation and morphology",
-      "designation": "AR",
-      "difficulty": "hard",
-      "yield": "low"
-    },
-    {
-      "question_id": 84,
+      "question_id": 72,
       "topic": "Extranodal NK/T-cell lymphoma",
       "item_locations": ["CP 3-14-d-ii"],
       "education_objective": "Recognize nasal-type NK/T-cell lymphoma and EBV association",
       "designation": "C",
       "difficulty": "hard",
       "yield": "medium"
+    },
+    {
+      "question_id": 73,
+      "topic": "Adult T-cell leukemia/lymphoma",
+      "item_locations": ["CP 3-14-d-v"],
+      "education_objective": "Recognize ATLL morphology and HTLV-1 association",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "low"
+    },
+    {
+      "question_id": 74,
+      "topic": "Angioimmunoblastic T-cell lymphoma",
+      "item_locations": ["CP 3-14-d-ix"],
+      "education_objective": "Recognize AITL clinical features and morphology",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 75,
+      "topic": "Plasma cell myeloma diagnosis",
+      "item_locations": ["CP 3-15-a"],
+      "education_objective": "Diagnose multiple myeloma using bone marrow and serum studies",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 76,
+      "topic": "MGUS vs. myeloma differential",
+      "item_locations": ["CP 3-15-a"],
+      "education_objective": "Distinguish MGUS from multiple myeloma using established criteria",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 77,
+      "topic": "Amyloidosis diagnosis",
+      "item_locations": ["CP 3-15-b"],
+      "education_objective": "Recognize amyloidosis and classify AL vs. other types",
+      "designation": "C",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 78,
+      "topic": "POEMS syndrome",
+      "item_locations": ["CP 3-15-d"],
+      "education_objective": "Recognize POEMS syndrome criteria and plasma cell association",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "low"
+    },
+    {
+      "question_id": 79,
+      "topic": "Bone marrow metastases",
+      "item_locations": ["CP 3-17-a"],
+      "education_objective": "Recognize metastatic carcinoma in bone marrow",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 80,
+      "topic": "Lymph node metastases",
+      "item_locations": ["CP 3-17-b"],
+      "education_objective": "Distinguish metastatic carcinoma from lymphoma in lymph nodes",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 81,
+      "topic": "Monoclonal B-cell lymphocytosis",
+      "item_locations": ["CP 3-14-c-i"],
+      "education_objective": "Distinguish MBL from CLL and understand monitoring",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 82,
+      "topic": "Post-transplant lymphoproliferative disorder",
+      "item_locations": ["CP 3-10-c-ii"],
+      "education_objective": "Recognize PTLD and understand EBV association",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 83,
+      "topic": "Lead poisoning anemia",
+      "item_locations": ["CP 3-3-a-xiv-1"],
+      "education_objective": "Recognize lead poisoning effects on hematopoiesis and basophilic stippling",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 84,
+      "topic": "Porphyria effects on blood",
+      "item_locations": ["CP 3-3-a-xiii"],
+      "education_objective": "Recognize hematologic manifestations of porphyria",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "low"
     }
   ],
   "summary_statistics": {
     "by_designation": {
-      "core_only": 51,
-      "advanced_resident_only": 30,
+      "core_only": 48,
+      "advanced_resident_only": 33,
       "combined_c_ar": 3
     },
     "by_difficulty": {
       "easy": 0,
-      "medium": 50,
-      "hard": 34
+      "medium": 51,
+      "hard": 33
     },
     "by_yield": {
-      "high": 60,
-      "medium": 18,
-      "low": 6
+      "high": 57,
+      "medium": 22,
+      "low": 5
     }
   }
 }

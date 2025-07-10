@@ -127,7 +127,7 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      selectedCategory: '',
+      selectedCategory: 'none',
       selectedQuestionSet: '',
     },
   });
@@ -282,7 +282,7 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
     });
 
     try {
-      const selectedCategoryId = data.selectedCategory || null;
+      const selectedCategoryId = data.selectedCategory === 'none' ? null : data.selectedCategory;
       const selectedQuestionSetId = data.selectedQuestionSet;
 
       for (let i = 0; i < parsedQuestions.length; i++) {
@@ -428,8 +428,8 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
       setValidationError(null);
       setImportProgress(null);
       form.reset({
-        selectedCategory: '',
-        selectedQuestionSet: 'none',
+        selectedCategory: 'none',
+        selectedQuestionSet: '',
       });
       onOpenChange(false);
     }
@@ -469,7 +469,7 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">No category</SelectItem>
+                      <SelectItem value="none">No category</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
                           {formatCategoryName(category)}
@@ -628,7 +628,7 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || parsedQuestions.length === 0 || !form.watch('selectedCategory')}
+                disabled={isSubmitting || parsedQuestions.length === 0 || !form.watch('selectedQuestionSet')}
               >
                 {isSubmitting ? (
                   <>

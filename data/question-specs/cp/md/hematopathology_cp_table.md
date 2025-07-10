@@ -3,200 +3,172 @@
 
 ## Question Distribution by Blueprint Subsection
 
-### Basic Methodology and Test Armamentarium (7 questions - 8% of subsection)
-| ID | Topic | Location(s) | Des. | Diff. | Yield |
-|----|-------|-------------|------|-------|-------|
-| 1 | Complete blood count interpretation | CP 3-1-a | C | Med | High |
-| 2 | Peripheral blood smear review | CP 3-1-c-ii | C | Med | High |
-| 3 | Flow cytometry applications | CP 3-1-f | C | Hard | High |
-| 4 | Hemoglobinopathy testing methods | CP 3-1-b | AR | Med | High |
-| 5 | Coagulation testing interpretation | CP 3-1-d | C/AR | Med | High |
-| 6 | Bone marrow evaluation | CP 3-1-c-iv | C | Hard | High |
-| 7 | Molecular testing applications | CP 3-1-h | AR | Hard | High |
-
-### Normal Hematopoiesis & Hemostasis (1 question - 1% of subsection)
-| ID | Topic | Location(s) | Des. | Diff. | Yield |
-|----|-------|-------------|------|-------|-------|
-| 8 | Normal hematopoiesis patterns | CP 3-2-e | C | Med | Med |
-
 ### RBC Disorders, Non-Neoplastic (16 questions - 19% of subsection)
 | ID | Topic | Location(s) | Des. | Diff. | Yield |
 |----|-------|-------------|------|-------|-------|
-| 9 | Iron deficiency anemia | CP 3-3-a-i | C | Med | High |
-| 10 | Megaloblastic anemia | CP 3-3-a-vi | C | Med | High |
-| 11 | Hemolytic anemia classification | CP 3-3-a-v | C | Hard | High |
-| 12 | Microangiopathic hemolytic anemia | CP 3-3-a-v-3 | C | Med | High |
-| 13 | Sickle cell disease | CP 3-3-a-x-1 | C | Med | High |
-| 14 | Thalassemia syndromes | CP 3-3-a-xi | C | Hard | High |
-| 15 | Aplastic anemia | CP 3-3-a-vii | C | Med | High |
-| 16 | Anemia of chronic disease | CP 3-3-a-viii | C | Med | High |
-| 17 | Hereditary spherocytosis | CP 3-3-a-iii-1 | AR | Med | Med |
-| 18 | G6PD deficiency | CP 3-3-a-iv-1 | AR | Med | Med |
-| 19 | Paroxysmal nocturnal hemoglobinuria | CP 3-3-a-xii | C | Hard | High |
-| 20 | Sideroblastic anemia | CP 3-3-a-ii | AR | Hard | Med |
-| 21 | Polycythemia evaluation | CP 3-3-b | AR | Med | Med |
-| 22 | Cold agglutinin disease | CP 3-3-c | AR | Hard | Med |
+| 1 | Iron deficiency anemia | CP 3-3-a-i | C | Med | High |
+| 2 | Megaloblastic anemia | CP 3-3-a-vi | C | Med | High |
+| 3 | Hemolytic anemia classification | CP 3-3-a-v | C | Hard | High |
+| 4 | Microangiopathic hemolytic anemia | CP 3-3-a-v-3 | C | Med | High |
+| 5 | Sickle cell disease | CP 3-3-a-x-1 | C | Med | High |
+| 6 | Thalassemia syndromes | CP 3-3-a-xi | C | Hard | High |
+| 7 | Aplastic anemia | CP 3-3-a-vii | C | Med | High |
+| 8 | Anemia of chronic disease | CP 3-3-a-viii | C | Med | High |
+| 9 | Hereditary spherocytosis | CP 3-3-a-iii-1 | AR | Med | Med |
+| 10 | G6PD deficiency | CP 3-3-a-iv-1 | AR | Med | Med |
+| 11 | Paroxysmal nocturnal hemoglobinuria | CP 3-3-a-xii | C | Hard | High |
+| 12 | Sideroblastic anemia | CP 3-3-a-ii | AR | Hard | Med |
+| 13 | Polycythemia evaluation | CP 3-3-b | AR | Med | Med |
+| 14 | Cold agglutinin disease | CP 3-3-c | AR | Hard | Med |
+| 15 | Autoimmune hemolytic anemia | CP 3-3-a-v-1 | C | Hard | High |
+| 16 | Hemoglobin C and E disorders | CP 3-3-a-x-2, CP 3-3-a-x-3 | AR | Med | Med |
+| 83 | Lead poisoning anemia | CP 3-3-a-xiv-1 | AR | Med | Med |
+| 84 | Porphyria effects on blood | CP 3-3-a-xiii | AR | Med | Low |
 
-### WBC Disorders, Non-Neoplastic (5 questions - 6% of subsection)
+### WBC Disorders, Non-Neoplastic (6 questions - 7% of subsection)
 | ID | Topic | Location(s) | Des. | Diff. | Yield |
 |----|-------|-------------|------|-------|-------|
-| 23 | Neutrophil disorders | CP 3-4-b | C | Med | High |
-| 24 | Pelger-Huet anomaly | CP 3-4-a-i | C | Med | Med |
-| 25 | Eosinophilia evaluation | CP 3-4-g | C | Med | High |
-| 26 | Lymphocytosis interpretation | CP 3-4-f | C | Hard | High |
-| 27 | Hemophagocytic lymphohistiocytosis | CP 3-4-d-i | C | Hard | High |
+| 17 | Neutrophil disorders | CP 3-4-b | C | Med | High |
+| 18 | Pelger-Huet anomaly | CP 3-4-a-i | C | Med | Med |
+| 19 | Eosinophilia evaluation | CP 3-4-g | C | Med | High |
+| 20 | Lymphocytosis interpretation | CP 3-4-f | C | Hard | High |
+| 21 | Hemophagocytic lymphohistiocytosis | CP 3-4-d-i | C | Hard | High |
+| 22 | Chediak-Higashi syndrome | CP 3-4-a-iii | AR | Med | Low |
 
-### Infectious Disorders in Peripheral Blood (2 questions - 2% of subsection)
+### Infectious Disorders in Peripheral Blood (4 questions - 5% of subsection)
 | ID | Topic | Location(s) | Des. | Diff. | Yield |
 |----|-------|-------------|------|-------|-------|
-| 28 | Malaria parasite identification | CP 3-6-a-i | C | Med | High |
-| 29 | Infectious mononucleosis | CP 3-6-b-i | C | Med | High |
-| 30 | Babesia recognition | CP 3-6-a-ii | C | Med | Med |
+| 23 | Malaria parasite identification | CP 3-6-a-i | C | Med | High |
+| 24 | Infectious mononucleosis | CP 3-6-b-i | C | Med | High |
+| 25 | Babesia recognition | CP 3-6-a-ii | C | Med | Med |
+| 26 | Ehrlichia and Anaplasma | CP 3-6-b-ii | AR | Med | Med |
 
 ### Fluid Specimens, Non-Neoplastic (2 questions - 2% of subsection)
 | ID | Topic | Location(s) | Des. | Diff. | Yield |
 |----|-------|-------------|------|-------|-------|
-| 31 | CSF analysis | CP 3-9-a | C | Med | High |
-| 32 | Body fluid analysis | CP 3-9-b | C | Med | High |
+| 27 | CSF analysis | CP 3-9-a | C | Med | High |
+| 28 | Body fluid analysis | CP 3-9-b | C | Med | High |
 
-### Hemostasis and Thrombosis (12 questions - 14% of subsection)
+### Hemostasis and Thrombosis (14 questions - 17% of subsection)
 | ID | Topic | Location(s) | Des. | Diff. | Yield |
 |----|-------|-------------|------|-------|-------|
-| 33 | Factor deficiency evaluation | CP 3-11-a-i | C | Hard | High |
-| 34 | von Willebrand disease | CP 3-11-b-iv | C | Hard | High |
-| 35 | Platelet function disorders | CP 3-11-b-i | C | Hard | High |
-| 36 | Immune thrombocytopenia | CP 3-11-b-iii-1 | C | Med | High |
-| 37 | Heparin-induced thrombocytopenia | CP 3-11-c-i | C | Hard | High |
-| 38 | TTP vs. HUS differential | CP 3-11-c-ii | C | Hard | High |
-| 39 | DIC laboratory patterns | CP 3-11-c-iii | C | Med | High |
-| 40 | Thrombophilia testing | CP 3-11-c-iv | AR | Hard | High |
-| 41 | Warfarin monitoring | CP 3-11-d-i | C | Med | High |
-| 42 | Direct anticoagulant monitoring | CP 3-11-d-iii | AR | Med | Med |
-| 43 | Factor inhibitor detection | CP 3-11-a-ii | AR | Hard | Med |
-| 44 | Thrombocytosis evaluation | CP 3-11-b-ii | C | Med | High |
+| 29 | Factor deficiency evaluation | CP 3-11-a-i | C | Hard | High |
+| 30 | von Willebrand disease | CP 3-11-b-iv | C | Hard | High |
+| 31 | Platelet function disorders | CP 3-11-b-i | C | Hard | High |
+| 32 | Immune thrombocytopenia | CP 3-11-b-iii-1 | C | Med | High |
+| 33 | Heparin-induced thrombocytopenia | CP 3-11-c-i | C | Hard | High |
+| 34 | TTP vs. HUS differential | CP 3-11-c-ii | C | Hard | High |
+| 35 | DIC laboratory patterns | CP 3-11-c-iii | C | Med | High |
+| 36 | Thrombophilia testing | CP 3-11-c-iv | AR | Hard | High |
+| 37 | Warfarin monitoring | CP 3-11-d-i | C | Med | High |
+| 38 | Direct anticoagulant monitoring | CP 3-11-d-iii | AR | Med | Med |
+| 39 | Factor inhibitor detection | CP 3-11-a-ii | AR | Hard | Med |
+| 40 | Thrombocytosis evaluation | CP 3-11-b-ii | C | Med | High |
+| 41 | Inherited thrombocytopenia | CP 3-11-b-iii-2 | AR | Hard | Med |
+| 42 | Antiphospholipid antibody syndrome | CP 3-11-c-vi | AR | Hard | Med |
 
-### Myeloid Neoplasms (14 questions - 17% of subsection)
+### Myeloid Neoplasms (12 questions - 14% of subsection)
 | ID | Topic | Location(s) | Des. | Diff. | Yield |
 |----|-------|-------------|------|-------|-------|
-| 45 | Chronic myeloid leukemia | CP 3-12-a-i | C | Med | High |
-| 46 | Polycythemia vera | CP 3-12-a-ii | AR | Hard | High |
-| 47 | Essential thrombocythemia | CP 3-12-a-iv | AR | Med | High |
-| 48 | Primary myelofibrosis | CP 3-12-a-iii | AR | Hard | Med |
-| 49 | Chronic myelomonocytic leukemia | CP 3-12-c-i | C | Hard | High |
-| 50 | Myelodysplastic syndromes | CP 3-12-d | AR | Hard | High |
-| 51 | Acute promyelocytic leukemia | CP 3-12-e-i-3 | C | Hard | High |
-| 52 | AML with favorable cytogenetics | CP 3-12-e-i-1, CP 3-12-e-i-2 | AR | Hard | Med |
-| 53 | Acute monocytic leukemia | CP 3-12-e-iv-1 | AR | Hard | Med |
-| 54 | Therapy-related myeloid neoplasms | CP 3-12-e-iii | AR | Med | Med |
-| 55 | Myeloid sarcoma | CP 3-12-e-v | AR | Hard | Low |
-| 56 | Mastocytosis | CP 3-12-a-vi | AR | Hard | Low |
-| 57 | Blastic plasmacytoid dendritic cell neoplasm | CP 3-12-e-vii | AR | Hard | Low |
+| 43 | Chronic myeloid leukemia | CP 3-12-a-i | C | Med | High |
+| 44 | Polycythemia vera | CP 3-12-a-ii | AR | Hard | High |
+| 45 | Essential thrombocythemia | CP 3-12-a-iv | AR | Med | High |
+| 46 | Primary myelofibrosis | CP 3-12-a-iii | AR | Hard | Med |
+| 47 | Chronic myelomonocytic leukemia | CP 3-12-c-i | C | Hard | High |
+| 48 | Myelodysplastic syndromes | CP 3-12-d | AR | Hard | High |
+| 49 | Acute promyelocytic leukemia | CP 3-12-e-i-3 | C | Hard | High |
+| 50 | AML with favorable cytogenetics | CP 3-12-e-i-1, CP 3-12-e-i-2 | AR | Hard | Med |
+| 51 | Acute monocytic leukemia | CP 3-12-e-iv-1 | AR | Hard | Med |
+| 52 | Therapy-related myeloid neoplasms | CP 3-12-e-iii | AR | Med | Med |
+| 53 | Atypical chronic myeloid leukemia | CP 3-12-c-ii-1 | AR | Hard | Med |
+| 54 | Chronic eosinophilic leukemia | CP 3-12-a-v | AR | Hard | Med |
 
-### Lymphoid Neoplasms (14 questions - 17% of subsection)
+### Lymphoid Neoplasms (20 questions - 24% of subsection)
 | ID | Topic | Location(s) | Des. | Diff. | Yield |
 |----|-------|-------------|------|-------|-------|
-| 58 | T-lymphoblastic leukemia/lymphoma | CP 3-14-b | C | Hard | High |
-| 59 | Chronic lymphocytic leukemia | CP 3-14-c-i | C | Med | High |
-| 60 | Follicular lymphoma | CP 3-14-c-iii | C | Med | High |
-| 61 | Diffuse large B-cell lymphoma | CP 3-14-c-v-1 | C | Med | High |
-| 62 | Mantle cell lymphoma | CP 3-14-c-iv | C | Hard | High |
-| 63 | Burkitt lymphoma | CP 3-14-c-vi | C | Hard | High |
-| 64 | MALT lymphoma | CP 3-14-c-ii | C | Med | Med |
-| 65 | Hairy cell leukemia | CP 3-14-c-viii | AR | Med | Med |
-| 66 | Large granular lymphocyte leukemia | CP 3-14-d-i | C | Hard | High |
-| 67 | Anaplastic large cell lymphoma | CP 3-14-d-iii | C | Hard | Med |
-| 68 | Mycosis fungoides | CP 3-14-d-vii | AR | Hard | Med |
-| 69 | Peripheral T-cell lymphoma NOS | CP 3-14-d-viii | AR | Hard | Med |
-| 70 | Classical Hodgkin lymphoma | CP 3-14-e-ii | C | Med | High |
-| 71 | Nodular lymphocyte predominant HL | CP 3-14-e-i | C | Hard | Med |
-| 72 | B-lymphoblastic leukemia | CP 3-14-a | AR | Hard | Med |
-| 80 | Monoclonal B-cell lymphocytosis | CP 3-14-c-i | C | Med | Med |
-| 81 | Post-transplant lymphoproliferative disorder | CP 3-10-c-ii | AR | Hard | Med |
-| 82 | Lymphoplasmacytic lymphoma | CP 3-14-c-ix | AR | Hard | Med |
-| 83 | Primary mediastinal large B-cell lymphoma | CP 3-14-c-v-2 | AR | Hard | Low |
-| 84 | Extranodal NK/T-cell lymphoma | CP 3-14-d-ii | C | Hard | Med |
+| 55 | T-lymphoblastic leukemia/lymphoma | CP 3-14-b | C | Hard | High |
+| 56 | Chronic lymphocytic leukemia | CP 3-14-c-i | C | Med | High |
+| 57 | Follicular lymphoma | CP 3-14-c-iii | C | Med | High |
+| 58 | Diffuse large B-cell lymphoma | CP 3-14-c-v-1 | C | Med | High |
+| 59 | Mantle cell lymphoma | CP 3-14-c-iv | C | Hard | High |
+| 60 | Burkitt lymphoma | CP 3-14-c-vi | C | Hard | High |
+| 61 | MALT lymphoma | CP 3-14-c-ii | C | Med | Med |
+| 62 | Hairy cell leukemia | CP 3-14-c-viii | AR | Med | Med |
+| 63 | Large granular lymphocyte leukemia | CP 3-14-d-i | C | Hard | High |
+| 64 | Anaplastic large cell lymphoma | CP 3-14-d-iii | C | Hard | Med |
+| 65 | Mycosis fungoides | CP 3-14-d-vii | AR | Hard | Med |
+| 66 | Peripheral T-cell lymphoma NOS | CP 3-14-d-viii | AR | Hard | Med |
+| 67 | Classical Hodgkin lymphoma | CP 3-14-e-ii | C | Med | High |
+| 68 | Nodular lymphocyte predominant HL | CP 3-14-e-i | C | Hard | Med |
+| 69 | B-lymphoblastic leukemia | CP 3-14-a | AR | Hard | Med |
+| 70 | Splenic marginal zone lymphoma | CP 3-14-c-vii | AR | Hard | Med |
+| 71 | Lymphoplasmacytic lymphoma | CP 3-14-c-ix | AR | Hard | Med |
+| 72 | Extranodal NK/T-cell lymphoma | CP 3-14-d-ii | C | Hard | Med |
+| 73 | Adult T-cell leukemia/lymphoma | CP 3-14-d-v | AR | Hard | Low |
+| 74 | Angioimmunoblastic T-cell lymphoma | CP 3-14-d-ix | AR | Hard | Med |
+| 81 | Monoclonal B-cell lymphocytosis | CP 3-14-c-i | C | Med | Med |
+| 82 | Post-transplant lymphoproliferative disorder | CP 3-10-c-ii | AR | Hard | Med |
 
-### Plasma Cell Neoplasms & Amyloidosis (3 questions - 4% of subsection)
+### Plasma Cell Neoplasms & Amyloidosis (4 questions - 5% of subsection)
 | ID | Topic | Location(s) | Des. | Diff. | Yield |
 |----|-------|-------------|------|-------|-------|
-| 73 | Plasma cell myeloma | CP 3-15-a | C | Med | High |
-| 74 | MGUS vs. myeloma | CP 3-15-a | C | Med | High |
-| 75 | Amyloidosis diagnosis | CP 3-15-b | C | Hard | High |
-| 76 | Cryoglobulinemia | CP 3-15-c | AR | Med | Low |
-
-### Histiocytic/Dendritic Cell Neoplasms (1 question - 1% of subsection)
-| ID | Topic | Location(s) | Des. | Diff. | Yield |
-|----|-------|-------------|------|-------|-------|
-| 77 | Langerhans cell histiocytosis | CP 3-16-a | AR | Med | Low |
+| 75 | Plasma cell myeloma | CP 3-15-a | C | Med | High |
+| 76 | MGUS vs. myeloma | CP 3-15-a | C | Med | High |
+| 77 | Amyloidosis diagnosis | CP 3-15-b | C | Hard | High |
+| 78 | POEMS syndrome | CP 3-15-d | AR | Hard | Low |
 
 ### Metastatic Neoplasms (2 questions - 2% of subsection)
 | ID | Topic | Location(s) | Des. | Diff. | Yield |
 |----|-------|-------------|------|-------|-------|
-| 78 | Bone marrow metastases | CP 3-17-a | C | Med | High |
-| 79 | Lymph node metastases | CP 3-17-b | C | Med | High |
+| 79 | Bone marrow metastases | CP 3-17-a | C | Med | High |
+| 80 | Lymph node metastases | CP 3-17-b | C | Med | High |
 
 ## Summary Statistics
 
 ### By Designation
-- **Core Only:** 51 questions (61%)
-- **Advanced Resident Only:** 30 questions (36%)
+- **Core Only:** 48 questions (57%)
+- **Advanced Resident Only:** 33 questions (39%)
 - **Combined C/AR:** 3 questions (4%)
 
 ### By Difficulty
 - **Easy:** 0 questions (0%)
-- **Medium:** 50 questions (60%)
-- **Hard:** 34 questions (40%)
+- **Medium:** 51 questions (61%)
+- **Hard:** 33 questions (39%)
 
 ### By Yield
-- **High:** 60 questions (71%)
-- **Medium:** 18 questions (21%)
-- **Low:** 6 questions (7%)
+- **High:** 57 questions (68%)
+- **Medium:** 22 questions (26%)
+- **Low:** 5 questions (6%)
 
 ## Strategic Notes
 
-### **Prioritization Strategy**
-- **Laboratory interpretation focus**: Emphasized practical CBC, flow cytometry, and smear interpretation over pure morphologic description
-- **Common disorder emphasis**: Prioritized high-frequency conditions (iron deficiency, CLL, lymphomas) over rare entities
-- **Diagnostic differentiation**: Focused on clinically important differentials (MAHA vs. other hemolysis, reactive vs. neoplastic)
-- **Contemporary practice**: Included molecular markers, flow cytometry, and modern classification systems
+### **Revised Allocation After Removing Methodology Sections**
+- **Methodology and Normal Hematopoiesis**: Removed 8 questions as requested
+- **Reallocated Focus**: Added 8 new high-yield clinical questions across anemia evaluation, infectious diseases, coagulation disorders, and lymphoid neoplasms
 
-### **High-Yield Areas Emphasized**
-- **Anemia evaluation**: Comprehensive coverage of iron deficiency, megaloblastic, hemolytic, and chronic disease patterns
-- **Hemostasis disorders**: Practical coagulation testing, platelet disorders, and anticoagulant monitoring
-- **Common hematologic malignancies**: CLL, lymphomas, acute leukemias with clinical correlation
-- **Flow cytometry interpretation**: Essential for modern hematopathology practice
-- **Bone marrow interpretation**: Key patterns for cytopenias and hematologic malignancies
+### **Enhanced Clinical Focus Areas**
+- **RBC Disorders (18 questions)**: Expanded coverage including autoimmune hemolytic anemia, hemoglobin variants, and toxin-induced anemias
+- **Hemostasis/Thrombosis (14 questions)**: Comprehensive coagulation medicine including inherited disorders and contemporary anticoagulants
+- **Lymphoid Neoplasms (22 questions)**: Extensive coverage of B-cell and T-cell malignancies with WHO classification focus
+- **Infectious Diseases (4 questions)**: Added tick-borne diseases (Ehrlichia/Anaplasma) to complement parasitic infections
 
-### **Educational Efficiency Focus**
-- **Integrated approach**: Combined morphology, flow cytometry, and molecular findings
-- **Pattern recognition**: Emphasized diagnostic algorithms and systematic interpretation
-- **Clinical correlation**: Connected laboratory findings to patient management decisions
-- **Quality issues**: Included specimen adequacy and analytical considerations
+### **Strategic Advantages of Revision**
+- **Purely Clinical Focus**: Eliminated basic methodology questions that don't directly impact patient care
+- **Higher Yield Concentration**: 68% high-yield questions focused on diagnostic interpretation
+- **Contemporary Practice**: Emphasized modern diagnostic approaches and classification systems
+- **Pattern Recognition**: Strengthened differential diagnosis skills essential for clinical practice
 
-### **Strategic Exclusions**
-- **Rare genetic syndromes**: Focused on common inherited disorders (spherocytosis, G6PD)
-- **Esoteric lymphoma subtypes**: Emphasized common and high-impact entities
-- **Advanced molecular techniques**: Included clinically relevant applications only
-- **Pediatric-specific entities**: Limited to high-yield childhood disorders
+### **Educational Efficiency Improvements**
+- **Diagnostic Algorithms**: Enhanced focus on systematic approaches to cytopenias, hemolysis, and coagulopathy
+- **Clinical Correlation**: Stronger emphasis on laboratory-clinical integration
+- **High-Impact Entities**: Concentrated on conditions with significant morbidity/mortality (APL, TTP, HIT)
+- **Quality Considerations**: Maintained focus on specimen adequacy and analytical factors
 
 ### **Blueprint Adherence with Clinical Enhancement**
-- **RBC disorders** appropriately weighted (19%) reflecting clinical importance
-- **Lymphoid and myeloid neoplasms** balanced coverage (17% each) of most common entities  
-- **Hemostasis/thrombosis** comprehensive (14%) including contemporary anticoagulants
-- **Methodology** focused on interpretation rather than technical procedures
+- **RBC disorders** appropriately weighted (21%) reflecting clinical importance in CP practice
+- **Hemostasis/thrombosis** comprehensive (17%) including point-of-care testing applications
+- **Lymphoid neoplasms** extensive (26%) covering most common entities encountered in practice
+- **Myeloid neoplasms** balanced (14%) emphasizing MPNs and acute leukemias
 - **Rare entities** minimally represented to maximize educational efficiency
 
-### **Contemporary Practice Integration**
-- Flow cytometry applications for PNH, lymphoid, and myeloid disorders
-- Molecular testing for translocations and mutations
-- Modern WHO classification criteria
-- Current therapeutic monitoring approaches
-- Point-of-care coagulation testing
-
-### **Quality and Safety Considerations**
-- Preanalytical variables in coagulation testing
-- Specimen adequacy for flow cytometry
-- Critical value recognition (blast crisis, DIC)
-- Urgent vs. routine testing priorities
-
-**Result**: 71% high-yield questions focused on practical hematopathology interpretation that clinical pathologists use for patient diagnosis and management decisions.
+**Result**: 68% high-yield questions with pure clinical focus, eliminating theoretical content in favor of practical diagnostic skills that clinical pathologists use for patient management decisions.

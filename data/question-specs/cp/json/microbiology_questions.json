@@ -1,0 +1,700 @@
+{
+  "section": "CP 4: Medical Microbiology",
+  "total_questions": 75,
+  "total_available_topics": 346,
+  "allocation_strategy": "Clinical relevance focus prioritizing common pathogens, resistance mechanisms, and diagnostic methods essential for clinical practice",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Blood culture specimen collection and processing",
+      "item_locations": ["CP 4-1-a-vii", "CP 4-1-g-ii"],
+      "education_objective": "Optimize blood culture collection techniques and interpret automated systems",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Respiratory tract specimen evaluation",
+      "item_locations": ["CP 4-1-a-i", "CP 4-1-d-i"],
+      "education_objective": "Apply specimen rejection criteria and optimize lower respiratory culture results",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Urine culture interpretation and methods",
+      "item_locations": ["CP 4-1-a-iii", "CP 4-1-e-x-3"],
+      "education_objective": "Interpret urine culture results and apply appropriate media selection",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "CSF culture processing and interpretation",
+      "item_locations": ["CP 4-1-a-ix", "CP 4-1-e-x-8"],
+      "education_objective": "Process CSF specimens optimally and interpret culture results",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Stool culture methods and pathogens",
+      "item_locations": ["CP 4-1-a-vi", "CP 4-1-d-ii"],
+      "education_objective": "Select appropriate media and interpret enteric pathogen isolation",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Gram stain interpretation and artifacts",
+      "item_locations": ["CP 4-1-f-i", "CP 4-1-f-ii"],
+      "education_objective": "Interpret Gram stain results and recognize common artifacts",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "MALDI-TOF mass spectrometry applications",
+      "item_locations": ["CP 4-1-g-v"],
+      "education_objective": "Understand MALDI-TOF principles and limitations in bacterial identification",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Antimicrobial susceptibility testing interpretation",
+      "item_locations": ["CP 4-1-i"],
+      "education_objective": "Interpret AST results and understand CLSI guidelines",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "ESBL detection and clinical significance",
+      "item_locations": ["CP 4-1-j-iii"],
+      "education_objective": "Detect ESBL-producing organisms and understand treatment implications",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Carbapenemase detection methods",
+      "item_locations": ["CP 4-1-j-ii"],
+      "education_objective": "Identify carbapenemase-producing organisms and resistance mechanisms",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "MRSA detection and mecA gene",
+      "item_locations": ["CP 4-1-j-v"],
+      "education_objective": "Detect MRSA using phenotypic and molecular methods",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "VRE identification and resistance genes",
+      "item_locations": ["CP 4-1-j-vi"],
+      "education_objective": "Identify VRE and distinguish vanA from vanB resistance patterns",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Staphylococcus aureus identification and testing",
+      "item_locations": ["CP 4-1-n-i-16", "CP 4-1-h-v"],
+      "education_objective": "Identify S. aureus using coagulase and other key tests",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Streptococcus pneumoniae identification",
+      "item_locations": ["CP 4-1-n-i-20", "CP 4-1-h-vi"],
+      "education_objective": "Identify S. pneumoniae using optochin and bile solubility",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Enterococcus species differentiation",
+      "item_locations": ["CP 4-1-n-i-7", "CP 4-1-n-i-8"],
+      "education_objective": "Distinguish E. faecalis from E. faecium and clinical significance",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Group B Streptococcus screening",
+      "item_locations": ["CP 4-1-n-i-22"],
+      "education_objective": "Understand GBS screening methods and clinical importance",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Listeria monocytogenes recognition",
+      "item_locations": ["CP 4-1-n-i-14"],
+      "education_objective": "Identify L. monocytogenes and understand clinical significance",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 18,
+      "topic": "Escherichia coli pathotypes and identification",
+      "item_locations": ["CP 4-1-n-ii-16"],
+      "education_objective": "Identify E. coli and understand major pathogenic variants",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 19,
+      "topic": "Klebsiella pneumoniae and resistance",
+      "item_locations": ["CP 4-1-n-ii-23"],
+      "education_objective": "Identify Klebsiella species and recognize resistance patterns",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Pseudomonas aeruginosa characteristics",
+      "item_locations": ["CP 4-1-n-ii-31", "CP 4-1-h-vii"],
+      "education_objective": "Identify P. aeruginosa using oxidase and other characteristics",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 21,
+      "topic": "Acinetobacter baumannii complex",
+      "item_locations": ["CP 4-1-n-ii-1"],
+      "education_objective": "Identify Acinetobacter and understand multidrug resistance",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Neisseria gonorrhoeae detection",
+      "item_locations": ["CP 4-1-n-ii-27", "CP 4-1-e-ix"],
+      "education_objective": "Identify N. gonorrhoeae using Thayer-Martin medium and confirmatory tests",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 23,
+      "topic": "Neisseria meningitidis identification",
+      "item_locations": ["CP 4-1-n-ii-26"],
+      "education_objective": "Identify N. meningitidis and understand clinical urgency",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 24,
+      "topic": "Haemophilus influenzae identification",
+      "item_locations": ["CP 4-1-n-ii-18"],
+      "education_objective": "Identify H. influenzae using chocolate agar and factor requirements",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 25,
+      "topic": "Salmonella species identification",
+      "item_locations": ["CP 4-1-n-ii-32", "CP 4-1-n-ii-33"],
+      "education_objective": "Identify Salmonella spp. and distinguish typhoidal from non-typhoidal",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 26,
+      "topic": "Shigella species identification",
+      "item_locations": ["CP 4-1-n-ii-35"],
+      "education_objective": "Identify Shigella spp. and understand epidemiological significance",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 27,
+      "topic": "Campylobacter jejuni isolation",
+      "item_locations": ["CP 4-1-n-ii-9", "CP 4-1-e-i"],
+      "education_objective": "Isolate Campylobacter using selective media and identify key features",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 28,
+      "topic": "Helicobacter pylori testing methods",
+      "item_locations": ["CP 4-1-n-ii-21", "CP 4-1-h-iv"],
+      "education_objective": "Understand H. pylori detection methods including CLO test",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 29,
+      "topic": "Clostridioides difficile testing",
+      "item_locations": ["CP 4-1-p-vii"],
+      "education_objective": "Understand C. difficile testing algorithms and interpretation",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 30,
+      "topic": "Anaerobic culture methods and interpretation",
+      "item_locations": ["CP 4-1-a-xii", "CP 4-1-p"],
+      "education_objective": "Process anaerobic specimens and identify common anaerobes",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 31,
+      "topic": "Mycobacterium tuberculosis complex identification",
+      "item_locations": ["CP 4-1-t-xiv-1-a"],
+      "education_objective": "Identify MTB complex using molecular and phenotypic methods",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 32,
+      "topic": "Nontuberculous mycobacteria identification",
+      "item_locations": ["CP 4-1-t-xiv-1-d", "CP 4-1-t-xiv-1-h"],
+      "education_objective": "Identify common NTM species and understand clinical significance",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 33,
+      "topic": "Acid-fast staining methods",
+      "item_locations": ["CP 4-1-t-v"],
+      "education_objective": "Understand acid-fast staining techniques and interpretation",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 34,
+      "topic": "Nocardia species identification",
+      "item_locations": ["CP 4-1-t-xiv-2-a"],
+      "education_objective": "Identify Nocardia spp. using modified acid-fast stain",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 35,
+      "topic": "Candida species identification and antifungal susceptibility",
+      "item_locations": ["CP 4-2-j-i"],
+      "education_objective": "Identify common Candida species and interpret antifungal testing",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 36,
+      "topic": "Candida auris recognition and infection control",
+      "item_locations": ["CP 4-2-j-i-3"],
+      "education_objective": "Recognize C. auris and understand infection control implications",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 37,
+      "topic": "Cryptococcus neoformans identification",
+      "item_locations": ["CP 4-2-j-i-10"],
+      "education_objective": "Identify Cryptococcus using capsule detection and urease test",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 38,
+      "topic": "Aspergillus species identification",
+      "item_locations": ["CP 4-2-j-ii"],
+      "education_objective": "Identify Aspergillus species and understand clinical significance",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 39,
+      "topic": "Pneumocystis jirovecii detection",
+      "item_locations": ["CP 4-2-j-i-13"],
+      "education_objective": "Detect P. jirovecii using appropriate staining methods",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 40,
+      "topic": "Dimorphic fungi identification",
+      "item_locations": ["CP 4-2-j-iii"],
+      "education_objective": "Identify dimorphic fungi and understand geographic distribution",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 41,
+      "topic": "Histoplasma capsulatum recognition",
+      "item_locations": ["CP 4-2-j-iii-3"],
+      "education_objective": "Recognize H. capsulatum in tissue and culture",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 42,
+      "topic": "Mucormycosis agents identification",
+      "item_locations": ["CP 4-2-j-iv"],
+      "education_objective": "Identify mucoraceous fungi and understand rapid progression",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 43,
+      "topic": "Dermatophyte identification",
+      "item_locations": ["CP 4-2-j-ii-6", "CP 4-2-j-ii-14"],
+      "education_objective": "Identify common dermatophytes using morphologic features",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 44,
+      "topic": "Fungal staining methods interpretation",
+      "item_locations": ["CP 4-2-d"],
+      "education_objective": "Interpret KOH, calcofluor white, and other fungal stains",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 45,
+      "topic": "SARS-CoV-2 testing methods",
+      "item_locations": ["CP 4-3-j-iv"],
+      "education_objective": "Understand COVID-19 testing algorithms and interpretation",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 46,
+      "topic": "Influenza virus detection and typing",
+      "item_locations": ["CP 4-3-j-xx", "CP 4-3-j-xxi"],
+      "education_objective": "Detect and differentiate influenza A from influenza B",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 47,
+      "topic": "RSV and pediatric respiratory viruses",
+      "item_locations": ["CP 4-3-j-xxiii-4"],
+      "education_objective": "Detect RSV and understand pediatric respiratory viral panels",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 48,
+      "topic": "HSV vs. VZV differentiation",
+      "item_locations": ["CP 4-3-j-xvi-1", "CP 4-3-j-xvi-2"],
+      "education_objective": "Distinguish HSV from VZV using molecular and antigenic methods",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 49,
+      "topic": "CMV detection and monitoring",
+      "item_locations": ["CP 4-3-j-xvi-4"],
+      "education_objective": "Detect CMV and understand quantitative testing for monitoring",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 50,
+      "topic": "EBV testing and interpretation",
+      "item_locations": ["CP 4-3-j-xvi-3"],
+      "education_objective": "Interpret EBV serology and molecular testing",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 51,
+      "topic": "Hepatitis B virus markers",
+      "item_locations": ["CP 4-3-j-xvii"],
+      "education_objective": "Interpret HBV serologic patterns and understand chronic infection",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 52,
+      "topic": "Hepatitis C virus testing",
+      "item_locations": ["CP 4-3-j-xi"],
+      "education_objective": "Understand HCV antibody and RNA testing algorithms",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 53,
+      "topic": "HIV testing algorithms",
+      "item_locations": ["CP 4-3-j-xxviii-1"],
+      "education_objective": "Understand HIV screening and confirmatory testing strategies",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 54,
+      "topic": "BK and JC virus detection",
+      "item_locations": ["CP 4-3-j-xxvi"],
+      "education_objective": "Detect polyoma viruses in transplant patients",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 55,
+      "topic": "Respiratory viral panel interpretation",
+      "item_locations": ["CP 4-3-j-i", "CP 4-3-j-v"],
+      "education_objective": "Interpret multiplex respiratory viral testing results",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 56,
+      "topic": "HPV testing and genotyping",
+      "item_locations": ["CP 4-3-j-xxii"],
+      "education_objective": "Understand HPV testing methods and high-risk typing",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 57,
+      "topic": "Malaria species identification",
+      "item_locations": ["CP 4-4-g-i-2-e"],
+      "education_objective": "Identify Plasmodium species and understand rapid diagnostic tests",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 58,
+      "topic": "Babesia species recognition",
+      "item_locations": ["CP 4-4-g-i-2-b"],
+      "education_objective": "Recognize Babesia on blood smears and distinguish from malaria",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 59,
+      "topic": "Toxoplasma gondii detection",
+      "item_locations": ["CP 4-4-g-i-2-f"],
+      "education_objective": "Detect Toxoplasma using serology and molecular methods",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 60,
+      "topic": "Giardia and Cryptosporidium detection",
+      "item_locations": ["CP 4-4-g-i-1-h", "CP 4-4-g-i-1-b"],
+      "education_objective": "Detect intestinal parasites using antigen and molecular methods",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 61,
+      "topic": "Entamoeba histolytica vs. dispar",
+      "item_locations": ["CP 4-4-g-i-1-e", "CP 4-4-g-i-1-f"],
+      "education_objective": "Distinguish pathogenic from non-pathogenic Entamoeba",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 62,
+      "topic": "Trichomonas vaginalis detection",
+      "item_locations": ["CP 4-4-g-i-1-j"],
+      "education_objective": "Detect T. vaginalis using wet mount and molecular methods",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 63,
+      "topic": "Strongyloides stercoralis identification",
+      "item_locations": ["CP 4-4-g-ii-5"],
+      "education_objective": "Identify Strongyloides and understand autoinfection risk",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 64,
+      "topic": "Schistosoma species identification",
+      "item_locations": ["CP 4-4-g-iii-1"],
+      "education_objective": "Identify Schistosoma eggs and understand geographic distribution",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "low"
+    },
+    {
+      "question_id": 65,
+      "topic": "Ova and parasite examination techniques",
+      "item_locations": ["CP 4-4-c", "CP 4-4-d"],
+      "education_objective": "Perform systematic O&P examination and interpret findings",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 66,
+      "topic": "Molecular diagnostics applications in microbiology",
+      "item_locations": ["CP 4-1-l", "CP 4-2-h", "CP 4-3-f"],
+      "education_objective": "Understand molecular testing applications across microbiology",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 67,
+      "topic": "Antimicrobial stewardship and resistance reporting",
+      "item_locations": ["CP 4-1-i-vi"],
+      "education_objective": "Understand AST reporting principles and stewardship support",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 68,
+      "topic": "Biosafety and laboratory safety protocols",
+      "item_locations": ["CP 4-5-a", "CP 4-1-c"],
+      "education_objective": "Apply biosafety principles and specimen processing safety",
+      "designation": "C/AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 69,
+      "topic": "Quality control in microbiology",
+      "item_locations": ["CP 4-1-m"],
+      "education_objective": "Implement QC procedures for bacterial identification and AST",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 70,
+      "topic": "Fastidious organism cultivation",
+      "item_locations": ["CP 4-1-b-iv"],
+      "education_objective": "Optimize culture conditions for fastidious bacteria",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 71,
+      "topic": "Media selection and optimization",
+      "item_locations": ["CP 4-1-e"],
+      "education_objective": "Select appropriate media for different specimen types and organisms",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 72,
+      "topic": "Beta-lactamase detection methods",
+      "item_locations": ["CP 4-1-h-i", "CP 4-1-j-i"],
+      "education_objective": "Detect beta-lactamases using phenotypic and molecular methods",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 73,
+      "topic": "Infection control and outbreak investigation",
+      "item_locations": ["CP 4-1-m"],
+      "education_objective": "Support infection control through laboratory surveillance",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 74,
+      "topic": "Rapid diagnostic test interpretation",
+      "item_locations": ["CP 4-1-g-vi"],
+      "education_objective": "Interpret rapid antigen and molecular tests appropriately",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 75,
+      "topic": "Critical value communication",
+      "item_locations": ["CP 4-1-m"],
+      "education_objective": "Recognize and communicate critical microbiology results",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 0,
+      "advanced_resident_only": 74,
+      "combined_c_ar": 1
+    },
+    "by_difficulty": {
+      "easy": 0,
+      "medium": 62,
+      "hard": 13
+    },
+    "by_yield": {
+      "high": 60,
+      "medium": 14,
+      "low": 1
+    }
+  }
+}
