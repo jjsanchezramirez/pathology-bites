@@ -21,18 +21,18 @@ import {
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
 import { Separator } from "@/shared/components/ui/separator"
-import { 
-  History, 
-  User, 
-  Calendar, 
-  FileText, 
+import {
+  History,
+  User,
+  Calendar,
+  FileText,
   Eye,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Check
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/shared/services/client'
-import { Check } from "lucide-react"
 import { ImprovedImageDialog } from "@/shared/components/common/improved-image-dialog"
 import { ImageCarousel } from "@/features/images/components/image-carousel"
 
