@@ -116,34 +116,18 @@ export function CreatorQuestionsDashboard() {
 
   const handlePreview = async (question: CreatorQuestion) => {
     try {
-      // Fetch complete question data with options and images for preview
-      const { data: fullQuestion, error } = await supabase
-        .from('questions')
-        .select(`
-          *,
-          question_options(*),
-          question_images(*, image:images(*)),
-          categories(*)
-        `)
-        .eq('id', question.id)
-        .single()
+      // Use the same API endpoint as other pages for consistency
+      const response = await fetch(`/api/admin/questions/${question.id}`)
 
-      if (error) {
-        console.error('Error fetching full question data:', error)
+      if (!response.ok) {
+        console.error('Failed to fetch question details')
         toast.error('Failed to load question details')
         return
       }
 
-      // Merge the full data with the existing question data
-      const questionWithDetails: CreatorQuestion = {
-        ...question,
-        ...fullQuestion,
-        question_options: fullQuestion.question_options || [],
-        question_images: fullQuestion.question_images || [],
-        categories: fullQuestion.categories ? [fullQuestion.categories] : []
-      }
+      const { question: fullQuestion } = await response.json()
 
-      setSelectedQuestion(questionWithDetails)
+      setSelectedQuestion(fullQuestion)
       setPreviewOpen(true)
     } catch (error) {
       console.error('Error fetching question details:', error)
@@ -153,36 +137,18 @@ export function CreatorQuestionsDashboard() {
 
   const handleEdit = async (question: CreatorQuestion) => {
     try {
-      // Fetch complete question data with options and images for editing
-      const { data: fullQuestion, error } = await supabase
-        .from('questions')
-        .select(`
-          *,
-          question_options(*),
-          question_images(*, image:images(*)),
-          categories(*),
-          tags:question_tags(tag:tags(*))
-        `)
-        .eq('id', question.id)
-        .single()
+      // Use the same API endpoint as the All Questions page for consistency
+      const response = await fetch(`/api/admin/questions/${question.id}`)
 
-      if (error) {
-        console.error('Error fetching full question data:', error)
+      if (!response.ok) {
+        console.error('Failed to fetch question details')
         toast.error('Failed to load question details')
         return
       }
 
-      // Merge the full data with the existing question data
-      const questionWithDetails: CreatorQuestion = {
-        ...question,
-        ...fullQuestion,
-        question_options: fullQuestion.question_options || [],
-        question_images: fullQuestion.question_images || [],
-        categories: fullQuestion.categories ? [fullQuestion.categories] : [],
-        tags: fullQuestion.tags?.map((t: any) => t.tag).filter(Boolean) || []
-      }
+      const { question: fullQuestion } = await response.json()
 
-      setSelectedQuestion(questionWithDetails)
+      setSelectedQuestion(fullQuestion)
       setEditOpen(true)
     } catch (error) {
       console.error('Error fetching question details:', error)
@@ -222,7 +188,7 @@ export function CreatorQuestionsDashboard() {
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       const submittableQuestions = filteredQuestions
-        .filter(q => q.status === 'draft' || q.status === 'rejected')
+        .filter(q => q.status === 'draft')
         .map(q => q.id)
       setSelectedQuestions(new Set(submittableQuestions))
     } else {
@@ -265,12 +231,12 @@ export function CreatorQuestionsDashboard() {
     switch (status) {
       case 'draft':
         return <Edit className="h-4 w-4 text-gray-500" />
-      case 'under_review':
+      case 'pending':
         return <Clock className="h-4 w-4 text-blue-500" />
-      case 'published':
+      case 'approved':
         return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'rejected':
-        return <XCircle className="h-4 w-4 text-red-500" />
+      case 'flagged':
+        return <XCircle className="h-4 w-4 text-orange-500" />
       default:
         return <FileQuestion className="h-4 w-4 text-gray-500" />
     }
@@ -278,11 +244,11 @@ export function CreatorQuestionsDashboard() {
 
   const getTabCounts = () => {
     const drafts = questions.filter(q => q.status === 'draft').length
-    const underReview = questions.filter(q => q.status === 'under_review').length
-    const published = questions.filter(q => q.status === 'published').length
-    const rejected = questions.filter(q => q.status === 'rejected').length
-    
-    return { drafts, underReview, published, rejected, total: questions.length }
+    const pending = questions.filter(q => q.status === 'pending').length
+    const approved = questions.filter(q => q.status === 'approved').length
+    const flagged = questions.filter(q => q.status === 'flagged').length
+
+    return { drafts, pending, approved, flagged, total: questions.length }
   }
 
   const counts = getTabCounts()
@@ -298,7 +264,7 @@ export function CreatorQuestionsDashboard() {
     )
   }
 
-  const submittableQuestions = filteredQuestions.filter(q => q.status === 'draft' || q.status === 'rejected')
+  const submittableQuestions = filteredQuestions.filter(q => q.status === 'draft')
   const selectedSubmittableCount = Array.from(selectedQuestions).filter(id =>
     submittableQuestions.some(q => q.id === id)
   ).length
@@ -380,15 +346,15 @@ export function CreatorQuestionsDashboard() {
 
         <Card
           className={`cursor-pointer hover:bg-muted/50 transition-colors ${
-            activeTab === 'under_review' ? 'ring-2 ring-primary bg-primary/5' : ''
+            activeTab === 'pending' ? 'ring-2 ring-primary bg-primary/5' : ''
           }`}
-          onClick={() => setActiveTab('under_review')}
+          onClick={() => setActiveTab('pending')}
         >
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Under Review</CardTitle>
+            <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{counts.underReview}</div>
+            <div className="text-2xl font-bold">{counts.pending}</div>
             <p className="text-xs text-muted-foreground">
               Awaiting review
             </p>
@@ -397,17 +363,17 @@ export function CreatorQuestionsDashboard() {
 
         <Card
           className={`cursor-pointer hover:bg-muted/50 transition-colors ${
-            activeTab === 'rejected' ? 'ring-2 ring-primary bg-primary/5' : ''
+            activeTab === 'approved' ? 'ring-2 ring-primary bg-primary/5' : ''
           }`}
-          onClick={() => setActiveTab('rejected')}
+          onClick={() => setActiveTab('approved')}
         >
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
+            <CardTitle className="text-sm font-medium">Approved</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{counts.rejected}</div>
+            <div className="text-2xl font-bold">{counts.approved}</div>
             <p className="text-xs text-muted-foreground">
-              Need revision
+              Live questions
             </p>
           </CardContent>
         </Card>
@@ -461,7 +427,7 @@ export function CreatorQuestionsDashboard() {
                     <Checkbox
                       checked={selectedQuestions.has(question.id)}
                       onCheckedChange={(checked) => handleSelectQuestion(question.id, checked as boolean)}
-                      disabled={question.status !== 'draft' && question.status !== 'rejected'}
+                      disabled={question.status !== 'draft'}
                       aria-label={`Select ${question.title}`}
                     />
                   </TableCell>
@@ -520,16 +486,16 @@ export function CreatorQuestionsDashboard() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          {(question.status === 'draft' || question.status === 'rejected') && (
+                          {question.status === 'draft' && (
                             <DropdownMenuItem onClick={() => handleEdit(question)}>
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
                           )}
-                          {(question.status === 'draft' || question.status === 'rejected') && (
+                          {question.status === 'draft' && (
                             <DropdownMenuItem onClick={() => handleSubmitForReview(question.id)}>
                               <Send className="h-4 w-4 mr-2" />
-                              {question.status === 'rejected' ? 'Resubmit for Review' : 'Send for Review'}
+                              Send for Review
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>

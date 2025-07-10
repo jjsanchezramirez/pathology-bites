@@ -80,6 +80,12 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
             is_correct,
             explanation,
             order_index
+          ),
+          question_tags(
+            tag:tags(
+              id,
+              name
+            )
           )
         `, { count: 'exact' });
 
@@ -149,7 +155,8 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
             ? `${question.created_by_user.first_name || ''} ${question.created_by_user.last_name || ''}`.trim()
             : 'Unknown',
           image_count: question.question_images?.[0]?.count || 0,
-          categories: questionCategory ? [questionCategory] : []
+          categories: questionCategory ? [questionCategory] : [],
+          tags: question.question_tags?.map((qt: any) => qt.tag).filter(Boolean) || []
         };
       });
 

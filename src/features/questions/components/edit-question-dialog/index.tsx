@@ -114,7 +114,8 @@ export function EditQuestionDialog({
       });
 
       // Initialize selected tag IDs
-      setSelectedTagIds(question.tags?.map(tag => tag.id) || []);
+      const tagIds = question.tags?.map(tag => tag.id) || [];
+      setSelectedTagIds(tagIds);
 
       // Initialize answer options
       if (question.question_options && question.question_options.length > 0) {
@@ -137,9 +138,9 @@ export function EditQuestionDialog({
       }
 
       // Initialize question images
-      if (question.question_images) {
+      if (question.question_images && question.question_images.length > 0) {
         const images = question.question_images.map(qi => ({
-          image_id: qi.image?.id || '',
+          image_id: qi.image_id || '',
           question_section: (qi.question_section === 'explanation' ? 'explanation' : 'stem') as 'stem' | 'explanation',
           order_index: qi.order_index || 0
         }));
@@ -183,6 +184,8 @@ export function EditQuestionDialog({
         question_set_id: data.question_set_id === 'none' ? null : data.question_set_id,
         question_references: data.question_references || null,
       };
+
+
 
       await updateQuestion(question.id, updateData, {
         answerOptions: answerOptions,

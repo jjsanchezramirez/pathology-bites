@@ -64,8 +64,8 @@ export function QuestionReviewDialog({
 
 
     // Validate required feedback for certain actions
-    if (selectedAction === 'reject' && !feedback.trim()) {
-      toast.error('Feedback is required for rejection')
+    if ((selectedAction === 'reject' || selectedAction === 'request_changes') && !feedback.trim()) {
+      toast.error(`Feedback is required for ${selectedAction.replace('_', ' ')}`)
       return
     }
 
@@ -98,14 +98,17 @@ export function QuestionReviewDialog({
         return
       }
 
-      // Determine new question status based on action - SIMPLIFIED
+      // Determine new question status based on action - SIMPLIFIED TO 4 STATUSES
       let newStatus = question.status
       switch (selectedAction) {
         case 'approve':
-          newStatus = 'published'
+          newStatus = 'approved'
+          break
+        case 'request_changes':
+          newStatus = 'draft'
           break
         case 'reject':
-          newStatus = 'rejected'
+          newStatus = 'draft'
           break
       }
 
@@ -197,7 +200,7 @@ export function QuestionReviewDialog({
               Review Question: {question.title}
             </DialogTitle>
             <DialogDescription>
-              Review this question and decide on the appropriate action.
+              Choose one of three actions: Approve (goes live immediately), Request Changes (returns to creator), or Reject (returns to creator with feedback).
             </DialogDescription>
           </DialogHeader>
 
@@ -321,7 +324,7 @@ export function QuestionReviewDialog({
 
               <div>
                 <Label htmlFor="feedback">
-                  Feedback {selectedAction === 'reject' ? '*' : '(Optional)'}
+                  Feedback {(selectedAction === 'reject' || selectedAction === 'request_changes') ? '*' : '(Optional)'}
                 </Label>
                 <Textarea
                   id="feedback"
@@ -330,6 +333,8 @@ export function QuestionReviewDialog({
                   placeholder={
                     selectedAction === 'reject'
                       ? 'Explain why this question is being rejected and what needs to be fixed...'
+                      : selectedAction === 'request_changes'
+                      ? 'Explain what changes are needed and provide specific feedback...'
                       : 'Add any additional comments or suggestions...'
                   }
                   rows={4}
@@ -345,7 +350,7 @@ export function QuestionReviewDialog({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!selectedAction || isSubmitting || (selectedAction === 'reject' && !feedback.trim())}
+            disabled={!selectedAction || isSubmitting || ((selectedAction === 'reject' || selectedAction === 'request_changes') && !feedback.trim())}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Review'}
           </Button>

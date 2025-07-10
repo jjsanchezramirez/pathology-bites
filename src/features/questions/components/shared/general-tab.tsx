@@ -23,7 +23,7 @@ import { X } from 'lucide-react';
 import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
 import { createClient } from '@/shared/services/client';
-import { EditQuestionFormData } from './index';
+// Remove unused import
 
 interface Tag {
   id: string;

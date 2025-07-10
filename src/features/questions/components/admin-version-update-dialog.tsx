@@ -11,17 +11,11 @@ import {
   DialogPortal,
   DialogTitle,
 } from "@/shared/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select"
+
 import { Button } from "@/shared/components/ui/button"
 import { Label } from "@/shared/components/ui/label"
 import { Textarea } from "@/shared/components/ui/textarea"
-import { Badge } from "@/shared/components/ui/badge"
+
 import { Separator } from "@/shared/components/ui/separator"
 import { 
   GitBranch, 
@@ -39,28 +33,7 @@ interface AdminVersionUpdateDialogProps {
   onVersionCreated?: () => void
 }
 
-type UpdateType = 'patch' | 'minor' | 'major'
-
-const UPDATE_TYPE_CONFIG = {
-  patch: {
-    label: 'Patch Update',
-    description: 'Bug fixes, typos, formatting, references, minor wording changes',
-    color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
-    examples: ['Fix typos', 'Update references', 'Correct formatting', 'Minor wording adjustments']
-  },
-  minor: {
-    label: 'Minor Update', 
-    description: 'Content changes, new explanations, option modifications (non-breaking)',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-    examples: ['Add explanations', 'Modify answer options', 'Update teaching points', 'Content improvements']
-  },
-  major: {
-    label: 'Major Update',
-    description: 'Complete rewrites, fundamental changes, breaking modifications',
-    color: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
-    examples: ['Complete rewrite', 'Change question type', 'Major content overhaul', 'Structural changes']
-  }
-} as const
+// Simplified versioning - no complex update type selection needed
 
 export function AdminVersionUpdateDialog({
   questionId,
@@ -70,7 +43,6 @@ export function AdminVersionUpdateDialog({
   onOpenChange,
   onVersionCreated
 }: AdminVersionUpdateDialogProps) {
-  const [updateType, setUpdateType] = useState<UpdateType>('patch')
   const [changeSummary, setChangeSummary] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -94,7 +66,6 @@ export function AdminVersionUpdateDialog({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          updateType,
           changeSummary: changeSummary.trim()
         }),
       })
@@ -107,11 +78,10 @@ export function AdminVersionUpdateDialog({
       }
 
       toast.success('Version created successfully', {
-        description: `Created ${updateType} version ${data.newVersion}`
+        description: `Created new version ${data.newVersion}`
       })
 
       // Reset form
-      setUpdateType('patch')
       setChangeSummary('')
       onOpenChange(false)
       onVersionCreated?.()
@@ -125,7 +95,6 @@ export function AdminVersionUpdateDialog({
   }
 
   const handleCancel = () => {
-    setUpdateType('patch')
     setChangeSummary('')
     onOpenChange(false)
   }
@@ -158,48 +127,15 @@ export function AdminVersionUpdateDialog({
               </div>
             )}
 
-            {/* Update Type Selection */}
-            <div className="space-y-3">
-              <Label htmlFor="updateType">Update Type *</Label>
-              <Select value={updateType} onValueChange={(value: UpdateType) => setUpdateType(value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select update type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(UPDATE_TYPE_CONFIG).map(([type, config]) => (
-                    <SelectItem key={type} value={type}>
-                      <div className="flex items-center gap-2">
-                        <Badge className={config.color}>
-                          {config.label}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              {/* Update Type Description */}
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-start gap-2">
-                  <Badge className={UPDATE_TYPE_CONFIG[updateType].color}>
-                    {UPDATE_TYPE_CONFIG[updateType].label}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {UPDATE_TYPE_CONFIG[updateType].description}
-                </p>
-                <div className="mt-3">
-                  <p className="text-xs font-medium text-muted-foreground mb-1">Examples:</p>
-                  <ul className="text-xs text-muted-foreground space-y-1">
-                    {UPDATE_TYPE_CONFIG[updateType].examples.map((example, index) => (
-                      <li key={index} className="flex items-center gap-1">
-                        <span className="w-1 h-1 bg-muted-foreground rounded-full" />
-                        {example}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            {/* Simplified Version Creation */}
+            <div className="p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <GitBranch className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Version Update</span>
               </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Creating a new version will increment the minor version number and save a snapshot of the current question state.
+              </p>
             </div>
 
             <Separator />
@@ -211,7 +147,7 @@ export function AdminVersionUpdateDialog({
                 id="changeSummary"
                 value={changeSummary}
                 onChange={(e) => setChangeSummary(e.target.value)}
-                placeholder={`Describe the ${updateType} changes made to this question...`}
+                placeholder="Describe the changes made to this question..."
                 rows={4}
                 className="resize-none"
               />
@@ -220,21 +156,18 @@ export function AdminVersionUpdateDialog({
               </p>
             </div>
 
-            {/* Warning for Major Updates */}
-            {updateType === 'major' && (
-              <div className="flex items-start gap-2 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                <AlertCircle className="h-4 w-4 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
-                <div className="text-sm">
-                  <p className="font-medium text-orange-900 dark:text-orange-100">
-                    Major Version Warning
-                  </p>
-                  <p className="text-orange-800 dark:text-orange-200 mt-1">
-                    Major versions indicate significant changes that may affect question analytics and user performance tracking. 
-                    Use sparingly and only for substantial content overhauls.
-                  </p>
-                </div>
+            {/* Version Update Info */}
+            <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-medium text-blue-900 dark:text-blue-100">
+                  Version Update
+                </p>
+                <p className="text-blue-800 dark:text-blue-200 mt-1">
+                  This will create a new version snapshot and increment the minor version number automatically.
+                </p>
               </div>
-            )}
+            </div>
           </div>
 
           <DialogFooter>
@@ -249,7 +182,7 @@ export function AdminVersionUpdateDialog({
               onClick={handleSubmit}
               disabled={!changeSummary.trim() || isSubmitting}
             >
-              {isSubmitting ? 'Creating...' : `Create ${UPDATE_TYPE_CONFIG[updateType].label}`}
+              {isSubmitting ? 'Creating...' : 'Create Version'}
             </Button>
           </DialogFooter>
         </DialogContent>

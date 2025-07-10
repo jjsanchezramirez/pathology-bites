@@ -255,7 +255,7 @@ BEGIN
   ) qi ON q.id = qi.question_id
   LEFT JOIN (
     SELECT qt.question_id, jsonb_agg(to_jsonb(t.*)) as tags
-    FROM questions_tags qt
+    FROM question_tags qt
     LEFT JOIN tags t ON qt.tag_id = t.id
     GROUP BY qt.question_id
   ) qt ON q.id = qt.question_id

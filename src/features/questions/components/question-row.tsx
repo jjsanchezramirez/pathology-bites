@@ -62,7 +62,7 @@ export default function QuestionRow({ question, categoryPaths, onDelete }: Quest
       // Fetch the full question details from the API
       const response = await fetch(`/api/admin/questions/${question.id}`)
       if (response.ok) {
-        const questionDetails = await response.json()
+        const { question: questionDetails } = await response.json()
         setFullQuestion(questionDetails)
         setShowEditDialog(true)
       } else {

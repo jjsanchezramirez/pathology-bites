@@ -18,53 +18,44 @@ This document describes the streamlined question review workflow system that ens
 - **Reviewer**: Review draft questions, handle flagged questions, access review queues
 - **User**: Take quizzes, flag published questions
 
-## Question Statuses
+## Question Statuses (SIMPLIFIED)
 
-The system supports the following question statuses:
+The system now uses a simplified 4-status workflow:
 
-1. **Draft**: Question is being created or edited
-2. **Under Review**: Question is submitted and awaiting reviewer decision
-3. **Published**: Question is live and available to users
-4. **Rejected**: Question was rejected and returned to original creator
-5. **Pending Major Edits**: Question needs significant changes, goes to communal draft pool
-6. **Pending Minor Edits**: Reviewer will make small edits and approve immediately
-7. **Published + Flagged**: Live question with user-reported issues
+1. **Draft**: Question is being created or edited by creator
+2. **Pending**: Question is submitted and awaiting reviewer decision
+3. **Approved**: Question is live and available to users
+4. **Flagged**: Approved question with user-reported issues requiring attention
 
-## Review Process
+## Simplified Review Process
 
 ### Initial Question Creation
 1. **Creator** creates question and saves as `draft`
 2. Creator can edit multiple times while in draft status
-3. Creator clicks "Submit for Review" → status becomes `under_review`
-4. Question appears in **Review Drafts** queue
+3. Creator clicks "Submit for Review" → status becomes `pending`
+4. Question appears in **Review Queue** with priority scoring
 
-### Review Actions
+### Simplified Review Actions
 
-When reviewing a draft question, any available reviewer can take one of four actions:
+When reviewing a pending question, any available reviewer can take one of three clear actions:
 
-### 1. ✅ Approved
-- **Result**: Question is immediately published as v1.0.0
-- **Status Change**: `under_review` → `published`
+### 1. ✅ Approve
+- **Result**: Question is immediately approved and goes live
+- **Status Change**: `pending` → `approved`
 - **Use Case**: Question is ready for publication as-is
-- **Outcome**: JSON snapshot created, question goes live
+- **Outcome**: Automatic version snapshot created, question available to users
 
-### 2. ✏️ Pending Minor Edits
-- **Result**: Reviewer immediately makes small edits and publishes as v1.0.0
-- **Status Change**: `under_review` → `pending_minor_edits` → `published`
-- **Use Case**: Question needs small fixes (typos, formatting, minor clarity)
-- **Outcome**: Reviewer edits and publishes in one action
+### 2. 🔄 Request Changes
+- **Result**: Question returned to creator with specific feedback
+- **Status Change**: `pending` → `draft`
+- **Use Case**: Question needs improvements but is salvageable
+- **Outcome**: Creator receives feedback and can edit and resubmit
 
-### 3. 🔧 Pending Major Edits
-- **Result**: Question goes to communal draft pool for significant improvements
-- **Status Change**: `under_review` → `pending_major_edits`
-- **Use Case**: Question needs substantial content changes
-- **Outcome**: Any creator/admin can claim, edit, and resubmit for review
-
-### 4. ❌ Rejected
-- **Result**: Question returned to original creator with feedback
-- **Status Change**: `under_review` → `rejected`
-- **Use Case**: Question is fundamentally flawed or inappropriate
-- **Outcome**: Only original creator can edit and resubmit
+### 3. ❌ Reject
+- **Result**: Question returned to creator with detailed feedback
+- **Status Change**: `pending` → `draft`
+- **Use Case**: Question has fundamental issues requiring significant work
+- **Outcome**: Creator can address issues and resubmit when ready
 
 ## Post-Publication Versioning
 

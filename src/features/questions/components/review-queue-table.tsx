@@ -68,7 +68,7 @@ export function ReviewQueueTable() {
           question_options(*),
           question_images(*, image:images(*))
         `)
-        .in('status', ['under_review', 'pending_major_edits', 'pending_minor_edits'])
+        .in('status', ['pending', 'flagged'])
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -222,8 +222,7 @@ export function ReviewQueueTable() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="under_review">Under Review</SelectItem>
+            <SelectItem value="pending">Pending Review</SelectItem>
             <SelectItem value="flagged">Flagged</SelectItem>
           </SelectContent>
         </Select>

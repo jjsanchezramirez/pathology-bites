@@ -169,9 +169,22 @@ export function FlaggedQuestionsTable() {
     setPreviewOpen(true)
   }
 
-  const handleEditQuestion = (question: FlaggedQuestion) => {
-    setSelectedQuestion(question)
-    setEditOpen(true)
+  const handleEditQuestion = async (question: FlaggedQuestion) => {
+    try {
+      // Fetch the full question details from the API to ensure we have all related data
+      const response = await fetch(`/api/admin/questions/${question.id}`)
+      if (response.ok) {
+        const { question: questionDetails } = await response.json()
+        setSelectedQuestion(questionDetails)
+        setEditOpen(true)
+      } else {
+        console.error('Failed to fetch question details')
+        toast.error('Failed to load question details')
+      }
+    } catch (error) {
+      console.error('Failed to fetch question details:', error)
+      toast.error('Failed to load question details')
+    }
   }
 
   const handleResolveFlags = (question: FlaggedQuestion) => {

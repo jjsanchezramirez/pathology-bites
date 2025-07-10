@@ -77,9 +77,9 @@ export function UnifiedReviewQueue() {
     try {
       setLoading(true)
       
-      // Use the unified review queue view
+      // Use the simplified review queue view
       const { data, error } = await supabase
-        .from('v_review_queue')
+        .from('v_simplified_review_queue')
         .select('*')
         .order('priority_score', { ascending: false })
         .order('created_at', { ascending: true })

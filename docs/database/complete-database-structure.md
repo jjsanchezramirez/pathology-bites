@@ -72,19 +72,21 @@
 - Standard tags table
 
 #### question_tags
-- question_id (uuid, FK → questions.id)
-- tag_id (uuid, FK → tags.id)
+- question_id (uuid, FK → questions.id, NOT NULL)
+- tag_id (uuid, FK → tags.id, NOT NULL)
+
+#### question_images
+- question_id (uuid, FK → questions.id, NOT NULL)
+- image_id (uuid, FK → images.id, NOT NULL)
+- question_section (varchar, NOT NULL)
+- order_index (integer, NOT NULL, DEFAULT 0)
 
 ### Supporting Tables
 
 #### images
 - Standard images table with search_vector
 
-#### question_images
-- question_id (uuid, FK → questions.id)
-- image_id (uuid, FK → images.id)
-- question_section (text)
-- order_index (integer)
+
 
 #### question_flags
 - Standard flagging table

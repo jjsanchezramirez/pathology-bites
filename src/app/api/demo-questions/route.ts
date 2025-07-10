@@ -116,7 +116,7 @@ export async function GET(request: Request) {
           difficulty
         `)
         .eq('id', demoData.question_id)
-        .eq('status', 'published')
+        .eq('status', 'approved')
         .single();
 
       if (questionError || !questionData) {
@@ -238,7 +238,7 @@ export async function GET(request: Request) {
         .from('questions')
         .select('id, title, stem, teaching_point, question_references, status, difficulty')
         .eq('id', selectedDemo.question_id)
-        .eq('status', 'published')
+        .eq('status', 'approved')
         .single();
 
       if (questionError || !questionData) {

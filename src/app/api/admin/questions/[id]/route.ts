@@ -9,6 +9,145 @@ async function createAdminClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey)
 }
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: questionId } = await params
+
+    // Check user authentication
+    const userClient = await createClient()
+    const { data: { user }, error: authError } = await userClient.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check user permissions
+    const { data: profile, error: profileError } = await userClient
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError) {
+      return NextResponse.json(
+        { error: 'Failed to verify user permissions' },
+        { status: 500 }
+      )
+    }
+
+    // Use admin client for the actual operations
+    const adminClient = await createAdminClient()
+
+    // First, try a simple query to see if the question exists
+    const { data: simpleQuestion, error: simpleError } = await adminClient
+      .from('questions')
+      .select('*')
+      .eq('id', questionId)
+      .single()
+
+    if (simpleError || !simpleQuestion) {
+      console.error('Simple question fetch error:', simpleError)
+      console.error('Question ID:', questionId)
+      return NextResponse.json(
+        { error: 'Question not found in simple query', details: simpleError?.message },
+        { status: 404 }
+      )
+    }
+
+    // Now try the complex query
+    const { data: question, error: questionError } = await adminClient
+      .from('questions')
+      .select(`
+        *,
+        question_set:sets(
+          id,
+          name,
+          source_type,
+          short_form
+        ),
+        created_by_user:users!questions_created_by_fkey(
+          first_name,
+          last_name
+        ),
+        updated_by_user:users!questions_updated_by_fkey(
+          first_name,
+          last_name
+        ),
+        question_images(
+          image_id,
+          question_section,
+          order_index,
+          image:images(
+            id,
+            url,
+            alt_text,
+            description,
+            category
+          )
+        ),
+        question_options(
+          id,
+          text,
+          is_correct,
+          explanation,
+          order_index
+        ),
+        question_tags(
+          tag:tags(
+            id,
+            name
+          )
+        )
+      `)
+      .eq('id', questionId)
+      .single()
+
+    if (questionError || !question) {
+      console.error('Question fetch error:', questionError)
+      console.error('Question ID:', questionId)
+      console.error('Question data:', question)
+      return NextResponse.json(
+        { error: 'Question not found', details: questionError?.message },
+        { status: 404 }
+      )
+    }
+
+    // Check permissions based on question status and user role
+    const canAccess =
+      profile?.role === 'admin' ||
+      (question.created_by === user.id && ['admin', 'creator'].includes(profile?.role)) ||
+      (['reviewer', 'admin'].includes(profile?.role) && question.status === 'pending')
+
+    if (!canAccess) {
+      return NextResponse.json(
+        { error: 'Insufficient permissions to access this question' },
+        { status: 403 }
+      )
+    }
+
+    // Flatten the tags structure for easier consumption
+    const questionWithFlattenedTags = {
+      ...question,
+      tags: question.question_tags?.map((qt: any) => qt.tag).filter(Boolean) || []
+    }
+
+    return NextResponse.json({
+      success: true,
+      question: questionWithFlattenedTags
+    })
+
+  } catch (error) {
+    console.error('Error fetching question:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -68,22 +207,17 @@ export async function PATCH(
     }
 
     // Check permissions based on question status
-    if (currentQuestion.status === 'published') {
-      // Only admins can edit published questions
+    if (currentQuestion.status === 'approved') {
+      // Only admins can edit approved questions
       if (profile?.role !== 'admin') {
         return NextResponse.json(
-          { error: 'Only admins can edit published questions' },
+          { error: 'Only admins can edit approved questions' },
           { status: 403 }
         )
       }
 
-      // For published questions, updateType is required
-      if (!updateType || !['patch', 'minor', 'major'].includes(updateType)) {
-        return NextResponse.json(
-          { error: 'Update type (patch, minor, major) is required for published questions' },
-          { status: 400 }
-        )
-      }
+      // For approved questions, we'll automatically create a version
+      // No need to require updateType - simplified versioning
     } else {
       // For non-published questions, check if user is creator or admin
       if (currentQuestion.created_by !== user.id && profile?.role !== 'admin') {
@@ -245,33 +379,22 @@ export async function PATCH(
         }
       }
 
-      // Handle versioning for published questions
+      // Handle versioning for approved questions (simplified)
       let versionId = null
-      if (currentQuestion.status === 'published' && updateType) {
-        // Get complete question data for snapshot
-        const { data: snapshotData, error: snapshotError } = await adminClient
-          .rpc('get_question_snapshot_data', { question_id_param: questionId })
+      if (currentQuestion.status === 'approved') {
+        // Use simplified versioning function
+        const { data: newVersionId, error: versionError } = await adminClient
+          .rpc('create_question_version_simplified', {
+            question_id_param: questionId,
+            change_summary_param: changeSummary || 'Question updated',
+            changed_by_param: user.id
+          })
 
-        if (snapshotError) {
-          console.error('Error getting question snapshot:', snapshotError)
+        if (versionError) {
+          console.error('Error creating question version:', versionError)
           // Continue without versioning rather than failing the entire update
         } else {
-          // Update version using atomic function
-          const { data: newVersionId, error: versionError } = await adminClient
-            .rpc('update_question_version', {
-              question_id_param: questionId,
-              update_type_param: updateType,
-              change_summary_param: changeSummary || null,
-              question_data_param: snapshotData,
-              changed_by_param: user.id
-            })
-
-          if (versionError) {
-            console.error('Error updating question version:', versionError)
-            // Continue without versioning rather than failing the entire update
-          } else {
-            versionId = newVersionId
-          }
+          versionId = newVersionId
         }
       }
 

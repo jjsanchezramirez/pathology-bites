@@ -189,9 +189,9 @@ export const DIFFICULTY_CONFIG = {
   }
 } as const;
 
-// Review and workflow types - SIMPLIFIED
-export type ReviewAction = 'approve' | 'reject';
-export type QuestionStatus = 'draft' | 'under_review' | 'published' | 'rejected';
+// Review and workflow types - SIMPLIFIED TO 4 STATUSES
+export type ReviewAction = 'approve' | 'request_changes' | 'reject';
+export type QuestionStatus = 'draft' | 'pending' | 'approved' | 'flagged';
 export type FlagType = 'incorrect_answer' | 'unclear_question' | 'outdated_content' | 'incorrect_explanations' | 'other';
 export type FlagStatus = 'open' | 'closed';
 export type FlagResolutionType = 'fixed' | 'dismissed';
@@ -260,45 +260,52 @@ export interface FlagFormData {
   description: string;
 }
 
-// Status configuration for UI - SIMPLIFIED
+// Status configuration for UI - SIMPLIFIED TO 4 STATUSES
 export const STATUS_CONFIG = {
   draft: {
     label: 'Draft',
     color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300',
     description: 'Question is being created or edited'
   },
-  under_review: {
-    label: 'Under Review',
+  pending: {
+    label: 'Pending Review',
     color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-    description: 'Question is being reviewed by a reviewer'
+    description: 'Question is submitted and awaiting review'
   },
-  published: {
-    label: 'Published',
-    color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300',
-    description: 'Question is live and available to users'
+  approved: {
+    label: 'Approved',
+    color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+    description: 'Question is approved and live for users'
   },
-  rejected: {
-    label: 'Rejected',
-    color: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
-    description: 'Question was rejected and needs revision'
+  flagged: {
+    label: 'Flagged',
+    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300',
+    description: 'Approved question with user-reported issues'
   }
 } as const;
 
-// Review action configuration - SIMPLIFIED
+// Review action configuration - SIMPLIFIED TO 3 ACTIONS
 export const REVIEW_ACTION_CONFIG = {
   approve: {
     label: 'Approve',
     description: 'Approve and publish the question',
     color: 'bg-green-600 hover:bg-green-700',
     icon: '✓',
-    resultStatus: 'published' as QuestionStatus
+    resultStatus: 'approved' as QuestionStatus
+  },
+  request_changes: {
+    label: 'Request Changes',
+    description: 'Send back to creator with feedback for revision',
+    color: 'bg-yellow-600 hover:bg-yellow-700',
+    icon: '↻',
+    resultStatus: 'draft' as QuestionStatus
   },
   reject: {
     label: 'Reject',
-    description: 'Reject the question and send back to creator with feedback',
+    description: 'Reject the question permanently',
     color: 'bg-red-600 hover:bg-red-700',
     icon: '✗',
-    resultStatus: 'rejected' as QuestionStatus
+    resultStatus: 'draft' as QuestionStatus
   }
 } as const;
 

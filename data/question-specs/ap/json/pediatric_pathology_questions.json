@@ -1,0 +1,664 @@
+{
+  "section": "AP 18: Pediatric Pathology Topics for Anatomic Pathology Residents",
+  "total_questions": 70,
+  "total_available_topics": 625,
+  "allocation_strategy": "Clinical judgment prioritizing major pediatric tumors, congenital anomalies, placental pathology, and essential developmental disorders",
+  "questions": [
+    {
+      "question_id": 1,
+      "topic": "Celiac disease in children",
+      "item_locations": ["AP 18-9-g-i"],
+      "education_objective": "Recognize celiac disease morphology and understand diagnostic criteria in pediatric patients",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 2,
+      "topic": "Eosinophilic gastroenteritis",
+      "item_locations": ["AP 18-9-g-ii"],
+      "education_objective": "Identify eosinophilic gastroenteritis patterns and correlate with allergic history",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 3,
+      "topic": "Autoimmune hepatitis in children",
+      "item_locations": ["AP 18-10-f-iv"],
+      "education_objective": "Recognize autoimmune hepatitis features and distinguish from other pediatric liver diseases",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 4,
+      "topic": "Thymic hyperplasia vs. thymoma",
+      "item_locations": ["AP 18-13-e-i"],
+      "education_objective": "Distinguish thymic hyperplasia from thymoma in pediatric and adolescent patients",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 5,
+      "topic": "Nodular fasciitis in children",
+      "item_locations": ["AP 18-18-c-i-1"],
+      "education_objective": "Recognize nodular fasciitis morphology and distinguish from sarcoma",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 6,
+      "topic": "Granular cell tumor features",
+      "item_locations": ["AP 18-18-c-ii-4"],
+      "education_objective": "Identify granular cell tumor morphology and understand clinical behavior",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 7,
+      "topic": "Juvenile papillomatosis of breast",
+      "item_locations": ["AP 18-14-c-ii"],
+      "education_objective": "Recognize juvenile papillomatosis and understand its significance in adolescents",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 8,
+      "topic": "Wilms tumor: morphologic variants and staging",
+      "item_locations": ["AP 18-11-k-i"],
+      "education_objective": "Recognize Wilms tumor morphology and apply staging criteria for treatment planning",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 9,
+      "topic": "Neuroblastoma: morphology and differentiation",
+      "item_locations": ["AP 18-12-f-i"],
+      "education_objective": "Classify neuroblastoma morphologic patterns and correlate with prognosis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 10,
+      "topic": "Hepatoblastoma: epithelial vs. mixed patterns",
+      "item_locations": ["AP 18-10-i-iii"],
+      "education_objective": "Recognize hepatoblastoma histologic patterns and understand prognostic implications",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 11,
+      "topic": "Rhabdomyosarcoma: embryonal vs. alveolar types",
+      "item_locations": ["AP 18-11-l-iii", "AP 18-17-e"],
+      "education_objective": "Distinguish rhabdomyosarcoma subtypes and correlate with molecular markers",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 12,
+      "topic": "Ewing sarcoma: morphology and differential diagnosis",
+      "item_locations": ["AP 18-18-v-1", "AP 18-19-d-ii"],
+      "education_objective": "Recognize Ewing sarcoma and distinguish from other small round cell tumors",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 13,
+      "topic": "Osteosarcoma: variants and treatment response",
+      "item_locations": ["AP 18-19-d-i-1"],
+      "education_objective": "Classify osteosarcoma variants and assess chemotherapy response",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 14,
+      "topic": "Medulloblastoma: WHO classification",
+      "item_locations": ["AP 18-6-i-i"],
+      "education_objective": "Recognize medulloblastoma morphology and apply WHO classification criteria",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 15,
+      "topic": "Pilocytic astrocytoma features",
+      "item_locations": ["AP 18-6-i-ii"],
+      "education_objective": "Identify pilocytic astrocytoma morphology and understand benign behavior",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 16,
+      "topic": "Retinoblastoma: morphology and staging",
+      "item_locations": ["AP 18-8-c-i"],
+      "education_objective": "Recognize retinoblastoma features and apply staging for treatment planning",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 17,
+      "topic": "Burkitt lymphoma: morphology and molecular markers",
+      "item_locations": ["AP 18-13-g-i-1"],
+      "education_objective": "Identify Burkitt lymphoma features and correlate with MYC translocations",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 18,
+      "topic": "Acute lymphoblastic leukemia: B-cell vs. T-cell",
+      "item_locations": ["AP 18-13-g-iv-1", "AP 18-13-g-iv-2"],
+      "education_objective": "Distinguish B-cell from T-cell ALL using immunophenotyping",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 19,
+      "topic": "Langerhans cell histiocytosis features",
+      "item_locations": ["AP 18-7-e-i", "AP 18-13-d-i"],
+      "education_objective": "Recognize LCH morphology and confirm diagnosis with immunohistochemistry",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 20,
+      "topic": "Congenital heart disease: left-to-right shunts",
+      "item_locations": ["AP 18-4-c-ii"],
+      "education_objective": "Classify congenital heart defects and understand hemodynamic consequences",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 21,
+      "topic": "Hypoplastic left heart syndrome",
+      "item_locations": ["AP 18-4-c-vii"],
+      "education_objective": "Recognize HLHS morphology and understand surgical management implications",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 22,
+      "topic": "Hyaline membrane disease features",
+      "item_locations": ["AP 18-5-b-ii"],
+      "education_objective": "Identify hyaline membrane disease and correlate with surfactant deficiency",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 23,
+      "topic": "Bronchopulmonary dysplasia changes",
+      "item_locations": ["AP 18-5-b-iii"],
+      "education_objective": "Recognize BPD morphologic changes and understand pathogenesis",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 24,
+      "topic": "Congenital diaphragmatic hernia complications",
+      "item_locations": ["AP 18-5-i-ii"],
+      "education_objective": "Recognize CDH and understand associated pulmonary hypoplasia",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 25,
+      "topic": "Hirschsprung disease: aganglionosis patterns",
+      "item_locations": ["AP 18-9-k-i-1"],
+      "education_objective": "Recognize aganglionosis and apply diagnostic criteria for Hirschsprung disease",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 26,
+      "topic": "Necrotizing enterocolitis features",
+      "item_locations": ["AP 18-9-h-iii"],
+      "education_objective": "Identify NEC morphologic changes and understand complications",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 27,
+      "topic": "Meckel diverticulum and ectopic tissue",
+      "item_locations": ["AP 18-9-e-i"],
+      "education_objective": "Recognize Meckel diverticulum and identify ectopic gastric/pancreatic tissue",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 28,
+      "topic": "Juvenile polyps vs. adenomatous polyps",
+      "item_locations": ["AP 18-9-n-i", "AP 18-9-n-iv"],
+      "education_objective": "Distinguish juvenile from adenomatous polyps and assess malignant potential",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 29,
+      "topic": "Inflammatory bowel disease in children",
+      "item_locations": ["AP 18-9-i-ii"],
+      "education_objective": "Recognize pediatric IBD patterns and distinguish from infectious colitis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 30,
+      "topic": "Alpha-1 antitrypsin deficiency",
+      "item_locations": ["AP 18-10-d-i"],
+      "education_objective": "Recognize A1AT deficiency liver changes and understand inheritance pattern",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 31,
+      "topic": "Wilson disease: hepatic manifestations",
+      "item_locations": ["AP 18-10-d-iii"],
+      "education_objective": "Identify Wilson disease liver pathology and correlate with copper accumulation",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 32,
+      "topic": "Cystic fibrosis: multi-organ manifestations",
+      "item_locations": ["AP 18-10-d-ii", "AP 18-10-l-i-1"],
+      "education_objective": "Recognize CF pathologic changes across multiple organ systems",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 33,
+      "topic": "Biliary atresia features",
+      "item_locations": ["AP 18-10-c"],
+      "education_objective": "Recognize biliary atresia morphology and understand surgical implications",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 34,
+      "topic": "Multicystic renal dysplasia",
+      "item_locations": ["AP 18-11-d-i"],
+      "education_objective": "Identify multicystic dysplastic kidney and distinguish from other cystic diseases",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 35,
+      "topic": "Congenital mesoblastic nephroma",
+      "item_locations": ["AP 18-11-k-ii"],
+      "education_objective": "Distinguish congenital mesoblastic nephroma from Wilms tumor",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 36,
+      "topic": "Clear cell sarcoma of kidney",
+      "item_locations": ["AP 18-11-k-iii"],
+      "education_objective": "Recognize clear cell sarcoma and distinguish from Wilms tumor",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 37,
+      "topic": "Rhabdoid tumor features",
+      "item_locations": ["AP 18-11-k-iv"],
+      "education_objective": "Identify rhabdoid tumor morphology and understand aggressive behavior",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 38,
+      "topic": "Neural tube defects: types and features",
+      "item_locations": ["AP 18-6-c-v"],
+      "education_objective": "Classify neural tube defects and understand developmental mechanisms",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 39,
+      "topic": "Intraventricular hemorrhage grading",
+      "item_locations": ["AP 18-2-g-iii-1"],
+      "education_objective": "Grade intraventricular hemorrhage and correlate with gestational age",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 40,
+      "topic": "Holoprosencephaly spectrum",
+      "item_locations": ["AP 18-6-c-ii"],
+      "education_objective": "Recognize holoprosencephaly variants and understand developmental basis",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 41,
+      "topic": "Trisomy 21: cardiac and GI manifestations",
+      "item_locations": ["AP 18-3-b-i", "AP 18-4-b-ii"],
+      "education_objective": "Identify Down syndrome-associated malformations and understand genetic basis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 42,
+      "topic": "Trisomy 18 and 13: distinguishing features",
+      "item_locations": ["AP 18-3-b-ii", "AP 18-3-b-iii"],
+      "education_objective": "Distinguish trisomy 18 from trisomy 13 based on malformation patterns",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 43,
+      "topic": "22q deletion syndrome features",
+      "item_locations": ["AP 18-4-b-iii"],
+      "education_objective": "Recognize DiGeorge syndrome manifestations and understand genetic basis",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 44,
+      "topic": "Congenital infections: TORCH complex",
+      "item_locations": ["AP 18-2-e"],
+      "education_objective": "Recognize congenital infection patterns and distinguish causative organisms",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 45,
+      "topic": "Teratomas: mature vs. immature",
+      "item_locations": ["AP 18-2-f-i"],
+      "education_objective": "Distinguish mature from immature teratomas and assess malignant potential",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 46,
+      "topic": "Hydrops fetalis: immune vs. non-immune",
+      "item_locations": ["AP 18-2-c"],
+      "education_objective": "Distinguish immune from non-immune hydrops and identify underlying causes",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 47,
+      "topic": "Intrauterine growth restriction patterns",
+      "item_locations": ["AP 18-2-b-ii"],
+      "education_objective": "Recognize IUGR patterns and correlate with placental pathology",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 48,
+      "topic": "Inflammatory myofibroblastic tumor",
+      "item_locations": ["AP 18-18-c-i-5"],
+      "education_objective": "Recognize IMT morphology and distinguish from other spindle cell lesions",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 49,
+      "topic": "Fibromatosis: pediatric patterns",
+      "item_locations": ["AP 18-18-c-i-2"],
+      "education_objective": "Identify fibromatosis in children and understand local aggressive behavior",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 50,
+      "topic": "Lipoblastoma vs. liposarcoma",
+      "item_locations": ["AP 18-18-c-iii-2"],
+      "education_objective": "Distinguish lipoblastoma from liposarcoma in pediatric patients",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 51,
+      "topic": "Infantile hemangioma features",
+      "item_locations": ["AP 18-18-c-iv-2"],
+      "education_objective": "Recognize infantile hemangioma and understand growth phases",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 52,
+      "topic": "Vascular malformations vs. hemangiomas",
+      "item_locations": ["AP 18-18-c-iv-1"],
+      "education_objective": "Distinguish vascular malformations from hemangiomas using clinical and morphologic criteria",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 53,
+      "topic": "Neurofibromatosis manifestations",
+      "item_locations": ["AP 18-18-c-ii-2"],
+      "education_objective": "Recognize NF1 manifestations and understand tumor predisposition",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 54,
+      "topic": "Schwannoma vs. neurofibroma",
+      "item_locations": ["AP 18-18-c-ii-3"],
+      "education_objective": "Distinguish schwannoma from neurofibroma in pediatric patients",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 55,
+      "topic": "Malignant peripheral nerve sheath tumor",
+      "item_locations": ["AP 18-18-c-ii-7"],
+      "education_objective": "Recognize MPNST and understand association with NF1",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 56,
+      "topic": "Desmoplastic small round cell tumor",
+      "item_locations": ["AP 18-18-c-v-2"],
+      "education_objective": "Identify DSRCT morphology and understand molecular characteristics",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 57,
+      "topic": "Synovial sarcoma in children",
+      "item_locations": ["AP 18-18-c-v-6"],
+      "education_objective": "Recognize synovial sarcoma and correlate with SYT translocations",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 58,
+      "topic": "Epithelioid sarcoma features",
+      "item_locations": ["AP 18-18-c-v-7"],
+      "education_objective": "Identify epithelioid sarcoma and distinguish from other epithelioid tumors",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "medium"
+    },
+    {
+      "question_id": 59,
+      "topic": "Ovarian teratomas in children",
+      "item_locations": ["AP 18-15-g-ii"],
+      "education_objective": "Recognize ovarian germ cell tumors and assess maturity",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 60,
+      "topic": "Testicular torsion changes",
+      "item_locations": ["AP 18-17-b-iii-1"],
+      "education_objective": "Recognize testicular torsion morphology and understand time-dependent changes",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 61,
+      "topic": "Cryptorchidism and malignancy risk",
+      "item_locations": ["AP 18-17-b-i"],
+      "education_objective": "Understand cryptorchidism complications and malignancy risk",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 62,
+      "topic": "Thyroid carcinoma in children",
+      "item_locations": ["AP 18-12-d-ii"],
+      "education_objective": "Recognize pediatric thyroid carcinoma and understand radiation association",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 63,
+      "topic": "Pheochromocytoma features",
+      "item_locations": ["AP 18-12-f-iii"],
+      "education_objective": "Identify pheochromocytoma morphology and understand syndromic associations",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 64,
+      "topic": "Spitz tumors: benign vs. malignant features",
+      "item_locations": ["AP 18-7-e-iii"],
+      "education_objective": "Distinguish Spitz nevus from spitzoid melanoma in children",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    },
+    {
+      "question_id": 65,
+      "topic": "Juvenile xanthogranuloma",
+      "item_locations": ["AP 18-7-e-xi"],
+      "education_objective": "Recognize JXG morphology and understand clinical behavior",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 66,
+      "topic": "Pleomorphic adenoma in children",
+      "item_locations": ["AP 18-9-d-ii-1"],
+      "education_objective": "Recognize pleomorphic adenoma in pediatric salivary glands",
+      "designation": "C",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 67,
+      "topic": "Hemolytic disease of the newborn",
+      "item_locations": ["AP 18-20-b-i"],
+      "education_objective": "Understand HDN pathophysiology and laboratory correlation",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 68,
+      "topic": "Neonatal alloimmune thrombocytopenia",
+      "item_locations": ["AP 18-20-b-ii"],
+      "education_objective": "Recognize NAIT and distinguish from other causes of neonatal thrombocytopenia",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "medium"
+    },
+    {
+      "question_id": 69,
+      "topic": "Sudden infant death syndrome",
+      "item_locations": ["AP 18-22-c"],
+      "education_objective": "Understand SIDS diagnostic criteria and differential diagnosis",
+      "designation": "AR",
+      "difficulty": "medium",
+      "yield": "high"
+    },
+    {
+      "question_id": 70,
+      "topic": "Child abuse: pattern recognition",
+      "item_locations": ["AP 18-22-e"],
+      "education_objective": "Recognize morphologic patterns suggestive of child abuse",
+      "designation": "AR",
+      "difficulty": "hard",
+      "yield": "high"
+    }
+  ],
+  "summary_statistics": {
+    "by_designation": {
+      "core_only": 30,
+      "advanced_resident_only": 40,
+      "combined_c_ar": 0
+    },
+    "by_difficulty": {
+      "easy": 0,
+      "medium": 57,
+      "hard": 13
+    },
+    "by_yield": {
+      "high": 62,
+      "medium": 8,
+      "low": 0
+    },
+    "by_category": {
+      "pediatric_tumors": 21,
+      "congenital_anomalies": 12,
+      "soft_tissue_tumors": 10,
+      "other_categories": 9,
+      "developmental_disorders": 8,
+      "gi_liver_inflammatory": 7,
+      "genetic_syndromes": 3
+    }
+  }
+}

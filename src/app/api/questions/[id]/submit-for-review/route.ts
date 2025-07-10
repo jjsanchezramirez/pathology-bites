@@ -46,10 +46,10 @@ export async function POST(
       }, { status: 403 });
     }
 
-    // Check if question is in draft or rejected status (both can be submitted for review)
-    if (question.status !== 'draft' && question.status !== 'rejected') {
+    // Check if question is in draft status (only draft questions can be submitted for review)
+    if (question.status !== 'draft') {
       return NextResponse.json({
-        error: `Question cannot be submitted for review. Current status: ${question.status}`
+        error: `Question cannot be submitted for review. Current status: ${question.status}. Only draft questions can be submitted.`
       }, { status: 400 });
     }
 
@@ -105,11 +105,11 @@ export async function POST(
       }, { status: 400 });
     }
 
-    // Update question status to under_review
+    // Update question status to pending (simplified from under_review)
     const { error: updateError } = await supabase
       .from('questions')
       .update({
-        status: 'under_review',
+        status: 'pending',
         updated_at: new Date().toISOString()
       })
       .eq('id', questionId);
@@ -121,11 +121,11 @@ export async function POST(
       }, { status: 500 });
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       message: 'Question submitted for review successfully',
       questionId,
-      newStatus: 'under_review'
+      newStatus: 'pending'
     });
 
   } catch (error) {

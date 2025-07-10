@@ -11,7 +11,6 @@ interface ImageData {
 }
 
 interface QuestionImageData {
-  id: string;
   image_id: string;
   question_section: string;
   order_index: number;
@@ -117,7 +116,6 @@ export async function GET(
             explanation
           ),
           question_images(
-            id,
             image_id,
             question_section,
             order_index,

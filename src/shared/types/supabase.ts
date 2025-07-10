@@ -142,34 +142,62 @@ export interface Database {
         }
         Relationships: []
       }
-      questions_tags: {
+      question_images: {
         Row: {
-          id: string
           question_id: string
-          tag_id: string
-          created_at: string
+          image_id: string
+          question_section: string
+          order_index: number
         }
         Insert: {
-          id?: string
           question_id: string
-          tag_id: string
-          created_at?: string
+          image_id: string
+          question_section: string
+          order_index?: number
         }
         Update: {
-          id?: string
           question_id?: string
-          tag_id?: string
-          created_at?: string
+          image_id?: string
+          question_section?: string
+          order_index?: number
         }
         Relationships: [
           {
-            foreignKeyName: "questions_tags_question_id_fkey"
+            foreignKeyName: "question_images_question_id_fkey"
             columns: ["question_id"]
             referencedRelation: "questions"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "questions_tags_tag_id_fkey"
+            foreignKeyName: "question_images_image_id_fkey"
+            columns: ["image_id"]
+            referencedRelation: "images"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      question_tags: {
+        Row: {
+          question_id: string
+          tag_id: string
+        }
+        Insert: {
+          question_id: string
+          tag_id: string
+        }
+        Update: {
+          question_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_tags_question_id_fkey"
+            columns: ["question_id"]
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_tags_tag_id_fkey"
             columns: ["tag_id"]
             referencedRelation: "tags"
             referencedColumns: ["id"]
@@ -380,46 +408,7 @@ export interface Database {
           }
         ]
       }
-      question_images: {
-        Row: {
-          id: string
-          question_id: string
-          image_id: string
-          question_section: string
-          order_index: number
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          question_id: string
-          image_id: string
-          question_section: string
-          order_index?: number
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          question_id?: string
-          image_id?: string
-          question_section?: string
-          order_index?: number
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "question_images_image_id_fkey"
-            columns: ["image_id"]
-            referencedRelation: "images"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_images_question_id_fkey"
-            columns: ["question_id"]
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
+
       users: {
         Row: {
           id: string

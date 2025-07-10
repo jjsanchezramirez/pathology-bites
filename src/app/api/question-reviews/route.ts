@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Validate action - SIMPLIFIED
-    const validActions = ['approve', 'reject'];
+    // Validate action - SIMPLIFIED TO 3 ACTIONS
+    const validActions = ['approve', 'request_changes', 'reject'];
     if (!validActions.includes(action)) {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
@@ -47,14 +47,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Question not found' }, { status: 404 });
     }
 
-    // Determine new status based on action - SIMPLIFIED
+    // Determine new status based on action - SIMPLIFIED TO 4 STATUSES
     let newStatus = question.status;
     switch (action) {
       case 'approve':
-        newStatus = 'published';
+        newStatus = 'approved';
+        break;
+      case 'request_changes':
+        newStatus = 'draft';
         break;
       case 'reject':
-        newStatus = 'rejected';
+        newStatus = 'draft';
         break;
     }
 

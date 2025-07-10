@@ -763,12 +763,9 @@ export function CreateQuestionDialog({
                               </FormControl>
                               <SelectContent>
                                 <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="under_review">Under Review</SelectItem>
-                                <SelectItem value="published">Published</SelectItem>
-                                <SelectItem value="rejected">Rejected</SelectItem>
-                                <SelectItem value="pending_major_edits">Pending Major Edits</SelectItem>
-                                <SelectItem value="pending_minor_edits">Pending Minor Edits</SelectItem>
-                                <SelectItem value="archived">Archived</SelectItem>
+                                <SelectItem value="pending">Pending Review</SelectItem>
+                                <SelectItem value="approved">Approved</SelectItem>
+                                <SelectItem value="flagged">Flagged</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />

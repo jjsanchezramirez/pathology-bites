@@ -106,12 +106,9 @@ function TableControls({
           <SelectContent>
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="under_review">Under Review</SelectItem>
-            <SelectItem value="approved_with_edits">Approved with Edits</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-            <SelectItem value="published">Published</SelectItem>
+            <SelectItem value="pending">Pending Review</SelectItem>
+            <SelectItem value="approved">Approved</SelectItem>
             <SelectItem value="flagged">Flagged</SelectItem>
-            <SelectItem value="archived">Archived</SelectItem>
           </SelectContent>
         </Select>
         <Select value={questionSetFilter} onValueChange={onQuestionSetChange}>
@@ -197,8 +194,7 @@ function RowActions({
   onDelete,
   onFlag,
   onViewHistory,
-  onCreateVersion,
-  onPreview
+  onCreateVersion
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
@@ -206,7 +202,6 @@ function RowActions({
   onFlag?: (question: QuestionWithDetails) => void;
   onViewHistory?: (question: QuestionWithDetails) => void;
   onCreateVersion?: (question: QuestionWithDetails) => void;
-  onPreview?: (question: QuestionWithDetails) => void;
 }) {
   const { isAdmin } = useUserRole();
 
@@ -224,12 +219,6 @@ function RowActions({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {onPreview && (
-          <DropdownMenuItem onClick={() => onPreview(question)}>
-            <Eye className="h-4 w-4 mr-2" />
-            Preview
-          </DropdownMenuItem>
-        )}
         {canEdit ? (
           <DropdownMenuItem onClick={() => onEdit(question)}>
             <Edit className="h-4 w-4 mr-2" />
@@ -293,20 +282,20 @@ function QuestionRow({
 
   return (
     <TableRow key={question.id}>
+      <TableCell className="text-center">
+        {(question.flag_count || 0) > 0 && (
+          <Flag className="h-4 w-4 text-red-500" />
+        )}
+      </TableCell>
       <TableCell className="max-w-xs">
         <div className="flex-1 min-w-0">
           <p className="line-clamp-2 text-sm font-medium">{question.title}</p>
         </div>
       </TableCell>
         <TableCell>
-          <Badge className={DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.color}>
-            {DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.label || question.difficulty}
+          <Badge className={STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.color}>
+            {STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.label || question.status}
           </Badge>
-        </TableCell>
-        <TableCell className="max-w-xs">
-          <p className="line-clamp-1 text-sm">
-            {question.question_set ? getQuestionSetDisplayName(question.question_set) : 'No set assigned'}
-          </p>
         </TableCell>
         <TableCell>
           <div className="flex flex-wrap gap-1 max-w-[150px]">
@@ -330,32 +319,30 @@ function QuestionRow({
             )}
           </div>
         </TableCell>
-        <TableCell>
-          <div className="flex items-center gap-2">
-            <Badge className={STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.color}>
-              {STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.label || question.status}
-            </Badge>
-            {/* Show flagged indicator if question has pending flags */}
-            {question.status === 'published' && question.flag_count && question.flag_count > 0 && (
-              <Badge variant="destructive" className="text-xs">
-                🚩 Flagged
-              </Badge>
-            )}
-          </div>
+        <TableCell className="max-w-xs">
+          <p className="line-clamp-1 text-sm">
+            {question.question_set ? getQuestionSetDisplayName(question.question_set) : 'No set assigned'}
+          </p>
         </TableCell>
         <TableCell>
           <div className="text-sm">
             {question.version_string || `${question.version_major || 1}.${question.version_minor || 0}.${question.version_patch || 0}`}
           </div>
         </TableCell>
-        <TableCell>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <ImageIcon className="h-4 w-4" />
-            {question.image_count || 0}
-          </div>
-        </TableCell>
         <TableCell className="text-sm text-muted-foreground">
           {new Date(question.created_at).toLocaleDateString()}
+        </TableCell>
+        <TableCell className="text-center">
+          {onPreview && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onPreview(question)}
+              className="h-8 w-8 p-0"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          )}
         </TableCell>
         <TableCell>
           <RowActions
@@ -365,7 +352,6 @@ function QuestionRow({
             onFlag={onFlag}
             onViewHistory={onViewHistory}
             onCreateVersion={onCreateVersion}
-            onPreview={onPreview}
           />
         </TableCell>
       </TableRow>
@@ -437,9 +423,22 @@ export function QuestionsTable() {
     setPage(0);
   }, []);
 
-  const handleEdit = useCallback((question: QuestionWithDetails) => {
-    setSelectedQuestion(question);
-    setShowEditDialog(true);
+  const handleEdit = useCallback(async (question: QuestionWithDetails) => {
+    try {
+      // Fetch the full question details from the API to ensure we have all related data
+      const response = await fetch(`/api/admin/questions/${question.id}`)
+      if (response.ok) {
+        const { question: questionDetails } = await response.json()
+        setSelectedQuestion(questionDetails)
+        setShowEditDialog(true)
+      } else {
+        console.error('Failed to fetch question details')
+        toast.error('Failed to load question details')
+      }
+    } catch (error) {
+      console.error('Failed to fetch question details:', error)
+      toast.error('Failed to load question details')
+    }
   }, []);
 
   const handleDelete = useCallback((question: QuestionWithDetails) => {
@@ -553,14 +552,14 @@ export function QuestionsTable() {
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
+              <TableHead className="w-[50px]"></TableHead>
               <TableHead>Title</TableHead>
-              <TableHead>Difficulty</TableHead>
-              <TableHead>Question Set</TableHead>
-              <TableHead>Category</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Set</TableHead>
               <TableHead>Version</TableHead>
-              <TableHead>Images</TableHead>
               <TableHead className="w-32">Created</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>

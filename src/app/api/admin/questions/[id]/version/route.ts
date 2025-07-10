@@ -20,13 +20,8 @@ export async function POST(
     const body = await request.json()
     const { updateType, changeSummary, questionData } = body
 
-    // Validate required fields
-    if (!updateType || !['patch', 'minor', 'major'].includes(updateType)) {
-      return NextResponse.json(
-        { error: 'Valid update type (patch, minor, major) is required' },
-        { status: 400 }
-      )
-    }
+    // Simplified versioning - no need to specify update type
+    // All updates are treated as minor version increments
 
     // Check user authentication and admin role
     const userClient = await createClient()
@@ -67,36 +62,18 @@ export async function POST(
       )
     }
 
-    if (question.status !== 'published') {
+    if (question.status !== 'approved') {
       return NextResponse.json(
-        { error: 'Only published questions can be versioned' },
+        { error: 'Only approved questions can be versioned' },
         { status: 400 }
       )
     }
 
-    // Get complete question data for snapshot if not provided
-    let snapshotData = questionData
-    if (!snapshotData) {
-      const { data: snapshot, error: snapshotError } = await adminClient
-        .rpc('get_question_snapshot_data', { question_id_param: questionId })
-
-      if (snapshotError) {
-        console.error('Error getting question snapshot:', snapshotError)
-        return NextResponse.json(
-          { error: 'Failed to create question snapshot' },
-          { status: 500 }
-        )
-      }
-      snapshotData = snapshot
-    }
-
-    // Update question version using the atomic function
+    // Create version using simplified versioning function
     const { data: versionId, error: versionError } = await adminClient
-      .rpc('update_question_version', {
+      .rpc('create_question_version_simplified', {
         question_id_param: questionId,
-        update_type_param: updateType,
-        change_summary_param: changeSummary || null,
-        question_data_param: snapshotData,
+        change_summary_param: changeSummary || 'Manual version creation',
         changed_by_param: user.id
       })
 

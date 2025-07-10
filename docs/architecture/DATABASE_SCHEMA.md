@@ -160,21 +160,22 @@ Images used in questions and content.
 Images associated with questions.
 
 **Table: `question_images`**
-- `id` (uuid, primary key)
-- `question_id` (uuid, foreign key to questions)
-- `image_id` (uuid, foreign key to images)
-- `question_section` (text, required) - stem, explanation, option
-- `order_index` (integer, required)
+- `question_id` (uuid, foreign key to questions, NOT NULL)
+- `image_id` (uuid, foreign key to images, NOT NULL)
+- `question_section` (varchar, required) - stem, explanation, option
+- `order_index` (integer, required, DEFAULT 0)
+
+**Note**: This is a junction table with composite primary key (question_id, image_id, question_section). No separate `id` column.
 - `created_at` (timestamp)
 
 ### Question Tags
 Many-to-many relationship between questions and tags.
 
-**Table: `questions_tags`**
-- `id` (uuid, primary key)
-- `question_id` (uuid, foreign key to questions)
-- `tag_id` (uuid, foreign key to tags)
-- `created_at` (timestamp)
+**Table: `question_tags`**
+- `question_id` (uuid, foreign key to questions, NOT NULL)
+- `tag_id` (uuid, foreign key to tags, NOT NULL)
+
+**Note**: This is a junction table with composite primary key (question_id, tag_id). No separate `id` column.
 
 ### Tags
 Flexible tagging system.
@@ -228,6 +229,21 @@ Complete audit trail of question changes with semantic versioning.
 - `changed_by` (uuid, foreign key to users)
 - `change_summary` (text, optional)
 - `created_at` (timestamp)
+
+## 🔧 **Database Structure Notes**
+
+### Junction Tables
+Several tables serve as junction tables for many-to-many relationships and do NOT have separate `id` columns:
+- `question_tags` - Links questions to tags
+- `question_images` - Links questions to images with positioning info
+
+### Critical Structure Details
+- **question_images**: Uses composite primary key, no separate `id` column
+- **question_tags**: Uses composite primary key, no separate `id` column
+- **Foreign Key Naming**: All foreign keys follow the pattern `{table}_{column}_fkey`
+
+### Type Safety
+Always refer to this documentation when updating Supabase types or writing database queries to ensure field names and relationships match the actual database structure.
 
 ## 🎯 **Key Improvements from Reorganization**
 
