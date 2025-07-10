@@ -33,6 +33,8 @@ import {
 import { toast } from 'sonner'
 import { createClient } from '@/shared/services/client'
 import { Check } from "lucide-react"
+import { ImprovedImageDialog } from "@/shared/components/common/improved-image-dialog"
+import { ImageCarousel } from "@/features/images/components/image-carousel"
 
 // Utility function to compare two objects and find differences
 function getChanges(oldData: any, newData: any): string[] {
@@ -103,21 +105,8 @@ function VersionSnapshotView({ version }: { version: QuestionVersion }) {
     )
   }
 
-  // Transform the snapshot data to match QuestionWithDetails format
-  const transformedQuestion = {
-    id: version.question_id,
-    title: questionData.title || 'Untitled Question',
-    stem: questionData.stem || '',
-    difficulty: questionData.difficulty || 'Medium',
-    teaching_point: questionData.teaching_point || '',
-    question_references: questionData.question_references || '',
-    status: 'published',
-    created_at: version.created_at,
-    question_options: questionData.answer_options || [],
-    question_images: questionData.question_images || [],
-    categories: questionData.categories || [],
-    tags: questionData.tags || []
-  }
+  // Transform the snapshot data using the helper function
+  const transformedQuestion = transformQuestionData(version)
 
   return (
     <div className="space-y-4">
@@ -126,7 +115,7 @@ function VersionSnapshotView({ version }: { version: QuestionVersion }) {
         <div className="grid grid-cols-2 gap-4">
           <div><span className="font-medium">Version:</span> {version.version_string}</div>
           <div><span className="font-medium">Created:</span> {new Date(version.created_at).toLocaleString()}</div>
-          <div><span className="font-medium">Update Type:</span> {version.update_type}</div>
+          <div><span className="font-medium">Update Type:</span> {version.update_type.charAt(0).toUpperCase() + version.update_type.slice(1)}</div>
           <div><span className="font-medium">Creator:</span> {
             version.creator ?
               `${version.creator.first_name} ${version.creator.last_name}` :
@@ -227,19 +216,26 @@ function VersionComparisonView({
 function transformQuestionData(version: QuestionVersion) {
   const questionData = version.question_snapshot
 
+  // Handle both old and new data structures
+  const question = questionData?.question || questionData
+  const questionOptions = questionData?.question_options || question?.question_options || questionData?.answer_options || []
+  const questionImages = questionData?.question_images || question?.question_images || []
+  const categories = questionData?.categories || question?.categories || []
+  const tags = questionData?.tags || question?.tags || []
+
   return {
     id: version.question_id,
-    title: questionData?.title || 'Untitled Question',
-    stem: questionData?.stem || '',
-    difficulty: questionData?.difficulty || 'Medium',
-    teaching_point: questionData?.teaching_point || '',
-    question_references: questionData?.question_references || '',
-    status: 'published',
+    title: question?.title || questionData?.title || 'Untitled Question',
+    stem: question?.stem || questionData?.stem || '',
+    difficulty: question?.difficulty || questionData?.difficulty || 'Medium',
+    teaching_point: question?.teaching_point || questionData?.teaching_point || '',
+    question_references: question?.question_references || questionData?.question_references || '',
+    status: question?.status || questionData?.status || 'published',
     created_at: version.created_at,
-    question_options: questionData?.answer_options || [],
-    question_images: questionData?.question_images || [],
-    categories: questionData?.categories || [],
-    tags: questionData?.tags || []
+    question_options: questionOptions,
+    question_images: questionImages,
+    categories: categories,
+    tags: tags
   }
 }
 
@@ -273,6 +269,13 @@ function QuestionSnapshotPreview({
 }) {
   const optionLabels = ['A', 'B', 'C', 'D', 'E']
 
+  // Get question images for the stem and explanation
+  const stemImages = question.question_images?.filter((qi: any) => qi.question_section === 'stem') || []
+  const explanationImages = question.question_images?.filter((qi: any) => qi.question_section === 'explanation') || []
+
+  // Get incorrect options with explanations
+  const incorrectOptions = question.question_options?.filter((option: any) => !option.is_correct && option.explanation) || []
+
   return (
     <div className={`space-y-4 ${isComparison ? 'text-sm' : ''}`}>
       {/* Title */}
@@ -286,6 +289,31 @@ function QuestionSnapshotPreview({
       <div className={`${isComparison ? 'text-xs' : 'text-sm'} text-foreground/90`}>
         {question.stem}
       </div>
+
+      {/* Stem Images */}
+      {stemImages.length > 0 && (
+        <div>
+          {stemImages.length === 1 ? (
+            <ImprovedImageDialog
+              src={stemImages[0].image?.url || ''}
+              alt={stemImages[0].image?.alt_text || ''}
+              caption={stemImages[0].image?.description || ''}
+              className="border rounded-lg"
+              aspectRatio="16/10"
+            />
+          ) : (
+            <ImageCarousel
+              images={stemImages.map((si: any) => ({
+                id: si.image?.id || '',
+                url: si.image?.url || '',
+                alt: si.image?.alt_text || '',
+                caption: si.image?.description || ''
+              }))}
+              className="border rounded-lg"
+            />
+          )}
+        </div>
+      )}
 
       {/* Answer Options */}
       <div className="space-y-2">
@@ -323,32 +351,83 @@ function QuestionSnapshotPreview({
         )}
       </div>
 
-      {/* Teaching Point */}
-      {question.teaching_point && (
-        <div className="bg-muted/50 p-3 rounded">
-          <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} mb-2`}>Teaching Point</h5>
-          <div className={`text-muted-foreground ${isComparison ? 'text-xs' : 'text-sm'}`}>
-            {question.teaching_point}
-          </div>
-        </div>
-      )}
+      {/* Teaching Point and Explanation Section */}
+      {(question.teaching_point || explanationImages.length > 0 || question.question_references || incorrectOptions.length > 0) && (
+        <div className="p-3 rounded-lg bg-muted/50 space-y-4">
+          {/* Teaching Point */}
+          {question.teaching_point && (
+            <div>
+              <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} uppercase mb-1`}>Teaching Point</h5>
+              <div className={`text-muted-foreground ${isComparison ? 'text-xs' : 'text-sm'}`}>
+                {question.teaching_point}
+              </div>
+            </div>
+          )}
 
-      {/* References */}
-      {question.question_references && (
-        <div className="bg-muted/50 p-3 rounded">
-          <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} mb-2`}>References</h5>
-          <div className={`text-muted-foreground ${isComparison ? 'text-xs' : 'text-sm'}`}>
-            {question.question_references}
-          </div>
+          {/* Incorrect Option Explanations */}
+          {incorrectOptions.length > 0 && (
+            <div>
+              <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} uppercase mb-2`}>Incorrect Option Explanations</h5>
+              <div className="space-y-2">
+                {incorrectOptions.map((option: any, index: number) => {
+                  const originalIndex = question.question_options?.findIndex((opt: any) => opt.id === option.id) || 0
+                  const optionLabel = optionLabels[originalIndex] || (originalIndex + 1).toString()
+
+                  return (
+                    <div key={option.id} className={`${isComparison ? 'text-xs' : 'text-sm'}`}>
+                      <span className="font-medium">Option {optionLabel}:</span>
+                      <span className="text-muted-foreground ml-2">{option.explanation}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Explanation Images */}
+          {explanationImages.length > 0 && (
+            <div>
+              <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} uppercase mb-1`}>Reference Images</h5>
+              {explanationImages.length === 1 ? (
+                <ImprovedImageDialog
+                  src={explanationImages[0].image?.url || ''}
+                  alt={explanationImages[0].image?.alt_text || ''}
+                  caption={explanationImages[0].image?.description || ''}
+                  className="border rounded-lg"
+                  aspectRatio="16/10"
+                />
+              ) : (
+                <ImageCarousel
+                  images={explanationImages.map((ei: any) => ({
+                    id: ei.image?.id || '',
+                    url: ei.image?.url || '',
+                    alt: ei.image?.alt_text || '',
+                    caption: ei.image?.description || ''
+                  }))}
+                  className="border rounded-lg"
+                />
+              )}
+            </div>
+          )}
+
+          {/* References */}
+          {question.question_references && (
+            <div>
+              <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} uppercase mb-1`}>References</h5>
+              <div className={`text-muted-foreground ${isComparison ? 'text-xs' : 'text-sm'}`}>
+                {question.question_references}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* Metadata */}
       <div className={`flex items-center gap-4 pt-2 border-t ${isComparison ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
         <Badge variant="outline" className={isComparison ? 'text-xs' : ''}>
-          {question.difficulty}
+          {question.difficulty?.charAt(0).toUpperCase() + question.difficulty?.slice(1) || 'Medium'}
         </Badge>
-        <span>Status: {question.status}</span>
+        <span>Status: {question.status?.charAt(0).toUpperCase() + question.status?.slice(1) || 'Published'}</span>
         {question.categories && question.categories.length > 0 && (
           <span>Category: {question.categories[0].name}</span>
         )}
@@ -479,7 +558,7 @@ export function VersionHistoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <DialogOverlay className="backdrop-blur-md bg-black/20" />
-        <DialogContent className="max-w-4xl max-h-[85vh]">
+        <DialogContent className="w-full !max-w-[min(95vw,1600px)] max-h-[85vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <History className="h-5 w-5" />
@@ -657,7 +736,7 @@ export function VersionHistoryDialog({
       <Dialog open={snapshotDialogOpen} onOpenChange={setSnapshotDialogOpen}>
         <DialogPortal>
           <DialogOverlay className="backdrop-blur-md bg-black/20" />
-          <DialogContent className="w-full !max-w-[min(90vw,1100px)] max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-full !max-w-[min(95vw,1400px)] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Eye className="h-5 w-5" />
