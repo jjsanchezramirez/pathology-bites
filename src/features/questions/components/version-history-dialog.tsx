@@ -19,7 +19,6 @@ import {
   TableRow,
 } from "@/shared/components/ui/table"
 import { Button } from "@/shared/components/ui/button"
-import { Badge } from "@/shared/components/ui/badge"
 import { Separator } from "@/shared/components/ui/separator"
 import {
   History,
@@ -35,6 +34,7 @@ import { toast } from 'sonner'
 import { createClient } from '@/shared/services/client'
 import { ImprovedImageDialog } from "@/shared/components/common/improved-image-dialog"
 import { ImageCarousel } from "@/features/images/components/image-carousel"
+import { Badge } from "@/shared/components/ui/badge"
 
 // Utility function to compare two objects and find differences
 function getChanges(oldData: any, newData: any): string[] {
