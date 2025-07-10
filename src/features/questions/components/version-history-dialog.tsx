@@ -324,7 +324,7 @@ function QuestionSnapshotPreview({
             const isCorrect = option.is_correct
 
             return (
-              <div key={option.id || index}
+              <div
                 key={option.id || index}
                 className={`
                   p-2 rounded-md border ${isComparison ? 'text-xs' : 'text-sm'}
