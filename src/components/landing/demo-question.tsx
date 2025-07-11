@@ -172,17 +172,17 @@ export default function DemoQuestion() {
                 <div>
                   <h4 className="font-medium text-xs uppercase mb-1">Reference Chart</h4>
                   <div className="bg-white rounded-lg border overflow-hidden">
-                    <ImageCarousel 
-                      images={[currentQuestion.comparativeImage]} 
+                    <ImageCarousel
+                      images={[currentQuestion.comparativeImage]}
                       className="m-0 max-w-full"
                       fillContainer={false}
                     />
-                    {currentQuestion.comparativeImage.caption && (
-                      <div className="p-2 text-xs text-muted-foreground">
-                        {currentQuestion.comparativeImage.caption}
-                      </div>
-                    )}
                   </div>
+                  {currentQuestion.comparativeImage.caption && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      {currentQuestion.comparativeImage.caption}
+                    </div>
+                  )}
                 </div>
               )}
 

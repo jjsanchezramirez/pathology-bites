@@ -151,17 +151,16 @@ export function ImageCarousel({
       {/* Fullscreen overlay */}
       {isFullscreen && (
         <div className="fixed inset-0 z-50 bg-background/90 flex items-center justify-center p-4" onClick={toggleFullscreen}>
-          <div className="relative max-w-5xl max-h-[90vh] w-full" onClick={e => e.stopPropagation()}>
-            <div className="relative w-full h-full">
-              <Image
-                src={currentImage.url}
-                alt={currentImage.alt || "Pathology image fullscreen view"}
-                fill={true}
-                sizes="100vw"
-                className="object-contain"
-                priority={true} // Load fullscreen image with higher priority
-              />
-            </div>
+          <div className="relative" onClick={e => e.stopPropagation()}>
+            <Image
+              src={currentImage.url}
+              alt={currentImage.alt || "Pathology image fullscreen view"}
+              width={0}
+              height={0}
+              sizes="100vw"
+              className="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain"
+              priority={true} // Load fullscreen image with higher priority
+            />
             <button
               onClick={toggleFullscreen}
               className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/80 flex items-center justify-center shadow-md"
