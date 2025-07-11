@@ -15,7 +15,7 @@ export function Footer() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between h-16 text-sm">
         <div className="flex items-center gap-2">
           <MicroscopeIcon className="h-4 w-4 text-primary" />
-          <p className="text-muted-foreground">© 2024 Pathology Bites. All rights reserved.</p>
+          <p className="text-muted-foreground">© 2025 Pathology Bites. All rights reserved.</p>
         </div>
         <nav className="flex gap-6 text-muted-foreground">
           <Link href="/faq" className="hover:text-primary transition-colors">FAQ</Link>

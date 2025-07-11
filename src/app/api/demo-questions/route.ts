@@ -230,6 +230,9 @@ export async function GET(request: Request) {
       const selectedIndex = currentIndex % demoQuestions.length;
       const selectedDemo = demoQuestions[selectedIndex];
 
+      console.log('Selected demo question:', selectedDemo);
+      console.log('Looking for question ID:', selectedDemo.question_id);
+
       // Include next index in response for client to track
       const nextIndex = (selectedIndex + 1) % demoQuestions.length;
 

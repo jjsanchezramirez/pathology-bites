@@ -139,17 +139,17 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
           className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-8"
           onClick={() => setShowModal(false)}
         >
-          {/* Image container - slightly smaller than fullscreen */}
-          <div className="relative max-w-[90vw] max-h-[90vh] bg-white/5 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+          {/* Image container - let image determine size within viewport limits */}
+          <div className="relative bg-white/5 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
             {currentImage.url ? (
               <img
                 src={currentImage.url}
                 alt={currentImage.alt}
-                className="w-full h-full object-contain"
+                className="max-w-[90vw] max-h-[90vh] object-contain"
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-white/70">
+              <div className="w-full h-full flex items-center justify-center text-white/70 min-w-[300px] min-h-[200px]">
                 No image available
               </div>
             )}

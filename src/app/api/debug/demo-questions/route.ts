@@ -46,11 +46,11 @@ export async function GET() {
       .select('*', { count: 'exact', head: true })
       .eq('is_active', true);
 
-    // Get count of published questions referenced by demo questions
+    // Get count of approved questions referenced by demo questions
     const { count: publishedCount } = await supabase
       .from('questions')
       .select('*', { count: 'exact', head: true })
-      .eq('status', 'published')
+      .eq('status', 'approved')
       .in('id', demoQuestions?.map(dq => dq.question_id) || []);
 
     return NextResponse.json({

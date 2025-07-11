@@ -8,7 +8,6 @@ import { Check, X, ExternalLink } from "lucide-react"
 import QuestionSkeleton from "./skeletons/demo-question-skeleton"
 import DemoQuestionError from "./demo-question-error"
 import { ImageCarousel } from "@/features/images/components/image-carousel"
-import { ImprovedImageDialog } from "./improved-image-dialog"
 import { useDemoQuestions } from "@/shared/hooks/use-demo-questions"
 
 export default function DemoQuestion() {
@@ -100,22 +99,12 @@ export default function DemoQuestion() {
           {/* Images */}
           {currentQuestion.images && currentQuestion.images.length > 0 && (
             <div>
-            {currentQuestion.images.length === 1 ? (
-              <ImprovedImageDialog
-                src={currentQuestion.images[0].url}
-                alt={currentQuestion.images[0].alt}
-                caption={currentQuestion.images[0].caption}
-                className="border rounded-lg"
-                aspectRatio="16/10"
-              />
-            ) : (
               <ImageCarousel
                 images={currentQuestion.images}
                 className="border rounded-lg"
               />
-            )}
-          </div>
-        )}
+            </div>
+          )}
 
         <div className="grid gap-2" role="listbox" aria-label="Answer options">
           {currentQuestion.options.map((option, index) => {
@@ -176,21 +165,19 @@ export default function DemoQuestion() {
               {currentQuestion.comparativeImage && (
                 <div>
                   <h4 className="font-medium text-xs uppercase mb-1">Reference Chart</h4>
-                  <div className="bg-white rounded-lg border overflow-hidden">
-                    <div className="relative" style={{ aspectRatio: '16/10' }}>
-                      <img
-                        src={currentQuestion.comparativeImage.url}
-                        alt={currentQuestion.comparativeImage.alt}
-                        className="w-full h-full object-contain"
-                        loading="lazy"
-                      />
+                  <ImageCarousel
+                    images={[{
+                      url: currentQuestion.comparativeImage.url,
+                      alt: currentQuestion.comparativeImage.alt,
+                      caption: currentQuestion.comparativeImage.caption
+                    }]}
+                    className="bg-white border rounded-lg"
+                  />
+                  {currentQuestion.comparativeImage.caption && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      {currentQuestion.comparativeImage.caption}
                     </div>
-                    {currentQuestion.comparativeImage.caption && (
-                      <div className="p-2 text-xs text-muted-foreground">
-                        {currentQuestion.comparativeImage.caption}
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
               )}
 

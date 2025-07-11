@@ -44,7 +44,7 @@ export function ImprovedImageDialog({
     <>
       {/* Clickable image with consistent aspect ratio */}
       <div
-        className={`cursor-pointer rounded-lg overflow-hidden bg-muted ${className}`}
+        className={`relative cursor-pointer rounded-lg overflow-hidden bg-muted ${className}`}
         style={{ aspectRatio }}
         onClick={openDialog}
       >
@@ -71,19 +71,19 @@ export function ImprovedImageDialog({
       {/* True fullscreen modal */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+          className="fixed inset-0 z-[9999] bg-black flex items-center justify-center p-4"
           onClick={() => setIsOpen(false)}
         >
-          {/* Image fills entire screen */}
+          {/* Image sized to fit screen without cropping */}
           {src ? (
             <img
               src={src}
               alt={alt}
-              className="w-screen h-screen object-contain"
+              className="max-w-full max-h-full object-contain"
               onClick={(e) => e.stopPropagation()}
             />
           ) : (
-            <div className="w-screen h-screen flex items-center justify-center text-white/70">
+            <div className="w-full h-full flex items-center justify-center text-white/70">
               No image available
             </div>
           )}

@@ -9,30 +9,29 @@ export const GET = rateLimitedHandler(async function() {
   try {
     const supabase = await createClient()
 
-    // Get basic public stats from the dashboard stats view
-    const { data: dashboardStats, error: statsError } = await supabase
-      .from('v_dashboard_stats')
-      .select('published_questions, total_images')
-      .single()
+    // Get published questions count directly
+    const { count: questionCount, error: questionError } = await supabase
+      .from('questions')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'published')
 
-    if (statsError) {
-      console.error('Error fetching dashboard stats:', statsError)
-      // Return fallback data if view doesn't exist or has issues
-      return NextResponse.json({
-        success: true,
-        data: {
-          questions: 500,
-          images: 1200,
-          categories: 25
-        }
-      })
-    }
+    // Get total images count
+    const { count: imageCount, error: imageError } = await supabase
+      .from('images')
+      .select('*', { count: 'exact', head: true })
 
     // Get category count
     const { count: categoryCount, error: categoryError } = await supabase
       .from('categories')
       .select('*', { count: 'exact', head: true })
 
+    // Log any errors but don't fail the request
+    if (questionError) {
+      console.error('Error fetching question count:', questionError)
+    }
+    if (imageError) {
+      console.error('Error fetching image count:', imageError)
+    }
     if (categoryError) {
       console.error('Error fetching category count:', categoryError)
     }
@@ -40,22 +39,22 @@ export const GET = rateLimitedHandler(async function() {
     return NextResponse.json({
       success: true,
       data: {
-        questions: dashboardStats?.published_questions || 500,
-        images: dashboardStats?.total_images || 1200,
-        categories: categoryCount || 25
+        questions: questionCount || 0,
+        images: imageCount || 0,
+        categories: categoryCount || 0
       }
     })
 
   } catch (error) {
     console.error('Error fetching public stats:', error)
-    
+
     // Return fallback data on any error
     return NextResponse.json({
       success: true,
       data: {
-        questions: 500,
-        images: 1200,
-        categories: 25
+        questions: 0,
+        images: 0,
+        categories: 0
       }
     })
   }

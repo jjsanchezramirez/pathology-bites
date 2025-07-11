@@ -138,15 +138,15 @@ export function SimpleCarousel({ images, className = '' }: SimpleCarouselProps) 
       {/* Fullscreen modal */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+          className="fixed inset-0 z-[9999] bg-black flex items-center justify-center p-4"
           onClick={() => setIsOpen(false)}
         >
-          {/* Image container - truly fullscreen */}
-          <div className="absolute inset-0 flex items-center justify-center">
+          {/* Image container - sized to fit without cropping */}
+          <div className="relative flex items-center justify-center">
             <img
               src={currentImage.url}
               alt={currentImage.alt}
-              className="w-screen h-screen object-contain"
+              className="max-w-full max-h-full object-contain"
               onClick={(e) => e.stopPropagation()}
             />
 
