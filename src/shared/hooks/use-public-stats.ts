@@ -9,9 +9,9 @@ export interface PublicStats {
 
 export function usePublicStats() {
   const [stats, setStats] = useState<PublicStats>({
-    questions: 500,
-    images: 1200,
-    categories: 25
+    questions: 0,
+    images: 0,
+    categories: 0
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -23,20 +23,27 @@ export function usePublicStats() {
         setError(null)
 
         const response = await fetch('/api/public/stats')
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch stats')
         }
 
         const result = await response.json()
-        
-        if (result.success && result.data) {
+
+        if (result.success && result.data !== undefined) {
           setStats(result.data)
+        } else {
+          throw new Error('Invalid response format')
         }
       } catch (err) {
         console.error('Error fetching public stats:', err)
         setError(err instanceof Error ? err.message : 'Failed to fetch stats')
-        // Keep fallback values on error
+        // Use fallback values only on error
+        setStats({
+          questions: 0,
+          images: 0,
+          categories: 0
+        })
       } finally {
         setLoading(false)
       }
