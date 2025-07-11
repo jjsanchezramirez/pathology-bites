@@ -9,11 +9,11 @@ export const GET = rateLimitedHandler(async function() {
   try {
     const supabase = await createClient()
 
-    // Get published questions count directly
+    // Get approved questions count directly (published questions are now 'approved')
     const { count: questionCount, error: questionError } = await supabase
       .from('questions')
       .select('*', { count: 'exact', head: true })
-      .eq('status', 'published')
+      .eq('status', 'approved')
 
     // Get total images count
     const { count: imageCount, error: imageError } = await supabase
