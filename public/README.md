@@ -20,13 +20,7 @@ public/
 
 ### Data Files
 
-#### `content_specifications_merged.json`
-Consolidated pathology content specifications accessible via HTTP.
-- **Purpose**: Provides content data to the frontend application
-- **Source**: Generated from individual JSON files in `data/content-specs/`
-- **Access**: Available at `/content_specifications_merged.json`
-- **Format**: JSON with AP and CP sections, metadata, and hierarchical content
-- **Size**: ~1.5MB containing 22 sections (17 AP + 5 CP)
+**Note:** Data files have been moved to `src/data/` for better organization. They are now served via API endpoints rather than static files.
 
 ### Icons
 
@@ -146,10 +140,10 @@ const data = await response.json();
 ## Integration with Application
 
 ### Content Specifications
-The merged content specifications file is loaded by the admin interface:
+Content specifications are now served via API endpoints:
 ```typescript
 // In admin components
-const response = await fetch('/content_specifications_merged.json');
+const response = await fetch('/api/content-specifications');
 const contentSpecs = await response.json();
 ```
 

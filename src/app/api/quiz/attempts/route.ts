@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse request body
-    const { sessionId, questionId, selectedAnswerId, timeSpent } = await request.json()
+    const { sessionId, questionId, selectedAnswerId, firstAnswerId, timeSpent } = await request.json()
 
     // Validate required fields
     if (!sessionId || !questionId) {
@@ -45,27 +45,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if attempt already exists for this question in this session
-    const { data: existingAttempt, error: existingError } = await supabase
-      .from('quiz_attempts')
-      .select('id')
-      .eq('quiz_session_id', sessionId)
-      .eq('question_id', questionId)
-      .single()
+    // Note: Duplicate submission check is handled on the client side
 
-    if (existingAttempt) {
-      return NextResponse.json(
-        { error: 'Answer already submitted for this question' },
-        { status: 400 }
-      )
-    }
-
-    // Submit answer using the service
+    // Submit answer using the service with authenticated client
     const attempt = await quizService.submitAnswer(
       sessionId,
       questionId,
       selectedAnswerId,
-      timeSpent || 0
+      timeSpent || 0,
+      supabase,
+      firstAnswerId
     )
 
     return NextResponse.json({

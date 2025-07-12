@@ -1,7 +1,7 @@
 // src/app/(dashboard)/dashboard/page.tsx
 "use client"
 
-import { Suspense } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { Skeleton } from "@/shared/components/ui/skeleton"
@@ -17,7 +17,26 @@ import {
   BarChart3,
   Calendar
 } from "lucide-react"
+import { toast } from "sonner"
 import Link from "next/link"
+
+interface DashboardStats {
+  totalQuestions: number
+  completedQuestions: number
+  averageScore: number
+  studyStreak: number
+  recentQuizzes: number
+  weeklyGoal: number
+  currentWeekProgress: number
+  recentActivity: Array<{
+    id: string
+    type: string
+    title: string
+    description: string
+    timestamp: string
+    score?: number
+  }>
+}
 
 // Loading components
 function StatsLoading() {
@@ -80,43 +99,33 @@ function ActionsLoading() {
   )
 }
 
-// Mock data - replace with real data fetching
-const mockStats = {
-  totalQuestions: 1246,
-  completedQuestions: 128,
-  averageScore: 76,
-  studyStreak: 12,
-  recentQuizzes: 5,
-  weeklyGoal: 50,
-  currentWeekProgress: 32
-}
 
-const mockRecentActivity = [
-  {
-    id: 1,
-    type: 'quiz_completed',
-    title: 'Completed Renal Pathology Quiz',
-    description: 'Scored 85% on 20 questions',
-    timestamp: '2 hours ago',
-    score: 85
-  },
-  {
-    id: 2,
-    type: 'study_streak',
-    title: 'Study Streak Milestone',
-    description: 'Reached 12 days in a row!',
-    timestamp: '1 day ago'
-  },
-  {
-    id: 3,
-    type: 'quiz_started',
-    title: 'Started Dermatopathology Quiz',
-    description: 'Progress: 15/30 questions',
-    timestamp: '2 days ago'
-  }
-]
 
 export default function DashboardPage() {
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  // Fetch dashboard stats on component mount
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/dashboard/stats')
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard stats')
+        }
+        const result = await response.json()
+        setStats(result.data)
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error)
+        toast.error('Failed to load dashboard data')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [])
+
   return (
     <div className="space-y-6">
       <div>
@@ -127,7 +136,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <Suspense fallback={<StatsLoading />}>
+      {loading ? (
+        <StatsLoading />
+      ) : stats ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -135,9 +146,9 @@ export default function DashboardPage() {
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockStats.completedQuestions}</div>
+              <div className="text-2xl font-bold">{stats.completedQuestions}</div>
               <p className="text-xs text-muted-foreground">
-                of {mockStats.totalQuestions} total questions
+                of {stats.totalQuestions} total questions
               </p>
             </CardContent>
           </Card>
@@ -148,9 +159,9 @@ export default function DashboardPage() {
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockStats.averageScore}%</div>
+              <div className="text-2xl font-bold">{stats.averageScore}%</div>
               <p className="text-xs text-muted-foreground">
-                +5% from last week
+                {stats.averageScore >= 80 ? 'Excellent!' : stats.averageScore >= 70 ? 'Good progress' : 'Keep practicing'}
               </p>
             </CardContent>
           </Card>
@@ -161,9 +172,9 @@ export default function DashboardPage() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockStats.studyStreak} days</div>
+              <div className="text-2xl font-bold">{stats.studyStreak} days</div>
               <p className="text-xs text-muted-foreground">
-                Keep it up!
+                {stats.studyStreak > 0 ? 'Keep it up!' : 'Start your streak today!'}
               </p>
             </CardContent>
           </Card>
@@ -174,79 +185,86 @@ export default function DashboardPage() {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockStats.currentWeekProgress}/{mockStats.weeklyGoal}</div>
+              <div className="text-2xl font-bold">{stats.currentWeekProgress}/{stats.weeklyGoal}</div>
               <p className="text-xs text-muted-foreground">
-                {Math.round((mockStats.currentWeekProgress / mockStats.weeklyGoal) * 100)}% of weekly goal
+                {Math.round((stats.currentWeekProgress / stats.weeklyGoal) * 100)}% of weekly goal
               </p>
             </CardContent>
           </Card>
         </div>
-      </Suspense>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-muted-foreground">No data available</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         {/* Recent Activity */}
-        <Suspense fallback={<ActivityLoading />}>
+        {loading ? (
+          <ActivityLoading />
+        ) : (
           <Card className="md:col-span-4">
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockRecentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-4 rounded-lg border p-4">
-                    {activity.type === 'quiz_completed' && <Award className="h-5 w-5 mt-0.5 text-green-500" />}
-                    {activity.type === 'study_streak' && <TrendingUp className="h-5 w-5 mt-0.5 text-blue-500" />}
-                    {activity.type === 'quiz_started' && <Play className="h-5 w-5 mt-0.5 text-orange-500" />}
-                    <div className="space-y-1 flex-1">
-                      <p className="text-sm font-medium leading-none">{activity.title}</p>
-                      <p className="text-sm text-muted-foreground">{activity.description}</p>
+                {stats?.recentActivity && stats.recentActivity.length > 0 ? (
+                  stats.recentActivity.map((activity) => (
+                    <div key={activity.id} className="flex items-start gap-4 rounded-lg border p-4">
+                      {activity.type === 'quiz_completed' && <Award className="h-5 w-5 mt-0.5 text-green-500" />}
+                      {activity.type === 'study_streak' && <TrendingUp className="h-5 w-5 mt-0.5 text-blue-500" />}
+                      {activity.type === 'quiz_started' && <Play className="h-5 w-5 mt-0.5 text-orange-500" />}
+                      <div className="space-y-1 flex-1">
+                        <p className="text-sm font-medium leading-none">{activity.title}</p>
+                        <p className="text-sm text-muted-foreground">{activity.description}</p>
+                      </div>
+                      <div className="text-xs text-muted-foreground">{activity.timestamp}</div>
                     </div>
-                    <div className="text-xs text-muted-foreground">{activity.timestamp}</div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No recent activity. Start a quiz to see your progress!</p>
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>
-        </Suspense>
+        )}
 
         {/* Quick Actions */}
-        <Suspense fallback={<ActionsLoading />}>
-          <Card className="md:col-span-3">
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Link href="/dashboard/quiz/new" className="block">
-                <Button className="w-full justify-between">
-                  Start New Quiz
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </Link>
+        <Card className="md:col-span-3">
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Link href="/dashboard/quiz/new" className="block">
+              <Button className="w-full justify-between">
+                Start New Quiz
+                <Plus className="h-4 w-4" />
+              </Button>
+            </Link>
 
-              <Link href="/dashboard/quiz/tutor" className="block">
-                <Button variant="outline" className="w-full justify-between">
-                  Tutor Mode
-                  <Brain className="h-4 w-4" />
-                </Button>
-              </Link>
+            <Link href="/dashboard/performance" className="block">
+              <Button variant="outline" className="w-full justify-between">
+                View Performance
+                <BarChart3 className="h-4 w-4" />
+              </Button>
+            </Link>
 
-              <Link href="/dashboard/performance" className="block">
-                <Button variant="outline" className="w-full justify-between">
-                  View Performance
-                  <BarChart3 className="h-4 w-4" />
-                </Button>
-              </Link>
-
-              <Link href="/dashboard/quizzes" className="block">
-                <Button variant="outline" className="w-full justify-between">
-                  My Quizzes
-                  <Clock className="h-4 w-4" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </Suspense>
+            <Link href="/dashboard/quizzes" className="block">
+              <Button variant="outline" className="w-full justify-between">
+                My Quizzes
+                <Clock className="h-4 w-4" />
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

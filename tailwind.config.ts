@@ -90,5 +90,6 @@ module.exports = {
   plugins: [
     require("tailwindcss-animate")
     // Container queries plugin removed - now built into Tailwind core
+    // Line-clamp is built into Tailwind CSS v3.3+ - no plugin needed
   ],
 }

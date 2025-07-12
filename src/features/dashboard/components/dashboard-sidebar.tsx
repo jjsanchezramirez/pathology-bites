@@ -10,8 +10,7 @@ import {
   Target,
   BookOpen,
   TrendingUp,
-  Microscope,
-  FileText
+  Microscope
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -58,11 +57,6 @@ const navigation = [
     name: "Progress",
     href: "/dashboard/progress",
     icon: TrendingUp
-  },
-  {
-    name: "Pathology Outlines",
-    href: "/dashboard/pathology-outlines",
-    icon: FileText
   }
 ]
 

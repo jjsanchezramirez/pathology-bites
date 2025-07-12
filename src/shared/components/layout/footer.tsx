@@ -18,6 +18,8 @@ export function Footer() {
           <p className="text-muted-foreground">© 2025 Pathology Bites. All rights reserved.</p>
         </div>
         <nav className="flex gap-6 text-muted-foreground">
+          <Link href="/images" className="hover:text-primary transition-colors">Images</Link>
+          <Link href="/tools/citations" className="hover:text-primary transition-colors">Citations</Link>
           <Link href="/faq" className="hover:text-primary transition-colors">FAQ</Link>
           <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
           <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>

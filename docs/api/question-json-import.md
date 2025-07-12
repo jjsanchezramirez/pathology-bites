@@ -86,7 +86,7 @@ Both are arrays of UUID strings that must reference existing records in the data
 
 ## Complete Example
 
-See `docs/sample-question-import.json` for a complete working example.
+See `src/data/api-examples/sample-question-import.json` for a complete working example.
 
 ## Validation
 

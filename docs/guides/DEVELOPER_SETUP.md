@@ -21,7 +21,7 @@ git clone https://github.com/jjsanchezramirez/pathology-bites.git
 cd pathology-bites
 
 # Run the automated setup script
-./scripts/setup-dev.sh
+./tools/scripts/setup-dev.sh
 ```
 
 ### Manual Setup

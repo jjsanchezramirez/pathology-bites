@@ -101,7 +101,7 @@ def check_content_presence(data):
 
 def main():
     # Load the merged JSON file
-    with open('content_specifications_merged.json', 'r', encoding='utf-8') as f:
+    with open('src/data/content_specifications_merged.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     
     # Check section sequences

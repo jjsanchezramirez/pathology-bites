@@ -16,8 +16,11 @@ export class QuizService {
   /**
    * Create a new quiz session
    */
-  async createQuizSession(userId: string, formData: QuizCreationForm): Promise<QuizSession> {
+  async createQuizSession(userId: string, formData: QuizCreationForm, authenticatedSupabase?: any): Promise<QuizSession> {
     try {
+      // Use authenticated client if provided, otherwise fall back to default
+      const supabaseClient = authenticatedSupabase || this.supabase
+
       // First, get questions based on the criteria
       const questions = await this.getQuestionsForQuiz(formData)
       
@@ -34,35 +37,40 @@ export class QuizService {
       const limitedQuestions = finalQuestions.slice(0, formData.questionCount)
 
       // Create quiz session
-      const { data: session, error } = await this.supabase
+      const sessionData = {
+        user_id: userId,
+        title: formData.title || 'Custom Quiz',
+        config: {
+          mode: formData.mode,
+          timing: formData.timing,
+          questionCount: formData.questionCount,
+          questionType: formData.questionType,
+          categorySelection: formData.categorySelection,
+          selectedCategories: formData.selectedCategories,
+          shuffleQuestions: formData.shuffleQuestions,
+          shuffleAnswers: formData.shuffleAnswers,
+          showProgress: formData.showProgress,
+          showExplanations: formData.mode === 'tutor',
+          timePerQuestion: formData.timing === 'timed' ? 90 : undefined
+        },
+        questions: limitedQuestions.map(q => q.id),
+        current_question_index: 0,
+        status: 'not_started',
+        total_questions: limitedQuestions.length
+      }
+
+      console.log('Creating quiz session with data:', sessionData)
+
+      const { data: session, error } = await supabaseClient
         .from('quiz_sessions')
-        .insert({
-          user_id: userId,
-          title: formData.title,
-          config: {
-            mode: formData.mode,
-            questionCount: formData.questionCount,
-            timeLimit: formData.timeLimit,
-            timePerQuestion: formData.timePerQuestion,
-            difficulty: formData.difficulty,
-            categories: formData.selectedCategories,
-            tags: formData.selectedTags,
-            questionSets: formData.selectedQuestionSets,
-            shuffleQuestions: formData.shuffleQuestions,
-            shuffleAnswers: formData.shuffleAnswers,
-            showExplanations: formData.showExplanations,
-            allowReview: formData.allowReview,
-            showProgress: formData.showProgress
-          },
-          questions: limitedQuestions.map(q => q.id),
-          current_question_index: 0,
-          status: 'not_started',
-          total_questions: limitedQuestions.length
-        })
+        .insert(sessionData)
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Quiz session creation error:', error)
+        throw error
+      }
 
       return {
         ...session,
@@ -84,54 +92,138 @@ export class QuizService {
    * Get questions for quiz based on criteria
    */
   private async getQuestionsForQuiz(formData: QuizCreationForm): Promise<QuestionWithDetails[]> {
+    console.log('Getting questions for quiz with criteria:', formData)
+
+    // Start with a simple query first to avoid complex join issues
     let query = this.supabase
       .from('questions')
       .select(`
-        *,
-        question_options(*),
-        question_images(*, image:images(*)),
-        question_set:sets(*)
+        id,
+        title,
+        stem,
+        teaching_point,
+        question_references,
+        difficulty,
+        category_id,
+        question_set_id,
+        status,
+        created_by,
+        updated_by,
+        version,
+        version_major,
+        version_minor,
+        version_patch,
+        version_string,
+        is_flagged,
+        flag_count,
+        created_at,
+        updated_at,
+        search_vector
       `)
-      .eq('status', 'published')
-
-    // Filter by difficulty
-    if (formData.difficulty && formData.difficulty !== 'mixed') {
-      query = query.eq('difficulty', formData.difficulty)
-    }
-
-    // Filter by question sets
-    if (formData.selectedQuestionSets.length > 0) {
-      query = query.in('question_set_id', formData.selectedQuestionSets)
-    }
+      .eq('status', 'approved')
 
     const { data: questions, error } = await query
 
-    if (error) throw error
+    if (error) {
+      console.error('Error fetching questions:', error)
+      throw error
+    }
 
-    // Filter by categories if specified
+    console.log(`Found ${questions?.length || 0} approved questions`)
     let filteredQuestions = questions || []
 
-    if (formData.selectedCategories.length > 0) {
+    // Filter by category selection
+    if (formData.categorySelection === 'ap_only') {
+      // Get AP subcategory IDs
+      const { data: apCategories } = await this.supabase
+        .from('categories')
+        .select('id')
+        .eq('parent_id', (
+          await this.supabase
+            .from('categories')
+            .select('id')
+            .eq('name', 'Anatomic Pathology')
+            .eq('level', 1)
+            .single()
+        ).data?.id)
+
+      if (apCategories && apCategories.length > 0) {
+        const apCategoryIds = apCategories.map(cat => cat.id)
+        filteredQuestions = filteredQuestions.filter(q =>
+          q.category_id && apCategoryIds.includes(q.category_id)
+        )
+      }
+    } else if (formData.categorySelection === 'cp_only') {
+      // Get CP subcategory IDs
+      const { data: cpCategories } = await this.supabase
+        .from('categories')
+        .select('id')
+        .eq('parent_id', (
+          await this.supabase
+            .from('categories')
+            .select('id')
+            .eq('name', 'Clinical Pathology')
+            .eq('level', 1)
+            .single()
+        ).data?.id)
+
+      if (cpCategories && cpCategories.length > 0) {
+        const cpCategoryIds = cpCategories.map(cat => cat.id)
+        filteredQuestions = filteredQuestions.filter(q =>
+          q.category_id && cpCategoryIds.includes(q.category_id)
+        )
+      }
+    } else if (formData.categorySelection === 'custom' && formData.selectedCategories.length > 0) {
       filteredQuestions = filteredQuestions.filter(q =>
         q.category_id && formData.selectedCategories.includes(q.category_id)
       )
     }
 
-    return filteredQuestions
+    console.log(`After filtering by category selection (${formData.categorySelection}): ${filteredQuestions.length} questions`)
+
+    // TODO: Filter by question type (unused, incorrect, marked, correct)
+    // This would require user-specific data about question attempts and flags
+    // For now, we'll return all questions matching the category criteria
+
+    // Convert to QuestionWithDetails format (simplified for now)
+    const questionsWithDetails: QuestionWithDetails[] = filteredQuestions.map(q => ({
+      ...q,
+      question_options: [], // Will be loaded separately when needed
+      question_images: [], // Will be loaded separately when needed
+      question_set: undefined, // Will be loaded separately when needed
+      set: undefined, // Will be loaded separately when needed
+      categories: undefined, // Will be loaded separately when needed
+      tags: undefined, // Will be loaded separately when needed
+      analytics: undefined,
+      created_by_name: undefined,
+      updated_by_name: undefined,
+      image_count: 0,
+      latest_flag_date: undefined
+    }))
+
+    return questionsWithDetails
   }
 
   /**
    * Get quiz session by ID
    */
-  async getQuizSession(sessionId: string): Promise<QuizSession | null> {
+  async getQuizSession(sessionId: string, authenticatedSupabase?: any): Promise<QuizSession | null> {
     try {
-      const { data: session, error } = await this.supabase
+      // Use authenticated client if provided, otherwise fall back to default
+      const supabaseClient = authenticatedSupabase || this.supabase
+
+      console.log('Getting quiz session:', sessionId)
+
+      const { data: session, error } = await supabaseClient
         .from('quiz_sessions')
         .select('*')
         .eq('id', sessionId)
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Error getting quiz session:', error)
+        throw error
+      }
       if (!session) return null
 
       // Get questions for this session
@@ -169,39 +261,59 @@ export class QuizService {
 
     if (error) throw error
 
-    // Maintain the order from questionIds
+    // Maintain the order from questionIds and map to expected format
     const questionMap = new Map(questions?.map(q => [q.id, q]) || [])
-    return questionIds.map(id => questionMap.get(id)).filter(Boolean) as QuestionWithDetails[]
+    const orderedQuestions = questionIds.map(id => questionMap.get(id)).filter(Boolean) as any[]
+
+    // Map to QuestionWithDetails format with proper answer_options mapping
+    return orderedQuestions.map(q => ({
+      ...q,
+      answer_options: q.question_options || [], // Map question_options to answer_options for backward compatibility
+      question_options: q.question_options || []
+    }))
   }
 
   /**
    * Submit an answer for a question
    */
   async submitAnswer(
-    sessionId: string, 
-    questionId: string, 
+    sessionId: string,
+    questionId: string,
     selectedAnswerId: string | null,
-    timeSpent: number
+    timeSpent: number,
+    authenticatedSupabase?: any,
+    firstAnswerId?: string | null
   ): Promise<QuizAttempt> {
     try {
+      // Use authenticated client if provided, otherwise fall back to default
+      const supabaseClient = authenticatedSupabase || this.supabase
+
+      console.log('Submitting answer:', { sessionId, questionId, selectedAnswerId, timeSpent })
+
       // Get the correct answer
-      const { data: answerOptions, error: answerError } = await this.supabase
+      const { data: answerOptions, error: answerError } = await supabaseClient
         .from('question_options')
         .select('*')
         .eq('question_id', questionId)
 
-      if (answerError) throw answerError
+      if (answerError) {
+        console.error('Error fetching answer options:', answerError)
+        throw answerError
+      }
 
-      const selectedAnswer = answerOptions?.find(opt => opt.id === selectedAnswerId)
+      const selectedAnswer = answerOptions?.find((opt: any) => opt.id === selectedAnswerId)
       const isCorrect = selectedAnswer?.is_correct || false
 
+      console.log('Answer evaluation:', { selectedAnswer, isCorrect })
+
       // Create quiz attempt
-      const { data: attempt, error } = await this.supabase
+      const { data: attempt, error } = await supabaseClient
         .from('quiz_attempts')
         .insert({
           quiz_session_id: sessionId,
           question_id: questionId,
           selected_answer_id: selectedAnswerId,
+          first_answer_id: firstAnswerId,
           is_correct: isCorrect,
           time_spent: timeSpent,
           attempted_at: new Date().toISOString()
@@ -230,9 +342,12 @@ export class QuizService {
   /**
    * Update quiz session progress
    */
-  async updateQuizSession(sessionId: string, updates: Partial<QuizSession>): Promise<void> {
+  async updateQuizSession(sessionId: string, updates: Partial<QuizSession>, authenticatedSupabase?: any): Promise<void> {
     try {
-      const { error } = await this.supabase
+      // Use authenticated client if provided, otherwise fall back to default
+      const supabaseClient = authenticatedSupabase || this.supabase
+
+      const { error } = await supabaseClient
         .from('quiz_sessions')
         .update({
           current_question_index: updates.currentQuestionIndex,
@@ -254,10 +369,154 @@ export class QuizService {
   }
 
   /**
-   * Complete a quiz and calculate results
+   * Start a quiz session
    */
-  async completeQuiz(sessionId: string): Promise<QuizResult> {
+  async startQuizSession(sessionId: string, authenticatedSupabase?: any): Promise<void> {
     try {
+      await this.updateQuizSession(sessionId, {
+        status: 'in_progress',
+        startedAt: new Date().toISOString()
+      }, authenticatedSupabase)
+    } catch (error) {
+      console.error('Error starting quiz session:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Pause a quiz session
+   */
+  async pauseQuizSession(sessionId: string, authenticatedSupabase?: any): Promise<void> {
+    try {
+      await this.updateQuizSession(sessionId, {
+        status: 'paused'
+      }, authenticatedSupabase)
+    } catch (error) {
+      console.error('Error pausing quiz session:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Resume a quiz session
+   */
+  async resumeQuizSession(sessionId: string, authenticatedSupabase?: any): Promise<void> {
+    try {
+      await this.updateQuizSession(sessionId, {
+        status: 'in_progress'
+      }, authenticatedSupabase)
+    } catch (error) {
+      console.error('Error resuming quiz session:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get user quiz statistics for performance analytics
+   */
+  async getUserQuizStats(userId: string): Promise<QuizStats> {
+    try {
+      // Get quiz session statistics
+      const { data: sessions, error: sessionsError } = await this.supabase
+        .from('quiz_sessions')
+        .select('*')
+        .eq('user_id', userId)
+
+      if (sessionsError) throw sessionsError
+
+      const totalQuizzes = sessions?.length || 0
+      const completedQuizzes = sessions?.filter(s => s.status === 'completed').length || 0
+
+      // Calculate average score
+      const completedSessions = sessions?.filter(s => s.status === 'completed' && s.score !== null) || []
+      const averageScore = completedSessions.length > 0
+        ? Math.round(completedSessions.reduce((sum, s) => sum + (s.score || 0), 0) / completedSessions.length)
+        : 0
+
+      // Calculate total study time
+      const totalStudyTime = completedSessions.reduce((sum, s) => sum + (s.total_time_spent || 0), 0)
+
+      // Calculate current streak (simplified - just count recent days with completed quizzes)
+      const today = new Date()
+      const recentDays = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(today)
+        date.setDate(date.getDate() - i)
+        return date.toDateString()
+      })
+
+      let currentStreak = 0
+      for (const day of recentDays) {
+        const hasQuizOnDay = completedSessions.some(s =>
+          new Date(s.completed_at || '').toDateString() === day
+        )
+        if (hasQuizOnDay) {
+          currentStreak++
+        } else {
+          break
+        }
+      }
+
+      // Get weekly stats (last 7 days)
+      const weekAgo = new Date()
+      weekAgo.setDate(weekAgo.getDate() - 7)
+
+      const weeklyQuizzes = completedSessions.filter(s =>
+        new Date(s.completed_at || '') >= weekAgo
+      ).length
+
+      const weeklyStudyTime = completedSessions
+        .filter(s => new Date(s.completed_at || '') >= weekAgo)
+        .reduce((sum, s) => sum + (s.total_time_spent || 0), 0)
+
+      // Get recent quizzes (last 5)
+      const recentQuizzes = completedSessions
+        .sort((a, b) => new Date(b.completed_at || '').getTime() - new Date(a.completed_at || '').getTime())
+        .slice(0, 5)
+        .map(s => ({
+          title: s.title,
+          score: s.score || 0,
+          completedAt: s.completed_at || ''
+        }))
+
+      // Get category performance (simplified - would need to join with questions and categories)
+      // For now, return empty array - this would require more complex queries
+      const categoryPerformance: Array<{ categoryName: string, correct: number, total: number }> = []
+
+      return {
+        totalQuizzes,
+        completedQuizzes,
+        averageScore,
+        totalTimeSpent: totalStudyTime,
+        currentStreak,
+        longestStreak: 0, // TODO: Calculate longest streak
+        favoriteCategories: [], // TODO: Implement
+        recentPerformance: [], // TODO: Implement
+        difficultyStats: {
+          easy: { attempted: 0, correct: 0, averageScore: 0 },
+          medium: { attempted: 0, correct: 0, averageScore: 0 },
+          hard: { attempted: 0, correct: 0, averageScore: 0 }
+        }
+      }
+    } catch (error) {
+      console.error('Error getting user quiz stats:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get quiz results for a completed session
+   */
+  async getQuizResults(sessionId: string, authenticatedSupabase?: any): Promise<QuizResult | null> {
+    try {
+      // Get session details
+      const session = await this.getQuizSession(sessionId, authenticatedSupabase)
+      if (!session) return null
+
+      // Check if quiz is completed
+      if (session.status !== 'completed') {
+        throw new Error('Quiz session is not completed yet')
+      }
+
       // Get all attempts for this session
       const { data: attempts, error: attemptsError } = await this.supabase
         .from('quiz_attempts')
@@ -266,15 +525,108 @@ export class QuizService {
 
       if (attemptsError) throw attemptsError
 
+      // Calculate results
+      const correctAnswers = attempts?.filter((a: any) => a.is_correct).length || 0
+      const totalQuestions = session.totalQuestions
+      const score = Math.round((correctAnswers / totalQuestions) * 100)
+      const totalTimeSpent = session.totalTimeSpent || 0
+      const averageTimePerQuestion = Math.round(totalTimeSpent / totalQuestions)
+
+      // Calculate difficulty breakdown
+      const difficultyBreakdown = {
+        easy: { correct: 0, total: 0 },
+        medium: { correct: 0, total: 0 },
+        hard: { correct: 0, total: 0 }
+      }
+
+      // Calculate category breakdown
+      const categoryMap = new Map<string, { name: string, correct: number, total: number }>()
+
+      session.questions.forEach(question => {
+        const difficulty = question.difficulty as 'easy' | 'medium' | 'hard'
+        const attempt = attempts?.find((a: any) => a.question_id === question.id)
+
+        difficultyBreakdown[difficulty].total++
+        if (attempt?.is_correct) {
+          difficultyBreakdown[difficulty].correct++
+        }
+
+        // Category breakdown
+        if (question.category_id) {
+          if (!categoryMap.has(question.category_id)) {
+            categoryMap.set(question.category_id, {
+              name: 'Unknown Category', // TODO: Get actual category name
+              correct: 0,
+              total: 0
+            })
+          }
+          const categoryStats = categoryMap.get(question.category_id)!
+          categoryStats.total++
+          if (attempt?.is_correct) {
+            categoryStats.correct++
+          }
+        }
+      })
+
+      const categoryBreakdown = Array.from(categoryMap.entries()).map(([categoryId, stats]) => ({
+        categoryId,
+        categoryName: stats.name,
+        correct: stats.correct,
+        total: stats.total
+      }))
+
+      return {
+        sessionId,
+        score,
+        correctAnswers,
+        totalQuestions,
+        totalTimeSpent,
+        averageTimePerQuestion,
+        difficultyBreakdown,
+        categoryBreakdown,
+        attempts: attempts?.map(a => ({
+          ...a,
+          quizSessionId: a.quiz_session_id,
+          questionId: a.question_id,
+          selectedAnswerId: a.selected_answer_id,
+          isCorrect: a.is_correct,
+          timeSpent: a.time_spent,
+          attemptedAt: a.attempted_at,
+          reviewedAt: a.reviewed_at
+        })) || [],
+        completedAt: session.completedAt || new Date().toISOString()
+      }
+    } catch (error) {
+      console.error('Error getting quiz results:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Complete a quiz and calculate results
+   */
+  async completeQuiz(sessionId: string, authenticatedSupabase?: any): Promise<QuizResult> {
+    try {
+      // Use authenticated client if provided, otherwise fall back to default
+      const supabaseClient = authenticatedSupabase || this.supabase
+
+      // Get all attempts for this session
+      const { data: attempts, error: attemptsError } = await supabaseClient
+        .from('quiz_attempts')
+        .select('*')
+        .eq('quiz_session_id', sessionId)
+
+      if (attemptsError) throw attemptsError
+
       // Get session details
-      const session = await this.getQuizSession(sessionId)
+      const session = await this.getQuizSession(sessionId, authenticatedSupabase)
       if (!session) throw new Error('Quiz session not found')
 
       // Calculate results
-      const correctAnswers = attempts?.filter(a => a.is_correct).length || 0
+      const correctAnswers = attempts?.filter((a: any) => a.is_correct).length || 0
       const totalQuestions = session.totalQuestions
       const score = Math.round((correctAnswers / totalQuestions) * 100)
-      const totalTimeSpent = attempts?.reduce((sum, a) => sum + (a.time_spent || 0), 0) || 0
+      const totalTimeSpent = attempts?.reduce((sum: number, a: any) => sum + (a.time_spent || 0), 0) || 0
       const averageTimePerQuestion = Math.round(totalTimeSpent / totalQuestions)
 
       // Calculate difficulty breakdown
@@ -286,8 +638,8 @@ export class QuizService {
 
       session.questions.forEach(question => {
         const difficulty = question.difficulty as 'easy' | 'medium' | 'hard'
-        const attempt = attempts?.find(a => a.question_id === question.id)
-        
+        const attempt = attempts?.find((a: any) => a.question_id === question.id)
+
         difficultyBreakdown[difficulty].total++
         if (attempt?.is_correct) {
           difficultyBreakdown[difficulty].correct++
@@ -301,7 +653,7 @@ export class QuizService {
         totalTimeSpent,
         score,
         correctAnswers
-      })
+      }, authenticatedSupabase)
 
       return {
         sessionId,
@@ -312,7 +664,7 @@ export class QuizService {
         averageTimePerQuestion,
         difficultyBreakdown,
         categoryBreakdown: [], // TODO: Implement category breakdown
-        attempts: attempts?.map(a => ({
+        attempts: attempts?.map((a: any) => ({
           ...a,
           quizSessionId: a.quiz_session_id,
           questionId: a.question_id,
@@ -330,47 +682,7 @@ export class QuizService {
     }
   }
 
-  /**
-   * Get user quiz statistics
-   */
-  async getUserQuizStats(userId: string): Promise<QuizStats> {
-    try {
-      // Get all completed quiz sessions for user
-      const { data: sessions, error } = await this.supabase
-        .from('quiz_sessions')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('status', 'completed')
 
-      if (error) throw error
-
-      const completedSessions = sessions || []
-      const totalQuizzes = completedSessions.length
-      const averageScore = totalQuizzes > 0 
-        ? Math.round(completedSessions.reduce((sum, s) => sum + (s.score || 0), 0) / totalQuizzes)
-        : 0
-      const totalTimeSpent = completedSessions.reduce((sum, s) => sum + (s.total_time_spent || 0), 0)
-
-      return {
-        totalQuizzes,
-        completedQuizzes: totalQuizzes,
-        averageScore,
-        totalTimeSpent,
-        currentStreak: 0, // TODO: Calculate streak
-        longestStreak: 0, // TODO: Calculate longest streak
-        favoriteCategories: [], // TODO: Implement
-        recentPerformance: [], // TODO: Implement
-        difficultyStats: {
-          easy: { attempted: 0, correct: 0, averageScore: 0 },
-          medium: { attempted: 0, correct: 0, averageScore: 0 },
-          hard: { attempted: 0, correct: 0, averageScore: 0 }
-        }
-      }
-    } catch (error) {
-      console.error('Error getting user quiz stats:', error)
-      throw error
-    }
-  }
 
   /**
    * Utility function to shuffle array

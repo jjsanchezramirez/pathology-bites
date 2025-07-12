@@ -34,10 +34,10 @@ def analyze_pathology_data():
     
     # Load the merged JSON data
     try:
-        with open('data/content-specs/content_specifications_merged.json', 'r', encoding='utf-8') as f:
+        with open('src/data/content_specifications_merged.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print("Error: content_specifications_merged.json not found in data/content-specs/ directory")
+        print("Error: content_specifications_merged.json not found in src/data/ directory")
         return
     except json.JSONDecodeError as e:
         print(f"Error parsing JSON: {e}")

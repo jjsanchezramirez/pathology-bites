@@ -12,30 +12,33 @@ export type QuizAttemptData = Database['public']['Tables']['quiz_attempts']['Row
 export type QuizAttemptInsert = Database['public']['Tables']['quiz_attempts']['Insert']
 export type QuizAttemptUpdate = Database['public']['Tables']['quiz_attempts']['Update']
 
-// Quiz modes
-export type QuizMode = 'tutor' | 'timed' | 'untimed' | 'practice' | 'review'
+// Quiz modes - simplified to binary options
+export type QuizMode = 'tutor' | 'practice'
+export type QuizTiming = 'timed' | 'untimed'
 
-// Quiz difficulty settings
-export type QuizDifficulty = 'easy' | 'medium' | 'hard' | 'mixed'
+// Question types for filtering
+export type QuestionType = 'all' | 'unused' | 'incorrect' | 'marked' | 'correct'
+
+// Category selection types
+export type CategorySelection = 'all' | 'ap_only' | 'cp_only' | 'custom'
 
 // Quiz status
 export type QuizStatus = 'not_started' | 'in_progress' | 'completed' | 'paused' | 'abandoned'
 
-// Quiz configuration interface
+// Quiz configuration interface - simplified
 export interface QuizConfig {
   mode: QuizMode
+  timing: QuizTiming
   questionCount: number
-  timeLimit?: number // in minutes, null for untimed
-  timePerQuestion?: number // in seconds, for timed mode
-  difficulty?: QuizDifficulty
-  categories?: string[] // category IDs
-  tags?: string[] // tag IDs
-  questionSets?: string[] // question set IDs
-  shuffleQuestions?: boolean
-  shuffleAnswers?: boolean
-  showExplanations?: boolean // for tutor mode
-  allowReview?: boolean
-  showProgress?: boolean
+  questionType: QuestionType
+  categorySelection: CategorySelection
+  selectedCategories: string[] // category IDs when categorySelection is 'custom'
+  shuffleQuestions: boolean
+  shuffleAnswers: boolean
+  showProgress: boolean
+  // Derived from mode and timing
+  showExplanations: boolean // true for tutor mode
+  timePerQuestion?: number // set for timed mode
 }
 
 // Quiz session interface
@@ -92,23 +95,39 @@ export interface QuizResult {
   completedAt: string
 }
 
-// Quiz creation form data
+// Quiz creation form data - simplified
 export interface QuizCreationForm {
-  title: string
+  title?: string // Optional - will be auto-generated if not provided
   mode: QuizMode
+  timing: QuizTiming
   questionCount: number
-  timeLimit?: number
-  timePerQuestion?: number
-  difficulty: QuizDifficulty
-  selectedCategories: string[]
-  selectedTags: string[]
-  selectedQuestionSets: string[]
+  questionType: QuestionType
+  categorySelection: CategorySelection
+  selectedCategories: string[] // only used when categorySelection is 'custom'
   shuffleQuestions: boolean
   shuffleAnswers: boolean
-  showExplanations: boolean
-  allowReview: boolean
   showProgress: boolean
 }
+
+// Question type statistics
+export interface QuestionTypeStats {
+  all: number
+  unused: number
+  incorrect: number
+  marked: number
+  correct: number
+}
+
+// Category with question counts by type
+export interface CategoryWithStats {
+  id: string
+  name: string
+  shortName: string
+  parent: 'AP' | 'CP'
+  questionStats: QuestionTypeStats
+}
+
+
 
 // Quiz statistics interface
 export interface QuizStats {
@@ -136,135 +155,88 @@ export interface QuizStats {
   }
 }
 
-// Quiz mode configurations
+// Quiz mode configurations - simplified binary options
 export const QUIZ_MODE_CONFIG = {
   tutor: {
-    label: 'Tutor Mode',
-    description: 'Get immediate feedback after each question',
+    label: 'Tutor',
+    description: 'Get immediate feedback and explanations after each question',
     icon: '🎓',
-    features: ['Immediate feedback', 'Explanations shown', 'No time pressure'],
-    defaultConfig: {
-      showExplanations: true,
-      allowReview: true,
-      showProgress: true,
-      shuffleQuestions: true,
-      shuffleAnswers: true
-    }
-  },
-  timed: {
-    label: 'Timed Mode',
-    description: 'Test your knowledge under time pressure',
-    icon: '⏱️',
-    features: ['Time limits', 'Exam simulation', 'Performance tracking'],
-    defaultConfig: {
-      showExplanations: false,
-      allowReview: false,
-      showProgress: true,
-      shuffleQuestions: true,
-      shuffleAnswers: true,
-      timePerQuestion: 90 // 90 seconds per question
-    }
-  },
-  untimed: {
-    label: 'Untimed Mode',
-    description: 'Take your time to think through each question',
-    icon: '🧠',
-    features: ['No time pressure', 'Thorough review', 'Deep learning'],
-    defaultConfig: {
-      showExplanations: false,
-      allowReview: true,
-      showProgress: true,
-      shuffleQuestions: true,
-      shuffleAnswers: true
-    }
+    showExplanations: true
   },
   practice: {
-    label: 'Practice Mode',
-    description: 'Focus on specific topics or weak areas',
+    label: 'Practice',
+    description: 'Test yourself without immediate feedback',
     icon: '💪',
-    features: ['Targeted practice', 'Adaptive difficulty', 'Progress tracking'],
-    defaultConfig: {
-      showExplanations: true,
-      allowReview: true,
-      showProgress: true,
-      shuffleQuestions: false,
-      shuffleAnswers: true
-    }
-  },
-  review: {
-    label: 'Review Mode',
-    description: 'Review previous quiz attempts and explanations',
-    icon: '📚',
-    features: ['Previous attempts', 'Detailed explanations', 'Performance analysis'],
-    defaultConfig: {
-      showExplanations: true,
-      allowReview: true,
-      showProgress: true,
-      shuffleQuestions: false,
-      shuffleAnswers: false
-    }
+    showExplanations: false
   }
 } as const
 
-// Quiz difficulty configurations
-export const QUIZ_DIFFICULTY_CONFIG = {
-  easy: {
-    label: 'Easy',
-    description: 'Fundamental concepts and basic knowledge',
-    color: 'text-green-600 bg-green-100',
-    icon: '🟢'
+export const QUIZ_TIMING_CONFIG = {
+  timed: {
+    label: 'Timed',
+    description: 'Test your knowledge under time pressure (90 seconds per question)',
+    icon: '⏱️',
+    timePerQuestion: 90
   },
-  medium: {
-    label: 'Medium',
-    description: 'Intermediate concepts and clinical applications',
-    color: 'text-yellow-600 bg-yellow-100',
-    icon: '🟡'
-  },
-  hard: {
-    label: 'Hard',
-    description: 'Advanced concepts and complex cases',
-    color: 'text-red-600 bg-red-100',
-    icon: '🔴'
-  },
-  mixed: {
-    label: 'Mixed',
-    description: 'Combination of all difficulty levels',
-    color: 'text-purple-600 bg-purple-100',
-    icon: '🎯'
+  untimed: {
+    label: 'Untimed',
+    description: 'Take your time to think through each question',
+    icon: '🧠',
+    timePerQuestion: undefined
   }
 } as const
 
-// Default quiz configurations
-export const DEFAULT_QUIZ_CONFIGS = {
-  quickPractice: {
-    mode: 'tutor' as QuizMode,
-    questionCount: 10,
-    difficulty: 'mixed' as QuizDifficulty,
-    shuffleQuestions: true,
-    shuffleAnswers: true,
-    showExplanations: true,
-    allowReview: true,
-    showProgress: true
+export const QUESTION_TYPE_CONFIG = {
+  all: {
+    label: 'All Questions',
+    description: 'Include all available questions'
   },
-  examSimulation: {
-    mode: 'timed' as QuizMode,
-    questionCount: 50,
-    timeLimit: 75, // 75 minutes
-    difficulty: 'mixed' as QuizDifficulty,
-    shuffleQuestions: true,
-    shuffleAnswers: true,
-    showExplanations: false,
-    allowReview: false,
-    showProgress: true
+  unused: {
+    label: 'Unused Questions',
+    description: 'Questions you haven\'t attempted yet'
   },
-  focusedStudy: {
-    mode: 'practice' as QuizMode,
-    questionCount: 25,
-    difficulty: 'medium' as QuizDifficulty,
-    shuffleQuestions: false,
-    shuffleAnswers: true,
-    showExplanations: true,
-    allowReview: true,
-    showProgress: true
+  incorrect: {
+    label: 'Incorrect Questions',
+    description: 'Questions you answered incorrectly'
+  },
+  marked: {
+    label: 'Marked Questions',
+    description: 'Questions you marked for review'
+  },
+  correct: {
+    label: 'Correct Questions',
+    description: 'Questions you answered correctly'
   }
+} as const
+
+export const CATEGORY_SELECTION_CONFIG = {
+  all: {
+    label: 'All Categories',
+    description: 'Include questions from all AP and CP categories'
+  },
+  ap_only: {
+    label: 'AP Only',
+    description: 'Include only Anatomic Pathology questions'
+  },
+  cp_only: {
+    label: 'CP Only',
+    description: 'Include only Clinical Pathology questions'
+  },
+  custom: {
+    label: 'Custom Selection',
+    description: 'Choose specific categories'
+  }
+} as const
+
+// Default quiz configuration
+export const DEFAULT_QUIZ_CONFIG: QuizCreationForm = {
+  mode: 'practice',
+  timing: 'untimed',
+  questionCount: 10,
+  questionType: 'unused',
+  categorySelection: 'all',
+  selectedCategories: [],
+  shuffleQuestions: true,
+  shuffleAnswers: true,
+  showProgress: true
 }

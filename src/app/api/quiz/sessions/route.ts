@@ -10,7 +10,10 @@ export async function POST(request: NextRequest) {
 
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser()
+    console.log('Auth check - user:', user?.id, 'error:', authError)
+
     if (authError || !user) {
+      console.error('Authentication failed:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -34,17 +37,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate that at least one source is selected
-    if (formData.selectedCategories.length === 0 && 
-        formData.selectedQuestionSets.length === 0 && 
-        formData.selectedTags.length === 0) {
+    if (formData.categorySelection === 'custom' && formData.selectedCategories.length === 0) {
       return NextResponse.json(
-        { error: 'Please select at least one category, question set, or tag' },
+        { error: 'Please select at least one category when using custom selection' },
         { status: 400 }
       )
     }
 
-    // Create quiz session using the service
-    const quizSession = await quizService.createQuizSession(user.id, formData)
+    // Create quiz session using the service with authenticated client
+    const quizSession = await quizService.createQuizSession(user.id, formData, supabase)
 
     return NextResponse.json({
       success: true,

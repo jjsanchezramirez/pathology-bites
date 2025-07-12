@@ -17,8 +17,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get quiz session
-    const quizSession = await quizService.getQuizSession(id)
+    // Get quiz session using authenticated client
+    const quizSession = await quizService.getQuizSession(id, supabase)
 
     if (!quizSession) {
       return NextResponse.json(
@@ -67,7 +67,7 @@ export async function PATCH(
     const updates = await request.json()
 
     // Get existing quiz session to verify ownership
-    const existingSession = await quizService.getQuizSession(id)
+    const existingSession = await quizService.getQuizSession(id, supabase)
     if (!existingSession) {
       return NextResponse.json(
         { error: 'Quiz session not found' },
@@ -82,8 +82,17 @@ export async function PATCH(
       )
     }
 
-    // Update quiz session
-    await quizService.updateQuizSession(id, updates)
+    // Handle special actions
+    if (updates.action === 'start') {
+      await quizService.startQuizSession(id, supabase)
+    } else if (updates.action === 'pause') {
+      await quizService.pauseQuizSession(id, supabase)
+    } else if (updates.action === 'resume') {
+      await quizService.resumeQuizSession(id, supabase)
+    } else {
+      // Regular update
+      await quizService.updateQuizSession(id, updates, supabase)
+    }
 
     return NextResponse.json({
       success: true,

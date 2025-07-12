@@ -47,7 +47,7 @@ export async function POST(
     }
 
     // Complete the quiz using the service
-    const result = await quizService.completeQuiz(id)
+    const result = await quizService.completeQuiz(id, supabase)
 
     return NextResponse.json({
       success: true,

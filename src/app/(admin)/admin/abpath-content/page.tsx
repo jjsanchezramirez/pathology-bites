@@ -135,7 +135,7 @@ export default function ABPathContentPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/content_specifications_merged.json');
+        const response = await fetch('/api/content-specifications');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

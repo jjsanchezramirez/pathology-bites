@@ -96,7 +96,8 @@ export async function updateSession(request: NextRequest) {
     '/contact',
     '/faq',
     '/privacy',
-    '/terms'
+    '/terms',
+    '/images'
   ]
 
   // Define protected routes that require authentication

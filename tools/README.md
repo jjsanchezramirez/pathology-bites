@@ -7,7 +7,6 @@ This directory contains utility scripts and tools for processing and validating 
 ```
 tools/
 ├── data-processing/     # Scripts for processing and transforming data
-├── validation/         # Scripts for validating data integrity
 ├── scripts/            # Development and deployment scripts
 ├── database/           # Database migrations and SQL scripts
 └── README.md          # This file
@@ -17,8 +16,8 @@ tools/
 
 ### `merge_json.py`
 Merges individual JSON files from the content specifications into a single consolidated file.
-- **Input**: Individual JSON files in `data/content-specs/json/` directory
-- **Output**: `content_specifications_merged.json`
+- **Input**: Individual JSON files in `src/data/question-specs/` directory
+- **Output**: `src/data/content_specifications_merged.json`
 - **Usage**: `python tools/data-processing/merge_json.py`
 
 ### `analyze_content_specs.py`
@@ -39,25 +38,11 @@ Counts the number of items with different designations (C, AR, F) across the con
 - **Output**: Designation count statistics
 - **Usage**: `python tools/data-processing/count_designations.py`
 
-### `split_muscle_section.py`
-Splits the muscle section into appropriate subsections for better organization.
-- **Input**: Muscle section JSON data
-- **Output**: Reorganized muscle section data
-- **Usage**: `python tools/data-processing/split_muscle_section.py`
-
-## Validation Scripts (`validation/`)
-
-### `validate_line_numbers.py`
-Validates that line numbers in the JSON files are consistent and properly ordered.
-- **Input**: JSON files with line number data
-- **Output**: Validation report with any inconsistencies
-- **Usage**: `python tools/validation/validate_line_numbers.py`
-
-### `final_validation_summary.py`
-Provides a comprehensive validation summary of all content specifications.
-- **Input**: All content specification files
-- **Output**: Final validation report
-- **Usage**: `python tools/validation/final_validation_summary.py`
+### `analyze-cells.js`
+Analyzes cell images and generates cell data for the application.
+- **Input**: Cell images in `public/images/cells/`
+- **Output**: Cell data JSON file for application use
+- **Usage**: `node tools/data-processing/analyze-cells.js`
 
 ## Development Scripts (`scripts/`)
 
@@ -86,6 +71,11 @@ Web scrapers for pathology outline data.
 - **Purpose**: Extract pathology outline data from external sources
 - **Usage**: `node tools/scripts/pathoutlines-scraper.js` or `python tools/scripts/pathoutlines_scraper.py`
 
+### `test-organization.py`
+Tests the directory organization structure.
+- **Purpose**: Verify that directory reorganization is working correctly
+- **Usage**: `python tools/scripts/test-organization.py`
+
 ## Database Scripts (`database/`)
 
 ### Migrations (`database/migrations/`)
@@ -103,13 +93,15 @@ Database security patches and fixes.
 ## Data Directory Structure
 
 ```
-data/
-├── content-specs/           # Content specification data
-│   ├── json/               # Individual JSON files by section
-│   │   ├── ap/            # Anatomic Pathology sections
-│   │   └── cp/            # Clinical Pathology sections
-│   └── content_specifications_merged.json  # Consolidated file
-└── pathology-outlines/     # Pathology outline data (if any)
+src/data/
+├── question-specs/          # Question specification data
+│   ├── ap/                 # Anatomic Pathology sections
+│   └── cp/                 # Clinical Pathology sections
+├── content_specifications_merged.json  # Consolidated file
+├── cell-data.json          # Cell quiz data
+├── blood_cells_reference.json  # Blood cell reference data
+├── nlm_journal_abbreviations.json  # Journal abbreviations
+└── api-examples/           # API example files
 ```
 
 ## Usage Notes
@@ -122,11 +114,10 @@ data/
 ## Common Workflows
 
 ### Data Processing Workflow
-1. Update individual JSON files in `data/content-specs/json/`
+1. Update individual JSON files in `src/data/question-specs/`
 2. Run `python tools/data-processing/merge_json.py` to create merged file
-3. Run `python tools/validation/validate_line_numbers.py` to check integrity
-4. Run `python tools/data-processing/count_designations.py` for statistics
-5. Run `python tools/validation/final_validation_summary.py` for final validation
+3. Run `python tools/data-processing/count_designations.py` for statistics
+4. Run `python tools/data-processing/analyze_content_specs.py` for analysis
 
 ### Analysis Workflow
 1. Run `python tools/data-processing/analyze_content_specs.py` for content analysis

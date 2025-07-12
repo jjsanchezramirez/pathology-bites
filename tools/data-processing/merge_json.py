@@ -93,8 +93,8 @@ def extract_section_number_from_filename(filename):
 
 def main():
     # Paths to the JSON folders
-    ap_folder = Path('data/content-specs/json/ap')
-    cp_folder = Path('data/content-specs/json/cp')
+    ap_folder = Path('src/data/question-specs/ap')
+    cp_folder = Path('src/data/question-specs/cp')
 
     if not ap_folder.exists():
         print(f"Error: {ap_folder} does not exist")
@@ -167,7 +167,7 @@ def main():
     }
 
     # Write the merged JSON
-    output_file = 'data/content-specs/content_specifications_merged.json'
+    output_file = 'src/data/content_specifications_merged.json'
 
     try:
         with open(output_file, 'w', encoding='utf-8') as f:

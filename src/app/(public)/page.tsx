@@ -6,7 +6,7 @@ import { FeatureCard } from "@/shared/components/common/feature-card"
 import { ScrollToTopButton } from "@/shared/components/common/scroll-to-top"
 import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
-import { BookOpenIcon, BarChartIcon, TestTube2Icon } from "lucide-react"
+import { BookOpenIcon, BarChartIcon, TestTube2Icon, Microscope, Target, BookOpen } from "lucide-react"
 import DemoQuestion from "@/shared/components/common/demo-question"
 import ComingSoonPage from "./coming-soon/page"
 
@@ -100,6 +100,79 @@ export default function LandingPage() {
               title="Virtual Lab Cases"
               description="Practice with interactive case simulations featuring real histopathology slides"
             />
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive Tools Section */}
+      <section className="relative py-24">
+        <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary/5 to-transparent" />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-4xl font-bold mb-4">
+              Interactive Learning Tools
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              Practice with our specialized tools designed to enhance your diagnostic skills
+            </p>
+          </div>
+          <div className="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
+            <div className="group relative overflow-hidden rounded-xl border bg-background p-6 hover:shadow-lg transition-all duration-300">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 bg-blue-100 dark:bg-blue-950/30 rounded-full flex items-center justify-center">
+                  <Microscope className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Cell Identification Quiz</h3>
+                  <p className="text-sm text-muted-foreground">Test your hematology skills</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Interactive quiz with 500+ cell images across myeloid, erythroid, peripheral blood, and bone marrow categories.
+              </p>
+              <Link href="/tools/cell-quiz">
+                <Button className="w-full gap-2">
+                  <Target className="h-4 w-4" />
+                  Start Quiz
+                </Button>
+              </Link>
+            </div>
+
+            <div className="group relative overflow-hidden rounded-xl border bg-background p-6 opacity-60">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 bg-green-100 dark:bg-green-950/30 rounded-full flex items-center justify-center">
+                  <BookOpen className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Image Gallery</h3>
+                  <p className="text-sm text-muted-foreground">Browse pathology images</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Comprehensive collection of pathology images with detailed descriptions and categorization.
+              </p>
+              <Button disabled className="w-full">
+                Coming Soon
+              </Button>
+            </div>
+
+            <div className="group relative overflow-hidden rounded-xl border bg-background p-6 opacity-60">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 bg-purple-100 dark:bg-purple-950/30 rounded-full flex items-center justify-center">
+                  <BookOpenIcon className="h-6 w-6 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Content Browser</h3>
+                  <p className="text-sm text-muted-foreground">Explore pathology topics</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Browse comprehensive pathology content specifications and educational materials.
+              </p>
+              <Button disabled className="w-full">
+                Coming Soon
+              </Button>
+            </div>
           </div>
         </div>
       </section>
