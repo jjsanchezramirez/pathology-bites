@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
-import { Badge } from '@/shared/components/ui/badge'
+
 import { 
   Search, 
   Copy, 
@@ -144,35 +144,49 @@ export default function GeneLookupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <FloatingCharacter
-        imagePath="/images/dr-albright.png"
-        imageAlt="Dr. Albright Character"
-      />
-      
-      {/* Header */}
-      <section className="relative py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="container px-4 mx-auto text-center">
-          <div className="flex items-center justify-center mb-4">
-            <Dna className="h-12 w-12 mr-4" />
-            <h1 className="text-4xl md:text-5xl font-bold">Gene Lookup Tool</h1>
-          </div>
-          <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto">
-            Search for comprehensive gene information from HGNC and Harmonizome databases
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4 text-sm">
-            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-              <FileText className="h-3 w-3 mr-1" />
-              HGNC Database
-            </Badge>
-            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-              <Dna className="h-3 w-3 mr-1" />
-              Harmonizome API
-            </Badge>
-            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-              <ExternalLink className="h-3 w-3 mr-1" />
-              External Links
-            </Badge>
+    <div className="flex min-h-screen flex-col">
+      {/* Hero Section */}
+      <section className="relative py-16 md:py-24 overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.08),transparent_25%),radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.08),transparent_25%),linear-gradient(to_bottom,rgba(56,189,248,0.05),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] opacity-[0.15]" />
+
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="flex items-center justify-between gap-8">
+            {/* Content */}
+            <div className="flex-1 space-y-6 max-w-2xl">
+              <h1 className="text-3xl md:text-5xl font-bold">
+                Gene Lookup Tool
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                Search for comprehensive gene information from HGNC and Harmonizome databases.
+                Get detailed gene data, chromosome locations, aliases, and direct links to external resources.
+              </p>
+              <div className="flex gap-4 pt-2">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <FileText className="h-4 w-4" />
+                  <span>HGNC Database</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Dna className="h-4 w-4" />
+                  <span>Harmonizome API</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <ExternalLink className="h-4 w-4" />
+                  <span>External Links</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Character - hidden on mobile */}
+            <div className="hidden md:block w-[350px]">
+              <FloatingCharacter
+                imagePath="/images/dr-albright.png"
+                imageAlt="Dr. Albright Character"
+                size={350}
+                wrapperClassName="w-full flex justify-center"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -402,8 +416,8 @@ export default function GeneLookupPage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <ExternalLink className="h-8 w-8 text-purple-600" />
+              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <ExternalLink className="h-8 w-8 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold mb-2">3. Explore Resources</h3>
               <p className="text-muted-foreground">
@@ -415,26 +429,26 @@ export default function GeneLookupPage() {
       </section>
 
       {/* Ready for More Learning */}
-      <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+      <section className="py-16 bg-gray-50">
         <div className="container px-4 mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">Ready for More Learning?</h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Explore our other tools and resources to enhance your pathology knowledge
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button asChild variant="secondary" size="lg">
+            <Button asChild size="lg">
               <Link href="/tools/cell-quiz">
                 <Dna className="h-5 w-5 mr-2" />
                 Cell Quiz
               </Link>
             </Button>
-            <Button asChild variant="secondary" size="lg">
+            <Button asChild size="lg">
               <Link href="/tools/citations">
                 <FileText className="h-5 w-5 mr-2" />
                 Citation Generator
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="bg-white/10 border-white/30 text-white hover:bg-white/20">
+            <Button asChild variant="outline" size="lg">
               <Link href="/images">
                 <FileText className="h-5 w-5 mr-2" />
                 Image Gallery
