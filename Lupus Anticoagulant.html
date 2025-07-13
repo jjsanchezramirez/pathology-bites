@@ -12,6 +12,26 @@
     body {
       font-family: 'Inter', sans-serif;
     }
+
+    /* Smooth scrolling for better UX */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Custom button hover effects */
+    .btn-primary {
+      transition: all 0.2s ease-in-out;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Section spacing */
+    .section-spacing {
+      margin-top: 4rem;
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -58,13 +78,49 @@
         </div>
 
         <div class="md:col-span-2 mt-4">
-          <button type="submit" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Analyze Profile</button>
+          <button type="submit" class="btn-primary w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Analyze Profile</button>
         </div>
       </form>
     </div>
 
     <div id="resultContainer" class="mt-8"></div>
   </div>
+
+  <!-- Join Our Discord Section -->
+  <section class="bg-blue-600 text-white py-16 mt-16">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6">Join Our Discord</h2>
+      <p class="text-xl mb-8 leading-relaxed max-w-3xl mx-auto">
+        Connect with fellow pathology learners, share knowledge, and get quick answers to your questions in our active Discord community.
+      </p>
+      <a
+        href="https://discord.gg/pathology-bites"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn-primary inline-block bg-white text-blue-600 hover:bg-gray-100 font-semibold px-8 py-3 rounded-lg"
+      >
+        Join Discord Server
+      </a>
+    </div>
+  </section>
+
+  <!-- Join Our Learning Community Section -->
+  <section class="bg-gradient-to-b from-transparent to-blue-50 py-16">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6 text-gray-900">Join Our Learning Community</h2>
+      <p class="text-xl mb-8 leading-relaxed text-gray-600 max-w-3xl mx-auto">
+        Ready to take your pathology education to the next level? Create a free account and access our comprehensive question bank, interactive quizzes, and study tools.
+      </p>
+      <a
+        href="https://pathologybites.com/signup"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn-primary inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg"
+      >
+        Create Free Account
+      </a>
+    </div>
+  </section>
 
   <script>
     document.getElementById('profileForm').addEventListener('submit', function(event) {
