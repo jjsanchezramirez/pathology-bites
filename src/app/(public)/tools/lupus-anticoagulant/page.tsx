@@ -41,21 +41,67 @@ export default function LupusAnticoagulantPage() {
   const [values, setValues] = useState<Partial<LACValues>>({})
   const [report, setReport] = useState<LACReport | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [errors, setErrors] = useState<Partial<Record<keyof LACValues, string>>>({})
 
   const handleInputChange = (field: keyof LACValues, value: string) => {
     setValues(prev => ({
       ...prev,
       [field]: value === '' ? undefined : parseFloat(value)
     }))
+
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: undefined
+      }))
+    }
+  }
+
+  const validateForm = (): boolean => {
+    const newErrors: Partial<Record<keyof LACValues, string>> = {}
+
+    if (values.pt === undefined || isNaN(values.pt) || values.pt < 0) {
+      newErrors.pt = 'Please enter a valid PT value'
+    }
+    if (values.inr === undefined || isNaN(values.inr) || values.inr < 0) {
+      newErrors.inr = 'Please enter a valid INR value'
+    }
+    if (values.ptt_la === undefined || isNaN(values.ptt_la) || values.ptt_la < 0) {
+      newErrors.ptt_la = 'Please enter a valid aPTT value'
+    }
+    if (values.tt === undefined || isNaN(values.tt) || values.tt < 0) {
+      newErrors.tt = 'Please enter a valid TT value'
+    }
+    if (values.heparin_xa === undefined || isNaN(values.heparin_xa) || values.heparin_xa < 0) {
+      newErrors.heparin_xa = 'Please enter a valid Heparin Anti-Xa value'
+    }
+    if (values.drvvt === undefined || isNaN(values.drvvt) || values.drvvt < 0) {
+      newErrors.drvvt = 'Please enter a valid dRVVT Screen value'
+    }
+    if (values.drvvt_ratio === undefined || isNaN(values.drvvt_ratio) || values.drvvt_ratio < 0) {
+      newErrors.drvvt_ratio = 'Please enter a valid dRVVT Confirm Ratio'
+    }
+    if (values.hex_la_delta === undefined || isNaN(values.hex_la_delta) || values.hex_la_delta < 0) {
+      newErrors.hex_la_delta = 'Please enter a valid Hexagonal Phase Delta value'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!validateForm()) {
+      return
+    }
+
     setIsAnalyzing(true)
-    
+
     // Simulate analysis delay for better UX
     await new Promise(resolve => setTimeout(resolve, 800))
-    
+
     const result = generateLupusAnticoagulantReport(values as LACValues)
     setReport(result)
     setIsAnalyzing(false)
@@ -207,14 +253,9 @@ export default function LupusAnticoagulantPage() {
           <div className="flex items-center justify-between gap-8">
             {/* Content */}
             <div className="flex-1 space-y-6 max-w-2xl">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="p-3 bg-primary/10 rounded-full">
-                  <FlaskConicalIcon className="w-8 h-8 text-primary" />
-                </div>
-                <h1 className="text-3xl md:text-5xl font-bold">
-                  Lupus Anticoagulant Interpreter
-                </h1>
-              </div>
+              <h1 className="text-3xl md:text-5xl font-bold mb-4">
+                Lupus Anticoagulant Interpreter
+              </h1>
               <p className="text-lg text-muted-foreground">
                 Enter coagulation test results to generate a comprehensive clinical interpretation
                 for lupus anticoagulant detection with detailed analysis and clinical guidance.
@@ -254,9 +295,13 @@ export default function LupusAnticoagulantPage() {
                       placeholder="Normal: 9.5-13.5 sec"
                       value={values.pt === undefined ? '' : values.pt}
                       onChange={(e) => handleInputChange('pt', e.target.value)}
-                      className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
-                      required
+                      className={`bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary ${
+                        errors.pt ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
+                      }`}
                     />
+                    {errors.pt && (
+                      <p className="text-sm text-red-600">{errors.pt}</p>
+                    )}
                   </div>
 
                   {/* INR */}
@@ -271,9 +316,13 @@ export default function LupusAnticoagulantPage() {
                       placeholder="Normal: <1.2"
                       value={values.inr === undefined ? '' : values.inr}
                       onChange={(e) => handleInputChange('inr', e.target.value)}
-                      className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
-                      required
+                      className={`bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary ${
+                        errors.inr ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
+                      }`}
                     />
+                    {errors.inr && (
+                      <p className="text-sm text-red-600">{errors.inr}</p>
+                    )}
                   </div>
 
                   {/* aPTT */}
@@ -288,9 +337,13 @@ export default function LupusAnticoagulantPage() {
                       placeholder="Normal: <35 sec"
                       value={values.ptt_la === undefined ? '' : values.ptt_la}
                       onChange={(e) => handleInputChange('ptt_la', e.target.value)}
-                      className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
-                      required
+                      className={`bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary ${
+                        errors.ptt_la ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
+                      }`}
                     />
+                    {errors.ptt_la && (
+                      <p className="text-sm text-red-600">{errors.ptt_la}</p>
+                    )}
                   </div>
 
                   {/* TT */}
@@ -305,9 +358,13 @@ export default function LupusAnticoagulantPage() {
                       placeholder="Normal: <21 sec"
                       value={values.tt === undefined ? '' : values.tt}
                       onChange={(e) => handleInputChange('tt', e.target.value)}
-                      className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
-                      required
+                      className={`bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary ${
+                        errors.tt ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
+                      }`}
                     />
+                    {errors.tt && (
+                      <p className="text-sm text-red-600">{errors.tt}</p>
+                    )}
                   </div>
 
                   {/* Heparin Anti-Xa */}
@@ -322,9 +379,13 @@ export default function LupusAnticoagulantPage() {
                       placeholder="Normal: 0.00 IU/mL"
                       value={values.heparin_xa === undefined ? '' : values.heparin_xa}
                       onChange={(e) => handleInputChange('heparin_xa', e.target.value)}
-                      className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
-                      required
+                      className={`bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary ${
+                        errors.heparin_xa ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
+                      }`}
                     />
+                    {errors.heparin_xa && (
+                      <p className="text-sm text-red-600">{errors.heparin_xa}</p>
+                    )}
                   </div>
 
                   {/* dRVVT Screen */}
@@ -339,9 +400,13 @@ export default function LupusAnticoagulantPage() {
                       placeholder="Normal: <45 sec"
                       value={values.drvvt === undefined ? '' : values.drvvt}
                       onChange={(e) => handleInputChange('drvvt', e.target.value)}
-                      className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
-                      required
+                      className={`bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary ${
+                        errors.drvvt ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
+                      }`}
                     />
+                    {errors.drvvt && (
+                      <p className="text-sm text-red-600">{errors.drvvt}</p>
+                    )}
                   </div>
 
                   {/* dRVVT Confirm Ratio */}
@@ -356,9 +421,13 @@ export default function LupusAnticoagulantPage() {
                       placeholder="Positive: >1.2, Indeterminate: 1.1-1.2"
                       value={values.drvvt_ratio === undefined ? '' : values.drvvt_ratio}
                       onChange={(e) => handleInputChange('drvvt_ratio', e.target.value)}
-                      className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
-                      required
+                      className={`bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary ${
+                        errors.drvvt_ratio ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
+                      }`}
                     />
+                    {errors.drvvt_ratio && (
+                      <p className="text-sm text-red-600">{errors.drvvt_ratio}</p>
+                    )}
                   </div>
 
                   {/* Hexagonal Phase Delta */}
@@ -373,9 +442,13 @@ export default function LupusAnticoagulantPage() {
                       placeholder="Positive: >8 sec"
                       value={values.hex_la_delta === undefined ? '' : values.hex_la_delta}
                       onChange={(e) => handleInputChange('hex_la_delta', e.target.value)}
-                      className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
-                      required
+                      className={`bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary ${
+                        errors.hex_la_delta ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
+                      }`}
                     />
+                    {errors.hex_la_delta && (
+                      <p className="text-sm text-red-600">{errors.hex_la_delta}</p>
+                    )}
                   </div>
                 </div>
 
@@ -473,6 +546,7 @@ export default function LupusAnticoagulantPage() {
                         onClick={() => {
                           setReport(null)
                           setValues({})
+                          setErrors({})
                         }}
                         variant="outline"
                         className="w-full border-gray-300 hover:bg-gray-50"
