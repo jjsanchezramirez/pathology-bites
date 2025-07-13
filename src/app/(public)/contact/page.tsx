@@ -284,25 +284,6 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Join Our Discord Section */}
-      <section className="relative py-20 bg-primary">
-        <div className="container px-4 max-w-3xl mx-auto text-center relative">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Join Our Discord</h2>
-          <p className="text-xl mb-8 leading-relaxed text-white">
-            Connect with fellow pathology learners, share knowledge, and get quick answers to your questions in our active Discord community.
-          </p>
-          <Button
-            asChild
-            size="lg"
-            className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 py-3"
-          >
-            <Link href="https://discord.gg/pathology-bites" target="_blank" rel="noopener noreferrer">
-              Join Discord Server
-            </Link>
-          </Button>
-        </div>
-      </section>
-
       {/* Join Our Learning Community */}
       <section className="relative py-20">
         <div className="absolute inset-0 bg-linear-to-b from-transparent to-primary/5" />

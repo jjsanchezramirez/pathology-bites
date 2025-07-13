@@ -5,15 +5,16 @@ import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { Label } from "@/shared/components/ui/label"
 import Link from "next/link"
-import { 
-  FlaskConicalIcon, 
-  TestTubeIcon, 
-  ActivityIcon,
+import {
+  FlaskConicalIcon,
+  TestTubeIcon,
+  Loader2Icon,
   AlertTriangleIcon,
   CheckCircleIcon,
   XCircleIcon,
   HelpCircleIcon
 } from "lucide-react"
+import FloatingCharacter from "@/shared/components/common/dr-albright"
 
 interface LACValues {
   pt: number
@@ -201,21 +202,34 @@ export default function LupusAnticoagulantPage() {
         {/* Background elements */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.08),transparent_25%),radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.08),transparent_25%),linear-gradient(to_bottom,rgba(56,189,248,0.05),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] opacity-[0.15]" />
-        
+
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center space-y-6 max-w-4xl mx-auto">
-            <div className="flex justify-center mb-6">
-              <div className="p-4 bg-primary/10 rounded-full">
-                <FlaskConicalIcon className="w-12 h-12 text-primary" />
+          <div className="flex items-center justify-between gap-8">
+            {/* Content */}
+            <div className="flex-1 space-y-6 max-w-2xl">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="p-3 bg-primary/10 rounded-full">
+                  <FlaskConicalIcon className="w-8 h-8 text-primary" />
+                </div>
+                <h1 className="text-3xl md:text-5xl font-bold">
+                  Lupus Anticoagulant Interpreter
+                </h1>
               </div>
+              <p className="text-lg text-muted-foreground">
+                Enter coagulation test results to generate a comprehensive clinical interpretation
+                for lupus anticoagulant detection with detailed analysis and clinical guidance.
+              </p>
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold">
-              Advanced Lupus Anticoagulant Interpreter
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Enter coagulation test results to generate a comprehensive clinical interpretation 
-              for lupus anticoagulant detection with detailed analysis and clinical guidance.
-            </p>
+
+            {/* Character - hidden on mobile */}
+            <div className="hidden md:block w-[350px]">
+              <FloatingCharacter
+                imagePath="/images/dr-albright.png"
+                imageAlt="Dr. Albright Character"
+                size={350}
+                wrapperClassName="w-full flex justify-center"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -237,8 +251,8 @@ export default function LupusAnticoagulantPage() {
                       id="pt"
                       type="number"
                       step="0.1"
-                      placeholder="e.g., 12.5"
-                      value={values.pt || ''}
+                      placeholder="Normal: 9.5-13.5 sec"
+                      value={values.pt === undefined ? '' : values.pt}
                       onChange={(e) => handleInputChange('pt', e.target.value)}
                       className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
                       required
@@ -253,9 +267,9 @@ export default function LupusAnticoagulantPage() {
                     <Input
                       id="inr"
                       type="number"
-                      step="0.1"
-                      placeholder="e.g., 1.1"
-                      value={values.inr || ''}
+                      step="0.01"
+                      placeholder="Normal: <1.2"
+                      value={values.inr === undefined ? '' : values.inr}
                       onChange={(e) => handleInputChange('inr', e.target.value)}
                       className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
                       required
@@ -271,8 +285,8 @@ export default function LupusAnticoagulantPage() {
                       id="ptt_la"
                       type="number"
                       step="0.1"
-                      placeholder="e.g., 45.2"
-                      value={values.ptt_la || ''}
+                      placeholder="Normal: <35 sec"
+                      value={values.ptt_la === undefined ? '' : values.ptt_la}
                       onChange={(e) => handleInputChange('ptt_la', e.target.value)}
                       className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
                       required
@@ -288,8 +302,8 @@ export default function LupusAnticoagulantPage() {
                       id="tt"
                       type="number"
                       step="0.1"
-                      placeholder="e.g., 18.0"
-                      value={values.tt || ''}
+                      placeholder="Normal: <21 sec"
+                      value={values.tt === undefined ? '' : values.tt}
                       onChange={(e) => handleInputChange('tt', e.target.value)}
                       className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
                       required
@@ -305,8 +319,8 @@ export default function LupusAnticoagulantPage() {
                       id="heparin_xa"
                       type="number"
                       step="0.01"
-                      placeholder="e.g., 0.00"
-                      value={values.heparin_xa || ''}
+                      placeholder="Normal: 0.00 IU/mL"
+                      value={values.heparin_xa === undefined ? '' : values.heparin_xa}
                       onChange={(e) => handleInputChange('heparin_xa', e.target.value)}
                       className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
                       required
@@ -322,8 +336,8 @@ export default function LupusAnticoagulantPage() {
                       id="drvvt"
                       type="number"
                       step="0.1"
-                      placeholder="e.g., 52.1"
-                      value={values.drvvt || ''}
+                      placeholder="Normal: <45 sec"
+                      value={values.drvvt === undefined ? '' : values.drvvt}
                       onChange={(e) => handleInputChange('drvvt', e.target.value)}
                       className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
                       required
@@ -339,8 +353,8 @@ export default function LupusAnticoagulantPage() {
                       id="drvvt_ratio"
                       type="number"
                       step="0.01"
-                      placeholder="e.g., 1.52"
-                      value={values.drvvt_ratio || ''}
+                      placeholder="Positive: >1.2, Indeterminate: 1.1-1.2"
+                      value={values.drvvt_ratio === undefined ? '' : values.drvvt_ratio}
                       onChange={(e) => handleInputChange('drvvt_ratio', e.target.value)}
                       className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
                       required
@@ -356,8 +370,8 @@ export default function LupusAnticoagulantPage() {
                       id="hex_la_delta"
                       type="number"
                       step="0.1"
-                      placeholder="e.g., 10.5"
-                      value={values.hex_la_delta || ''}
+                      placeholder="Positive: >8 sec"
+                      value={values.hex_la_delta === undefined ? '' : values.hex_la_delta}
                       onChange={(e) => handleInputChange('hex_la_delta', e.target.value)}
                       className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-primary"
                       required
@@ -374,7 +388,7 @@ export default function LupusAnticoagulantPage() {
                   >
                     {isAnalyzing ? (
                       <div className="flex items-center justify-center space-x-2">
-                        <ActivityIcon className="w-5 h-5 animate-spin" />
+                        <Loader2Icon className="w-5 h-5 animate-spin" />
                         <span>Analyzing Profile...</span>
                       </div>
                     ) : (
@@ -385,117 +399,92 @@ export default function LupusAnticoagulantPage() {
                     )}
                   </Button>
                 </div>
+
+                {/* Results Section - appears in same card */}
+                {report && (
+                  <div className="mt-8 pt-8 border-t border-gray-200">
+                    {/* Overall Result */}
+                    <div className={`p-4 rounded-lg border-2 ${getResultColors(report.overall)} mb-6`}>
+                      <div className="flex items-center justify-center space-x-3">
+                        {getResultIcon(report.overall)}
+                        <h3 className="text-xl font-bold text-center">
+                          {report.overall.toUpperCase()} for Lupus Anticoagulant
+                        </h3>
+                      </div>
+                    </div>
+
+                    {/* Detailed Findings - Compact */}
+                    <div className="space-y-4">
+                      {/* aPTT/Hexagonal Phase */}
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-2 flex items-center space-x-2 text-sm">
+                          <TestTubeIcon className="w-4 h-4 text-primary" />
+                          <span>aPTT / Hexagonal Phase</span>
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">{report.findings.ptt}</p>
+                      </div>
+
+                      {/* dRVVT */}
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-2 flex items-center space-x-2 text-sm">
+                          <FlaskConicalIcon className="w-4 h-4 text-primary" />
+                          <span>dRVVT Pathway</span>
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">{report.findings.drvvt}</p>
+                      </div>
+
+                      {/* Other Findings */}
+                      {report.findings.other.length > 0 && (
+                        <div className="bg-blue-50 rounded-lg p-4">
+                          <h4 className="font-semibold text-gray-900 mb-2 text-sm">Other Findings</h4>
+                          <ul className="space-y-1">
+                            {report.findings.other.map((finding, index) => (
+                              <li key={index} className="text-gray-700 text-sm leading-relaxed flex items-start space-x-2">
+                                <span className="text-blue-600 mt-1">•</span>
+                                <span>{finding}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Caveats */}
+                      {report.caveats.length > 0 && (
+                        <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-4">
+                          <h4 className="font-semibold text-yellow-800 mb-2 flex items-center space-x-2 text-sm">
+                            <AlertTriangleIcon className="w-4 h-4" />
+                            <span>Important Caveats</span>
+                          </h4>
+                          <ul className="space-y-1">
+                            {report.caveats.map((caveat, index) => (
+                              <li key={index} className="text-yellow-800 text-sm leading-relaxed flex items-start space-x-2">
+                                <span className="text-yellow-600 mt-1">•</span>
+                                <span>{caveat}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Reset Button */}
+                    <div className="mt-6 pt-4 border-t border-gray-200">
+                      <Button
+                        onClick={() => {
+                          setReport(null)
+                          setValues({})
+                        }}
+                        variant="outline"
+                        className="w-full border-gray-300 hover:bg-gray-50"
+                      >
+                        Analyze Another Profile
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </form>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Results Section */}
-      {report && (
-        <section className="relative py-16">
-          <div className="container mx-auto px-4 max-w-4xl">
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-              <div className="p-8">
-                {/* Overall Result */}
-                <div className={`p-6 rounded-xl border-2 ${getResultColors(report.overall)} mb-8`}>
-                  <div className="flex items-center justify-center space-x-3">
-                    {getResultIcon(report.overall)}
-                    <h3 className="text-2xl font-bold text-center">
-                      {report.overall.toUpperCase()} for Lupus Anticoagulant
-                    </h3>
-                  </div>
-                </div>
-
-                {/* Detailed Findings */}
-                <div className="space-y-6">
-                  {/* aPTT/Hexagonal Phase */}
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center space-x-2">
-                      <TestTubeIcon className="w-5 h-5 text-primary" />
-                      <span>aPTT / Hexagonal Phase Pathway</span>
-                    </h4>
-                    <p className="text-gray-700 leading-relaxed">{report.findings.ptt}</p>
-                  </div>
-
-                  {/* dRVVT */}
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center space-x-2">
-                      <FlaskConicalIcon className="w-5 h-5 text-primary" />
-                      <span>dRVVT Pathway</span>
-                    </h4>
-                    <p className="text-gray-700 leading-relaxed">{report.findings.drvvt}</p>
-                  </div>
-
-                  {/* Other Findings */}
-                  {report.findings.other.length > 0 && (
-                    <div className="bg-blue-50 rounded-lg p-6">
-                      <h4 className="font-semibold text-gray-900 mb-3">Other Findings</h4>
-                      <ul className="space-y-2">
-                        {report.findings.other.map((finding, index) => (
-                          <li key={index} className="text-gray-700 leading-relaxed flex items-start space-x-2">
-                            <span className="text-blue-600 mt-1">•</span>
-                            <span>{finding}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* Caveats */}
-                  {report.caveats.length > 0 && (
-                    <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-6">
-                      <h4 className="font-semibold text-yellow-800 mb-3 flex items-center space-x-2">
-                        <AlertTriangleIcon className="w-5 h-5" />
-                        <span>Important Caveats & Interferences</span>
-                      </h4>
-                      <ul className="space-y-2">
-                        {report.caveats.map((caveat, index) => (
-                          <li key={index} className="text-yellow-800 leading-relaxed flex items-start space-x-2">
-                            <span className="text-yellow-600 mt-1">•</span>
-                            <span>{caveat}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-
-                {/* Reset Button */}
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                  <Button
-                    onClick={() => {
-                      setReport(null)
-                      setValues({})
-                    }}
-                    variant="outline"
-                    className="w-full border-gray-300 hover:bg-gray-50"
-                  >
-                    Analyze Another Profile
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Join Our Discord Section */}
-      <section className="relative py-20 bg-primary">
-        <div className="container px-4 max-w-3xl mx-auto text-center relative">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Join Our Discord</h2>
-          <p className="text-xl mb-8 leading-relaxed text-white">
-            Connect with fellow pathology learners, share knowledge, and get quick answers to your questions in our active Discord community.
-          </p>
-          <Button
-            asChild
-            size="lg"
-            className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 py-3"
-          >
-            <Link href="https://discord.gg/pathology-bites" target="_blank" rel="noopener noreferrer">
-              Join Discord Server
-            </Link>
-          </Button>
         </div>
       </section>
 
