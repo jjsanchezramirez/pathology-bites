@@ -49,39 +49,19 @@ export default function GeneLookupPage() {
     setGeneInfo(null)
 
     try {
-      const [hugoResponse, harmonizomeResponse] = await Promise.all([
-        fetch(`https://rest.genenames.org/fetch/symbol/${input.trim()}`),
-        fetch(`https://amp.pharm.mssm.edu/Harmonizome/api/1.0/gene/${input.trim()}`)
-      ])
+      const response = await fetch(`/api/gene-lookup?symbol=${encodeURIComponent(input.trim())}`)
+      const result = await response.json()
 
-      if (!hugoResponse.ok) {
-        throw new Error(`HGNC API error: ${hugoResponse.statusText}`)
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch gene information')
       }
 
-      const hugoData = await hugoResponse.text()
-      const hugoXmlDoc = new DOMParser().parseFromString(hugoData, 'text/xml')
+      const geneInfo = result.data
+      setGeneInfo(geneInfo)
 
-      if (hugoXmlDoc.querySelector('result[name="response"][numFound="0"]')) {
-        throw new Error('Gene not found in HGNC database.')
-      }
-
-      let harmonizomeData = null
-      if (harmonizomeResponse.ok) {
-        harmonizomeData = await harmonizomeResponse.json()
-        if (harmonizomeData.status === 400) {
-          harmonizomeData = null // Ignore harmonizome errors, use HGNC data only
-        }
-      }
-
-      const hugoGeneInfo = extractHugoGeneInfo(hugoXmlDoc)
-      const harmonizomeGeneInfo = harmonizomeData ? extractHarmonizomeGeneInfo(harmonizomeData) : { aliasSymbols: [], description: '' }
-      const combinedGeneInfo = combineGeneInfo(hugoGeneInfo, harmonizomeGeneInfo)
-
-      setGeneInfo(combinedGeneInfo)
-      
       // Add to search history (keep last 5)
       setSearchHistory(prev => {
-        const newHistory = [combinedGeneInfo, ...prev.filter(g => g.geneName !== combinedGeneInfo.geneName)]
+        const newHistory = [geneInfo, ...prev.filter(g => g.geneName !== geneInfo.geneName)]
         return newHistory.slice(0, 5)
       })
 
@@ -93,41 +73,7 @@ export default function GeneLookupPage() {
     }
   }
 
-  const extractHugoGeneInfo = (xmlDoc: Document): Omit<GeneInfo, 'description'> => {
-    const getTagValue = (tagName: string) => {
-      const element = xmlDoc.querySelector(`str[name="${tagName}"]`)
-      return element ? element.textContent || '' : ''
-    }
 
-    const getArrayValues = (arrayName: string) => {
-      const arrayElement = xmlDoc.querySelector(`arr[name="${arrayName}"]`)
-      return arrayElement ? Array.from(arrayElement.getElementsByTagName('str')).map(node => node.textContent || '') : []
-    }
-
-    return {
-      hgncId: getTagValue('hgnc_id'),
-      geneName: getTagValue('symbol'),
-      geneProduct: getTagValue('name'),
-      previousNames: getArrayValues('prev_name'),
-      aliasSymbols: getArrayValues('alias_symbol'),
-      chromosomeLocation: getTagValue('location')
-    }
-  }
-
-  const extractHarmonizomeGeneInfo = (data: any) => {
-    return {
-      aliasSymbols: Array.isArray(data.synonyms) ? data.synonyms : [],
-      description: typeof data.description === 'string' ? data.description : ''
-    }
-  }
-
-  const combineGeneInfo = (hugoInfo: Omit<GeneInfo, 'description'>, harmonizomeInfo: { aliasSymbols: string[], description: string }): GeneInfo => {
-    return {
-      ...hugoInfo,
-      aliasSymbols: [...new Set([...hugoInfo.aliasSymbols, ...harmonizomeInfo.aliasSymbols])],
-      description: harmonizomeInfo.description
-    }
-  }
 
   const copyToClipboard = async (text: string, field: string) => {
     try {
