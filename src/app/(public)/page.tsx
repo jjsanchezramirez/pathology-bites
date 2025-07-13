@@ -6,7 +6,7 @@ import { FeatureCard } from "@/shared/components/common/feature-card"
 import { ScrollToTopButton } from "@/shared/components/common/scroll-to-top"
 import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
-import { BookOpenIcon, BarChartIcon, TestTube2Icon, Microscope, Target, BookOpen } from "lucide-react"
+import { BookOpenIcon, BarChartIcon, TestTube2Icon, Microscope, Target, BookOpen, Dna, FileText } from "lucide-react"
 import DemoQuestion from "@/shared/components/common/demo-question"
 import ComingSoonPage from "./coming-soon/page"
 
@@ -138,40 +138,46 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            <div className="group relative overflow-hidden rounded-xl border bg-background p-6 opacity-60">
+            <div className="group relative overflow-hidden rounded-xl border bg-background p-6 hover:shadow-lg transition-all duration-300">
               <div className="flex items-center gap-4 mb-4">
                 <div className="h-12 w-12 bg-green-100 dark:bg-green-950/30 rounded-full flex items-center justify-center">
-                  <BookOpen className="h-6 w-6 text-green-600" />
+                  <Dna className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">Image Gallery</h3>
-                  <p className="text-sm text-muted-foreground">Browse pathology images</p>
+                  <h3 className="text-lg font-semibold">Gene Lookup Tool</h3>
+                  <p className="text-sm text-muted-foreground">Search gene information</p>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Comprehensive collection of pathology images with detailed descriptions and categorization.
+                Comprehensive gene information from HGNC and Harmonizome databases with external resource links.
               </p>
-              <Button disabled className="w-full">
-                Coming Soon
-              </Button>
+              <Link href="/tools/gene-lookup">
+                <Button className="w-full gap-2">
+                  <Dna className="h-4 w-4" />
+                  Search Genes
+                </Button>
+              </Link>
             </div>
 
-            <div className="group relative overflow-hidden rounded-xl border bg-background p-6 opacity-60">
+            <div className="group relative overflow-hidden rounded-xl border bg-background p-6 hover:shadow-lg transition-all duration-300">
               <div className="flex items-center gap-4 mb-4">
                 <div className="h-12 w-12 bg-purple-100 dark:bg-purple-950/30 rounded-full flex items-center justify-center">
-                  <BookOpenIcon className="h-6 w-6 text-purple-600" />
+                  <FileText className="h-6 w-6 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">Content Browser</h3>
-                  <p className="text-sm text-muted-foreground">Explore pathology topics</p>
+                  <h3 className="text-lg font-semibold">Citation Generator</h3>
+                  <p className="text-sm text-muted-foreground">Generate academic citations</p>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Browse comprehensive pathology content specifications and educational materials.
+                Generate properly formatted citations in APA, MLA, AMA, and Vancouver styles from URLs, DOIs, or ISBNs.
               </p>
-              <Button disabled className="w-full">
-                Coming Soon
-              </Button>
+              <Link href="/tools/citations">
+                <Button className="w-full gap-2">
+                  <FileText className="h-4 w-4" />
+                  Generate Citations
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
