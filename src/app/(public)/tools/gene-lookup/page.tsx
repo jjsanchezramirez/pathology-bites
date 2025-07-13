@@ -160,7 +160,7 @@ export default function GeneLookupPage() {
               </h1>
               <p className="text-lg text-muted-foreground">
                 Search for comprehensive gene information from HGNC and Harmonizome databases.
-                Get detailed gene data, chromosome locations, aliases, and direct links to external resources.
+                Get detailed gene data, chromosome locations, aliases, and descriptions.
               </p>
               <div className="flex gap-4 pt-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -170,10 +170,6 @@ export default function GeneLookupPage() {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Dna className="h-4 w-4" />
                   <span>Harmonizome API</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <ExternalLink className="h-4 w-4" />
-                  <span>External Links</span>
                 </div>
               </div>
             </div>
@@ -191,18 +187,7 @@ export default function GeneLookupPage() {
         </div>
       </section>
 
-      {/* Navigation */}
-      <section className="py-4 bg-white border-b">
-        <div className="container px-4 mx-auto">
-          <div className="flex items-center text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-primary">Home</Link>
-            <span className="mx-2">/</span>
-            <Link href="/tools" className="hover:text-primary">Tools</Link>
-            <span className="mx-2">/</span>
-            <span className="text-primary">Gene Lookup</span>
-          </div>
-        </div>
-      </section>
+
 
       {/* Gene Search Tool */}
       <section className="relative py-16">
@@ -305,11 +290,11 @@ export default function GeneLookupPage() {
                         />
                       )}
 
-                      {/* External Links */}
+                      {/* Database Links */}
                       <div className="bg-gray-50 p-6 rounded-lg">
                         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                          <ExternalLink className="h-5 w-5" />
-                          External Resources
+                          <Dna className="h-5 w-5" />
+                          Database Resources
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                           <Button
@@ -392,46 +377,33 @@ export default function GeneLookupPage() {
         </div>
       </section>
 
-      {/* How to Use */}
-      <section className="py-16 bg-gray-50">
-        <div className="container px-4 mx-auto max-w-4xl">
-          <h2 className="text-3xl font-bold text-center mb-12">How to Use</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Search className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">1. Enter Gene Symbol</h3>
-              <p className="text-muted-foreground">
-                Type the official gene symbol (e.g., TP53, BRCA1) in the search box
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <FileText className="h-8 w-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">2. View Information</h3>
-              <p className="text-muted-foreground">
-                Get comprehensive gene data from HGNC and Harmonizome databases
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <ExternalLink className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">3. Explore Resources</h3>
-              <p className="text-muted-foreground">
-                Access external databases and copy information for your research
-              </p>
-            </div>
-          </div>
+
+
+      {/* Community Section */}
+      <section className="relative py-20">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-green-500/10" />
+        <div className="container px-4 max-w-3xl mx-auto text-center relative">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Our Discord</h2>
+          <p className="text-xl text-muted-foreground mb-8">
+            Connect with fellow pathology learners, share knowledge, and get quick answers to your questions
+            in our active Discord community.
+          </p>
+          <Button
+            size="lg"
+            className="bg-[#5865F2] hover:bg-[#4752C4] transform hover:scale-105
+                      transition-all duration-300 ease-in-out"
+            onClick={() => window.open('https://discord.gg/2v64p2fzsC', '_blank')}
+          >
+            <ExternalLink className="h-5 w-5 mr-2" />
+            Join Discord Server
+          </Button>
         </div>
       </section>
 
-      {/* Ready for More Learning */}
+      {/* Start Learning Today */}
       <section className="py-16 bg-gray-50">
         <div className="container px-4 mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready for More Learning?</h2>
+          <h2 className="text-3xl font-bold mb-4">Start Learning Today</h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Explore our other tools and resources to enhance your pathology knowledge
           </p>

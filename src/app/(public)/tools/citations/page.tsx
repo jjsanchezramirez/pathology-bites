@@ -577,25 +577,55 @@ export default function CitationGeneratorPage() {
         </div>
       </section>
 
-      {/* Call to Action Section */}
+      {/* Community Section */}
       <section className="relative py-20">
-        <div className="absolute inset-0 bg-linear-to-b from-transparent to-primary/5" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-green-500/10" />
         <div className="container px-4 max-w-3xl mx-auto text-center relative">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready for More Learning?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Our Discord</h2>
           <p className="text-xl text-muted-foreground mb-8">
+            Connect with fellow pathology learners, share knowledge, and get quick answers to your questions
+            in our active Discord community.
+          </p>
+          <Button
+            size="lg"
+            className="bg-[#5865F2] hover:bg-[#4752C4] transform hover:scale-105
+                      transition-all duration-300 ease-in-out"
+            onClick={() => window.open('https://discord.gg/2v64p2fzsC', '_blank')}
+          >
+            <Globe className="h-5 w-5 mr-2" />
+            Join Discord Server
+          </Button>
+        </div>
+      </section>
+
+      {/* Start Learning Today */}
+      <section className="py-16 bg-gray-50">
+        <div className="container px-4 mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-4">Start Learning Today</h2>
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Explore our comprehensive pathology question bank with thousands of practice questions,
             detailed explanations, and personalized learning paths.
           </p>
-          <Link href="/signup">
-            <Button
-              size="lg"
-              className="bg-primary hover:bg-primary/90 transform hover:scale-105
-                        transition-all duration-300 ease-in-out"
-            >
-              <BookOpen className="h-4 w-4 mr-2" />
-              Start Learning
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button asChild size="lg">
+              <Link href="/signup">
+                <BookOpen className="h-5 w-5 mr-2" />
+                Start Learning
+              </Link>
             </Button>
-          </Link>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/tools/cell-quiz">
+                <FileText className="h-5 w-5 mr-2" />
+                Cell Quiz
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/tools/gene-lookup">
+                <Search className="h-5 w-5 mr-2" />
+                Gene Lookup
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
     </div>

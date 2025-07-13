@@ -285,7 +285,7 @@ export default function ContactPage() {
 
       {/* Community Section */}
       <section className="relative py-20">
-        <div className="absolute inset-0 bg-linear-to-b from-transparent to-primary/5" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-green-500/10" />
         <div className="container px-4 max-w-3xl mx-auto text-center relative">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Our Discord</h2>
           <p className="text-xl text-muted-foreground mb-8">
@@ -296,7 +296,7 @@ export default function ContactPage() {
             size="lg" 
             className="bg-[#5865F2] hover:bg-[#4752C4] transform hover:scale-105 
                       transition-all duration-300 ease-in-out"
-            onClick={() => window.open('https://discord.gg/PNFvwVbW', '_blank')}
+            onClick={() => window.open('https://discord.gg/2v64p2fzsC', '_blank')}
           >
             <Icons.discord className="h-5 w-5 mr-2" />
             Join Discord Server
