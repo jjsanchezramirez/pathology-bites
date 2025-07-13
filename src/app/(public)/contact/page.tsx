@@ -284,15 +284,22 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Mission Section */}
+      {/* Join Our Discord Section */}
       <section className="relative py-20 bg-primary">
         <div className="container px-4 max-w-3xl mx-auto text-center relative">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Our Mission</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Join Our Discord</h2>
           <p className="text-xl mb-8 leading-relaxed text-white">
-            To democratize pathology education by providing high-quality, accessible learning
-            resources to medical students, residents, and pathologists worldwide. We believe
-            that knowledge should be free and available to all.
+            Connect with fellow pathology learners, share knowledge, and get quick answers to your questions in our active Discord community.
           </p>
+          <Button
+            asChild
+            size="lg"
+            className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 py-3"
+          >
+            <Link href="https://discord.gg/pathology-bites" target="_blank" rel="noopener noreferrer">
+              Join Discord Server
+            </Link>
+          </Button>
         </div>
       </section>
 
