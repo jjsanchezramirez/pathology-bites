@@ -123,21 +123,48 @@ function abbreviateJournal(journalName: string): string {
     }
   }
   
-  // Try partial matching (remove common prefixes/suffixes)
+  // Try partial matching (remove common prefixes/suffixes and special characters)
   const cleanedJournal = journalName
     .replace(/^(The|An|A)\s+/i, '')  // Remove articles
-    .replace(/\s*:\s*.*$/, '')        // Remove subtitles after colon
-    .replace(/\s*\([^)]*\)$/, '')     // Remove parenthetical info
+    .replace(/\s*[:=]\s*.*$/, '')     // Remove subtitles after colon or equals
+    .replace(/\s*\([^)]*\)$/, '')     // Remove parenthetical info at end
+    .replace(/\s*\[[^\]]*\]$/, '')    // Remove bracketed info at end
+    .replace(/\s*\{[^}]*\}$/, '')     // Remove braced info at end
+    .replace(/\s*[<>].*$/, '')        // Remove angle bracket content at end
+    .replace(/\s*[|&]\s*.*$/, '')     // Remove content after pipe or ampersand
+    .replace(/\s*[-–—]\s*.*$/, '')    // Remove content after dashes at end
+    .replace(/\s*[;,]\s*.*$/, '')     // Remove content after semicolon or comma at end
+    .replace(/\s+/g, ' ')             // Normalize whitespace
     .trim()
   
   if (cleanedJournal !== journalName) {
     const cleanedMatch = JOURNAL_ABBREVIATIONS[cleanedJournal]
     if (cleanedMatch) return cleanedMatch
-    
+
     // Try case-insensitive on cleaned version
     const lowerCleaned = cleanedJournal.toLowerCase()
     for (const [title, abbr] of Object.entries(JOURNAL_ABBREVIATIONS)) {
       if (title.toLowerCase() === lowerCleaned) {
+        return abbr
+      }
+    }
+  }
+
+  // Try even more aggressive cleaning - remove everything after first special character
+  const aggressivelyCleaned = journalName
+    .replace(/^(The|An|A)\s+/i, '')  // Remove articles
+    .replace(/\s*[:\-–—=|&;,()[\]{}<>].*$/, '') // Remove everything after first special char
+    .replace(/\s+/g, ' ')             // Normalize whitespace
+    .trim()
+
+  if (aggressivelyCleaned !== journalName && aggressivelyCleaned !== cleanedJournal) {
+    const aggressiveMatch = JOURNAL_ABBREVIATIONS[aggressivelyCleaned]
+    if (aggressiveMatch) return aggressiveMatch
+
+    // Try case-insensitive on aggressively cleaned version
+    const lowerAggressive = aggressivelyCleaned.toLowerCase()
+    for (const [title, abbr] of Object.entries(JOURNAL_ABBREVIATIONS)) {
+      if (title.toLowerCase() === lowerAggressive) {
         return abbr
       }
     }

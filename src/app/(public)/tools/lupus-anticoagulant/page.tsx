@@ -113,7 +113,7 @@ export default function LupusAnticoagulantPage() {
       inr: { high: 1.2 },
       ptt_la: { high: 35 },
       tt: { high: 21 },
-      heparin_xa: { critical: 1.5 },
+      heparin_xa: { critical: 1.0 },
       drvvt: { high: 45 },
       drvvt_ratio: { indeterminate: 1.1, positive: 1.2 },
       hex_la_delta: { positive: 8 }
@@ -193,7 +193,11 @@ export default function LupusAnticoagulantPage() {
 
     // Other findings
     if (values.pt > ref.pt.high) {
-      report.findings.other.push('PT/INR is prolonged. When seen with a prolonged aPTT, this may indicate a common pathway factor deficiency (II, V, X), multiple factor deficiencies (e.g., liver disease, DIC), or certain anticoagulants.')
+      if (values.ptt_la > ref.ptt_la.high) {
+        report.findings.other.push('PT/INR is prolonged. When seen with a prolonged aPTT, this may indicate a common pathway factor deficiency (II, V, X), multiple factor deficiencies (e.g., liver disease, DIC), or certain anticoagulants.')
+      } else {
+        report.findings.other.push('PT/INR is prolonged with normal aPTT. This pattern suggests factor VII deficiency, early warfarin effect, or liver dysfunction affecting vitamin K-dependent factors.')
+      }
     }
 
     // Final determination
@@ -557,6 +561,31 @@ export default function LupusAnticoagulantPage() {
                   </div>
                 )}
               </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* References Section */}
+      <section className="relative py-16 bg-gray-50">
+        <div className="container px-4 max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            <h2 className="text-2xl font-bold mb-6 text-gray-900">References</h2>
+            <div className="prose prose-gray max-w-none">
+              <p className="text-gray-700 leading-relaxed">
+                Devreese, K. M., de Groot, P. G., de Laat, B., Erkan, D., Favaloro, E. J., Mackie, I., et al. (2020).
+                Guidance from the Scientific and Standardization Committee for lupus anticoagulant/antiphospholipid antibodies
+                of the International Society on Thrombosis and Haemostasis. <em>Journal of Thrombosis and Haemostasis</em>,
+                18(11), 2828-2839.{' '}
+                <a
+                  href="https://www.sciencedirect.com/science/article/pii/S1538783622037254"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80 underline transition-colors"
+                >
+                  https://doi.org/10.1111/jth.15047
+                </a>
+              </p>
             </div>
           </div>
         </div>
