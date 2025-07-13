@@ -2,6 +2,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Button } from "@/shared/components/ui/button"
 import { Card } from "@/shared/components/ui/card"
 import { Label } from "@/shared/components/ui/label"
@@ -283,24 +284,36 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Community Section */}
-      <section className="relative py-20">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-green-500/10" />
+      {/* Mission Section */}
+      <section className="relative py-20 bg-primary">
         <div className="container px-4 max-w-3xl mx-auto text-center relative">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Our Discord</h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Connect with fellow pathology learners, share knowledge, and get quick answers to your questions 
-            in our active Discord community.
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Our Mission</h2>
+          <p className="text-xl mb-8 leading-relaxed text-white">
+            To democratize pathology education by providing high-quality, accessible learning
+            resources to medical students, residents, and pathologists worldwide. We believe
+            that knowledge should be free and available to all.
           </p>
-          <Button 
-            size="lg" 
-            className="bg-[#5865F2] hover:bg-[#4752C4] transform hover:scale-105 
-                      transition-all duration-300 ease-in-out"
-            onClick={() => window.open('https://discord.gg/2v64p2fzsC', '_blank')}
-          >
-            <Icons.discord className="h-5 w-5 mr-2" />
-            Join Discord Server
-          </Button>
+        </div>
+      </section>
+
+      {/* Join Our Learning Community */}
+      <section className="relative py-20">
+        <div className="absolute inset-0 bg-linear-to-b from-transparent to-primary/5" />
+        <div className="container px-4 max-w-3xl mx-auto text-center relative">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Our Learning Community</h2>
+          <p className="text-xl text-muted-foreground mb-8">
+            Start your learning journey today. No fees, no subscriptions - just
+            high-quality pathology education available to everyone.
+          </p>
+          <Link href="/signup">
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-primary/90 transform hover:scale-105
+                        transition-all duration-300 ease-in-out"
+            >
+              Create Free Account
+            </Button>
+          </Link>
         </div>
       </section>
     </div>
