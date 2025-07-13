@@ -107,15 +107,32 @@ function parseHGNCData(xmlData: string) {
     }
   }
 
+  // Extract previous names
+  const prevMatches = xmlData.match(/<arr name="prev_name">([\s\S]*?)<\/arr>/)
+  const previousNames: string[] = []
+  if (prevMatches) {
+    const prevContent = prevMatches[1]
+    const prevs = prevContent.match(/<str>([^<]+)<\/str>/g)
+    if (prevs) {
+      prevs.forEach(prev => {
+        const match = prev.match(/<str>([^<]+)<\/str>/)
+        if (match) previousNames.push(match[1])
+      })
+    }
+  }
+
   return {
-    symbol: symbolMatch?.[1] || '',
-    name: nameMatch?.[1] || '',
-    location: locationMatch?.[1] || '',
     hgncId: hgncIdMatch?.[1] || '',
-    entrezId: entrezIdMatch?.[1] || '',
-    ensemblId: ensemblIdMatch?.[1] || '',
+    geneName: symbolMatch?.[1] || '',
+    geneProduct: nameMatch?.[1] || '',
+    previousNames,
     aliasSymbols,
-    description: ''
+    chromosomeLocation: locationMatch?.[1] || '',
+    description: '',
+    // Keep original fields for database links
+    symbol: symbolMatch?.[1] || '',
+    entrezId: entrezIdMatch?.[1] || '',
+    ensemblId: ensemblIdMatch?.[1] || ''
   }
 }
 
