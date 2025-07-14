@@ -43,6 +43,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'dlm.lmp.utoronto.ca',
       },
+      {
+        protocol: 'https',
+        hostname: 'rosai.secondslide.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'hematopathology.com',
+      },
     ],
   },
   experimental: {
