@@ -229,6 +229,84 @@ export default function VirtualSlidesPage() {
         </div>
       </section>
 
+      {/* Repository Logos Section */}
+      <section className="py-8 border-b border-border/40">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center mb-6">
+            <p className="text-sm text-muted-foreground font-medium">
+              Trusted by Leading Institutions Worldwide
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+            {/* Leeds University */}
+            <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
+              <Image
+                src="/logos/university-of-leeds-logo.png"
+                alt="University of Leeds"
+                width={120}
+                height={48}
+                className="object-contain h-full w-auto"
+              />
+            </div>
+
+            {/* MGH Pathology */}
+            <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
+              <Image
+                src="/logos/mgh-logo.png"
+                alt="MGH Pathology"
+                width={120}
+                height={48}
+                className="object-contain h-full w-auto"
+              />
+            </div>
+
+            {/* PathPresenter */}
+            <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
+              <Image
+                src="/logos/path-presenter-logo.png"
+                alt="PathPresenter"
+                width={120}
+                height={48}
+                className="object-contain h-full w-auto"
+              />
+            </div>
+
+            {/* Rosai Collection */}
+            <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
+              <Image
+                src="/logos/rosai-collection-logo.png"
+                alt="Rosai Collection"
+                width={120}
+                height={48}
+                className="object-contain h-full w-auto"
+              />
+            </div>
+
+            {/* University of Toronto */}
+            <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
+              <Image
+                src="/logos/university-of-toronto-logo.png"
+                alt="University of Toronto LMP"
+                width={120}
+                height={48}
+                className="object-contain h-full w-auto"
+              />
+            </div>
+
+            {/* Hematopathology eTutorial */}
+            <div className="flex items-center justify-center h-12 w-auto opacity-70 hover:opacity-100 transition-opacity">
+              <Image
+                src="/logos/hematopathology-etutorial-logo.png"
+                alt="Hematopathology eTutorial"
+                width={120}
+                height={48}
+                className="object-contain h-full w-auto"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Search and Filter Section */}
       <section className="relative py-16">
         <div className="container px-4 mx-auto max-w-6xl">
