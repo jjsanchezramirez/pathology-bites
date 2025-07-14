@@ -70,7 +70,54 @@ export default function VirtualSlidesPage() {
     return systems.filter(system => system && system.trim() !== '').sort()
   }, [])
 
-  // Filter and search logic
+  // Enhanced search scoring function
+  const calculateSearchScore = (slide: VirtualSlide, searchTerm: string): number => {
+    const term = searchTerm.toLowerCase().trim()
+    if (!term) return 0
+
+    let score = 0
+    const fields = [
+      { text: slide.title.toLowerCase(), weight: 10 },
+      { text: slide.diagnosis.toLowerCase(), weight: 8 },
+      { text: slide.clinical_details.toLowerCase(), weight: 4 },
+      { text: slide.patient_info.toLowerCase(), weight: 2 },
+      { text: slide.repository.toLowerCase(), weight: 1 },
+      { text: slide.category.toLowerCase(), weight: 3 },
+      { text: slide.organ_system.toLowerCase(), weight: 5 }
+    ]
+
+    for (const field of fields) {
+      const text = field.text
+
+      // Exact match (highest priority)
+      if (text === term) {
+        score += field.weight * 100
+        continue
+      }
+
+      // Whole word match (high priority)
+      const wordBoundaryRegex = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
+      if (wordBoundaryRegex.test(text)) {
+        score += field.weight * 50
+        continue
+      }
+
+      // Starts with term (medium-high priority)
+      if (text.startsWith(term)) {
+        score += field.weight * 25
+        continue
+      }
+
+      // Contains term as substring (lower priority)
+      if (text.includes(term)) {
+        score += field.weight * 10
+      }
+    }
+
+    return score
+  }
+
+  // Filter and search logic with enhanced scoring
   const filteredSlides = useMemo(() => {
     let filtered = virtualSlidesData as VirtualSlide[]
 
@@ -89,10 +136,12 @@ export default function VirtualSlidesPage() {
       filtered = filtered.filter(slide => slide.organ_system === selectedOrganSystem)
     }
 
-    // Apply search term
+    // Apply search term with enhanced scoring
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase()
-      filtered = filtered.filter(slide => 
+
+      // First filter slides that match the search term
+      const matchingSlides = filtered.filter(slide =>
         slide.title.toLowerCase().includes(term) ||
         slide.diagnosis.toLowerCase().includes(term) ||
         slide.clinical_details.toLowerCase().includes(term) ||
@@ -101,6 +150,15 @@ export default function VirtualSlidesPage() {
         slide.category.toLowerCase().includes(term) ||
         slide.organ_system.toLowerCase().includes(term)
       )
+
+      // Then sort by relevance score (highest first)
+      filtered = matchingSlides
+        .map(slide => ({
+          slide,
+          score: calculateSearchScore(slide, searchTerm)
+        }))
+        .sort((a, b) => b.score - a.score)
+        .map(item => item.slide)
     }
 
     return filtered
