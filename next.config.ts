@@ -33,6 +33,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'pathpresenter.net',
+      },
+      {
+        protocol: 'https',
         hostname: 'learn.mghpathology.org',
       },
       {
