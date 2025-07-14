@@ -53,7 +53,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'hematopathology.com',
+        hostname: 'hematopathologyetutorial.com',
       },
       {
         protocol: 'https',
