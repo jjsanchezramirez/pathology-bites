@@ -32,15 +32,14 @@ export function useDemoQuestions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
-
-
-  const fetchNewQuestion = useCallback(async () => {
+  const fetchNewQuestion = useCallback(async (index: number) => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/demo-questions?index=${currentIndex}`);
+      const response = await fetch(`/api/demo-questions?index=${index}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -61,18 +60,20 @@ export function useDemoQuestions() {
       setError('Failed to load question');
       setLoading(false);
     }
-  }, [currentIndex]);
-
+  }, []);
 
   const refreshQuestion = () => {
-    // Move to next question in sequence
-    fetchNewQuestion();
+    // Move to next question in sequence using current index
+    fetchNewQuestion(currentIndex);
   };
 
-  // Initial load
+  // Initial load only
   useEffect(() => {
-    fetchNewQuestion();
-  }, [fetchNewQuestion]);
+    if (!hasInitialized) {
+      setHasInitialized(true);
+      fetchNewQuestion(0);
+    }
+  }, [fetchNewQuestion, hasInitialized]);
   
   return {
     questions,
