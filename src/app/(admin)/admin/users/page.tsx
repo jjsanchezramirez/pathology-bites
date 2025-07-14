@@ -2,7 +2,7 @@
 'use client'
 
 import { useRef } from 'react'
-import { Metadata } from 'next'
+
 import { UsersTable } from '@/features/users/components/users-table'
 import { UserStatsCards, UserStatsRef } from '@/features/users/components/user-stats-cards'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'

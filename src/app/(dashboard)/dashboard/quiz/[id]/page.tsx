@@ -65,6 +65,17 @@ export default function QuizSessionPage() {
     }
   }, [params.id, router])
 
+  // Define handleAutoSubmit before it's used in useEffect
+  const handleAutoSubmit = useCallback(() => {
+    if (selectedAnswerId) {
+      // handleSubmitAnswer() will be defined later
+      console.log('Auto-submitting with answer:', selectedAnswerId)
+    } else {
+      // handleNextQuestion() will be defined later
+      console.log('Auto-submitting with no answer')
+    }
+  }, [selectedAnswerId])
+
   // Timer effect for timed quizzes - must be before early returns
   useEffect(() => {
     if (quizSession?.config.timing === 'timed' && quizSession?.config.timePerQuestion) {
@@ -73,7 +84,7 @@ export default function QuizSessionPage() {
       const timer = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev === null || prev <= 1) {
-            // handleAutoSubmit() // Will be defined later
+            handleAutoSubmit()
             return null
           }
           return prev - 1
@@ -82,7 +93,7 @@ export default function QuizSessionPage() {
 
       return () => clearInterval(timer)
     }
-  }, [quizSession?.currentQuestionIndex, quizSession?.config.timing, quizSession?.config.timePerQuestion])
+  }, [quizSession?.currentQuestionIndex, quizSession?.config.timing, quizSession?.config.timePerQuestion, handleAutoSubmit])
 
   // Load question state when navigating to a question
   const loadQuestionState = useCallback((questionId: string) => {
@@ -347,14 +358,7 @@ export default function QuizSessionPage() {
     // In practice mode, user needs to click submit button or will auto-submit on next question
   }
 
-  const handleAutoSubmit = () => {
-    if (selectedAnswerId) {
-      handleSubmitAnswer()
-    } else {
-      // Auto-submit with no answer
-      handleNextQuestion()
-    }
-  }
+
 
   const handleSubmitAnswerInternal = async (answerId?: string) => {
     const answerToSubmit = answerId || selectedAnswerId
@@ -376,7 +380,7 @@ export default function QuizSessionPage() {
     const currentFirstAnswer = firstAnswerId || questionState?.firstAnswer || null
 
     try {
-      let result: any
+      let result: { isCorrect: boolean; correctAnswerId?: string; data?: any }
 
       if (isMockSession) {
         // Handle mock session locally without API call
@@ -384,6 +388,7 @@ export default function QuizSessionPage() {
         const isCorrect = answerToSubmit === correctOption?.id
 
         result = {
+          isCorrect,
           data: {
             attemptId: `mock-attempt-${Date.now()}`,
             isCorrect,

@@ -12,7 +12,8 @@ import {
   AlertTriangleIcon,
   CheckCircleIcon,
   XCircleIcon,
-  HelpCircleIcon
+  HelpCircleIcon,
+  ExternalLink
 } from "lucide-react"
 import FloatingCharacter from "@/shared/components/common/dr-albright"
 
@@ -460,7 +461,7 @@ export default function LupusAnticoagulantPage() {
                 <div className="pt-4">
                   <Button
                     type="submit"
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-6 rounded-lg transform hover:scale-105 transition-all duration-300 ease-in-out shadow-lg"
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-6 rounded-lg shadow-lg"
                     disabled={isAnalyzing}
                   >
                     {isAnalyzing ? (
@@ -560,32 +561,28 @@ export default function LupusAnticoagulantPage() {
                     </div>
                   </div>
                 )}
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* References Section */}
-      <section className="relative py-16 bg-gray-50">
-        <div className="container px-4 max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-            <h2 className="text-2xl font-bold mb-6 text-gray-900">References</h2>
-            <div className="prose prose-gray max-w-none">
-              <p className="text-gray-700 leading-relaxed">
-                Devreese, K. M., de Groot, P. G., de Laat, B., Erkan, D., Favaloro, E. J., Mackie, I., et al. (2020).
-                Guidance from the Scientific and Standardization Committee for lupus anticoagulant/antiphospholipid antibodies
-                of the International Society on Thrombosis and Haemostasis. <em>Journal of Thrombosis and Haemostasis</em>,
-                18(11), 2828-2839.{' '}
-                <a
-                  href="https://www.sciencedirect.com/science/article/pii/S1538783622037254"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:text-primary/80 underline transition-colors"
-                >
-                  https://doi.org/10.1111/jth.15047
-                </a>
-              </p>
+                {/* References Section - within same card */}
+                <div className="mt-8 pt-6 border-t border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">References</h3>
+                  <div className="text-sm text-gray-600 leading-relaxed flex items-start space-x-2">
+                    <a
+                      href="https://www.sciencedirect.com/science/article/pii/S1538783622037254"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:text-primary/80 transition-colors mt-0.5"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                    <span>
+                      Devreese, K. M., de Groot, P. G., de Laat, B., Erkan, D., Favaloro, E. J., Mackie, I., et al. (2020).
+                      Guidance from the Scientific and Standardization Committee for lupus anticoagulant/antiphospholipid antibodies
+                      of the International Society on Thrombosis and Haemostasis. <em>J Thromb Haemost</em>,
+                      18(11), 2828-2839.
+                    </span>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
         </div>

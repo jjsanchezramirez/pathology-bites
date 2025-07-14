@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         if (harmonizomeData.status === 400) {
           harmonizomeData = null
         }
-      } catch (error) {
+      } catch {
         // Ignore harmonizome errors, use HGNC data only
         harmonizomeData = null
       }

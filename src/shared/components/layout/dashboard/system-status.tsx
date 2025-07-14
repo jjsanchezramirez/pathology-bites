@@ -1,7 +1,7 @@
 // src/components/admin/dashboard/system-status.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { createClient } from '@/shared/services/client'
 
@@ -23,8 +23,7 @@ export function SystemStatus() {
   const [isLoading, setIsLoading] = useState(true)
   const supabase = createClient()
 
-  useEffect(() => {
-    const checkSystemHealth = async () => {
+  const checkSystemHealth = useCallback(async () => {
       try {
         // Use the API endpoint for consistency
         const response = await fetch('/api/admin/system-status')
@@ -68,15 +67,16 @@ export function SystemStatus() {
       } finally {
         setIsLoading(false)
       }
-    }
+  }, [])
 
+  useEffect(() => {
     checkSystemHealth()
 
     // Check every 30 seconds
     const interval = setInterval(checkSystemHealth, 30000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [checkSystemHealth])
 
 
 

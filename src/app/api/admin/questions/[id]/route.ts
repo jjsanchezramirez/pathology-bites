@@ -131,7 +131,7 @@ export async function GET(
     // Flatten the tags structure for easier consumption
     const questionWithFlattenedTags = {
       ...question,
-      tags: question.question_tags?.map((qt: any) => qt.tag).filter(Boolean) || []
+      tags: question.question_tags?.map((qt: { tag: any }) => qt.tag).filter(Boolean) || []
     }
 
     return NextResponse.json({
@@ -157,7 +157,6 @@ export async function PATCH(
     const body = await request.json()
     const {
       questionData,
-      updateType,
       changeSummary,
       answerOptions,
       questionImages,
@@ -269,7 +268,7 @@ export async function PATCH(
 
         // Insert new options
         if (answerOptions.length > 0) {
-          const optionsToInsert = answerOptions.map((option: any, index: number) => ({
+          const optionsToInsert = answerOptions.map((option: { text: string; is_correct: boolean; explanation?: string }, index: number) => ({
             question_id: questionId,
             text: option.text,
             is_correct: option.is_correct,
@@ -307,7 +306,7 @@ export async function PATCH(
           const { error: imagesError } = await adminClient
             .from('question_images')
             .insert(
-              questionImages.map((img: any, index: number) => ({
+              questionImages.map((img: { image_id: string; question_section: string }, index: number) => ({
                 question_id: questionId,
                 image_id: img.image_id,
                 question_section: img.question_section,
@@ -339,7 +338,7 @@ export async function PATCH(
         // Insert new tags
         if (tagIds && tagIds.length > 0) {
           // Filter out any null/undefined tag IDs
-          const validTagIds = tagIds.filter((tagId: any) =>
+          const validTagIds = tagIds.filter((tagId: string | null | undefined) =>
             tagId !== null &&
             tagId !== undefined &&
             typeof tagId === 'string' &&

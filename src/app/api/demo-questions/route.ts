@@ -11,7 +11,6 @@ interface ImageData {
 }
 
 interface QuestionImageData {
-  id: string;
   image_id: string;
   question_section: string;
   order_index: number;
@@ -229,9 +228,6 @@ export async function GET(request: Request) {
       // Use sequential ordering instead of random selection
       const selectedIndex = currentIndex % demoQuestions.length;
       const selectedDemo = demoQuestions[selectedIndex];
-
-      console.log('Selected demo question:', selectedDemo);
-      console.log('Looking for question ID:', selectedDemo.question_id);
 
       // Include next index in response for client to track
       const nextIndex = (selectedIndex + 1) % demoQuestions.length;

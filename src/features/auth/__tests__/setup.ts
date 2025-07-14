@@ -107,10 +107,10 @@ declare global {
     }
   }
 
-  var testUtils: {
-    createMockUser: (overrides?: any) => any
-    createMockSession: (user?: any) => any
-    createMockError: (type?: string, message?: string) => any
+  const testUtils: {
+    createMockUser: (overrides?: Record<string, unknown>) => Record<string, unknown>
+    createMockSession: (user?: Record<string, unknown>) => Record<string, unknown>
+    createMockError: (type?: string, message?: string) => Record<string, unknown>
     waitForNextTick: () => Promise<void>
   }
 }

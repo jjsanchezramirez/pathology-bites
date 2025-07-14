@@ -2,6 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { updateImage } from '@/features/images/services/images';
 import { ImageData, IMAGE_CATEGORIES } from '@/features/images/types/images';
 import { toast } from 'sonner';
@@ -117,11 +118,13 @@ export function EditImageDialog({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Image Preview - Takes 1/3 of space */}
           <div className="space-y-3">
-            <div className="rounded-lg overflow-hidden">
-              <img
+            <div className="rounded-lg overflow-hidden relative h-64">
+              <Image
                 src={image.url}
                 alt={image.alt_text || ''}
-                className="w-full h-64 object-contain bg-muted/20"
+                className="object-contain bg-muted/20"
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
               />
             </div>
             <div className="text-xs text-muted-foreground space-y-1 bg-muted/20 rounded-lg p-3">

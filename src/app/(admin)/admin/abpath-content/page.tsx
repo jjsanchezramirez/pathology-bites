@@ -6,7 +6,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Search, BookOpen, ToggleLeft, Filter, X, ChevronDown, ChevronRight, Download } from 'lucide-react';
+import { Search, BookOpen, X, ChevronDown, ChevronRight, Download } from 'lucide-react';
 import { ABPathPDFGenerator } from './pdf-generator';
 
 interface PathologyItem {
@@ -63,11 +63,7 @@ const DESIGNATION_COLORS = {
   'F': 'bg-purple-100 text-purple-800 border-purple-200'
 };
 
-const DESIGNATION_LABELS = {
-  'C': 'Core',
-  'AR': 'Advanced Resident',
-  'F': 'Fellow'
-};
+
 
 export default function ABPathContentPage() {
   const [data, setData] = useState<ContentSpecifications | null>(null);

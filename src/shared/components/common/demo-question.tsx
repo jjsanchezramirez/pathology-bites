@@ -27,7 +27,7 @@ export default function DemoQuestion() {
       setIsAnswered(false);
       setShowExplanation(false);
     }
-  }, [currentQuestion?.id]);
+  }, [currentQuestion]);
 
   const handleOptionClick = (optionId: string) => {
     if (!isAnswered) {

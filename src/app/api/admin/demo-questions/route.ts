@@ -1,7 +1,7 @@
 // src/app/api/admin/demo-questions/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
+;
 
 // Admin API for managing demo questions
 export async function GET() {
@@ -230,7 +230,7 @@ export async function PATCH(request: Request) {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Update demo question
-    const updateData: any = {};
+    const updateData: { is_active?: boolean; display_order?: number } = {};
     if (is_active !== undefined) updateData.is_active = is_active;
     if (display_order !== undefined) updateData.display_order = display_order;
 

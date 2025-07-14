@@ -1,7 +1,7 @@
 // src/app/(dashboard)/dashboard/page.tsx
 "use client"
 
-import { Suspense, useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { Skeleton } from "@/shared/components/ui/skeleton"
@@ -11,7 +11,7 @@ import {
   TrendingUp,
   Clock,
   Award,
-  Brain,
+
   Play,
   Plus,
   BarChart3,
@@ -82,22 +82,7 @@ function ActivityLoading() {
   )
 }
 
-function ActionsLoading() {
-  return (
-    <Card className="col-span-3">
-      <CardHeader>
-        <CardTitle>Quick Actions</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+
 
 
 

@@ -11,9 +11,7 @@ export type QuestionReportInsert = Database['public']['Tables']['question_report
 export type QuestionReportUpdate = Database['public']['Tables']['question_reports']['Update']
 
 // Extended types with relationships
-export interface InquiryWithDetails extends InquiryData {
-  // Add any joined data here if needed
-}
+export type InquiryWithDetails = InquiryData
 
 export interface QuestionReportWithDetails extends QuestionReportData {
   question?: {

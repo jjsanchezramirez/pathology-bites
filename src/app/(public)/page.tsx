@@ -6,7 +6,7 @@ import { FeatureCard } from "@/shared/components/common/feature-card"
 import { ScrollToTopButton } from "@/shared/components/common/scroll-to-top"
 import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
-import { BookOpenIcon, BarChartIcon, TestTube2Icon, Microscope, Target, BookOpen, Dna, FileText } from "lucide-react"
+import { BookOpenIcon, BarChartIcon, TestTube2Icon, Microscope, Target, Dna, FileText } from "lucide-react"
 import DemoQuestion from "@/shared/components/common/demo-question"
 import ComingSoonPage from "./coming-soon/page"
 
@@ -176,6 +176,27 @@ export default function LandingPage() {
                 <Button className="w-full gap-2">
                   <FileText className="h-4 w-4" />
                   Generate Citations
+                </Button>
+              </Link>
+            </div>
+
+            <div className="group relative overflow-hidden rounded-xl border bg-background p-6 hover:shadow-lg transition-all duration-300">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 bg-orange-100 dark:bg-orange-950/30 rounded-full flex items-center justify-center">
+                  <Microscope className="h-6 w-6 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Virtual Slide Search Engine</h3>
+                  <p className="text-sm text-muted-foreground">Explore pathology slides</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Search and explore thousands of virtual pathology slides from leading institutions worldwide including Leeds, PathPresenter, MGH, and University of Toronto.
+              </p>
+              <Link href="/tools/virtual-slides">
+                <Button className="w-full gap-2">
+                  <Microscope className="h-4 w-4" />
+                  Search Virtual Slides
                 </Button>
               </Link>
             </div>

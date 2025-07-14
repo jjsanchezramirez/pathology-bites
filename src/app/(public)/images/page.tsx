@@ -2,6 +2,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react';
+import Image from 'next/image';
 import { Card } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
@@ -232,10 +233,12 @@ export default function PublicImagesPage() {
                               document.body.appendChild(overlay);
                             }}
                           >
-                            <img
+                            <Image
                               src={image.url}
                               alt={image.alt_text || image.description || 'Image'}
                               className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                              fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             />
                           </div>
                           {image.description && (

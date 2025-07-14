@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
-import { Check, X, Play, RotateCcw, Microscope, Target, BookOpen, ArrowLeft, ArrowRight, FileText } from 'lucide-react'
+import { Check, X, Play, RotateCcw, Microscope, Target, BookOpen, ArrowLeft, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import FloatingCharacter from '@/shared/components/common/dr-albright'
@@ -82,7 +82,7 @@ function generateRandomQuestion(): Question {
 
 export default function CellQuizPage() {
   const [mode, setMode] = useState<'menu' | 'quiz' | 'tutorial'>('menu')
-  const [gameStarted, setGameStarted] = useState(false)
+
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [showExplanation, setShowExplanation] = useState(false)
@@ -92,7 +92,6 @@ export default function CellQuizPage() {
 
   const startGame = () => {
     setMode('quiz')
-    setGameStarted(true)
     setCurrentQuestion(generateRandomQuestion())
     setSelectedAnswer(null)
     setShowExplanation(false)
@@ -106,7 +105,6 @@ export default function CellQuizPage() {
 
   const backToMenu = () => {
     setMode('menu')
-    setGameStarted(false)
   }
 
   const handleAnswerSelect = (answer: string) => {
@@ -132,7 +130,6 @@ export default function CellQuizPage() {
 
   const resetGame = () => {
     setMode('menu')
-    setGameStarted(false)
     setCurrentQuestion(null)
     setSelectedAnswer(null)
     setShowExplanation(false)
@@ -309,7 +306,7 @@ export default function CellQuizPage() {
                       {/* Get detailed information for the correct answer */}
                       {(() => {
                         // Find the cell data for the correct answer
-                        const correctCellData = Object.entries(cellData).find(([key, cell]) => {
+                        const correctCellData = Object.entries(cellData).find(([, cell]) => {
                           const referenceInfo = findReferenceCellInfo(cell.name)
                           return (referenceInfo ? referenceInfo.name : cell.name) === currentQuestion.correctAnswer
                         })?.[1]
@@ -412,7 +409,7 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
   const currentReferenceCell = referenceCells[currentCellIndex]
 
   // Find matching cell data for images with improved matching logic
-  const matchingCellData = Object.entries(cellData).find(([key, cell]) => {
+  const matchingCellData = Object.entries(cellData).find(([, cell]) => {
     const refName = currentReferenceCell.name.toLowerCase()
     const cellName = cell.name.toLowerCase()
 

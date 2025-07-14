@@ -124,7 +124,7 @@ export interface QuestionOptionFormData {
 }
 
 // Legacy type alias for backward compatibility
-export interface AnswerOptionFormData extends QuestionOptionFormData {}
+export type AnswerOptionFormData = QuestionOptionFormData
 
 export interface QuestionImageFormData {
   id?: string;

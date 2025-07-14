@@ -1,7 +1,7 @@
 // src/app/(dashboard)/dashboard/profile/page.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/shared/services/client'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -11,7 +11,7 @@ import { Separator } from '@/shared/components/ui/separator'
 import { Badge } from '@/shared/components/ui/badge'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import { toast } from 'sonner'
-import { User, Mail, Calendar, Shield, Save, RefreshCw } from 'lucide-react'
+import { User, Shield, Save, RefreshCw } from 'lucide-react'
 
 interface UserProfile {
   id: string
@@ -37,13 +37,7 @@ export default function MyProfilePage() {
 
   const supabase = createClient()
 
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      fetchUserProfile()
-    }
-  }, [isAuthenticated, user])
-
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       setProfileLoading(true)
       const { data, error } = await supabase
@@ -66,7 +60,13 @@ export default function MyProfilePage() {
     } finally {
       setProfileLoading(false)
     }
-  }
+  }, [user?.id])
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchUserProfile()
+    }
+  }, [isAuthenticated, user, fetchUserProfile])
 
   const handleSave = async () => {
     try {

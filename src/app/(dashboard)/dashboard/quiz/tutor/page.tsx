@@ -10,12 +10,12 @@ import {
   Play, 
   Settings, 
   Target,
-  Clock,
+
   BookOpen,
   Lightbulb,
   TrendingUp
 } from "lucide-react"
-import { QuizMode, QUIZ_MODE_CONFIG } from "@/features/quiz/types/quiz"
+
 import Link from "next/link"
 
 const tutorModeFeatures = [

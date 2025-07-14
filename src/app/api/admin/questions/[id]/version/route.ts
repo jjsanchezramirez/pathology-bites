@@ -18,7 +18,7 @@ export async function POST(
   try {
     const { id: questionId } = await params
     const body = await request.json()
-    const { updateType, changeSummary, questionData } = body
+    const { changeSummary } = body
 
     // Simplified versioning - no need to specify update type
     // All updates are treated as minor version increments

@@ -39,26 +39,38 @@ export function SessionDebugComponent() {
   useEffect(() => {
     const supabase = createClient()
     
-    console.log('🔍 Client Debug: Starting session check...')
-    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 Client Debug: Starting session check...')
+    }
+
     // Check cookies manually
     const allCookies = document.cookie.split(';').map(c => c.trim())
     const supabaseCookies = allCookies.filter(c => c.includes('sb-'))
-    
-    console.log('🍪 All cookies found:', allCookies.length)
-    console.log('🍪 Supabase cookies:', supabaseCookies)
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🍪 All cookies found:', allCookies.length)
+      console.log('🍪 Supabase cookies:', supabaseCookies)
+    }
 
     async function checkAuth() {
       try {
         // Method 1: getUser()
-        console.log('🔍 Method 1: Checking getUser()...')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 Method 1: Checking getUser()...')
+        }
         const { data: userData, error: userError } = await supabase.auth.getUser()
-        console.log('👤 getUser result:', { user: userData.user, error: userError })
+        if (process.env.NODE_ENV === 'development') {
+          console.log('👤 getUser result:', { user: userData.user, error: userError })
+        }
 
-        // Method 2: getSession() 
-        console.log('🔍 Method 2: Checking getSession()...')
+        // Method 2: getSession()
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 Method 2: Checking getSession()...')
+        }
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
-        console.log('🔐 getSession result:', { session: sessionData.session, error: sessionError })
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔐 getSession result:', { session: sessionData.session, error: sessionError })
+        }
 
         setDebugInfo(prev => ({
           ...prev,
@@ -109,13 +121,17 @@ export function SessionDebugComponent() {
   }, [])
 
   const refreshAuth = async () => {
-    console.log('🔄 Manual refresh triggered...')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Manual refresh triggered...')
+    }
     const supabase = createClient()
     const { data, error } = await supabase.auth.refreshSession()
-    console.log('🔄 Refresh result:', { data, error })
-    setDebugInfo(prev => ({ 
-      ...prev, 
-      refreshResult: { data, error } 
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Refresh result:', { data, error })
+    }
+    setDebugInfo(prev => ({
+      ...prev,
+      refreshResult: { data, error }
     }))
   }
 

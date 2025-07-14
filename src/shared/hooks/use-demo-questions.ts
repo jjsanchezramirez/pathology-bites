@@ -35,7 +35,7 @@ export function useDemoQuestions() {
 
 
 
-  const fetchNewQuestion = async () => {
+  const fetchNewQuestion = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -61,7 +61,7 @@ export function useDemoQuestions() {
       setError('Failed to load question');
       setLoading(false);
     }
-  };
+  }, [currentIndex]);
 
 
   const refreshQuestion = () => {
@@ -72,7 +72,7 @@ export function useDemoQuestions() {
   // Initial load
   useEffect(() => {
     fetchNewQuestion();
-  }, []);
+  }, [fetchNewQuestion]);
   
   return {
     questions,

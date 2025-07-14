@@ -1,0 +1,2640 @@
+[
+  {
+    "id": "leeds_0001",
+    "title": "Invasive ductal carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Invasive ductal carcinoma",
+    "clinical_details": "3cm breast lump",
+    "patient_info": "Female 59 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FUndergraduate%2F1082.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Undergraduate/1082.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "59 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0002",
+    "title": "Residual infiltrating mixed ductal, lobular and tubulo-lobular carcinoma.",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Residual infiltrating mixed ductal, lobular and tubulo-lobular carcinoma.",
+    "clinical_details": "Known breast carcinoma with metastatic disease - salvage mastectomy following neoadjuvant chemotherapy.",
+    "patient_info": "Female 37 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FProf_Hanby_Collection%2FSet1%2F32907.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FProf_Hanby_Collection%2FSet1%2F32908.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FProf_Hanby_Collection%2FSet1%2F33083.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Prof_Hanby_Collection/Set1/32907.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Prof_Hanby_Collection/Set1/32908.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Prof_Hanby_Collection/Set1/33083.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "37 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0003",
+    "title": "Infarcted ductal adenoma/papilloma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Infarcted ductal adenoma/papilloma",
+    "clinical_details": "15 mm nodule on ultrasound",
+    "patient_info": "Female 60 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FProf_Hanby_Collection%2FSet1%2F32895.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FProf_Hanby_Collection%2FSet1%2F32896.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FProf_Hanby_Collection%2FSet1%2F32901.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Prof_Hanby_Collection/Set1/32895.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Prof_Hanby_Collection/Set1/32896.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Prof_Hanby_Collection/Set1/32901.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "60 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0004",
+    "title": "Malignant Phyllodes tumour",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Malignant Phyllodes tumour",
+    "clinical_details": "Symptomatic breast lump",
+    "patient_info": "Female 42 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FR_Bishop_Collection%2FCard_index_Set%2FBreast%2F33542.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/R_Bishop_Collection/Card_index_Set/Breast/33542.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "42 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0005",
+    "title": "Angiosarcoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Angiosarcoma",
+    "clinical_details": "Right mastectomy. Haemorrhagic area 3cm",
+    "patient_info": "Female 73 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FR_Bishop_Collection%2FCard_index_Set%2FBreast%2F33560.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/R_Bishop_Collection/Card_index_Set/Breast/33560.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "73 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0006",
+    "title": "Carcinoma with neuroendocrine differentiation, ?metastasis from elsewhere",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Carcinoma with neuroendocrine differentiation, ?metastasis from elsewhere",
+    "clinical_details": "3 separate breast lumps. 2 on right, 1 on left. All have same histology.",
+    "patient_info": "Female 40 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FR_Bishop_Collection%2FCard_index_Set%2FBreast%2F33561.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/R_Bishop_Collection/Card_index_Set/Breast/33561.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "40 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0007",
+    "title": "Granular cell tumour",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Granular cell tumour",
+    "clinical_details": "Breast lump",
+    "patient_info": "Female 29 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FR_Bishop_Collection%2FCard_index_Set%2FBreast%2F33557.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/R_Bishop_Collection/Card_index_Set/Breast/33557.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "29 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0008",
+    "title": "Tubular adenoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Tubular adenoma",
+    "clinical_details": "Breast lump",
+    "patient_info": "Sex unknown 55 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FR_Bishop_Collection%2FCard_index_Set%2FBreast%2F33555.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/R_Bishop_Collection/Card_index_Set/Breast/33555.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "55 years",
+    "gender": null,
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0009",
+    "title": "Phyllodes tumour",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Phyllodes tumour",
+    "clinical_details": "Recurrent left breast lesion",
+    "patient_info": "Female 56 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FR_Bishop_Collection%2FCard_index_Set%2FBreast%2F33547.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FR_Bishop_Collection%2FCard_index_Set%2FBreast%2F33549.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/R_Bishop_Collection/Card_index_Set/Breast/33547.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/R_Bishop_Collection/Card_index_Set/Breast/33549.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "56 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0010",
+    "title": "Synovial metaplasia",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Synovial metaplasia",
+    "clinical_details": "Tissue removed following removal of breast implant",
+    "patient_info": "Female 40 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FR_Bishop_Collection%2FCard_index_Set%2FBreast%2F33554.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/R_Bishop_Collection/Card_index_Set/Breast/33554.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "40 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0011",
+    "title": "Hibernoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Hibernoma",
+    "clinical_details": "Breast lump well circumscribed lump 5 x 5 x 4 cm. Uniform deep yellow and lobulated.",
+    "patient_info": "Female 26 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FR_Bishop_Collection%2FCard_index_Set%2FBreast%2F33544.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/R_Bishop_Collection/Card_index_Set/Breast/33544.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "26 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0012",
+    "title": "Malignant phyllodes with fibrosarcomatous stroma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Malignant phyllodes with fibrosarcomatous stroma",
+    "clinical_details": "Mastectomy. Well circumscribed tumour, 6 x 4 cm fleshy white and haemorrhagic cut surface.",
+    "patient_info": "Female 44 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FR_Bishop_Collection%2FCard_index_Set%2FBreast%2F33556.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/R_Bishop_Collection/Card_index_Set/Breast/33556.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "44 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0013",
+    "title": "Nipple adenoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Nipple adenoma",
+    "clinical_details": "? Paget's of nipple",
+    "patient_info": "Sex unknown 50 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FR_Bishop_Collection%2FCard_index_Set%2FBreast%2F33540.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/R_Bishop_Collection/Card_index_Set/Breast/33540.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "50 years",
+    "gender": null,
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0014",
+    "title": "Signet ring carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Signet ring carcinoma",
+    "clinical_details": "Right mastectomy - irregular cream firm area beneath nipple",
+    "patient_info": "Female 67 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FR_Bishop_Collection%2FCard_index_Set%2FBreast%2F33548.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FR_Bishop_Collection%2FCard_index_Set%2FBreast%2F33550.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/R_Bishop_Collection/Card_index_Set/Breast/33548.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/R_Bishop_Collection/Card_index_Set/Breast/33550.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "67 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0015",
+    "title": "Scar, no tumour",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Scar, no tumour",
+    "clinical_details": "Known breast carcinoma. Axillary sampling",
+    "patient_info": "Female 54 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FFrozen_sections%2F37889.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Frozen_sections/37889.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "54 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0016",
+    "title": "Invasive micropapillary carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Invasive micropapillary carcinoma",
+    "clinical_details": "6cm tumour in breast",
+    "patient_info": "Female 64 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FDarren_Collection%2FSet_4%2F31822.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Darren_Collection/Set_4/31822.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "64 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0017",
+    "title": "Invasive micropapillary carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Invasive micropapillary carcinoma",
+    "clinical_details": "6cm tumour in breast",
+    "patient_info": "Female 64 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FDarren_Collection%2FSet_4%2F31540.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Darren_Collection/Set_4/31540.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "64 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0018",
+    "title": "Ductal adenoma/benign adenomyoepithelioma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Ductal adenoma/benign adenomyoepithelioma",
+    "clinical_details": "Excision of old vertical scar and breast lump adjacent and medial to it. Margins of lump macro clear. Excision sutures - short superior, medium medial, long lateral.",
+    "patient_info": "Female 49 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FDarren_Collection%2FSet_1%2F31207.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Darren_Collection/Set_1/31207.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "49 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0019",
+    "title": "Invasive ductal carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Invasive ductal carcinoma",
+    "clinical_details": "2cm breast lump",
+    "patient_info": "Female 35 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FDarren_Collection%2FSet_1%2F31120.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Darren_Collection/Set_1/31120.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "35 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0020",
+    "title": "Sclerosing adenosis with calcification",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Sclerosing adenosis with calcification",
+    "clinical_details": "Needle biopsy for microcalcification",
+    "patient_info": "Female 51 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FDarren_Collection%2FSet_1%2F31119.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Darren_Collection/Set_1/31119.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "51 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0021",
+    "title": "Infiltrating ductal carcinoma, grade III",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Infiltrating ductal carcinoma, grade III",
+    "clinical_details": "7cm breast tumour",
+    "patient_info": "Female 78 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FDarren_Collection%2FSet_1%2F31110.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Darren_Collection/Set_1/31110.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "78 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0022",
+    "title": "Fibrocystic changes and secretory changes.",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Fibrocystic changes and secretory changes.",
+    "clinical_details": "Prophylactic mastectomy. Previous left breast ductal carcinoma",
+    "patient_info": "Female 50 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FDarren_Collection%2FSet_4%2F31824.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Darren_Collection/Set_4/31824.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "50 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0023",
+    "title": "Myofibroblastoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Myofibroblastoma",
+    "clinical_details": "Breast tumour. We received a mastectomy specimen with a large well defined nodular tumour. On section the cut surface was variegated grey/pink. Immunocytochemistry showed patchy desmin and S100 protein positivity. Smooth muscle actin and CD34 were negative.",
+    "patient_info": "Female 82 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FNW%2FCirc_AA%2F51010.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/NW/Circ_AA/51010.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "82 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0024",
+    "title": "Adenoid cystic carcinoma.",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Adenoid cystic carcinoma.",
+    "clinical_details": "Lump left breast. P3, R4, U5, C5, B5.",
+    "patient_info": "Female 58 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FNW%2FCirc_X%2F51358.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/NW/Circ_X/51358.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "58 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0025",
+    "title": "Nipple adenoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Nipple adenoma",
+    "clinical_details": "Nipple biopsy ?Bowen's disease.",
+    "patient_info": "Female 65 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FNW%2FCirc_V%2F51286.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/NW/Circ_V/51286.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "65 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0026",
+    "title": "Mucinous (colloid) carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Mucinous (colloid) carcinoma",
+    "clinical_details": "Presented with lesion in right breast. On cut surface this demonstrated a circumscribed gelatinous appearance.",
+    "patient_info": "Female 83 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FNW%2FCirc_V%2F51275.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/NW/Circ_V/51275.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "83 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0027",
+    "title": "Diabetic mastopathy",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Diabetic mastopathy",
+    "clinical_details": "Presented with lump in right breast. Two portions of fibroadipose tissue were received macroscopically, the largest of which measured 5cm in maximal dimension. On cut surface there was evidence of fibrosis.",
+    "patient_info": "Female 36 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FNW%2FCirc_V%2F51285.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/NW/Circ_V/51285.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "36 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0028",
+    "title": "Mucinous carcinoma (breast)",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Mucinous carcinoma (breast)",
+    "clinical_details": "Carcinoma left breast. Specimen: Left Breast. Macro: Left Mastectomy specimen with tumour 9 x 7cm.",
+    "patient_info": "Female 47 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FGeneral_Histopathology%2FHisto_EQA_CircO_Set8%2F52984.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/General_Histopathology/Histo_EQA_CircO_Set8/52984.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "47 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0029",
+    "title": "Adenosquamous carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Adenosquamous carcinoma",
+    "clinical_details": "Previous history of DCIS. New lesion in right axilla. ?Carcinoma.",
+    "patient_info": "Female 60 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F05-feb-09%2F78030.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/05-feb-09/78030.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "60 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0030",
+    "title": "Breast implant capsule / implant leak reaction",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Breast implant capsule / implant leak reaction",
+    "clinical_details": "Prophylactic mastectomy for BRCA1 breast Ca. Now removal of implants / skin.",
+    "patient_info": "Female 50 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F18-feb-09%2F78197.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F18-feb-09%2F78198.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/18-feb-09/78197.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/18-feb-09/78198.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "50 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0031",
+    "title": "C3 - atypia - ?papillary lesion",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "C3 - atypia - ?papillary lesion",
+    "clinical_details": "Suspicious mammography. Cyst on ultrasound. Blood stained aspirate. P1 R3.",
+    "patient_info": "Female 60 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F12-Mar-09%2F82081.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F12-Mar-09%2F82316.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/12-Mar-09/82081.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/12-Mar-09/82316.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "60 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0032",
+    "title": "Metastatic ductal carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Metastatic ductal carcinoma",
+    "clinical_details": "FNA axilla",
+    "patient_info": "Female 60 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F18-Jun-09%2F91017.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F18-Jun-09%2F91050.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F18-Jun-09%2F91054.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/18-Jun-09/91017.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/18-Jun-09/91050.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/18-Jun-09/91054.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "60 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0033",
+    "title": "Metastatic malignant melanoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Metastatic malignant melanoma",
+    "clinical_details": "Breast mass. ?Nature",
+    "patient_info": "Female 40 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F09-Jul-09%2F93320.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/09-Jul-09/93320.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "40 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0034",
+    "title": "Metastatic invasive lobular carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Metastatic invasive lobular carcinoma",
+    "clinical_details": "Breast cancer. Sentinel lymph node.",
+    "patient_info": "Female 70 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F09-Jul-09%2F93290.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/09-Jul-09/93290.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "70 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0035",
+    "title": "Phyllodes tumour",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Phyllodes tumour",
+    "clinical_details": "Huge breast mass. P5.",
+    "patient_info": "Female 50 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F06-Aug-09%2F96520.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/06-Aug-09/96520.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "50 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0036",
+    "title": "Low grade fibromyxoid sarcoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Low grade fibromyxoid sarcoma",
+    "clinical_details": "Right breast lump.",
+    "patient_info": "Female 47 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FSara_Edward%2FSet_4%2F95385.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Sara_Edward/Set_4/95385.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "47 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0037",
+    "title": "Atypical ductal proliferation with mucin extravasation",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Atypical ductal proliferation with mucin extravasation",
+    "clinical_details": "Calcifications. P1 R3.",
+    "patient_info": "Female 50 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F10-Oct-09%2F98465.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F10-Oct-09%2F98467.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/10-Oct-09/98465.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/10-Oct-09/98467.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "50 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0038",
+    "title": "Tubular carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Tubular carcinoma",
+    "clinical_details": "Wire-guided excision of breast carcinoma.",
+    "patient_info": "Female 50 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F10-Oct-09%2F98464.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/10-Oct-09/98464.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "50 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0039",
+    "title": "Benign Phyllodes",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Benign Phyllodes",
+    "clinical_details": "Lump right breast, U4, ?mucinous carcinoma. C2. Diagnostic biopsy containing a moderately well circumscribed grey/white lesion 25mm in maximum diameter.",
+    "patient_info": "Female 53 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_1%2F102713.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_1/102713.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "53 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0040",
+    "title": "B5 papillary carcinoma, confirmed on resection",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "B5 papillary carcinoma, confirmed on resection",
+    "clinical_details": "Core biopsy left breast.",
+    "patient_info": "Female 81 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_2%2F103963.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_2/103963.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "81 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0041",
+    "title": "Benign papilloma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Benign papilloma",
+    "clinical_details": "Nodule behind nipple R3.",
+    "patient_info": "Female 50 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_2%2F103956.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_2/103956.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "50 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0042",
+    "title": "High grade DCIS with cancerisation of lobules",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "High grade DCIS with cancerisation of lobules",
+    "clinical_details": "Screen detected calcification. Wide local excision.",
+    "patient_info": "Female 67 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_2%2F103943.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_2/103943.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "67 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0043",
+    "title": "Invasive lobular carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Invasive lobular carcinoma",
+    "clinical_details": "Wide local excision of breast lump.",
+    "patient_info": "Female 68 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_2%2F103934.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_2/103934.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "68 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0044",
+    "title": "Mixed invasive ductal carcinoma and micropapillary carcinoma with associated low grade DCIS",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Mixed invasive ductal carcinoma and micropapillary carcinoma with associated low grade DCIS",
+    "clinical_details": "Mass right breast.",
+    "patient_info": "Female 65 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_2%2F103927.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_2/103927.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "65 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0045",
+    "title": "Radial scar",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Radial scar",
+    "clinical_details": "Diagnostic wire guided biopsy. Spiculated area seen macroscopically measuring 9mm.",
+    "patient_info": "Female 52 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_2%2F104097.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_2/104097.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "52 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0046",
+    "title": "Widespread sclerosing adenosis with intermediate grade DCIS and a small number of tubules with no myosin staining representing an invasive ductal carcinoma grade 2. Micrometastasis in the lymph node.",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Widespread sclerosing adenosis with intermediate grade DCIS and a small number of tubules with no myosin staining representing an invasive ductal carcinoma grade 2. Micrometastasis in the lymph node.",
+    "clinical_details": "Right wide local excision. Firm mass 20mm in diameter seen macroscopially.",
+    "patient_info": "Female 40 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_2%2F103924.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_2/103924.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "40 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0047",
+    "title": "Invasive micropapillary carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Invasive micropapillary carcinoma",
+    "clinical_details": "Breast lump.",
+    "patient_info": "Female 61 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_3%2F105007.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_3/105007.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "61 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0048",
+    "title": "Granular cell tumour",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Granular cell tumour",
+    "clinical_details": "Breast lump.",
+    "patient_info": "Female 30 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_3%2F104983.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_3/104983.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "30 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0049",
+    "title": "Fibromatosis",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Fibromatosis",
+    "clinical_details": "Breast lump.",
+    "patient_info": "Female 32 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_3%2F104968.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_3/104968.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "32 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0050",
+    "title": "Myofibroblastoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Myofibroblastoma",
+    "clinical_details": "Breast lump.",
+    "patient_info": "Female 45 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_3%2F105237.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_3/105237.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "45 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0051",
+    "title": "Low grade (fibromatosis-like) spindle cell carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Low grade (fibromatosis-like) spindle cell carcinoma",
+    "clinical_details": "Breast lump.",
+    "patient_info": "Female 80 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_3%2F104971.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_3/104971.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "80 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0052",
+    "title": "Malignant phyllodes tumour",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Malignant phyllodes tumour",
+    "clinical_details": "Breast lump.",
+    "patient_info": "Female 53 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2Fseminar_3%2F105020.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/seminar_3/105020.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "53 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0053",
+    "title": "Micropapillary adenocarcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Micropapillary adenocarcinoma",
+    "clinical_details": "Superficial mass in right breast, not attached to skin, microcalcification present - imaging category B. EMA surface positive, CD34 negative. Wide bore needle biopsy of breast - three needle cores of pale tissue up to 10mm in length.",
+    "patient_info": "Female 73 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FGeneral_Histopathology%2FHisto_EQA_CircG_Set4%2F8560.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/General_Histopathology/Histo_EQA_CircG_Set4/8560.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "73 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0054",
+    "title": "Malignant phyllodes tumour",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Malignant phyllodes tumour",
+    "clinical_details": "Tumour right breast",
+    "patient_info": "Female 50 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F26-Nov-09%2F102111.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/26-Nov-09/102111.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "50 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0055",
+    "title": "Tubular carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Tubular carcinoma",
+    "clinical_details": "Lump in axilla",
+    "patient_info": "Female 46 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FMISCELLANEOUS%2FACP%2FMAY2007%2F38543.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/MISCELLANEOUS/ACP/MAY2007/38543.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "46 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0056",
+    "title": "Lactating adenoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Lactating adenoma",
+    "clinical_details": "Right breast lump.",
+    "patient_info": "Female 28 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2FSS%2F124539.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/SS/124539.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "28 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0057",
+    "title": "Fibroadenoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Fibroadenoma",
+    "clinical_details": "Lump right breast. Has increased in size gradually. Specimen: Right breast lumpectomy. Macro: Pale firm bosselated tissue, 3.5cm.",
+    "patient_info": "Female 20 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FGeneral_Histopathology%2FHisto_EQA_CircU%2F125127.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/General_Histopathology/Histo_EQA_CircU/125127.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "20 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0058",
+    "title": "Fat necrosis, C2",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Fat necrosis, C2",
+    "clinical_details": "FNA breast",
+    "patient_info": "Female 60 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F11-Nov-10%2F127814.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/11-Nov-10/127814.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "60 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0059",
+    "title": "Epitheliosis and intraduct carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Epitheliosis and intraduct carcinoma",
+    "clinical_details": "Breast lump.",
+    "patient_info": "Female 57 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126543.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126545.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126543.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126545.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "57 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0060",
+    "title": "Gynaecomastia",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Gynaecomastia",
+    "clinical_details": "No clinical details.",
+    "patient_info": "Male 62 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126542.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126544.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126542.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126544.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "62 years",
+    "gender": "Male",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0061",
+    "title": "Carcinoma including lobular distribution",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Carcinoma including lobular distribution",
+    "clinical_details": "Lump in breast.",
+    "patient_info": "Female 53 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126541.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126541.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "53 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0062",
+    "title": "Unusual carcinoma of breast",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Unusual carcinoma of breast",
+    "clinical_details": "Breast lump.",
+    "patient_info": "Female 82 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126536.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126536.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "82 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0063",
+    "title": "Invasive breast carcinoma, intraduct, lobular, etc.",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Invasive breast carcinoma, intraduct, lobular, etc.",
+    "clinical_details": "No clinical details.",
+    "patient_info": "Female 45 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126538.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126538.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "45 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0064",
+    "title": "Intraduct papilloma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Intraduct papilloma",
+    "clinical_details": "No clinical details.",
+    "patient_info": "Sex unknown age unknown",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126552.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126556.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126552.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126556.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": null,
+    "gender": null,
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0065",
+    "title": "Colloid carcinoma of breast",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Colloid carcinoma of breast",
+    "clinical_details": "No clinical details.",
+    "patient_info": "Sex unknown age unknown",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126559.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126560.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126559.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126560.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": null,
+    "gender": null,
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0066",
+    "title": "Fibroadenoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Fibroadenoma",
+    "clinical_details": "No clinical details.",
+    "patient_info": "Sex unknown age unknown",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126561.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126561.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": null,
+    "gender": null,
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0067",
+    "title": "Fibroadenoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Fibroadenoma",
+    "clinical_details": "No clinical details.",
+    "patient_info": "Sex unknown age unknown",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126585.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126585.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": null,
+    "gender": null,
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0068",
+    "title": "Hyperplastic cystic mastopathy",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Hyperplastic cystic mastopathy",
+    "clinical_details": "Breast biopsy.",
+    "patient_info": "Female 49 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126596.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126596.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "49 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0069",
+    "title": "Squamous intraduct carcinoma of male breast",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Squamous intraduct carcinoma of male breast",
+    "clinical_details": "No clinical details.",
+    "patient_info": "Male 75 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126595.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126595.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "75 years",
+    "gender": "Male",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0070",
+    "title": "Hyalinised fibroadenoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Hyalinised fibroadenoma",
+    "clinical_details": "Breast lump.",
+    "patient_info": "Female 78 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126591.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126591.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "78 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0071",
+    "title": "Benign fibroadenoma with rather cellular stroma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Benign fibroadenoma with rather cellular stroma",
+    "clinical_details": "Breast lump.",
+    "patient_info": "Female 16 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126589.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126589.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "16 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0072",
+    "title": "Carcinoma of breast",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Carcinoma of breast",
+    "clinical_details": "No clinical details.",
+    "patient_info": "Female 74 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126586.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126586.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "74 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0073",
+    "title": "Adenosis",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Adenosis",
+    "clinical_details": "No clinical details.",
+    "patient_info": "Sex unknown age unknown",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126609.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126609.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": null,
+    "gender": null,
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0074",
+    "title": "Paget's disease and underlying carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Paget's disease and underlying carcinoma",
+    "clinical_details": "No clinical details.",
+    "patient_info": "Female 63 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126616.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126616.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "63 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0075",
+    "title": "Mammary duct ectasia",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Mammary duct ectasia",
+    "clinical_details": "No clinical details.",
+    "patient_info": "Sex unknown age unknown",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126613.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126613.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": null,
+    "gender": null,
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0076",
+    "title": "Intracanalicular fibroadenoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Intracanalicular fibroadenoma",
+    "clinical_details": "Right breast lump for four months.",
+    "patient_info": "Female age unknown",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126612.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126612.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": null,
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0077",
+    "title": "Duct ectasia",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Duct ectasia",
+    "clinical_details": "No clinical details. Breast.",
+    "patient_info": "Sex unknown age unknown",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126611.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126614.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126611.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126614.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": null,
+    "gender": null,
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0078",
+    "title": "Carcinoma of male breast",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Carcinoma of male breast",
+    "clinical_details": "No clinical details.",
+    "patient_info": "Male age unknown",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126632.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126632.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": null,
+    "gender": "Male",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0079",
+    "title": "Mucoid carcinoma of breast",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Mucoid carcinoma of breast",
+    "clinical_details": "No clinical details.",
+    "patient_info": "Female 63 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126624.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126624.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "63 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0080",
+    "title": "Well differentiated papillary carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Well differentiated papillary carcinoma",
+    "clinical_details": "No clinical details. Breast.",
+    "patient_info": "Female 61 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2Fslide_Library%2FGeneral_Teaching_Collection%2F126629.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/slide_Library/General_Teaching_Collection/126629.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "61 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0081",
+    "title": "Ductal adenoma of breast",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Ductal adenoma of breast",
+    "clinical_details": "Section from a breast lesion. Excision biopsy of U3 LOQ left breast.",
+    "patient_info": "Female 44 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FManchester_FRCPath%2F2011%2FUC_7Mar%2F133427.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Manchester_FRCPath/2011/UC_7Mar/133427.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "44 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0082",
+    "title": "Fibroadenoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Fibroadenoma",
+    "clinical_details": "Right breast lump, up to 14mm. A well circumscribed fibrous nodule 23 x 18 x 15mm.",
+    "patient_info": "Female 39 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FEast_Midlands%2FCirculation_E_2011%2F134115.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/East_Midlands/Circulation_E_2011/134115.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "39 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0083",
+    "title": "Adenoma of the Nipple",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Adenoma of the Nipple",
+    "clinical_details": "Three month history of bleeding and ulceration of right nipple.",
+    "patient_info": "Female 51 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FFRCPath%2F2010%2FAutumn%2F135093.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/FRCPath/2010/Autumn/135093.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "51 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0084",
+    "title": "Invasive ductal and lobular carcinoma, ?collision tumour",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Invasive ductal and lobular carcinoma, ?collision tumour",
+    "clinical_details": "Screen detected lesion right breast.",
+    "patient_info": "Female 59 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FFRCPath%2F2010%2FAutumn%2F135102.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/FRCPath/2010/Autumn/135102.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "59 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0085",
+    "title": "Malignant (C5)",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Malignant (C5)",
+    "clinical_details": "Breast lump",
+    "patient_info": "Female 70 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F16-Dec-10%2F143939.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/16-Dec-10/143939.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "70 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0086",
+    "title": "Clear cell hidradenoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Clear cell hidradenoma",
+    "clinical_details": "Breast lesion",
+    "patient_info": "Female 75 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F07-July-11%2F145504.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/07-July-11/145504.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "75 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0087",
+    "title": "Malignant Phyllodes tumour",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Malignant Phyllodes tumour",
+    "clinical_details": "Breast lesion",
+    "patient_info": "Female 40 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FBlack_Box%2F10-Feb-11%2F143763.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Black_Box/10-Feb-11/143763.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "40 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0088",
+    "title": "Toxoplasmosis.",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Toxoplasmosis.",
+    "clinical_details": "Lump from right breast, ? Fibroadenoma.",
+    "patient_info": "Female 38 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FWednesday_Teaching%2F28-Sept-11%2F151822.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/Wednesday_Teaching/28-Sept-11/151822.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "38 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0089",
+    "title": "Angiosarcoma in lymph nodes",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Angiosarcoma in lymph nodes",
+    "clinical_details": "Breast mass",
+    "patient_info": "Female 63 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FSara_Edward%2FSet_18%2F153446.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FSara_Edward%2FSet_18%2F153450.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FSlide_Library%2FSara_Edward%2FSet_18%2F153451.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Sara_Edward/Set_18/153446.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Sara_Edward/Set_18/153450.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Slide_Library/Sara_Edward/Set_18/153451.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "63 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0090",
+    "title": "Malignant Phyllodes tumour",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Malignant Phyllodes tumour",
+    "clinical_details": "Breast lump. Mastectomy for malignant tumour of breast. Macro: 6.5 cm tumour in breast.",
+    "patient_info": "Female 74 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FEast_Midlands%2FCirculation_H%2F158223.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/East_Midlands/Circulation_H/158223.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "74 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0091",
+    "title": "Benign breast cyst fluid",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Benign breast cyst fluid",
+    "clinical_details": "Right breast lump. Complex cyst with septation on ultrasound. Breast cyst fluid. 2 cytospins, Pap and MGG",
+    "patient_info": "Female 49 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FFRCPath%2F2011%2FSpring%2FNon_Gynae_Cytology%2F143827.svs",
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FFRCPath%2F2011%2FSpring%2FNon_Gynae_Cytology%2F143825.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/FRCPath/2011/Spring/Non_Gynae_Cytology/143827.svs?-1",
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/FRCPath/2011/Spring/Non_Gynae_Cytology/143825.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "49 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0092",
+    "title": "Borderline phyllodes tumour",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Borderline phyllodes tumour",
+    "clinical_details": "Mobile lump in right breast's upper outer quadrant, 6cm in diameter, confirmed on mammography and ultrasound. Macro: Orientated lumpectomy of breast, 93g, measuring 7 x 4 x 4cm, containing a multilobulated nodule, 6cm in it’s maximum dimension, with a white whorled appearance associated with some haemorrhage. Specimen: Lumpectomy from right breast",
+    "patient_info": "Female 55 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FGeneral_Histopathology%2FHisto_EQA_CircX_Set6%2F166143.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/General_Histopathology/Histo_EQA_CircX_Set6/166143.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "55 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0093",
+    "title": "Benign microcalcification and fibrocystic disease / columnar cell change",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Benign microcalcification and fibrocystic disease / columnar cell change",
+    "clinical_details": "Breast screening patient. Mammotome / Vacuum-Assisted Core Biopsy of 5 mm focus of microcalcification in left upper outer quadrant. Clinical assessment = normal (P1), Radiological assessment = probably benign (R3), Ultrasound assessment = Normal (U1)",
+    "patient_info": "Female 48 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FFRCPath%2F2012%2FSpring%2F186932.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/FRCPath/2012/Spring/186932.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "48 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0094",
+    "title": "Invasive mucinous carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Invasive mucinous carcinoma",
+    "clinical_details": "Breast. Left mastectomy. Macro: Circumscribed hard mass 12mm at 2 o'clock.",
+    "patient_info": "Female 49 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FGeneral_Histopathology%2FHisto_EQA_CircY_Set6%2F188733.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/General_Histopathology/Histo_EQA_CircY_Set6/188733.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "49 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0095",
+    "title": "Malignant phyllodes tumour",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Malignant phyllodes tumour",
+    "clinical_details": "Lump in left breast",
+    "patient_info": "Female 43 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FFRCPath%2F2012%2FAutumn%2F198026.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/FRCPath/2012/Autumn/198026.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "43 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0096",
+    "title": "Adenomyoepithelioma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Adenomyoepithelioma",
+    "clinical_details": "Lump in breast. B3 on core biopsy. P3 clinically.",
+    "patient_info": "Female 38 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FCOW%2FCOW00002%2F103359.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/COW/COW00002/103359.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "38 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0097",
+    "title": "Paget's disease",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Paget's disease",
+    "clinical_details": "Right mastectomy for carcinoma. Macro: A mastectomy specimen 25 x 10 x 3cm. The nipple is eroded. Specimen: Nipple",
+    "patient_info": "Female 80 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FGeneral_Histopathology%2FHisto_EQA_CircJ_Set4A%2F7172.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/General_Histopathology/Histo_EQA_CircJ_Set4A/7172.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "80 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0098",
+    "title": "Intracystic / encysted papillary carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Intracystic / encysted papillary carcinoma",
+    "clinical_details": "Lump in breast noticed 4 weeks earlier. Clinically and radiologically benign. Macro: Wedge of breast tissue 40 x 3.0 x 2.5cm containing an incised soft mass 2.5 x 2.5 x 2.0. Specimen: Cystic mass in breast",
+    "patient_info": "Male 73 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FGeneral_Histopathology%2FHisto_EQA_CircE_Set4%2F8464.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/General_Histopathology/Histo_EQA_CircE_Set4/8464.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "73 years",
+    "gender": "Male",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0099",
+    "title": "Masson's tumour (papillary endothelial hyperplasia)",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Masson's tumour (papillary endothelial hyperplasia)",
+    "clinical_details": "Breast tumour - malignant?",
+    "patient_info": "Female 58 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEducation%2FPostgraduate%2FCOW%2FCOW00009%2F104335.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/Education/Postgraduate/COW/COW00009/104335.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "58 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  },
+  {
+    "id": "leeds_0100",
+    "title": "Hypersecretory DCIS/ Grade 1 invasive ductal carcinoma",
+    "repository": "Leeds University",
+    "category": "Breast Pathology",
+    "organ_system": "Breast",
+    "diagnosis": "Hypersecretory DCIS/ Grade 1 invasive ductal carcinoma",
+    "clinical_details": "Breast mass, mastectomy",
+    "patient_info": "Female 54 years",
+    "slide_urls": [
+      "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2FEQA%2FFRCPath%2F2013%2FSpring%2F217498.svs"
+    ],
+    "preview_image_urls": [
+      "https://images.virtualpathology.leeds.ac.uk/Research_4/Teaching/EQA/FRCPath/2013/Spring/217498.svs?-1"
+    ],
+    "case_url": "",
+    "stain": "",
+    "specimen_type": "",
+    "age": "54 years",
+    "gender": "Female",
+    "source_data": {
+      "original_source": "leeds_virtual_pathology",
+      "system": "Breast",
+      "system_id": "sy1"
+    }
+  }
+]

@@ -1715,4 +1715,55 @@
         },
         {
           "id": "23.15",
-          "
+          "title": "Pediatric follicular lymphoma",
+          "url": "/files/23.15+Pediastric+follicular+lymphoma.svs",
+          "specimen_type": "Lymph node"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/23.Immunophenotype+of+pediatric+hematologic+diseases.pdf"
+    },
+    {
+      "lesson_number": 24,
+      "title": "Ancillary Methods in Hematopathology",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+24.++Ancillary+diagnostic+tools+in+hematopathology+v3.pdf",
+      "slides": [],
+      "figures": [
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+1.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+2.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+3.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+4.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+5.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+6.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+7.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+8.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+9.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+10.pdf"
+      ],
+      "figure_descriptions": [
+        "Procedures of immunohistochemistry and flow cytometry",
+        "Immunohistochemical staining pattern of selected markers",
+        "Flow cytometry histograms of an angioimmunoblastic lymphoma",
+        "Procedures of conventional cytogenetics, fluorescence in situ hybridization, and array comparative genomic hybridization",
+        "Karyotype of a case of chronic myeloid leukemia",
+        "FISH images of a chronic lymphocytic leukemia",
+        "aCGH result of a case of transformed large B-cell lymphoma",
+        "Procedures of IGH and TCR clonality studies, reverse transcriptase PCR, and next generation sequencing",
+        "Electropherogram pattern of IGH and TCR gene rearrangements",
+        "An example of real time quantitative rtPCR in chronic myeloid leukemia"
+      ]
+    }
+  ],
+  "additional_resources": {
+    "table_of_contents": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes/Table+of+Contents.pdf",
+    "index_of_images": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/INDEX+OF+THE+IMAGES.pdf",
+    "tools": {
+      "cell_counter": "https://studio.code.org/projects/applab/ZkG62VBji_wViMygAGWsObu2PCSidCTXu6VLTTutk18",
+      "practice_guidelines": "https://e-booktoc.s3.us-east-2.amazonaws.com/Tools/Guidelines+for+Diagnostic+Workup+of+Hematolymphoid+Neoplasms+-+Jefferson+Health.docx.pdf"
+    },
+    "institutional_links": {
+      "jefferson_pathology": "https://www.jefferson.edu/university/jmc/departments/pathology.html",
+      "hematopathology_fellowship": "https://www.jefferson.edu/university/jmc/departments/pathology/education/fellowships/hematopathology.html"
+    }
+  },
+  "website_credits": "Website designed and engineered by KinnearTech Corporation & 360DataService Inc."
+}

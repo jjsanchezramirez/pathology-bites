@@ -142,7 +142,7 @@ function getMockStats(totalQuestions: number) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
 
@@ -202,8 +202,7 @@ export async function GET(request: NextRequest) {
 
     // Create parent lookup
     const parentLookup = new Map(parentCategories?.map(p => [p.id, p.name]) || [])
-    const apId = parentCategories?.find(p => p.name === 'Anatomic Pathology')?.id
-    const cpId = parentCategories?.find(p => p.name === 'Clinical Pathology')?.id
+
 
 
 

@@ -9,14 +9,14 @@ interface SystemHealth {
   lastUpdated: string
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const startTime = performance.now()
 
   try {
     const supabase = await createClient()
 
     // Simple database connectivity test - no auth required for health check
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('users')
       .select('id', { count: 'exact', head: true })
       .limit(1)
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     // Only log errors, not successful checks
     if (error) {
-      console.log('Supabase connection error:', error.message)
+      console.error('Supabase connection error:', error.message)
     }
 
     return NextResponse.json(systemHealth, { status: 200 })

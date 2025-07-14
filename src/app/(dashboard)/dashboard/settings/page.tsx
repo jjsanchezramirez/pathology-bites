@@ -11,13 +11,12 @@ import { Separator } from '@/shared/components/ui/separator'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import { useTheme } from 'next-themes'
 import { toast } from 'sonner'
-import { 
-  Settings as SettingsIcon, 
-  Moon, 
-  Sun, 
-  Bell, 
-  Shield, 
-  Trash2, 
+import {
+  Moon,
+  Sun,
+  Bell,
+  Shield,
+  Trash2,
   RefreshCw,
   AlertTriangle
 } from 'lucide-react'
@@ -30,7 +29,7 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-  DialogTrigger,
+
 } from '@/shared/components/ui/dialog'
 
 interface UserPreferences {
@@ -54,7 +53,7 @@ export default function SettingsPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const supabase = createClient()
+
 
   useEffect(() => {
     setMounted(true)

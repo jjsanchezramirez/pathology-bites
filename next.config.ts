@@ -18,6 +18,27 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'www.captodayonline.com',
       },
+      // Virtual slide image hostnames
+      {
+        protocol: 'https',
+        hostname: 'images.virtualpathology.leeds.ac.uk',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ppprodpublic.blob.core.windows.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'pathpresenter.blob.core.windows.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'learn.mghpathology.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'dlm.lmp.utoronto.ca',
+      },
     ],
   },
   experimental: {

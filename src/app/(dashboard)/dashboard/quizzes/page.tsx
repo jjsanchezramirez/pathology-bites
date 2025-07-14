@@ -1,8 +1,8 @@
 // src/app/(dashboard)/dashboard/quizzes/page.tsx
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
+import { useState, useEffect, useCallback } from "react"
+import { Card, CardContent } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
 import { Input } from "@/shared/components/ui/input"
@@ -19,13 +19,13 @@ import {
   Target,
   Calendar,
   Search,
-  Filter,
+
   Plus,
   Trash2,
   Eye,
-  RotateCcw
+
 } from "lucide-react"
-import { QuizSession } from "@/features/quiz/types/quiz"
+
 import { toast } from "sonner"
 import Link from "next/link"
 
@@ -51,11 +51,7 @@ export default function QuizzesPage() {
   const [modeFilter, setModeFilter] = useState<string>("all")
 
   // Fetch quizzes on component mount
-  useEffect(() => {
-    fetchQuizzes()
-  }, [statusFilter])
-
-  const fetchQuizzes = async () => {
+  const fetchQuizzes = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams()
@@ -77,7 +73,11 @@ export default function QuizzesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter])
+
+  useEffect(() => {
+    fetchQuizzes()
+  }, [fetchQuizzes])
 
   const handleDeleteQuiz = async (quizId: string) => {
     if (!confirm('Are you sure you want to delete this quiz? This action cannot be undone.')) {
