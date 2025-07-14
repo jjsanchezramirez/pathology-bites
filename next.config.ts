@@ -33,6 +33,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'pathpresenter2.blob.core.windows.net',
+      },
+      {
+        protocol: 'https',
         hostname: 'pathpresenter.net',
       },
       {
@@ -50,6 +54,18 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'hematopathology.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.virtualpathology.leeds.ac.uk',
+      },
+      {
+        protocol: 'https',
+        hostname: 'rosaicollection.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'e-booktoc.s3.us-east-2.amazonaws.com',
       },
     ],
   },
