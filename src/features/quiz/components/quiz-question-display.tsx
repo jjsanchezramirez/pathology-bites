@@ -60,12 +60,12 @@ export function QuizQuestionDisplay({
           <p className="text-muted-foreground">{question.stem}</p>
         </div>
 
-        {/* Question Body Images */}
+        {/* Question Stem Images */}
         {question.question_images && question.question_images.length > 0 && (
           <div>
             <ImageCarousel
               images={question.question_images
-                .filter(qi => qi.question_section === 'body')
+                .filter(qi => qi.question_section === 'stem')
                 .map(qi => ({
                   id: qi.image?.id || '',
                   url: qi.image?.url || '',
