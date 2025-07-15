@@ -41,6 +41,10 @@ interface QuizSessionListItem {
   createdAt: string
   completedAt?: string
   totalTimeSpent?: number
+  currentQuestionIndex?: number
+  timeLimit?: number
+  timeRemaining?: number
+  isTimedMode?: boolean
 }
 
 export default function QuizzesPage() {
@@ -108,13 +112,21 @@ export default function QuizzesPage() {
   })
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) {
+        return 'Invalid date'
+      }
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    } catch (error) {
+      return 'Invalid date'
+    }
   }
 
   const formatDuration = (seconds?: number) => {
@@ -125,6 +137,47 @@ export default function QuizzesPage() {
       return `${hours}h ${minutes}m`
     }
     return `${minutes}m`
+  }
+
+  const formatTimeRemaining = (seconds?: number) => {
+    if (!seconds) return 'N/A'
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    if (hours > 0) {
+      return `${hours}h ${minutes}m remaining`
+    } else if (minutes > 0) {
+      return `${minutes}m ${secs}s remaining`
+    }
+    return `${secs}s remaining`
+  }
+
+  const getProgressText = (quiz: QuizSessionListItem) => {
+    if (quiz.status === 'completed') {
+      return `${quiz.totalQuestions} questions`
+    }
+
+    const currentIndex = quiz.currentQuestionIndex ?? 0
+    const completed = currentIndex
+    const total = quiz.totalQuestions
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0
+
+    return `${completed} of ${total} (${percentage}%)`
+  }
+
+  const getModeDisplayText = (mode: string) => {
+    switch (mode.toLowerCase()) {
+      case 'practice':
+        return 'Practice'
+      case 'tutor':
+        return 'Tutor'
+      case 'timed':
+        return 'Timed'
+      case 'untimed':
+        return 'Untimed'
+      default:
+        return mode.charAt(0).toUpperCase() + mode.slice(1)
+    }
   }
 
   const getStatusBadge = (status: string) => {
@@ -142,7 +195,7 @@ export default function QuizzesPage() {
     }
   }
 
-  const getModeBadge = (mode: string) => {
+  const getModeBadge = (quiz: QuizSessionListItem) => {
     const modeConfig = {
       tutor: { label: 'Tutor', color: 'bg-purple-100 text-purple-800' },
       timed: { label: 'Timed', color: 'bg-red-100 text-red-800' },
@@ -151,8 +204,18 @@ export default function QuizzesPage() {
       review: { label: 'Review', color: 'bg-gray-100 text-gray-800' }
     }
 
-    const config = modeConfig[mode as keyof typeof modeConfig] || { label: mode, color: 'bg-gray-100 text-gray-800' }
-    return <Badge className={config.color}>{config.label}</Badge>
+    // Determine the display text based on mode and timing
+    let displayText = getModeDisplayText(quiz.mode)
+    if (quiz.isTimedMode) {
+      displayText += ' (Timed)'
+    } else if (quiz.mode !== 'timed') {
+      displayText += ' (Untimed)'
+    }
+
+    const colorKey = quiz.isTimedMode ? 'timed' : quiz.mode.toLowerCase()
+    const config = modeConfig[colorKey as keyof typeof modeConfig] || { label: displayText, color: 'bg-gray-100 text-gray-800' }
+
+    return <Badge className={config.color}>{displayText}</Badge>
   }
 
   if (loading) {
@@ -271,7 +334,7 @@ export default function QuizzesPage() {
                     <div className="flex items-center gap-3">
                       <h3 className="text-lg font-semibold">{quiz.title}</h3>
                       {getStatusBadge(quiz.status)}
-                      {getModeBadge(quiz.mode)}
+                      {getModeBadge(quiz)}
                       {quiz.difficulty && (
                         <Badge variant="outline" className="capitalize">
                           {quiz.difficulty}
@@ -282,19 +345,29 @@ export default function QuizzesPage() {
                     <div className="flex items-center gap-6 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Target className="h-4 w-4" />
-                        {quiz.totalQuestions} questions
+                        {getProgressText(quiz)}
                       </div>
-                      {quiz.score !== undefined && (
+
+                      {quiz.score !== undefined && quiz.score !== null && (
                         <div className="flex items-center gap-1">
-                          <span>Score: {quiz.score}%</span>
+                          <span>Score: {Math.round(quiz.score)}%</span>
                         </div>
                       )}
+
+                      {quiz.isTimedMode && quiz.timeRemaining && quiz.status !== 'completed' && (
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          {formatTimeRemaining(quiz.timeRemaining)}
+                        </div>
+                      )}
+
                       {quiz.totalTimeSpent && (
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
                           {formatDuration(quiz.totalTimeSpent)}
                         </div>
                       )}
+
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         {formatDate(quiz.createdAt)}

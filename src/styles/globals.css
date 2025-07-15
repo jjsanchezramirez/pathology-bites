@@ -110,12 +110,17 @@
     font-size: calc(1rem * var(--font-scale));
   }
 
-  /* Apply font scaling to all text elements including headers */
+  /* Apply font scaling to all text elements including headers with higher specificity */
   body, main, header, nav, section, article, aside, footer,
   h1, h2, h3, h4, h5, h6,
   p, span, div, a, button, input, textarea, select, label,
   li, td, th, blockquote, pre, code {
-    font-size: calc(1rem * var(--font-scale));
+    font-size: calc(1rem * var(--font-scale)) !important;
+  }
+
+  /* Override Tailwind text size classes with font scaling */
+  .text-xs, .text-sm, .text-base, .text-lg, .text-xl, .text-2xl, .text-3xl, .text-4xl, .text-5xl, .text-6xl {
+    font-size: calc(1rem * var(--font-scale)) !important;
   }
 
   /* Reset base font size for root elements */
