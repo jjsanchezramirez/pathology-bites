@@ -338,7 +338,7 @@ export default function QuizSessionPage() {
 
           if (response.ok) {
             toast.success("Quiz completed due to time expiry")
-            router.push('/dashboard/quizzes')
+            router.push(`/dashboard/quiz/${quizSession.id}/results`)
           }
         } catch (error) {
           console.error('Error completing quiz due to timer expiry:', error)
