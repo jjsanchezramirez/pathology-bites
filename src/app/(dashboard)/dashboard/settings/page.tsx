@@ -49,26 +49,19 @@ import {
   QUESTION_TYPE_CONFIG,
   CATEGORY_SELECTION_CONFIG
 } from '@/features/quiz/types/quiz'
+import {
+  userSettingsService,
+  type QuizSettings,
+  type NotificationSettings,
+  type UserSettings
+} from '@/shared/services/user-settings'
 
-interface UserPreferences {
-  email_notifications: boolean
-  quiz_reminders: boolean
-  progress_updates: boolean
-  marketing_emails: boolean
-}
-
-interface QuizSettings {
-  default_question_count: number
-  default_mode: QuizMode
-  default_timing: QuizTiming
-  default_question_type: QuestionType
-  default_category_selection: CategorySelection
-}
+// Remove local interfaces since we're using the ones from the service
 
 export default function SettingsPage() {
   const { user, isAuthenticated, isLoading } = useAuthStatus()
   const { theme, setTheme } = useTheme()
-  const [preferences, setPreferences] = useState<UserPreferences>({
+  const [preferences, setPreferences] = useState<NotificationSettings>({
     email_notifications: true,
     quiz_reminders: true,
     progress_updates: true,
@@ -82,6 +75,7 @@ export default function SettingsPage() {
     default_category_selection: 'all'
   })
   const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -100,34 +94,44 @@ export default function SettingsPage() {
 
   const fetchUserPreferences = async () => {
     try {
-      // For now, we'll use default preferences
-      // In a real app, you'd fetch from a user_preferences table
+      setLoading(true)
+
+      // Fetch user settings from database
+      const userSettings = await userSettingsService.getUserSettings()
+
+      setPreferences(userSettings.notification_settings)
+      setQuizSettings(userSettings.quiz_settings)
+    } catch (error) {
+      console.error('Error fetching preferences:', error)
+      toast.error('Failed to load preferences')
+
+      // Use defaults if fetch fails
       setPreferences({
         email_notifications: true,
         quiz_reminders: true,
         progress_updates: true,
         marketing_emails: false
       })
-
-      // Load quiz settings from localStorage for now
-      // In a real app, you'd fetch from a user_quiz_settings table
-      const savedQuizSettings = localStorage.getItem('quiz_settings')
-      if (savedQuizSettings) {
-        setQuizSettings(JSON.parse(savedQuizSettings))
-      }
-    } catch (error) {
-      console.error('Error fetching preferences:', error)
-      toast.error('Failed to load preferences')
+      setQuizSettings({
+        default_question_count: 10,
+        default_mode: 'tutor',
+        default_timing: 'untimed',
+        default_question_type: 'unused',
+        default_category_selection: 'all'
+      })
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handlePreferenceChange = async (key: keyof UserPreferences, value: boolean) => {
+  const handlePreferenceChange = async (key: keyof NotificationSettings, value: boolean) => {
     try {
       setSaving(true)
-      setPreferences(prev => ({ ...prev, [key]: value }))
+      const newPreferences = { ...preferences, [key]: value }
+      setPreferences(newPreferences)
 
-      // In a real app, you'd save to a user_preferences table
-      // For now, we'll just show a success message
+      // Save to database
+      await userSettingsService.updateNotificationSettings(newPreferences)
       toast.success('Preference updated')
     } catch (error) {
       console.error('Error updating preference:', error)
@@ -145,9 +149,8 @@ export default function SettingsPage() {
       const newSettings = { ...quizSettings, [key]: value }
       setQuizSettings(newSettings)
 
-      // Save to localStorage for now
-      // In a real app, you'd save to a user_quiz_settings table
-      localStorage.setItem('quiz_settings', JSON.stringify(newSettings))
+      // Save to database
+      await userSettingsService.updateQuizSettings(newSettings)
       toast.success('Quiz setting updated')
     } catch (error) {
       console.error('Error updating quiz setting:', error)
@@ -173,11 +176,22 @@ export default function SettingsPage() {
     }
   }
 
-  if (isLoading) {
+  if (isLoading || loading) {
     return (
       <div className="container mx-auto py-8">
-        <div className="flex items-center justify-center h-64">
-          <RefreshCw className="h-8 w-8 animate-spin" />
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold">Settings</h1>
+            <p className="text-muted-foreground mt-2">
+              Manage your account preferences and quiz settings.
+            </p>
+          </div>
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading settings...</p>
+            </div>
+          </div>
         </div>
       </div>
     )

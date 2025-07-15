@@ -11,6 +11,7 @@ import { Slider } from "@/shared/components/ui/slider"
 import { Separator } from "@/shared/components/ui/separator"
 import { Input } from "@/shared/components/ui/input"
 import { Play } from "lucide-react"
+import { userSettingsService } from '@/shared/services/user-settings'
 import {
   QuizMode,
   QuizTiming,
@@ -36,13 +37,7 @@ interface QuizOptionsData {
   }
 }
 
-interface QuizSettings {
-  default_question_count: number
-  default_mode: QuizMode
-  default_timing: QuizTiming
-  default_question_type: QuestionType
-  default_category_selection: CategorySelection
-}
+// Remove local interface since we're using the one from the service
 
 export default function NewQuizPage() {
   const router = useRouter()
@@ -53,22 +48,20 @@ export default function NewQuizPage() {
 
   // Load user settings and apply them as defaults
   useEffect(() => {
-    const loadUserSettings = () => {
+    const loadUserSettings = async () => {
       try {
-        const savedQuizSettings = localStorage.getItem('quiz_settings')
-        if (savedQuizSettings) {
-          const settings: QuizSettings = JSON.parse(savedQuizSettings)
-          setFormData(prev => ({
-            ...prev,
-            questionCount: settings.default_question_count,
-            mode: settings.default_mode,
-            timing: settings.default_timing,
-            questionType: settings.default_question_type,
-            categorySelection: settings.default_category_selection
-          }))
-        }
+        const settings = await userSettingsService.getQuizSettings()
+        setFormData(prev => ({
+          ...prev,
+          questionCount: settings.default_question_count,
+          mode: settings.default_mode,
+          timing: settings.default_timing,
+          questionType: settings.default_question_type,
+          categorySelection: settings.default_category_selection
+        }))
       } catch (error) {
         console.error('Error loading user settings:', error)
+        // Continue with default values if settings can't be loaded
       }
     }
 
