@@ -42,6 +42,8 @@ export function QuizQuestionDisplay({
   showExplanation,
   onAnswerSelect
 }: QuizQuestionDisplayProps) {
+
+
   // Helper to get a letter label for an option ID
   const getOptionLabel = (optionId: string, index: number): string => {
     if (optionId.length > 10) {
@@ -52,10 +54,9 @@ export function QuizQuestionDisplay({
 
   return (
     <Card>
-      <CardContent className="space-y-6">
-        {/* Question Title and Stem */}
+      <CardContent className="space-y-6 pt-6">
+        {/* Question Stem */}
         <div>
-          <h2 className="text-lg font-semibold mb-2">{question.title}</h2>
           <p className="text-muted-foreground">{question.stem}</p>
         </div>
 

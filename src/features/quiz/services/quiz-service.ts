@@ -217,6 +217,8 @@ export class QuizService {
       latest_flag_date: undefined
     }))
 
+
+
     return questionsWithDetails
   }
 
@@ -291,11 +293,13 @@ export class QuizService {
     const orderedQuestions = questionIds.map(id => questionMap.get(id)).filter(Boolean) as any[]
 
     // Map to QuestionWithDetails format with proper answer_options mapping
-    return orderedQuestions.map(q => ({
+    const mappedQuestions = orderedQuestions.map(q => ({
       ...q,
       answer_options: q.question_options || [], // Map question_options to answer_options for backward compatibility
       question_options: q.question_options || []
     }))
+
+    return mappedQuestions
   }
 
   /**
