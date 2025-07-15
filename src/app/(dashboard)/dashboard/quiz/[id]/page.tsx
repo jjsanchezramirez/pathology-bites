@@ -20,6 +20,7 @@ import {
 import { QuizSession, QuizAttempt } from "@/features/quiz/types/quiz"
 import { ImageCarousel } from "@/features/images/components/image-carousel"
 import { toast } from "sonner"
+import { QuizSidebar } from "@/features/quiz/components/quiz-sidebar"
 
 export default function QuizSessionPage() {
   const params = useParams()
@@ -644,6 +645,29 @@ export default function QuizSessionPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  const handleQuestionNavigation = (questionIndex: number) => {
+    // Only allow navigation to previous questions or current question
+    if (questionIndex <= currentSession.currentQuestionIndex) {
+      if (quizSession) {
+        setQuizSession(prev => ({
+          ...prev!,
+          currentQuestionIndex: questionIndex
+        }))
+      }
+
+      // Reset answer selection for the new question
+      setSelectedAnswerId(null)
+      setFirstAnswerId(null)
+      setShowExplanation(false)
+
+      // Reset timer for the new question
+      if (currentSession.config.timing === 'timed') {
+        setQuestionStartTime(Date.now())
+        setTimeRemaining(currentSession.config.timePerQuestion || 90)
+      }
+    }
+  }
+
   // Helper to get a letter label for an option ID (like in demo question)
   const getOptionLabel = (optionId: string, index: number) => {
     // For UUIDs or long IDs, use alphabetical labels based on index
@@ -657,15 +681,33 @@ export default function QuizSessionPage() {
 
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{currentSession.title}</h1>
-          <p className="text-muted-foreground">
-            Question {currentSession.currentQuestionIndex + 1} of {currentSession.totalQuestions}
-          </p>
-        </div>
+    <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto">
+      {/* Sidebar */}
+      <div className="lg:flex-shrink-0 order-2 lg:order-1">
+        <QuizSidebar
+          session={currentSession}
+          currentQuestionIndex={currentSession.currentQuestionIndex}
+          attempts={attempts.map(attempt => ({
+            questionId: attempt.questionId,
+            selectedAnswerId: attempt.selectedAnswerId ?? null,
+            isCorrect: attempt.isCorrect ?? false,
+            timeSpent: attempt.timeSpent ?? 0
+          }))}
+          onQuestionSelect={handleQuestionNavigation}
+          timeRemaining={timeRemaining}
+        />
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 space-y-6 order-1 lg:order-2">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">{currentSession.title}</h1>
+            <p className="text-muted-foreground">
+              Question {currentSession.currentQuestionIndex + 1} of {currentSession.totalQuestions}
+            </p>
+          </div>
 
         <div className="flex items-center gap-4">
           {timeRemaining !== null && (
@@ -691,17 +733,6 @@ export default function QuizSessionPage() {
           )}
         </div>
       </div>
-
-      {/* Progress */}
-      {currentSession.config.showProgress && (
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Progress</span>
-            <span>{Math.round(progress)}%</span>
-          </div>
-          <Progress value={progress} className="w-full" />
-        </div>
-      )}
 
       {/* Paused Overlay */}
       {isPaused && (
@@ -893,6 +924,7 @@ export default function QuizSessionPage() {
         </div>
       </div>
       )}
+      </div>
     </div>
   )
 }

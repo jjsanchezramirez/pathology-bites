@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function createClient() {
+  // IMPORTANT: Await the cookies() call in Next.js 15
   const cookieStore = await cookies()
 
   // Use environment variables directly for server-side

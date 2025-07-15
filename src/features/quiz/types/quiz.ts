@@ -91,6 +91,17 @@ export interface QuizResult {
     correct: number
     total: number
   }>
+  questionDetails: Array<{
+    id: string
+    title: string
+    stem: string
+    difficulty: string
+    category: string
+    isCorrect: boolean
+    selectedAnswerId: string | null
+    timeSpent: number
+    successRate: number
+  }>
   attempts: QuizAttempt[]
   completedAt: string
 }
@@ -160,13 +171,11 @@ export const QUIZ_MODE_CONFIG = {
   tutor: {
     label: 'Tutor',
     description: 'Get immediate feedback and explanations after each question',
-    icon: '🎓',
     showExplanations: true
   },
   practice: {
     label: 'Practice',
     description: 'Test yourself without immediate feedback',
-    icon: '💪',
     showExplanations: false
   }
 } as const
@@ -175,13 +184,11 @@ export const QUIZ_TIMING_CONFIG = {
   timed: {
     label: 'Timed',
     description: 'Test your knowledge under time pressure (90 seconds per question)',
-    icon: '⏱️',
     timePerQuestion: 90
   },
   untimed: {
     label: 'Untimed',
     description: 'Take your time to think through each question',
-    icon: '🧠',
     timePerQuestion: undefined
   }
 } as const

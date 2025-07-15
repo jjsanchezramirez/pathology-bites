@@ -21,12 +21,16 @@ import {
 import { QuizResult } from "@/features/quiz/types/quiz"
 import { toast } from "sonner"
 import Link from "next/link"
+import confetti from "canvas-confetti"
+import { QuizQuestionReviewDialog } from "@/features/quiz/components/quiz-question-review-dialog"
 
 export default function QuizResultsPage() {
   const params = useParams()
   const router = useRouter()
   const [result, setResult] = useState<QuizResult | null>(null)
   const [loading, setLoading] = useState(true)
+  const [reviewQuestionId, setReviewQuestionId] = useState<string | null>(null)
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
 
   // Check if this is a mock session (for development)
   const sessionId = Array.isArray(params.id) ? params.id[0] : params.id
@@ -42,6 +46,17 @@ export default function QuizResultsPage() {
           if (storedResults) {
             const mockResults = JSON.parse(storedResults)
             setResult(mockResults)
+
+            // Trigger confetti for high scores (80% or above)
+            if (mockResults.score >= 80) {
+              setTimeout(() => {
+                confetti({
+                  particleCount: 100,
+                  spread: 70,
+                  origin: { y: 0.6 }
+                })
+              }, 500)
+            }
           } else {
             throw new Error('Mock quiz results not found')
           }
@@ -53,6 +68,17 @@ export default function QuizResultsPage() {
           }
           const data = await response.json()
           setResult(data.data)
+
+          // Trigger confetti for high scores (80% or above)
+          if (data.data.score >= 80) {
+            setTimeout(() => {
+              confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+              })
+            }, 500)
+          }
         }
       } catch (error) {
         console.error('Error fetching quiz results:', error)
@@ -67,6 +93,11 @@ export default function QuizResultsPage() {
       fetchResults()
     }
   }, [params.id, router, isMockSession, sessionId])
+
+  const handleReviewQuestion = (questionId: string) => {
+    setReviewQuestionId(questionId)
+    setReviewDialogOpen(true)
+  }
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
@@ -241,29 +272,49 @@ export default function QuizResultsPage() {
       {/* Question Review */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Question review</CardTitle>
+          <CardTitle className="text-base">Question Review</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {result.attempts.map((attempt, index) => (
-              <div key={attempt.id} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  {attempt.isCorrect ? (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <XCircle className="h-4 w-4 text-red-500" />
-                  )}
-                  <div>
-                    <span className="font-medium text-sm">Question {index + 1}</span>
-                    <div className="text-xs text-muted-foreground">
-                      {formatTime(attempt.timeSpent || 0)}
+          <div className="space-y-3">
+            {result.questionDetails?.map((question, index) => (
+              <div key={question.id} className="p-4 border rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    {question.isCorrect ? (
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <XCircle className="h-5 w-5 text-red-500" />
+                    )}
+                    <div>
+                      <span className="font-medium">Question {index + 1}: {question.title}</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs">
+                          {question.category}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {question.difficulty}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3"
+                    onClick={() => handleReviewQuestion(question.id)}
+                  >
+                    <Eye className="h-3 w-3 mr-1" />
+                    Review
+                  </Button>
                 </div>
-                <Button variant="outline" size="sm" className="h-8 px-3">
-                  <Eye className="h-3 w-3 mr-1" />
-                  Review
-                </Button>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <span>Time spent: {formatTime(question.timeSpent)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span>{question.successRate}% of people got this correct</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -289,6 +340,13 @@ export default function QuizResultsPage() {
           </Button>
         </Link>
       </div>
+
+      {/* Question Review Dialog */}
+      <QuizQuestionReviewDialog
+        questionDetail={result.questionDetails?.find(q => q.id === reviewQuestionId) || null}
+        open={reviewDialogOpen}
+        onOpenChange={setReviewDialogOpen}
+      />
 
     </div>
   )

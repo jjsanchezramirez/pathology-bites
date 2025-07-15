@@ -1,21 +1,15 @@
 // src/app/(dashboard)/dashboard/quiz/new/page.tsx
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
+import { Card, CardContent } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
-import { Input } from "@/shared/components/ui/input"
 import { Label } from "@/shared/components/ui/label"
-import { Slider } from "@/shared/components/ui/slider"
 import { Badge } from "@/shared/components/ui/badge"
-import {
-  Brain,
-  Target,
-  Settings,
-  Play,
-  BarChart3
-} from "lucide-react"
+import { Slider } from "@/shared/components/ui/slider"
+import { Separator } from "@/shared/components/ui/separator"
+import { Play } from "lucide-react"
 import {
   QuizMode,
   QuizTiming,
@@ -151,8 +145,6 @@ export default function NewQuizPage() {
         timePerQuestion: formData.timing === 'timed' ? QUIZ_TIMING_CONFIG.timed.timePerQuestion : undefined
       }
 
-
-
       const response = await fetch('/api/quiz/sessions', {
         method: 'POST',
         headers: {
@@ -181,37 +173,42 @@ export default function NewQuizPage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create New Quiz</h1>
-          <p className="text-muted-foreground">
-            Loading quiz options...
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
+          <p className="text-muted-foreground">Loading quiz options...</p>
         </div>
-        <div className="space-y-6">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <div className="h-6 bg-gray-200 rounded animate-pulse" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                  <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card>
+          <CardContent className="p-6 space-y-6">
+            <div className="space-y-4">
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-1/4" />
+              <div className="h-10 bg-gray-200 rounded animate-pulse" />
+            </div>
+            <div className="space-y-4">
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-1/4" />
+              <div className="space-y-2">
+                <div className="h-12 bg-gray-200 rounded animate-pulse" />
+                <div className="h-12 bg-gray-200 rounded animate-pulse" />
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-1/4" />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="h-12 bg-gray-200 rounded animate-pulse" />
+                <div className="h-12 bg-gray-200 rounded animate-pulse" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   if (!quizOptions) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create New Quiz</h1>
+          <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
           <p className="text-muted-foreground text-red-600">
             Failed to load quiz options. Please refresh the page.
           </p>
@@ -224,139 +221,98 @@ export default function NewQuizPage() {
   const maxQuestions = Math.min(availableQuestions, 50) // Cap at 50 questions
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4 pt-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
-            <Play className="h-8 w-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-              Create New Quiz
-            </h1>
-            <p className="text-lg text-gray-600 mt-2">Configure your personalized learning experience</p>
-          </div>
-        </div>
+    <>
+      <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
+        <p className="text-muted-foreground">
+          Configure your quiz settings and start learning
+        </p>
+      </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Configuration */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Quiz Title */}
-            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-3 text-xl">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Settings className="h-5 w-5 text-blue-600" />
-                  </div>
-                  Quiz Title
-                  <span className="text-sm font-normal text-gray-500">(Optional)</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <Input
-                    placeholder={`Auto-generated: ${generateQuizTitle()}`}
-                    value={formData.title || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                  <p className="text-sm text-gray-600">
-                    Leave blank to auto-generate based on your selection
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Learning Mode */}
-            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-3 text-xl">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Brain className="h-5 w-5 text-green-600" />
-                  </div>
-                  Learning Mode
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 gap-4">
-                  {Object.entries(QUIZ_MODE_CONFIG).map(([key, config]) => (
-                    <div
-                      key={key}
-                      className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                        formData.mode === key
-                          ? 'border-blue-500 bg-blue-50 shadow-md'
-                          : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
-                      }`}
-                      onClick={() => setFormData(prev => ({ ...prev, mode: key as QuizMode }))}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{config.icon}</span>
-                          <div>
-                            <div className="font-semibold text-gray-900">{config.label}</div>
-                            <div className="text-sm text-gray-600 mt-1">{config.description}</div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            config.showExplanations
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            {config.showExplanations ? 'With explanations' : 'No explanations'}
-                          </span>
-                          {formData.mode === key && (
-                            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                              <div className="w-2 h-2 bg-white rounded-full" />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-        {/* Timing */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Timing</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              {Object.entries(QUIZ_TIMING_CONFIG).map(([key, config]) => (
+      {/* Main Configuration Card */}
+      <Card>
+        <CardContent className="p-6 space-y-6">
+          {/* Question Count */}
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">Number of Questions</Label>
+              <p className="text-xs text-muted-foreground">Choose how many questions for your quiz</p>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {[5, 10, 25, 50].map((count) => (
                 <Button
-                  key={key}
-                  variant={formData.timing === key ? "default" : "outline"}
-                  className="h-auto p-4 justify-start"
-                  onClick={() => setFormData(prev => ({ ...prev, timing: key as QuizTiming }))}
+                  key={count}
+                  variant={formData.questionCount === count ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFormData(prev => ({ ...prev, questionCount: Math.min(count, maxQuestions) }))}
+                  disabled={count > availableQuestions}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">{config.icon}</span>
-                    <div className="text-left">
-                      <div className="font-semibold">{config.label}</div>
-                      <div className="text-xs text-muted-foreground">{config.description}</div>
-                    </div>
-                  </div>
+                  {count}
                 </Button>
               ))}
             </div>
-          </CardContent>
-        </Card>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Custom: {formData.questionCount}</span>
+                <span className="text-muted-foreground">{availableQuestions} available</span>
+              </div>
+              <Slider
+                value={[formData.questionCount]}
+                onValueChange={([value]) => setFormData(prev => ({ ...prev, questionCount: value }))}
+                max={maxQuestions}
+                min={1}
+                step={1}
+                className="w-full"
+              />
+            </div>
+          </div>
 
-        {/* Question Type Selection */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
-              Question Type
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-3">
+          <Separator />
+
+          {/* Learning Mode & Timing */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Mode</Label>
+              <div className="grid grid-cols-1 gap-2">
+                {Object.entries(QUIZ_MODE_CONFIG).map(([key, config]) => (
+                  <Button
+                    key={key}
+                    variant={formData.mode === key ? "default" : "outline"}
+                    onClick={() => setFormData(prev => ({ ...prev, mode: key as QuizMode }))}
+                  >
+                    {config.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Timing</Label>
+              <div className="grid grid-cols-1 gap-2">
+                {Object.entries(QUIZ_TIMING_CONFIG).map(([key, config]) => (
+                  <Button
+                    key={key}
+                    variant={formData.timing === key ? "default" : "outline"}
+                    onClick={() => setFormData(prev => ({ ...prev, timing: key as QuizTiming }))}
+                  >
+                    {config.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Question Type */}
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">Question Type</Label>
+              <p className="text-xs text-muted-foreground">Select the type of questions</p>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
               {Object.entries(QUESTION_TYPE_CONFIG).map(([key, config]) => {
                 const count = quizOptions ? (
                   formData.categorySelection === 'all' ? quizOptions.questionTypeStats.all[key as QuestionType] :
@@ -372,32 +328,25 @@ export default function NewQuizPage() {
                   <Button
                     key={key}
                     variant={formData.questionType === key ? "default" : "outline"}
-                    className="h-auto p-4 justify-between"
+                    className="h-auto p-3 justify-between"
                     onClick={() => setFormData(prev => ({ ...prev, questionType: key as QuestionType }))}
                   >
                     <div className="text-left">
-                      <div className="font-medium">{config.label}</div>
-                      <div className="text-xs text-muted-foreground">{config.description}</div>
+                      <div className="font-medium text-sm">{config.label}</div>
                     </div>
-                    <Badge variant="secondary">{count} available</Badge>
+                    <Badge variant="secondary" className="text-xs">{count}</Badge>
                   </Button>
                 )
               })}
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Category Selection */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Categories
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Category Selection Type */}
-            <div className="grid grid-cols-1 gap-3">
+          <Separator />
+
+          {/* Categories */}
+          <div className="space-y-4">
+            <Label className="text-sm font-medium">Categories</Label>
+            <div className="grid grid-cols-4 gap-2">
               {Object.entries(CATEGORY_SELECTION_CONFIG).map(([key, config]) => {
                 const stats = quizOptions?.questionTypeStats[key as keyof typeof quizOptions.questionTypeStats]
                 const count = stats ? stats[formData.questionType] : 0
@@ -406,157 +355,80 @@ export default function NewQuizPage() {
                   <Button
                     key={key}
                     variant={formData.categorySelection === key ? "default" : "outline"}
-                    className="h-auto p-4 justify-between"
+                    size="sm"
                     onClick={() => handleCategorySelectionChange(key as CategorySelection)}
+                    disabled={key !== 'custom' && count === 0}
                   >
-                    <div className="text-left">
-                      <div className="font-medium">{config.label}</div>
-                      <div className="text-xs text-muted-foreground">{config.description}</div>
+                    <div className="text-center">
+                      <div className="font-medium text-xs">{config.label}</div>
+                      {key !== 'custom' && <div className="text-xs opacity-70">{count}</div>}
                     </div>
-                    {key !== 'custom' && <Badge variant="secondary">{count} available</Badge>}
                   </Button>
                 )
               })}
             </div>
 
-            {/* Custom Category Selection */}
+            {/* Custom Category Selection - Always visible when custom is selected */}
             {formData.categorySelection === 'custom' && quizOptions && (
-              <div className="space-y-3 border-t pt-4">
-                <Label className="text-sm font-medium">Select Categories</Label>
-                <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
+              <div className="space-y-3 border-t pt-3 mt-3">
+                <Label className="text-sm font-medium">Select Specific Categories</Label>
+                <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
                   {quizOptions.categories.map((category) => {
                     const count = category.questionStats[formData.questionType]
+                    if (count === 0) return null
+
+                    const isSelected = formData.selectedCategories.includes(category.id)
+
                     return (
-                      <Button
+                      <Badge
                         key={category.id}
-                        variant={formData.selectedCategories.includes(category.id) ? "default" : "outline"}
-                        className="h-auto p-3 justify-between"
+                        variant={isSelected ? "default" : "outline"}
+                        className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1 px-2 py-1"
                         onClick={() => handleCategoryToggle(category.id)}
                       >
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
-                            {category.parent}
-                          </Badge>
-                          <span className="font-medium text-sm">{category.name}</span>
-                        </div>
-                        <Badge variant="secondary" className="text-xs">
-                          {count}
-                        </Badge>
-                      </Button>
+                        <span className="text-xs font-medium">{category.parent}</span>
+                        <span className="text-xs">{category.name}</span>
+                        <span className="text-xs opacity-70">({count})</span>
+                      </Badge>
                     )
                   })}
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
-
           </div>
 
-          {/* Right Column - Summary & Actions */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Quiz Summary */}
-            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm sticky top-6">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-3 text-xl">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <BarChart3 className="h-5 w-5 text-purple-600" />
-                  </div>
-                  Quiz Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-600">Title:</span>
-                    <span className="text-sm font-medium text-right max-w-32 truncate">
-                      {formData.title?.trim() || generateQuizTitle()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-600">Mode:</span>
-                    <span className="text-sm font-medium">
-                      {QUIZ_MODE_CONFIG[formData.mode].label}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-600">Timing:</span>
-                    <span className="text-sm font-medium">
-                      {QUIZ_TIMING_CONFIG[formData.timing].label}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-600">Questions:</span>
-                    <span className="text-sm font-medium">
-                      {formData.questionCount} of {availableQuestions}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-gray-600">Categories:</span>
-                    <span className="text-sm font-medium text-right max-w-32 truncate">
-                      {CATEGORY_SELECTION_CONFIG[formData.categorySelection].label}
-                      {formData.categorySelection === 'custom' && ` (${formData.selectedCategories.length})`}
-                    </span>
-                  </div>
-                </div>
+          <Separator />
 
-                {/* Question Count Slider */}
-                <div className="pt-4 border-t border-gray-100">
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium">Questions: {formData.questionCount}</span>
-                      <span className="text-gray-500">
-                        {availableQuestions} available
-                      </span>
-                    </div>
-                    <Slider
-                      value={[formData.questionCount]}
-                      onValueChange={([value]) => setFormData(prev => ({ ...prev, questionCount: value }))}
-                      max={maxQuestions}
-                      min={1}
-                      step={1}
-                      className="w-full"
-                    />
-                    <div className="text-xs text-gray-500 text-center">
-                      {formData.questionCount === availableQuestions ? 'All available questions' :
-                       formData.questionCount === maxQuestions ? 'Maximum 50 questions' :
-                       `${formData.questionCount} of ${availableQuestions} questions`}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Button */}
-                <div className="pt-4">
-                  <Button
-                    onClick={handleSubmit}
-                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg"
-                    size="lg"
-                    disabled={creating || availableQuestions === 0}
-                  >
-                    {creating ? (
-                      <>
-                        <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        Creating Quiz...
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-4 w-4 mr-2" />
-                        Start Quiz
-                      </>
-                    )}
-                  </Button>
-
-                  {availableQuestions === 0 && (
-                    <p className="text-sm text-red-600 text-center mt-3">
-                      No questions available for the selected criteria
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+          {/* Start Button */}
+          <div className="flex justify-center">
+            <Button
+              onClick={handleSubmit}
+              size="lg"
+              className="w-full h-16 text-lg font-semibold"
+              disabled={creating || availableQuestions === 0}
+            >
+              {creating ? (
+                <>
+                  <div className="h-5 w-5 mr-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Play className="h-5 w-5 mr-3" />
+                  Start Quiz ({formData.questionCount} questions)
+                </>
+              )}
+            </Button>
           </div>
-        </div>
+
+          {availableQuestions === 0 && (
+            <p className="text-sm text-red-600 text-center">
+              No questions available for the selected criteria
+            </p>
+          )}
+        </CardContent>
+      </Card>
       </div>
-    </div>
+    </>
   )
 }

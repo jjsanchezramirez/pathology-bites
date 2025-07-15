@@ -227,7 +227,7 @@ export class QuizService {
       if (!session) return null
 
       // Get questions for this session
-      const questions = await this.getQuestionsForSession(session.questions)
+      const questions = await this.getQuestionsForSession(session.questions, supabaseClient)
 
       return {
         ...session,
@@ -248,8 +248,9 @@ export class QuizService {
   /**
    * Get questions for a session
    */
-  private async getQuestionsForSession(questionIds: string[]): Promise<QuestionWithDetails[]> {
-    const { data: questions, error } = await this.supabase
+  private async getQuestionsForSession(questionIds: string[], authenticatedSupabase?: any): Promise<QuestionWithDetails[]> {
+    const supabaseClient = authenticatedSupabase || this.supabase
+    const { data: questions, error } = await supabaseClient
       .from('questions')
       .select(`
         *,
@@ -262,7 +263,7 @@ export class QuizService {
     if (error) throw error
 
     // Maintain the order from questionIds and map to expected format
-    const questionMap = new Map(questions?.map(q => [q.id, q]) || [])
+    const questionMap = new Map(questions?.map((q: any) => [q.id, q]) || [])
     const orderedQuestions = questionIds.map(id => questionMap.get(id)).filter(Boolean) as any[]
 
     // Map to QuestionWithDetails format with proper answer_options mapping
@@ -518,7 +519,8 @@ export class QuizService {
       }
 
       // Get all attempts for this session
-      const { data: attempts, error: attemptsError } = await this.supabase
+      const supabaseClient = authenticatedSupabase || this.supabase
+      const { data: attempts, error: attemptsError } = await supabaseClient
         .from('quiz_attempts')
         .select('*')
         .eq('quiz_session_id', sessionId)
@@ -542,6 +544,17 @@ export class QuizService {
       // Calculate category breakdown
       const categoryMap = new Map<string, { name: string, correct: number, total: number }>()
 
+      // Get unique category IDs from questions
+      const categoryIds = [...new Set(session.questions.map(q => q.category_id).filter(Boolean))]
+
+      // Fetch category names
+      const { data: categories } = await supabaseClient
+        .from('categories')
+        .select('id, name')
+        .in('id', categoryIds)
+
+      const categoryNameMap = new Map(categories?.map((c: any) => [c.id, c.name]) || [])
+
       session.questions.forEach(question => {
         const difficulty = question.difficulty as 'easy' | 'medium' | 'hard'
         const attempt = attempts?.find((a: any) => a.question_id === question.id)
@@ -555,7 +568,7 @@ export class QuizService {
         if (question.category_id) {
           if (!categoryMap.has(question.category_id)) {
             categoryMap.set(question.category_id, {
-              name: 'Unknown Category', // TODO: Get actual category name
+              name: (categoryNameMap.get(question.category_id) as string) || 'Unknown Category',
               correct: 0,
               total: 0
             })
@@ -575,6 +588,40 @@ export class QuizService {
         total: stats.total
       }))
 
+      // Get detailed question information for review
+      const questionDetails = await Promise.all(session.questions.map(async question => {
+        const attempt = attempts?.find((a: any) => a.question_id === question.id)
+
+        // Get category name
+        const { data: category } = await supabaseClient
+          .from('categories')
+          .select('name')
+          .eq('id', question.category_id)
+          .single()
+
+        // Get success rate for this question
+        const { data: allAttempts } = await supabaseClient
+          .from('quiz_attempts')
+          .select('is_correct')
+          .eq('question_id', question.id)
+
+        const totalAttempts = allAttempts?.length || 0
+        const correctAttempts = allAttempts?.filter((a: any) => a.is_correct).length || 0
+        const successRate = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 0
+
+        return {
+          id: question.id,
+          title: question.title,
+          stem: question.stem,
+          difficulty: question.difficulty,
+          category: category?.name || 'Unknown',
+          isCorrect: attempt?.is_correct || false,
+          selectedAnswerId: attempt?.selected_answer_id || null,
+          timeSpent: attempt?.time_spent || 0,
+          successRate
+        }
+      }))
+
       return {
         sessionId,
         score,
@@ -584,7 +631,8 @@ export class QuizService {
         averageTimePerQuestion,
         difficultyBreakdown,
         categoryBreakdown,
-        attempts: attempts?.map(a => ({
+        questionDetails,
+        attempts: attempts?.map((a: any) => ({
           ...a,
           quizSessionId: a.quiz_session_id,
           questionId: a.question_id,
@@ -655,6 +703,25 @@ export class QuizService {
         correctAnswers
       }, authenticatedSupabase)
 
+      // Refresh user statistics after quiz completion for better performance
+      try {
+        const { data: session } = await supabaseClient
+          .from('quiz_sessions')
+          .select('user_id')
+          .eq('id', sessionId)
+          .single()
+
+        if (session?.user_id) {
+          await supabaseClient.rpc('refresh_user_category_stats', {
+            p_user_id: session.user_id
+          })
+          console.log('User statistics refreshed after quiz completion')
+        }
+      } catch (statsError) {
+        console.warn('Failed to refresh user statistics:', statsError)
+        // Don't fail the quiz completion if stats refresh fails
+      }
+
       return {
         sessionId,
         score,
@@ -664,6 +731,7 @@ export class QuizService {
         averageTimePerQuestion,
         difficultyBreakdown,
         categoryBreakdown: [], // TODO: Implement category breakdown
+        questionDetails: [], // TODO: Implement question details
         attempts: attempts?.map((a: any) => ({
           ...a,
           quizSessionId: a.quiz_session_id,
