@@ -188,9 +188,9 @@ export const QUIZ_MODE_CONFIG = {
 export const QUIZ_TIMING_CONFIG = {
   timed: {
     label: 'Timed',
-    description: 'Test your knowledge under global time pressure (90 seconds per question total)',
-    timePerQuestion: 90,
-    calculateTotalTime: (questionCount: number) => questionCount * 90
+    description: 'Test your knowledge under global time pressure (60 seconds per question total)',
+    timePerQuestion: 60,
+    calculateTotalTime: (questionCount: number) => questionCount * 60
   },
   untimed: {
     label: 'Untimed',

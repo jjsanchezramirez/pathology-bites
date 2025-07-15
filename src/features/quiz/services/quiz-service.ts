@@ -57,7 +57,7 @@ export class QuizService {
           shuffleAnswers: formData.shuffleAnswers,
           showProgress: formData.showProgress,
           showExplanations: formData.mode === 'tutor',
-          timePerQuestion: formData.timing === 'timed' ? 90 : undefined, // kept for backward compatibility
+          timePerQuestion: formData.timing === 'timed' ? 60 : undefined, // kept for backward compatibility
           totalTimeLimit
         },
         questions: limitedQuestions.map(q => q.id),

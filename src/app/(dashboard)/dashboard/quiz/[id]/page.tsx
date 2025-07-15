@@ -169,8 +169,8 @@ export default function QuizSessionPage() {
       shuffleAnswers: false,
       showProgress: true,
       showExplanations: true,
-      timePerQuestion: 120,
-      totalTimeLimit: 1800 // 30 minutes for 20 questions
+      timePerQuestion: 60,
+      totalTimeLimit: 60 // 1 minute for 1 question
     },
     questions: [
       {
@@ -265,36 +265,88 @@ export default function QuizSessionPage() {
   const isLastQuestion = currentSession.currentQuestionIndex === currentSession.questions.length - 1
   const progress = ((currentSession.currentQuestionIndex + 1) / currentSession.totalQuestions) * 100
 
-  // Define handleGlobalTimeExpired after currentQuestion is available
+  // Define handleGlobalTimeExpired after other functions are available
   const handleGlobalTimeExpired = useCallback(async () => {
     if (!quizSession) return
 
     console.log('Global timer expired - auto-completing quiz')
-
-    // Submit current question if not already submitted and has selection
-    if (currentQuestion && selectedAnswerId) {
-      const questionState = questionAttempts.get(currentQuestion.id)
-      if (!questionState?.submitted) {
-        try {
-          // handleSubmitAnswerInternal will be called when available
-          console.log('Auto-submitting current answer due to time expiry')
-        } catch (error) {
-          console.error('Error auto-submitting current answer:', error)
-        }
-      }
-    }
-
-    // Auto-complete the quiz with remaining questions as empty
-    // handleCompleteQuizWithTimeExpired will be called when available
-    console.log('Auto-completing quiz due to time expiry')
-  }, [quizSession, currentQuestion, selectedAnswerId, questionAttempts])
+    // This will be defined after the other functions
+  }, [quizSession])
 
   // Handle timer expiration
   useEffect(() => {
     if (globalTimeRemaining === 0 && quizSession?.config.timing === 'timed') {
-      handleGlobalTimeExpired()
+      console.log('Global timer expired - auto-completing quiz')
+
+      // Submit current question if not already submitted and has selection
+      if (currentQuestion && selectedAnswerId) {
+        const questionState = questionAttempts.get(currentQuestion.id)
+        if (!questionState?.submitted) {
+          console.log('Auto-submitting current answer due to time expiry')
+          // Submit the current answer
+          fetch('/api/quiz/attempts', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              sessionId: quizSession.id,
+              questionId: currentQuestion.id,
+              selectedAnswerId: selectedAnswerId,
+              timeSpent: 0,
+              firstAnswerId: selectedAnswerId
+            }),
+          }).catch(error => console.error('Error auto-submitting current answer:', error))
+        }
+      }
+
+      // Complete the quiz with time expiry by submitting empty answers for remaining questions
+      setTimeout(async () => {
+        try {
+          // Submit empty answers for all unanswered questions
+          for (const question of quizSession.questions) {
+            const questionState = questionAttempts.get(question.id)
+            if (!questionState?.submitted) {
+              await fetch('/api/quiz/attempts', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  sessionId: quizSession.id,
+                  questionId: question.id,
+                  selectedAnswerId: null, // Empty answer
+                  timeSpent: 0,
+                  firstAnswerId: null
+                }),
+              })
+            }
+          }
+
+          // Complete the quiz
+          const response = await fetch(`/api/quiz/sessions/${quizSession.id}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              action: 'complete',
+              completedAt: new Date().toISOString(),
+              totalTimeSpent: (quizSession.totalTimeLimit || 0) - globalTimeRemaining
+            }),
+          })
+
+          if (response.ok) {
+            toast.success("Quiz completed due to time expiry")
+            router.push('/dashboard/quizzes')
+          }
+        } catch (error) {
+          console.error('Error completing quiz due to timer expiry:', error)
+          toast.error('Failed to complete quiz due to timer expiry')
+        }
+      }, 100) // Small delay to ensure current answer is submitted first
     }
-  }, [globalTimeRemaining, quizSession?.config.timing, handleGlobalTimeExpired])
+  }, [globalTimeRemaining, quizSession, currentQuestion, selectedAnswerId, questionAttempts, router])
 
   // Calculate mock quiz results
   const calculateMockResults = useCallback(() => {
@@ -737,19 +789,18 @@ export default function QuizSessionPage() {
         toast.warning("Time expired! Quiz completed automatically.")
         router.push(`/dashboard/quiz/${currentSession.id}/results`)
       } else {
-        // Submit empty answers for all remaining questions
-        const remainingQuestions = currentSession.questions.slice(currentSession.currentQuestionIndex + 1)
-
-        for (const question of remainingQuestions) {
+        // Submit empty answers for all unanswered questions
+        for (const question of currentSession.questions) {
           const questionState = questionAttempts.get(question.id)
           if (!questionState?.submitted) {
             try {
-              await fetch(`/api/quiz/sessions/${currentSession.id}/submit`, {
+              await fetch('/api/quiz/attempts', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
+                  sessionId: currentSession.id,
                   questionId: question.id,
                   selectedAnswerId: null, // Empty answer
                   timeSpent: 0,
