@@ -86,46 +86,42 @@ export function QuizSidebar({
   const progress = ((currentQuestionIndex + 1) / session.totalQuestions) * 100
 
   return (
-    <div className="w-full lg:w-80 space-y-4 sticky top-4 self-start">
-      {/* Quiz Info */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
+    <Card className="w-full lg:w-80 sticky top-4 self-start">
+      <CardContent className="p-6 space-y-6">
+        {/* Quiz Info */}
+        <div>
+          <div className="flex items-center gap-2 mb-4">
             <Target className="h-4 w-4" />
-            Quiz Progress
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Question {currentQuestionIndex + 1} of {session.totalQuestions}</span>
-              <span>{Math.round(progress)}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
+            <h3 className="text-base font-semibold">Quiz Progress</h3>
           </div>
-
-          {timeRemaining !== null && timeRemaining !== undefined && (
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="h-4 w-4" />
-              <span className={`font-mono ${timeRemaining <= 10 ? 'text-red-500' : ''}`}>
-                {formatTime(timeRemaining)}
-              </span>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Question {currentQuestionIndex + 1} of {session.totalQuestions}</span>
+                <span>{Math.round(progress)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Question Navigation */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Questions</CardTitle>
-        </CardHeader>
-        <CardContent>
+            {timeRemaining !== null && timeRemaining !== undefined && (
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="h-4 w-4" />
+                <span className={`font-mono ${timeRemaining <= 10 ? 'text-red-500' : ''}`}>
+                  {formatTime(timeRemaining)}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Question Navigation */}
+        <div>
+          <h3 className="text-base font-semibold mb-4">Questions</h3>
           <div className="space-y-1">
             {session.questions.map((question, index) => (
               <Button
@@ -149,9 +145,8 @@ export function QuizSidebar({
               </Button>
             ))}
           </div>
-        </CardContent>
-      </Card>
-
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
