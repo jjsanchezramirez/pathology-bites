@@ -18,7 +18,8 @@ import {
   Shield,
   Trash2,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  BookOpen
 } from 'lucide-react'
 import {
   Dialog,
@@ -31,12 +32,37 @@ import {
   DialogTitle,
 
 } from '@/shared/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select'
+import {
+  QuizMode,
+  QuizTiming,
+  QuestionType,
+  CategorySelection,
+  QUIZ_MODE_CONFIG,
+  QUIZ_TIMING_CONFIG,
+  QUESTION_TYPE_CONFIG,
+  CATEGORY_SELECTION_CONFIG
+} from '@/features/quiz/types/quiz'
 
 interface UserPreferences {
   email_notifications: boolean
   quiz_reminders: boolean
   progress_updates: boolean
   marketing_emails: boolean
+}
+
+interface QuizSettings {
+  default_question_count: number
+  default_mode: QuizMode
+  default_timing: QuizTiming
+  default_question_type: QuestionType
+  default_category_selection: CategorySelection
 }
 
 export default function SettingsPage() {
@@ -47,6 +73,13 @@ export default function SettingsPage() {
     quiz_reminders: true,
     progress_updates: true,
     marketing_emails: false
+  })
+  const [quizSettings, setQuizSettings] = useState<QuizSettings>({
+    default_question_count: 10,
+    default_mode: 'tutor',
+    default_timing: 'untimed',
+    default_question_type: 'unused',
+    default_category_selection: 'all'
   })
   const [saving, setSaving] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -75,6 +108,13 @@ export default function SettingsPage() {
         progress_updates: true,
         marketing_emails: false
       })
+
+      // Load quiz settings from localStorage for now
+      // In a real app, you'd fetch from a user_quiz_settings table
+      const savedQuizSettings = localStorage.getItem('quiz_settings')
+      if (savedQuizSettings) {
+        setQuizSettings(JSON.parse(savedQuizSettings))
+      }
     } catch (error) {
       console.error('Error fetching preferences:', error)
       toast.error('Failed to load preferences')
@@ -85,7 +125,7 @@ export default function SettingsPage() {
     try {
       setSaving(true)
       setPreferences(prev => ({ ...prev, [key]: value }))
-      
+
       // In a real app, you'd save to a user_preferences table
       // For now, we'll just show a success message
       toast.success('Preference updated')
@@ -94,6 +134,26 @@ export default function SettingsPage() {
       toast.error('Failed to update preference')
       // Revert the change
       setPreferences(prev => ({ ...prev, [key]: !value }))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleQuizSettingChange = async (key: keyof QuizSettings, value: any) => {
+    try {
+      setSaving(true)
+      const newSettings = { ...quizSettings, [key]: value }
+      setQuizSettings(newSettings)
+
+      // Save to localStorage for now
+      // In a real app, you'd save to a user_quiz_settings table
+      localStorage.setItem('quiz_settings', JSON.stringify(newSettings))
+      toast.success('Quiz setting updated')
+    } catch (error) {
+      console.error('Error updating quiz setting:', error)
+      toast.error('Failed to update quiz setting')
+      // Revert the change
+      setQuizSettings(prev => ({ ...prev, [key]: quizSettings[key] }))
     } finally {
       setSaving(false)
     }
@@ -249,6 +309,119 @@ export default function SettingsPage() {
                 onCheckedChange={(checked) => handlePreferenceChange('marketing_emails', checked)}
                 disabled={saving}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quiz Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              Quiz Settings
+            </CardTitle>
+            <CardDescription>
+              Set your default quiz preferences.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Default Questions per Quiz</Label>
+              <Select
+                value={quizSettings.default_question_count.toString()}
+                onValueChange={(value) => handleQuizSettingChange('default_question_count', parseInt(value))}
+                disabled={saving}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5 questions</SelectItem>
+                  <SelectItem value="10">10 questions</SelectItem>
+                  <SelectItem value="25">25 questions</SelectItem>
+                  <SelectItem value="50">50 questions</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <Label>Default Mode</Label>
+              <Select
+                value={quizSettings.default_mode}
+                onValueChange={(value) => handleQuizSettingChange('default_mode', value as QuizMode)}
+                disabled={saving}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(QUIZ_MODE_CONFIG).map(([key, config]) => (
+                    <SelectItem key={key} value={key}>
+                      {config.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <Label>Default Timing</Label>
+              <Select
+                value={quizSettings.default_timing}
+                onValueChange={(value) => handleQuizSettingChange('default_timing', value as QuizTiming)}
+                disabled={saving}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(QUIZ_TIMING_CONFIG).map(([key, config]) => (
+                    <SelectItem key={key} value={key}>
+                      {config.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <Label>Default Question Type</Label>
+              <Select
+                value={quizSettings.default_question_type}
+                onValueChange={(value) => handleQuizSettingChange('default_question_type', value as QuestionType)}
+                disabled={saving}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(QUESTION_TYPE_CONFIG).map(([key, config]) => (
+                    <SelectItem key={key} value={key}>
+                      {config.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <Label>Default Categories</Label>
+              <Select
+                value={quizSettings.default_category_selection}
+                onValueChange={(value) => handleQuizSettingChange('default_category_selection', value as CategorySelection)}
+                disabled={saving}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CATEGORY_SELECTION_CONFIG).map(([key, config]) => (
+                    <SelectItem key={key} value={key}>
+                      {config.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
