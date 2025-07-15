@@ -86,7 +86,7 @@ export async function PATCH(
     if (updates.action === 'start') {
       await quizService.startQuizSession(id, supabase)
     } else if (updates.action === 'pause') {
-      await quizService.pauseQuizSession(id, supabase)
+      await quizService.pauseQuizSession(id, updates.timeRemaining || 0, supabase)
     } else if (updates.action === 'resume') {
       await quizService.resumeQuizSession(id, supabase)
     } else {

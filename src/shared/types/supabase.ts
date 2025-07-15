@@ -5,8 +5,9 @@ import { QuestionSetSourceDetails } from '@/features/questions/types/question-se
 export interface QuizConfig {
   mode: 'tutor' | 'timed' | 'untimed' | 'practice' | 'review';
   questionCount: number;
-  timeLimit?: number;
+  timeLimit?: number; // deprecated - use totalTimeLimit instead
   timePerQuestion?: number;
+  totalTimeLimit?: number; // total time for entire quiz in seconds (global timer)
   difficulty?: 'easy' | 'medium' | 'hard' | 'mixed';
   categories?: string[];
   tags?: string[];
@@ -822,6 +823,9 @@ export interface Database {
           score: number | null
           correct_answers: number | null
           total_questions: number
+          total_time_limit: number | null
+          time_remaining: number | null
+          quiz_started_at: string | null
           created_at: string
           updated_at: string
         }
@@ -839,6 +843,9 @@ export interface Database {
           score?: number | null
           correct_answers?: number | null
           total_questions: number
+          total_time_limit?: number | null
+          time_remaining?: number | null
+          quiz_started_at?: string | null
           created_at?: string
           updated_at?: string
         }

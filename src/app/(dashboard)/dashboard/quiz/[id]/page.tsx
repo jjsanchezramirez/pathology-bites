@@ -30,10 +30,11 @@ export default function QuizSessionPage() {
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null)
   const [firstAnswerId, setFirstAnswerId] = useState<string | null>(null)
   const [showExplanation, setShowExplanation] = useState(false)
-  const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
+  const [globalTimeRemaining, setGlobalTimeRemaining] = useState<number | null>(null)
   const [questionStartTime, setQuestionStartTime] = useState(Date.now())
   const [attempts, setAttempts] = useState<QuizAttempt[]>([])
   const [isPaused, setIsPaused] = useState(false)
+  const [quizStartTime, setQuizStartTime] = useState<number | null>(null)
   const [questionAttempts, setQuestionAttempts] = useState<Map<string, {
     firstAnswer: string | null,
     finalAnswer: string | null,
@@ -84,16 +85,20 @@ export default function QuizSessionPage() {
     }
   }, [selectedAnswerId])
 
-  // Timer effect for timed quizzes - must be before early returns
+  // Global timer effect for timed quizzes - must be before early returns
   useEffect(() => {
-    if (quizSession?.config.timing === 'timed' && quizSession?.config.timePerQuestion) {
-      setTimeRemaining(quizSession.config.timePerQuestion)
+    if (quizSession?.config.timing === 'timed' && quizSession?.totalTimeLimit && !isPaused && quizSession.status === 'in_progress') {
+      // Initialize global timer from session data
+      if (globalTimeRemaining === null) {
+        setGlobalTimeRemaining(quizSession.timeRemaining || quizSession.totalTimeLimit)
+        setQuizStartTime(Date.now())
+      }
 
       const timer = setInterval(() => {
-        setTimeRemaining(prev => {
+        setGlobalTimeRemaining(prev => {
           if (prev === null || prev <= 1) {
-            handleAutoSubmit()
-            return null
+            // handleGlobalTimeExpired will be called after currentQuestion is defined
+            return 0
           }
           return prev - 1
         })
@@ -101,7 +106,14 @@ export default function QuizSessionPage() {
 
       return () => clearInterval(timer)
     }
-  }, [quizSession?.currentQuestionIndex, quizSession?.config.timing, quizSession?.config.timePerQuestion, handleAutoSubmit])
+  }, [quizSession?.config.timing, quizSession?.totalTimeLimit, quizSession?.status, isPaused, globalTimeRemaining])
+
+  // Initialize global timer when session loads
+  useEffect(() => {
+    if (quizSession?.config.timing === 'timed' && quizSession?.totalTimeLimit && globalTimeRemaining === null) {
+      setGlobalTimeRemaining(quizSession.timeRemaining || quizSession.totalTimeLimit)
+    }
+  }, [quizSession?.config.timing, quizSession?.totalTimeLimit, quizSession?.timeRemaining, globalTimeRemaining])
 
   // Load question state when navigating to a question
   const loadQuestionState = useCallback((questionId: string) => {
@@ -148,7 +160,7 @@ export default function QuizSessionPage() {
     title: "Renal Pathology Quiz",
     config: {
       mode: 'tutor',
-      timing: 'untimed',
+      timing: 'timed',
       questionCount: 20,
       questionType: 'all',
       categorySelection: 'all',
@@ -157,7 +169,8 @@ export default function QuizSessionPage() {
       shuffleAnswers: false,
       showProgress: true,
       showExplanations: true,
-      timePerQuestion: 120
+      timePerQuestion: 120,
+      totalTimeLimit: 1800 // 30 minutes for 20 questions
     },
     questions: [
       {
@@ -239,6 +252,9 @@ export default function QuizSessionPage() {
     totalQuestions: 1,
     startedAt: new Date().toISOString(),
     status: 'in_progress',
+    totalTimeLimit: 1800, // 30 minutes
+    timeRemaining: 1800,
+    quizStartedAt: new Date().toISOString(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }
@@ -248,6 +264,37 @@ export default function QuizSessionPage() {
   const currentQuestion = currentSession.questions[currentSession.currentQuestionIndex]
   const isLastQuestion = currentSession.currentQuestionIndex === currentSession.questions.length - 1
   const progress = ((currentSession.currentQuestionIndex + 1) / currentSession.totalQuestions) * 100
+
+  // Define handleGlobalTimeExpired after currentQuestion is available
+  const handleGlobalTimeExpired = useCallback(async () => {
+    if (!quizSession) return
+
+    console.log('Global timer expired - auto-completing quiz')
+
+    // Submit current question if not already submitted and has selection
+    if (currentQuestion && selectedAnswerId) {
+      const questionState = questionAttempts.get(currentQuestion.id)
+      if (!questionState?.submitted) {
+        try {
+          // handleSubmitAnswerInternal will be called when available
+          console.log('Auto-submitting current answer due to time expiry')
+        } catch (error) {
+          console.error('Error auto-submitting current answer:', error)
+        }
+      }
+    }
+
+    // Auto-complete the quiz with remaining questions as empty
+    // handleCompleteQuizWithTimeExpired will be called when available
+    console.log('Auto-completing quiz due to time expiry')
+  }, [quizSession, currentQuestion, selectedAnswerId, questionAttempts])
+
+  // Handle timer expiration
+  useEffect(() => {
+    if (globalTimeRemaining === 0 && quizSession?.config.timing === 'timed') {
+      handleGlobalTimeExpired()
+    }
+  }, [globalTimeRemaining, quizSession?.config.timing, handleGlobalTimeExpired])
 
   // Calculate mock quiz results
   const calculateMockResults = useCallback(() => {
@@ -519,9 +566,7 @@ export default function QuizSessionPage() {
 
     setQuestionStartTime(Date.now())
 
-    if (currentSession.config.timing === 'timed' && currentSession.config.timePerQuestion) {
-      setTimeRemaining(currentSession.config.timePerQuestion)
-    }
+    // Global timer continues running - no per-question timer reset
   }
 
   const handlePreviousQuestion = async () => {
@@ -566,13 +611,15 @@ export default function QuizSessionPage() {
 
   const handlePauseQuiz = async () => {
     try {
+      // Save current time remaining when pausing
       const response = await fetch(`/api/quiz/sessions/${currentSession.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          action: 'pause'
+          action: 'pause',
+          timeRemaining: globalTimeRemaining
         }),
       })
 
@@ -605,13 +652,15 @@ export default function QuizSessionPage() {
       }
 
       setIsPaused(false)
-      setQuestionStartTime(Date.now()) // Reset question timer
+      setQuizStartTime(Date.now()) // Reset timer start time for accurate tracking
       toast.success("Quiz resumed")
     } catch (error) {
       console.error('Error resuming quiz:', error)
       toast.error('Failed to resume quiz')
     }
   }
+
+
 
   const handleCompleteQuiz = async () => {
     try {
@@ -646,6 +695,64 @@ export default function QuizSessionPage() {
     }
   }
 
+  const handleCompleteQuizWithTimeExpired = async () => {
+    try {
+      if (isMockSession) {
+        // Handle mock session completion locally
+        const mockResults = calculateMockResults()
+
+        // Store results in localStorage for the results page
+        localStorage.setItem(`quiz-results-${currentSession.id}`, JSON.stringify(mockResults))
+
+        toast.warning("Time expired! Quiz completed automatically.")
+        router.push(`/dashboard/quiz/${currentSession.id}/results`)
+      } else {
+        // Submit empty answers for all remaining questions
+        const remainingQuestions = currentSession.questions.slice(currentSession.currentQuestionIndex + 1)
+
+        for (const question of remainingQuestions) {
+          const questionState = questionAttempts.get(question.id)
+          if (!questionState?.submitted) {
+            try {
+              await fetch(`/api/quiz/sessions/${currentSession.id}/submit`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  questionId: question.id,
+                  selectedAnswerId: null, // Empty answer
+                  timeSpent: 0,
+                  firstAnswerId: null
+                }),
+              })
+            } catch (error) {
+              console.error('Error submitting empty answer for question:', question.id, error)
+            }
+          }
+        }
+
+        // Complete the quiz
+        const response = await fetch(`/api/quiz/sessions/${currentSession.id}/complete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to complete quiz')
+        }
+
+        toast.warning("Time expired! Quiz completed automatically.")
+        router.push(`/dashboard/quiz/${currentSession.id}/results`)
+      }
+    } catch (error) {
+      console.error('Error completing quiz with time expired:', error)
+      toast.error('Failed to complete quiz')
+    }
+  }
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -667,10 +774,9 @@ export default function QuizSessionPage() {
       setFirstAnswerId(null)
       setShowExplanation(false)
 
-      // Reset timer for the new question
+      // Update question start time for tracking but keep global timer running
       if (currentSession.config.timing === 'timed') {
         setQuestionStartTime(Date.now())
-        setTimeRemaining(currentSession.config.timePerQuestion || 90)
       }
     }
   }
@@ -688,7 +794,32 @@ export default function QuizSessionPage() {
 
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background relative">
+      {/* Pause Overlay */}
+      {isPaused && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <Card className="w-96 p-6 text-center">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-center gap-2">
+                <Pause className="h-5 w-5" />
+                Quiz Paused
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Your quiz is paused. Time remaining: {globalTimeRemaining ? formatTime(globalTimeRemaining) : 'N/A'}
+              </p>
+              <Button onClick={handleResumeQuiz} className="w-full">
+                <Play className="h-4 w-4 mr-2" />
+                Resume Quiz
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto">
       {/* Sidebar */}
       <div className="lg:flex-shrink-0 order-2 lg:order-1">
         <QuizSidebar
@@ -701,7 +832,7 @@ export default function QuizSessionPage() {
             timeSpent: attempt.timeSpent ?? 0
           }))}
           onQuestionSelect={handleQuestionNavigation}
-          timeRemaining={timeRemaining}
+          timeRemaining={globalTimeRemaining}
         />
       </div>
 
@@ -717,11 +848,14 @@ export default function QuizSessionPage() {
           </div>
 
         <div className="flex items-center gap-4">
-          {timeRemaining !== null && (
+          {globalTimeRemaining !== null && (
             <div className="flex items-center gap-2">
               <Timer className="h-4 w-4" />
-              <span className={`font-mono ${timeRemaining <= 10 ? 'text-red-500' : ''}`}>
-                {formatTime(timeRemaining)}
+              <span className={`font-mono ${globalTimeRemaining <= 60 ? 'text-red-500' : globalTimeRemaining <= 300 ? 'text-yellow-500' : ''}`}>
+                {formatTime(globalTimeRemaining)}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                (Total Quiz Time)
               </span>
             </div>
           )}
@@ -736,6 +870,13 @@ export default function QuizSessionPage() {
             <Button variant="outline" size="sm" onClick={handlePauseQuiz}>
               <Pause className="h-4 w-4 mr-2" />
               Pause
+            </Button>
+          )}
+
+          {currentSession.status === 'paused' && isPaused && (
+            <Button variant="outline" size="sm" onClick={handleResumeQuiz}>
+              <Play className="h-4 w-4 mr-2" />
+              Resume
             </Button>
           )}
         </div>
@@ -931,6 +1072,8 @@ export default function QuizSessionPage() {
         </div>
       </div>
       )}
+      </div>
+        </div>
       </div>
     </div>
   )

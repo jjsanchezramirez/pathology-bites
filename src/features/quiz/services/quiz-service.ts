@@ -1,12 +1,13 @@
 // src/features/quiz/services/quiz-service.ts
 import { createClient } from '@/shared/services/client'
-import { 
-  QuizSession, 
-  QuizAttempt, 
-  QuizConfig, 
+import {
+  QuizSession,
+  QuizAttempt,
+  QuizConfig,
   QuizResult,
   QuizStats,
-  QuizCreationForm 
+  QuizCreationForm,
+  QUIZ_TIMING_CONFIG
 } from '@/features/quiz/types/quiz'
 import { QuestionWithDetails } from '@/features/questions/types/questions'
 
@@ -36,6 +37,11 @@ export class QuizService {
       // Limit to requested count
       const limitedQuestions = finalQuestions.slice(0, formData.questionCount)
 
+      // Calculate total time limit for timed quizzes
+      const totalTimeLimit = formData.timing === 'timed'
+        ? QUIZ_TIMING_CONFIG.timed.calculateTotalTime(limitedQuestions.length)
+        : undefined
+
       // Create quiz session
       const sessionData = {
         user_id: userId,
@@ -51,12 +57,15 @@ export class QuizService {
           shuffleAnswers: formData.shuffleAnswers,
           showProgress: formData.showProgress,
           showExplanations: formData.mode === 'tutor',
-          timePerQuestion: formData.timing === 'timed' ? 90 : undefined
+          timePerQuestion: formData.timing === 'timed' ? 90 : undefined, // kept for backward compatibility
+          totalTimeLimit
         },
         questions: limitedQuestions.map(q => q.id),
         current_question_index: 0,
         status: 'not_started',
-        total_questions: limitedQuestions.length
+        total_questions: limitedQuestions.length,
+        total_time_limit: totalTimeLimit,
+        time_remaining: totalTimeLimit
       }
 
       console.log('Creating quiz session with data:', sessionData)
@@ -79,6 +88,9 @@ export class QuizService {
         config: session.config as QuizConfig,
         currentQuestionIndex: session.current_question_index,
         totalQuestions: session.total_questions,
+        totalTimeLimit: session.total_time_limit,
+        timeRemaining: session.time_remaining,
+        quizStartedAt: session.quiz_started_at,
         createdAt: session.created_at,
         updatedAt: session.updated_at
       }
@@ -363,6 +375,9 @@ export class QuizService {
           total_time_spent: updates.totalTimeSpent,
           score: updates.score,
           correct_answers: updates.correctAnswers,
+          total_time_limit: updates.totalTimeLimit,
+          time_remaining: updates.timeRemaining,
+          quiz_started_at: updates.quizStartedAt,
           updated_at: new Date().toISOString()
         })
         .eq('id', sessionId)
@@ -379,9 +394,11 @@ export class QuizService {
    */
   async startQuizSession(sessionId: string, authenticatedSupabase?: any): Promise<void> {
     try {
+      const now = new Date().toISOString()
       await this.updateQuizSession(sessionId, {
         status: 'in_progress',
-        startedAt: new Date().toISOString()
+        startedAt: now,
+        quizStartedAt: now // Set when the global timer starts
       }, authenticatedSupabase)
     } catch (error) {
       console.error('Error starting quiz session:', error)
@@ -392,10 +409,11 @@ export class QuizService {
   /**
    * Pause a quiz session
    */
-  async pauseQuizSession(sessionId: string, authenticatedSupabase?: any): Promise<void> {
+  async pauseQuizSession(sessionId: string, timeRemaining: number, authenticatedSupabase?: any): Promise<void> {
     try {
       await this.updateQuizSession(sessionId, {
-        status: 'paused'
+        status: 'paused',
+        timeRemaining // Save current time remaining when pausing
       }, authenticatedSupabase)
     } catch (error) {
       console.error('Error pausing quiz session:', error)
@@ -409,13 +427,30 @@ export class QuizService {
   async resumeQuizSession(sessionId: string, authenticatedSupabase?: any): Promise<void> {
     try {
       await this.updateQuizSession(sessionId, {
-        status: 'in_progress'
+        status: 'in_progress',
+        quizStartedAt: new Date().toISOString() // Reset timer start time for accurate tracking
       }, authenticatedSupabase)
     } catch (error) {
       console.error('Error resuming quiz session:', error)
       throw error
     }
   }
+
+  /**
+   * Update time remaining for a quiz session
+   */
+  async updateTimeRemaining(sessionId: string, timeRemaining: number, authenticatedSupabase?: any): Promise<void> {
+    try {
+      await this.updateQuizSession(sessionId, {
+        timeRemaining
+      }, authenticatedSupabase)
+    } catch (error) {
+      console.error('Error updating time remaining:', error)
+      throw error
+    }
+  }
+
+
 
   /**
    * Get user quiz statistics for performance analytics

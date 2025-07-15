@@ -38,7 +38,8 @@ export interface QuizConfig {
   showProgress: boolean
   // Derived from mode and timing
   showExplanations: boolean // true for tutor mode
-  timePerQuestion?: number // set for timed mode
+  timePerQuestion?: number // set for timed mode (kept for backward compatibility)
+  totalTimeLimit?: number // total time for entire quiz in seconds (for global timer)
 }
 
 // Quiz session interface
@@ -56,6 +57,10 @@ export interface QuizSession {
   score?: number
   correctAnswers?: number
   totalQuestions: number
+  // Global timer fields
+  totalTimeLimit?: number // total time allowed for entire quiz in seconds
+  timeRemaining?: number // time remaining for entire quiz in seconds
+  quizStartedAt?: string // when the quiz timer actually started (for pause/resume)
   createdAt: string
   updatedAt: string
 }
@@ -183,13 +188,15 @@ export const QUIZ_MODE_CONFIG = {
 export const QUIZ_TIMING_CONFIG = {
   timed: {
     label: 'Timed',
-    description: 'Test your knowledge under time pressure (90 seconds per question)',
-    timePerQuestion: 90
+    description: 'Test your knowledge under global time pressure (90 seconds per question total)',
+    timePerQuestion: 90,
+    calculateTotalTime: (questionCount: number) => questionCount * 90
   },
   untimed: {
     label: 'Untimed',
     description: 'Take your time to think through each question',
-    timePerQuestion: undefined
+    timePerQuestion: undefined,
+    calculateTotalTime: () => undefined
   }
 } as const
 
