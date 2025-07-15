@@ -276,18 +276,23 @@ export default function QuizSessionPage() {
   // Function to handle quiz completion when timer expires
   const handleCompleteQuizWithTimeExpired = async () => {
     try {
+      if (!quizSession) {
+        console.error('No quiz session available for timer expiration')
+        return
+      }
+
       if (isMockSession) {
         // Handle mock session completion locally
         const mockResults = calculateMockResults()
 
         // Store results in localStorage for the results page
-        localStorage.setItem(`quiz-results-${currentSession.id}`, JSON.stringify(mockResults))
+        localStorage.setItem(`quiz-results-${quizSession.id}`, JSON.stringify(mockResults))
 
         toast.warning("Time expired! Quiz completed automatically.")
-        router.push(`/dashboard/quiz/${currentSession.id}/results`)
+        router.push(`/dashboard/quiz/${quizSession.id}/results`)
       } else {
         // Submit empty answers for all unanswered questions
-        for (const question of currentSession.questions) {
+        for (const question of quizSession.questions) {
           const questionState = questionAttempts.get(question.id)
           if (!questionState?.submitted) {
             try {
@@ -297,7 +302,7 @@ export default function QuizSessionPage() {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  sessionId: currentSession.id,
+                  sessionId: quizSession.id,
                   questionId: question.id,
                   selectedAnswerId: null, // Empty answer
                   timeSpent: 0,
@@ -311,7 +316,7 @@ export default function QuizSessionPage() {
         }
 
         // Complete the quiz
-        const response = await fetch(`/api/quiz/sessions/${currentSession.id}/complete`, {
+        const response = await fetch(`/api/quiz/sessions/${quizSession.id}/complete`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -323,7 +328,7 @@ export default function QuizSessionPage() {
         }
 
         toast.warning("Time expired! Quiz completed automatically.")
-        router.push(`/dashboard/quiz/${currentSession.id}/results`)
+        router.push(`/dashboard/quiz/${quizSession.id}/results`)
       }
     } catch (error) {
       console.error('Error completing quiz with time expired:', error)
