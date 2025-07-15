@@ -110,14 +110,17 @@
     font-size: calc(1rem * var(--font-scale));
   }
 
-  /* Apply font scaling to main content areas */
-  main {
+  /* Apply font scaling to all text elements including headers */
+  body, main, header, nav, section, article, aside, footer,
+  h1, h2, h3, h4, h5, h6,
+  p, span, div, a, button, input, textarea, select, label,
+  li, td, th, blockquote, pre, code {
     font-size: calc(1rem * var(--font-scale));
   }
 
-  /* Preserve header and navigation sizes */
-  header, nav, .header-fixed-size {
-    font-size: 1rem;
+  /* Reset base font size for root elements */
+  html {
+    font-size: 16px; /* Base font size */
   }
 
   /* Specific overrides for icons that should maintain fixed sizes */
