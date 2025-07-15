@@ -60,6 +60,9 @@
     --ring: 186 66% 40%;  /* Teal ring color */
     --radius: 0.5rem;
 
+    /* Font size scaling */
+    --font-scale: 1;
+
     /* Chart colors */
     --chart-1: 186 66% 40%;
     --chart-2: 214 100% 60%;
@@ -90,6 +93,9 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 170 60% 70%;
 
+    /* Font size scaling */
+    --font-scale: 1;
+
     /* Dark mode chart colors */
     --chart-1: 170 60% 70%;
     --chart-2: 214 90% 70%;
@@ -101,5 +107,28 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-size: calc(1rem * var(--font-scale));
+  }
+
+  /* Apply font scaling to main content areas */
+  main {
+    font-size: calc(1rem * var(--font-scale));
+  }
+
+  /* Preserve header and navigation sizes */
+  header, nav, .header-fixed-size {
+    font-size: 1rem;
+  }
+
+  /* Specific overrides for icons that should maintain fixed sizes */
+  .icon-fixed-size,
+  [data-icon-fixed] {
+    font-size: 1rem !important;
+  }
+
+  .icon-fixed-size svg,
+  [data-icon-fixed] svg {
+    width: 1em !important;
+    height: 1em !important;
   }
 }

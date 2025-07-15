@@ -5,6 +5,7 @@ import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { Menu, Search } from "lucide-react"
 import { ThemeToggle } from "@/shared/components/common/theme-toggle"
+import { FontSizeControl } from "@/shared/components/common/font-size-control"
 import { NotificationsHandler } from "@/shared/components/layout/notifications-handler"
 import { ProfileDropdown } from "./profile-dropdown"
 
@@ -38,6 +39,7 @@ export function DashboardHeader({ onToggleSidebar }: HeaderProps) {
       </div>
       
       <div className="ml-auto flex items-center gap-2">
+        <FontSizeControl />
         <ThemeToggle />
         <NotificationsHandler />
         <ProfileDropdown />

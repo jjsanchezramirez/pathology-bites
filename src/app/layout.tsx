@@ -1,5 +1,6 @@
 // src/app/layout.tsx
 import { ConditionalThemeProvider } from '@/shared/components/common/conditional-theme-provider'
+import { FontSizeProvider } from '@/shared/contexts/font-size-context'
 import { Toaster as SonnerToaster } from "@/shared/components/ui/sonner"
 import { ConnectionStatus } from "@/shared/components/common/connection-status"
 import { cn } from '@/shared/utils'
@@ -28,13 +29,15 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-sans antialiased')}>
         <ConditionalThemeProvider attribute="class" defaultTheme="light">
-          <div className="relative flex min-h-screen flex-col">
-            <AuthProvider>
-              <div>{children}</div>
-            </AuthProvider>
-          </div>
-          <SonnerToaster />
-          <ConnectionStatus />
+          <FontSizeProvider>
+            <div className="relative flex min-h-screen flex-col">
+              <AuthProvider>
+                <div>{children}</div>
+              </AuthProvider>
+            </div>
+            <SonnerToaster />
+            <ConnectionStatus />
+          </FontSizeProvider>
         </ConditionalThemeProvider>
         <Analytics/>
       </body>

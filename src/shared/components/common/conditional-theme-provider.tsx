@@ -11,7 +11,7 @@ export function ConditionalThemeProvider({ children, ...props }: ThemeProviderPr
   
   // Define which routes allow theming
   const themedRoutes = ['/admin', '/dashboard']
-  const isThemedRoute = themedRoutes.some(route => pathname.startsWith(route))
+  const isThemedRoute = pathname ? themedRoutes.some(route => pathname.startsWith(route)) : false
   
   // Theme configuration
   const themeProps: ThemeProviderProps = {

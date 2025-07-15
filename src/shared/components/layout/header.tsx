@@ -6,6 +6,7 @@ import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { ProfileDropdown } from "@/features/dashboard/components/profile-dropdown"
 import { ThemeToggle } from "@/shared/components/common/theme-toggle"
+import { FontSizeControl } from "@/shared/components/common/font-size-control"
 import { NotificationsHandler } from "@/shared/components/layout/notifications-handler"
 
 interface HeaderProps {
@@ -38,6 +39,7 @@ export function AdminHeader({ onToggleSidebar }: HeaderProps) {
       </div>
       
       <div className="ml-auto flex items-center gap-2">
+        <FontSizeControl />
         <ThemeToggle />
         <NotificationsHandler />
         <ProfileDropdown />

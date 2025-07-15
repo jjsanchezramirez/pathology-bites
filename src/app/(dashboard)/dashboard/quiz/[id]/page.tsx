@@ -45,7 +45,14 @@ export default function QuizSessionPage() {
   useEffect(() => {
     const fetchQuizSession = async () => {
       try {
-        const response = await fetch(`/api/quiz/sessions/${params.id}`)
+        // Check if this is a mock session first
+        if (isMockSession) {
+          setQuizSession(mockQuizSession)
+          setLoading(false)
+          return
+        }
+
+        const response = await fetch(`/api/quiz/sessions/${params?.id}`)
         if (!response.ok) {
           throw new Error('Failed to fetch quiz session')
         }
@@ -61,10 +68,10 @@ export default function QuizSessionPage() {
       }
     }
 
-    if (params.id) {
+    if (params?.id) {
       fetchQuizSession()
     }
-  }, [params.id, router])
+  }, [params?.id, router])
 
   // Define handleAutoSubmit before it's used in useEffect
   const handleAutoSubmit = useCallback(() => {
@@ -131,7 +138,7 @@ export default function QuizSessionPage() {
   }, [firstAnswerId, selectedAnswerId, showExplanation])
 
   // Check if this is a mock session (for development)
-  const sessionId = Array.isArray(params.id) ? params.id[0] : params.id
+  const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id
   const isMockSession = sessionId ? (sessionId.startsWith('mock-') || sessionId === 'demo' || sessionId === 'quiz-1') : false
 
   // Mock quiz session data for development

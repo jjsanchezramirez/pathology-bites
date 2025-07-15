@@ -1,16 +1,61 @@
 // src/features/dashboard/components/dashboard-layout-client.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { DashboardSidebar } from './dashboard-sidebar'
 import { DashboardHeader } from './dashboard-header'
+import { useQuizMode } from '@/shared/hooks/use-quiz-mode'
+import { useMobile } from '@/shared/hooks/use-mobile'
 
 export function DashboardLayoutClient({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const { isInQuizMode } = useQuizMode()
+  const isMobile = useMobile()
+
+  // Sidebar state management
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [preQuizState, setPreQuizState] = useState(false) // Store state before entering quiz mode
+
+  // Track previous quiz mode state to detect transitions
+  const prevQuizModeRef = useRef(isInQuizMode)
+
+  // Determine actual sidebar state - mobile always collapsed, otherwise use state
+  const isSidebarCollapsed = isMobile || isCollapsed
+
+  // Handle quiz mode transitions
+  useEffect(() => {
+    const wasInQuizMode = prevQuizModeRef.current
+    const isNowInQuizMode = isInQuizMode
+
+    if (!wasInQuizMode && isNowInQuizMode && !isMobile) {
+      // Entering quiz mode on desktop - save current state and auto-collapse
+      setPreQuizState(isCollapsed)
+      setIsCollapsed(true)
+    } else if (wasInQuizMode && !isNowInQuizMode && !isMobile) {
+      // Exiting quiz mode on desktop - restore previous state
+      setIsCollapsed(preQuizState)
+    }
+
+    prevQuizModeRef.current = isInQuizMode
+  }, [isInQuizMode, isCollapsed, preQuizState, isMobile])
+
+  // Handle mobile state changes - always collapse on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setIsCollapsed(true)
+    }
+  }, [isMobile])
+
+  // Handle manual toggle - works in all modes except mobile (mobile always collapsed)
+  const handleToggleSidebar = () => {
+    if (!isMobile) {
+      setIsCollapsed(!isCollapsed)
+    }
+    // On mobile, do nothing - sidebar stays collapsed
+  }
 
   return (
     <div className="h-screen overflow-hidden bg-background">
@@ -24,7 +69,7 @@ export function DashboardLayoutClient({
         }`}
       >
         {/* Fixed Header */}
-        <DashboardHeader onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
+        <DashboardHeader onToggleSidebar={handleToggleSidebar} />
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-auto bg-background">

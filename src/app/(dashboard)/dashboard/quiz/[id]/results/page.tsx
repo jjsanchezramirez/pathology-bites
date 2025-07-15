@@ -33,7 +33,7 @@ export default function QuizResultsPage() {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
 
   // Check if this is a mock session (for development)
-  const sessionId = Array.isArray(params.id) ? params.id[0] : params.id
+  const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id
   const isMockSession = sessionId ? (sessionId.startsWith('mock-') || sessionId === 'demo' || sessionId === 'quiz-1') : false
 
   // Fetch quiz results on component mount
@@ -62,7 +62,7 @@ export default function QuizResultsPage() {
           }
         } else {
           // Fetch from API for real sessions
-          const response = await fetch(`/api/quiz/sessions/${params.id}/results`)
+          const response = await fetch(`/api/quiz/sessions/${params?.id}/results`)
           if (!response.ok) {
             throw new Error('Failed to fetch quiz results')
           }
@@ -89,10 +89,10 @@ export default function QuizResultsPage() {
       }
     }
 
-    if (params.id) {
+    if (params?.id) {
       fetchResults()
     }
-  }, [params.id, router, isMockSession, sessionId])
+  }, [params?.id, router, isMockSession, sessionId])
 
   const handleReviewQuestion = (questionId: string) => {
     setReviewQuestionId(questionId)

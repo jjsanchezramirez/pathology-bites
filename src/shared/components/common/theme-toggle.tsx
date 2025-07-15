@@ -18,7 +18,7 @@ export function ThemeToggle() {
 
   // Check if theming is allowed on current route
   const themedRoutes = ['/admin', '/dashboard']
-  const isThemedRoute = themedRoutes.some(route => pathname.startsWith(route))
+  const isThemedRoute = pathname ? themedRoutes.some(route => pathname.startsWith(route)) : false
   
   // Don't render until mounted to prevent hydration mismatch
   if (!mounted) {

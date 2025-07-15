@@ -67,7 +67,7 @@ export function UnifiedReviewQueue() {
 
   // Set initial tab from URL params
   useEffect(() => {
-    const tabParam = searchParams.get('tab')
+    const tabParam = searchParams?.get('tab')
     if (tabParam && ['all', 'new_submission', 'flagged_question'].includes(tabParam)) {
       setActiveTab(tabParam)
     }
