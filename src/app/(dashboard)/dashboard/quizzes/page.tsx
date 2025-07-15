@@ -165,7 +165,9 @@ export default function QuizzesPage() {
     return `${completed} of ${total} (${percentage}%)`
   }
 
-  const getModeDisplayText = (mode: string) => {
+  const getModeDisplayText = (mode: string | undefined) => {
+    if (!mode) return 'Unknown'
+
     switch (mode.toLowerCase()) {
       case 'practice':
         return 'Practice'
@@ -208,11 +210,11 @@ export default function QuizzesPage() {
     let displayText = getModeDisplayText(quiz.mode)
     if (quiz.isTimedMode) {
       displayText += ' (Timed)'
-    } else if (quiz.mode !== 'timed') {
+    } else if (quiz.mode && quiz.mode !== 'timed') {
       displayText += ' (Untimed)'
     }
 
-    const colorKey = quiz.isTimedMode ? 'timed' : quiz.mode.toLowerCase()
+    const colorKey = quiz.isTimedMode ? 'timed' : (quiz.mode?.toLowerCase() || 'unknown')
     const config = modeConfig[colorKey as keyof typeof modeConfig] || { label: displayText, color: 'bg-gray-100 text-gray-800' }
 
     return <Badge className={config.color}>{displayText}</Badge>
