@@ -110,22 +110,41 @@
     font-size: calc(1rem * var(--font-scale));
   }
 
-  /* Apply font scaling to all text elements including headers with higher specificity */
-  body, main, header, nav, section, article, aside, footer,
-  h1, h2, h3, h4, h5, h6,
-  p, span, div, a, button, input, textarea, select, label,
-  li, td, th, blockquote, pre, code {
-    font-size: calc(1rem * var(--font-scale)) !important;
-  }
-
-  /* Override Tailwind text size classes with font scaling */
-  .text-xs, .text-sm, .text-base, .text-lg, .text-xl, .text-2xl, .text-3xl, .text-4xl, .text-5xl, .text-6xl {
-    font-size: calc(1rem * var(--font-scale)) !important;
-  }
-
-  /* Reset base font size for root elements */
+  /* Apply font scaling while preserving relative sizes */
   html {
-    font-size: 16px; /* Base font size */
+    font-size: calc(16px * var(--font-scale));
+  }
+
+  /* Override Tailwind text size classes to scale proportionally */
+  .text-xs {
+    font-size: calc(0.75rem * var(--font-scale)) !important;
+  }
+  .text-sm {
+    font-size: calc(0.875rem * var(--font-scale)) !important;
+  }
+  .text-base {
+    font-size: calc(1rem * var(--font-scale)) !important;
+  }
+  .text-lg {
+    font-size: calc(1.125rem * var(--font-scale)) !important;
+  }
+  .text-xl {
+    font-size: calc(1.25rem * var(--font-scale)) !important;
+  }
+  .text-2xl {
+    font-size: calc(1.5rem * var(--font-scale)) !important;
+  }
+  .text-3xl {
+    font-size: calc(1.875rem * var(--font-scale)) !important;
+  }
+  .text-4xl {
+    font-size: calc(2.25rem * var(--font-scale)) !important;
+  }
+  .text-5xl {
+    font-size: calc(3rem * var(--font-scale)) !important;
+  }
+  .text-6xl {
+    font-size: calc(3.75rem * var(--font-scale)) !important;
   }
 
   /* Specific overrides for icons that should maintain fixed sizes */
