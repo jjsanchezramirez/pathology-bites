@@ -12,6 +12,7 @@ import { Separator } from "@/shared/components/ui/separator"
 import { Input } from "@/shared/components/ui/input"
 import { Play } from "lucide-react"
 import { userSettingsService } from '@/shared/services/user-settings'
+import { QUIZ_LIMITS, getQuestionCountOptions } from '@/shared/config/quiz-limits'
 import {
   QuizMode,
   QuizTiming,
@@ -110,39 +111,87 @@ export default function NewQuizPage() {
   }
 
   const handleCategorySelectionChange = (selection: CategorySelection) => {
-    setFormData(prev => ({
-      ...prev,
-      categorySelection: selection,
-      selectedCategories: selection === 'custom' ? prev.selectedCategories : []
-    }))
+    setFormData(prev => {
+      const newFormData = {
+        ...prev,
+        categorySelection: selection,
+        selectedCategories: selection === 'custom' ? prev.selectedCategories : []
+      }
+
+      // Validate and adjust question count if needed
+      const tempAvailableQuestions = getAvailableQuestionsForConfig(newFormData)
+      const adjustedQuestionCount = Math.min(prev.questionCount, tempAvailableQuestions)
+
+      return {
+        ...newFormData,
+        questionCount: adjustedQuestionCount > 0 ? adjustedQuestionCount : prev.questionCount
+      }
+    })
   }
 
   const handleCategoryToggle = (categoryId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      selectedCategories: prev.selectedCategories.includes(categoryId)
+    setFormData(prev => {
+      const newSelectedCategories = prev.selectedCategories.includes(categoryId)
         ? prev.selectedCategories.filter(id => id !== categoryId)
         : [...prev.selectedCategories, categoryId]
-    }))
+
+      const newFormData = {
+        ...prev,
+        selectedCategories: newSelectedCategories
+      }
+
+      // Validate and adjust question count if needed
+      const tempAvailableQuestions = getAvailableQuestionsForConfig(newFormData)
+      const adjustedQuestionCount = Math.min(prev.questionCount, tempAvailableQuestions)
+
+      return {
+        ...newFormData,
+        questionCount: adjustedQuestionCount > 0 ? adjustedQuestionCount : prev.questionCount
+      }
+    })
   }
 
   // Get available question count based on current selection
   const getAvailableQuestions = (): number => {
+    return getAvailableQuestionsForConfig(formData)
+  }
+
+  // Helper function to get available questions for any configuration
+  const getAvailableQuestionsForConfig = (config: typeof formData): number => {
     if (!quizOptions) return 0
 
-    if (formData.categorySelection === 'all') {
-      return quizOptions.questionTypeStats.all[formData.questionType]
-    } else if (formData.categorySelection === 'ap_only') {
-      return quizOptions.questionTypeStats.ap_only[formData.questionType]
-    } else if (formData.categorySelection === 'cp_only') {
-      return quizOptions.questionTypeStats.cp_only[formData.questionType]
+    if (config.categorySelection === 'all') {
+      return quizOptions.questionTypeStats.all[config.questionType]
+    } else if (config.categorySelection === 'ap_only') {
+      return quizOptions.questionTypeStats.ap_only[config.questionType]
+    } else if (config.categorySelection === 'cp_only') {
+      return quizOptions.questionTypeStats.cp_only[config.questionType]
     } else {
       // Custom selection
-      return formData.selectedCategories.reduce((total, categoryId) => {
+      return config.selectedCategories.reduce((total, categoryId) => {
         const category = quizOptions.categories.find(c => c.id === categoryId)
-        return total + (category?.questionStats[formData.questionType] || 0)
+        return total + (category?.questionStats[config.questionType] || 0)
       }, 0)
     }
+  }
+
+  // Handle question type change with validation
+  const handleQuestionTypeChange = (questionType: QuestionType) => {
+    setFormData(prev => {
+      const newFormData = {
+        ...prev,
+        questionType
+      }
+
+      // Validate and adjust question count if needed
+      const tempAvailableQuestions = getAvailableQuestionsForConfig(newFormData)
+      const adjustedQuestionCount = Math.min(prev.questionCount, tempAvailableQuestions)
+
+      return {
+        ...newFormData,
+        questionCount: adjustedQuestionCount > 0 ? adjustedQuestionCount : prev.questionCount
+      }
+    })
   }
 
   // Apply fallback logic for question type and count
@@ -286,7 +335,8 @@ export default function NewQuizPage() {
   }
 
   const { questionType: effectiveQuestionType, questionCount: effectiveQuestionCount, availableQuestions } = applyFallbackLogic()
-  const maxQuestions = Math.min(availableQuestions || 0, 50) // Cap at 50 questions
+  const maxQuestions = Math.min(availableQuestions || 0, QUIZ_LIMITS.maxQuestionsPerQuiz)
+  const questionCountOptions = getQuestionCountOptions()
 
   return (
     <>
@@ -324,7 +374,7 @@ export default function NewQuizPage() {
               <p className="text-xs text-muted-foreground">Choose how many questions for your quiz</p>
             </div>
             <div className="grid grid-cols-4 gap-2">
-              {[5, 10, 25, 50].map((count) => (
+              {questionCountOptions.map((count) => (
                 <Button
                   key={count}
                   variant={formData.questionCount === count ? "default" : "outline"}
@@ -345,7 +395,7 @@ export default function NewQuizPage() {
                 value={[formData.questionCount]}
                 onValueChange={([value]) => setFormData(prev => ({ ...prev, questionCount: value }))}
                 max={maxQuestions}
-                min={1}
+                min={QUIZ_LIMITS.minQuestionsPerQuiz}
                 step={1}
                 className="w-full"
               />
@@ -412,7 +462,7 @@ export default function NewQuizPage() {
                     key={key}
                     variant={formData.questionType === key ? "default" : "outline"}
                     className="h-auto p-3 justify-between"
-                    onClick={() => setFormData(prev => ({ ...prev, questionType: key as QuestionType }))}
+                    onClick={() => handleQuestionTypeChange(key as QuestionType)}
                   >
                     <div className="text-left">
                       <div className="font-medium text-sm">{config.label}</div>
@@ -470,7 +520,7 @@ export default function NewQuizPage() {
                         onClick={() => handleCategoryToggle(category.id)}
                       >
                         <span className="text-xs font-medium">{category.parent}</span>
-                        <span className="text-xs">{category.name}</span>
+                        <span className="text-xs">{category.shortName}</span>
                         <span className="text-xs opacity-70">({count})</span>
                       </Badge>
                     )

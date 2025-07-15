@@ -1,6 +1,7 @@
 // src/features/quiz/types/quiz.ts
 import { Database } from '@/shared/types/supabase'
 import { QuestionWithDetails } from '@/features/questions/types/questions'
+import { QUIZ_LIMITS } from '@/shared/config/quiz-limits'
 
 // Database types for quiz sessions
 export type QuizSessionData = Database['public']['Tables']['quiz_sessions']['Row']
@@ -188,9 +189,9 @@ export const QUIZ_MODE_CONFIG = {
 export const QUIZ_TIMING_CONFIG = {
   timed: {
     label: 'Timed',
-    description: 'Test your knowledge under global time pressure (60 seconds per question total)',
-    timePerQuestion: 60,
-    calculateTotalTime: (questionCount: number) => questionCount * 60
+    description: `Test your knowledge under global time pressure (${QUIZ_LIMITS.secondsPerQuestion} seconds per question total)`,
+    timePerQuestion: QUIZ_LIMITS.secondsPerQuestion,
+    calculateTotalTime: (questionCount: number) => questionCount * QUIZ_LIMITS.secondsPerQuestion
   },
   untimed: {
     label: 'Untimed',
@@ -237,7 +238,7 @@ export const CATEGORY_SELECTION_CONFIG = {
     description: 'Include only Clinical Pathology questions'
   },
   custom: {
-    label: 'Custom Selection',
+    label: 'Custom',
     description: 'Choose specific categories'
   }
 } as const

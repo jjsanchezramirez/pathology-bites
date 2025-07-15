@@ -10,7 +10,8 @@ import {
   Target,
   BookOpen,
   TrendingUp,
-  Microscope
+  Microscope,
+  Settings
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -57,6 +58,11 @@ const navigation = [
     name: "Progress",
     href: "/dashboard/progress",
     icon: TrendingUp
+  },
+  {
+    name: "Settings",
+    href: "/dashboard/settings",
+    icon: Settings
   }
 ]
 
