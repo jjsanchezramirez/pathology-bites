@@ -86,7 +86,7 @@ export function QuizSidebar({
   const progress = ((currentQuestionIndex + 1) / session.totalQuestions) * 100
 
   return (
-    <div className="w-full lg:w-80 space-y-4">
+    <div className="w-full lg:w-80 space-y-4 sticky top-4 self-start">
       {/* Quiz Info */}
       <Card>
         <CardHeader className="pb-3">

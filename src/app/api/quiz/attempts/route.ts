@@ -17,9 +17,9 @@ export async function POST(request: NextRequest) {
     const { sessionId, questionId, selectedAnswerId, firstAnswerId, timeSpent } = await request.json()
 
     // Validate required fields
-    if (!sessionId || !questionId) {
+    if (!sessionId || !questionId || !selectedAnswerId) {
       return NextResponse.json(
-        { error: 'Missing required fields: sessionId, questionId' },
+        { error: 'Missing required fields: sessionId, questionId, selectedAnswerId' },
         { status: 400 }
       )
     }

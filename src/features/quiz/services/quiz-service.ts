@@ -289,6 +289,11 @@ export class QuizService {
       // Use authenticated client if provided, otherwise fall back to default
       const supabaseClient = authenticatedSupabase || this.supabase
 
+      // Validate required parameters
+      if (!selectedAnswerId) {
+        throw new Error('No answer selected')
+      }
+
       console.log('Submitting answer:', { sessionId, questionId, selectedAnswerId, timeSpent })
 
       // Get the correct answer
