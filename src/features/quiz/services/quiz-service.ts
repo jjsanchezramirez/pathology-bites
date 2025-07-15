@@ -106,7 +106,7 @@ export class QuizService {
   private async getQuestionsForQuiz(formData: QuizCreationForm): Promise<QuestionWithDetails[]> {
     console.log('Getting questions for quiz with criteria:', formData)
 
-    // Start with a simple query first to avoid complex join issues
+    // Query with proper joins to load images and options
     let query = this.supabase
       .from('questions')
       .select(`
@@ -130,7 +130,10 @@ export class QuizService {
         flag_count,
         created_at,
         updated_at,
-        search_vector
+        search_vector,
+        question_options(*),
+        question_images(*, image:images(*)),
+        question_set:sets(*)
       `)
       .eq('status', 'approved')
 
@@ -197,19 +200,20 @@ export class QuizService {
     // This would require user-specific data about question attempts and flags
     // For now, we'll return all questions matching the category criteria
 
-    // Convert to QuestionWithDetails format (simplified for now)
+    // Convert to QuestionWithDetails format with loaded data
     const questionsWithDetails: QuestionWithDetails[] = filteredQuestions.map(q => ({
       ...q,
-      question_options: [], // Will be loaded separately when needed
-      question_images: [], // Will be loaded separately when needed
-      question_set: undefined, // Will be loaded separately when needed
-      set: undefined, // Will be loaded separately when needed
-      categories: undefined, // Will be loaded separately when needed
-      tags: undefined, // Will be loaded separately when needed
+      question_options: q.question_options || [],
+      question_images: q.question_images || [],
+      question_set: Array.isArray(q.question_set) ? q.question_set[0] : q.question_set,
+      set: Array.isArray(q.question_set) ? q.question_set[0] : q.question_set, // Backward compatibility
+      answer_options: q.question_options || [], // Backward compatibility
+      categories: undefined, // Not loaded in this query
+      tags: undefined, // Not loaded in this query
       analytics: undefined,
       created_by_name: undefined,
       updated_by_name: undefined,
-      image_count: 0,
+      image_count: q.question_images?.length || 0,
       latest_flag_date: undefined
     }))
 
