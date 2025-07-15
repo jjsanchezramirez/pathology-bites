@@ -250,8 +250,8 @@ export default function QuizSessionPage() {
     ],
     currentQuestionIndex: 0,
     totalQuestions: 1,
-    startedAt: new Date().toISOString(),
-    status: 'in_progress',
+    startedAt: undefined,
+    status: 'not_started',
     totalTimeLimit: 1800, // 30 minutes
     timeRemaining: 1800,
     quizStartedAt: new Date().toISOString(),
@@ -660,7 +660,37 @@ export default function QuizSessionPage() {
     }
   }
 
+  const handleStartQuiz = async () => {
+    try {
+      if (isMockSession) {
+        // For mock sessions, just update the status locally
+        setQuizSession(prev => prev ? { ...prev, status: 'in_progress' } : null)
+        toast.success("Quiz started!")
+      } else {
+        // Start the real quiz session
+        const response = await fetch(`/api/quiz/sessions/${currentSession.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'start'
+          }),
+        })
 
+        if (!response.ok) {
+          throw new Error('Failed to start quiz')
+        }
+
+        // Update local state
+        setQuizSession(prev => prev ? { ...prev, status: 'in_progress' } : null)
+        toast.success("Quiz started!")
+      }
+    } catch (error) {
+      console.error('Error starting quiz:', error)
+      toast.error('Failed to start quiz')
+    }
+  }
 
   const handleCompleteQuiz = async () => {
     try {
@@ -882,6 +912,32 @@ export default function QuizSessionPage() {
         </div>
       </div>
 
+      {/* Start Quiz Overlay */}
+      {currentSession.status === 'not_started' && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <div className="flex justify-center">
+                <Play className="h-12 w-12 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-blue-800">Ready to Start?</h3>
+                <p className="text-blue-700">
+                  {currentSession.config.timing === 'timed'
+                    ? `You have ${Math.floor((currentSession.totalTimeLimit || 0) / 60)} minutes to complete ${currentSession.totalQuestions} questions.`
+                    : `Take your time to complete ${currentSession.totalQuestions} questions.`
+                  }
+                </p>
+              </div>
+              <Button onClick={handleStartQuiz} className="bg-blue-600 hover:bg-blue-700">
+                <Play className="h-4 w-4 mr-2" />
+                Start Quiz
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Paused Overlay */}
       {isPaused && (
         <Card className="border-yellow-200 bg-yellow-50">
@@ -904,7 +960,7 @@ export default function QuizSessionPage() {
       )}
 
       {/* Question */}
-      {!isPaused && (
+      {!isPaused && currentSession.status !== 'not_started' && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">{currentQuestion.title}</CardTitle>
@@ -1038,7 +1094,7 @@ export default function QuizSessionPage() {
       )}
 
       {/* Navigation */}
-      {!isPaused && (
+      {!isPaused && currentSession.status !== 'not_started' && (
       <div className="flex justify-between">
         <Button
           variant="outline"

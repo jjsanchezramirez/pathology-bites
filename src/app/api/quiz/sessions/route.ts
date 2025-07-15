@@ -109,9 +109,28 @@ export async function GET(request: NextRequest) {
       throw error
     }
 
+    // Map database fields to expected format
+    const mappedSessions = sessions?.map(session => ({
+      id: session.id,
+      title: session.title,
+      status: session.status,
+      mode: session.config?.mode || 'unknown',
+      difficulty: session.config?.difficulty,
+      totalQuestions: session.total_questions,
+      score: session.score,
+      correctAnswers: session.correct_answers,
+      createdAt: session.created_at,
+      completedAt: session.completed_at,
+      totalTimeSpent: session.total_time_spent,
+      currentQuestionIndex: session.current_question_index,
+      timeLimit: session.total_time_limit,
+      timeRemaining: session.time_remaining,
+      isTimedMode: session.config?.timing === 'timed'
+    })) || []
+
     return NextResponse.json({
       success: true,
-      data: sessions || [],
+      data: mappedSessions,
       pagination: {
         limit,
         offset,

@@ -248,6 +248,14 @@ export class QuizService {
         config: session.config as QuizConfig,
         currentQuestionIndex: session.current_question_index,
         totalQuestions: session.total_questions,
+        totalTimeLimit: session.total_time_limit,
+        timeRemaining: session.time_remaining,
+        quizStartedAt: session.quiz_started_at,
+        startedAt: session.started_at,
+        completedAt: session.completed_at,
+        totalTimeSpent: session.total_time_spent,
+        score: session.score,
+        correctAnswers: session.correct_answers,
         createdAt: session.created_at,
         updatedAt: session.updated_at
       }
