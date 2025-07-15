@@ -273,6 +273,64 @@ export default function QuizSessionPage() {
     // This will be defined after the other functions
   }, [quizSession])
 
+  // Function to handle quiz completion when timer expires
+  const handleCompleteQuizWithTimeExpired = async () => {
+    try {
+      if (isMockSession) {
+        // Handle mock session completion locally
+        const mockResults = calculateMockResults()
+
+        // Store results in localStorage for the results page
+        localStorage.setItem(`quiz-results-${currentSession.id}`, JSON.stringify(mockResults))
+
+        toast.warning("Time expired! Quiz completed automatically.")
+        router.push(`/dashboard/quiz/${currentSession.id}/results`)
+      } else {
+        // Submit empty answers for all unanswered questions
+        for (const question of currentSession.questions) {
+          const questionState = questionAttempts.get(question.id)
+          if (!questionState?.submitted) {
+            try {
+              await fetch('/api/quiz/attempts', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  sessionId: currentSession.id,
+                  questionId: question.id,
+                  selectedAnswerId: null, // Empty answer
+                  timeSpent: 0,
+                  firstAnswerId: null
+                }),
+              })
+            } catch (error) {
+              console.error('Error submitting empty answer for question:', question.id, error)
+            }
+          }
+        }
+
+        // Complete the quiz
+        const response = await fetch(`/api/quiz/sessions/${currentSession.id}/complete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to complete quiz')
+        }
+
+        toast.warning("Time expired! Quiz completed automatically.")
+        router.push(`/dashboard/quiz/${currentSession.id}/results`)
+      }
+    } catch (error) {
+      console.error('Error completing quiz with time expired:', error)
+      toast.error('Failed to complete quiz')
+    }
+  }
+
   // Handle timer expiration
   useEffect(() => {
     if (globalTimeRemaining === 0 && quizSession?.config.timing === 'timed') {
@@ -300,53 +358,12 @@ export default function QuizSessionPage() {
         }
       }
 
-      // Complete the quiz with time expiry by submitting empty answers for remaining questions
-      setTimeout(async () => {
-        try {
-          // Submit empty answers for all unanswered questions
-          for (const question of quizSession.questions) {
-            const questionState = questionAttempts.get(question.id)
-            if (!questionState?.submitted) {
-              await fetch('/api/quiz/attempts', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  sessionId: quizSession.id,
-                  questionId: question.id,
-                  selectedAnswerId: null, // Empty answer
-                  timeSpent: 0,
-                  firstAnswerId: null
-                }),
-              })
-            }
-          }
-
-          // Complete the quiz
-          const response = await fetch(`/api/quiz/sessions/${quizSession.id}`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              action: 'complete',
-              completedAt: new Date().toISOString(),
-              totalTimeSpent: (quizSession.totalTimeLimit || 0) - globalTimeRemaining
-            }),
-          })
-
-          if (response.ok) {
-            toast.success("Quiz completed due to time expiry")
-            router.push(`/dashboard/quiz/${quizSession.id}/results`)
-          }
-        } catch (error) {
-          console.error('Error completing quiz due to timer expiry:', error)
-          toast.error('Failed to complete quiz due to timer expiry')
-        }
+      // Use the proper completion handler after a small delay
+      setTimeout(() => {
+        handleCompleteQuizWithTimeExpired()
       }, 100) // Small delay to ensure current answer is submitted first
     }
-  }, [globalTimeRemaining, quizSession, currentQuestion, selectedAnswerId, questionAttempts, router])
+  }, [globalTimeRemaining, quizSession, currentQuestion, selectedAnswerId, questionAttempts])
 
   // Calculate mock quiz results
   const calculateMockResults = useCallback(() => {
@@ -777,62 +794,7 @@ export default function QuizSessionPage() {
     }
   }
 
-  const handleCompleteQuizWithTimeExpired = async () => {
-    try {
-      if (isMockSession) {
-        // Handle mock session completion locally
-        const mockResults = calculateMockResults()
 
-        // Store results in localStorage for the results page
-        localStorage.setItem(`quiz-results-${currentSession.id}`, JSON.stringify(mockResults))
-
-        toast.warning("Time expired! Quiz completed automatically.")
-        router.push(`/dashboard/quiz/${currentSession.id}/results`)
-      } else {
-        // Submit empty answers for all unanswered questions
-        for (const question of currentSession.questions) {
-          const questionState = questionAttempts.get(question.id)
-          if (!questionState?.submitted) {
-            try {
-              await fetch('/api/quiz/attempts', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  sessionId: currentSession.id,
-                  questionId: question.id,
-                  selectedAnswerId: null, // Empty answer
-                  timeSpent: 0,
-                  firstAnswerId: null
-                }),
-              })
-            } catch (error) {
-              console.error('Error submitting empty answer for question:', question.id, error)
-            }
-          }
-        }
-
-        // Complete the quiz
-        const response = await fetch(`/api/quiz/sessions/${currentSession.id}/complete`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to complete quiz')
-        }
-
-        toast.warning("Time expired! Quiz completed automatically.")
-        router.push(`/dashboard/quiz/${currentSession.id}/results`)
-      }
-    } catch (error) {
-      console.error('Error completing quiz with time expired:', error)
-      toast.error('Failed to complete quiz')
-    }
-  }
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
