@@ -55,10 +55,30 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
       const isDarkMode = root.classList.contains('dark')
       const variables = isDarkMode ? theme.variables.dark : theme.variables.light
 
-      // Apply theme variables directly to override the default CSS variables
-      Object.entries(variables).forEach(([key, value]) => {
-        root.style.setProperty(key, value)
-      })
+      // Only apply theme variables if we're not using the default theme
+      if (theme.id === 'default') {
+        // Remove any custom theme variables to restore original styling
+        const allThemeKeys = [
+          '--background', '--foreground', '--card', '--card-foreground', '--popover', '--popover-foreground',
+          '--primary', '--primary-foreground', '--secondary', '--secondary-foreground', '--muted', '--muted-foreground',
+          '--accent', '--accent-foreground', '--destructive', '--destructive-foreground', '--border', '--input', '--ring',
+          '--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5',
+          '--sidebar', '--sidebar-foreground', '--sidebar-primary', '--sidebar-primary-foreground',
+          '--sidebar-accent', '--sidebar-accent-foreground', '--sidebar-border', '--sidebar-ring'
+        ]
+
+        // Remove any custom theme overrides to let the original CSS take effect
+        allThemeKeys.forEach((key) => {
+          if (root.style.getPropertyValue(key) !== '') {
+            root.style.removeProperty(key)
+          }
+        })
+      } else {
+        // Apply theme variables directly to override the default CSS variables
+        Object.entries(variables).forEach(([key, value]) => {
+          root.style.setProperty(key, value)
+        })
+      }
 
       // Set a data attribute to identify the current dashboard theme
       root.setAttribute('data-dashboard-theme', theme.id)
