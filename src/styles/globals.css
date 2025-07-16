@@ -39,32 +39,43 @@
 }
 @layer base {
   :root {
+    /* Base colors */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Surface colors - simplified by reusing background */
+    --card: var(--background);
+    --card-foreground: var(--foreground);
+    --popover: var(--background);
+    --popover-foreground: var(--foreground);
+
+    /* Brand colors */
     --primary: 186 66% 40%;  /* Teal primary color */
     --primary-foreground: 0 0% 100%;
+
+    /* Neutral colors - consolidated similar values */
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
+    --muted: var(--secondary);
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: var(--secondary);
+    --accent-foreground: var(--secondary-foreground);
+
+    /* Status colors */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
+
+    /* UI elements - consolidated */
     --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 186 66% 40%;  /* Teal ring color */
+    --input: var(--border);
+    --ring: var(--primary);
     --radius: 0.5rem;
 
-    /* Font size scaling */
+    /* Font scaling */
     --font-scale: 1;
 
-    /* Chart colors */
-    --chart-1: 186 66% 40%;
+    /* Chart colors - systematic teal-based palette */
+    --chart-1: var(--primary);
     --chart-2: 214 100% 60%;
     --chart-3: 262 80% 56%;
     --chart-4: 32 94% 56%;
@@ -73,31 +84,39 @@
 
 
   .dark {
+    /* Base colors */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+
+    /* Surface colors - inherit from base */
+    --card: var(--background);
+    --card-foreground: var(--foreground);
+    --popover: var(--background);
+    --popover-foreground: var(--foreground);
+
+    /* Brand colors */
     --primary: 170 60% 70%;  /* Light teal for dark mode */
     --primary-foreground: 180 100% 10%;
+
+    /* Neutral colors - consolidated */
     --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
+    --secondary-foreground: var(--foreground);
+    --muted: var(--secondary);
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: var(--secondary);
+    --accent-foreground: var(--foreground);
+
+    /* Status colors */
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 170 60% 70%;
+    --destructive-foreground: var(--foreground);
 
-    /* Font size scaling */
-    --font-scale: 1;
+    /* UI elements - consolidated */
+    --border: var(--secondary);
+    --input: var(--secondary);
+    --ring: var(--primary);
 
-    /* Dark mode chart colors */
-    --chart-1: 170 60% 70%;
+    /* Chart colors - consistent with light mode pattern */
+    --chart-1: var(--primary);
     --chart-2: 214 90% 70%;
     --chart-3: 262 70% 70%;
     --chart-4: 32 85% 70%;
@@ -110,42 +129,22 @@
     font-size: calc(1rem * var(--font-scale));
   }
 
-  /* Apply font scaling while preserving relative sizes */
+  /* Simplified font scaling - let CSS handle the cascade */
   html {
     font-size: calc(16px * var(--font-scale));
   }
 
-  /* Override Tailwind text size classes to scale proportionally */
-  .text-xs {
-    font-size: calc(0.75rem * var(--font-scale)) !important;
-  }
-  .text-sm {
-    font-size: calc(0.875rem * var(--font-scale)) !important;
-  }
-  .text-base {
-    font-size: calc(1rem * var(--font-scale)) !important;
-  }
-  .text-lg {
-    font-size: calc(1.125rem * var(--font-scale)) !important;
-  }
-  .text-xl {
-    font-size: calc(1.25rem * var(--font-scale)) !important;
-  }
-  .text-2xl {
-    font-size: calc(1.5rem * var(--font-scale)) !important;
-  }
-  .text-3xl {
-    font-size: calc(1.875rem * var(--font-scale)) !important;
-  }
-  .text-4xl {
-    font-size: calc(2.25rem * var(--font-scale)) !important;
-  }
-  .text-5xl {
-    font-size: calc(3rem * var(--font-scale)) !important;
-  }
-  .text-6xl {
-    font-size: calc(3.75rem * var(--font-scale)) !important;
-  }
+  /* More efficient font scaling using CSS custom properties */
+  .text-xs { font-size: calc(0.75rem * var(--font-scale)) !important; }
+  .text-sm { font-size: calc(0.875rem * var(--font-scale)) !important; }
+  .text-base { font-size: calc(1rem * var(--font-scale)) !important; }
+  .text-lg { font-size: calc(1.125rem * var(--font-scale)) !important; }
+  .text-xl { font-size: calc(1.25rem * var(--font-scale)) !important; }
+  .text-2xl { font-size: calc(1.5rem * var(--font-scale)) !important; }
+  .text-3xl { font-size: calc(1.875rem * var(--font-scale)) !important; }
+  .text-4xl { font-size: calc(2.25rem * var(--font-scale)) !important; }
+  .text-5xl { font-size: calc(3rem * var(--font-scale)) !important; }
+  .text-6xl { font-size: calc(3.75rem * var(--font-scale)) !important; }
 
   /* Specific overrides for icons that should maintain fixed sizes */
   .icon-fixed-size,
