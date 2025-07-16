@@ -67,6 +67,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'e-booktoc.s3.us-east-2.amazonaws.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'hematopathology.com',
+      },
     ],
   },
   experimental: {

@@ -7,14 +7,12 @@ import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { Badge } from '@/shared/components/ui/badge'
-import { 
-  Search, 
-  ExternalLink, 
-  Microscope, 
+import {
+  Search,
+  ExternalLink,
+  Microscope,
   Filter,
   Eye,
-  User,
-  Calendar,
   FileText,
   Loader2
 } from 'lucide-react'
@@ -27,21 +25,18 @@ import virtualSlidesData from '@/data/virtual-slides-unified.json'
 
 interface VirtualSlide {
   id: string
-  title: string
   repository: string
   category: string
   organ_system: string
   diagnosis: string
-  clinical_details: string
   patient_info: string
+  age: string
+  gender: string
   slide_urls: string[]
-  preview_image_urls: string[]
+  preview_urls: string[]
   case_url: string
   stain: string
-  specimen_type: string
-  age: string | null
-  gender: string | null
-  source_data: any
+  source_metadata: any
 }
 
 export default function VirtualSlidesPage() {
@@ -77,13 +72,11 @@ export default function VirtualSlidesPage() {
 
     let score = 0
     const fields = [
-      { text: slide.title.toLowerCase(), weight: 10 },
-      { text: slide.diagnosis.toLowerCase(), weight: 8 },
-      { text: slide.clinical_details.toLowerCase(), weight: 4 },
-      { text: slide.patient_info.toLowerCase(), weight: 2 },
-      { text: slide.repository.toLowerCase(), weight: 1 },
-      { text: slide.category.toLowerCase(), weight: 3 },
-      { text: slide.organ_system.toLowerCase(), weight: 5 }
+      { text: slide.diagnosis?.toLowerCase() || '', weight: 10 },
+      { text: slide.patient_info?.toLowerCase() || '', weight: 4 },
+      { text: slide.category?.toLowerCase() || '', weight: 5 },
+      { text: slide.organ_system?.toLowerCase() || '', weight: 7 },
+      { text: slide.repository?.toLowerCase() || '', weight: 2 }
     ]
 
     for (const field of fields) {
@@ -142,13 +135,11 @@ export default function VirtualSlidesPage() {
 
       // First filter slides that match the search term
       const matchingSlides = filtered.filter(slide =>
-        slide.title.toLowerCase().includes(term) ||
-        slide.diagnosis.toLowerCase().includes(term) ||
-        slide.clinical_details.toLowerCase().includes(term) ||
-        slide.patient_info.toLowerCase().includes(term) ||
-        slide.repository.toLowerCase().includes(term) ||
-        slide.category.toLowerCase().includes(term) ||
-        slide.organ_system.toLowerCase().includes(term)
+        slide.diagnosis?.toLowerCase().includes(term) ||
+        slide.patient_info?.toLowerCase().includes(term) ||
+        slide.repository?.toLowerCase().includes(term) ||
+        slide.category?.toLowerCase().includes(term) ||
+        slide.organ_system?.toLowerCase().includes(term)
       )
 
       // Then sort by relevance score (highest first)
@@ -298,6 +289,17 @@ export default function VirtualSlidesPage() {
                 className="object-contain h-full w-auto"
               />
             </div>
+
+            {/* Recut Club */}
+            <div className="flex items-center justify-center h-16 w-auto opacity-50 hover:opacity-100 transition-opacity">
+              <Image
+                src="/logos/recut-club-logo.png"
+                alt="Recut Club"
+                width={200}
+                height={80}
+                className="object-contain h-full w-auto"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -315,7 +317,7 @@ export default function VirtualSlidesPage() {
                 <div className="flex gap-2">
                   <Input
                     id="search-input"
-                    placeholder="Search by diagnosis, title, clinical details, or repository..."
+                    placeholder="Search by diagnosis, patient info, repository, category, or organ system..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="flex-1"
@@ -415,10 +417,10 @@ export default function VirtualSlidesPage() {
                     <thead className="bg-muted/50 border-b">
                       <tr>
                         <th className="text-left p-4 font-semibold">Preview</th>
-                        <th className="text-left p-4 font-semibold">Title & Diagnosis</th>
+                        <th className="text-left p-4 font-semibold">Diagnosis & Patient Info</th>
                         <th className="text-left p-4 font-semibold">Repository</th>
                         <th className="text-left p-4 font-semibold">Category</th>
-                        <th className="text-left p-4 font-semibold">Patient Info</th>
+                        <th className="text-left p-4 font-semibold">Details</th>
                         <th className="text-left p-4 font-semibold">Actions</th>
                       </tr>
                     </thead>
@@ -428,10 +430,10 @@ export default function VirtualSlidesPage() {
                           {/* Preview Image */}
                           <td className="p-4">
                             <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
-                              {slide.preview_image_urls.length > 0 ? (
+                              {slide.preview_urls && slide.preview_urls.length > 0 ? (
                                 <Image
-                                  src={slide.preview_image_urls[0]}
-                                  alt={slide.title}
+                                  src={slide.preview_urls[0]}
+                                  alt={slide.diagnosis}
                                   width={64}
                                   height={64}
                                   className="object-cover w-full h-full"
@@ -442,26 +444,21 @@ export default function VirtualSlidesPage() {
                                   }}
                                 />
                               ) : null}
-                              <div className={`flex items-center justify-center w-full h-full ${slide.preview_image_urls.length > 0 ? 'hidden' : ''}`}>
+                              <div className={`flex items-center justify-center w-full h-full ${slide.preview_urls && slide.preview_urls.length > 0 ? 'hidden' : ''}`}>
                                 <Microscope className="h-6 w-6 text-muted-foreground" />
                               </div>
                             </div>
                           </td>
 
-                          {/* Title & Diagnosis */}
+                          {/* Diagnosis & Patient Info */}
                           <td className="p-4">
                             <div className="space-y-1">
-                              <h3 className="font-medium text-sm leading-tight line-clamp-2">
-                                {slide.title}
+                              <h3 className="font-medium text-sm leading-tight line-clamp-3">
+                                {slide.diagnosis}
                               </h3>
-                              {slide.diagnosis && slide.diagnosis !== slide.title && (
-                                <p className="text-xs text-muted-foreground line-clamp-2">
-                                  {slide.diagnosis}
-                                </p>
-                              )}
-                              {slide.clinical_details && (
-                                <p className="text-xs text-muted-foreground line-clamp-1">
-                                  {slide.clinical_details}
+                              {slide.patient_info && (
+                                <p className="text-xs text-muted-foreground">
+                                  {slide.patient_info}
                                 </p>
                               )}
                             </div>
@@ -484,25 +481,19 @@ export default function VirtualSlidesPage() {
                             </div>
                           </td>
 
-                          {/* Patient Info */}
+                          {/* Details */}
                           <td className="p-4">
                             <div className="space-y-1">
-                              {slide.patient_info && (
-                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  <User className="h-3 w-3" />
-                                  <span>{slide.patient_info}</span>
-                                </div>
-                              )}
                               {slide.stain && (
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                   <Eye className="h-3 w-3" />
                                   <span>{slide.stain}</span>
                                 </div>
                               )}
-                              {slide.specimen_type && (
+                              {slide.source_metadata?.diagnostic_modality && (
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                   <FileText className="h-3 w-3" />
-                                  <span>{slide.specimen_type}</span>
+                                  <span>{slide.source_metadata.diagnostic_modality}</span>
                                 </div>
                               )}
                             </div>
@@ -564,6 +555,15 @@ export default function VirtualSlidesPage() {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => setCurrentPage(1)}
+                          disabled={currentPage === 1}
+                          className="w-8 h-8 p-0"
+                        >
+                          &lt;&lt;
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                           disabled={currentPage === 1}
                         >
@@ -592,6 +592,15 @@ export default function VirtualSlidesPage() {
                           disabled={currentPage === totalPages}
                         >
                           Next
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(totalPages)}
+                          disabled={currentPage === totalPages}
+                          className="w-8 h-8 p-0"
+                        >
+                          &gt;&gt;
                         </Button>
                       </div>
                     </div>
