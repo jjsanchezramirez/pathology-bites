@@ -12,6 +12,12 @@ interface QuizQuestion {
   stem: string
   teaching_point?: string
   question_references?: string
+  question_options?: Array<{
+    id: string
+    text: string
+    is_correct: boolean
+    explanation?: string
+  }>
   answer_options?: Array<{
     id: string
     text: string
@@ -43,6 +49,8 @@ export function QuizQuestionDisplay({
   onAnswerSelect
 }: QuizQuestionDisplayProps) {
 
+  // Get answer options with fallback for backward compatibility
+  const answerOptions = question.question_options || question.answer_options || []
 
   // Helper to get a letter label for an option ID
   const getOptionLabel = (optionId: string, index: number): string => {
@@ -79,7 +87,7 @@ export function QuizQuestionDisplay({
 
         {/* Answer Options */}
         <div className="grid gap-2" role="listbox" aria-label="Answer options">
-          {question.answer_options?.map((option, index) => {
+          {answerOptions?.map((option, index) => {
             const isSelected = selectedAnswerId === option.id
             const showCorrect = showExplanation && option.is_correct
             const showIncorrect = showExplanation && isSelected && !option.is_correct
@@ -132,16 +140,16 @@ export function QuizQuestionDisplay({
             )}
 
             {/* Individual Option Explanations */}
-            {question.answer_options?.some(opt => opt.explanation) && (
+            {answerOptions?.some(opt => opt.explanation) && (
               <div>
                 <h4 className="font-medium text-xs uppercase mb-2">Answer Explanations</h4>
                 <div className="space-y-2 text-muted-foreground">
-                  {question.answer_options
+                  {answerOptions
                     ?.filter(opt => opt.explanation)
                     .map((option, index) => (
                       <div key={option.id} className="flex gap-2">
                         <span className="font-medium">
-                          {getOptionLabel(option.id, question.answer_options?.findIndex(opt => opt.id === option.id) || index)}.
+                          {getOptionLabel(option.id, answerOptions?.findIndex(opt => opt.id === option.id) || index)}.
                         </span>
                         <span>{option.explanation}</span>
                       </div>

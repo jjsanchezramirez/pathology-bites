@@ -17,8 +17,8 @@ export type QuizAttemptUpdate = Database['public']['Tables']['quiz_attempts']['U
 export type QuizMode = 'tutor' | 'practice'
 export type QuizTiming = 'timed' | 'untimed'
 
-// Question types for filtering
-export type QuestionType = 'all' | 'unused' | 'incorrect' | 'marked' | 'correct'
+// Question types for filtering - using meaningful categories
+export type QuestionType = 'all' | 'unused' | 'needsReview' | 'marked' | 'mastered'
 
 // Category selection types
 export type CategorySelection = 'all' | 'ap_only' | 'cp_only' | 'custom'
@@ -126,13 +126,13 @@ export interface QuizCreationForm {
   showProgress: boolean
 }
 
-// Question type statistics
+// Question type statistics - using meaningful categories
 export interface QuestionTypeStats {
   all: number
   unused: number
-  incorrect: number
+  needsReview: number  // Questions with any incorrect attempts
   marked: number
-  correct: number
+  mastered: number     // Questions with only correct attempts
 }
 
 // Category with question counts by type
@@ -140,7 +140,6 @@ export interface CategoryWithStats {
   id: string
   name: string
   shortName: string
-  parent: 'AP' | 'CP'
   questionStats: QuestionTypeStats
 }
 
@@ -210,17 +209,17 @@ export const QUESTION_TYPE_CONFIG = {
     label: 'Unused Questions',
     description: 'Questions you haven\'t attempted yet'
   },
-  incorrect: {
-    label: 'Incorrect Questions',
-    description: 'Questions you answered incorrectly'
+  needsReview: {
+    label: 'Needs Review',
+    description: 'Questions you got wrong at least once'
   },
   marked: {
     label: 'Marked Questions',
     description: 'Questions you marked for review'
   },
-  correct: {
-    label: 'Correct Questions',
-    description: 'Questions you answered correctly'
+  mastered: {
+    label: 'Mastered Questions',
+    description: 'Questions you consistently answer correctly'
   }
 } as const
 
@@ -248,7 +247,7 @@ export const DEFAULT_QUIZ_CONFIG: QuizCreationForm = {
   mode: 'practice',
   timing: 'untimed',
   questionCount: 10,
-  questionType: 'unused',
+  questionType: 'unused',  // Start with unused questions by default
   categorySelection: 'all',
   selectedCategories: [],
   shuffleQuestions: true,

@@ -5,7 +5,7 @@ export interface QuizSettings {
   default_question_count: number
   default_mode: 'tutor' | 'practice'
   default_timing: 'timed' | 'untimed'
-  default_question_type: 'all' | 'unused' | 'incorrect' | 'marked' | 'correct'
+  default_question_type: 'all' | 'unused' | 'needsReview' | 'marked' | 'mastered'
   default_category_selection: 'all' | 'ap_only' | 'cp_only' | 'custom'
 }
 
@@ -20,6 +20,7 @@ export interface UISettings {
   theme: 'light' | 'dark' | 'system'
   font_size: 'small' | 'medium' | 'large'
   sidebar_collapsed: boolean
+  welcome_message_seen: boolean
 }
 
 export interface UserSettings {
@@ -31,6 +32,44 @@ export interface UserSettings {
 }
 
 export type SettingsSection = 'quiz_settings' | 'notification_settings' | 'ui_settings'
+
+// Mapping between old and new question types for backward compatibility
+const QUESTION_TYPE_MAPPING = {
+  // Old -> New
+  'incorrect': 'needsReview' as const,
+  'correct': 'mastered' as const,
+  // New -> Old (for saving to database)
+  'needsReview': 'incorrect' as const,
+  'mastered': 'correct' as const,
+  // Unchanged
+  'all': 'all' as const,
+  'unused': 'unused' as const,
+  'marked': 'marked' as const
+}
+
+function mapQuestionTypeFromDatabase(dbType: string): QuizSettings['default_question_type'] {
+  // Map old database types to new frontend types
+  switch (dbType) {
+    case 'incorrect':
+      return 'needsReview'
+    case 'correct':
+      return 'mastered'
+    default:
+      return dbType as QuizSettings['default_question_type']
+  }
+}
+
+function mapQuestionTypeToDatabase(frontendType: QuizSettings['default_question_type']): string {
+  // Map new frontend types to old database types
+  switch (frontendType) {
+    case 'needsReview':
+      return 'incorrect'
+    case 'mastered':
+      return 'correct'
+    default:
+      return frontendType
+  }
+}
 
 class UserSettingsService {
   private baseUrl = '/api/user/settings'
@@ -52,7 +91,14 @@ class UserSettingsService {
     }
 
     const result = await response.json()
-    return result.data
+    const data = result.data
+
+    // Map question type from database format to frontend format
+    if (data?.quiz_settings?.default_question_type) {
+      data.quiz_settings.default_question_type = mapQuestionTypeFromDatabase(data.quiz_settings.default_question_type)
+    }
+
+    return data
   }
 
   /**
@@ -64,6 +110,18 @@ class UserSettingsService {
               T extends 'notification_settings' ? Partial<NotificationSettings> :
               T extends 'ui_settings' ? Partial<UISettings> : never
   ): Promise<any> {
+    // Map question type to database format if updating quiz settings
+    let mappedSettings = settings
+    if (section === 'quiz_settings' && settings && typeof settings === 'object') {
+      const quizSettings = settings as Partial<QuizSettings>
+      if (quizSettings.default_question_type) {
+        mappedSettings = {
+          ...settings,
+          default_question_type: mapQuestionTypeToDatabase(quizSettings.default_question_type)
+        } as typeof settings
+      }
+    }
+
     const response = await fetch(this.baseUrl, {
       method: 'PATCH',
       headers: {
@@ -71,7 +129,7 @@ class UserSettingsService {
       },
       body: JSON.stringify({
         section,
-        settings
+        settings: mappedSettings
       })
     })
 
@@ -145,6 +203,32 @@ class UserSettingsService {
   }
 
   /**
+   * Mark welcome message as seen for first-time users
+   */
+  async markWelcomeMessageSeen(): Promise<void> {
+    try {
+      await this.updateUISettings({ welcome_message_seen: true })
+    } catch (error) {
+      console.error('Error marking welcome message as seen:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Check if user has seen the welcome message
+   */
+  async hasSeenWelcomeMessage(): Promise<boolean> {
+    try {
+      const userSettings = await this.getUserSettings()
+      return userSettings.ui_settings.welcome_message_seen ?? false
+    } catch (error) {
+      console.error('Error checking welcome message status:', error)
+      // Default to true to avoid showing welcome message on error
+      return true
+    }
+  }
+
+  /**
    * Get UI settings with fallback to defaults
    */
   async getUISettings(): Promise<UISettings> {
@@ -157,7 +241,8 @@ class UserSettingsService {
       return {
         theme: 'system',
         font_size: 'medium',
-        sidebar_collapsed: false
+        sidebar_collapsed: false,
+        welcome_message_seen: true
       }
     }
   }

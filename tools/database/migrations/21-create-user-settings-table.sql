@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS user_settings (
   ui_settings jsonb DEFAULT '{
     "theme": "system",
     "font_size": "medium",
-    "sidebar_collapsed": false
+    "sidebar_collapsed": false,
+    "welcome_message_seen": false
   }'::jsonb,
   
   -- Timestamps

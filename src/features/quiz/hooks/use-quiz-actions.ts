@@ -94,7 +94,8 @@ export function useQuizActions({
 
       if (isMockSession) {
         // Handle mock session locally without API call
-        const correctOption = currentQuestion.answer_options?.find(opt => opt.is_correct)
+        const answerOptions = currentQuestion.question_options || currentQuestion.answer_options
+        const correctOption = answerOptions?.find(opt => opt.is_correct)
         const isCorrect = answerToSubmit === correctOption?.id
 
         result = {

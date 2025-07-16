@@ -82,7 +82,7 @@ export async function PATCH(request: NextRequest) {
         default_question_count: (val: any) => typeof val === 'number' && [5, 10, 25, 50].includes(val),
         default_mode: (val: any) => typeof val === 'string' && ['tutor', 'practice'].includes(val),
         default_timing: (val: any) => typeof val === 'string' && ['timed', 'untimed'].includes(val),
-        default_question_type: (val: any) => typeof val === 'string' && ['all', 'unused', 'incorrect', 'marked', 'correct'].includes(val),
+        default_question_type: (val: any) => typeof val === 'string' && ['all', 'unused', 'needsReview', 'marked', 'mastered', 'incorrect', 'correct'].includes(val),
         default_category_selection: (val: any) => typeof val === 'string' && ['all', 'ap_only', 'cp_only', 'custom'].includes(val)
       }
 

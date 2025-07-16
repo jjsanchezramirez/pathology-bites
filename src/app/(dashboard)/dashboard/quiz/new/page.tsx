@@ -10,7 +10,7 @@ import { Badge } from "@/shared/components/ui/badge"
 import { Slider } from "@/shared/components/ui/slider"
 import { Separator } from "@/shared/components/ui/separator"
 import { Input } from "@/shared/components/ui/input"
-import { Play } from "lucide-react"
+import { BookOpen } from "lucide-react"
 import { userSettingsService } from '@/shared/services/user-settings'
 import { QUIZ_LIMITS, getQuestionCountOptions } from '@/shared/config/quiz-limits'
 import {
@@ -90,152 +90,87 @@ export default function NewQuizPage() {
     fetchQuizOptions()
   }, [])
 
-  // Generate quiz title based on selection
+  // Generate simple quiz title
   const generateQuizTitle = (): string => {
-    if (!quizOptions) return 'Custom Quiz 01'
+    const timestamp = new Date().toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    })
 
-    if (formData.categorySelection === 'all') {
-      return 'AP/CP Quiz 01'
-    } else if (formData.categorySelection === 'ap_only') {
-      return 'AP Quiz 01'
-    } else if (formData.categorySelection === 'cp_only') {
-      return 'CP Quiz 01'
-    } else if (formData.selectedCategories.length === 1) {
-      // Single category selected
-      const category = quizOptions.categories.find(c => c.id === formData.selectedCategories[0])
-      return category ? `${category.shortName} Quiz 01` : 'Custom Quiz 01'
-    } else {
-      // Multiple categories selected
-      return 'Custom Quiz 01'
+    switch (formData.categorySelection) {
+      case 'all':
+        return `AP/CP Quiz - ${timestamp}`
+      case 'ap_only':
+        return `AP Quiz - ${timestamp}`
+      case 'cp_only':
+        return `CP Quiz - ${timestamp}`
+      default:
+        return `Custom Quiz - ${timestamp}`
     }
   }
 
   const handleCategorySelectionChange = (selection: CategorySelection) => {
-    setFormData(prev => {
-      const newFormData = {
-        ...prev,
-        categorySelection: selection,
-        selectedCategories: selection === 'custom' ? prev.selectedCategories : []
-      }
-
-      // Validate and adjust question count if needed
-      const tempAvailableQuestions = getAvailableQuestionsForConfig(newFormData)
-      const adjustedQuestionCount = Math.min(prev.questionCount, tempAvailableQuestions)
-
-      return {
-        ...newFormData,
-        questionCount: adjustedQuestionCount > 0 ? adjustedQuestionCount : prev.questionCount
-      }
-    })
+    setFormData(prev => ({
+      ...prev,
+      categorySelection: selection,
+      selectedCategories: selection === 'custom' ? prev.selectedCategories : []
+    }))
   }
 
   const handleCategoryToggle = (categoryId: string) => {
-    setFormData(prev => {
-      const newSelectedCategories = prev.selectedCategories.includes(categoryId)
+    setFormData(prev => ({
+      ...prev,
+      selectedCategories: prev.selectedCategories.includes(categoryId)
         ? prev.selectedCategories.filter(id => id !== categoryId)
         : [...prev.selectedCategories, categoryId]
-
-      const newFormData = {
-        ...prev,
-        selectedCategories: newSelectedCategories
-      }
-
-      // Validate and adjust question count if needed
-      const tempAvailableQuestions = getAvailableQuestionsForConfig(newFormData)
-      const adjustedQuestionCount = Math.min(prev.questionCount, tempAvailableQuestions)
-
-      return {
-        ...newFormData,
-        questionCount: adjustedQuestionCount > 0 ? adjustedQuestionCount : prev.questionCount
-      }
-    })
+    }))
   }
 
-  // Get available question count based on current selection
+  const handleQuestionTypeChange = (questionType: QuestionType) => {
+    setFormData(prev => ({
+      ...prev,
+      questionType
+    }))
+  }
+
+  // Get available questions for current configuration
   const getAvailableQuestions = (): number => {
-    return getAvailableQuestionsForConfig(formData)
-  }
-
-  // Helper function to get available questions for any configuration
-  const getAvailableQuestionsForConfig = (config: typeof formData): number => {
     if (!quizOptions) return 0
 
-    if (config.categorySelection === 'all') {
-      return quizOptions.questionTypeStats.all[config.questionType]
-    } else if (config.categorySelection === 'ap_only') {
-      return quizOptions.questionTypeStats.ap_only[config.questionType]
-    } else if (config.categorySelection === 'cp_only') {
-      return quizOptions.questionTypeStats.cp_only[config.questionType]
+    if (formData.categorySelection === 'all') {
+      return quizOptions.questionTypeStats.all[formData.questionType]
+    } else if (formData.categorySelection === 'ap_only') {
+      return quizOptions.questionTypeStats.ap_only[formData.questionType]
+    } else if (formData.categorySelection === 'cp_only') {
+      return quizOptions.questionTypeStats.cp_only[formData.questionType]
     } else {
       // Custom selection
-      return config.selectedCategories.reduce((total, categoryId) => {
+      return formData.selectedCategories.reduce((total, categoryId) => {
         const category = quizOptions.categories.find(c => c.id === categoryId)
-        return total + (category?.questionStats[config.questionType] || 0)
+        return total + (category?.questionStats[formData.questionType] || 0)
       }, 0)
     }
   }
 
-  // Handle question type change with validation
-  const handleQuestionTypeChange = (questionType: QuestionType) => {
-    setFormData(prev => {
-      const newFormData = {
-        ...prev,
-        questionType
-      }
-
-      // Validate and adjust question count if needed
-      const tempAvailableQuestions = getAvailableQuestionsForConfig(newFormData)
-      const adjustedQuestionCount = Math.min(prev.questionCount, tempAvailableQuestions)
-
-      return {
-        ...newFormData,
-        questionCount: adjustedQuestionCount > 0 ? adjustedQuestionCount : prev.questionCount
-      }
-    })
-  }
-
-  // Apply fallback logic for question type and count
-  const applyFallbackLogic = () => {
-    if (!quizOptions) return { questionType: formData.questionType, questionCount: formData.questionCount }
-
-    let currentQuestionType = formData.questionType
-    let availableQuestions = getAvailableQuestions()
-
-    // If the user-defined question type has no questions, fallback to 'all'
-    if (availableQuestions === 0) {
-      currentQuestionType = 'all'
-      // Recalculate with 'all' question type
-      if (formData.categorySelection === 'all') {
-        availableQuestions = quizOptions.questionTypeStats.all.all
-      } else if (formData.categorySelection === 'ap_only') {
-        availableQuestions = quizOptions.questionTypeStats.ap_only.all
-      } else if (formData.categorySelection === 'cp_only') {
-        availableQuestions = quizOptions.questionTypeStats.cp_only.all
-      } else {
-        availableQuestions = formData.selectedCategories.reduce((total, categoryId) => {
-          const category = quizOptions.categories.find(c => c.id === categoryId)
-          return total + (category?.questionStats.all || 0)
-        }, 0)
-      }
+  // Simple validation function
+  const validateQuizConfig = () => {
+    if (formData.categorySelection === 'custom' && formData.selectedCategories.length === 0) {
+      return { isValid: false, error: 'Please select at least one category' }
     }
 
-    // If available questions are less than desired count, adjust the count
-    const adjustedQuestionCount = Math.min(formData.questionCount, availableQuestions)
+    const availableQuestions = getAvailableQuestions()
+    if (availableQuestions === 0) {
+      return { isValid: false, error: 'No questions available for the selected criteria' }
+    }
 
-    return { questionType: currentQuestionType, questionCount: adjustedQuestionCount, availableQuestions: availableQuestions || 0 }
+    return { isValid: true, error: null }
   }
 
   const handleSubmit = async () => {
-    if (formData.categorySelection === 'custom' && formData.selectedCategories.length === 0) {
-      toast.error('Please select at least one category')
-      return
-    }
-
-    // Apply fallback logic
-    const { questionType, questionCount, availableQuestions } = applyFallbackLogic()
-
-    if (availableQuestions === 0) {
-      toast.error('No questions available for the selected criteria')
+    // Simple validation
+    const validation = validateQuizConfig()
+    if (!validation.isValid) {
+      toast.error(validation.error!)
       return
     }
 
@@ -244,22 +179,22 @@ export default function NewQuizPage() {
       // Generate title if not provided
       const title = formData.title?.trim() || generateQuizTitle()
 
-      // Create quiz payload with fallback adjustments
+      // Check if user requested more questions than available
+      const availableQuestions = getAvailableQuestions()
+      const adjustedQuestionCount = Math.min(formData.questionCount, availableQuestions)
+
+      // Show warning if we had to adjust the question count
+      if (adjustedQuestionCount < formData.questionCount) {
+        toast.warning(`Only ${adjustedQuestionCount} questions available. Quiz adjusted accordingly.`)
+      }
+
+      // Create quiz payload
       const quizPayload = {
         ...formData,
         title,
-        questionType,
-        questionCount,
+        questionCount: adjustedQuestionCount,
         showExplanations: QUIZ_MODE_CONFIG[formData.mode].showExplanations,
         timePerQuestion: formData.timing === 'timed' ? QUIZ_TIMING_CONFIG.timed.timePerQuestion : undefined
-      }
-
-      // Show warning if fallbacks were applied
-      if (questionType !== formData.questionType) {
-        toast.warning(`No ${QUESTION_TYPE_CONFIG[formData.questionType].label.toLowerCase()} available. Using all questions instead.`)
-      }
-      if (questionCount < formData.questionCount) {
-        toast.warning(`Only ${questionCount} questions available. Quiz adjusted accordingly.`)
       }
 
       const response = await fetch('/api/quiz/sessions', {
@@ -334,8 +269,6 @@ export default function NewQuizPage() {
     )
   }
 
-  const { questionType: effectiveQuestionType, questionCount: effectiveQuestionCount, availableQuestions } = applyFallbackLogic()
-  const maxQuestions = Math.min(availableQuestions || 0, QUIZ_LIMITS.maxQuestionsPerQuiz)
   const questionCountOptions = getQuestionCountOptions()
 
   return (
@@ -379,8 +312,7 @@ export default function NewQuizPage() {
                   key={count}
                   variant={formData.questionCount === count ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setFormData(prev => ({ ...prev, questionCount: Math.min(count, maxQuestions) }))}
-                  disabled={count > (availableQuestions || 0)}
+                  onClick={() => setFormData(prev => ({ ...prev, questionCount: count }))}
                 >
                   {count}
                 </Button>
@@ -389,12 +321,11 @@ export default function NewQuizPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Custom: {formData.questionCount}</span>
-                <span className="text-muted-foreground">{availableQuestions || 0} available</span>
               </div>
               <Slider
                 value={[formData.questionCount]}
                 onValueChange={([value]) => setFormData(prev => ({ ...prev, questionCount: value }))}
-                max={maxQuestions}
+                max={QUIZ_LIMITS.maxQuestionsPerQuiz}
                 min={QUIZ_LIMITS.minQuestionsPerQuiz}
                 step={1}
                 className="w-full"
@@ -519,7 +450,6 @@ export default function NewQuizPage() {
                         className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1 px-2 py-1"
                         onClick={() => handleCategoryToggle(category.id)}
                       >
-                        <span className="text-xs font-medium">{category.parent}</span>
                         <span className="text-xs">{category.shortName}</span>
                         <span className="text-xs opacity-70">({count})</span>
                       </Badge>
@@ -533,43 +463,42 @@ export default function NewQuizPage() {
           <Separator />
 
           {/* Start Button */}
-          <div className="flex justify-center">
-            <Button
-              onClick={handleSubmit}
-              size="lg"
-              className="w-full h-16 text-lg font-semibold"
-              disabled={creating || (availableQuestions || 0) === 0}
-            >
-              {creating ? (
-                <>
-                  <div className="h-5 w-5 mr-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Play className="h-5 w-5 mr-3" />
-                  Start Quiz ({effectiveQuestionCount} questions)
-                </>
-              )}
-            </Button>
-          </div>
+          <div className="space-y-3">
+            <div className="flex justify-center">
+              <Button
+                onClick={handleSubmit}
+                size="lg"
+                className="w-full h-16 text-lg font-semibold"
+                disabled={creating || !validateQuizConfig().isValid}
+              >
+                {creating ? (
+                  <>
+                    <div className="h-5 w-5 mr-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <BookOpen className="h-5 w-5 mr-3" />
+                    Start Quiz
+                  </>
+                )}
+              </Button>
+            </div>
 
-          {/* Show warnings for fallbacks */}
-          {effectiveQuestionType !== formData.questionType && (
-            <p className="text-sm text-amber-600 text-center">
-              No {QUESTION_TYPE_CONFIG[formData.questionType].label.toLowerCase()} available. Will use all questions instead.
-            </p>
-          )}
-          {effectiveQuestionCount < formData.questionCount && (
-            <p className="text-sm text-amber-600 text-center">
-              Only {effectiveQuestionCount} questions available. Quiz will be adjusted accordingly.
-            </p>
-          )}
-          {(availableQuestions || 0) === 0 && (
-            <p className="text-sm text-red-600 text-center">
-              No questions available for the selected criteria
-            </p>
-          )}
+            {/* Show helpful message when button is disabled */}
+            {!creating && !validateQuizConfig().isValid && (
+              <p className="text-sm text-muted-foreground text-center">
+                {validateQuizConfig().error}
+              </p>
+            )}
+
+            {/* Show available questions info */}
+            {!creating && validateQuizConfig().isValid && (
+              <p className="text-sm text-muted-foreground text-center">
+                {Math.min(formData.questionCount, getAvailableQuestions())} questions available
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
       </div>

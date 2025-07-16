@@ -29,80 +29,11 @@ async function getOptimizedUserStats(
   categoryIds: string[]
 ) {
   try {
-    // Use materialized view for pre-calculated statistics
-    const { data: userStats, error: statsError } = await supabase
-      .from('user_category_stats')
-      .select('category_id, total_attempts, correct_attempts, incorrect_attempts, unique_questions_attempted')
-      .eq('user_id', userId)
-      .in('category_id', categoryIds)
-
-    if (statsError) {
-      console.error('Error fetching user stats from materialized view:', statsError)
-      // Fallback to real-time calculation
-      return await getFallbackUserStats(supabase, userId, categoryIds)
-    }
-
-    console.log('Using materialized view for user stats, found', userStats?.length || 0, 'category stats')
-
-    // Get user favorites efficiently
-    const { data: favorites, error: favoritesError } = await supabase
-      .from('user_favorites')
-      .select('question_id, questions!inner(category_id)')
-      .eq('user_id', userId)
-      .in('questions.category_id', categoryIds)
-
-    if (favoritesError) {
-      console.error('Error fetching user favorites:', favoritesError)
-    }
-
-    // Process results into the expected format
-    const categoryStats = new Map<string, {
-      all: number
-      unused: number
-      incorrect: number
-      marked: number
-      correct: number
-    }>()
-
-    // Initialize all categories
-    for (const categoryId of categoryIds) {
-      categoryStats.set(categoryId, {
-        all: 0,
-        unused: 0,
-        incorrect: 0,
-        marked: 0,
-        correct: 0
-      })
-    }
-
-    // Process user statistics
-    for (const stat of userStats || []) {
-      const categoryId = stat.category_id
-      const stats = categoryStats.get(categoryId)
-      if (stats) {
-        stats.correct = stat.correct_attempts || 0
-        stats.incorrect = stat.incorrect_attempts || 0
-        // unused = total questions in category - unique questions attempted
-        // This will be calculated after we get question counts
-      }
-    }
-
-    // Process favorites
-    const favoritesByCategory = new Map<string, number>()
-    for (const favorite of favorites || []) {
-      const categoryId = (favorite as any).questions.category_id
-      favoritesByCategory.set(categoryId, (favoritesByCategory.get(categoryId) || 0) + 1)
-    }
-
-    // Add favorites to stats
-    for (const [categoryId, count] of favoritesByCategory) {
-      const stats = categoryStats.get(categoryId)
-      if (stats) {
-        stats.marked = count
-      }
-    }
-
-    return categoryStats
+    // The materialized view doesn't have the unique question breakdown we need
+    // (questions with only correct attempts vs questions with any incorrect attempts)
+    // So we need to fall back to the real-time calculation for now
+    console.log('Materialized view lacks unique question breakdown, falling back to real-time calculation')
+    return await getFallbackUserStats(supabase, userId, categoryIds)
 
   } catch (error) {
     console.error('Error in optimized user stats:', error)
@@ -150,7 +81,7 @@ async function getFallbackUserStats(
     const attempts = attemptsResult.data || []
     const favorites = favoritesResult.data || []
 
-    // Process results similar to optimized version
+    // Process results using unique question logic (not attempts)
     const categoryStats = new Map()
 
     // Initialize with empty stats
@@ -158,26 +89,64 @@ async function getFallbackUserStats(
       categoryStats.set(categoryId, {
         all: 0,
         unused: 0,
-        incorrect: 0,
+        incorrect: 0, // Will be renamed to needsReview
         marked: 0,
-        correct: 0
+        correct: 0    // Will be renamed to mastered
       })
     }
 
-    // Process attempts
+    // Track unique questions per category
+    const categoryQuestions = new Map<string, Map<string, { hasCorrect: boolean, hasIncorrect: boolean }>>()
+
+    // Initialize category question maps
+    for (const categoryId of categoryIds) {
+      categoryQuestions.set(categoryId, new Map())
+    }
+
+    // Process attempts to track unique questions
     for (const attempt of attempts) {
       const categoryId = attempt.category_id
-      const stats = categoryStats.get(categoryId)
-      if (stats) {
+      const questionId = attempt.question_id
+      const categoryQuestionMap = categoryQuestions.get(categoryId)
+
+      if (categoryQuestionMap) {
+        const existing = categoryQuestionMap.get(questionId) || { hasCorrect: false, hasIncorrect: false }
+
         if (attempt.is_correct) {
-          stats.correct++
+          existing.hasCorrect = true
         } else {
-          stats.incorrect++
+          existing.hasIncorrect = true
         }
+
+        categoryQuestionMap.set(questionId, existing)
       }
     }
 
-    // Process favorites
+    // Calculate meaningful categories for each category
+    for (const categoryId of categoryIds) {
+      const stats = categoryStats.get(categoryId)
+      const questionMap = categoryQuestions.get(categoryId)
+
+      if (stats && questionMap) {
+        // Count unique questions in meaningful categories
+        let needsReview = 0  // Questions with any incorrect attempts
+        let mastered = 0     // Questions with only correct attempts
+
+        for (const questionStatus of questionMap.values()) {
+          if (questionStatus.hasIncorrect) {
+            needsReview++
+          } else if (questionStatus.hasCorrect) {
+            mastered++
+          }
+        }
+
+        // Update stats with meaningful categories
+        stats.incorrect = needsReview  // Reusing field name for backward compatibility
+        stats.correct = mastered      // Reusing field name for backward compatibility
+      }
+    }
+
+    // Process favorites (marked questions)
     for (const favorite of favorites) {
       const categoryId = (favorite as any).questions.category_id
       const stats = categoryStats.get(categoryId)
@@ -236,7 +205,7 @@ export async function GET() {
       // Get categories
       supabase
         .from('categories')
-        .select('id, name, parent_id, level')
+        .select('id, name, short_form, parent_id, level')
         .order('name'),
       
       // Get question counts efficiently
@@ -285,7 +254,7 @@ export async function GET() {
     // Build final categories with stats
     const categoriesWithStats = subcategories.map((category) => {
       const questionCount = categoryQuestionCounts.get(category.id) || 0
-      const stats = userStats.get(category.id) || {
+      const rawStats = userStats.get(category.id) || {
         all: questionCount,
         unused: questionCount,
         incorrect: 0,
@@ -293,21 +262,21 @@ export async function GET() {
         correct: 0
       }
 
-      // Update 'all' and 'unused' with actual question count
-      stats.all = questionCount
-      stats.unused = Math.max(0, questionCount - stats.correct - stats.incorrect)
-
-      const parentName = parentLookup.get(category.parent_id || '')
-      const parent = parentName === 'Anatomic Pathology' ? 'AP' :
-                    parentName === 'Clinical Pathology' ? 'CP' : 'AP'
+      // Map old field names to new meaningful names
+      const stats = {
+        all: questionCount,
+        unused: Math.max(0, questionCount - rawStats.correct - rawStats.incorrect),
+        needsReview: rawStats.incorrect,  // Questions with any incorrect attempts
+        marked: rawStats.marked,
+        mastered: rawStats.correct        // Questions with only correct attempts
+      }
 
       console.log(`Category ${category.name}: ${questionCount} questions, User stats:`, stats)
 
       return {
         id: category.id,
         name: category.name,
-        shortName: extractShortName(category.name),
-        parent: parent as 'AP' | 'CP',
+        shortName: category.short_form || extractShortName(category.name),
         questionStats: stats
       }
     })
@@ -361,10 +330,10 @@ function calculateOverallStats(categories: any[]) {
   return categories.reduce((acc, cat) => ({
     all: acc.all + cat.questionStats.all,
     unused: acc.unused + cat.questionStats.unused,
-    incorrect: acc.incorrect + cat.questionStats.incorrect,
+    needsReview: acc.needsReview + cat.questionStats.needsReview,
     marked: acc.marked + cat.questionStats.marked,
-    correct: acc.correct + cat.questionStats.correct
-  }), { all: 0, unused: 0, incorrect: 0, marked: 0, correct: 0 })
+    mastered: acc.mastered + cat.questionStats.mastered
+  }), { all: 0, unused: 0, needsReview: 0, marked: 0, mastered: 0 })
 }
 
 function calculateStatsForParent(categories: any[], parent: 'AP' | 'CP') {
@@ -373,8 +342,8 @@ function calculateStatsForParent(categories: any[], parent: 'AP' | 'CP') {
     .reduce((acc, cat) => ({
       all: acc.all + cat.questionStats.all,
       unused: acc.unused + cat.questionStats.unused,
-      incorrect: acc.incorrect + cat.questionStats.incorrect,
+      needsReview: acc.needsReview + cat.questionStats.needsReview,
       marked: acc.marked + cat.questionStats.marked,
-      correct: acc.correct + cat.questionStats.correct
-    }), { all: 0, unused: 0, incorrect: 0, marked: 0, correct: 0 })
+      mastered: acc.mastered + cat.questionStats.mastered
+    }), { all: 0, unused: 0, needsReview: 0, marked: 0, mastered: 0 })
 }

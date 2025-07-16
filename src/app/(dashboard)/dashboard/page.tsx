@@ -19,10 +19,21 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
+import { WelcomeMessage, PerformanceAnalytics } from "@/features/dashboard/components"
+import { userSettingsService } from "@/shared/services/user-settings"
 
 interface DashboardStats {
+  // New meaningful categories
+  allQuestions?: number
+  needsReview?: number
+  mastered?: number
+  unused?: number
+
+  // Legacy fields for backward compatibility
   totalQuestions: number
   completedQuestions: number
+
+  // Other stats
   averageScore: number
   studyStreak: number
   recentQuizzes: number
@@ -36,6 +47,24 @@ interface DashboardStats {
     timestamp: string
     score?: number
   }>
+
+  // Performance analytics
+  performance?: {
+    userPercentile: number
+    peerRank: number
+    totalUsers: number
+    subjectsForImprovement: Array<{
+      name: string
+      score: number
+      attempts: number
+    }>
+    subjectsMastered: Array<{
+      name: string
+      score: number
+      attempts: number
+    }>
+    overallScore: number
+  }
 }
 
 // Loading components
@@ -89,26 +118,32 @@ function ActivityLoading() {
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(false)
 
-  // Fetch dashboard stats on component mount
+  // Fetch dashboard stats and check welcome message status on component mount
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/dashboard/stats')
-        if (!response.ok) {
+        // Fetch dashboard stats
+        const statsResponse = await fetch('/api/dashboard/stats')
+        if (!statsResponse.ok) {
           throw new Error('Failed to fetch dashboard stats')
         }
-        const result = await response.json()
-        setStats(result.data)
+        const statsResult = await statsResponse.json()
+        setStats(statsResult.data)
+
+        // Check if user has seen welcome message
+        const hasSeenWelcome = await userSettingsService.hasSeenWelcomeMessage()
+        setShowWelcomeMessage(!hasSeenWelcome)
       } catch (error) {
-        console.error('Error fetching dashboard stats:', error)
+        console.error('Error fetching dashboard data:', error)
         toast.error('Failed to load dashboard data')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchStats()
+    fetchData()
   }, [])
 
   return (
@@ -120,6 +155,11 @@ export default function DashboardPage() {
         </p>
       </div>
 
+      {/* Welcome Message for First-Time Users */}
+      {showWelcomeMessage && (
+        <WelcomeMessage onDismiss={() => setShowWelcomeMessage(false)} />
+      )}
+
       {/* Stats Cards */}
       {loading ? (
         <StatsLoading />
@@ -127,52 +167,52 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Questions Completed</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Needs Review</CardTitle>
+              <BookOpen className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.completedQuestions}</div>
+              <div className="text-2xl font-bold text-red-600">{stats.needsReview || 0}</div>
               <p className="text-xs text-muted-foreground">
-                of {stats.totalQuestions} total questions
+                Questions to practice more
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average Score</CardTitle>
-              <Target className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Mastered</CardTitle>
+              <Target className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.averageScore}%</div>
+              <div className="text-2xl font-bold text-green-600">{stats.mastered || 0}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.averageScore >= 80 ? 'Excellent!' : stats.averageScore >= 70 ? 'Good progress' : 'Keep practicing'}
+                Questions answered correctly
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Study Streak</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Unused</CardTitle>
+              <TrendingUp className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.studyStreak} days</div>
+              <div className="text-2xl font-bold text-blue-600">{stats.unused || 0}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.studyStreak > 0 ? 'Keep it up!' : 'Start your streak today!'}
+                Questions to explore
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Weekly Progress</CardTitle>
+              <CardTitle className="text-sm font-medium">All Questions</CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.currentWeekProgress}/{stats.weeklyGoal}</div>
+              <div className="text-2xl font-bold">{stats.allQuestions || stats.totalQuestions || 0}</div>
               <p className="text-xs text-muted-foreground">
-                {Math.round((stats.currentWeekProgress / stats.weeklyGoal) * 100)}% of weekly goal
+                Total questions available
               </p>
             </CardContent>
           </Card>
@@ -186,6 +226,8 @@ export default function DashboardPage() {
           </Card>
         </div>
       )}
+
+
 
       {/* Main Content Area */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
@@ -251,6 +293,19 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Performance Analytics */}
+      {stats?.performance && (
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Performance Analytics</h2>
+            <p className="text-muted-foreground">
+              Track your progress and see how you compare to other users.
+            </p>
+          </div>
+          <PerformanceAnalytics data={stats.performance} />
+        </div>
+      )}
     </div>
   )
 }
