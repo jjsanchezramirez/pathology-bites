@@ -39,7 +39,7 @@ export function ThemeSelector() {
           <Palette className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
+      <DropdownMenuContent align="end" className="w-96">
         <DropdownMenuLabel>Dashboard Themes</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
@@ -109,7 +109,7 @@ export function CompactThemeSelector() {
           title={`Current theme: ${currentTheme.name}`}
         />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="text-xs">Themes</DropdownMenuLabel>
         <DropdownMenuSeparator />
         

@@ -63,13 +63,13 @@
     --chart-3: hsl(262 80% 56%);
     --chart-4: hsl(32 94% 56%);
     --chart-5: hsl(354 78% 56%);
-    --sidebar: hsl(210 40% 96.1%);
-    --sidebar-foreground: hsl(0 0% 14.9020%);
+    --sidebar: hsl(222.2 47.4% 11.2%);
+    --sidebar-foreground: hsl(214.3 31.8% 91.4%);
     --sidebar-primary: hsl(186 66% 40%);
     --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(210 40% 96.1%);
-    --sidebar-accent-foreground: hsl(222.2 47.4% 11.2%);
-    --sidebar-border: hsl(214.3 31.8% 91.4%);
+    --sidebar-accent: hsl(217.2 32.6% 17.5%);
+    --sidebar-accent-foreground: hsl(0 0% 100%);
+    --sidebar-border: hsl(215.3 25% 26.7%);
     --sidebar-ring: hsl(186 66% 40%);
     --font-sans: Inter, sans-serif;
     --font-serif: Source Serif 4, serif;
@@ -117,12 +117,12 @@
     --chart-4: hsl(32 85% 70%);
     --chart-5: hsl(354 70% 70%);
     --sidebar: hsl(217.2 32.6% 17.5%);
-    --sidebar-foreground: hsl(210 40% 98%);
+    --sidebar-foreground: hsl(214.3 31.8% 91.4%);
     --sidebar-primary: hsl(170 60% 70%);
     --sidebar-primary-foreground: hsl(180 100% 10%);
-    --sidebar-accent: hsl(217.2 32.6% 17.5%);
-    --sidebar-accent-foreground: hsl(210 40% 98%);
-    --sidebar-border: hsl(217.2 32.6% 17.5%);
+    --sidebar-accent: hsl(215.3 25% 26.7%);
+    --sidebar-accent-foreground: hsl(0 0% 100%);
+    --sidebar-border: hsl(215.3 25% 26.7%);
     --sidebar-ring: hsl(170 60% 70%);
     --font-sans: Inter, sans-serif;
     --font-serif: Source Serif 4, serif;
@@ -322,4 +322,16 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+
+  --tracking-tighter: calc(var(--tracking-normal, 0em) - 0.05em);
+  --tracking-tight: calc(var(--tracking-normal, 0em) - 0.025em);
+  --tracking-normal: var(--tracking-normal, 0em);
+  --tracking-wide: calc(var(--tracking-normal, 0em) + 0.025em);
+  --tracking-wider: calc(var(--tracking-normal, 0em) + 0.05em);
+  --tracking-widest: calc(var(--tracking-normal, 0em) + 0.1em);
+}
+
+/* Apply letter-spacing globally when themes specify it */
+.dashboard-theme-container {
+  letter-spacing: var(--tracking-normal, 0em);
 }

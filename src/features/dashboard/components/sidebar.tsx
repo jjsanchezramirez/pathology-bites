@@ -39,7 +39,7 @@ export function Sidebar({}: SidebarProps) {
   const pathname = usePathname()
 
   return (
-    <div className="fixed left-0 top-0 h-full w-64 bg-[#5BA4A4] text-white">
+    <div className="fixed left-0 top-0 h-full w-64 bg-sidebar text-sidebar-foreground">
       {/* Logo */}
       <div className="p-6">
         <Link href="/" className="flex items-center gap-2">
@@ -56,8 +56,8 @@ export function Sidebar({}: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-md text-white/90 hover:bg-white/10",
-                isActive && "bg-white/20"
+                "flex items-center gap-3 px-4 py-3 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10",
+                isActive && "bg-sidebar-foreground/20"
               )}
             >
               <item.icon size={20} />

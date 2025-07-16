@@ -170,10 +170,10 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
           {isFirstTimeUser
-            ? "Welcome to Pathology Bites! Let's get your dashboard started with a quick quiz."
+            ? "Nice to meet you! Let's get you started with a quick quiz."
             : isReturningUser
             ? "Good to see you again! Ready to pick up where you left off?"
-            : "Welcome back! Track your progress and continue learning."
+            : "Welcome back! Ready to continue your learning journey?"
           }
         </p>
       </div>

@@ -28,18 +28,24 @@ export default async function RootLayout({
   // Just render the layout
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className={cn('min-h-screen bg-background font-sans antialiased')}>
         <ConditionalThemeProvider attribute="class" defaultTheme="light">
           <FontSizeProvider>
-            <DashboardThemeProvider>
-              <div className="relative flex min-h-screen flex-col">
-                <AuthProvider>
-                  <div>{children}</div>
-                </AuthProvider>
-              </div>
-              <SonnerToaster />
-              <ConnectionStatus />
-            </DashboardThemeProvider>
+            <div className="relative flex min-h-screen flex-col">
+              <AuthProvider>
+                <div>{children}</div>
+              </AuthProvider>
+            </div>
+            <SonnerToaster />
+            <ConnectionStatus />
           </FontSizeProvider>
         </ConditionalThemeProvider>
         <Analytics/>

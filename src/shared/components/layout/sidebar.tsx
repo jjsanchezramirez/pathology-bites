@@ -109,10 +109,10 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
     <aside
       className={`fixed left-0 top-0 bottom-0 z-50 ${
         isCollapsed ? 'w-16' : 'w-64'
-      } bg-slate-900 text-slate-100 dark:bg-slate-800/95 flex flex-col transition-all duration-300 border-r border-slate-700/50`}
+      } bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-300 border-r border-sidebar-border`}
     >
       {/* Logo Section */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-700/50 dark:border-slate-600/50 shrink-0">
+      <div className="h-16 flex items-center px-6 border-b border-sidebar-border shrink-0">
         <Microscope className="h-6 w-6 shrink-0" />
         {!isCollapsed && (
           <h1 className="font-bold text-lg ml-3 whitespace-nowrap">Pathology Bites</h1>
@@ -135,10 +135,10 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
                   className={`flex h-10 rounded-lg text-sm font-medium
                     transition-colors duration-200 relative items-center
                     ${isDisabled
-                      ? 'text-slate-500 cursor-not-allowed opacity-50'
+                      ? 'text-sidebar-foreground/30 cursor-not-allowed opacity-50'
                       : isActive
-                        ? 'bg-slate-800 text-slate-100 dark:bg-slate-700 dark:text-white'
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100 dark:text-slate-200 dark:hover:bg-slate-700/50 dark:hover:text-white'
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                     }`}
                   title={isCollapsed ? item.name : undefined}
                   onClick={isDisabled ? (e) => e.preventDefault() : undefined}
@@ -150,7 +150,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
                     <span className="truncate">{item.name}</span>
                   )}
                   {!isCollapsed && item.adminOnly && !isAdmin && !isLoading && (
-                    <span className="ml-auto text-xs text-slate-500">Admin</span>
+                    <span className="ml-auto text-xs text-sidebar-foreground/50">Admin</span>
                   )}
                 </Link>
               )

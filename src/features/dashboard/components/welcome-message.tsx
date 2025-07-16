@@ -78,15 +78,15 @@ export function WelcomeMessage({ onDismiss }: WelcomeMessageProps) {
   }
 
   return (
-    <Card className="relative bg-white border border-gray-200">
+    <Card className="relative bg-card border border-gray-200">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              📖 Welcome to Pathology Bites!
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              📖 Welcome to PathologyBites!
             </h3>
 
-            <div className="text-sm text-gray-600 space-y-2 mb-4">
+            <div className="text-sm text-muted-foreground space-y-2 mb-4">
               <p>Your dashboard is empty because you're just getting started.</p>
 
               <p>
@@ -105,7 +105,7 @@ export function WelcomeMessage({ onDismiss }: WelcomeMessageProps) {
             <div className="flex gap-3">
               <Button
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+                className="bg-primary hover:bg-primary/90 w-sm px-16 py-3 flex items-center gap-2"
                 onClick={handleStartQuiz}
                 disabled={isCreatingQuiz}
               >

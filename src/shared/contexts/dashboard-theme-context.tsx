@@ -55,30 +55,25 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
       const isDarkMode = root.classList.contains('dark')
       const variables = isDarkMode ? theme.variables.dark : theme.variables.light
 
-      // Only apply theme variables if we're not using the default theme
-      if (theme.id === 'default') {
-        // Remove any custom theme variables to restore original styling
-        const allThemeKeys = [
-          '--background', '--foreground', '--card', '--card-foreground', '--popover', '--popover-foreground',
-          '--primary', '--primary-foreground', '--secondary', '--secondary-foreground', '--muted', '--muted-foreground',
-          '--accent', '--accent-foreground', '--destructive', '--destructive-foreground', '--border', '--input', '--ring',
-          '--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5',
-          '--sidebar', '--sidebar-foreground', '--sidebar-primary', '--sidebar-primary-foreground',
-          '--sidebar-accent', '--sidebar-accent-foreground', '--sidebar-border', '--sidebar-ring'
-        ]
+      // Apply theme variables directly to override the default CSS variables
+      Object.entries(variables).forEach(([key, value]) => {
+        // Handle different types of CSS variables
+        let formattedValue = value
 
-        // Remove any custom theme overrides to let the original CSS take effect
-        allThemeKeys.forEach((key) => {
-          if (root.style.getPropertyValue(key) !== '') {
-            root.style.removeProperty(key)
-          }
-        })
-      } else {
-        // Apply theme variables directly to override the default CSS variables
-        Object.entries(variables).forEach(([key, value]) => {
-          root.style.setProperty(key, value)
-        })
-      }
+        // For color variables, ensure HSL format (but not for shadows which already contain hsl())
+        if ((key.includes('color') || key.includes('ground') || key.includes('border') ||
+            key.includes('ring') || key.includes('chart') || key.includes('sidebar') ||
+            key === '--background' || key === '--foreground' || key === '--card' ||
+            key === '--popover' || key === '--primary' || key === '--secondary' ||
+            key === '--muted' || key === '--accent' || key === '--destructive' ||
+            key === '--input') && !key.includes('shadow')) {
+          formattedValue = value.includes('hsl(') ? value : `hsl(${value})`
+        }
+        // For font, shadow, radius, tracking, and spacing variables, use as-is
+        // These are already properly formatted
+
+        root.style.setProperty(key, formattedValue)
+      })
 
       // Set a data attribute to identify the current dashboard theme
       root.setAttribute('data-dashboard-theme', theme.id)
