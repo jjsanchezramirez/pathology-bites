@@ -81,21 +81,17 @@ export function WelcomeMessage({ onDismiss }: WelcomeMessageProps) {
     <Card className="relative bg-white border border-gray-200">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-blue-50 rounded-lg flex-shrink-0">
-            <BookOpen className="h-6 w-6 text-blue-600" />
-          </div>
-
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Welcome to Pathology Bites!
+              📖 Welcome to Pathology Bites!
             </h3>
 
             <div className="text-sm text-gray-600 space-y-2 mb-4">
-              <p>Your dashboard is empty because you're just getting started:</p>
+              <p>Your dashboard is empty because you're just getting started.</p>
 
               <p>
-                Take a quick starter quiz to see how we track your progress. We'll track which questions you nail,
-                which ones need another look, and identify your strong areas.
+                <strong>Take a quick starter quiz</strong> to see how we track your progress. We'll track which questions you master,
+                which ones need work, and what you should focus on next.
               </p>
 
               <p>

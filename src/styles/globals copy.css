@@ -70,7 +70,7 @@
     --chart-4: 32 94% 56%;
     --chart-5: 354 78% 56%;
   }
-
+ 
 
   .dark {
     --background: 222.2 84% 4.9%;
@@ -157,5 +157,52 @@
   [data-icon-fixed] svg {
     width: 1em !important;
     height: 1em !important;
+  }
+
+  /* Dashboard Theme Styles */
+  .dashboard-theme-container {
+    /* Use dashboard-specific CSS variables when available */
+    --background: var(--dashboard--background, var(--background));
+    --foreground: var(--dashboard--foreground, var(--foreground));
+    --card: var(--dashboard--card, var(--card));
+    --card-foreground: var(--dashboard--card-foreground, var(--card-foreground));
+    --popover: var(--dashboard--popover, var(--popover));
+    --popover-foreground: var(--dashboard--popover-foreground, var(--popover-foreground));
+    --primary: var(--dashboard--primary, var(--primary));
+    --primary-foreground: var(--dashboard--primary-foreground, var(--primary-foreground));
+    --secondary: var(--dashboard--secondary, var(--secondary));
+    --secondary-foreground: var(--dashboard--secondary-foreground, var(--secondary-foreground));
+    --muted: var(--dashboard--muted, var(--muted));
+    --muted-foreground: var(--dashboard--muted-foreground, var(--muted-foreground));
+    --accent: var(--dashboard--accent, var(--accent));
+    --accent-foreground: var(--dashboard--accent-foreground, var(--accent-foreground));
+    --destructive: var(--dashboard--destructive, var(--destructive));
+    --destructive-foreground: var(--dashboard--destructive-foreground, var(--destructive-foreground));
+    --border: var(--dashboard--border, var(--border));
+    --input: var(--dashboard--input, var(--input));
+    --ring: var(--dashboard--ring, var(--ring));
+  }
+
+  /* Dashboard theme-specific enhancements */
+  .dashboard-theme-container .dashboard-themed {
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* Theme-specific styling for cards in dashboard */
+  .dashboard-theme-container [data-dashboard-theme="notebook"] .card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid hsl(var(--border));
+  }
+
+  .dashboard-theme-container [data-dashboard-theme="tangerine"] .card {
+    box-shadow: 0 4px 12px rgba(255, 120, 73, 0.15);
+  }
+
+  .dashboard-theme-container [data-dashboard-theme="amber-minimal"] .card {
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.1);
+  }
+
+  .dashboard-theme-container [data-dashboard-theme="amethyst-haze"] .card {
+    box-shadow: 0 4px 16px rgba(168, 85, 247, 0.15);
   }
 }
