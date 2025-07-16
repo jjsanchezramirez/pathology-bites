@@ -296,15 +296,7 @@ export default function DashboardPage() {
 
       {/* Performance Analytics */}
       {stats?.performance && (
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Performance Analytics</h2>
-            <p className="text-muted-foreground">
-              Track your progress and see how you compare to other users.
-            </p>
-          </div>
-          <PerformanceAnalytics data={stats.performance} />
-        </div>
+        <PerformanceAnalytics data={stats.performance} />
       )}
     </div>
   )

@@ -129,11 +129,11 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center space-y-2">
-          <div className="text-center">
+          <div className="text-center pt-2">
             <div className="text-3xl font-bold text-purple-600">
               {data.peerRank}{getRankSuffix(data.peerRank)}
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground pb-2">
               out of {data.totalUsers.toLocaleString()} users
             </div>
           </div>

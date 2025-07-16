@@ -245,7 +245,8 @@ async function calculatePerformanceAnalytics(supabase: any, userId: string, user
       .from('quiz_attempts')
       .select(`
         is_correct,
-        questions!inner(categories!inner(name))
+        questions!inner(categories!inner(name)),
+        quiz_sessions!inner(user_id)
       `)
       .eq('quiz_sessions.user_id', userId)
 
