@@ -128,18 +128,18 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
             Peer Ranking
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col items-center space-y-2">
-          <div className="text-center pt-2">
-            <div className="text-3xl font-bold text-purple-600">
+        <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
+          <div className="text-center">
+            <div className="text-4xl font-bold text-purple-600 mb-2">
               {data.peerRank}{getRankSuffix(data.peerRank)}
             </div>
-            <div className="text-sm text-muted-foreground pb-2">
+            <div className="text-sm text-muted-foreground mb-3">
               out of {data.totalUsers.toLocaleString()} users
             </div>
+            <p className="text-xs text-muted-foreground">
+              Based on overall performance
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground text-center">
-            Based on overall performance
-          </p>
         </CardContent>
       </Card>
 

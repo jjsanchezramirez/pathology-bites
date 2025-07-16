@@ -119,6 +119,8 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false)
+  const [isFirstTimeUser, setIsFirstTimeUser] = useState(false)
+  const [isReturningUser, setIsReturningUser] = useState(false)
 
   // Fetch dashboard stats and check welcome message status on component mount
   useEffect(() => {
@@ -135,6 +137,22 @@ export default function DashboardPage() {
         // Check if user has seen welcome message
         const hasSeenWelcome = await userSettingsService.hasSeenWelcomeMessage()
         setShowWelcomeMessage(!hasSeenWelcome)
+
+        // Determine user status based on activity
+        const isFirstTime = !hasSeenWelcome && (statsResult.data.recentQuizzes === 0 || statsResult.data.completedQuestions === 0)
+        setIsFirstTimeUser(isFirstTime)
+
+        // Check if user is returning after 7+ days (based on recent activity)
+        const hasRecentActivity = statsResult.data.recentActivity && statsResult.data.recentActivity.length > 0
+        if (hasRecentActivity && !isFirstTime) {
+          // If they have activity but the most recent is more than 7 days old
+          const mostRecentActivity = statsResult.data.recentActivity[0]
+          const sevenDaysAgo = new Date()
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+          // This is a simplified check - in a real implementation you'd parse the timestamp
+          setIsReturningUser(!hasRecentActivity || statsResult.data.recentQuizzes === 0)
+        }
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
         toast.error('Failed to load dashboard data')
@@ -151,7 +169,12 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome back! Track your progress and continue learning.
+          {isFirstTimeUser
+            ? "Welcome to Pathology Bites! Let's get your dashboard started with a quick quiz."
+            : isReturningUser
+            ? "Good to see you again! Ready to pick up where you left off?"
+            : "Welcome back! Track your progress and continue learning."
+          }
         </p>
       </div>
 

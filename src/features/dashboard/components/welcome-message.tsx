@@ -14,6 +14,7 @@ interface WelcomeMessageProps {
 
 export function WelcomeMessage({ onDismiss }: WelcomeMessageProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [isCreatingQuiz, setIsCreatingQuiz] = useState(false)
 
   const handleDismiss = async () => {
     setIsLoading(true)
@@ -29,47 +30,111 @@ export function WelcomeMessage({ onDismiss }: WelcomeMessageProps) {
     }
   }
 
+  const handleStartQuiz = async () => {
+    setIsCreatingQuiz(true)
+    try {
+      // Create a random 20-question quiz
+      const quizPayload = {
+        title: `Starter Quiz - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+        mode: 'practice',
+        timing: 'untimed',
+        questionCount: 20,
+        questionType: 'unused',
+        categorySelection: 'all',
+        selectedCategories: [],
+        shuffleQuestions: true,
+        shuffleAnswers: true,
+        showProgress: true,
+        showExplanations: true
+      }
+
+      const response = await fetch('/api/quiz/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quizPayload),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to create quiz')
+      }
+
+      const result = await response.json()
+
+      // Mark welcome message as seen
+      await userSettingsService.markWelcomeMessageSeen()
+
+      // Redirect to the quiz
+      window.location.href = `/dashboard/quiz/${result.data.sessionId}`
+    } catch (error) {
+      console.error('Error creating starter quiz:', error)
+      // Fall back to the quiz creation page
+      window.location.href = '/dashboard/quiz/new'
+    } finally {
+      setIsCreatingQuiz(false)
+    }
+  }
+
   return (
-    <Card className="relative border-l-4 border-l-green-500 bg-green-50/50">
-      <CardContent className="p-4">
-        {/* Close Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-green-100"
-          onClick={handleDismiss}
-          disabled={isLoading}
-        >
-          <X className="h-3 w-3" />
-        </Button>
-
-        <div className="pr-6">
-          <div className="flex items-center gap-2 mb-2">
-            <BookOpen className="h-4 w-4 text-green-600" />
-            <h3 className="font-medium text-gray-900">Welcome to Pathology Bites!</h3>
+    <Card className="relative bg-white border border-gray-200">
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-blue-50 rounded-lg flex-shrink-0">
+            <BookOpen className="h-6 w-6 text-blue-600" />
           </div>
 
-          <p className="text-sm text-gray-600 mb-3">
-            Start practicing with our comprehensive question bank to master pathology concepts.
-          </p>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Welcome to Pathology Bites!
+            </h3>
 
-          <div className="flex gap-2">
-            <Link href="/dashboard/quiz/new">
-              <Button size="sm" className="bg-green-600 hover:bg-green-700 text-xs">
-                Start Quiz
+            <div className="text-sm text-gray-600 space-y-2 mb-4">
+              <p>Your dashboard is empty because you're just getting started:</p>
+
+              <p>
+                Take a quick starter quiz to see how we track your progress. We'll track which questions you nail,
+                which ones need another look, and identify your strong areas.
+              </p>
+
+              <p>
+                Your percentile ranking and performance stats will update as you go. No pressure - this is all about
+                finding your starting point and building from there.
+              </p>
+
+              <p className="font-medium">Ready to start?</p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                size="lg"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+                onClick={handleStartQuiz}
+                disabled={isCreatingQuiz}
+              >
+                {isCreatingQuiz ? (
+                  <>
+                    <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    Creating Quiz...
+                  </>
+                ) : (
+                  'Start Quiz'
+                )}
               </Button>
-            </Link>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs border-green-200 hover:bg-green-50"
-              onClick={handleDismiss}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Saving...' : 'Dismiss'}
-            </Button>
+            </div>
           </div>
+
+          {/* Close Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 hover:bg-gray-100 flex-shrink-0"
+            onClick={handleDismiss}
+            disabled={isLoading}
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
       </CardContent>
     </Card>
