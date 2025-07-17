@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -20,24 +20,29 @@ import Image from 'next/image'
 import FloatingCharacter from '@/shared/components/common/dr-albright'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
 
-// Import the full unified virtual slides data
-import virtualSlidesData from '@/data/virtual-slides-unified.json'
+// Import the filtered virtual slides data (unknown diagnoses removed)
+import virtualSlidesDataRaw from '@/data/virtual-slides-filtered.json'
 
 interface VirtualSlide {
   id: string
   repository: string
   category: string
-  organ_system: string
+  subcategory: string
   diagnosis: string
   patient_info: string
-  age: string
-  gender: string
-  slide_urls: string[]
-  preview_urls: string[]
+  age: string | null
+  gender: string | null
+  clinical_history: string
+  stain_type: string
+  preview_image_url: string
+  slide_url: string
   case_url: string
-  stain: string
-  source_metadata: any
+  other_urls: string[]
+  source_metadata: Record<string, unknown>
 }
+
+// Type cast the imported data
+const virtualSlidesData = virtualSlidesDataRaw as VirtualSlide[]
 
 export default function VirtualSlidesPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -46,8 +51,16 @@ export default function VirtualSlidesPage() {
   const [selectedOrganSystem, setSelectedOrganSystem] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
+
   
   const itemsPerPage = 50
+
+  // Simulate initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitialLoading(false), 800)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Get unique values for filters
   const repositories = useMemo(() => {
@@ -61,99 +74,209 @@ export default function VirtualSlidesPage() {
   }, [])
 
   const organSystems = useMemo(() => {
-    const systems = [...new Set(virtualSlidesData.map((slide: VirtualSlide) => slide.organ_system))]
+    const systems = [...new Set(virtualSlidesData.map((slide: VirtualSlide) => slide.subcategory))]
     return systems.filter(system => system && system.trim() !== '').sort()
   }, [])
 
-  // Enhanced search scoring function
-  const calculateSearchScore = (slide: VirtualSlide, searchTerm: string): number => {
-    const term = searchTerm.toLowerCase().trim()
-    if (!term) return 0
+  // Dynamic acronym mapping based on first letters of words
+  const acronymMap = useMemo(() => {
+    const map = new Map<string, string[]>()
 
-    let score = 0
-    const fields = [
-      { text: slide.diagnosis?.toLowerCase() || '', weight: 10 },
-      { text: slide.patient_info?.toLowerCase() || '', weight: 4 },
-      { text: slide.category?.toLowerCase() || '', weight: 5 },
-      { text: slide.organ_system?.toLowerCase() || '', weight: 7 },
-      { text: slide.repository?.toLowerCase() || '', weight: 2 }
-    ]
-
-    for (const field of fields) {
-      const text = field.text
-
-      // Exact match (highest priority)
-      if (text === term) {
-        score += field.weight * 100
-        continue
-      }
-
-      // Whole word match (high priority)
-      const wordBoundaryRegex = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
-      if (wordBoundaryRegex.test(text)) {
-        score += field.weight * 50
-        continue
-      }
-
-      // Starts with term (medium-high priority)
-      if (text.startsWith(term)) {
-        score += field.weight * 25
-        continue
-      }
-
-      // Contains term as substring (lower priority)
-      if (text.includes(term)) {
-        score += field.weight * 10
-      }
+    // Helper function to generate acronym from phrase
+    const generateAcronym = (phrase: string): string => {
+      return phrase
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(word => word.length > 0)
+        .map(word => word.charAt(0))
+        .join('')
     }
 
-    return score
+
+
+    // Collect all unique diagnoses and related text from the data
+    const allTexts = new Set<string>()
+
+    virtualSlidesData.forEach(slide => {
+      if (slide.diagnosis) allTexts.add(slide.diagnosis.toLowerCase())
+      if (slide.category) allTexts.add(slide.category.toLowerCase())
+      if (slide.subcategory) allTexts.add(slide.subcategory.toLowerCase())
+      if (slide.clinical_history) allTexts.add(slide.clinical_history.toLowerCase())
+      if (slide.patient_info) allTexts.add(slide.patient_info.toLowerCase())
+    })
+
+    // Build bidirectional mapping for all text phrases
+    Array.from(allTexts).forEach(text => {
+      // Skip very short phrases or single words
+      if (text.split(/\s+/).length < 2) return
+
+      const acronym = generateAcronym(text)
+
+      // Only create mappings for acronyms that are 2+ characters
+      if (acronym.length >= 2) {
+        // Map acronym to full phrase
+        if (!map.has(acronym)) {
+          map.set(acronym, [])
+        }
+        if (!map.get(acronym)!.includes(text)) {
+          map.get(acronym)!.push(text)
+        }
+
+        // Map full phrase to acronym
+        if (!map.has(text)) {
+          map.set(text, [])
+        }
+        if (!map.get(text)!.includes(acronym)) {
+          map.get(text)!.push(acronym)
+        }
+      }
+    })
+
+    return map
+  }, [])
+
+  // Create search index for better performance
+  const searchIndex = useMemo(() => {
+    return virtualSlidesData.map((slide: VirtualSlide) => {
+      const diagnosis = slide.diagnosis?.toLowerCase() || ''
+      const repository = slide.repository?.toLowerCase() || ''
+      const category = slide.category?.toLowerCase() || ''
+      const subcategory = slide.subcategory?.toLowerCase() || ''
+      const patientInfo = slide.patient_info?.toLowerCase() || ''
+      const clinicalHistory = slide.clinical_history?.toLowerCase() || ''
+      const stainType = slide.stain_type?.toLowerCase() || ''
+
+      // Create a combined searchable text for efficient searching
+      const combinedText = [diagnosis, repository, category, subcategory, patientInfo, clinicalHistory, stainType].join(' ')
+
+      return {
+        slide,
+        combinedText,
+        fields: {
+          diagnosis,
+          repository,
+          category,
+          subcategory,
+          patientInfo,
+          clinicalHistory,
+          stainType
+        }
+      }
+    })
+  }, [])
+
+  // Enhanced search scoring function with acronym support
+  const calculateSearchScore = (indexItem: { slide: VirtualSlide; combinedText: string; fields: Record<string, string> }, searchTerms: string[]): number => {
+    let totalScore = 0
+
+    const fieldWeights = {
+      diagnosis: 10,
+      category: 7,
+      subcategory: 7,
+      patientInfo: 4,
+      repository: 2,
+      clinicalHistory: 3,
+      stainType: 3
+    }
+
+    for (const term of searchTerms) {
+      let termScore = 0
+
+      // Check each field
+      Object.entries(fieldWeights).forEach(([fieldName, weight]) => {
+        const fieldText = indexItem.fields[fieldName]
+        if (!fieldText) return
+
+        // Exact match (highest priority)
+        if (fieldText === term) {
+          termScore += weight * 100
+          return
+        }
+
+        // Whole word match (high priority)
+        const wordBoundaryRegex = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
+        if (wordBoundaryRegex.test(fieldText)) {
+          termScore += weight * 50
+          return
+        }
+
+        // Starts with term (medium-high priority)
+        if (fieldText.startsWith(term)) {
+          termScore += weight * 25
+          return
+        }
+
+        // Contains term as substring (lower priority)
+        if (fieldText.includes(term)) {
+          termScore += weight * 10
+        }
+      })
+
+      totalScore += termScore
+    }
+
+    return totalScore
   }
 
-  // Filter and search logic with enhanced scoring
+  // Filter and search logic with enhanced scoring and acronym support
   const filteredSlides = useMemo(() => {
-    let filtered = virtualSlidesData as VirtualSlide[]
+    // Expand search terms with acronyms
+    const expandSearchTerms = (searchTerm: string): string[] => {
+      const terms = searchTerm.toLowerCase().trim().split(/\s+/)
+      const expandedTerms = new Set<string>()
+
+      for (const term of terms) {
+        expandedTerms.add(term)
+
+        // Add acronym expansions
+        const expansions = acronymMap.get(term)
+        if (expansions) {
+          expansions.forEach(expansion => expandedTerms.add(expansion))
+        }
+      }
+
+      return Array.from(expandedTerms)
+    }
+
+    let filteredIndex = searchIndex
 
     // Apply repository filter
     if (selectedRepository !== 'all') {
-      filtered = filtered.filter(slide => slide.repository === selectedRepository)
+      filteredIndex = filteredIndex.filter(item => item.slide.repository === selectedRepository)
     }
 
     // Apply category filter
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(slide => slide.category === selectedCategory)
+      filteredIndex = filteredIndex.filter(item => item.slide.category === selectedCategory)
     }
 
     // Apply organ system filter
     if (selectedOrganSystem !== 'all') {
-      filtered = filtered.filter(slide => slide.organ_system === selectedOrganSystem)
+      filteredIndex = filteredIndex.filter(item => item.slide.subcategory === selectedOrganSystem)
     }
 
-    // Apply search term with enhanced scoring
+    // Apply search term with enhanced scoring and acronym support
     if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase()
+      const expandedTerms = expandSearchTerms(searchTerm)
 
-      // First filter slides that match the search term
-      const matchingSlides = filtered.filter(slide =>
-        slide.diagnosis?.toLowerCase().includes(term) ||
-        slide.patient_info?.toLowerCase().includes(term) ||
-        slide.repository?.toLowerCase().includes(term) ||
-        slide.category?.toLowerCase().includes(term) ||
-        slide.organ_system?.toLowerCase().includes(term)
-      )
+      // First filter items that match any of the search terms (including acronyms)
+      const matchingItems = filteredIndex.filter(item => {
+        return expandedTerms.some(term => item.combinedText.includes(term))
+      })
 
       // Then sort by relevance score (highest first)
-      filtered = matchingSlides
-        .map(slide => ({
-          slide,
-          score: calculateSearchScore(slide, searchTerm)
+      const scoredItems = matchingItems
+        .map(item => ({
+          item,
+          score: calculateSearchScore(item, expandedTerms)
         }))
         .sort((a, b) => b.score - a.score)
-        .map(item => item.slide)
+
+      return scoredItems.map(scoredItem => scoredItem.item.slide)
     }
 
-    return filtered
-  }, [searchTerm, selectedRepository, selectedCategory, selectedOrganSystem])
+    return filteredIndex.map(item => item.slide)
+  }, [searchTerm, selectedRepository, selectedCategory, selectedOrganSystem, searchIndex, acronymMap])
 
   // Pagination
   const totalPages = Math.ceil(filteredSlides.length / itemsPerPage)
@@ -165,7 +288,25 @@ export default function VirtualSlidesPage() {
   const handleSearch = () => {
     setIsLoading(true)
     setCurrentPage(1)
-    // Simulate loading delay
+    setTimeout(() => setIsLoading(false), 500)
+  }
+
+  const handleFilterChange = (filterType: string, value: string) => {
+    setIsLoading(true)
+    setCurrentPage(1)
+    
+    switch(filterType) {
+      case 'repository':
+        setSelectedRepository(value)
+        break
+      case 'category':
+        setSelectedCategory(value)
+        break
+      case 'organSystem':
+        setSelectedOrganSystem(value)
+        break
+    }
+    
     setTimeout(() => setIsLoading(false), 300)
   }
 
@@ -180,7 +321,7 @@ export default function VirtualSlidesPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
+      <section className="relative py-8 overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-b from-primary/10 via-primary/5 to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.15),transparent_25%)]" />
 
@@ -221,193 +362,254 @@ export default function VirtualSlidesPage() {
       </section>
 
       {/* Repository Logos Section */}
-      <section className="py-8 border-b border-border/40">
+      <section className="py-8 bg-background">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="flex flex-wrap items-center justify-center gap-12 md:gap-16">
-            {/* Leeds University */}
-            <div className="flex items-center justify-center h-16 w-auto opacity-50 hover:opacity-100 transition-opacity bg-opacity-100">
-              <Image
-                src="/logos/university-of-leeds-logo.png"
-                alt="University of Leeds"
-                width={200}
-                height={80}
-                className="object-contain h-full w-auto"
-              />
-            </div>
-
-            {/* MGH Pathology */}
-            <div className="flex items-center justify-center h-16 w-auto opacity-50 hover:opacity-100 transition-opacity">
-              <Image
-                src="/logos/mgh-logo.png"
-                alt="MGH Pathology"
-                width={200}
-                height={80}
-                className="object-contain h-full w-auto"
-              />
-            </div>
-
-            {/* PathPresenter */}
-            <div className="flex items-center justify-center h-16 w-auto opacity-50 hover:opacity-100 transition-opacity">
-              <Image
-                src="/logos/path-presenter-logo.png"
-                alt="PathPresenter"
-                width={200}
-                height={80}
-                className="object-contain h-full w-auto"
-              />
-            </div>
-
-            {/* Rosai Collection */}
-            <div className="flex items-center justify-center h-16 w-auto opacity-50 hover:opacity-100 transition-opacity">
-              <Image
-                src="/logos/rosai-collection-logo.png"
-                alt="Rosai Collection"
-                width={200}
-                height={80}
-                className="object-contain h-full w-auto"
-              />
-            </div>
-
-            {/* University of Toronto */}
-            <div className="flex items-center justify-center h-16 w-auto opacity-50 hover:opacity-100 transition-opacity">
-              <Image
-                src="/logos/university-of-toronto-logo.png"
-                alt="University of Toronto LMP"
-                width={200}
-                height={80}
-                className="object-contain h-full w-auto"
-              />
-            </div>
-
-            {/* Hematopathology eTutorial */}
-            <div className="flex items-center justify-center h-16 w-auto opacity-50 hover:opacity-100 transition-opacity">
-              <Image
-                src="/logos/hematopathology-etutorial-logo.png"
-                alt="Hematopathology eTutorial"
-                width={200}
-                height={80}
-                className="object-contain h-full w-auto"
-              />
-            </div>
-
-            {/* Recut Club */}
-            <div className="flex items-center justify-center h-16 w-auto opacity-50 hover:opacity-100 transition-opacity">
-              <Image
-                src="/logos/recut-club-logo.png"
-                alt="Recut Club"
-                width={200}
-                height={80}
-                className="object-contain h-full w-auto"
-              />
-            </div>
+          <div className="flex items-center justify-center gap-4 md:gap-6 lg:gap-8 overflow-x-auto">
+            {[
+              { src: '/logos/university-of-leeds-logo.png', alt: 'University of Leeds' },
+              { src: '/logos/mgh-logo.png', alt: 'MGH Pathology' },
+              { src: '/logos/path-presenter-logo.png', alt: 'PathPresenter' },
+              { src: '/logos/rosai-collection-logo.png', alt: 'Rosai Collection' },
+              { src: '/logos/university-of-toronto-logo.png', alt: 'University of Toronto LMP' },
+              { src: '/logos/hematopathology-etutorial-logo.png', alt: 'Hematopathology eTutorial' },
+              { src: '/logos/recut-club-logo.png', alt: 'Recut Club' }
+            ].map((logo, index) => (
+              <div
+                key={index}
+                className="logo-container flex items-center justify-center h-8 w-16 md:h-12 md:w-24 lg:h-14 lg:w-28 flex-shrink-0 transition-opacity duration-300"
+                style={{
+                  animation: 'fadeInToHalf 1s ease-out forwards',
+                  animationDelay: `${index * 200}ms`,
+                  opacity: 0
+                }}
+              >
+                <div className="relative w-full h-full">
+                  <Image
+                    src={logo.src}
+                    alt={logo.alt}
+                    width={112}
+                    height={56}
+                    className="object-contain h-full w-full"
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
+
+        <style jsx>{`
+          @keyframes fadeInToHalf {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 0.5;
+            }
+          }
+
+          .logo-container:hover {
+            opacity: 1 !important;
+          }
+        `}</style>
       </section>
 
       {/* Search and Filter Section */}
-      <section className="relative py-16">
+      <section className="py-4">
         <div className="container px-4 mx-auto max-w-6xl">
           <Card className="p-8 shadow-lg">
             <CardContent className="space-y-6">
-              {/* Search Bar */}
-              <div className="space-y-4">
-                <Label htmlFor="search-input" className="text-lg font-semibold">
-                  Search Virtual Slides
-                </Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="search-input"
-                    placeholder="Search by diagnosis, patient info, repository, category, or organ system..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-1"
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  />
-                  <Button
-                    onClick={handleSearch}
-                    disabled={isLoading}
-                    className="px-6"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Search className="h-4 w-4 mr-2" />
-                        Search
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
+              {isInitialLoading ? (
+                <>
+                  {/* Search Bar Skeleton */}
+                  <div className="space-y-4">
+                    <div className="h-6 bg-muted rounded animate-pulse w-48" />
+                    <div className="flex gap-2">
+                      <div className="h-10 bg-muted rounded animate-pulse flex-1" />
+                      <div className="h-10 bg-muted rounded animate-pulse w-24" />
+                    </div>
+                  </div>
 
-              {/* Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="repository-filter">Web Repository</Label>
-                  <Select value={selectedRepository} onValueChange={setSelectedRepository}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All repositories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Repositories</SelectItem>
-                      {repositories.map((repo, index) => (
-                        <SelectItem key={`repo-${index}-${repo}`} value={repo}>{repo}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                  {/* Filters Skeleton */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <div className="h-4 bg-muted rounded animate-pulse w-24" />
+                      <div className="h-10 bg-muted rounded animate-pulse" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-muted rounded animate-pulse w-16" />
+                      <div className="h-10 bg-muted rounded animate-pulse" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-muted rounded animate-pulse w-20" />
+                      <div className="h-10 bg-muted rounded animate-pulse" />
+                    </div>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="category-filter">Category</Label>
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map((category, index) => (
-                        <SelectItem key={`cat-${index}-${category}`} value={category}>{category}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                  {/* Filter Summary Skeleton */}
+                  <div className="flex items-center justify-between">
+                    <div className="h-4 bg-muted rounded animate-pulse w-48" />
+                    <div className="h-8 bg-muted rounded animate-pulse w-24" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Search Bar */}
+                  <div className="space-y-4">
+                    <Label htmlFor="search-input" className="text-lg font-semibold">
+                      Search Virtual Slides
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="search-input"
+                        placeholder="Search by diagnosis, patient info, repository, category, or organ system..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="flex-1"
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                      />
+                      <Button
+                        onClick={handleSearch}
+                        disabled={isLoading}
+                        className="px-6"
+                      >
+                        {isLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Search className="h-4 w-4 mr-2" />
+                            Search
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="organ-system-filter">Organ System</Label>
-                  <Select value={selectedOrganSystem} onValueChange={setSelectedOrganSystem}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All organ systems" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Organ Systems</SelectItem>
-                      {organSystems.map((system, index) => (
-                        <SelectItem key={`sys-${index}-${system}`} value={system}>{system}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+                  {/* Filters */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="repository-filter">Web Repository</Label>
+                      <Select value={selectedRepository} onValueChange={(value) => handleFilterChange('repository', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All repositories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Repositories</SelectItem>
+                          {repositories.map((repo, index) => (
+                            <SelectItem key={`repo-${index}-${repo}`} value={repo as string}>{repo as string}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-              {/* Filter Summary and Clear */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Filter className="h-4 w-4" />
-                  <span>
-                    Showing {filteredSlides.length.toLocaleString()} of {virtualSlidesData.length.toLocaleString()} slides
-                  </span>
-                </div>
-                <Button variant="outline" onClick={clearFilters} size="sm">
-                  Clear Filters
-                </Button>
-              </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="category-filter">Category</Label>
+                      <Select value={selectedCategory} onValueChange={(value) => handleFilterChange('category', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All categories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Categories</SelectItem>
+                          {categories.map((category, index) => (
+                            <SelectItem key={`cat-${index}-${category}`} value={category as string}>{category as string}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="organ-system-filter">Organ System</Label>
+                      <Select value={selectedOrganSystem} onValueChange={(value) => handleFilterChange('organSystem', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All organ systems" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Organ Systems</SelectItem>
+                          {organSystems.map((system, index) => (
+                            <SelectItem key={`sys-${index}-${system}`} value={system as string}>{system as string}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Filter Summary and Clear */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Filter className="h-4 w-4" />
+                      <span>
+                        Showing {filteredSlides.length.toLocaleString()} of {virtualSlidesData.length.toLocaleString()} slides
+                      </span>
+                    </div>
+                    <Button variant="outline" onClick={clearFilters} size="sm">
+                      Clear Filters
+                    </Button>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
       </section>
 
       {/* Results Section */}
-      {filteredSlides.length > 0 && (
-        <section className="relative py-16">
+      {(isInitialLoading || isLoading) ? (
+        <section className="relative py-8">
+          <div className="container px-4 mx-auto max-w-6xl">
+            <Card className="shadow-lg">
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-muted/50 border-b">
+                      <tr>
+                        <th className="text-left p-4 font-semibold">Preview</th>
+                        <th className="text-left p-4 font-semibold">Diagnosis & Patient Info</th>
+                        <th className="text-left p-4 font-semibold">Repository</th>
+                        <th className="text-left p-4 font-semibold">Category</th>
+                        <th className="text-left p-4 font-semibold">Details</th>
+                        <th className="text-left p-4 font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array.from({ length: 10 }).map((_, index) => (
+                        <tr key={index} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                          <td className="p-4">
+                            <div className="w-16 h-16 bg-muted rounded-lg animate-pulse" />
+                          </td>
+                          <td className="p-4">
+                            <div className="space-y-2">
+                              <div className="h-4 bg-muted rounded animate-pulse w-3/4" />
+                              <div className="h-3 bg-muted rounded animate-pulse w-1/2" />
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="h-6 bg-muted rounded animate-pulse w-20" />
+                          </td>
+                          <td className="p-4">
+                            <div className="h-4 bg-muted rounded animate-pulse w-24" />
+                          </td>
+                          <td className="p-4">
+                            <div className="space-y-1">
+                              <div className="h-3 bg-muted rounded animate-pulse w-16" />
+                              <div className="h-3 bg-muted rounded animate-pulse w-20" />
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex gap-2">
+                              <div className="h-8 bg-muted rounded animate-pulse w-20" />
+                              <div className="h-8 bg-muted rounded animate-pulse w-16" />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      ) : filteredSlides.length > 0 && (
+        <section className="relative py-8">
           <div className="container px-4 mx-auto max-w-6xl">
             <Card className="shadow-lg">
               <CardContent className="p-0">
@@ -426,13 +628,13 @@ export default function VirtualSlidesPage() {
                     </thead>
                     <tbody>
                       {paginatedSlides.map((slide, index) => (
-                        <tr key={slide.id} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                        <tr key={`${slide.id}-${index}`} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
                           {/* Preview Image */}
                           <td className="p-4">
                             <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
-                              {slide.preview_urls && slide.preview_urls.length > 0 ? (
+                              {slide.preview_image_url ? (
                                 <Image
-                                  src={slide.preview_urls[0]}
+                                  src={slide.preview_image_url}
                                   alt={slide.diagnosis}
                                   width={64}
                                   height={64}
@@ -444,7 +646,7 @@ export default function VirtualSlidesPage() {
                                   }}
                                 />
                               ) : null}
-                              <div className={`flex items-center justify-center w-full h-full ${slide.preview_urls && slide.preview_urls.length > 0 ? 'hidden' : ''}`}>
+                              <div className={`flex items-center justify-center w-full h-full ${slide.preview_image_url ? 'hidden' : ''}`}>
                                 <Microscope className="h-6 w-6 text-muted-foreground" />
                               </div>
                             </div>
@@ -461,6 +663,11 @@ export default function VirtualSlidesPage() {
                                   {slide.patient_info}
                                 </p>
                               )}
+                              {slide.clinical_history && (
+                                <p className="text-xs text-muted-foreground italic">
+                                  {slide.clinical_history}
+                                </p>
+                              )}
                             </div>
                           </td>
 
@@ -475,8 +682,8 @@ export default function VirtualSlidesPage() {
                           <td className="p-4">
                             <div className="space-y-1">
                               <p className="text-sm font-medium">{slide.category}</p>
-                              {slide.organ_system && slide.organ_system !== slide.category && (
-                                <p className="text-xs text-muted-foreground">{slide.organ_system}</p>
+                              {slide.subcategory && slide.subcategory !== slide.category && (
+                                <p className="text-xs text-muted-foreground">{slide.subcategory}</p>
                               )}
                             </div>
                           </td>
@@ -484,16 +691,10 @@ export default function VirtualSlidesPage() {
                           {/* Details */}
                           <td className="p-4">
                             <div className="space-y-1">
-                              {slide.stain && (
+                              {slide.stain_type && (
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                   <Eye className="h-3 w-3" />
-                                  <span>{slide.stain}</span>
-                                </div>
-                              )}
-                              {slide.source_metadata?.diagnostic_modality && (
-                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  <FileText className="h-3 w-3" />
-                                  <span>{slide.source_metadata.diagnostic_modality}</span>
+                                  <span>{slide.stain_type}</span>
                                 </div>
                               )}
                             </div>
@@ -502,7 +703,7 @@ export default function VirtualSlidesPage() {
                           {/* Actions */}
                           <td className="p-4">
                             <div className="flex gap-2">
-                              {slide.slide_urls.length > 0 && (
+                              {slide.slide_url && (
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -510,7 +711,7 @@ export default function VirtualSlidesPage() {
                                   className="text-xs"
                                 >
                                   <a
-                                    href={slide.slide_urls[0]}
+                                    href={slide.slide_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
@@ -519,7 +720,9 @@ export default function VirtualSlidesPage() {
                                   </a>
                                 </Button>
                               )}
-                              {slide.case_url && (
+
+                              {/* Repository-specific second button */}
+                              {slide.repository === 'Leeds University' && slide.case_url && (
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -533,6 +736,60 @@ export default function VirtualSlidesPage() {
                                   >
                                     <ExternalLink className="h-3 w-3 mr-1" />
                                     Case
+                                  </a>
+                                </Button>
+                              )}
+
+                              {slide.repository === 'University of Toronto LMP' && slide.case_url && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  asChild
+                                  className="text-xs"
+                                >
+                                  <a
+                                    href={slide.case_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <ExternalLink className="h-3 w-3 mr-1" />
+                                    Case
+                                  </a>
+                                </Button>
+                              )}
+
+                              {slide.repository === 'Hematopathology eTutorial' && slide.other_urls && slide.other_urls.length > 0 && slide.other_urls[0] && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  asChild
+                                  className="text-xs"
+                                >
+                                  <a
+                                    href={slide.other_urls[0]}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <ExternalLink className="h-3 w-3 mr-1" />
+                                    Study Notes
+                                  </a>
+                                </Button>
+                              )}
+
+                              {slide.repository === 'Rosai Collection' && slide.case_url && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  asChild
+                                  className="text-xs"
+                                >
+                                  <a
+                                    href={slide.case_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <ExternalLink className="h-3 w-3 mr-1" />
+                                    Seminar Info
                                   </a>
                                 </Button>
                               )}
@@ -613,7 +870,7 @@ export default function VirtualSlidesPage() {
       )}
 
       {/* No Results */}
-      {filteredSlides.length === 0 && !isLoading && (
+      {filteredSlides.length === 0 && !isLoading && !isInitialLoading && (
         <section className="relative py-16">
           <div className="container px-4 mx-auto max-w-4xl text-center">
             <div className="space-y-4">
