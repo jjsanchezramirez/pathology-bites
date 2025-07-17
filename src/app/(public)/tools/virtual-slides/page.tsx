@@ -6,13 +6,10 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
-import { Badge } from '@/shared/components/ui/badge'
 import {
   Search,
-  ExternalLink,
   Microscope,
   Filter,
-  Eye,
   FileText,
   Loader2
 } from 'lucide-react'
@@ -23,23 +20,22 @@ import { JoinCommunitySection } from '@/shared/components/common/join-community-
 // Import the filtered virtual slides data (unknown diagnoses removed)
 import virtualSlidesDataRaw from '@/data/virtual-slides-filtered.json'
 
-interface VirtualSlide {
-  id: string
-  repository: string
-  category: string
-  subcategory: string
-  diagnosis: string
-  patient_info: string
-  age: string | null
-  gender: string | null
-  clinical_history: string
-  stain_type: string
-  preview_image_url: string
-  slide_url: string
-  case_url: string
-  other_urls: string[]
-  source_metadata: Record<string, unknown>
-}
+// Import types and utilities
+import { VirtualSlide } from './types'
+import {
+  createAcronymMap,
+  createSearchIndex,
+  getUniqueRepositories,
+  getUniqueCategories,
+  getUniqueOrganSystems,
+  searchSlides,
+  applyFilters
+} from './utils/search'
+
+// Import components
+import { SlideRow } from './components/slide-row'
+import { Pagination } from './components/pagination'
+import { LoadingSkeleton } from './components/loading-skeleton'
 
 // Type cast the imported data
 const virtualSlidesData = virtualSlidesDataRaw as VirtualSlide[]
@@ -71,216 +67,27 @@ export default function VirtualSlidesPage() {
   }, [searchTerm])
 
   // Get unique values for filters
-  const repositories = useMemo(() => {
-    const repos = [...new Set(virtualSlidesData.map((slide: VirtualSlide) => slide.repository))]
-    return repos.filter(repo => repo && repo.trim() !== '').sort()
-  }, [])
+  const repositories = useMemo(() => getUniqueRepositories(virtualSlidesData), [])
+  const categories = useMemo(() => getUniqueCategories(virtualSlidesData), [])
+  const organSystems = useMemo(() => getUniqueOrganSystems(virtualSlidesData), [])
 
-  const categories = useMemo(() => {
-    const cats = [...new Set(virtualSlidesData.map((slide: VirtualSlide) => slide.category))]
-    return cats.filter(cat => cat && cat.trim() !== '').sort()
-  }, [])
+  // Dynamic acronym mapping and search index
+  const acronymMap = useMemo(() => createAcronymMap(virtualSlidesData), [])
+  const searchIndex = useMemo(() => createSearchIndex(virtualSlidesData), [])
 
-  const organSystems = useMemo(() => {
-    const systems = [...new Set(virtualSlidesData.map((slide: VirtualSlide) => slide.subcategory))]
-    return systems.filter(system => system && system.trim() !== '').sort()
-  }, [])
-
-  // Dynamic acronym mapping based on first letters of words (diagnosis only)
-  const acronymMap = useMemo(() => {
-    const map = new Map<string, string[]>()
-
-    // Helper function to generate acronym from phrase
-    const generateAcronym = (phrase: string): string => {
-      return phrase
-        .toLowerCase()
-        .split(/\s+/)
-        .filter(word => word.length > 0)
-        .map(word => word.charAt(0))
-        .join('')
-    }
-
-    // Collect all unique diagnoses only (for performance)
-    const allDiagnoses = new Set<string>()
-
-    virtualSlidesData.forEach(slide => {
-      if (slide.diagnosis) allDiagnoses.add(slide.diagnosis.toLowerCase())
-    })
-
-    // Build bidirectional mapping for diagnosis phrases only
-    Array.from(allDiagnoses).forEach(diagnosis => {
-      // Skip very short phrases or single words
-      if (diagnosis.split(/\s+/).length < 2) return
-
-      const acronym = generateAcronym(diagnosis)
-
-      // Only create mappings for acronyms that are 2+ characters
-      if (acronym.length >= 2) {
-        // Map acronym to full phrase
-        if (!map.has(acronym)) {
-          map.set(acronym, [])
-        }
-        if (!map.get(acronym)!.includes(diagnosis)) {
-          map.get(acronym)!.push(diagnosis)
-        }
-
-        // Map full phrase to acronym
-        if (!map.has(diagnosis)) {
-          map.set(diagnosis, [])
-        }
-        if (!map.get(diagnosis)!.includes(acronym)) {
-          map.get(diagnosis)!.push(acronym)
-        }
-      }
-    })
-
-    return map
-  }, [])
-
-  // Create search index for better performance (diagnosis only)
-  const searchIndex = useMemo(() => {
-    return virtualSlidesData.map((slide: VirtualSlide) => {
-      const diagnosis = slide.diagnosis?.toLowerCase() || ''
-
-      return {
-        slide,
-        diagnosis
-      }
-    })
-  }, [])
-
-  // Completely new broad search algorithm - designed from scratch for maximum coverage
-  const searchSlides = useCallback((searchTerm: string): VirtualSlide[] => {
-    if (!searchTerm.trim()) {
-      return searchIndex.map(item => item.slide)
-    }
-
-    const term = searchTerm.toLowerCase().trim()
-    const searchWords = term.split(/\s+/).filter(word => word.length > 0)
-
-    // Generate all possible search variations
-    const searchVariations = new Set<string>()
-
-    // Add original term and words
-    searchVariations.add(term)
-    searchWords.forEach(word => searchVariations.add(word))
-
-    // Add acronym from search term (if multi-word)
-    if (searchWords.length >= 2) {
-      const acronym = searchWords.map(word => word.charAt(0)).join('')
-      searchVariations.add(acronym)
-    }
-
-    // Add expansions from acronym map
-    if (acronymMap.has(term)) {
-      acronymMap.get(term)?.forEach(expansion => {
-        searchVariations.add(expansion)
-        expansion.split(/\s+/).forEach(word => searchVariations.add(word))
-      })
-    }
-
-    // Add partial matches for longer words (3+ chars)
-    searchWords.forEach(word => {
-      if (word.length >= 3) {
-        for (let i = 3; i <= word.length; i++) {
-          searchVariations.add(word.substring(0, i))
-        }
-      }
-    })
-
-    // Score each slide
-    const scoredSlides: { slide: VirtualSlide; score: number }[] = []
-
-    for (const indexItem of searchIndex) {
-      const diagnosis = indexItem.diagnosis.toLowerCase()
-      const diagnosisWords = diagnosis.split(/\s+/).filter(word => word.length > 0)
-      const diagnosisAcronym = diagnosisWords.map(word => word.charAt(0)).join('')
-
-      let maxScore = 0
-
-      // Check all search variations against diagnosis
-      for (const variation of searchVariations) {
-        let score = 0
-
-        // Exact match (highest priority)
-        if (diagnosis === variation) {
-          score = 10000
-        }
-        // Exact acronym match
-        else if (diagnosisAcronym === variation || diagnosis.includes(variation.toUpperCase())) {
-          score = 5000
-        }
-        // Word boundary match
-        else if (new RegExp(`\\b${variation.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(diagnosis)) {
-          score = 1000
-        }
-        // Starts with
-        else if (diagnosis.startsWith(variation)) {
-          score = 500
-        }
-        // Contains
-        else if (diagnosis.includes(variation)) {
-          score = 100
-        }
-        // Partial word matches
-        else {
-          for (const diagWord of diagnosisWords) {
-            if (diagWord.includes(variation)) {
-              score = Math.max(score, 50)
-            }
-            if (variation.includes(diagWord) && diagWord.length >= 3) {
-              score = Math.max(score, 25)
-            }
-          }
-        }
-
-        maxScore = Math.max(maxScore, score)
-      }
-
-      // Bonus for multiple word matches
-      let wordMatches = 0
-      for (const searchWord of searchWords) {
-        if (diagnosis.includes(searchWord)) {
-          wordMatches++
-        }
-      }
-      if (wordMatches > 1) {
-        maxScore *= (1 + wordMatches * 0.5)
-      }
-
-      if (maxScore > 0) {
-        scoredSlides.push({ slide: indexItem.slide, score: maxScore })
-      }
-    }
-
-    // Sort by score (highest first) and return slides
-    return scoredSlides
-      .sort((a, b) => b.score - a.score)
-      .map(item => item.slide)
+  // Search function using utility
+  const searchSlidesCallback = useCallback((searchTerm: string): VirtualSlide[] => {
+    return searchSlides(searchTerm, searchIndex, acronymMap)
   }, [searchIndex, acronymMap])
 
-  // Completely new filtering logic using the broad search algorithm
+  // Filtering logic using utilities
   const filteredSlides = useMemo(() => {
-    // Start with all slides from search (includes search scoring and ranking)
-    let slides = searchSlides(debouncedSearchTerm)
+    // Start with search results
+    const searchResults = searchSlidesCallback(debouncedSearchTerm)
 
-    // Apply repository filter
-    if (selectedRepository !== 'all') {
-      slides = slides.filter(slide => slide.repository === selectedRepository)
-    }
-
-    // Apply category filter
-    if (selectedCategory !== 'all') {
-      slides = slides.filter(slide => slide.category === selectedCategory)
-    }
-
-    // Apply organ system filter
-    if (selectedOrganSystem !== 'all') {
-      slides = slides.filter(slide => slide.subcategory === selectedOrganSystem)
-    }
-
-    return slides
-  }, [debouncedSearchTerm, selectedRepository, selectedCategory, selectedOrganSystem, searchSlides])
+    // Apply filters
+    return applyFilters(searchResults, selectedRepository, selectedCategory, selectedOrganSystem)
+  }, [debouncedSearchTerm, selectedRepository, selectedCategory, selectedOrganSystem, searchSlidesCallback])
 
   // Pagination
   const totalPages = Math.ceil(filteredSlides.length / itemsPerPage)
@@ -573,39 +380,7 @@ export default function VirtualSlidesPage() {
                         <th className="text-left p-4 font-semibold">Actions</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      {Array.from({ length: 10 }).map((_, index) => (
-                        <tr key={index} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
-                          <td className="p-4">
-                            <div className="w-16 h-16 bg-muted rounded-lg animate-pulse" />
-                          </td>
-                          <td className="p-4">
-                            <div className="space-y-2">
-                              <div className="h-4 bg-muted rounded animate-pulse w-3/4" />
-                              <div className="h-3 bg-muted rounded animate-pulse w-1/2" />
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <div className="h-6 bg-muted rounded animate-pulse w-20" />
-                          </td>
-                          <td className="p-4">
-                            <div className="h-4 bg-muted rounded animate-pulse w-24" />
-                          </td>
-                          <td className="p-4">
-                            <div className="space-y-1">
-                              <div className="h-3 bg-muted rounded animate-pulse w-16" />
-                              <div className="h-3 bg-muted rounded animate-pulse w-20" />
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <div className="flex gap-2">
-                              <div className="h-8 bg-muted rounded animate-pulse w-20" />
-                              <div className="h-8 bg-muted rounded animate-pulse w-16" />
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
+                    <LoadingSkeleton />
                   </table>
                 </div>
               </CardContent>
@@ -632,260 +407,23 @@ export default function VirtualSlidesPage() {
                     </thead>
                     <tbody>
                       {paginatedSlides.map((slide, index) => (
-                        <tr key={`${slide.id}-${index}`} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
-                          {/* Preview Image */}
-                          <td className="p-4">
-                            <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
-                              {slide.preview_image_url ? (
-                                <Image
-                                  src={slide.preview_image_url}
-                                  alt={slide.diagnosis}
-                                  width={64}
-                                  height={64}
-                                  className="object-cover w-full h-full"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement
-                                    target.style.display = 'none'
-                                    target.nextElementSibling?.classList.remove('hidden')
-                                  }}
-                                />
-                              ) : null}
-                              <div className={`flex items-center justify-center w-full h-full ${slide.preview_image_url ? 'hidden' : ''}`}>
-                                <Microscope className="h-6 w-6 text-muted-foreground" />
-                              </div>
-                            </div>
-                          </td>
-
-                          {/* Diagnosis & Patient Info */}
-                          <td className="p-4">
-                            <div className="space-y-1">
-                              <h3 className="font-medium text-sm leading-tight line-clamp-3">
-                                {slide.diagnosis}
-                              </h3>
-                              {slide.patient_info && (
-                                <p className="text-xs text-muted-foreground">
-                                  {slide.patient_info}
-                                </p>
-                              )}
-                              {slide.clinical_history && (
-                                <p className="text-xs text-muted-foreground italic">
-                                  {slide.clinical_history}
-                                </p>
-                              )}
-                            </div>
-                          </td>
-
-                          {/* Repository */}
-                          <td className="p-4">
-                            <Badge variant="outline" className="text-xs">
-                              {slide.repository}
-                            </Badge>
-                          </td>
-
-                          {/* Category */}
-                          <td className="p-4">
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium">{slide.category}</p>
-                              {slide.subcategory && slide.subcategory !== slide.category && (
-                                <p className="text-xs text-muted-foreground">{slide.subcategory}</p>
-                              )}
-                            </div>
-                          </td>
-
-                          {/* Details */}
-                          <td className="p-4">
-                            <div className="space-y-1">
-                              {slide.stain_type && (
-                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  <Eye className="h-3 w-3" />
-                                  <span>{slide.stain_type}</span>
-                                </div>
-                              )}
-                            </div>
-                          </td>
-
-                          {/* Actions */}
-                          <td className="p-4">
-                            <div className="flex gap-2">
-                              {slide.slide_url && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  asChild
-                                  className="text-xs"
-                                >
-                                  <a
-                                    href={slide.slide_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <ExternalLink className="h-3 w-3 mr-1" />
-                                    View Slide
-                                  </a>
-                                </Button>
-                              )}
-
-                              {/* Repository-specific second button */}
-                              {slide.repository === 'Leeds University' && slide.case_url && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  asChild
-                                  className="text-xs"
-                                >
-                                  <a
-                                    href={slide.case_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <ExternalLink className="h-3 w-3 mr-1" />
-                                    Case
-                                  </a>
-                                </Button>
-                              )}
-
-                              {slide.repository === 'University of Toronto LMP' && slide.case_url && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  asChild
-                                  className="text-xs"
-                                >
-                                  <a
-                                    href={slide.case_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <ExternalLink className="h-3 w-3 mr-1" />
-                                    Case
-                                  </a>
-                                </Button>
-                              )}
-
-                              {slide.repository === 'Hematopathology eTutorial' && slide.other_urls && slide.other_urls.length > 0 && slide.other_urls[0] && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  asChild
-                                  className="text-xs"
-                                >
-                                  <a
-                                    href={slide.other_urls[0]}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <ExternalLink className="h-3 w-3 mr-1" />
-                                    Study Notes
-                                  </a>
-                                </Button>
-                              )}
-
-                              {slide.repository === 'Rosai Collection' && slide.case_url && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  asChild
-                                  className="text-xs"
-                                >
-                                  <a
-                                    href={slide.case_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <ExternalLink className="h-3 w-3 mr-1" />
-                                    Seminar Info
-                                  </a>
-                                </Button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
+                        <SlideRow key={`${slide.id}-${index}`} slide={slide} index={index} />
                       ))}
                     </tbody>
                   </table>
                 </div>
 
-                {/* Pagination */}
-                <div className="border-t p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Items per page:</span>
-                        <select
-                          value={itemsPerPage}
-                          onChange={(e) => {
-                            setItemsPerPage(Number(e.target.value))
-                            setCurrentPage(1) // Reset to first page when changing items per page
-                          }}
-                          className="text-sm border border-input bg-background px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                        >
-                          <option value={10}>10</option>
-                          <option value={20}>20</option>
-                          <option value={30}>30</option>
-                          <option value={50}>50</option>
-                          <option value={100}>100</option>
-                        </select>
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredSlides.length)} of {filteredSlides.length} results
-                      </div>
-                    </div>
-                    {totalPages > 1 && (
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setCurrentPage(1)}
-                          disabled={currentPage === 1}
-                          className="w-8 h-8 p-0"
-                        >
-                          &lt;&lt;
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                          disabled={currentPage === 1}
-                        >
-                          Previous
-                        </Button>
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                            const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i
-                            return (
-                              <Button
-                                key={pageNum}
-                                variant={pageNum === currentPage ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setCurrentPage(pageNum)}
-                                className="w-8 h-8 p-0"
-                              >
-                                {pageNum}
-                              </Button>
-                            )
-                          })}
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                          disabled={currentPage === totalPages}
-                        >
-                          Next
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setCurrentPage(totalPages)}
-                          disabled={currentPage === totalPages}
-                          className="w-8 h-8 p-0"
-                        >
-                          &gt;&gt;
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={filteredSlides.length}
+                  onPageChange={setCurrentPage}
+                  onItemsPerPageChange={(newItemsPerPage) => {
+                    setItemsPerPage(newItemsPerPage)
+                    setCurrentPage(1)
+                  }}
+                />
               </CardContent>
             </Card>
           </div>
