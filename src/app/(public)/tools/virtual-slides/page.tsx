@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -149,157 +149,138 @@ export default function VirtualSlidesPage() {
     })
   }, [])
 
-  // Improved search scoring function with proper priority hierarchy
-  const calculateSearchScore = (indexItem: { slide: VirtualSlide; diagnosis: string }, originalTerm: string): number => {
-    const diagnosis = indexItem.diagnosis.toLowerCase()
-    const searchTerm = originalTerm.toLowerCase().trim()
-
-    if (!diagnosis || !searchTerm) return 0
-
-    // Generate acronym from diagnosis and search term
-    const diagnosisWords = diagnosis.split(/\s+/).filter(word => word.length > 0)
-    const diagnosisAcronym = diagnosisWords.map(word => word.charAt(0)).join('')
-
-    const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0)
-    const searchAcronym = searchWords.length >= 2 ? searchWords.map(word => word.charAt(0)).join('') : ''
-
-    // Priority 1: Exact matches (10000 points)
-    if (diagnosis === searchTerm) {
-      return 10000 // Perfect exact match
+  // Completely new broad search algorithm - designed from scratch for maximum coverage
+  const searchSlides = useCallback((searchTerm: string): VirtualSlide[] => {
+    if (!searchTerm.trim()) {
+      return searchIndex.map(item => item.slide)
     }
 
-    // Priority 2: Exact acronyms (5000 points)
-    // Case 1: Search term is acronym, diagnosis generates that acronym
-    if (diagnosisAcronym === searchTerm) {
-      return 5000 // e.g., "alh" matches diagnosis that generates "alh"
+    const term = searchTerm.toLowerCase().trim()
+    const searchWords = term.split(/\s+/).filter(word => word.length > 0)
+
+    // Generate all possible search variations
+    const searchVariations = new Set<string>()
+
+    // Add original term and words
+    searchVariations.add(term)
+    searchWords.forEach(word => searchVariations.add(word))
+
+    // Add acronym from search term (if multi-word)
+    if (searchWords.length >= 2) {
+      const acronym = searchWords.map(word => word.charAt(0)).join('')
+      searchVariations.add(acronym)
     }
 
-    // Case 2: Search term expands to this diagnosis via acronym map
-    if (acronymMap.has(searchTerm) && acronymMap.get(searchTerm)?.includes(diagnosis)) {
-      return 5000 // e.g., "alh" expands to "atypical lobular hyperplasia"
+    // Add expansions from acronym map
+    if (acronymMap.has(term)) {
+      acronymMap.get(term)?.forEach(expansion => {
+        searchVariations.add(expansion)
+        expansion.split(/\s+/).forEach(word => searchVariations.add(word))
+      })
     }
 
-    // Case 3: Search term generates acronym that appears in diagnosis
-    if (searchAcronym && diagnosis.includes(searchAcronym)) {
-      return 5000 // e.g., "atypical lobular hyperplasia" finds "ALH" in diagnosis
-    }
-
-    // Priority 3: Near exact matches (1000-500 points)
-    if (diagnosis.includes(searchTerm)) {
-      // Bonus for word boundary matches
-      const wordBoundaryRegex = new RegExp(`\\b${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
-      if (wordBoundaryRegex.test(diagnosis)) {
-        return 1000 // Whole word/phrase match
-      }
-
-      // Bonus for starting with the term
-      if (diagnosis.startsWith(searchTerm)) {
-        return 500 // Starts with term
-      }
-
-      return 300 // Contains term
-    }
-
-    // Priority 4: Partial matches (10-200 points)
-    let wordMatchScore = 0
-    let matchedWords = 0
-
-    for (const searchWord of searchWords) {
-      for (const diagWord of diagnosisWords) {
-        if (diagWord === searchWord) {
-          wordMatchScore += 50
-          matchedWords++
-          break
-        } else if (diagWord.startsWith(searchWord)) {
-          wordMatchScore += 25
-          matchedWords++
-          break
-        } else if (diagWord.includes(searchWord)) {
-          wordMatchScore += 10
-          matchedWords++
-          break
+    // Add partial matches for longer words (3+ chars)
+    searchWords.forEach(word => {
+      if (word.length >= 3) {
+        for (let i = 3; i <= word.length; i++) {
+          searchVariations.add(word.substring(0, i))
         }
       }
+    })
+
+    // Score each slide
+    const scoredSlides: { slide: VirtualSlide; score: number }[] = []
+
+    for (const indexItem of searchIndex) {
+      const diagnosis = indexItem.diagnosis.toLowerCase()
+      const diagnosisWords = diagnosis.split(/\s+/).filter(word => word.length > 0)
+      const diagnosisAcronym = diagnosisWords.map(word => word.charAt(0)).join('')
+
+      let maxScore = 0
+
+      // Check all search variations against diagnosis
+      for (const variation of searchVariations) {
+        let score = 0
+
+        // Exact match (highest priority)
+        if (diagnosis === variation) {
+          score = 10000
+        }
+        // Exact acronym match
+        else if (diagnosisAcronym === variation || diagnosis.includes(variation.toUpperCase())) {
+          score = 5000
+        }
+        // Word boundary match
+        else if (new RegExp(`\\b${variation.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(diagnosis)) {
+          score = 1000
+        }
+        // Starts with
+        else if (diagnosis.startsWith(variation)) {
+          score = 500
+        }
+        // Contains
+        else if (diagnosis.includes(variation)) {
+          score = 100
+        }
+        // Partial word matches
+        else {
+          for (const diagWord of diagnosisWords) {
+            if (diagWord.includes(variation)) {
+              score = Math.max(score, 50)
+            }
+            if (variation.includes(diagWord) && diagWord.length >= 3) {
+              score = Math.max(score, 25)
+            }
+          }
+        }
+
+        maxScore = Math.max(maxScore, score)
+      }
+
+      // Bonus for multiple word matches
+      let wordMatches = 0
+      for (const searchWord of searchWords) {
+        if (diagnosis.includes(searchWord)) {
+          wordMatches++
+        }
+      }
+      if (wordMatches > 1) {
+        maxScore *= (1 + wordMatches * 0.5)
+      }
+
+      if (maxScore > 0) {
+        scoredSlides.push({ slide: indexItem.slide, score: maxScore })
+      }
     }
 
-    // Bonus for matching multiple words
-    if (matchedWords > 1) {
-      wordMatchScore *= matchedWords
-    }
+    // Sort by score (highest first) and return slides
+    return scoredSlides
+      .sort((a, b) => b.score - a.score)
+      .map(item => item.slide)
+  }, [searchIndex, acronymMap])
 
-    return wordMatchScore
-  }
-
-  // Filter and search logic with improved scoring and acronym support
+  // Completely new filtering logic using the broad search algorithm
   const filteredSlides = useMemo(() => {
-    let filteredIndex = searchIndex
+    // Start with all slides from search (includes search scoring and ranking)
+    let slides = searchSlides(debouncedSearchTerm)
 
     // Apply repository filter
     if (selectedRepository !== 'all') {
-      filteredIndex = filteredIndex.filter(item => item.slide.repository === selectedRepository)
+      slides = slides.filter(slide => slide.repository === selectedRepository)
     }
 
     // Apply category filter
     if (selectedCategory !== 'all') {
-      filteredIndex = filteredIndex.filter(item => item.slide.category === selectedCategory)
+      slides = slides.filter(slide => slide.category === selectedCategory)
     }
 
     // Apply organ system filter
     if (selectedOrganSystem !== 'all') {
-      filteredIndex = filteredIndex.filter(item => item.slide.subcategory === selectedOrganSystem)
+      slides = slides.filter(slide => slide.subcategory === selectedOrganSystem)
     }
 
-    // Apply search term with improved scoring (diagnosis only)
-    if (debouncedSearchTerm.trim()) {
-      const searchTermLower = debouncedSearchTerm.toLowerCase().trim()
-
-      // Filter items that contain the search term or related acronyms
-      const matchingItems = filteredIndex.filter(item => {
-        const diagnosis = item.diagnosis.toLowerCase()
-
-        // Direct text match
-        if (diagnosis.includes(searchTermLower)) {
-          return true
-        }
-
-        // Check if search term is an acronym that matches this diagnosis
-        const diagnosisWords = diagnosis.split(/\s+/).filter(word => word.length > 0)
-        const diagnosisAcronym = diagnosisWords.map(word => word.charAt(0)).join('')
-        if (diagnosisAcronym === searchTermLower) {
-          return true
-        }
-
-        // Check if search term expands to this diagnosis via acronym map
-        if (acronymMap.has(searchTermLower) && acronymMap.get(searchTermLower)?.includes(diagnosis)) {
-          return true
-        }
-
-        // IMPORTANT: Check if the search term (when converted to acronym) matches text in diagnosis
-        // This handles cases like "atypical lobular hyperplasia" finding "ALH"
-        const searchWords = searchTermLower.split(/\s+/).filter(word => word.length > 0)
-        if (searchWords.length >= 2) {
-          const searchAcronym = searchWords.map(word => word.charAt(0)).join('')
-          if (diagnosis.includes(searchAcronym)) {
-            return true
-          }
-        }
-
-        return false
-      })
-
-      // Sort by relevance score (highest first)
-      const scoredItems = matchingItems
-        .map(item => ({
-          item,
-          score: calculateSearchScore(item, debouncedSearchTerm)
-        }))
-        .sort((a, b) => b.score - a.score)
-
-      return scoredItems.map(scoredItem => scoredItem.item.slide)
-    }
-
-    return filteredIndex.map(item => item.slide)
-  }, [debouncedSearchTerm, selectedRepository, selectedCategory, selectedOrganSystem, searchIndex, acronymMap])
+    return slides
+  }, [debouncedSearchTerm, selectedRepository, selectedCategory, selectedOrganSystem, searchSlides])
 
   // Pagination
   const totalPages = Math.ceil(filteredSlides.length / itemsPerPage)
@@ -828,9 +809,6 @@ export default function VirtualSlidesPage() {
                 <div className="border-t p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="text-sm text-muted-foreground">
-                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredSlides.length)} of {filteredSlides.length} results
-                      </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">Items per page:</span>
                         <select
@@ -847,6 +825,9 @@ export default function VirtualSlidesPage() {
                           <option value={50}>50</option>
                           <option value={100}>100</option>
                         </select>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredSlides.length)} of {filteredSlides.length} results
                       </div>
                     </div>
                     {totalPages > 1 && (
