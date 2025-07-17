@@ -78,7 +78,7 @@ export default function VirtualSlidesPage() {
     return systems.filter(system => system && system.trim() !== '').sort()
   }, [])
 
-  // Dynamic acronym mapping based on first letters of words
+  // Dynamic acronym mapping based on first letters of words (diagnosis only)
   const acronymMap = useMemo(() => {
     const map = new Map<string, string[]>()
 
@@ -92,25 +92,19 @@ export default function VirtualSlidesPage() {
         .join('')
     }
 
-
-
-    // Collect all unique diagnoses and related text from the data
-    const allTexts = new Set<string>()
+    // Collect all unique diagnoses only (for performance)
+    const allDiagnoses = new Set<string>()
 
     virtualSlidesData.forEach(slide => {
-      if (slide.diagnosis) allTexts.add(slide.diagnosis.toLowerCase())
-      if (slide.category) allTexts.add(slide.category.toLowerCase())
-      if (slide.subcategory) allTexts.add(slide.subcategory.toLowerCase())
-      if (slide.clinical_history) allTexts.add(slide.clinical_history.toLowerCase())
-      if (slide.patient_info) allTexts.add(slide.patient_info.toLowerCase())
+      if (slide.diagnosis) allDiagnoses.add(slide.diagnosis.toLowerCase())
     })
 
-    // Build bidirectional mapping for all text phrases
-    Array.from(allTexts).forEach(text => {
+    // Build bidirectional mapping for diagnosis phrases only
+    Array.from(allDiagnoses).forEach(diagnosis => {
       // Skip very short phrases or single words
-      if (text.split(/\s+/).length < 2) return
+      if (diagnosis.split(/\s+/).length < 2) return
 
-      const acronym = generateAcronym(text)
+      const acronym = generateAcronym(diagnosis)
 
       // Only create mappings for acronyms that are 2+ characters
       if (acronym.length >= 2) {
@@ -118,16 +112,16 @@ export default function VirtualSlidesPage() {
         if (!map.has(acronym)) {
           map.set(acronym, [])
         }
-        if (!map.get(acronym)!.includes(text)) {
-          map.get(acronym)!.push(text)
+        if (!map.get(acronym)!.includes(diagnosis)) {
+          map.get(acronym)!.push(diagnosis)
         }
 
         // Map full phrase to acronym
-        if (!map.has(text)) {
-          map.set(text, [])
+        if (!map.has(diagnosis)) {
+          map.set(diagnosis, [])
         }
-        if (!map.get(text)!.includes(acronym)) {
-          map.get(text)!.push(acronym)
+        if (!map.get(diagnosis)!.includes(acronym)) {
+          map.get(diagnosis)!.push(acronym)
         }
       }
     })
@@ -135,82 +129,56 @@ export default function VirtualSlidesPage() {
     return map
   }, [])
 
-  // Create search index for better performance
+  // Create search index for better performance (diagnosis only)
   const searchIndex = useMemo(() => {
     return virtualSlidesData.map((slide: VirtualSlide) => {
       const diagnosis = slide.diagnosis?.toLowerCase() || ''
-      const repository = slide.repository?.toLowerCase() || ''
-      const category = slide.category?.toLowerCase() || ''
-      const subcategory = slide.subcategory?.toLowerCase() || ''
-      const patientInfo = slide.patient_info?.toLowerCase() || ''
-      const clinicalHistory = slide.clinical_history?.toLowerCase() || ''
-      const stainType = slide.stain_type?.toLowerCase() || ''
-
-      // Create a combined searchable text for efficient searching
-      const combinedText = [diagnosis, repository, category, subcategory, patientInfo, clinicalHistory, stainType].join(' ')
 
       return {
         slide,
-        combinedText,
-        fields: {
-          diagnosis,
-          repository,
-          category,
-          subcategory,
-          patientInfo,
-          clinicalHistory,
-          stainType
-        }
+        diagnosis
       }
     })
   }, [])
 
-  // Enhanced search scoring function with acronym support
-  const calculateSearchScore = (indexItem: { slide: VirtualSlide; combinedText: string; fields: Record<string, string> }, searchTerms: string[]): number => {
-    let totalScore = 0
+  // Optimized search scoring function (diagnosis only, prioritize acronyms)
+  const calculateSearchScore = (indexItem: { slide: VirtualSlide; diagnosis: string }, searchTerms: string[], originalTerm: string): number => {
+    const diagnosis = indexItem.diagnosis
+    if (!diagnosis) return 0
 
-    const fieldWeights = {
-      diagnosis: 10,
-      category: 7,
-      subcategory: 7,
-      patientInfo: 4,
-      repository: 2,
-      clinicalHistory: 3,
-      stainType: 3
-    }
+    let totalScore = 0
 
     for (const term of searchTerms) {
       let termScore = 0
 
-      // Check each field
-      Object.entries(fieldWeights).forEach(([fieldName, weight]) => {
-        const fieldText = indexItem.fields[fieldName]
-        if (!fieldText) return
+      // Check if this term is an acronym match (highest priority)
+      const isAcronymMatch = acronymMap.has(originalTerm.toLowerCase()) &&
+                            acronymMap.get(originalTerm.toLowerCase())?.includes(diagnosis)
 
-        // Exact match (highest priority)
-        if (fieldText === term) {
-          termScore += weight * 100
-          return
-        }
+      // Check if original term generates this diagnosis's acronym
+      const diagnosisWords = diagnosis.split(/\s+/).filter(word => word.length > 0)
+      const diagnosisAcronym = diagnosisWords.map(word => word.charAt(0)).join('')
+      const isGeneratedAcronym = originalTerm.toLowerCase() === diagnosisAcronym
 
-        // Whole word match (high priority)
-        const wordBoundaryRegex = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
-        if (wordBoundaryRegex.test(fieldText)) {
-          termScore += weight * 50
-          return
-        }
-
-        // Starts with term (medium-high priority)
-        if (fieldText.startsWith(term)) {
-          termScore += weight * 25
-          return
-        }
-
-        // Contains term as substring (lower priority)
-        if (fieldText.includes(term)) {
-          termScore += weight * 10
-        }
-      })
+      if (isAcronymMatch || isGeneratedAcronym) {
+        termScore += 1000 // Highest priority for acronym matches
+      }
+      // Exact diagnosis match (very high priority)
+      else if (diagnosis === term) {
+        termScore += 500
+      }
+      // Whole word match in diagnosis (high priority)
+      else if (new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(diagnosis)) {
+        termScore += 100
+      }
+      // Starts with term (medium priority)
+      else if (diagnosis.startsWith(term)) {
+        termScore += 50
+      }
+      // Contains term as substring (lower priority)
+      else if (diagnosis.includes(term)) {
+        termScore += 10
+      }
 
       totalScore += termScore
     }
@@ -255,20 +223,20 @@ export default function VirtualSlidesPage() {
       filteredIndex = filteredIndex.filter(item => item.slide.subcategory === selectedOrganSystem)
     }
 
-    // Apply search term with enhanced scoring and acronym support
+    // Apply search term with optimized scoring and acronym support (diagnosis only)
     if (searchTerm.trim()) {
       const expandedTerms = expandSearchTerms(searchTerm)
 
-      // First filter items that match any of the search terms (including acronyms)
+      // First filter items that match any of the search terms in diagnosis only
       const matchingItems = filteredIndex.filter(item => {
-        return expandedTerms.some(term => item.combinedText.includes(term))
+        return expandedTerms.some(term => item.diagnosis.includes(term))
       })
 
       // Then sort by relevance score (highest first)
       const scoredItems = matchingItems
         .map(item => ({
           item,
-          score: calculateSearchScore(item, expandedTerms)
+          score: calculateSearchScore(item, expandedTerms, searchTerm)
         }))
         .sort((a, b) => b.score - a.score)
 
