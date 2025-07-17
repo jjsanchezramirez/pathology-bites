@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
-import { Check, X, Play, RotateCcw, Microscope, Target, BookOpen, ArrowLeft, ArrowRight } from 'lucide-react'
+import { Check, X, RotateCcw, ArrowLeft, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
 import FloatingCharacter from '@/shared/components/common/dr-albright'
+import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
 import cellData from '@/data/cell-data.json'
 import bloodCellsReference from '@/data/blood_cells_reference.json'
 
@@ -163,19 +163,7 @@ export default function CellQuizPage() {
                 Identify different types of blood cells and learn from detailed explanations.
               </p>
 
-              {/* Stats */}
-              {totalQuestions > 0 && (
-                <div className="flex gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4 text-blue-500" />
-                    <span>Last session: {score}/{totalQuestions} correct</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Microscope className="h-4 w-4 text-green-500" />
-                    <span>{Math.round((score / totalQuestions) * 100)}% accuracy</span>
-                  </div>
-                </div>
-              )}
+
 
 
             </div>
@@ -197,25 +185,20 @@ export default function CellQuizPage() {
       <section className="relative py-8">
         <div className="flex items-center justify-center p-4">
           {mode === 'menu' ? (
-            <Card className="w-full max-w-md p-8 text-center shadow-lg">
+            <Card className="w-full max-w-sm p-8 text-center shadow-lg">
               <CardContent className="space-y-6">
-                <h1 className="text-3xl font-bold">Cell Quiz</h1>
-                <p className="text-muted-foreground">
-                  Identify different types of blood cells. Click start to begin!
-                </p>
+                <h1 className="text-2xl font-bold">Cell Quiz</h1>
                 {totalQuestions > 0 && (
                   <div className="text-sm text-muted-foreground">
-                    Last session: {score}/{totalQuestions} correct
+                    Last: {score}/{totalQuestions} correct
                   </div>
                 )}
                 <div className="space-y-3">
                   <Button onClick={startGame} size="lg" className="w-full">
-                    <Play className="h-4 w-4 mr-2" />
                     Start Quiz
                   </Button>
                   <Button onClick={startTutorial} size="lg" variant="outline" className="w-full">
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Learn Cell Types
+                    Learn Cells
                   </Button>
                 </div>
               </CardContent>
@@ -378,25 +361,9 @@ export default function CellQuizPage() {
       </section>
 
       {/* Join Our Learning Community */}
-      <section className="relative py-20">
-        <div className="absolute inset-0 bg-linear-to-b from-transparent to-primary/5" />
-        <div className="container px-4 max-w-3xl mx-auto text-center relative">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Our Learning Community</h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Start your learning journey today. No fees, no subscriptions - just
-            high-quality pathology education available to everyone.
-          </p>
-          <Link href="/signup">
-            <Button
-              size="lg"
-              className="bg-primary hover:bg-primary/90 transform hover:scale-105
-                        transition-all duration-300 ease-in-out"
-            >
-              Create Free Account
-            </Button>
-          </Link>
-        </div>
-      </section>
+      <JoinCommunitySection
+        description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone."
+      />
     </div>
   )
 }
@@ -459,10 +426,6 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
                 Learn about different blood cell types with detailed descriptions and characteristics.
                 Cell {currentCellIndex + 1} of {referenceCells.length}
               </p>
-              <Button onClick={onBack} variant="outline" size="lg">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Quiz
-              </Button>
             </div>
 
             <div className="hidden md:block w-[350px]">
@@ -482,29 +445,17 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
         <div className="container px-4 max-w-4xl mx-auto">
           <Card className="p-8 shadow-lg">
             <CardContent className="space-y-6">
-              {/* Navigation Controls */}
+              {/* Header Navigation */}
               <div className="flex justify-between items-center">
+                <div className="text-sm text-muted-foreground">
+                  {currentCellIndex + 1} of {referenceCells.length} cells
+                </div>
                 <Button
                   variant="outline"
-                  onClick={handlePrevious}
-                  disabled={currentCellIndex === 0}
+                  onClick={onBack}
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Previous
-                </Button>
-
-                <div className="text-center">
-                  <div className="text-sm text-muted-foreground">
-                    {currentCellIndex + 1} of {referenceCells.length} cell types
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleNext}
-                  disabled={currentCellIndex === referenceCells.length - 1}
-                >
-                  Next
-                  <ArrowRight className="h-4 w-4 ml-2" />
+                  Back
                 </Button>
               </div>
 
@@ -603,6 +554,25 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
                 </div>
               </div>
 
+              {/* Bottom Navigation */}
+              <div className="flex justify-between items-center pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={handlePrevious}
+                  disabled={currentCellIndex === 0}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Previous
+                </Button>
+
+                <Button
+                  onClick={handleNext}
+                  disabled={currentCellIndex === referenceCells.length - 1}
+                >
+                  Next
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
 
             </CardContent>
           </Card>

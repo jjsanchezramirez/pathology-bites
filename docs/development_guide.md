@@ -7,6 +7,7 @@
 - **npm** (comes with Node.js)
 - **Git** for version control
 - **Supabase account** (free tier available)
+- **Code Editor** (VS Code recommended, no specific settings required)
 
 ### Setup Commands
 ```bash
@@ -190,6 +191,60 @@ features/feature-name/
 ├── types/                 # Feature types
 │   └── feature-types.ts
 └── utils/                 # Feature utilities
+```
+
+### Enhanced Features in Development
+
+#### UI/UX Enhancement System
+The platform is implementing major UI improvements:
+
+```typescript
+// Enhanced theme system
+interface EnhancedTheme {
+  colors: {
+    primary: ColorScale;
+    medical: {
+      pathology: string;
+      anatomy: string;
+      clinical: string;
+    };
+  };
+  accessibility: AccessibilityConfig;
+}
+
+// Quiz configuration with templates
+interface QuizTemplate {
+  id: string;
+  name: string;
+  config: QuizConfig;
+  useCount: number;
+}
+```
+
+#### Question Versioning System
+Advanced version control for questions:
+
+```typescript
+// Version management
+interface QuestionVersion {
+  id: string;
+  questionId: string;
+  versionMajor: number;
+  versionMinor: number;
+  versionPatch: number;
+  changeType: 'patch' | 'minor' | 'major';
+  changeSummary: string;
+  questionData: QuestionSnapshot;
+}
+
+// Collaboration session
+interface CollaborationSession {
+  id: string;
+  questionId: string;
+  collaborators: CollaboratorInfo[];
+  activeEditors: string[];
+  pendingSuggestions: Suggestion[];
+}
 ```
 
 ### Component Development

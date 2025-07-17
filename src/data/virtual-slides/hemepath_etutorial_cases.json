@@ -1,0 +1,1769 @@
+{
+  "source": "Hematopathology eTutorial",
+  "description": "A study guide for hematopathology covering benign and neoplastic hematolymphoid diseases in 24 lessons",
+  "contact": "gong.jefferson@gmail.com",
+  "institution": "Jefferson Health",
+  "scrape_date": "2025-01-12",
+  "total_lessons": 24,
+  "lessons": [
+    {
+      "lesson_number": 1,
+      "title": "Anemia",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+1.++Anemia+v3.pdf",
+      "slides": [
+        {
+          "id": "01.01",
+          "title": "Iron deficiency anemia",
+          "url": "/files/01.01+Blood+-+Iron+deficiency+anemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "01.03",
+          "title": "Megaloblastic anemia",
+          "url": "/files/01.03+Blood+-+Megaloblastic+anemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "01.04",
+          "title": "Warm antibody hemolytic anemia",
+          "url": "/files/01.04+WAHA.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "01.05",
+          "title": "Cold antibody hemolytic anemia",
+          "url": "/files/01.05+Blood+-+Cold+agglutinin+disease.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "01.06",
+          "title": "Microangiopathic hemolytic anemia",
+          "url": "/files/01.06+Blood+-+Microagniopathic+hemolytic+anemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "01.07",
+          "title": "Aplastic anemia",
+          "url": "/files/01.07+AA.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "01.08a",
+          "title": "Pure red cell aplasia",
+          "url": "/files/01.08a+Pure+red+cell+aplasia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "01.08b",
+          "title": "Pure red cell aplasia with Parvavirus B19",
+          "url": "/files/01.08+Pure+red+cell+aplasia+with+Parva+B19.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "01.10",
+          "title": "Sickle cell anemia",
+          "url": "/files/01.10+Blood+-+Sickle+cell+anemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "01.11",
+          "title": "Hemoglobin SC disease",
+          "url": "/files/01.11+Blood+-+Hemoglobin+SC+disease.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "01.12",
+          "title": "Beta thalassemia",
+          "url": "/files/01.12+Blood+-+Beta+thalassemia+major.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "01.13",
+          "title": "Hemoglobin H disease",
+          "url": "/files/01.13+Hemoglobin+H+disease.svs",
+          "specimen_type": "Blood"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/01.Immunophenotype+of+PNH.pdf",
+      "audio_files": [
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Audio+Files/Anemia+part+1.mp3",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Audio+Files/Anemia+part+2.mp3"
+      ]
+    },
+    {
+      "lesson_number": 2,
+      "title": "Non-Neoplastic White Blood Cell Disorders",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+2.++Non-neoplastic+white+blood+cell+disorders+v3.pdf",
+      "slides": [
+        {
+          "id": "02.01",
+          "title": "Inflammation",
+          "url": "/files/02.01+Blood+-+Inflammation.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "02.02",
+          "title": "Sepsis",
+          "url": "/files/02.02+Sepsis.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "02.03",
+          "title": "Alder-Reilly anomaly",
+          "url": "/files/02.03+Blood+-+Alder-Reilly+anomaly.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "02.05",
+          "title": "MYH9-related disorder",
+          "url": "/files/02.05+Blood+-+MYH9-related+disorder.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "02.08",
+          "title": "Infectious mononucleosis",
+          "url": "/files/02.08+Blood+-+Infectious+mononucleosis.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "02.09",
+          "title": "Large granular lymphocytosis",
+          "url": "/files/02.09+Blood+-+Large+granular+lymphocytosis.svs",
+          "specimen_type": "Blood"
+        }
+      ]
+    },
+    {
+      "lesson_number": 3,
+      "title": "Bleeding and Clotting Disorders",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+3.++Bleeding+and+clotting+disorders+v3.pdf",
+      "slides": [
+        {
+          "id": "03.06",
+          "title": "Bernard-Soulier syndrome",
+          "url": "/files/03.06+Bernard-Soulier+syndrome.svs",
+          "specimen_type": "Blood"
+        }
+      ],
+      "figures": [
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+3/03.01+Coag+Cascade.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+3/03.04+VW+factor+multiple+gel+electrophoresis.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+3/03.05+Platelet+Aggregation+Assay.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+3/03.07+Mechanism+of+common+bleeding+and+clotting+disorders.pdf"
+      ]
+    },
+    {
+      "lesson_number": 4,
+      "title": "Non-Neoplastic Bone Marrow Disorders",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+4.++Non-neoplastic+bone+marrow+diorders+v3.pdf",
+      "slides": [
+        {
+          "id": "04.01",
+          "title": "Gaucher disease",
+          "url": "/files/04.01+Gaucher+disease.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "04.02",
+          "title": "Gaucher disease",
+          "url": "/files/04.02+Gaucher+disease.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "04.03",
+          "title": "Multiple myeloma with reactive histiocytes",
+          "url": "/files/04.03+Increased+histiocytes+in+multiple+myeloma.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "04.04",
+          "title": "Sarcoidosis",
+          "url": "/files/04.04+Sarcoid.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "04.07",
+          "title": "Macrophage activation syndrome",
+          "url": "/files/04.07+Macrophage+activating+syndrome.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "04.08",
+          "title": "Macrophage activation syndrome",
+          "url": "/files/4.8+Macraphage+activating+syndrome.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "04.09",
+          "title": "Hemophagocytic lymphohistiocytosis",
+          "url": "/files/04.09+Hemophagocytic+lymphohistiocytosis.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "04.11",
+          "title": "Autoimmune myelofibrosis",
+          "url": "/files/04.11+Autoimmune+myelofibrosis.svs",
+          "specimen_type": "Bone marrow"
+        }
+      ]
+    },
+    {
+      "lesson_number": 5,
+      "title": "Reactive Lymph Node Diseases",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+5.++Reactive+lymph+node+diseases+v3.pdf",
+      "slides": [
+        {
+          "id": "05.01",
+          "title": "Infectious mononucleosis",
+          "url": "/files/5.01+Infectious+mononucleosis.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.02",
+          "title": "HIV early stage",
+          "url": "/files/5.02+HIV+early+stage.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.03",
+          "title": "HIV late stage",
+          "url": "/files/5.03+HIV+late+stage.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.06",
+          "title": "Cat scratch disease",
+          "url": "/files/5.06+Cat+scratch+disease.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.07",
+          "title": "Tuberculosis lymphadenitis",
+          "url": "/files/5.07+Tuberculosis+lymphadenitis.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.09",
+          "title": "Mycobacterial spindle cell tumor",
+          "url": "/files/5.09+Mycobacterial+spindle+cell+pseudotumor.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.10",
+          "title": "Toxoplasmosis",
+          "url": "/files/5.10+Toxoplasmosis.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.11",
+          "title": "Lupus lymphadenitis",
+          "url": "/files/5.11+Lupus+lymphadenitis.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.12",
+          "title": "Rheumatoid arthritis-associated lymphadenitis",
+          "url": "/files/5.12+Rheumatoid+arthritis+associated+lymphadenitis.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.13",
+          "title": "IgG4-associated lymphadenitis, type 2",
+          "url": "/files/5.13+IgG+4-related+lymphadenopathy+type+2.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.14",
+          "title": "Kikuchi disease, early stage",
+          "url": "/files/5.14+Kikuchi+disease+early+stage.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.15",
+          "title": "Kikuchi disease, late stage",
+          "url": "/files/5.15+Kikuchi+disease+late+stage.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.16",
+          "title": "Kimura disease",
+          "url": "/files/5.16+Kimura+disease.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.17",
+          "title": "Sarcoidosis",
+          "url": "/files/5.17+Sarcoidosis.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.18",
+          "title": "Unicentric Castleman disease, hyaline vascular type",
+          "url": "/files/5.18+Unicentric+Castleman+disease+hyaline+vascular+type.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "05.19",
+          "title": "Multicentric Castleman disease, mixed type",
+          "url": "/files/5.19+Multicentric+Castleman+disease+mixed+plasma+cell+and+hyaline+vascular+type.svs",
+          "specimen_type": "Lymph node"
+        }
+      ]
+    },
+    {
+      "lesson_number": 6,
+      "title": "Small B-Cell Lymphoma",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+6.++Small+B-cell+lymphomas+v3.pdf",
+      "slides": [
+        {
+          "id": "06.01",
+          "title": "Follicular lymphoma, grade 1",
+          "url": "/files/06.01+Follicular+lymphoma+grade+1.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.02",
+          "title": "Follicular lymphoma, grade 2",
+          "url": "/files/06.02+Follicular+lymphoma+grade+2.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.03",
+          "title": "Follicular lymphoma, grade 3A",
+          "url": "/files/06.03+Follicular+lymphoma+grade+3A.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.04",
+          "title": "Follicular lymphoma, grade 3B",
+          "url": "/files/06.04+Follicular+lymphoma+grade+3B.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.05",
+          "title": "Follicular lymphoma involving peripheral blood",
+          "url": "/files/06.05+Follicular+lymphoma+in+blood.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "06.06",
+          "title": "B-cell lymphoma with IRF4 rearrangement",
+          "url": "/files/06.06+B-cell+lymphoma+with+IFR4+rearrangement.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.07",
+          "title": "Follicular lymphoma with 1p36 deletion",
+          "url": "/files/06.07+Diffuse+follicular+lymphoma+with+1p36+deletion.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.08",
+          "title": "Primary cutaneous follicular lymphoma",
+          "url": "/files/06.08+Primary+cutaneous+follicular+lymphoma.svs",
+          "specimen_type": "Skin"
+        },
+        {
+          "id": "06.09",
+          "title": "Primary duodenal follicular lymphoma",
+          "url": "/files/06.09+Primary+duodenal+follicular+lymphoma.svs",
+          "specimen_type": "Duodenum"
+        },
+        {
+          "id": "06.10",
+          "title": "Pediatric type follicular lymphoma",
+          "url": "/files/06.10+Pediatric+type+follicular+lymphoma.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.11",
+          "title": "Follicular lymphoma involving bone marrow",
+          "url": "/files/06.11+Follicular+lymphoma+involving+bone+marrow.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "06.12",
+          "title": "Small lymphocytic lymphoma",
+          "url": "/files/06.12+Small+lymphocytic+lymphoma.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.13",
+          "title": "Small lymphocytic lymphoma with enhanced proliferation centers",
+          "url": "/files/06.13+Small+lymphocytic+lymphoma+with+increased+prolymphocytes.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.14",
+          "title": "Small lymphocytic lymphoma with Richter's transformation",
+          "url": "/files/06.14+Small+lymphocytic+lymphoma+with+Richter's+transformation.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.15",
+          "title": "Mantle cell lymphoma, diffuse pattern",
+          "url": "/files/06.15+Mantle+cell+lymphoma%2C+diffuse+pattern.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.16",
+          "title": "Mantle cell lymphoma, nodular pattern",
+          "url": "/files/06.16+Mantle+cell+lymphoma%2C+nodular+pattern.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.17",
+          "title": "Mantle cell lymphoma, mantle zone pattern",
+          "url": "/files/06.17+Mantle+cell+lymphoma%2C+mantle+zone+pattern.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.19",
+          "title": "Intestinal mantle cell lymphoma",
+          "url": "/files/06.19+Intestinal+mantle+cell+lymphoma.svs",
+          "specimen_type": "Intestine"
+        },
+        {
+          "id": "06.20",
+          "title": "Lymphoplasmacytic lymphoma involving bone marrow",
+          "url": "/files/06.20+Lymphoplasmacytic+lymphoma+in+bone+marrow.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "06.21",
+          "title": "Lymphoplasmacytic lymphoma involving lymph node",
+          "url": "/files/06.21+Nodal+lymphoplasmacytic+lymphoma.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.22",
+          "title": "Nodal marginal zone lymphoma, marginal zone pattern",
+          "url": "/files/06.22+Nodal+marginal+zone+lymphoma%2C+marginal+zone+pattern.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.23",
+          "title": "Nodal marginal zone lymphoma with residual germinal centers",
+          "url": "/files/06.23+Nodal+marginal+zone+lymphoma%2C+with+residual+germinal+centers.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.24",
+          "title": "Nodal marginal zone lymphoma with plasma cell differentiation",
+          "url": "/files/06.24+Nodal+marginal+zone+lymphoma+with+plasma+cell+differentiation.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "06.25",
+          "title": "Splenic marginal zone lymphoma",
+          "url": "/files/06.25+Splenic+marginal+zone+lymphoma.svs",
+          "specimen_type": "Spleen"
+        },
+        {
+          "id": "06.26",
+          "title": "Splenic marginal zone lymphoma in circulation",
+          "url": "/files/06.26+Splenic+marginal+zone+lymphoma+in+blood.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "06.27",
+          "title": "Gastric MALT lymphoma",
+          "url": "/files/06.27+Gastric+MALT+lymphoma.svs",
+          "specimen_type": "Stomach"
+        },
+        {
+          "id": "06.28",
+          "title": "Lung MALT lymphoma",
+          "url": "/files/06.28+Lung+MALT+lymphoma.svs",
+          "specimen_type": "Lung"
+        },
+        {
+          "id": "06.29",
+          "title": "Salivary gland MALT lymphoma",
+          "url": "/files/06.29+Salivary+gland+MALT+lymphoma.svs",
+          "specimen_type": "Salivary gland"
+        },
+        {
+          "id": "06.30",
+          "title": "Orbital MALT lymphoma",
+          "url": "/files/06.30+Orbital+MALT+lymphoma.svs",
+          "specimen_type": "Orbit"
+        },
+        {
+          "id": "06.31",
+          "title": "Primary cutaneous marginal zone lymphoma",
+          "url": "/files/06.31+Cutaneous+marginal+zone+lymphoma.svs",
+          "specimen_type": "Skin"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/06.Immunophenotype+of+small+B-cell+lymphomas.pdf"
+    },
+    {
+      "lesson_number": 7,
+      "title": "Chronic Leukemia of Lymphoid Lineage",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+7.++Chronic+leukemia+of+lymphoid+lineages+v3.pdf",
+      "slides": [
+        {
+          "id": "07.01",
+          "title": "Chronic lymphocytic leukemia",
+          "url": "/files/07.01+Blood+-+Chronic+lymphocytic+leukemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "07.02a",
+          "title": "Chronic lymphocytic leukemia",
+          "url": "/files/07.02a+Chronic+lymphocytic+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "07.02b",
+          "title": "Chronic lymphocytic leukemia",
+          "url": "/files/07.02+Bone+marrow+-+Chronic+lymphocytic+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "07.03",
+          "title": "Prolymphocytic leukemia",
+          "url": "/files/07.03+Blood+-+Prolymphocytic+leukemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "07.04",
+          "title": "Mantle cell leukemia",
+          "url": "/files/07.04+Blood+-+Mantle+cell+leukemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "07.05",
+          "title": "Hairy cell leukemia",
+          "url": "/files/07.05+Blood+-+Hairy+cell+leukemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "07.06",
+          "title": "Hairy cell leukemia",
+          "url": "/files/07.06+Bone+marrow+-+Hairy+cell+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "07.07",
+          "title": "Hairy cell leukemia involving spleen",
+          "url": "/files/07.07+Spleen+-+Hairy+cell+leukemia.svs",
+          "specimen_type": "Spleen"
+        },
+        {
+          "id": "07.08",
+          "title": "Splenic marginal zone lymphoma",
+          "url": "/files/07.08+Blood+-+Splenic+marginal+zone+lymphoma.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "07.09",
+          "title": "Splenic red pulp small B-cell lymphoma",
+          "url": "/files/07.09+Blood+-+Splenic+red+pulp+small+B-cell+lymphoma.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "07.10",
+          "title": "T-prolymphocytic leukemia",
+          "url": "/files/07.10+Blood+-+T-prolymphocytic+leukemia+CD8%2B.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "07.11",
+          "title": "T-prolymphocytic leukemia, small cell variant",
+          "url": "/files/07.11+Blood+-+T-cell+prolymphocytic+leukemia%2C+small+cell+variant.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "07.12",
+          "title": "T-cell large granular lymphocytic leukemia",
+          "url": "/files/07.12+Blood+-+T-cell+large+granular+lymphocytic+leukemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "07.13",
+          "title": "T-cell large granular lymphocytic leukemia",
+          "url": "/files/07.13+Bone+marrow+-+T-cell+large+granular+lymphocytic+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "07.14",
+          "title": "Adult T-cell lymphoma/leukemia",
+          "url": "/files/07.14+Blood+-+Acult+T-cell+leukemia.svs",
+          "specimen_type": "Blood"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/07.Immunophenotype+of+chronic+leukemia+of+lymphoid+lineage.pdf"
+    },
+    {
+      "lesson_number": 8,
+      "title": "Diffuse Large B-Cell Lymphoma and Variants",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+8.++Diffuse+large+B-cell+lymphoma+and+variants+v3.pdf",
+      "slides": [
+        {
+          "id": "08.01",
+          "title": "Diffuse large B-cell lymphoma, immunoblastic",
+          "url": "/files/8.01+Diffuse+large+B-cell+lymphoma%2C+NOS%2C+centroblastic.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "08.02",
+          "title": "Diffuse large B-cell lymphoma, centroblastic",
+          "url": "/files/8.02+Diffuse+large+B-cell+lymphoma%2C+NOS%2C+immunoblastic.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "08.03",
+          "title": "Diffuse large B-cell lymphoma, anaplastic",
+          "url": "/files/8.03+Diffuse+large+B-cell+lymphoma%2C+NOS%2C+anaplastic.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "08.04",
+          "title": "High grade B-cell lymphoma",
+          "url": "/files/8.04+High+grade+B-cell+lymphoma%2C+NOS.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "08.05",
+          "title": "Primary mediastinal large B-cell lymphoma",
+          "url": "/files/8.05+Primary+mediastinal+large+B-cell+lymphoma.svs",
+          "specimen_type": "Mediastinum"
+        },
+        {
+          "id": "08.06",
+          "title": "T-cell/histiocyte rich large B-cell lymphoma",
+          "url": "/files/8.06+Bone+marrow+-+T-cell-histiocytic+rich+large+B-cell+lymphoma.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "08.07",
+          "title": "Intravascular large B-cell lymphoma",
+          "url": "/files/8.07+Bone+marrow+-+Intravascular+large+B-cell+lymphoma.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "08.08",
+          "title": "Primary cutaneous large B-cell lymphoma, leg type",
+          "url": "/files/8.08+Primary+cutaneous+large+B-cell+lymphoma+leg+type.svs",
+          "specimen_type": "Skin"
+        },
+        {
+          "id": "08.09",
+          "title": "Primary effusion lymphoma",
+          "url": "/files/8.09+Primary+effusion+lymphoma.svs",
+          "specimen_type": "Effusion"
+        },
+        {
+          "id": "08.10",
+          "title": "Primary central nervous system lymphoma",
+          "url": "/files/8.10+Primary+central+nervous+system+lymphoma.svs",
+          "specimen_type": "Brain"
+        },
+        {
+          "id": "08.11",
+          "title": "Lymphomatoid granulomatosis, grade 3",
+          "url": "/files/8.11+Lymphatoid+granulomatosis+grade+3+lung.svs",
+          "specimen_type": "Lung"
+        },
+        {
+          "id": "08.12",
+          "title": "Gray zone lymphoma, intermediate between Hodgkin and DLBCL",
+          "url": "/files/8.12+Gray+zone+lymphoma+intermediate+between+Hodgkin+lymphoma+and+diffuse+large+B-cell+lymphoma.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "08.13",
+          "title": "Primary testicular large B-cell lymphoma",
+          "url": "/files/8.13+Primary+testicular+diffuse+large+B-cell+lymphoma.svs",
+          "specimen_type": "Testis"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/08.Immunophenotype+of+diffuse+large+B-cell+lymphom+and+variants.pdf"
+    },
+    {
+      "lesson_number": 9,
+      "title": "Burkitt Lymphoma and Lymphoblastic Lymphoma/Leukemia",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+9.++Burkitt+lymphoma+and+lymphoblastic+leukemia-lymphoma+v3.pdf",
+      "slides": [
+        {
+          "id": "09.01",
+          "title": "Burkitt lymphoma",
+          "url": "/files/9.01+Small+intestine+-+Burkitt+lymphoma.svs",
+          "specimen_type": "Small intestine"
+        },
+        {
+          "id": "09.04",
+          "title": "B-lymphoblastic leukemia/lymphoma",
+          "url": "/files/9.04+Blood+-+B-lymphoblastic+leukemia-lymphoma.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "09.05a",
+          "title": "B-lymphoblastic leukemia/lymphoma",
+          "url": "/files/09.05a+B-lymphblastic+leukemia+lymphoma.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "09.05b",
+          "title": "B-lymphoblastic leukemia/lymphoma",
+          "url": "/files/9.05+Bone+marrow+-+B-lymphoblastic+leukemia-lymphoma.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "09.06a",
+          "title": "B-lymphoblastic leukemia/lymphoma",
+          "url": "/files/09.06a+B-lymphoblastic+leukemia+lymphoma.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "09.06b",
+          "title": "B-lymphoblastic leukemia/lymphoma",
+          "url": "/files/9.06+Bone+marrow+-+B-lymphoblastic+leukemia-lymphoma.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "09.07",
+          "title": "B-lymphoblastic lymphoma",
+          "url": "/files/9.07+Lymph+node+-+B-lymphoblastic+lymphoma.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "09.08",
+          "title": "T-lymphoblastic leukemia/lymphoma",
+          "url": "/files/9.08+Blood+-+T-lymphoblastic+leukemia-lymphoma.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "09.10a",
+          "title": "T-lymphoblastic leukemia/lymphoma",
+          "url": "/files/09.10a+T-lymphoblastic+leukemia+lymphoma.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "09.10b",
+          "title": "T-lymphoblastic leukemia/lymphoma",
+          "url": "/files/9.10+Bone+marrow+-+T-lymphoblastic+leukemia-lymphoma.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "09.11",
+          "title": "T-lymphoblastic lymphoma",
+          "url": "/files/9.11+Thymus+-+T-lymphoblastic+lymphoma.svs",
+          "specimen_type": "Thymus"
+        },
+        {
+          "id": "09.12",
+          "title": "T-lymphoblastic lymphoma",
+          "url": "/files/9.12+Lymph+node+-+T-lymphoblastic+lymphoma.svs",
+          "specimen_type": "Lymph node"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/09.Immunophenotype+of+Burkitt+lymphoma+and+lymphoblastic+lymphoma-leukemia.pdf"
+    },
+    {
+      "lesson_number": 10,
+      "title": "Peripheral T-Cell Lymphoma",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+10.++Peripheral+T-cell+lymphoma+v3.pdf",
+      "slides": [
+        {
+          "id": "10.01",
+          "title": "Peripheral T-cell lymphoma, NOS",
+          "url": "/files/10.01+Peripheral+T-cell+lymphoma+NOS.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "10.02",
+          "title": "Lennert lymphoma",
+          "url": "/files/10.02+Lennert+lymphoma.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "10.03",
+          "title": "Angioimmunoblastic T-cell lymphoma",
+          "url": "/files/10.03+Angioimmunoblastic+T-cell+lymphoma.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "10.04",
+          "title": "Follicular helper T-cell lymphoma",
+          "url": "/files/10.04+Follicular+helper+T-cell+lymphoma.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "10.06",
+          "title": "Anaplastic large cell lymphoma, ALK positive",
+          "url": "/files/10.06+Anaplastic+large+cell+lymphoma%2C+ALK+positive.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "10.07",
+          "title": "Anaplastic large cell lymphoma, ALK negative",
+          "url": "/files/10.07+Anaplastic+large+cell+lymphoma%2C+ALK+negative.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "10.08",
+          "title": "Anaplastic large cell lymphoma, breast implant-associated",
+          "url": "/files/10.08+Anaplastic+large+cell+lymphoma+breast+implant-associated.svs",
+          "specimen_type": "Breast"
+        },
+        {
+          "id": "10.09",
+          "title": "Adult T-cell lymphoma/leukemia",
+          "url": "/files/10.09+Adult+T-cell+lymphoma-leukemia.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "10.10",
+          "title": "Hepatosplenic T-cell lymphoma",
+          "url": "/files/10.10+Hepatosplenic+T-cell+lymphoma.svs",
+          "specimen_type": "Liver"
+        },
+        {
+          "id": "10.11",
+          "title": "Extranodal NK-T cell lymphoma",
+          "url": "/files/10.11+Extranodal+NK-T+cell+lymphoma.svs",
+          "specimen_type": "Extranodal"
+        },
+        {
+          "id": "10.12",
+          "title": "Monomorphic epitheliotropic intestinal T-cell lymphoma",
+          "url": "/files/10.12+Monomorphic+epitheliotropic+intestinal+T-cell+lymphoma.svs",
+          "specimen_type": "Intestine"
+        },
+        {
+          "id": "10.13",
+          "title": "Enteropathy-associated intestinal T-cell lymphoma",
+          "url": "/files/10.13+Enteropathy-associated+intestinal+T-cell+lymphoma.svs",
+          "specimen_type": "Intestine"
+        },
+        {
+          "id": "10.14",
+          "title": "Indolent T-cell lymphoproliferative disorder of gastrointestinal tract",
+          "url": "/files/10.14+Indolent+T-cell+LPD+of+GI+tract.svs",
+          "specimen_type": "GI tract"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/10.Immunophenotype+of+peripheral+T-cell+lymphomas.pdf"
+    },
+    {
+      "lesson_number": 11,
+      "title": "Cutaneous Lymphoma",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+11.++Cutaneous+lymphoma+v3.pdf",
+      "slides": [
+        {
+          "id": "11.01",
+          "title": "Mycosis fungoides, patch stage",
+          "url": "/files/11.01+Mycosis+fungoides%2C+patch+stage.svs",
+          "specimen_type": "Skin"
+        },
+        {
+          "id": "11.02",
+          "title": "Mycosis fungoides, plaque stage",
+          "url": "/files/11.02+Mycosis+fungoides%2C+plaque+stage.svs",
+          "specimen_type": "Skin"
+        },
+        {
+          "id": "11.03",
+          "title": "Mycosis fungoides, tumor stage",
+          "url": "/files/11.03+Mycosis+fungoides%2C+tumor+stage+(transformed+to+large+cell+type).svs",
+          "specimen_type": "Skin"
+        },
+        {
+          "id": "11.04",
+          "title": "Sezary syndrome",
+          "url": "/files/11.04+Sezary+syndrome.svs",
+          "specimen_type": "Skin"
+        },
+        {
+          "id": "11.05",
+          "title": "Primary cutaneous marginal zone lymphoma",
+          "url": "/files/11.05+Primary+cutaneous+marginal+lymphoma.svs",
+          "specimen_type": "Skin"
+        },
+        {
+          "id": "11.06",
+          "title": "Primary cutaneous marginal zone lymphoma with plasma cell differentiation",
+          "url": "/files/11.06+Primary+cutaneous+marginal+zone+lymphoma+with+plasma+cell+differentiation.svs",
+          "specimen_type": "Skin"
+        },
+        {
+          "id": "11.07",
+          "title": "Primary cutaneous follicular lymphoma, diffuse pattern",
+          "url": "/files/11.07+Primary+cutaneous+follicular+lymphoma%2C+diffuse.svs",
+          "specimen_type": "Skin"
+        },
+        {
+          "id": "11.08",
+          "title": "Primary cutaneous diffuse large B-cell lymphoma, leg type",
+          "url": "/files/11.08+Primary+cutaneous+large+B-cell+lymphoma%2C+leg+type.svs",
+          "specimen_type": "Skin"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/11.Immunophenotype+of+cutaneous+lymphoma.pdf"
+    },
+    {
+      "lesson_number": 12,
+      "title": "Hodgkin Lymphoma",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+12.++Hodgkin+lymphoma+v3.pdf",
+      "slides": [
+        {
+          "id": "12.01",
+          "title": "Classical Hodgkin lymphoma, nodular sclerosis type",
+          "url": "/files/12.01+Nodular+sclerosis+cHL.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "12.02",
+          "title": "Classical Hodgkin lymphoma, mixed cellularity type",
+          "url": "/files/12.03+Mixed+cellularity+cHL.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "12.03",
+          "title": "Classical Hodgkin lymphoma, lymphocyte rich type",
+          "url": "/files/12.07+Lymphocyte+rich+cHL.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "12.04",
+          "title": "Classical Hodgkin lymphoma, lymphocyte depleted type",
+          "url": "/files/12.08+Lymphocyte+depleted+cHL.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "12.05",
+          "title": "Nodular lymphocyte predominant Hodgkin lymphoma",
+          "url": "/files/12.09+Nodular+lymphocyte+predominant+HL.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "12.06",
+          "title": "Nodular lymphocyte predominant Hodgkin lymphoma",
+          "url": "/files/12.10+Nocular+lymphocyte+predominant+HL.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "12.07",
+          "title": "Progressive transformation of germinal center",
+          "url": "/files/12.11+Progressive+transformation+of+germinal+center.svs",
+          "specimen_type": "Lymph node"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/12.Immunophenotype+of+Hodgkin+lymphomas.pdf"
+    },
+    {
+      "lesson_number": 13,
+      "title": "Plasma Cell Myeloma, MGUS, and Systemic Amyloidosis",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+13.++Plasma+cell+myeloma+%2C+MGUS%2C+and+Systemic+Amyloidosis+v3.pdf",
+      "slides": [
+        {
+          "id": "13.00",
+          "title": "Red blood cell Rouleaux",
+          "url": "/files/13.00+Red+cell+rouleaux+formation.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "13.01",
+          "title": "Plasma cell myeloma",
+          "url": "/files/13.01+Plasma+cell+myeloma.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "13.02",
+          "title": "Plasma cell myeloma",
+          "url": "/files/13.02+Bone+marrow+-+Plasma+cell+myeloma+biopsy.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "13.04",
+          "title": "Plasma cell myeloma, plasmablastic",
+          "url": "/files/13.04+Bone+marrow+-+Plasma+cell+myeloma+plasmablast+type+biopsy.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "13.05",
+          "title": "Plasma cell myeloma, small cell",
+          "url": "/files/13.05+Bone+marrow+-+Plasma+cell+myeloma+small+cell+type+aspirate.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "13.07a",
+          "title": "Plasma cell myeloma with Dutcher bodies",
+          "url": "/files/13.07+Bone+marrow+-+Plasma+cell+myeloma+Russel+and+Dutcher+bodies.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "13.07b",
+          "title": "Plasma cell myeloma with Russel bodies",
+          "url": "/files/13.07b+Bone+marrow+-+Plasma+cell+myeloma+with+Russel+bodies.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "13.08a",
+          "title": "Flame cells",
+          "url": "/files/13.08+Bone+marrow+-+Plasma+cell+myeloma+flame+cells.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "13.08b",
+          "title": "Pseudo-Gaucher cells",
+          "url": "/files/13.08b+Pseudo-Gaucher+cells.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "13.09",
+          "title": "Plasma cell leukemia",
+          "url": "/files/13.09+Blood+-+Plasma+cell+leukemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "13.10",
+          "title": "Systemic amyloidosis",
+          "url": "/files/13.10+Bone+marrow+-+Systemic+amyloidosis.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "13.11",
+          "title": "Systemic amyloidosis involving lymph node",
+          "url": "/files/13.11+Lymph+node+-+Systemic+amyloidosis.svs",
+          "specimen_type": "Lymph node"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/13.Immunophenotype+of+plasma+cell+myeloma%2C+MGUS%2C+and+systemic+amyloidosis.pdf"
+    },
+    {
+      "lesson_number": 14,
+      "title": "Lymphoid Disorders Associated with Immune Deficiency and Immune Suppression",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+14.++Lymphoid+disorders+associated+with+immune+deficiency+and+immune+suppression+v3.pdf",
+      "slides": [
+        {
+          "id": "14.01",
+          "title": "Post-transplant lymphoproliferative disorder, polymorphic type",
+          "url": "/files/14.02+Post-transplant+lymphoproliferative+disorder%2C+polymorphic+type.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.02",
+          "title": "Post-transplant lymphoproliferative disorder, monomorphic type",
+          "url": "/files/14.03+Post-transplant+lymphoproliferative+disorder%2C+monomorphic+type.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.03",
+          "title": "Post-transplant lymphoproliferative disorder, T-cell type",
+          "url": "/files/14.03+Post-transplant+lymphoproliferative+disorder%2C+T-cell+type.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.04a",
+          "title": "HIV-associated lymphoid hyperplasia, early stage, follicular hyperplasia",
+          "url": "/files/14.04+HIV-associated+lymphoid+hyperplasia%2C+early+stage%2C+follicular+hyperplasia.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.04b",
+          "title": "HIV-associated lymphoid hyperplasia, late stage, follicular involution",
+          "url": "/files/14.05+HIV-associated+lymphoid+hyperplasia%2C+late+stage%2C+follicular+involute+stage.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.05",
+          "title": "HIV-associated Castleman disease",
+          "url": "/files/14.05a+HIV-associated+Castleman+Disease.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.06",
+          "title": "HIV-associated lymphoid hyperplasia, late stage follicular depletion",
+          "url": "/files/14.06+HIV-associated+lymphoid+hyperplasia%2C+late+stage%2C+lymphocyte+deplete.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.07",
+          "title": "HIV-associated lymphoid hyperplasia, follicle lysis",
+          "url": "/files/14.07+HIV-associated+lymphoid+hyperplasia%2C+follicle+lysis.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.08",
+          "title": "HIV-associated Kaposi sarcoma",
+          "url": "/files/14.08+HIV-associated+Kaposi+sarcoma.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.09",
+          "title": "HIV-associated lymphoepithelial cyst",
+          "url": "/files/14.09+HIV-associated+lymphoepithelial+cyst.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.10",
+          "title": "Lymphoproliferative disorder in common variable immune deficiency",
+          "url": "/files/14.10+Lymphoproliferative+disorder+in+common+variable+immune+deficiency.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.11",
+          "title": "Fatal infectious mononucleosis in severe combined immunodeficiency",
+          "url": "/files/14.11+Fatal+infectious+mononucleosis+in+severe+combined+immunodeficiency.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.12",
+          "title": "Lymphoproliferative disorder in ataxia telangiectasia",
+          "url": "/files/14.12+Lymphoproliferative+disorder+in+ataxia+telangiectasia.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.13",
+          "title": "Diffuse large B-cell lymphoma in Wiscott-Aldrich syndrome",
+          "url": "/files/14.13+Diffuse+large+B-cell+lymphoma+in+Wiscott+Aldrich+syndrome.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.14",
+          "title": "Autoimmune lymphoproliferative syndrome",
+          "url": "/files/14.14+Autoimmune+lymphoproliferative+syndrome.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.16",
+          "title": "Lymphoproliferative disorder associated with iatrogenic medication",
+          "url": "/files/14.16+Lymphoproliferative+disorder+associated+with+iatrogenic+medication.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "14.17",
+          "title": "Hodgkin-like lesion associated with iatrogenic medication",
+          "url": "/files/14.17+Hodgkin-like+lesion+associated+with+iatrogenic+medication.svs",
+          "specimen_type": "Lymph node"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/14.Immunophenotype+of+lymphoid+disorders+associated+with+immune+deficiency+and+immune+suppression.pdf"
+    },
+    {
+      "lesson_number": 15,
+      "title": "Myeloproliferative Neoplasm",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+15.++Myeloproliferative+neoplasm+v3.pdf",
+      "slides": [
+        {
+          "id": "15.01",
+          "title": "Chronic myeloid leukemia, chronic phase",
+          "url": "/files/15.01+Blood+-+Chronic+myeloid+leukemia%2C+chronic+phase.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "15.02",
+          "title": "Chronic myeloid leukemia, chronic phase",
+          "url": "/files/15.03+Bone+marrow+aspirate+-+Chronic+myeloid+leukemia+chronic+phase.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "15.03",
+          "title": "Chronic myeloid leukemia, chronic phase",
+          "url": "/files/15.04+Bone+marrow+chronic+myeloid+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "15.04",
+          "title": "Chronic myeloid leukemia, accelerated phase",
+          "url": "/files/15.02+Blood+-+Chronic+myeloid+leukemia%2C+accelerated+phase.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "15.05",
+          "title": "Polycythemia vera",
+          "url": "/files/15.05+Blood+-+Polycythemia+vera.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "15.06",
+          "title": "Polycythemia vera",
+          "url": "/files/15.06+Polycythemia+vera.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "15.07",
+          "title": "Polycythemia vera",
+          "url": "/files/15.07+Bone+marrow+biopsy+-+Polycythemia%2C+vera.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "15.10",
+          "title": "Essential thrombocythemia",
+          "url": "/files/15.10+Bone+marrow+biopsy+-+Essential+thrombocythemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "15.11",
+          "title": "Primary myelofibrosis",
+          "url": "/files/15.11+Blood+-+Primary+myelofibrosis.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "15.12",
+          "title": "Primary myelofibrosis, prefibrotic phase",
+          "url": "/files/15.12+Bone+marrow+-+Primary+myelofibrosis+prefibrotic+phase.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "15.13",
+          "title": "Primary myelofibrosis, cellular phase",
+          "url": "/files/15.13+Bone+marrow+-+Primary+myelofibrosis+cellular+phase.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "15.14",
+          "title": "Primary myelofibrosis, fibrotic phase",
+          "url": "/files/15.14+Bone+marrow+-+Primary+myelofibrosis+fibrotic+phase.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "15.15",
+          "title": "Chronic neutrophilic leukemia",
+          "url": "/files/15.15+Blood+-+Chronic+neutrophilic+leukemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "15.17",
+          "title": "Myeloproliferative neoplasm, unclassified",
+          "url": "/files/15.17+Bone+marrow+-+Myeloproliferative+neoplasm%2C+unclassified.svs",
+          "specimen_type": "Bone marrow"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/15.Immunophenotype+of+myeloproliferative+neoplasm.pdf"
+    },
+    {
+      "lesson_number": 16,
+      "title": "Myelodysplastic Syndrome",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+16.++Myelodysplastic+syndrome+v3.pdf",
+      "slides": [
+        {
+          "id": "16.01",
+          "title": "Myelodysplastic syndrome, dysplastic neutrophils",
+          "url": "/files/16.01+Blood+-+Myelodysplastic+syndrome+-+dysplastic+neutrophils.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "16.02",
+          "title": "Myelodysplastic syndrome, erythroid dysplasia",
+          "url": "/files/16.02+Bone+marrow+-+Myelodysplastic+syndrome+with+single+lineage+dysplasia+-+erythroid.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "16.03",
+          "title": "Myelodysplastic syndrome, megakaryocytic dysplasia",
+          "url": "/files/16.03+Bone+marrow+-+Myelodysplastic+syndrome+with+single+lineage+dysplasia+-+megakaryocytic.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "16.06",
+          "title": "Myelodysplastic syndrome with excess blasts-1",
+          "url": "/files/16.06+Bone+marrow+-+Myelodysplastic+syndrome+excess+blasts-1.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "16.07",
+          "title": "Myelodysplastic syndrome with excess blasts-2",
+          "url": "/files/16.07+Bone+marrow+aspirate+-+Myelodysplastic+syndrome+excess+blasts-2.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "16.09",
+          "title": "Myelodysplastic syndrome with ringed sideroblasts, Prussian blue stain",
+          "url": "/files/16.09+Bone+marrow+apirate+-+Myelodysplastic+syndrome+with+ringed+sideroblasts+-+prussian+blue.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "16.10",
+          "title": "Myelodysplastic syndrome with -5q",
+          "url": "/files/16.10+Bone+marrow+-+Myelodysplastic+syndrome+with+-5q.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "16.11",
+          "title": "Therapy-related myelodysplastic syndrome",
+          "url": "/files/16.11+Bone+marrow+biopsy+-+Therapt+related+MDS.svs",
+          "specimen_type": "Bone marrow"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/16.Immunophenotype+of+myelodysplastic+syndrome.pdf"
+    },
+    {
+      "lesson_number": 17,
+      "title": "Acute Myeloid Leukemia, Acute Leukemias of Ambiguous Lineage and Dendritic Cell Origin",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+17.++Acute+myeloid+leukemia%2C+acute+leukemias+of+ambiguous+lineage+and+dendritic+cell+origin+v3.pdf",
+      "slides": [
+        {
+          "id": "17.01",
+          "title": "Acute myeloid leukemia, NOS",
+          "url": "/files/17.01+Blood+-+Acute+myeloid+leukemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "17.02",
+          "title": "Acute myeloid leukemia, NOS",
+          "url": "/files/17.02+Bone+marrow+aspirate+-+Acute+myeloid+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.04",
+          "title": "Acute myelomonocytic leukemia",
+          "url": "/files/17.04+Blood+-+Acute+myelomonocytic+leukemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "17.05",
+          "title": "Acute myelomonocytic leukemia",
+          "url": "/files/17.05+Bone+marrow+aspirate+-+Acute+myelomonocytic+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.06",
+          "title": "Acute monocytic leukemia, promonocytes",
+          "url": "/files/17.06+Blood+-+Acute+monocytic+leukemia%2C+predominantly+promonocytes.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "17.07",
+          "title": "Acute monocytic leukemia, monoblasts",
+          "url": "/files/17.07+Blood+-+Acute+monoblastic+leukemia%2C+prdominantly+monoblasts.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "17.08",
+          "title": "Acute monoblastic leukemia",
+          "url": "/files/17.08+Bone+marrow+aspirate+-+Acute+monoblastic+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.09",
+          "title": "Acute erythroleukemia",
+          "url": "/files/17.09+Blood+-+Acute+erythroleukemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "17.10",
+          "title": "Acute erythroleukemia",
+          "url": "/files/17.10+Bone+marrow+aspirate+-+Acute+erythroleukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.11",
+          "title": "Acute erythroleukemia",
+          "url": "/files/17.11+Bone+marrow+biopsy+-+Acute+erythroleukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.12",
+          "title": "Acute megakaryoblastic leukemia",
+          "url": "/files/17.12+Bone+marrow+biopsy+-+Acute+megakaryoblastic+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.13",
+          "title": "Acute promyelocytic leukemia with t(15;17)",
+          "url": "/files/17.13+Blood+-+Acute+promyelocytic+leukemia+with+t(15%3B17).svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "17.14",
+          "title": "Acute promyelocytic leukemia with t(15;17)",
+          "url": "/files/17.14+Bone+marrow+aspirate+-+Acute+promyelocytic+leukemia+with+t(15%3B17).svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.15",
+          "title": "Acute promyelocytic leukemia with t(15;17)",
+          "url": "/files/17.15+Bone+marrow+biopsy+-+Acute+promyelocytic+leukemia+with+t(15%3B17).svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.16",
+          "title": "Acute myeloid leukemia with t(8;21)",
+          "url": "/files/17.16+Bone+marrow+aspirate+-+Acute+myeloid+leukemia+with+t(8%3B21).svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.17",
+          "title": "Acute myeloid leukemia t(8;21)",
+          "url": "/files/17.17+Bone+marrow+biopsy+-+Acute+myeloid+leukemia+with+t(8%3B21).svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.18",
+          "title": "Acute myeloid leukemia with inversion 16",
+          "url": "/files/17.18+Bone+marrow+aspirate+-+Acute+myeloid+leukemia+with+inversion+16.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.19",
+          "title": "Acute myeloid leukemia with inversion 16",
+          "url": "/files/17.19+Bone+marrow+biopsy+-+Acute+myeloid+leukemia+with+inversion+16.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.20",
+          "title": "Acute myeloid leukemia with t(3;3)",
+          "url": "/files/17.20+Bone+marrow+aspirate+-+Acute+myeloid+leukemia+with+t(3%3B3).svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.21",
+          "title": "Acute myeloid leukemia with increased eosinophils and basophils",
+          "url": "/files/17.21+Blood+-+Acute+myeloid+leukemia+with+increased+eosinophils+and+basophils.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "17.22",
+          "title": "Acute myeloid leukemia with myelodysplasia-related change",
+          "url": "/files/17.22+Bone+marrow+aspirate+-+Acute+myeloid+leukemia+with+myelodysplastia-related+change.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.23",
+          "title": "Acute myeloid leukemia with myelodysplasia-related change",
+          "url": "/files/17.23+Bone+marrow+biopsy+-+Acute+myeloid+leukemia+with+myelodysplasia-related+change.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.24",
+          "title": "Therapy-related acute myeloid leukemia",
+          "url": "/files/17.24+Bone+marrow+biopsy+-+Therapy-related+acute+myeloid+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.25",
+          "title": "Ph+ acute myeloid leukemia",
+          "url": "/files/17.25+Bone+marrow+biopsy+Ph%2B+acute+myeloid+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "17.26",
+          "title": "Myeloid sarcoma",
+          "url": "/files/17.26+Lymph+node+-+Myeloid+sarcoma.svs",
+          "specimen_type": "Lymph node"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/17.Immunophenotype+of+acute+myeloid+leukemias.pdf"
+    },
+    {
+      "lesson_number": 18,
+      "title": "Congenital and Inherited Myeloid Neoplasms",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+18.++Congenital+and+inherited+myeloid+neoplasms+v3.pdf",
+      "slides": [],
+      "figures": [
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+18/Figure+18.01+Mechanism+of+thrombocytopenia+in+MN+with+germline+mutations.jpg"
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/18.Immunophenotype+of+congenital+and+inherited+myeloid+neoplasms.pdf"
+    },
+    {
+      "lesson_number": 19,
+      "title": "Myelodysplastic-Myeloproliferative Neoplasms",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+19.++Myelodysplastic-myeloproliferative+neoplasms+v3.pdf",
+      "slides": [
+        {
+          "id": "19.01",
+          "title": "Chronic myelomonocytic leukemia",
+          "url": "/files/19.01+Blood+-+Chronic+myelomonocytic+leukemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "19.02",
+          "title": "Chronic myelomonocytic leukemia",
+          "url": "/files/19.02+Bone+marrow+aspirate+-+Chronic+myelomonocytic+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "19.07",
+          "title": "MDS-MPN-RST, Prussian blue stain",
+          "url": "/files/19.07+Prussian+blue+stain+-+MDS-MPN-RST.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "19.08",
+          "title": "Atypical chronic myeloid leukemia",
+          "url": "/files/19.08+Blood+-+Atypical+chronic+myeloid+leukemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "19.10",
+          "title": "Atypical chronic myeloid leukemia",
+          "url": "/files/19.10+Bone+marrow+biopsy+-+Atypical+chronic+myeloid+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/19.Immunophenotype+of+myelodysplastic-myeloproliferative+neoplasms.pdf"
+    },
+    {
+      "lesson_number": 20,
+      "title": "Eosinophil, Mast Cell, and Related Disorders",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+20.++Eosinophil%2C+mast+cell%2C+and+related+disorders+v3.pdf",
+      "slides": [
+        {
+          "id": "20.01",
+          "title": "Chronic eosinophilic leukemia",
+          "url": "/files/20.01+Blood+-+Chronic+eosinophilic+leukemia.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "20.02a",
+          "title": "Chronic eosinophilic leukemia",
+          "url": "/files/20.02+Bone+marrow+-+Chronic+eosinophilic+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "20.02b",
+          "title": "Chronic eosinophilic leukemia with increased blasts",
+          "url": "/files/20.02.1+Bone+marrow+-+Chronic+eosinophilic+leukemia+with+increased+blasts.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "20.04",
+          "title": "Systemic mastocytosis",
+          "url": "/files/20.04+Bone+marrow+-+Systemic+mastocytosis+associated+with+fibrosis.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "20.05",
+          "title": "Systemic mastocytosis with lymphoid aggregates",
+          "url": "/files/20.05+Bone+marrow+-+Systemic+mastocytosis+associated+with+lymphoid+aggregates.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "20.06",
+          "title": "Systemic mastocytosis with associated chronic myelomonocytic leukemia",
+          "url": "/files/20.06+Bone+marrow+-+Systemic+mastocytosis+with+associated+chronic+myelomonocytic+leukemia.svs",
+          "specimen_type": "Bone marrow"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/20.Immunophenotype+of+eosinophils+mast+cells+and+related+disorders.pdf"
+    },
+    {
+      "lesson_number": 21,
+      "title": "Histiocytic and Dendritic Cell Lesions",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+21.++Histiocytic+and+dendritic+cell+lesions+v3.pdf",
+      "slides": [
+        {
+          "id": "21.01",
+          "title": "Langerhans cell histiocytosis",
+          "url": "/files/21.01+Langerhan+cell+histiocytosis.svs",
+          "specimen_type": "Tissue"
+        },
+        {
+          "id": "21.02",
+          "title": "Langerhans cell histiocytosis",
+          "url": "/files/21.02+Langerhan+cell+histiocytosis.svs",
+          "specimen_type": "Tissue"
+        },
+        {
+          "id": "21.03",
+          "title": "Langerhans cell sarcoma",
+          "url": "/files/21.03+Langerhan+cell+sarcoma.svs",
+          "specimen_type": "Tissue"
+        },
+        {
+          "id": "21.04",
+          "title": "Rosai-Dorfman disease",
+          "url": "/files/21.04+Rosai-Dorfman+disease.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "21.05",
+          "title": "Rosai-Dorfman disease",
+          "url": "/files/21.05+Rosai-Dorfman+disease.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "21.06",
+          "title": "Rosai-Dorfman disease",
+          "url": "/files/21.06+Rosai-Dorfman+disease.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "21.07",
+          "title": "Follicular dendritic cell sarcoma",
+          "url": "/files/21.07+Follicular+dendritic+cell+sarcoma.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "21.08",
+          "title": "Follicular dendritic cell sarcoma, inflammatory pseudotumor-like",
+          "url": "/files/21.08+Follicular+dendritic+cell+sarcoma+inflammatory+pseudotumor-like.svs",
+          "specimen_type": "Lymph node"
+        },
+        {
+          "id": "21.09",
+          "title": "Interdigitating dendritic cell sarcoma",
+          "url": "/files/21.09+Interdigitating+dendritic+cell+sarcoma.svs",
+          "specimen_type": "Lymph node"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/21.Immunophenotype+of+histiocytic+and+dendritic+cell+lesions.pdf"
+    },
+    {
+      "lesson_number": 22,
+      "title": "Spleen",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+22.++Spleen.pdf",
+      "slides": [
+        {
+          "id": "22.01",
+          "title": "Red pulp congestion in sickle cell disease",
+          "url": "/files/22.01+Red+pulp+congection+in+sickle+cell+disease.svs",
+          "specimen_type": "Spleen"
+        },
+        {
+          "id": "22.03",
+          "title": "Littoral cell angioma",
+          "url": "/files/22.03+Littoral+cell+angioma.svs",
+          "specimen_type": "Spleen"
+        },
+        {
+          "id": "22.04",
+          "title": "Lymphangioma",
+          "url": "/files/22.04+Lymphangioma.svs",
+          "specimen_type": "Spleen"
+        },
+        {
+          "id": "22.05a",
+          "title": "Hairy cell leukemia",
+          "url": "/files/22.05a+Hairy+cell+leukemia.svs",
+          "specimen_type": "Spleen"
+        },
+        {
+          "id": "22.05b",
+          "title": "Hairy cell leukemia",
+          "url": "/files/22.05b+Hairy+cell+leukemia.svs",
+          "specimen_type": "Spleen"
+        },
+        {
+          "id": "22.07",
+          "title": "Splenic diffuse red pulp B-cell lymphoma",
+          "url": "/files/22.07+Splenic+diffuse+red+pulp+small+B-cell+lymphoma.svs",
+          "specimen_type": "Spleen"
+        },
+        {
+          "id": "22.08",
+          "title": "Hepatosplenic T-cell lymphoma and splenic infarct",
+          "url": "/files/22.08+Hepatosplenic+T-cell+lymphoma+and+infarct.svs",
+          "specimen_type": "Spleen"
+        },
+        {
+          "id": "22.09",
+          "title": "Chronic myeloid leukemia",
+          "url": "/files/22.09+Chronic+myeloid+leukemia.svs",
+          "specimen_type": "Spleen"
+        },
+        {
+          "id": "22.10a",
+          "title": "Primary myelofibrosis",
+          "url": "/files/22.10a+Primary+myelofibrosis.svs",
+          "specimen_type": "Spleen"
+        },
+        {
+          "id": "22.10b",
+          "title": "Primary myelofibrosis",
+          "url": "/files/22.10b+Primary+myelofibrosis.svs",
+          "specimen_type": "Spleen"
+        },
+        {
+          "id": "22.11",
+          "title": "Splenic marginal zone lymphoma",
+          "url": "/files/22.11+Splenic+marginal+zone+lymphoma.svs",
+          "specimen_type": "Spleen"
+        },
+        {
+          "id": "22.12",
+          "title": "Splenic marginal zone lymphoma",
+          "url": "/files/22.12+Splenic+marginal+zone+lymphoma.svs",
+          "specimen_type": "Spleen"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/22.Immunophenotype+of+splenic+lesions.pdf"
+    },
+    {
+      "lesson_number": 23,
+      "title": "Pediatric Hematologic Diseases",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+23.+Pediatric+hematologic+diseases.pdf",
+      "slides": [
+        {
+          "id": "23.01",
+          "title": "Hereditary elliptocytosis",
+          "url": "/files/23.01+Hereditary+elliptocytosis.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "23.08",
+          "title": "Niemann Pick disease",
+          "url": "/files/23.08+Niemann-Pick+syndrome.svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "23.12",
+          "title": "Transient myeloproliferative disorder in Down syndrome",
+          "url": "/files/23.12+Transient+myeloproliferative+disorder.svs",
+          "specimen_type": "Blood"
+        },
+        {
+          "id": "23.13",
+          "title": "Acute megakaryoblastic leukemia with t(1;22)",
+          "url": "/files/23.13+Acute+myeloid+leukemia+with+t(1%3B22).svs",
+          "specimen_type": "Bone marrow"
+        },
+        {
+          "id": "23.15",
+          "title": "Pediatric follicular lymphoma",
+          "url": "/files/23.15+Pediastric+follicular+lymphoma.svs",
+          "specimen_type": "Lymph node"
+        }
+      ],
+      "immunophenotype": "https://e-booktoc.s3.us-east-2.amazonaws.com/Immunophenotype/23.Immunophenotype+of+pediatric+hematologic+diseases.pdf"
+    },
+    {
+      "lesson_number": 24,
+      "title": "Ancillary Methods in Hematopathology",
+      "study_notes": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/Lesson+24.++Ancillary+diagnostic+tools+in+hematopathology+v3.pdf",
+      "slides": [],
+      "figures": [
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+1.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+2.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+3.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+4.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+5.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+6.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+7.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+8.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+9.pdf",
+        "https://e-booktoc.s3.us-east-2.amazonaws.com/Lesson+24/Lesson+24+figure+10.pdf"
+      ],
+      "figure_descriptions": [
+        "Procedures of immunohistochemistry and flow cytometry",
+        "Immunohistochemical staining pattern of selected markers",
+        "Flow cytometry histograms of an angioimmunoblastic lymphoma",
+        "Procedures of conventional cytogenetics, fluorescence in situ hybridization, and array comparative genomic hybridization",
+        "Karyotype of a case of chronic myeloid leukemia",
+        "FISH images of a chronic lymphocytic leukemia",
+        "aCGH result of a case of transformed large B-cell lymphoma",
+        "Procedures of IGH and TCR clonality studies, reverse transcriptase PCR, and next generation sequencing",
+        "Electropherogram pattern of IGH and TCR gene rearrangements",
+        "An example of real time quantitative rtPCR in chronic myeloid leukemia"
+      ]
+    }
+  ],
+  "additional_resources": {
+    "table_of_contents": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes/Table+of+Contents.pdf",
+    "index_of_images": "https://e-booktoc.s3.us-east-2.amazonaws.com/Notes+v3/INDEX+OF+THE+IMAGES.pdf",
+    "tools": {
+      "cell_counter": "https://studio.code.org/projects/applab/ZkG62VBji_wViMygAGWsObu2PCSidCTXu6VLTTutk18",
+      "practice_guidelines": "https://e-booktoc.s3.us-east-2.amazonaws.com/Tools/Guidelines+for+Diagnostic+Workup+of+Hematolymphoid+Neoplasms+-+Jefferson+Health.docx.pdf"
+    },
+    "institutional_links": {
+      "jefferson_pathology": "https://www.jefferson.edu/university/jmc/departments/pathology.html",
+      "hematopathology_fellowship": "https://www.jefferson.edu/university/jmc/departments/pathology/education/fellowships/hematopathology.html"
+    }
+  },
+  "website_credits": "Website designed and engineered by KinnearTech Corporation & 360DataService Inc."
+}

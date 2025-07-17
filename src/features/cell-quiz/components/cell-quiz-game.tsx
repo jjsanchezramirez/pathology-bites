@@ -122,9 +122,7 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
       setStreak(0)
     }
 
-    setTimeout(() => {
-      setShowExplanation(true)
-    }, 500)
+    setShowExplanation(true)
   }
 
   const handleNextQuestion = () => {
@@ -175,113 +173,54 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
     <Card className="shadow-lg max-w-4xl mx-auto">
       <CardContent className="p-0">
         {quizComplete ? (
-          <div className="p-8 text-center space-y-6">
-            <div className="space-y-4">
-              <h1 className="text-3xl font-bold">Cell Identification Quiz</h1>
-              <div className="text-6xl">🎉</div>
-              <h2 className="text-2xl font-bold">Quiz Complete!</h2>
-              <p className="text-muted-foreground">Great job! Here's how you performed:</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-lg mx-auto">
-              <div className="text-center p-4 bg-primary/10 rounded-lg">
-                <div className="text-2xl font-bold text-primary">{finalScore}</div>
-                <div className="text-xs text-muted-foreground">Correct</div>
+          <div className="p-12 text-center space-y-8">
+            <div className="space-y-2">
+              <div className="text-4xl font-bold">
+                {finalScore}/{QUESTIONS_PER_QUIZ}
               </div>
-              <div className="text-center p-4 bg-green-50 dark:bg-green-950/30 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
-                  {Math.round((finalScore / QUESTIONS_PER_QUIZ) * 100)}%
-                </div>
-                <div className="text-xs text-muted-foreground">Accuracy</div>
-              </div>
-              <div className="text-center p-4 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
-                <div className="text-2xl font-bold text-orange-600">{maxStreak}</div>
-                <div className="text-xs text-muted-foreground">Best Streak</div>
+              <div className="text-muted-foreground">
+                {Math.round((finalScore / QUESTIONS_PER_QUIZ) * 100)}% correct
               </div>
             </div>
 
             <div className="flex gap-3 justify-center">
-              <Button onClick={restartQuiz} className="gap-2">
-                <RotateCcw className="h-4 w-4" />
-                Start New Quiz
+              <Button onClick={restartQuiz} size="lg">
+                Try Again
               </Button>
-              {onTutorial && (
-                <Button onClick={onTutorial} variant="outline" className="gap-2">
-                  <BookOpen className="h-4 w-4" />
-                  Cell Guide
-                </Button>
-              )}
+              <Button onClick={onExit} variant="outline" size="lg">
+                Done
+              </Button>
             </div>
           </div>
         ) : (
           <div>
-            <div className="p-6 border-b">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-2xl font-bold">Cell Identification Quiz</h1>
-                  <p className="text-sm text-muted-foreground">
-                    Identify hematologic cells from all categories
-                  </p>
+            <div className="p-4 border-b">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-sm text-muted-foreground">
+                  {score}/{currentQuestionIndex + (isAnswered ? 1 : 0)} correct
                 </div>
-                {onTutorial && (
-                  <Button onClick={onTutorial} variant="outline" size="sm" className="gap-2">
-                    <BookOpen className="h-4 w-4" />
-                    Cell Guide
-                  </Button>
-                )}
+                <div className="text-sm text-muted-foreground">
+                  {currentQuestionIndex + 1} of {QUESTIONS_PER_QUIZ}
+                </div>
               </div>
-              
-              <div className="flex items-center gap-3 mt-4">
-                <Badge variant="outline" className="gap-1">
-                  <Target className="h-3 w-3" />
-                  {score}/{currentQuestionIndex + (isAnswered ? 1 : 0)}
-                </Badge>
-                <Badge variant="outline" className="gap-1">
-                  <Zap className="h-3 w-3" />
-                  Streak: {streak}
-                </Badge>
-                {externalStats && externalStats.total > 0 && (
-                  <Badge variant="outline" className="gap-1">
-                    <Trophy className="h-3 w-3" />
-                    Overall: {Math.round((externalStats.correct / externalStats.total) * 100)}%
-                  </Badge>
-                )}
-                <Button onClick={restartQuiz} variant="ghost" size="sm" className="gap-1 ml-auto">
-                  <RotateCcw className="h-3 w-3" />
-                  New Quiz
-                </Button>
-              </div>
+              <Progress value={progress} className="h-1" />
             </div>
 
-            <div className="px-6 py-3 border-b bg-gray-50 dark:bg-gray-900/50">
-              <div className="flex justify-between text-sm mb-2">
-                <span>Question {currentQuestionIndex + 1} of {QUESTIONS_PER_QUIZ}</span>
-                <span>{Math.round(progress)}% Complete</span>
-              </div>
-              <Progress value={progress} className="h-2" />
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-0">
-              <div className="relative h-80 md:h-96 bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-                <div className="relative w-full h-full max-w-[300px] max-h-[300px] aspect-square">
+            <div className="grid md:grid-cols-5 gap-0">
+              <div className="md:col-span-3 relative h-96 bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+                <div className="relative w-full h-full max-w-[400px] max-h-[400px] aspect-square">
                   <Image
                     src={currentQuestion.imagePath}
                     alt="Cell to identify"
                     fill
-                    className="object-contain rounded-lg"
+                    className="object-contain"
                     priority
                   />
                 </div>
               </div>
 
-              <div className="p-6 flex flex-col justify-between">
+              <div className="md:col-span-2 p-6 flex flex-col justify-center">
                 <div className="space-y-4">
-                  <div>
-                    <h2 className="text-xl font-bold mb-1">Identify this cell:</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Select the correct cell type from the options below.
-                    </p>
-                  </div>
 
                   <div className="space-y-2">
                     {currentQuestion.options.map((option, index) => {

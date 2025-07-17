@@ -262,6 +262,72 @@ Submit draft question for review.
 }
 ```
 
+### GET /api/questions/[id]/versions
+Get version history for a question (planned feature).
+
+**Response:**
+```json
+{
+  "versions": [
+    {
+      "id": "uuid",
+      "versionMajor": 1,
+      "versionMinor": 2,
+      "versionPatch": 0,
+      "versionString": "1.2.0",
+      "changeType": "minor",
+      "changeSummary": "Updated explanation for option B",
+      "changedBy": "uuid",
+      "createdAt": "2025-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /api/questions/[id]/versions/compare
+Compare two versions of a question (planned feature).
+
+**Query Parameters:**
+- `v1`: First version ID
+- `v2`: Second version ID
+
+**Response:**
+```json
+{
+  "comparison": {
+    "v1": {
+      "version": "1.1.0",
+      "title": "Original title",
+      "stem": "Original question content..."
+    },
+    "v2": {
+      "version": "1.2.0", 
+      "title": "Updated title",
+      "stem": "Updated question content..."
+    },
+    "changes": [
+      {
+        "field": "title",
+        "type": "modified",
+        "oldValue": "Original title",
+        "newValue": "Updated title"
+      }
+    ]
+  }
+}
+```
+
+### POST /api/questions/[id]/versions/restore
+Restore a previous version of a question (planned feature).
+
+**Request Body:**
+```json
+{
+  "versionId": "uuid",
+  "createNewVersion": true
+}
+```
+
 ## Quiz System
 
 ### POST /api/quiz/sessions

@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { Label } from "@/shared/components/ui/label"
-import Link from "next/link"
 import {
   FlaskConicalIcon,
   TestTubeIcon,
@@ -16,6 +15,7 @@ import {
   ExternalLink
 } from "lucide-react"
 import FloatingCharacter from "@/shared/components/common/dr-albright"
+import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
 
 interface LACValues {
   pt: number
@@ -589,24 +589,7 @@ export default function LupusAnticoagulantPage() {
       </section>
 
       {/* Join Our Learning Community Section */}
-      <section className="relative py-20">
-        <div className="absolute inset-0 bg-linear-to-b from-transparent to-primary/5" />
-        <div className="container px-4 max-w-3xl mx-auto text-center relative">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Our Learning Community</h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Ready to take your pathology education to the next level? Create a free account and access our comprehensive question bank, interactive quizzes, and study tools.
-          </p>
-          <Link href="/signup">
-            <Button
-              size="lg"
-              className="bg-primary hover:bg-primary/90 transform hover:scale-105
-                        transition-all duration-300 ease-in-out"
-            >
-              Create Free Account
-            </Button>
-          </Link>
-        </div>
-      </section>
+      <JoinCommunitySection />
     </div>
   )
 }

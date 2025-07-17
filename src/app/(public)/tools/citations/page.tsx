@@ -7,8 +7,8 @@ import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
 import { Copy, BookOpen, FileText, Globe, Search, CheckCircle, Edit, Save, X, Plus, Minus } from 'lucide-react'
-import Link from 'next/link'
 import FloatingCharacter from '@/shared/components/common/dr-albright'
+import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
 import { extractMetadata, CitationData } from '@/shared/utils/citation-extractor'
 import {
   formatAPA,
@@ -578,25 +578,9 @@ export default function CitationGeneratorPage() {
       </section>
 
       {/* Join Our Learning Community */}
-      <section className="relative py-20">
-        <div className="absolute inset-0 bg-linear-to-b from-transparent to-primary/5" />
-        <div className="container px-4 max-w-3xl mx-auto text-center relative">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Our Learning Community</h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Start your learning journey today. No fees, no subscriptions - just
-            high-quality pathology education available to everyone.
-          </p>
-          <Link href="/signup">
-            <Button
-              size="lg"
-              className="bg-primary hover:bg-primary/90 transform hover:scale-105
-                        transition-all duration-300 ease-in-out"
-            >
-              Create Free Account
-            </Button>
-          </Link>
-        </div>
-      </section>
+      <JoinCommunitySection
+        description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone."
+      />
     </div>
   )
 }

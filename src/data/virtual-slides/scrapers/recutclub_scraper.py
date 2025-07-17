@@ -1,18 +1,27 @@
 import json
 import time
-import re
+import logging
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementClickInterceptedException, StaleElementReferenceException, WebDriverException
-from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from urllib.parse import urljoin
 
 class RecutClubScraper:
-    def __init__(self, headless=False):
-        """Initialize the RecutClub scraper"""
+    def __init__(self, headless=False, debug=False):
+        """Initialize the scraper with Chrome WebDriver"""
         self.base_url = "https://recutclub.com"
+        self.scraped_data = []
+        
+        # Setup logging
+        log_level = logging.DEBUG if debug else logging.INFO
+        logging.basicConfig(
+            level=log_level,
+            format='%(asctime)s - %(levelname)s - %(message)s'
+        )
+        self.logger = logging.getLogger(__name__)
         
         # Configure Chrome options
         chrome_options = Options()
@@ -22,811 +31,820 @@ class RecutClubScraper:
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--window-size=1920,1080")
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-        chrome_options.add_argument("--memory-pressure-off")
-        chrome_options.add_argument("--max_old_space_size=4096")
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
         
-        print("🚀 Starting Chrome browser for RecutClub Scraper...")
         self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-        self.wait = WebDriverWait(self.driver, 30)
+        self.wait = WebDriverWait(self.driver, 20)
         
-        # Keep track of data to avoid duplicates
-        self.seen_case_urls = set()
-        self.seen_image_urls = set()
-        self.all_cases = []
-        
-    def __del__(self):
-        """Clean up the browser when done"""
-        if hasattr(self, 'driver'):
-            self.driver.quit()
-    
-    def login(self, username, password):
-        """Login to RecutClub"""
+        self.logger.info("RecutClub Scraper initialized")
+
+    def debug_page_state(self, prefix="debug"):
+        """Save screenshot and page source for debugging"""
         try:
-            print(f"🔐 Attempting to login to {self.base_url}")
+            # Save screenshot
+            screenshot_path = f"{prefix}_screenshot.png"
+            self.driver.save_screenshot(screenshot_path)
+            self.logger.info(f"Screenshot saved to {screenshot_path}")
+            
+            # Save page source
+            source_path = f"{prefix}_page_source.html"
+            with open(source_path, 'w', encoding='utf-8') as f:
+                f.write(self.driver.page_source)
+            self.logger.info(f"Page source saved to {source_path}")
+            
+            # Log current URL
+            self.logger.info(f"Current URL: {self.driver.current_url}")
+            
+            # Log what forms are visible
+            forms = self.driver.find_elements(By.TAG_NAME, "form")
+            self.logger.info(f"Found {len(forms)} forms on page")
+            
+            for i, form in enumerate(forms):
+                if form.is_displayed():
+                    form_id = form.get_attribute('id')
+                    form_class = form.get_attribute('class')
+                    self.logger.info(f"  Form {i+1}: id='{form_id}' class='{form_class}' visible=True")
+                    
+                    # Check for email inputs in this form
+                    email_inputs = form.find_elements(By.CSS_SELECTOR, "input[type='email'], input#inputEmail")
+                    if email_inputs:
+                        self.logger.info(f"    Found {len(email_inputs)} email inputs")
+                        
+        except Exception as e:
+            self.logger.error(f"Debug failed: {str(e)}")
+
+    def login(self, email, password):
+        """Login to RecutClub with multiple strategies"""
+        try:
+            self.logger.info(f"Navigating to {self.base_url}")
             self.driver.get(self.base_url)
+            time.sleep(5)  # Give more time for page load
             
-            # Wait for page to load
-            time.sleep(5)
+            # Debug the initial page state
+            self.debug_page_state("initial_page")
             
-            # Find and click login button/link
+            # Check if already logged in
             try:
-                login_selectors = [
-                    "a:contains('Login')",
-                    "button:contains('Login')", 
-                    "a:contains('Sign In')",
-                    "button:contains('Sign In')",
-                    ".login-btn",
-                    "#login",
-                    "a[href*='login']",
-                    "button[data-toggle='modal']"
-                ]
-                
-                login_element = None
-                for selector in login_selectors:
-                    try:
-                        if ":contains" in selector:
-                            text = selector.split("'")[1]
-                            xpath_selector = f"//*[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{text.lower()}')]"
-                            login_element = self.driver.find_element(By.XPATH, xpath_selector)
-                        else:
-                            login_element = self.driver.find_element(By.CSS_SELECTOR, selector)
-                        if login_element and login_element.is_displayed():
-                            print(f"   ✅ Found login element")
-                            break
-                    except NoSuchElementException:
-                        continue
-                
-                if login_element:
-                    self.driver.execute_script("arguments[0].click();", login_element)
-                    time.sleep(3)
-                
-                # Fill in credentials - try multiple field selectors
-                email_selectors = [
-                    "input[type='email']",
-                    "input[name='email']",
-                    "input[name='username']",
-                    "input[id*='email']",
-                    "input[id*='username']"
-                ]
-                
-                password_selectors = [
-                    "input[type='password']",
-                    "input[name='password']",
-                    "input[id*='password']"
-                ]
-                
-                email_field = None
-                for selector in email_selectors:
-                    try:
-                        email_field = self.driver.find_element(By.CSS_SELECTOR, selector)
-                        if email_field.is_displayed():
-                            break
-                    except NoSuchElementException:
-                        continue
-                
-                password_field = None
-                for selector in password_selectors:
-                    try:
-                        password_field = self.driver.find_element(By.CSS_SELECTOR, selector)
-                        if password_field.is_displayed():
-                            break
-                    except NoSuchElementException:
-                        continue
-                
-                if email_field and password_field:
-                    email_field.clear()
-                    email_field.send_keys(username)
-                    password_field.clear()
-                    password_field.send_keys(password)
-                    
-                    # Submit login
-                    submit_selectors = [
-                        "button[type='submit']",
-                        "input[type='submit']",
-                        "button:contains('Login')",
-                        "button:contains('Sign In')"
-                    ]
-                    
-                    submit_button = None
-                    for selector in submit_selectors:
-                        try:
-                            if ":contains" in selector:
-                                text = selector.split("'")[1]
-                                xpath_selector = f"//button[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{text.lower()}')]"
-                                submit_button = self.driver.find_element(By.XPATH, xpath_selector)
-                            else:
-                                submit_button = self.driver.find_element(By.CSS_SELECTOR, selector)
-                            if submit_button and submit_button.is_displayed():
-                                break
-                        except NoSuchElementException:
-                            continue
-                    
-                    if submit_button:
-                        submit_button.click()
-                        print("   🔄 Submitted login form, waiting for response...")
-                        time.sleep(8)
-                    
-                    # Check if login was successful by looking for user-specific content
-                    try:
-                        # Look for any sign of successful login (user menu, logout link, etc.)
-                        success_indicators = [
-                            ".user-menu",
-                            "a:contains('Logout')",
-                            "a:contains('My Cases')",
-                            "[class*='user']",
-                            ".dropdown-toggle"
-                        ]
-                        
-                        login_successful = False
-                        for indicator in success_indicators:
-                            try:
-                                if ":contains" in indicator:
-                                    text = indicator.split("'")[1]
-                                    xpath_selector = f"//*[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{text.lower()}')]"
-                                    element = self.driver.find_element(By.XPATH, xpath_selector)
-                                else:
-                                    element = self.driver.find_element(By.CSS_SELECTOR, indicator)
-                                if element and element.is_displayed():
-                                    login_successful = True
-                                    break
-                            except:
-                                continue
-                        
-                        if login_successful:
-                            print("   ✅ Login successful!")
-                            return True
-                        else:
-                            print("   ❌ Login may have failed - no success indicators found")
-                            return False
-                    except Exception as e:
-                        print(f"   ⚠️ Could not verify login status: {e}")
-                        return True  # Assume success if we can't verify
-                else:
-                    print("   ❌ Could not find email/password fields")
-                    return False
-                    
-            except Exception as e:
-                print(f"   ❌ Error during login process: {e}")
-                return False
+                user_menu = self.driver.find_element(By.XPATH, "//a[contains(text(), 'Juan Jose')]")
+                if user_menu:
+                    self.logger.info("Already logged in!")
+                    return True
+            except NoSuchElementException:
+                pass
+            
+            self.logger.info("Not logged in, attempting login...")
+            
+            # Strategy 1: Try the main center login form first
+            success = self._try_main_login_form(email, password)
+            if success:
+                return True
+            
+            # Strategy 2: Try the dropdown login form
+            success = self._try_dropdown_login_form(email, password)
+            if success:
+                return True
+            
+            # Strategy 3: Generic form finder
+            success = self._try_generic_login_form(email, password)
+            if success:
+                return True
+            
+            # If all failed, debug the final state
+            self.debug_page_state("login_failed")
+            self.logger.error("All login strategies failed")
+            return False
                 
         except Exception as e:
-            print(f"❌ Error accessing login page: {e}")
+            self.logger.error(f"Login failed with exception: {str(e)}")
+            self.debug_page_state("login_exception")
             return False
-    
-    def navigate_to_study_page(self):
-        """Navigate to the study page with the filtering options"""
+
+    def _try_main_login_form(self, email, password):
+        """Try to login using the main center form"""
         try:
-            print("📚 Navigating to Study page...")
+            self.logger.info("Strategy 1: Trying main center login form...")
             
-            # Look for Study link
-            study_selectors = [
-                "a:contains('Study')",
-                "a[href*='study']",
-                ".nav-link:contains('Study')"
+            # Look for the main login form in the center
+            email_field = None
+            password_field = None
+            submit_button = None
+            
+            # Wait a bit and try to find the form
+            time.sleep(2)
+            
+            # Try multiple selectors for the main form
+            form_selectors = [
+                "main form#login-nav",
+                "form#login-nav",
+                ".cover-container form",
+                ".inner.cover form"
             ]
             
-            study_link = None
-            for selector in study_selectors:
+            form_element = None
+            for selector in form_selectors:
                 try:
-                    if ":contains" in selector:
-                        text = selector.split("'")[1]
-                        xpath_selector = f"//a[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{text.lower()}')]"
-                        study_link = self.driver.find_element(By.XPATH, xpath_selector)
-                    else:
-                        study_link = self.driver.find_element(By.CSS_SELECTOR, selector)
-                    if study_link and study_link.is_displayed():
+                    form_element = self.driver.find_element(By.CSS_SELECTOR, selector)
+                    if form_element.is_displayed():
+                        self.logger.info(f"Found main form with selector: {selector}")
                         break
                 except NoSuchElementException:
                     continue
             
-            if study_link:
-                self.driver.execute_script("arguments[0].click();", study_link)
-                time.sleep(5)
-                print("   ✅ Navigated to Study page")
-            else:
-                print("   ⚠️ Study link not found, assuming already on correct page")
+            if form_element:
+                # Find fields within the form
+                email_field = form_element.find_element(By.ID, "inputEmail")
+                password_field = form_element.find_element(By.ID, "inputPassword")
+                submit_button = form_element.find_element(By.CSS_SELECTOR, "button[type='submit']")
+                
+                # Fill and submit
+                email_field.clear()
+                email_field.send_keys(email)
+                password_field.clear()
+                password_field.send_keys(password)
+                
+                self.logger.info("Submitting main form...")
+                submit_button.click()
+                
+                return self._wait_for_login_success()
             
-            # Verify we can see the filtering dropdowns
-            try:
-                topic_dropdown = self.driver.find_element(By.CSS_SELECTOR, "#topic_selection")
-                conference_dropdown = self.driver.find_element(By.CSS_SELECTOR, "#conference_selection")
-                
-                if topic_dropdown and conference_dropdown:
-                    print("   ✅ Found filtering dropdowns")
-                    return True
-                else:
-                    print("   ❌ Could not find expected dropdowns")
-                    return False
-            except:
-                print("   ❌ Could not find filtering dropdowns")
-                return False
-                
+            return False
+            
         except Exception as e:
-            print(f"❌ Error navigating to study page: {e}")
+            self.logger.warning(f"Main form login failed: {str(e)}")
             return False
 
-    def get_topics(self):
-        """Get all available topics from the topic dropdown"""
+    def _try_dropdown_login_form(self, email, password):
+        """Try to login using the dropdown form"""
         try:
-            print("🔍 Getting available topics...")
+            self.logger.info("Strategy 2: Trying dropdown login form...")
             
-            # Find the topic dropdown
-            topic_dropdown = self.driver.find_element(By.CSS_SELECTOR, "#topic_selection")
+            # Find and click the login dropdown
+            login_dropdown = self.driver.find_element(By.XPATH, "//a[contains(text(), 'Login')]")
+            login_dropdown.click()
+            time.sleep(2)
             
-            if not topic_dropdown:
-                print("   ❌ Could not find topic dropdown")
-                return []
+            # Find the dropdown form
+            dropdown_form = self.driver.find_element(By.CSS_SELECTOR, "#login-dp form")
             
-            # Extract topics from dropdown
-            topics = []
-            try:
-                select = Select(topic_dropdown)
-                options = select.options
-                
-                for option in options:
-                    value = option.get_attribute('value')
-                    text = option.text.strip()
-                    
-                    # Skip empty options
-                    if text and value and text.lower() not in ['', 'select']:
-                        topics.append({
-                            'name': text,
-                            'value': value,
-                            'dropdown': topic_dropdown
-                        })
-                
-                print(f"📊 Found {len(topics)} topics:")
-                for i, topic in enumerate(topics):
-                    print(f"   {i+1}. {topic['name']}")
-                
-                return topics
-                
-            except Exception as e:
-                print(f"   ❌ Error extracting topics: {e}")
-                return []
-                
+            email_field = dropdown_form.find_element(By.ID, "inputEmail")
+            password_field = dropdown_form.find_element(By.ID, "inputPassword")
+            submit_button = dropdown_form.find_element(By.CSS_SELECTOR, "button[type='submit']")
+            
+            # Fill and submit
+            email_field.clear()
+            email_field.send_keys(email)
+            password_field.clear()
+            password_field.send_keys(password)
+            
+            self.logger.info("Submitting dropdown form...")
+            submit_button.click()
+            
+            return self._wait_for_login_success()
+            
         except Exception as e:
-            print(f"❌ Error getting topics: {e}")
-            return []
-    
-    def select_topic(self, topic):
-        """Select a specific topic"""
+            self.logger.warning(f"Dropdown form login failed: {str(e)}")
+            return False
+
+    def _try_generic_login_form(self, email, password):
+        """Try to find any login form generically"""
         try:
-            print(f"\n🔍 Selecting topic: {topic['name']}")
+            self.logger.info("Strategy 3: Trying generic form finder...")
             
-            # Select from dropdown
-            select = Select(topic['dropdown'])
-            select.select_by_value(topic['value'])
-            print(f"   ✅ Selected {topic['name']} from dropdown")
+            # Find any email input
+            email_inputs = self.driver.find_elements(By.CSS_SELECTOR, "input[type='email'], input#inputEmail, input[name='inputEmail']")
             
-            # Wait for topic change to take effect
+            for email_field in email_inputs:
+                if email_field.is_displayed():
+                    try:
+                        # Find corresponding password field
+                        form = email_field.find_element(By.XPATH, "./ancestor::form[1]")
+                        password_field = form.find_element(By.CSS_SELECTOR, "input[type='password']")
+                        submit_button = form.find_element(By.CSS_SELECTOR, "button[type='submit'], input[type='submit']")
+                        
+                        # Fill and submit
+                        email_field.clear()
+                        email_field.send_keys(email)
+                        password_field.clear()
+                        password_field.send_keys(password)
+                        
+                        self.logger.info("Submitting generic form...")
+                        submit_button.click()
+                        
+                        return self._wait_for_login_success()
+                        
+                    except Exception as inner_e:
+                        self.logger.warning(f"Generic form attempt failed: {str(inner_e)}")
+                        continue
+            
+            return False
+            
+        except Exception as e:
+            self.logger.warning(f"Generic form login failed: {str(e)}")
+            return False
+
+    def _wait_for_login_success(self):
+        """Wait for login to be successful"""
+        try:
+            self.logger.info("Waiting for login to complete...")
+            
+            # Wait for one of these success indicators
+            success_indicators = [
+                (By.ID, "topic_selection"),
+                (By.XPATH, "//a[contains(text(), 'Juan Jose')]"),
+                (By.XPATH, "//a[contains(text(), 'My Cases')]"),
+                (By.XPATH, "//a[contains(text(), 'Log Out')]"),
+                (By.CSS_SELECTOR, ".dropdown-toggle b")
+            ]
+            
+            for indicator in success_indicators:
+                try:
+                    element = WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_element_located(indicator)
+                    )
+                    if element:
+                        self.logger.info(f"Login successful! Found indicator: {indicator}")
+                        time.sleep(3)  # Let page fully load
+                        return True
+                except TimeoutException:
+                    continue
+            
+            # Also check if URL changed (might redirect after login)
+            current_url = self.driver.current_url
+            if current_url != self.base_url and "login" not in current_url.lower():
+                self.logger.info("Login successful! URL changed indicating success")
+                return True
+            
+            self.logger.warning("No login success indicators found")
+            return False
+            
+        except Exception as e:
+            self.logger.error(f"Error waiting for login success: {str(e)}")
+            return False
+
+    def get_categories(self):
+        """Get all available categories from the topic dropdown"""
+        try:
+            self.logger.info("Getting available categories...")
+            
+            # Make sure we're on the main study page
+            current_url = self.driver.current_url
+            if "study" not in current_url.lower() and self.base_url in current_url:
+                # We might be on the home page, the categories should still be visible
+                pass
+            
+            # Find the topic selection dropdown
+            topic_select = self.wait.until(
+                EC.presence_of_element_located((By.ID, "topic_selection"))
+            )
+            
+            select = Select(topic_select)
+            categories = []
+            
+            for option in select.options:
+                value = option.get_attribute('value')
+                text = option.text.strip()
+                
+                # Skip empty options
+                if value and text and value != "":
+                    categories.append({
+                        'name': text,
+                        'value': value
+                    })
+            
+            self.logger.info(f"Found {len(categories)} categories: {[cat['name'] for cat in categories]}")
+            return categories
+            
+        except Exception as e:
+            self.logger.error(f"Failed to get categories: {str(e)}")
+            return []
+
+    def select_category(self, category_value):
+        """Select a specific category"""
+        try:
+            self.logger.info(f"Selecting category: {category_value}")
+            
+            topic_select = self.driver.find_element(By.ID, "topic_selection")
+            select = Select(topic_select)
+            select.select_by_value(category_value)
+            
+            # Wait for conferences to load
             time.sleep(3)
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to select category {category_value}: {str(e)}")
+            return False
+
+    def get_conferences(self):
+        """Get all conferences for the currently selected category"""
+        try:
+            self.logger.info("Getting conferences for selected category...")
+            
+            conference_select = self.wait.until(
+                EC.presence_of_element_located((By.ID, "conference_selection"))
+            )
+            
+            select = Select(conference_select)
+            conferences = []
+            
+            for option in select.options:
+                value = option.get_attribute('value')
+                text = option.text.strip()
+                data_merged = option.get_attribute('data-merged')
+                
+                if value and text and value != "":
+                    conferences.append({
+                        'name': text,
+                        'value': value,
+                        'data_merged': data_merged
+                    })
+            
+            self.logger.info(f"Found {len(conferences)} conferences")
+            return conferences
+            
+        except Exception as e:
+            self.logger.error(f"Failed to get conferences: {str(e)}")
+            return []
+
+    def select_conference(self, conference_value):
+        """Select a specific conference"""
+        try:
+            self.logger.info(f"Selecting conference: {conference_value}")
+            
+            conference_select = self.driver.find_element(By.ID, "conference_selection")
+            select = Select(conference_select)
+            select.select_by_value(conference_value)
+            
+            # Wait for cases to load
+            time.sleep(4)
+            
+            # Wait for the cases container to be present
+            self.wait.until(
+                EC.presence_of_element_located((By.ID, "casesFromConference"))
+            )
             
             return True
             
         except Exception as e:
-            print(f"   ❌ Error selecting topic {topic['name']}: {e}")
+            self.logger.error(f"Failed to select conference {conference_value}: {str(e)}")
             return False
 
-    def get_conferences_for_topic(self, topic_name):
-        """Get all available conferences for the selected topic"""
-        try:
-            print(f"   🔍 Getting conferences for {topic_name}...")
-            
-            # Find the conference dropdown
-            conference_dropdown = self.driver.find_element(By.CSS_SELECTOR, "#conference_selection")
-            
-            if not conference_dropdown:
-                print("   ❌ Could not find conference dropdown")
-                return []
-            
-            # Extract conferences from dropdown
-            conferences = []
-            try:
-                select = Select(conference_dropdown)
-                options = select.options
-                
-                for option in options:
-                    value = option.get_attribute('value')
-                    text = option.text.strip()
-                    data_merged = option.get_attribute('data-merged')
-                    
-                    # Skip empty options
-                    if text and value and text.lower() not in ['', 'select']:
-                        conferences.append({
-                            'name': text,
-                            'value': value,
-                            'data_merged': data_merged,
-                            'topic': topic_name,
-                            'dropdown': conference_dropdown
-                        })
-                
-                print(f"      Found {len(conferences)} conferences for {topic_name}")
-                for conf in conferences[:3]:  # Show first 3
-                    print(f"        - {conf['name']}")
-                if len(conferences) > 3:
-                    print(f"        ... and {len(conferences) - 3} more")
-                
-                return conferences
-                
-            except Exception as e:
-                print(f"   ❌ Error extracting conferences: {e}")
-                return []
-                
-        except Exception as e:
-            print(f"❌ Error getting conferences for {topic_name}: {e}")
-            return []
-
-    def select_conference(self, conference):
-        """Select a specific conference and load its cases"""
-        try:
-            print(f"   📅 Selecting conference: {conference['name']}")
-            
-            # Select from dropdown
-            select = Select(conference['dropdown'])
-            select.select_by_value(conference['value'])
-            print(f"      ✅ Selected {conference['name']}")
-            
-            # Wait for conference change to load cases
-            time.sleep(5)
-            
-            # Wait for cases to load
-            try:
-                self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#casesFromConference")))
-                print(f"      ✅ Cases loaded for {conference['name']}")
-                return True
-            except TimeoutException:
-                print(f"      ⚠️ Timeout waiting for cases to load")
-                return True  # Continue anyway
-            
-        except Exception as e:
-            print(f"   ❌ Error selecting conference {conference['name']}: {e}")
-            return False
-
-    def extract_cases_from_conference(self, conference):
-        """Extract all cases from the currently selected conference"""
-        try:
-            print(f"      📋 Extracting cases from {conference['name']}...")
-            
-            # Wait a bit for content to fully load
-            time.sleep(3)
-            
-            # Find the cases container
-            cases_container = self.driver.find_element(By.CSS_SELECTOR, "#casesFromConference")
-            
-            if not cases_container:
-                print(f"      ⚠️ No cases container found")
-                return []
-            
-            # Find all case cards
-            case_cards = cases_container.find_elements(By.CSS_SELECTOR, ".card")
-            
-            if not case_cards:
-                print(f"      ⚠️ No case cards found in {conference['name']}")
-                return []
-            
-            print(f"         Found {len(case_cards)} case cards")
-            
-            conference_cases = []
-            
-            for i, card in enumerate(case_cards):
-                try:
-                    case_data = self.extract_single_case(card, i, conference)
-                    if case_data:
-                        # Check for duplicates using case URL
-                        case_url = case_data.get('case_url', '')
-                        if case_url and case_url not in self.seen_case_urls:
-                            self.seen_case_urls.add(case_url)
-                            conference_cases.append(case_data)
-                        elif not case_url:
-                            # Fallback for cases without URL
-                            fallback_id = f"{case_data['case_title']}_{case_data['history']}_{conference['name']}"
-                            if fallback_id not in self.seen_case_urls:
-                                self.seen_case_urls.add(fallback_id)
-                                conference_cases.append(case_data)
-                        
-                except Exception as e:
-                    print(f"         ⚠️ Error extracting case {i+1}: {e}")
-                    continue
-            
-            print(f"      ✅ Extracted {len(conference_cases)} unique cases from {conference['name']}")
-            return conference_cases
-            
-        except Exception as e:
-            print(f"      ❌ Error extracting cases from {conference['name']}: {e}")
-            return []
-
-    def extract_single_case(self, case_card, index, conference):
-        """Extract information from a single case card"""
+    def extract_case_data(self, card_element, category_name, conference_name):
+        """Extract data from a single case card by clicking tabs"""
         case_data = {
+            'category': category_name,
+            'conference': conference_name,
             'case_title': '',
             'case_url': '',
             'image_url': '',
             'history': '',
-            'diagnosis': '',
-            'topic': conference['topic'],
-            'conference': conference['name'],
-            'conference_value': conference['value'],
-            'metadata': {}
+            'diagnosis': ''
         }
         
         try:
             # Extract case title
             try:
-                title_element = case_card.find_element(By.CSS_SELECTOR, ".card-title")
+                title_element = card_element.find_element(By.CSS_SELECTOR, ".card-title")
                 case_data['case_title'] = title_element.text.strip()
-            except:
-                case_data['case_title'] = f"Case {index + 1}"
+            except NoSuchElementException:
+                case_data['case_title'] = "Unknown Case"
             
-            # Extract case URL from the image link
+            # Extract case URL and image URL
             try:
-                link_element = case_card.find_element(By.CSS_SELECTOR, "a[href*='caseViewer']")
+                link_element = card_element.find_element(By.CSS_SELECTOR, "a[href*='caseViewer']")
                 case_url = link_element.get_attribute('href')
-                if case_url:
-                    # Convert relative URLs to absolute
-                    if case_url.startswith('/'):
-                        case_url = self.base_url + case_url
-                    elif not case_url.startswith('http'):
-                        case_url = self.base_url + '/' + case_url
-                    case_data['case_url'] = case_url
-            except:
-                pass
-            
-            # Extract image URL
-            try:
-                img_element = case_card.find_element(By.CSS_SELECTOR, "img")
-                img_src = img_element.get_attribute('src')
-                if img_src and img_src not in self.seen_image_urls:
-                    self.seen_image_urls.add(img_src)
-                    case_data['image_url'] = img_src
-            except:
-                pass
-            
-            # Extract history and diagnosis from tabs
-            try:
-                # Look for tab content
-                tab_contents = case_card.find_elements(By.CSS_SELECTOR, ".tab-pane")
+                case_data['case_url'] = urljoin(self.base_url, case_url)
                 
-                for tab_content in tab_contents:
-                    tab_id = tab_content.get_attribute('id')
-                    if tab_id:
-                        # Check if this is history or diagnosis based on tab structure
-                        panel_body = tab_content.find_element(By.CSS_SELECTOR, ".panel-body")
-                        text_content = panel_body.text.strip()
-                        
-                        # Look for corresponding tab link to determine type
-                        try:
-                            tab_link = case_card.find_element(By.CSS_SELECTOR, f"a[href='#{tab_id}']")
-                            tab_text = tab_link.text.strip().lower()
-                            
-                            if 'history' in tab_text:
-                                case_data['history'] = text_content
-                            elif 'diagnosis' in tab_text:
-                                case_data['diagnosis'] = text_content
-                        except:
-                            # Fallback: if no tab link found, assume first is history, second is diagnosis
-                            if not case_data['history']:
-                                case_data['history'] = text_content
-                            elif not case_data['diagnosis']:
-                                case_data['diagnosis'] = text_content
-            except Exception as e:
-                print(f"            ⚠️ Error extracting history/diagnosis: {e}")
+                # Get image URL from the same link
+                img_element = link_element.find_element(By.TAG_NAME, "img")
+                case_data['image_url'] = img_element.get_attribute('src')
+            except NoSuchElementException:
+                pass
             
-            # Debug: Print first few cases from each conference
-            if index < 3:
-                print(f"           Sample {index+1}: '{case_data['case_title']}' - {case_data['history'][:50]}...")
+            # Extract history and diagnosis by clicking tabs
+            self._extract_tab_content_by_clicking(card_element, case_data)
             
-            # Only return cases with meaningful data
-            if case_data['case_title'] and (case_data['history'] or case_data['diagnosis']):
-                return case_data
-            else:
-                return None
+            return case_data
             
         except Exception as e:
-            print(f"           ⚠️ Error extracting single case: {e}")
-            return None
+            self.logger.error(f"Error extracting case data for {case_data['case_title']}: {str(e)}")
+            return case_data
 
-    def scrape_topic_with_conferences(self, topic):
-        """Scrape all conferences for a specific topic"""
-        print(f"\n🔍 Scraping topic: {topic['name']}")
-        
-        # Select the topic
-        if not self.select_topic(topic):
-            print(f"❌ Failed to select topic {topic['name']}")
-            return []
-        
-        # Get conferences for this topic
-        conferences = self.get_conferences_for_topic(topic['name'])
-        
-        if not conferences:
-            print(f"   ⚠️ No conferences found for {topic['name']}")
-            return []
-        
-        topic_cases = []
-        
-        for i, conference in enumerate(conferences, 1):
-            print(f"\n   [{i}/{len(conferences)}] Processing conference: {conference['name']}")
-            
-            try:
-                # Select this conference
-                if self.select_conference(conference):
-                    # Extract cases from this conference
-                    conference_cases = self.extract_cases_from_conference(conference)
-                    topic_cases.extend(conference_cases)
-                    
-                    # Show summary
-                    if conference_cases:
-                        print(f"      📊 Conference {conference['name']}: {len(conference_cases)} cases")
-                        # Show sample case
-                        if len(conference_cases) > 0:
-                            sample = conference_cases[0]
-                            history = sample['history'][:40] + '...' if len(sample['history']) > 40 else sample['history']
-                            print(f"         Sample: {sample['case_title']} - {history}")
-                    else:
-                        print(f"      ⚠️ No cases found in {conference['name']}")
-                
-                # Be respectful between conferences
-                time.sleep(2)
-                
-            except Exception as e:
-                print(f"      ❌ Error processing conference {conference['name']}: {e}")
-                continue
-        
-        print(f"\n✅ Finished topic {topic['name']}: {len(topic_cases)} total cases")
-        return topic_cases
-
-    def scrape_all_topics(self, username, password, specific_topics=None, max_topics=None):
-        """Main scraping function for all topics"""
-        print("=== RecutClub Scraper ===\n")
-        print("🎯 Target: Educational pathology cases from RecutClub")
-        print("📋 Features: Topic/conference navigation, case extraction")
-        print()
-        
-        # Login
-        if not self.login(username, password):
-            print("❌ Login failed. Please check your credentials.")
-            return []
-        
-        # Navigate to study page
-        if not self.navigate_to_study_page():
-            print("❌ Failed to navigate to study page")
-            return []
-        
-        # Get topics
-        topics = self.get_topics()
-        if not topics:
-            print("❌ No topics found")
-            return []
-        
-        # Filter topics if specific ones are requested
-        if specific_topics:
-            topics = [topic for topic in topics if topic['name'] in specific_topics]
-            print(f"🎯 Filtering to specific topics: {specific_topics}")
-        
-        # Limit topics for testing
-        if max_topics:
-            topics = topics[:max_topics]
-            print(f"🧪 Testing with first {len(topics)} topics")
-        
-        total_cases = 0
-        
-        print(f"\n🚀 Starting to scrape {len(topics)} topics...")
-        
-        for i, topic in enumerate(topics, 1):
-            print(f"\n{'='*60}")
-            print(f"[{i}/{len(topics)}] Processing: {topic['name']}")
-            print(f"{'='*60}")
-            
-            try:
-                # Scrape this topic with all its conferences
-                topic_cases = self.scrape_topic_with_conferences(topic)
-                
-                # Add to global collection
-                self.all_cases.extend(topic_cases)
-                
-                total_cases += len(topic_cases)
-                
-                print(f"\n📊 {topic['name']} Summary:")
-                print(f"   - Cases: {len(topic_cases)}")
-                print(f"   - Running total: {total_cases} cases")
-                
-                # Be respectful between topics
-                time.sleep(3)
-                
-            except Exception as e:
-                print(f"   ❌ Error processing {topic['name']}: {e}")
-                continue
-        
-        # Save final results
-        self.save_results()
-        
-        return self.all_cases
-    
-    def save_results(self):
-        """Save comprehensive results to JSON file"""
-        output_file = 'recutclub_cases.json'
-        
+    def _extract_tab_content_by_clicking(self, card_element, case_data):
+        """Extract tab content by clicking each tab - WITH CONTENT WAIT"""
         try:
-            # Add final metadata to each case
-            for case in self.all_cases:
-                case['has_image'] = bool(case.get('image_url'))
-                case['has_case_url'] = bool(case.get('case_url'))
-                case['has_history'] = bool(case.get('history'))
-                case['has_diagnosis'] = bool(case.get('diagnosis'))
+            # Find all tab navigation links
+            nav_links = card_element.find_elements(By.CSS_SELECTOR, ".nav-pills .nav-link")
             
-            with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(self.all_cases, f, indent=2, ensure_ascii=False)
+            if not nav_links:
+                print(f"      ❌ No nav links found for {case_data['case_title']}")
+                return
             
+            print(f"      🔗 Found {len(nav_links)} nav links for {case_data['case_title']}")
+            
+            # Click each tab and extract content
+            for i, link in enumerate(nav_links):
+                try:
+                    link_text = link.text.strip().lower()
+                    print(f"        Tab {i+1}: '{link_text}'")
+                    
+                    # Click the tab to make it active
+                    self.driver.execute_script("arguments[0].click();", link)
+                    
+                    # Wait for tab to become active AND content to load
+                    content = self._wait_for_tab_content(card_element, link_text)
+                    
+                    if content:
+                        print(f"        Content: '{content[:50]}...' (length: {len(content)})")
+                        
+                        # Save content based on tab text
+                        if 'history' in link_text:
+                            case_data['history'] = content
+                            print(f"        ✅ SAVED as history")
+                        elif 'diagnosis' in link_text:
+                            case_data['diagnosis'] = content
+                            print(f"        ✅ SAVED as diagnosis")
+                        else:
+                            print(f"        ⚠️ Tab '{link_text}' not saved (not history/diagnosis)")
+                    else:
+                        print(f"        ❌ No content found for '{link_text}'")
+                        
+                except Exception as tab_error:
+                    print(f"        ❌ Error processing tab {i+1}: {tab_error}")
+                    continue
+                    
+        except Exception as e:
+            print(f"      ❌ Tab extraction failed for {case_data['case_title']}: {e}")
+            
+        # Show final result for this case
+        has_history = "✅" if case_data['history'] else "❌"
+        has_diagnosis = "✅" if case_data['diagnosis'] else "❌"
+        print(f"      📊 Final: History {has_history} | Diagnosis {has_diagnosis}")
+
+    def _wait_for_tab_content(self, card_element, tab_name):
+        """Wait for tab content to actually load after clicking"""
+        max_attempts = 10  # Try for up to 5 seconds
+        for attempt in range(max_attempts):
+            try:
+                # Find the currently active tab pane
+                active_pane = card_element.find_element(By.CSS_SELECTOR, ".tab-pane.active")
+                panel_body = active_pane.find_element(By.CSS_SELECTOR, ".panel-body")
+                content = panel_body.text.strip()
+                
+                # If we got content, return it
+                if content:
+                    return content
+                    
+                # If no content yet, wait a bit and try again
+                time.sleep(0.5)
+                
+            except Exception as e:
+                time.sleep(0.5)
+                continue
+        
+        # If we get here, content never loaded
+        print(f"          ⚠️ Content never loaded for {tab_name} after {max_attempts} attempts")
+        return ""
+
+    def scrape_conference_cases(self, category_name, conference_name):
+        """Scrape all cases from the currently selected conference"""
+        try:
+            self.logger.info(f"Scraping cases for {category_name} - {conference_name}")
+            
+            # Find the cases container
+            cases_container = self.wait.until(
+                EC.presence_of_element_located((By.ID, "casesFromConference"))
+            )
+            
+            # Find all case cards
+            case_cards = cases_container.find_elements(By.CSS_SELECTOR, ".card")
+            
+            if not case_cards:
+                self.logger.warning(f"No cases found for {conference_name}")
+                return []
+            
+            self.logger.info(f"Found {len(case_cards)} cases in {conference_name}")
+            
+            conference_cases = []
+            for i, card in enumerate(case_cards):
+                try:
+                    case_data = self.extract_case_data(card, category_name, conference_name)
+                    if case_data['case_title']:  # Only add if we got some data
+                        conference_cases.append(case_data)
+                        
+                        # Show what we extracted
+                        has_history = "H" if case_data['history'] else "-"
+                        has_diagnosis = "D" if case_data['diagnosis'] else "-"
+                        self.logger.info(f"      Case {i+1}/{len(case_cards)}: {case_data['case_title']} [{has_history}{has_diagnosis}]")
+                    else:
+                        self.logger.warning(f"      Case {i+1}/{len(case_cards)}: Failed to extract")
+                        
+                except Exception as e:
+                    self.logger.error(f"Error processing case {i+1}: {str(e)}")
+                    continue
+            
+            return conference_cases
+            
+        except Exception as e:
+            self.logger.error(f"Failed to scrape cases: {str(e)}")
+            return []
+
+    def is_logged_in(self):
+        """Check if user is already logged in"""
+        try:
+            # Look for user-specific elements that indicate login
+            success_indicators = [
+                (By.ID, "topic_selection"),
+                (By.XPATH, "//a[contains(text(), 'Juan Jose')]"),
+                (By.XPATH, "//a[contains(text(), 'My Cases')]"),
+                (By.XPATH, "//a[contains(text(), 'Log Out')]")
+            ]
+            
+            for indicator in success_indicators:
+                try:
+                    element = self.driver.find_element(*indicator)
+                    if element and element.is_displayed():
+                        self.logger.info(f"Already logged in - found indicator: {indicator}")
+                        return True
+                except NoSuchElementException:
+                    continue
+            
+            return False
+            
+        except Exception as e:
+            self.logger.warning(f"Error checking login status: {str(e)}")
+            return False
+
+    def scrape_all(self, email, password, skip_login=False):
+        """Main scraping function"""
+        try:
+            # Login only if not already logged in
+            if not skip_login and not self.is_logged_in():
+                if not self.login(email, password):
+                    self.logger.error("Failed to login. Aborting.")
+                    return False
+            elif self.is_logged_in():
+                self.logger.info("Already logged in, skipping login step")
+            
+            # Get all categories
+            categories = self.get_categories()
+            if not categories:
+                self.logger.error("No categories found. Aborting.")
+                return False
+            
+            total_cases = 0
+            
+            for category in categories:
+                self.logger.info(f"\n{'='*50}")
+                self.logger.info(f"Processing Category: {category['name']}")
+                self.logger.info(f"{'='*50}")
+                
+                # Select category
+                if not self.select_category(category['value']):
+                    continue
+                
+                # Get conferences for this category
+                conferences = self.get_conferences()
+                if not conferences:
+                    self.logger.warning(f"No conferences found for {category['name']}")
+                    continue
+                
+                for conference in conferences:
+                    self.logger.info(f"\nProcessing Conference: {conference['name']}")
+                    
+                    # Select conference
+                    if not self.select_conference(conference['value']):
+                        continue
+                    
+                    # Scrape cases
+                    cases = self.scrape_conference_cases(category['name'], conference['name'])
+                    self.scraped_data.extend(cases)
+                    total_cases += len(cases)
+                    
+                    self.logger.info(f"Added {len(cases)} cases. Total: {total_cases}")
+                    
+                    # Be nice to the server
+                    time.sleep(2)
+            
+            self.logger.info(f"\nScraping completed! Total cases: {total_cases}")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Scraping failed: {str(e)}")
+            return False
+
+    def save_data(self, filename="recutclub_data.json"):
+        """Save scraped data to JSON file"""
+        try:
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(self.scraped_data, f, indent=2, ensure_ascii=False)
+            
+            self.logger.info(f"Data saved to {filename}")
+            
+            # Print summary
             print(f"\n{'='*60}")
-            print(f"🎉 SCRAPING COMPLETED!")
+            print("SCRAPING SUMMARY")
             print(f"{'='*60}")
-            print(f"📁 Saved {len(self.all_cases)} cases to {output_file}")
+            print(f"Total cases scraped: {len(self.scraped_data)}")
             
-            # Comprehensive statistics
-            topics_processed = len(set(case['topic'] for case in self.all_cases))
-            conferences_processed = len(set(case['conference'] for case in self.all_cases))
-            cases_with_history = sum(1 for case in self.all_cases if case['history'])
-            cases_with_diagnosis = sum(1 for case in self.all_cases if case['diagnosis'])
-            cases_with_images = sum(1 for case in self.all_cases if case['image_url'])
-            cases_with_urls = sum(1 for case in self.all_cases if case.get('case_url'))
+            # Count by category
+            category_counts = {}
+            for case in self.scraped_data:
+                cat = case['category']
+                category_counts[cat] = category_counts.get(cat, 0) + 1
             
-            print(f"📊 FINAL SUMMARY:")
-            print(f"   - Topics processed: {topics_processed}")
-            print(f"   - Conferences processed: {conferences_processed}")
-            print(f"   - Total cases: {len(self.all_cases)}")
-            print(f"   - Cases with history: {cases_with_history}")
-            print(f"   - Cases with diagnosis: {cases_with_diagnosis}")
-            print(f"   - Cases with images: {cases_with_images}")
-            print(f"   - Cases with URLs: {cases_with_urls}")
-            print(f"   - Unique image URLs: {len(self.seen_image_urls)}")
-            print(f"   - Unique case URLs: {len(self.seen_case_urls)}")
+            print("\nCases by category:")
+            for cat, count in sorted(category_counts.items()):
+                print(f"  {cat}: {count}")
             
-            # Topic breakdown
-            print(f"\n📋 Topic Breakdown:")
-            topic_counts = {}
-            for case in self.all_cases:
-                topic = case['topic']
-                topic_counts[topic] = topic_counts.get(topic, 0) + 1
+            # Data completeness
+            with_history = sum(1 for case in self.scraped_data if case['history'])
+            with_diagnosis = sum(1 for case in self.scraped_data if case['diagnosis'])
+            with_both = sum(1 for case in self.scraped_data if case['history'] and case['diagnosis'])
             
-            for topic, count in sorted(topic_counts.items()):
-                print(f"   - {topic}: {count} cases")
-            
-            # Conference breakdown
-            print(f"\n📅 Conference Breakdown:")
-            conference_counts = {}
-            for case in self.all_cases:
-                conf = case['conference']
-                conference_counts[conf] = conference_counts.get(conf, 0) + 1
-            
-            for conference, count in sorted(conference_counts.items()):
-                print(f"   - {conference}: {count} cases")
+            print(f"\nData completeness:")
+            print(f"  Cases with history: {with_history} ({with_history/len(self.scraped_data)*100:.1f}%)")
+            print(f"  Cases with diagnosis: {with_diagnosis} ({with_diagnosis/len(self.scraped_data)*100:.1f}%)")
+            print(f"  Cases with both: {with_both} ({with_both/len(self.scraped_data)*100:.1f}%)")
             
             # Show sample cases
-            if len(self.all_cases) > 0:
-                print(f"\n📋 Sample cases:")
-                for case in self.all_cases[:10]:
-                    title = case['case_title']
-                    history = case['history'][:50] + '...' if len(case['history']) > 50 else case['history']
-                    print(f"   - {case['topic']}/{case['conference']}: {title}")
-                    if history:
-                        print(f"     📝 History: {history}")
-                    if case.get('case_url'):
-                        print(f"     🔗 URL: {case['case_url']}")
+            print(f"\nSample cases:")
+            for i, case in enumerate(self.scraped_data[:3]):
+                print(f"  {i+1}. {case['category']} - {case['case_title']}")
+                if case['history']:
+                    print(f"     History: {case['history'][:80]}...")
+                if case['diagnosis']:
+                    print(f"     Diagnosis: {case['diagnosis'][:80]}...")
             
-            # Save detailed stats
-            stats_file = 'recutclub_stats.json'
-            stats = {
-                'scraping_type': 'RecutClub Educational Cases',
-                'topics_processed': topics_processed,
-                'conferences_processed': conferences_processed,
-                'total_cases': len(self.all_cases),
-                'cases_with_history': cases_with_history,
-                'cases_with_diagnosis': cases_with_diagnosis,
-                'cases_with_images': cases_with_images,
-                'cases_with_urls': cases_with_urls,
-                'unique_image_urls': len(self.seen_image_urls),
-                'unique_case_urls': len(self.seen_case_urls),
-                'topic_breakdown': topic_counts,
-                'conference_breakdown': conference_counts,
-                'scraping_timestamp': time.strftime('%Y-%m-%d %H:%M:%S')
-            }
-            
-            with open(stats_file, 'w', encoding='utf-8') as f:
-                json.dump(stats, f, indent=2, ensure_ascii=False)
-            
-            print(f"📈 Detailed stats saved to {stats_file}")
+            return True
             
         except Exception as e:
-            print(f"❌ Error saving results: {e}")
+            self.logger.error(f"Failed to save data: {str(e)}")
+            return False
+
+    def close(self):
+        """Close the browser"""
+        if self.driver:
+            self.driver.quit()
 
 def main():
     """Main function"""
-    print("RecutClub Scraper v1.0")
-    print("======================")
-    print("🎯 Scrapes educational pathology cases from RecutClub")
-    print("📋 Features: Topic/conference navigation, case data extraction")
-    print("🔗 Outputs case URLs and comprehensive metadata")
+    # Credentials
+    EMAIL = "jjsanchezramirez@gmail.com"
+    PASSWORD = "jjsr1989"
+    
+    print("RecutClub Scraper - Enhanced Version")
+    print("=" * 50)
+    print("This scraper will:")
+    print("1. Login to RecutClub (with multiple strategies)")
+    print("2. Get all categories")
+    print("3. For each category, get all conferences")
+    print("4. For each conference, scrape all cases")
+    print("5. Extract: title, URLs, history, diagnosis by clicking tabs")
     print()
     
-    # Get credentials
-    username = input("Enter your RecutClub username/email: ").strip()
-    password = input("Enter your RecutClub password: ").strip()
+    # Ask user for preferences
+    headless = input("Run in headless mode? (y/n): ").lower().startswith('y')
+    debug = input("Enable debug logging? (y/n): ").lower().startswith('y')
     
-    if not username or not password:
-        print("❌ Username and password are required")
-        return
+    # Ask about test mode
+    test_mode = input("Run in test mode (first 3 conferences of first 2 categories)? (y/n): ").lower().startswith('y')
     
-    print("\nChoose scraping mode:")
-    print("1. Test mode (first 2 topics)")
-    print("2. Complete scrape (ALL topics)")
-    print("3. Specific topics (e.g., just Bone, Breast)")
-    print("4. Custom number of topics")
+    print(f"\nStarting scraper...")
+    print(f"Headless mode: {headless}")
+    print(f"Debug logging: {debug}")
+    print(f"Test mode: {test_mode}")
+    print()
+    
+    scraper = RecutClubScraper(headless=headless, debug=debug)
     
     try:
-        choice = input("\nEnter choice (1-4): ").strip()
-        
-        specific_topics = None
-        max_topics = None
-        
-        if choice == "1":
-            max_topics = 2
-            print("🧪 Test mode: Will scrape first 2 topics")
-        elif choice == "2":
-            max_topics = None
-            print("🚀 COMPLETE mode: Will scrape ALL topics")
-            confirm = input("This will scrape ALL topics and conferences. Continue? (y/n): ").strip().lower()
-            if confirm not in ['y', 'yes']:
-                print("Cancelled.")
-                return
-        elif choice == "3":
-            categories_input = input("Enter topics separated by commas (e.g., Bone, Breast, Cytology): ").strip()
-            specific_topics = [cat.strip() for cat in categories_input.split(',')]
-            print(f"🎯 Will scrape specific topics: {specific_topics}")
-        elif choice == "4":
-            max_topics = int(input("Enter number of topics to scrape: "))
-            print(f"🔢 Will scrape first {max_topics} topics")
+        # First try to login
+        print("Attempting login...")
+        if scraper.login(EMAIL, PASSWORD):
+            print("✅ Login successful!")
+            
+            if test_mode:
+                # Test mode - scrape first 3 conferences of first 2 categories
+                categories = scraper.get_categories()
+                if categories:
+                    print(f"Found {len(categories)} categories. Testing with first 2...")
+                    categories = categories[:2]
+                    
+                    total_cases = 0
+                    total_conferences = 0
+                    
+                    for cat_idx, category in enumerate(categories, 1):
+                        print(f"\n{'='*50}")
+                        print(f"Testing Category {cat_idx}/2: {category['name']}")
+                        print(f"{'='*50}")
+                        
+                        if scraper.select_category(category['value']):
+                            conferences = scraper.get_conferences()
+                            print(f"Found {len(conferences)} conferences")
+                            
+                            if conferences:
+                                # Test with first 3 conferences (or all if fewer than 3)
+                                test_conferences = conferences[:3]
+                                print(f"Will test first {len(test_conferences)} conferences")
+                                
+                                for conf_idx, conf in enumerate(test_conferences, 1):
+                                    print(f"\n  Conference {conf_idx}/{len(test_conferences)}: {conf['name']}")
+                                    
+                                    if scraper.select_conference(conf['value']):
+                                        cases = scraper.scrape_conference_cases(category['name'], conf['name'])
+                                        scraper.scraped_data.extend(cases)
+                                        total_cases += len(cases)
+                                        total_conferences += 1
+                                        
+                                        # Show extraction results
+                                        with_history = sum(1 for c in cases if c['history'])
+                                        with_diagnosis = sum(1 for c in cases if c['diagnosis'])
+                                        with_both = sum(1 for c in cases if c['history'] and c['diagnosis'])
+                                        
+                                        print(f"    ✅ Scraped {len(cases)} cases: {with_history}H/{with_diagnosis}D/{with_both}Both")
+                                        
+                                        # Show sample case if any found
+                                        if cases:
+                                            sample = cases[0]
+                                            print(f"    📝 Sample: {sample['case_title']}")
+                                            if sample['history']:
+                                                print(f"       History: {sample['history'][:60]}...")
+                                            if sample['diagnosis']:
+                                                print(f"       Diagnosis: {sample['diagnosis'][:60]}...")
+                                    else:
+                                        print(f"    ❌ Failed to select conference: {conf['name']}")
+                                    
+                                    # Be nice to the server between conferences
+                                    time.sleep(1)
+                            else:
+                                print(f"  ⚠️ No conferences found for {category['name']}")
+                        else:
+                            print(f"❌ Failed to select category: {category['name']}")
+                        
+                        # Be nice to the server between categories  
+                        time.sleep(2)
+                    
+                    print(f"\n🎉 Test completed!")
+                    print(f"📊 Results:")
+                    print(f"   - Categories tested: {len(categories)}")
+                    print(f"   - Conferences processed: {total_conferences}")
+                    print(f"   - Total cases found: {total_cases}")
+                    
+                    # Show breakdown by category
+                    if total_cases > 0:
+                        print(f"\n📋 Cases by category:")
+                        category_counts = {}
+                        for case in scraper.scraped_data:
+                            cat = case['category']
+                            category_counts[cat] = category_counts.get(cat, 0) + 1
+                        
+                        for cat, count in category_counts.items():
+                            print(f"   - {cat}: {count} cases")
+                        
+                        # Show data completeness
+                        with_history = sum(1 for case in scraper.scraped_data if case['history'])
+                        with_diagnosis = sum(1 for case in scraper.scraped_data if case['diagnosis'])
+                        with_both = sum(1 for case in scraper.scraped_data if case['history'] and case['diagnosis'])
+                        
+                        print(f"\n📈 Data completeness:")
+                        print(f"   - Cases with history: {with_history}/{total_cases} ({with_history/total_cases*100:.1f}%)")
+                        print(f"   - Cases with diagnosis: {with_diagnosis}/{total_cases} ({with_diagnosis/total_cases*100:.1f}%)")
+                        print(f"   - Cases with both: {with_both}/{total_cases} ({with_both/total_cases*100:.1f}%)")
+                        
+                        # Ask to save test data
+                        save_choice = input("\nSave test data? (y/n): ").lower().startswith('y')
+                        if save_choice:
+                            scraper.save_data("test_recutclub_data_v2.json")
+                    else:
+                        print("❌ No cases found. Check the debug files for more info.")
+                        
+            else:
+                # Full scrape
+                if scraper.scrape_all(EMAIL, PASSWORD):
+                    scraper.save_data("recutclub_cases.json")
+                else:
+                    print("❌ Full scraping failed!")
         else:
-            print("Invalid choice, using test mode")
-            max_topics = 2
-        
-        # Ask about headless mode
-        headless_choice = input("\nRun in headless mode? (y/n): ").strip().lower()
-        headless = headless_choice in ['y', 'yes']
-        
-        print(f"\n🚀 Starting RecutClub Scraper...")
-        print(f"   - Target: Educational pathology cases")
-        print(f"   - Username: {username}")
-        print(f"   - Mode: {'Headless' if headless else 'Visible browser'}")
-        if specific_topics:
-            print(f"   - Topics: {specific_topics}")
-        elif max_topics:
-            print(f"   - Max topics: {max_topics}")
-        else:
-            print(f"   - Max topics: All available")
-        print()
-        
-        # Create scraper and run
-        scraper = RecutClubScraper(headless=headless)
-        results = scraper.scrape_all_topics(
-            username, password, 
-            specific_topics=specific_topics,
-            max_topics=max_topics
-        )
-        
-        print(f"\n🎯 MISSION ACCOMPLISHED!")
-        print(f"📊 Successfully scraped {len(results)} cases from RecutClub!")
-        
+            print("❌ Login failed!")
+            print("Debug files have been saved. Check:")
+            print("  - initial_page_screenshot.png")
+            print("  - initial_page_page_source.html") 
+            print("  - login_failed_screenshot.png")
+            print("  - login_failed_page_source.html")
+            print("\nThis will help us understand what's happening.")
+            
     except KeyboardInterrupt:
-        print("\n\n⏹️ Scraping interrupted by user")
+        print("\n⏹️ Scraping interrupted by user")
     except Exception as e:
-        print(f"\n❌ Error: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"\n❌ Error: {str(e)}")
+        scraper.debug_page_state("error")
     finally:
-        print("\n👋 Done!")
+        print("\nClosing browser...")
+        scraper.close()
+        print("Done!")
 
 if __name__ == "__main__":
     main()

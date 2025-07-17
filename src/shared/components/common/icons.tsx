@@ -29,6 +29,7 @@ export type IconKeys =
   | "github"
   | "linkedin"
   | "google"
+  | "discord"
 
 export const Icons = {
   spinner: Loader2,

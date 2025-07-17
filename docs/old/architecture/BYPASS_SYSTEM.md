@@ -11,7 +11,7 @@ When Coming Soon mode is enabled:
 - **Auth pages modified**: Login shows "Admin Login", Sign up buttons are hidden
 - **Sign up blocked**: All signup-related pages redirect to login unless bypass is enabled
 - **Navigation added**: Coming Soon page includes links to all public pages
-- **Discord link updated**: All Discord links use the public invite: https://discord.gg/PNFvwVbW
+- **Discord link updated**: All Discord links use the public invite: https://discord.gg/2v64p2fzsC
 
 ## How It Works
 

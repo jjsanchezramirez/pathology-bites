@@ -121,6 +121,57 @@ audit_logs
 └── created_at
 ```
 
+#### Planned Schema Extensions (Versioning & Collaboration)
+```sql
+-- Question versioning system
+question_versions
+├── id (uuid, PK)
+├── question_id (uuid, FK → questions.id)
+├── version_major (integer, NOT NULL, DEFAULT 1)
+├── version_minor (integer, NOT NULL, DEFAULT 0)
+├── version_patch (integer, NOT NULL, DEFAULT 0)
+├── version_string (text, GENERATED)
+├── question_data (jsonb, NOT NULL)  -- Complete question snapshot
+├── update_type (text, CHECK: patch|minor|major)
+├── change_summary (text)
+├── changed_by (uuid, FK → users.id)
+└── created_at (timestamptz)
+
+-- Enhanced review system
+question_reviews_enhanced
+├── id (uuid, PK)
+├── question_id (uuid, FK → questions.id)
+├── version_id (uuid, FK → question_versions.id)
+├── reviewer_id (uuid, FK → users.id)
+├── action (text, CHECK: approve|request_changes|reject)
+├── feedback (text)
+├── changes_made (jsonb)
+└── created_at (timestamptz)
+
+-- Collaboration sessions
+question_collaboration_sessions
+├── id (uuid, PK)
+├── question_id (uuid, FK → questions.id)
+├── owner_id (uuid, FK → users.id)
+├── collaborators (uuid[])
+├── session_data (jsonb)
+├── is_active (boolean, DEFAULT true)
+├── expires_at (timestamptz)
+├── created_at (timestamptz)
+└── updated_at (timestamptz)
+
+-- Comment system
+question_comments
+├── id (uuid, PK)
+├── question_id (uuid, FK → questions.id)
+├── user_id (uuid, FK → users.id)
+├── content (text, NOT NULL)
+├── comment_type (text, CHECK: general|suggestion|review)
+├── parent_id (uuid, FK → question_comments.id)
+├── resolved (boolean, DEFAULT false)
+└── created_at (timestamptz)
+```
+
 ### Database Security
 
 #### Row-Level Security (RLS)

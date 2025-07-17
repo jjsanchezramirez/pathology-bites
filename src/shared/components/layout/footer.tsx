@@ -18,8 +18,20 @@ export function Footer() {
           <p className="text-muted-foreground">© 2025 Pathology Bites. All rights reserved.</p>
         </div>
         <nav className="flex gap-6 text-muted-foreground">
-          <Link href="/images" className="hover:text-primary transition-colors">Images</Link>
-          <Link href="/tools/citations" className="hover:text-primary transition-colors">Citations</Link>
+          <div className="relative group">
+            <span className="hover:text-primary transition-colors cursor-pointer">Tools</span>
+            <div className="absolute bottom-full mb-2 left-0 bg-background border rounded-md shadow-lg p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 min-w-48">
+              <div className="space-y-1">
+                <Link href="/tools/images" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm">Image Database</Link>
+                <Link href="/tools/cell-quiz" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm">Hemepath Cell Quiz</Link>
+                <Link href="/tools/gene-lookup" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm">Gene Lookup</Link>
+                <Link href="/tools/citations" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm">Citations Generator</Link>
+                <Link href="/tools/lupus-anticoagulant" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm">Lupus Anticoagulant</Link>
+                <Link href="/tools/abpath" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm">ABPath Content</Link>
+              </div>
+            </div>
+          </div>
+          <Link href="/tools/virtual-slides" className="hover:text-primary transition-colors">Virtual Slides</Link>
           <Link href="/faq" className="hover:text-primary transition-colors">FAQ</Link>
           <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
           <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>

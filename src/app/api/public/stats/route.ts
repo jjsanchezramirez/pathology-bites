@@ -20,10 +20,17 @@ export const GET = rateLimitedHandler(async function() {
       .from('images')
       .select('*', { count: 'exact', head: true })
 
-    // Get category count
-    const { count: categoryCount, error: categoryError } = await supabase
-      .from('categories')
-      .select('*', { count: 'exact', head: true })
+    // Get unique categories from approved questions
+    const { data: questionsWithCategories, error: categoryError } = await supabase
+      .from('questions')
+      .select('category_id')
+      .eq('status', 'approved')
+      .not('category_id', 'is', null)
+
+    // Calculate unique categories count
+    const uniqueCategories = questionsWithCategories
+      ? [...new Set(questionsWithCategories.map(q => q.category_id))].length
+      : 0
 
     // Log any errors but don't fail the request
     if (questionError) {
@@ -33,7 +40,7 @@ export const GET = rateLimitedHandler(async function() {
       console.error('Error fetching image count:', imageError)
     }
     if (categoryError) {
-      console.error('Error fetching category count:', categoryError)
+      console.error('Error fetching category data:', categoryError)
     }
 
     return NextResponse.json({
@@ -41,7 +48,7 @@ export const GET = rateLimitedHandler(async function() {
       data: {
         questions: questionCount || 0,
         images: imageCount || 0,
-        categories: categoryCount || 0
+        categories: uniqueCategories || 0
       }
     })
 
