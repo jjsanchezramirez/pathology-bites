@@ -53,9 +53,7 @@ export default function VirtualSlidesPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(true)
-
-  
-  const itemsPerPage = 50
+  const [itemsPerPage, setItemsPerPage] = useState(30)
 
   // Simulate initial loading
   useEffect(() => {
@@ -151,33 +149,42 @@ export default function VirtualSlidesPage() {
     })
   }, [])
 
-  // Improved search scoring function (diagnosis only, prioritize exact matches and acronyms)
+  // Improved search scoring function with proper priority hierarchy
   const calculateSearchScore = (indexItem: { slide: VirtualSlide; diagnosis: string }, originalTerm: string): number => {
     const diagnosis = indexItem.diagnosis.toLowerCase()
     const searchTerm = originalTerm.toLowerCase().trim()
 
     if (!diagnosis || !searchTerm) return 0
 
-    // Generate acronym from diagnosis
+    // Generate acronym from diagnosis and search term
     const diagnosisWords = diagnosis.split(/\s+/).filter(word => word.length > 0)
     const diagnosisAcronym = diagnosisWords.map(word => word.charAt(0)).join('')
 
-    // Check for exact matches (highest priority)
+    const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0)
+    const searchAcronym = searchWords.length >= 2 ? searchWords.map(word => word.charAt(0)).join('') : ''
+
+    // Priority 1: Exact matches (10000 points)
     if (diagnosis === searchTerm) {
       return 10000 // Perfect exact match
     }
 
-    // Check for acronym matches (very high priority)
+    // Priority 2: Exact acronyms (5000 points)
+    // Case 1: Search term is acronym, diagnosis generates that acronym
     if (diagnosisAcronym === searchTerm) {
-      return 5000 // Acronym match
+      return 5000 // e.g., "alh" matches diagnosis that generates "alh"
     }
 
-    // Check if search term is an acronym that expands to this diagnosis
+    // Case 2: Search term expands to this diagnosis via acronym map
     if (acronymMap.has(searchTerm) && acronymMap.get(searchTerm)?.includes(diagnosis)) {
-      return 5000 // Reverse acronym match
+      return 5000 // e.g., "alh" expands to "atypical lobular hyperplasia"
     }
 
-    // Check for phrase matches (high priority)
+    // Case 3: Search term generates acronym that appears in diagnosis
+    if (searchAcronym && diagnosis.includes(searchAcronym)) {
+      return 5000 // e.g., "atypical lobular hyperplasia" finds "ALH" in diagnosis
+    }
+
+    // Priority 3: Near exact matches (1000-500 points)
     if (diagnosis.includes(searchTerm)) {
       // Bonus for word boundary matches
       const wordBoundaryRegex = new RegExp(`\\b${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
@@ -190,17 +197,15 @@ export default function VirtualSlidesPage() {
         return 500 // Starts with term
       }
 
-      return 100 // Contains term
+      return 300 // Contains term
     }
 
-    // Check individual words for partial matches
-    const searchWords = searchTerm.split(/\s+/)
-    const diagnosisWordsLower = diagnosisWords
+    // Priority 4: Partial matches (10-200 points)
     let wordMatchScore = 0
     let matchedWords = 0
 
     for (const searchWord of searchWords) {
-      for (const diagWord of diagnosisWordsLower) {
+      for (const diagWord of diagnosisWords) {
         if (diagWord === searchWord) {
           wordMatchScore += 50
           matchedWords++
@@ -267,6 +272,16 @@ export default function VirtualSlidesPage() {
         // Check if search term expands to this diagnosis via acronym map
         if (acronymMap.has(searchTermLower) && acronymMap.get(searchTermLower)?.includes(diagnosis)) {
           return true
+        }
+
+        // IMPORTANT: Check if the search term (when converted to acronym) matches text in diagnosis
+        // This handles cases like "atypical lobular hyperplasia" finding "ALH"
+        const searchWords = searchTermLower.split(/\s+/).filter(word => word.length > 0)
+        if (searchWords.length >= 2) {
+          const searchAcronym = searchWords.map(word => word.charAt(0)).join('')
+          if (diagnosis.includes(searchAcronym)) {
+            return true
+          }
         }
 
         return false
@@ -810,12 +825,31 @@ export default function VirtualSlidesPage() {
                 </div>
 
                 {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="border-t p-4">
-                    <div className="flex items-center justify-between">
+                <div className="border-t p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
                       <div className="text-sm text-muted-foreground">
                         Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredSlides.length)} of {filteredSlides.length} results
                       </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Items per page:</span>
+                        <select
+                          value={itemsPerPage}
+                          onChange={(e) => {
+                            setItemsPerPage(Number(e.target.value))
+                            setCurrentPage(1) // Reset to first page when changing items per page
+                          }}
+                          className="text-sm border border-input bg-background px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        >
+                          <option value={10}>10</option>
+                          <option value={20}>20</option>
+                          <option value={30}>30</option>
+                          <option value={50}>50</option>
+                          <option value={100}>100</option>
+                        </select>
+                      </div>
+                    </div>
+                    {totalPages > 1 && (
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
@@ -868,9 +902,9 @@ export default function VirtualSlidesPage() {
                           &gt;&gt;
                         </Button>
                       </div>
-                    </div>
+                    )}
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           </div>
