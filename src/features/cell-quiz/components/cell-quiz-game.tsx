@@ -244,8 +244,8 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
                             w-full p-3 rounded-lg text-left border-2 transition-all text-sm
                             ${!isAnswered ? 'hover:border-primary/50 hover:bg-primary/5' : ''}
                             ${isSelected && !isAnswered ? 'border-primary bg-primary/10' : 'border-border'}
-                            ${showCorrect ? 'border-emerald-600 bg-emerald-100 dark:bg-emerald-900/40' : ''}
-                            ${showIncorrect ? 'border-orange-600 bg-orange-100 dark:bg-orange-900/40' : ''}
+                            ${showCorrect ? 'border-blue-600 bg-blue-100 dark:bg-blue-900/40' : ''}
+                            ${showIncorrect ? 'border-red-600 bg-red-100 dark:bg-red-900/40' : ''}
                             ${isAnswered ? 'cursor-default' : 'cursor-pointer'}
                           `}
                         >
@@ -254,15 +254,15 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
                               <span className={`
                                 flex items-center justify-center w-5 h-5 rounded-full border text-xs font-medium
                                 ${isSelected && !isAnswered ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/30'}
-                                ${showCorrect ? 'border-emerald-600 bg-emerald-600 text-white' : ''}
-                                ${showIncorrect ? 'border-orange-600 bg-orange-600 text-white' : ''}
+                                ${showCorrect ? 'border-blue-600 bg-blue-600 text-white' : ''}
+                                ${showIncorrect ? 'border-red-600 bg-red-600 text-white' : ''}
                               `}>
                                 {String.fromCharCode(65 + index)}
                               </span>
                               <span className="font-medium">{option}</span>
                             </div>
-                            {showCorrect && <Check className="w-4 h-4 text-emerald-600" />}
-                            {showIncorrect && <X className="w-4 h-4 text-orange-600" />}
+                            {showCorrect && <Check className="w-4 h-4 text-blue-600" />}
+                            {showIncorrect && <X className="w-4 h-4 text-red-600" />}
                           </div>
                         </button>
                       )
@@ -270,25 +270,44 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
                   </div>
 
                   {showExplanation && (
-                    <div className={`
-                      p-3 rounded-lg border-l-4 transition-all duration-500
-                      ${isCorrect ? 'border-l-emerald-600 bg-emerald-100 dark:bg-emerald-900/40' : 'border-l-orange-600 bg-orange-100 dark:bg-orange-900/40'}
-                    `}>
-                      <div className="flex items-start gap-2">
-                        <div className={`
-                          flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center
-                          ${isCorrect ? 'bg-emerald-600' : 'bg-orange-600'}
-                        `}>
-                          {isCorrect ? <Check className="w-3 h-3 text-white" /> : <X className="w-3 h-3 text-white" />}
+                    <div className="space-y-4">
+                      <div className={`
+                        p-3 rounded-lg border-l-4 transition-all duration-500
+                        ${isCorrect ? 'border-l-blue-600 bg-blue-100 dark:bg-blue-900/40' : 'border-l-red-600 bg-red-100 dark:bg-red-900/40'}
+                      `}>
+                        <div className="flex items-start gap-2">
+                          <div className={`
+                            flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center
+                            ${isCorrect ? 'bg-blue-600' : 'bg-red-600'}
+                          `}>
+                            {isCorrect ? <Check className="w-3 h-3 text-white" /> : <X className="w-3 h-3 text-white" />}
+                          </div>
+                          <div className="space-y-1">
+                            <p className="font-medium text-sm">
+                              {isCorrect ? 'Correct!' : `Incorrect. The correct answer is ${currentQuestion.correctAnswer}.`}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {currentQuestion.explanation}
+                            </p>
+                          </div>
                         </div>
-                        <div className="space-y-1">
-                          <p className="font-medium text-sm">
-                            {isCorrect ? 'Correct!' : `Incorrect. The correct answer is ${currentQuestion.correctAnswer}.`}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {currentQuestion.explanation}
-                          </p>
-                        </div>
+                      </div>
+
+                      <div className="flex justify-center">
+                        <Button
+                          onClick={handleNextQuestion}
+                          size="sm"
+                          className="gap-1 px-4 py-2 text-sm"
+                        >
+                          {currentQuestionIndex < questions.length - 1 ? (
+                            <>
+                              Next
+                              <ChevronRight className="h-3 w-3" />
+                            </>
+                          ) : (
+                            'Complete Quiz'
+                          )}
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -296,20 +315,7 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
               </div>
             </div>
 
-            {showExplanation && (
-              <div className="p-6 border-t">
-                <Button onClick={handleNextQuestion} className="w-full gap-2">
-                  {currentQuestionIndex < questions.length - 1 ? (
-                    <>
-                      Next
-                      <ChevronRight className="h-4 w-4" />
-                    </>
-                  ) : (
-                    'Complete Quiz'
-                  )}
-                </Button>
-              </div>
-            )}
+
           </div>
         )}
       </CardContent>
