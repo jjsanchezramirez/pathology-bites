@@ -43,7 +43,7 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
   const generateQuestions = useCallback(() => {
     const availableCells = Object.entries(cellData).filter(([_, cell]) => {
       if (!cell.categories) return false
-      return cell.categories.includes(quizSet)
+      return (cell.categories as string[]).includes(quizSet)
     })
 
     if (availableCells.length === 0) return []
