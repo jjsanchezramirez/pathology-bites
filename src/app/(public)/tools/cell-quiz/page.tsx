@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
-import { Check, X, RotateCcw, ArrowLeft, ArrowRight } from 'lucide-react'
+import { Check, X, RotateCcw, ArrowLeft, ArrowRight, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 import FloatingCharacter from '@/shared/components/common/dr-albright'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
@@ -246,9 +246,9 @@ export default function CellQuizPage() {
                           let buttonClass = ""
                           if (showResult) {
                             if (isCorrect) {
-                              buttonClass = "bg-green-500 hover:bg-green-600 text-white border-green-500"
+                              buttonClass = "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600"
                             } else if (isSelected) {
-                              buttonClass = "bg-red-500 hover:bg-red-600 text-white border-red-500"
+                              buttonClass = "bg-red-600 hover:bg-red-700 text-white border-red-600"
                             }
                           }
 
@@ -269,13 +269,6 @@ export default function CellQuizPage() {
                           )
                         })}
                       </div>
-
-                      {/* Next Button */}
-                      {showExplanation && (
-                        <Button onClick={nextQuestion} className="w-full mt-4" size="lg">
-                          Next Question
-                        </Button>
-                      )}
                     </div>
                   </div>
 
@@ -349,6 +342,16 @@ export default function CellQuizPage() {
                           </div>
                         )
                       })()}
+                    </div>
+                  )}
+
+                  {/* Next Button - moved below explanation, aligned right */}
+                  {showExplanation && (
+                    <div className="mt-6 flex justify-end">
+                      <Button onClick={nextQuestion} size="lg" className="gap-2">
+                        Next Question
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
                     </div>
                   )}
                 </div>

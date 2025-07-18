@@ -68,21 +68,36 @@ export default function ImagesPage() {
   const [images, setImages] = useState<ImageData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
   const pageSize = 20;
 
+  // Debounce search term to prevent jittery behavior
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Reset page when search term or category changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm, categoryFilter]);
+
   const loadImages = useCallback(async () => {
     setLoading(true);
     try {
       const result = await fetchImages({
-        page,
+        page: page - 1, // Convert to 0-based for service
         pageSize,
-        searchTerm,
+        searchTerm: debouncedSearchTerm,
         category: categoryFilter === 'all' ? undefined : categoryFilter,
-        showUnusedOnly: false
+        showUnusedOnly: false,
+        includeOnlyMicroscopicAndGross: categoryFilter === 'all'
       });
 
       if (result.error) {
@@ -91,13 +106,9 @@ export default function ImagesPage() {
         setTotalItems(0);
         setTotalPages(0);
       } else {
-        // Filter to only include microscopic and gross images
-        const filteredImages = result.data.filter(image =>
-          image.category === 'microscopic' || image.category === 'gross'
-        );
-        setImages(filteredImages);
-        setTotalItems(filteredImages.length);
-        setTotalPages(Math.ceil(filteredImages.length / pageSize));
+        setImages(result.data);
+        setTotalItems(result.total);
+        setTotalPages(Math.ceil(result.total / pageSize));
       }
     } catch (error) {
       console.error('Error loading images:', error);
@@ -107,7 +118,7 @@ export default function ImagesPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, searchTerm, categoryFilter]);
+  }, [page, pageSize, debouncedSearchTerm, categoryFilter]);
 
   useEffect(() => {
     loadImages();
@@ -227,18 +238,40 @@ export default function ImagesPage() {
                           <div
                             className="relative cursor-pointer rounded-lg overflow-hidden bg-muted w-full aspect-square"
                             onClick={() => {
-                              // Create a simple full-screen image viewer
+                              // Create a full-screen image viewer with blurry background like demo question
                               const overlay = document.createElement('div');
-                              overlay.className = 'fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4';
-                              overlay.onclick = () => document.body.removeChild(overlay);
+                              overlay.className = 'fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-8';
+                              overlay.onclick = () => {
+                                document.body.removeChild(overlay);
+                                document.body.style.overflow = 'auto'; // Restore scrolling
+                              };
+
+                              // Prevent body scrolling when modal is open
+                              document.body.style.overflow = 'hidden';
+
+                              // Create image container with rounded corners like demo question
+                              const imageContainer = document.createElement('div');
+                              imageContainer.className = 'relative bg-white/5 rounded-2xl border border-white/10 shadow-2xl overflow-hidden';
+                              imageContainer.onclick = (e) => e.stopPropagation(); // Prevent closing when clicking container
 
                               const img = document.createElement('img');
                               img.src = image.url;
                               img.alt = image.alt_text || image.description || 'Image';
-                              img.className = 'max-w-full max-h-full object-contain';
+                              img.className = 'max-w-[90vw] max-h-[90vh] object-contain';
 
-                              overlay.appendChild(img);
+                              imageContainer.appendChild(img);
+                              overlay.appendChild(imageContainer);
                               document.body.appendChild(overlay);
+
+                              // Add keyboard support
+                              const handleKeyDown = (e: KeyboardEvent) => {
+                                if (e.key === 'Escape') {
+                                  document.body.removeChild(overlay);
+                                  document.body.style.overflow = 'auto';
+                                  document.removeEventListener('keydown', handleKeyDown);
+                                }
+                              };
+                              document.addEventListener('keydown', handleKeyDown);
                             }}
                           >
                             <Image
@@ -275,38 +308,7 @@ export default function ImagesPage() {
         </div>
       </section>
 
-      {/* Educational Use Section */}
-      <section className="relative py-20">
-        <div className="absolute inset-0 bg-linear-to-b from-transparent to-primary/5" />
-        <div className="container px-4 max-w-3xl mx-auto text-center relative">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Educational Use</h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            All images in our gallery are provided for educational purposes. These high-quality
-            pathology images support learning and understanding of various medical conditions
-            and diagnostic techniques.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">Image Types</h3>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Microscopic pathology images</li>
-                <li>• Gross specimen photographs</li>
-                <li>• High-resolution medical imagery</li>
-                <li>• Diagnostic reference materials</li>
-              </ul>
-            </Card>
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">Usage Guidelines</h3>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• For educational purposes only</li>
-                <li>• High-resolution viewing available</li>
-                <li>• Click any image for full-screen view</li>
-                <li>• Organized by pathology type</li>
-              </ul>
-            </Card>
-          </div>
-        </div>
-      </section>
+
 
       {/* Join Our Learning Community Section */}
       <JoinCommunitySection />

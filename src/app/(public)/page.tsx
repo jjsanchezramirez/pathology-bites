@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react'
 import { ScrollToTopButton } from "@/shared/components/common/scroll-to-top"
 import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
-import Image from "next/image"
 import { ChevronDown, BookOpen, Users, Target, Heart, Zap, GitBranch } from "lucide-react"
 import DemoQuestion from "@/shared/components/common/demo-question"
+import { MouseAvoidingLogos } from "@/shared/components/common/mouse-avoiding-logos"
 import ComingSoonPage from "./coming-soon/page"
 import { usePublicStats } from "@/shared/hooks/use-public-stats"
 
@@ -348,82 +348,7 @@ export default function LandingPage() {
               </div>
 
               <div className="relative">
-                <div className="space-y-4">
-                  {/* Top row - 2 logos */}
-                  <div className="flex justify-center gap-6">
-                    <div className="w-32 h-20 bg-white rounded-lg shadow-sm border flex items-center justify-center p-3">
-                      <Image
-                        src="/logos/university-of-leeds-logo.png"
-                        alt="University of Leeds"
-                        width={120}
-                        height={60}
-                        className="object-contain"
-                      />
-                    </div>
-                    <div className="w-32 h-20 bg-white rounded-lg shadow-sm border flex items-center justify-center p-3">
-                      <Image
-                        src="/logos/path-presenter-logo.png"
-                        alt="PathPresenter"
-                        width={120}
-                        height={60}
-                        className="object-contain"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Middle row - 3 logos */}
-                  <div className="flex justify-center gap-4">
-                    <div className="w-28 h-18 bg-white rounded-lg shadow-sm border flex items-center justify-center p-2">
-                      <Image
-                        src="/logos/mgh-logo.png"
-                        alt="MGH"
-                        width={100}
-                        height={50}
-                        className="object-contain"
-                      />
-                    </div>
-                    <div className="w-28 h-18 bg-white rounded-lg shadow-sm border flex items-center justify-center p-2">
-                      <Image
-                        src="/logos/university-of-toronto-logo.png"
-                        alt="University of Toronto"
-                        width={100}
-                        height={50}
-                        className="object-contain"
-                      />
-                    </div>
-                    <div className="w-28 h-18 bg-white rounded-lg shadow-sm border flex items-center justify-center p-2">
-                      <Image
-                        src="/logos/rosai-collection-logo.png"
-                        alt="Rosai Collection"
-                        width={100}
-                        height={50}
-                        className="object-contain"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Bottom row - 2 logos (removed AANP) */}
-                  <div className="flex justify-center gap-4">
-                    <div className="w-28 h-18 bg-white rounded-lg shadow-sm border flex items-center justify-center p-2">
-                      <Image
-                        src="/logos/hematopathology-etutorial-logo.png"
-                        alt="Hematopathology eTutorial"
-                        width={100}
-                        height={50}
-                        className="object-contain"
-                      />
-                    </div>
-                    <div className="w-28 h-18 bg-white rounded-lg shadow-sm border flex items-center justify-center p-2">
-                      <Image
-                        src="/logos/recut-club-logo.png"
-                        alt="Recut Club"
-                        width={100}
-                        height={50}
-                        className="object-contain"
-                      />
-                    </div>
-                  </div>
-                </div>
+                <MouseAvoidingLogos />
               </div>
             </div>
           </div>

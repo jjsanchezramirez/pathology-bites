@@ -66,8 +66,9 @@ export async function fetchImages(params: {
   searchTerm?: string;
   category?: string;
   showUnusedOnly?: boolean;
+  includeOnlyMicroscopicAndGross?: boolean;
 }) {
-  const { page, pageSize, searchTerm, category, showUnusedOnly } = params;
+  const { page, pageSize, searchTerm, category, showUnusedOnly, includeOnlyMicroscopicAndGross } = params;
   const supabase = createClient(); // Remove <Database>
 
   try {
@@ -88,6 +89,12 @@ export async function fetchImages(params: {
     if (!showUnusedOnly) {
       countQuery = countQuery.neq('category', 'external');
       dataQuery = dataQuery.neq('category', 'external');
+    }
+
+    // Filter to only microscopic and gross images if requested
+    if (includeOnlyMicroscopicAndGross && !showUnusedOnly) {
+      countQuery = countQuery.in('category', ['microscopic', 'gross']);
+      dataQuery = dataQuery.in('category', ['microscopic', 'gross']);
     }
 
     // Apply filters to both queries

@@ -62,6 +62,7 @@ function MediaSection({ images, section, maxImages, onImagesChange, question }: 
         page: 0,
         pageSize: 10, // Load exactly 10 images (2 rows of 5)
         searchTerm: debouncedSearchTerm || undefined,
+        showUnusedOnly: false
       });
 
       if (result.error) {

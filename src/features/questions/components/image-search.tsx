@@ -52,6 +52,7 @@ export function ImageSearch({
         pageSize: 12,
         searchTerm: searchTerm || undefined,
         category: categoryFilter === 'all' ? undefined : categoryFilter,
+        showUnusedOnly: false
       });
 
       if (result.error) {

@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { createClient } from '@/shared/services/server'
+import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -121,17 +121,22 @@ ${data.inquiry}
 }
 
 export async function submitContactForm(formData: ContactFormData) {
-  const supabase = await createClient()
-  console.log('Starting form submission...')
-  
   try {
     // Validate form data
-    console.log('Validating data:', formData)
     const validatedData = formSchema.parse(formData)
-    console.log('Data validated successfully')
+
+    // Use service role key for contact form submissions
+    // This bypasses RLS since we want anyone to be able to submit inquiries
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      throw new Error('Missing Supabase environment variables')
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey)
 
     // Insert into database
-    console.log('Attempting database insertion...')
     const { data: dbData, error: dbError } = await supabase
       .from('inquiries')
       .insert([{
@@ -146,7 +151,7 @@ export async function submitContactForm(formData: ContactFormData) {
       .single()
 
     if (dbError) {
-      console.error('Supabase error:', dbError)
+      console.error('Database error:', dbError)
       return {
         success: false,
         error: `Database error: ${dbError.message}`,
@@ -178,15 +183,14 @@ export async function submitContactForm(formData: ContactFormData) {
       emailError = error instanceof Error ? error.message : 'Failed to send email notification'
     }
 
-    console.log('Submission successful:', dbData)
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: dbData,
       emailError: emailError ? 'Your message was saved but there was an issue sending the email notification. Our team will still receive your inquiry.' : null
     }
   } catch (error) {
-    console.error('Error in submitContactForm:', error)
-    
+    console.error('Contact form submission error:', error)
+
     if (error instanceof z.ZodError) {
       return {
         success: false,
@@ -194,7 +198,7 @@ export async function submitContactForm(formData: ContactFormData) {
         details: error.errors
       }
     }
-    
+
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to submit inquiry'

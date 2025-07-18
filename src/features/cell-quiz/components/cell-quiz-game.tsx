@@ -244,7 +244,7 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
                             w-full p-3 rounded-lg text-left border-2 transition-all text-sm
                             ${!isAnswered ? 'hover:border-primary/50 hover:bg-primary/5' : ''}
                             ${isSelected && !isAnswered ? 'border-primary bg-primary/10' : 'border-border'}
-                            ${showCorrect ? 'border-blue-600 bg-blue-100 dark:bg-blue-900/40' : ''}
+                            ${showCorrect ? 'border-emerald-600 bg-emerald-100 dark:bg-emerald-900/40' : ''}
                             ${showIncorrect ? 'border-red-600 bg-red-100 dark:bg-red-900/40' : ''}
                             ${isAnswered ? 'cursor-default' : 'cursor-pointer'}
                           `}
@@ -273,12 +273,12 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
                     <div className="space-y-4">
                       <div className={`
                         p-3 rounded-lg border-l-4 transition-all duration-500
-                        ${isCorrect ? 'border-l-blue-600 bg-blue-100 dark:bg-blue-900/40' : 'border-l-red-600 bg-red-100 dark:bg-red-900/40'}
+                        ${isCorrect ? 'border-l-emerald-600 bg-emerald-100 dark:bg-emerald-900/40' : 'border-l-red-600 bg-red-100 dark:bg-red-900/40'}
                       `}>
                         <div className="flex items-start gap-2">
                           <div className={`
                             flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center
-                            ${isCorrect ? 'bg-blue-600' : 'bg-red-600'}
+                            ${isCorrect ? 'bg-emerald-600' : 'bg-red-600'}
                           `}>
                             {isCorrect ? <Check className="w-3 h-3 text-white" /> : <X className="w-3 h-3 text-white" />}
                           </div>
@@ -293,19 +293,22 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
                         </div>
                       </div>
 
-                      <div className="flex justify-center">
+                      <div className="flex justify-end mt-4">
                         <Button
                           onClick={handleNextQuestion}
-                          size="sm"
-                          className="gap-1 px-4 py-2 text-sm"
+                          size="lg"
+                          className="gap-2"
                         >
                           {currentQuestionIndex < questions.length - 1 ? (
                             <>
-                              Next
-                              <ChevronRight className="h-3 w-3" />
+                              Next Question
+                              <ChevronRight className="h-4 w-4" />
                             </>
                           ) : (
-                            'Complete Quiz'
+                            <>
+                              Complete Quiz
+                              <ChevronRight className="h-4 w-4" />
+                            </>
                           )}
                         </Button>
                       </div>

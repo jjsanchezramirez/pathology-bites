@@ -35,6 +35,7 @@ export function ImageAttachment({
         page: 0,
         pageSize: 50,
         searchTerm: searchTerm || undefined,
+        showUnusedOnly: false
       });
 
       if (result.error) {
@@ -125,6 +126,7 @@ export function ImageAttachment({
       const result = await fetchImages({
         page: 0,
         pageSize: 1000,
+        showUnusedOnly: false
       });
 
       if (result.error) {

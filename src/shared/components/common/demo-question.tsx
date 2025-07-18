@@ -119,13 +119,12 @@ export default function DemoQuestion() {
                 key={option.id}
                 onClick={() => handleOptionClick(option.id)}
                 className={`
-                  p-2 rounded-md text-left border text-sm
+                  p-2 rounded-md text-left border text-sm transition-colors duration-200
                   ${!isAnswered ? 'hover:border-primary/50 hover:bg-primary/5' : ''}
                   ${isSelected ? 'border-primary' : 'border'}
                   ${showCorrect ? 'bg-green-50 border-green-500 dark:bg-green-950/30' : ''}
                   ${showIncorrect ? 'bg-red-50 border-red-500 dark:bg-red-950/30' : ''}
                 `}
-                style={{ transitionDelay: `${300 + index * 100}ms` }}
                 disabled={isAnswered}
                 role="option"
                 aria-selected={isSelected}

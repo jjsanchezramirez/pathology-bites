@@ -51,7 +51,8 @@ export function useImages(params: UseImagesParams = {}): UseImagesReturn {
         page,
         pageSize,
         searchTerm,
-        category
+        category,
+        showUnusedOnly: false
       });
 
       if (result.error) {
