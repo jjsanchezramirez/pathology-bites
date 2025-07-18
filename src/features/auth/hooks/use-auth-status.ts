@@ -42,6 +42,15 @@ export function useAuthStatus() {
           setSession(null)
           setUser(null)
           setIsAuthenticated(false)
+
+          // Show error as toast for visibility
+          if (typeof window !== 'undefined') {
+            const { toast } = await import('@/shared/utils/toast')
+            toast.error(authError.userMessage, {
+              duration: 8000,
+              description: `Error: ${authError.message}`
+            })
+          }
         } else {
           setSession(session)
           setUser(session?.user ?? null)
@@ -61,6 +70,15 @@ export function useAuthStatus() {
                   new Error('Session security validation failed')
                 )
                 setError(securityError)
+
+                // Show security error as toast
+                if (typeof window !== 'undefined') {
+                  const { toast } = await import('@/shared/utils/toast')
+                  toast.warning(securityError.userMessage, {
+                    duration: 10000,
+                    description: 'Please log in again for security'
+                  })
+                }
               }
             }
           }
@@ -73,6 +91,15 @@ export function useAuthStatus() {
         setSession(null)
         setUser(null)
         setIsAuthenticated(false)
+
+        // Show initialization error as toast
+        if (typeof window !== 'undefined') {
+          const { toast } = await import('@/shared/utils/toast')
+          toast.error(authError.userMessage, {
+            duration: 8000,
+            description: `Initialization error: ${authError.message}`
+          })
+        }
       } finally {
         if (mounted) {
           setIsLoading(false)
@@ -143,6 +170,15 @@ export function useAuthStatus() {
       console.error('Refresh session error:', err)
       const authError = authErrorHandler.categorizeError(err)
       setError(authError)
+
+      // Show refresh error as toast
+      if (typeof window !== 'undefined') {
+        const { toast } = await import('@/shared/utils/toast')
+        toast.error(authError.userMessage, {
+          duration: 8000,
+          description: `Session refresh failed: ${authError.message}`
+        })
+      }
     } finally {
       setIsLoading(false)
     }

@@ -16,7 +16,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       visibleToasts={4}
       closeButton
       toastOptions={{
-        duration: 4000,
+        duration: 8000, // Increased from 4000ms to 8000ms (8 seconds)
         className: "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
         descriptionClassName: "group-[.toast]:text-muted-foreground",
       }}
