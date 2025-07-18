@@ -79,7 +79,7 @@
     "count": 3
   },
   "basophilic": {
-    "name": "Basophilic Erythroblast",
+    "name": "Basophilic",
     "description": "Early red blood cell precursor with basophilic cytoplasm due to ribosomes",
     "categories": [
       "erythroid",
@@ -237,6 +237,15 @@
     ],
     "count": 9
   },
+  "mast": {
+    "name": "Mast",
+    "description": "mast cell",
+    "categories": [],
+    "images": [
+      "/images/cells/mast_cell_001.png"
+    ],
+    "count": 1
+  },
   "metamyelocyte": {
     "name": "Metamyelocyte",
     "description": "Immature neutrophil with an indented but not segmented nucleus",
@@ -393,7 +402,7 @@
     "count": 48
   },
   "orthochromatic": {
-    "name": "Orthochromic Erythroblast",
+    "name": "Orthochromatic",
     "description": "Late red blood cell precursor with mostly pink cytoplasm",
     "categories": [
       "erythroid",
@@ -497,7 +506,7 @@
     "count": 10
   },
   "polychromatic": {
-    "name": "Polychromatophilic Erythroblast",
+    "name": "Polychromatic",
     "description": "Intermediate red blood cell precursor with mixed blue-pink cytoplasm",
     "categories": [
       "erythroid",
@@ -599,6 +608,15 @@
       "/images/cells/proerythroblast_009.png"
     ],
     "count": 10
+  },
+  "promonocyte": {
+    "name": "Promonocyte",
+    "description": "promonocyte cell",
+    "categories": [],
+    "images": [
+      "/images/cells/promonocyte_001.png"
+    ],
+    "count": 1
   },
   "promyelocyte": {
     "name": "Promyelocyte",
@@ -712,29 +730,5 @@
       "/images/cells/segmented_071.png"
     ],
     "count": 72
-  },
-  "mast_cell": {
-    "name": "Mast Cell",
-    "description": "Large cell with abundant cytoplasm packed with purple-black or black coarse granules",
-    "categories": [
-      "other_cells",
-      "all_cells"
-    ],
-    "images": [
-      "/images/cells/mast_cell_001.png"
-    ],
-    "count": 1
-  },
-  "promonocyte": {
-    "name": "Promonocyte",
-    "description": "Immature monocyte with convoluted or folded nucleus and fine chromatin pattern",
-    "categories": [
-      "other_cells",
-      "all_cells"
-    ],
-    "images": [
-      "/images/cells/promonocyte_001.png"
-    ],
-    "count": 1
   }
 }
