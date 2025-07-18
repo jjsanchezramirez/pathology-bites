@@ -121,6 +121,26 @@ export default function PrivacyPage() {
                 </p>
               </div>
             </Card>
+
+            <Card className="p-8 shadow-lg">
+              <h2 className="text-2xl font-bold mb-4">Third-Party Websites</h2>
+              <div className="space-y-4 text-muted-foreground">
+                <p>
+                  PathologyBites may provide links to third-party websites, including educational repositories,
+                  virtual slide collections, and other external resources. We are not responsible for the
+                  privacy practices, content, or security of these external websites.
+                </p>
+                <p>
+                  When you access third-party websites through our platform, you are subject to their respective
+                  privacy policies and terms of service. We encourage you to review the privacy policies of any
+                  external websites you visit through our links.
+                </p>
+                <p>
+                  We do not control, endorse, or assume responsibility for the content, privacy policies, or
+                  practices of any third-party websites or services.
+                </p>
+              </div>
+            </Card>
           </div>
         </div>
       </section>

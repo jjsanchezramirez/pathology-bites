@@ -172,25 +172,7 @@ export default function VirtualSlidesPage() {
         </div>
       </section>
 
-      {/* Disclaimers Section */}
-      <section className="py-6 bg-muted/30">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="space-y-3 text-sm text-muted-foreground">
-            <div className="flex items-start gap-2">
-              <span className="font-medium text-foreground">Content Disclaimer:</span>
-              <span>
-                This tool provides links to third-party whole slide image (WSI) repositories. We do not host, store, or claim ownership of any of the content linked. All copyrights remain with the respective content owners. Accessing and using external content is subject to each source's terms and conditions. No affiliation or endorsement is implied.
-              </span>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="font-medium text-foreground">Medical Disclaimer:</span>
-              <span>
-                This educational tool is intended for learning purposes only and does not constitute medical advice, diagnosis, or treatment recommendations. Always consult qualified healthcare professionals for medical decisions.
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* Repository Logos Section */}
       <section className="py-8 bg-background">
@@ -467,6 +449,18 @@ export default function VirtualSlidesPage() {
           </div>
         </section>
       )}
+
+      {/* Content Disclaimer Section */}
+      <section className="py-8 bg-muted/30">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-sm text-muted-foreground text-center">
+            <span className="font-medium text-foreground">Content Disclaimer:</span>
+            <span className="ml-2">
+              This tool provides links to third-party whole slide image (WSI) repositories. We do not host, store, or claim ownership of any of the content linked. All copyrights remain with the respective content owners. Accessing and using external content is subject to each source's terms and conditions. No affiliation or endorsement is implied.
+            </span>
+          </div>
+        </div>
+      </section>
 
       {/* Join Our Learning Community Section */}
       <JoinCommunitySection />
