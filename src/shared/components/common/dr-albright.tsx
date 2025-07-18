@@ -1,4 +1,6 @@
 // src/components/landing/dr-albright.tsx
+'use client'
+
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 

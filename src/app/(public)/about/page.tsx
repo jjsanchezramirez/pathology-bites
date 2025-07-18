@@ -1,7 +1,9 @@
 // src/app/about/page.tsx
-'use client'
-
+import { Metadata } from 'next'
+import { generateAboutPageMetadata } from '@/shared/components/seo/page-seo'
 import { Button } from "@/shared/components/ui/button"
+
+export const metadata: Metadata = generateAboutPageMetadata()
 import Link from "next/link"
 import { 
   MicroscopeIcon, 

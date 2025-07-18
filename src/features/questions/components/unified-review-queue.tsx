@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/shared/services/client'
 import {
@@ -38,6 +38,20 @@ import { FlagResolutionDialog } from './flag-resolution-dialog'
 import { toast } from 'sonner'
 import { STATUS_CONFIG, QuestionWithDetails, QuestionFlagData } from '@/features/questions/types/questions'
 
+// Component to handle search params
+function TabInitializer({ setActiveTab }: { setActiveTab: (tab: string) => void }) {
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const tabParam = searchParams?.get('tab')
+    if (tabParam && ['all', 'new_submission', 'flagged_question'].includes(tabParam)) {
+      setActiveTab(tabParam)
+    }
+  }, [searchParams, setActiveTab])
+
+  return null
+}
+
 interface ReviewQueueItem extends QuestionWithDetails {
   creator_name: string
   creator_email: string
@@ -62,16 +76,7 @@ export function UnifiedReviewQueue() {
   const [selectedQuestionTitle, setSelectedQuestionTitle] = useState('')
   const [activeTab, setActiveTab] = useState('all')
 
-  const searchParams = useSearchParams()
   const supabase = createClient()
-
-  // Set initial tab from URL params
-  useEffect(() => {
-    const tabParam = searchParams?.get('tab')
-    if (tabParam && ['all', 'new_submission', 'flagged_question'].includes(tabParam)) {
-      setActiveTab(tabParam)
-    }
-  }, [searchParams])
 
   const fetchReviewQueue = async () => {
     try {
@@ -203,6 +208,11 @@ export function UnifiedReviewQueue() {
 
   return (
     <div className="space-y-6">
+      {/* Tab initializer wrapped in Suspense */}
+      <Suspense fallback={null}>
+        <TabInitializer setActiveTab={setActiveTab} />
+      </Suspense>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

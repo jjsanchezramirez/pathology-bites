@@ -1,6 +1,11 @@
 // Setup Jest DOM matchers
 import '@testing-library/jest-dom'
 
+// Polyfill for TextEncoder/TextDecoder
+const { TextEncoder, TextDecoder } = require('util')
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder
+
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(() => ({
@@ -63,51 +68,42 @@ window.location = {
   reload: jest.fn(),
 }
 
-// Polyfill for Request and Response
-global.Request = class Request {
-  constructor(url, options = {}) {
-    this.url = url
-    this.method = options.method || 'GET'
-    this.headers = new Map()
-
-    if (options.headers) {
-      Object.entries(options.headers).forEach(([key, value]) => {
-        this.headers.set(key.toLowerCase(), value)
-      })
-    }
-  }
-
-  get(name) {
-    return this.headers.get(name.toLowerCase()) || null
-  }
+// Polyfill for fetch API if not available
+if (typeof global.fetch === 'undefined') {
+  global.fetch = jest.fn()
 }
 
-global.Response = class Response {
-  constructor(body, options = {}) {
-    this.body = body
-    this.status = options.status || 200
-    this.headers = new Map()
-
-    if (options.headers) {
-      Object.entries(options.headers).forEach(([key, value]) => {
-        this.headers.set(key.toLowerCase(), value)
-      })
+// Mock Headers if not available
+if (typeof global.Headers === 'undefined') {
+  global.Headers = class Headers {
+    constructor(init = {}) {
+      this._headers = new Map()
+      if (init) {
+        Object.entries(init).forEach(([key, value]) => {
+          this._headers.set(key.toLowerCase(), value)
+        })
+      }
     }
-  }
 
-  get(name) {
-    return this.headers.get(name.toLowerCase()) || null
-  }
+    get(name) {
+      return this._headers.get(name.toLowerCase()) || null
+    }
 
-  async json() {
-    return JSON.parse(this.body)
-  }
-}
+    set(name, value) {
+      this._headers.set(name.toLowerCase(), value)
+    }
 
-// Mock Request.headers.get method
-global.Request.prototype.headers = {
-  get: function(name) {
-    return this._headers?.[name.toLowerCase()] || null
+    has(name) {
+      return this._headers.has(name.toLowerCase())
+    }
+
+    delete(name) {
+      this._headers.delete(name.toLowerCase())
+    }
+
+    entries() {
+      return this._headers.entries()
+    }
   }
 }
 
