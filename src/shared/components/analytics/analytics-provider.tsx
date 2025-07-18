@@ -144,25 +144,7 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-
-              gtag('config', '${GA_MEASUREMENT_ID}', {
-                page_location: window.location.href,
-                page_path: window.location.pathname,
-                page_title: document.title,
-                send_page_view: false, // We handle this manually
-                anonymize_ip: true,
-                allow_google_signals: false,
-                allow_ad_personalization_signals: false,
-              });
-
-              // Enhanced ecommerce and education tracking
-              gtag('config', '${GA_MEASUREMENT_ID}', {
-                custom_map: {
-                  'custom_parameter_1': 'category',
-                  'custom_parameter_2': 'difficulty',
-                  'custom_parameter_3': 'question_type',
-                }
-              });
+              gtag('config', '${GA_MEASUREMENT_ID}');
             `}
           </Script>
 
