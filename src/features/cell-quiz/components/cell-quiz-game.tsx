@@ -54,12 +54,15 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
       const [correctCellType, correctCell] = availableCells[Math.floor(Math.random() * availableCells.length)]
       const randomImage = correctCell.images[Math.floor(Math.random() * correctCell.images.length)]
       
+      // Get unique wrong options, excluding the correct answer
       const wrongOptions = availableCells
         .filter(([cellType]) => cellType !== correctCellType)
         .map(([cellType, cell]) => cell.name)
+        .filter((name, index, array) => array.indexOf(name) === index) // Remove duplicates
+        .filter(name => name !== correctCell.name) // Ensure correct answer isn't included
         .sort(() => Math.random() - 0.5)
         .slice(0, 3)
-      
+
       const options = [correctCell.name, ...wrongOptions].sort(() => Math.random() - 0.5)
       
       questions.push({
@@ -241,8 +244,8 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
                             w-full p-3 rounded-lg text-left border-2 transition-all text-sm
                             ${!isAnswered ? 'hover:border-primary/50 hover:bg-primary/5' : ''}
                             ${isSelected && !isAnswered ? 'border-primary bg-primary/10' : 'border-border'}
-                            ${showCorrect ? 'border-green-500 bg-green-50 dark:bg-green-950/30' : ''}
-                            ${showIncorrect ? 'border-red-500 bg-red-50 dark:bg-red-950/30' : ''}
+                            ${showCorrect ? 'border-emerald-600 bg-emerald-100 dark:bg-emerald-900/40' : ''}
+                            ${showIncorrect ? 'border-orange-600 bg-orange-100 dark:bg-orange-900/40' : ''}
                             ${isAnswered ? 'cursor-default' : 'cursor-pointer'}
                           `}
                         >
@@ -251,15 +254,15 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
                               <span className={`
                                 flex items-center justify-center w-5 h-5 rounded-full border text-xs font-medium
                                 ${isSelected && !isAnswered ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/30'}
-                                ${showCorrect ? 'border-green-500 bg-green-500 text-white' : ''}
-                                ${showIncorrect ? 'border-red-500 bg-red-500 text-white' : ''}
+                                ${showCorrect ? 'border-emerald-600 bg-emerald-600 text-white' : ''}
+                                ${showIncorrect ? 'border-orange-600 bg-orange-600 text-white' : ''}
                               `}>
                                 {String.fromCharCode(65 + index)}
                               </span>
                               <span className="font-medium">{option}</span>
                             </div>
-                            {showCorrect && <Check className="w-4 h-4 text-green-500" />}
-                            {showIncorrect && <X className="w-4 h-4 text-red-500" />}
+                            {showCorrect && <Check className="w-4 h-4 text-emerald-600" />}
+                            {showIncorrect && <X className="w-4 h-4 text-orange-600" />}
                           </div>
                         </button>
                       )
@@ -269,12 +272,12 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
                   {showExplanation && (
                     <div className={`
                       p-3 rounded-lg border-l-4 transition-all duration-500
-                      ${isCorrect ? 'border-l-green-500 bg-green-50 dark:bg-green-950/30' : 'border-l-red-500 bg-red-50 dark:bg-red-950/30'}
+                      ${isCorrect ? 'border-l-emerald-600 bg-emerald-100 dark:bg-emerald-900/40' : 'border-l-orange-600 bg-orange-100 dark:bg-orange-900/40'}
                     `}>
                       <div className="flex items-start gap-2">
                         <div className={`
                           flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center
-                          ${isCorrect ? 'bg-green-500' : 'bg-red-500'}
+                          ${isCorrect ? 'bg-emerald-600' : 'bg-orange-600'}
                         `}>
                           {isCorrect ? <Check className="w-3 h-3 text-white" /> : <X className="w-3 h-3 text-white" />}
                         </div>
@@ -289,24 +292,24 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
                       </div>
                     </div>
                   )}
-
-                  {showExplanation && (
-                    <div className="mt-4">
-                      <Button onClick={handleNextQuestion} className="w-full gap-2">
-                        {currentQuestionIndex < questions.length - 1 ? (
-                          <>
-                            Next Question
-                            <ChevronRight className="h-4 w-4" />
-                          </>
-                        ) : (
-                          'Complete Quiz'
-                        )}
-                      </Button>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
+
+            {showExplanation && (
+              <div className="p-6 border-t">
+                <Button onClick={handleNextQuestion} className="w-full gap-2">
+                  {currentQuestionIndex < questions.length - 1 ? (
+                    <>
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </>
+                  ) : (
+                    'Complete Quiz'
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </CardContent>

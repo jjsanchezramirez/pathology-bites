@@ -79,7 +79,7 @@
     "count": 3
   },
   "basophilic": {
-    "name": "Basophilic",
+    "name": "Basophilic Erythroblast",
     "description": "Early red blood cell precursor with basophilic cytoplasm due to ribosomes",
     "categories": [
       "erythroid",
@@ -393,7 +393,7 @@
     "count": 48
   },
   "orthochromatic": {
-    "name": "Orthochromatic",
+    "name": "Orthochromic Erythroblast",
     "description": "Late red blood cell precursor with mostly pink cytoplasm",
     "categories": [
       "erythroid",
@@ -497,7 +497,7 @@
     "count": 10
   },
   "polychromatic": {
-    "name": "Polychromatic",
+    "name": "Polychromatophilic Erythroblast",
     "description": "Intermediate red blood cell precursor with mixed blue-pink cytoplasm",
     "categories": [
       "erythroid",

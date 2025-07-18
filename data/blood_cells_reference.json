@@ -89,46 +89,46 @@
       "notes": "Definitive identification requires immunophenotyping"
     },
     {
-      "name": "Erythroid Precursor, Pronormoblast",
+      "name": "Proerythroblast",
       "lineage": "Erythroid",
       "size": "17-24 μm",
       "nc_ratio": "8:1",
-      "key_features": "Large cell with distinct cytoplasmic border, blue cytoplasm darker than myeloblast but lighter than basophilic normoblast, visible perinuclear hof",
+      "key_features": "Large cell with distinct cytoplasmic border, blue cytoplasm darker than myeloblast but lighter than basophilic erythroblast, visible perinuclear hof",
       "nucleus": "Large with distinct nuclear membrane, round or slightly oval, 1 or more prominent nucleoli. Finely reticulated, lacy, blast-like chromatin without clumping",
       "normal_percentage": "<3% of nucleated erythroid cells in normal bone marrow",
       "clinical_significance": null,
       "notes": "Most immature cells in the erythroid series"
     },
     {
-      "name": "Erythroid Precursor, Basophilic Normoblast",
+      "name": "Basophilic Erythroblast",
       "lineage": "Erythroid",
       "size": "10-17 μm",
       "nc_ratio": "6:1",
-      "key_features": "Smaller than pronormoblast, intensely basophilic cytoplasm",
-      "nucleus": "Round to slightly oval, chromatin is open but with thicker, more clumped strands than pronormoblast",
+      "key_features": "Smaller than proerythroblast, intensely basophilic cytoplasm",
+      "nucleus": "Round to slightly oval, chromatin is open but with thicker, more clumped strands than proerythroblast",
       "normal_percentage": "6% to 8% of nucleated erythroid cells in bone marrow",
       "clinical_significance": null,
       "notes": null
     },
     {
-      "name": "Erythroid Precursor, Polychromatophilic Normoblast",
+      "name": "Polychromatophilic Erythroblast",
       "lineage": "Erythroid",
       "size": "10-15 μm",
       "nc_ratio": "4:1",
       "key_features": "Round cell with polychromatophilic (blue-pink) cytoplasm due to increasing hemoglobin concentration",
       "nucleus": "Lacks nucleoli, more condensed chromatin than earlier stages",
-      "normal_percentage": "90% of nucleated erythroid cells (combined with orthochromic normoblasts)",
+      "normal_percentage": "90% of nucleated erythroid cells (combined with orthochromic erythroblasts)",
       "clinical_significance": null,
       "notes": null
     },
     {
-      "name": "Erythroid Precursor, Orthochromic Normoblast",
+      "name": "Orthochromic Erythroblast",
       "lineage": "Erythroid",
       "size": "8-12 μm",
       "nc_ratio": "1:2",
-      "key_features": "Late-stage erythroid precursor, smaller than polychromatophilic normoblast. Cytoplasm stains uniformly pinkish orange due to hemoglobinization with little or no basophilia",
+      "key_features": "Late-stage erythroid precursor, smaller than polychromatophilic erythroblast. Cytoplasm stains uniformly pinkish orange due to hemoglobinization with little or no basophilia",
       "nucleus": "Very small, often pyknotic, sometimes appears as homogeneous mass of dense chromatin. Often eccentrically placed and may be extruding or fragmented",
-      "normal_percentage": "90% of nucleated erythroid cells (combined with polychromatophilic normoblasts)",
+      "normal_percentage": "90% of nucleated erythroid cells (combined with polychromatophilic erythroblasts)",
       "clinical_significance": null,
       "notes": null
     },
@@ -144,7 +144,7 @@
       "notes": null
     },
     {
-      "name": "Monocyte, Immature (Promonocyte)",
+      "name": "Promonocyte",
       "lineage": "Other",
       "size": "6-25 μm",
       "nc_ratio": "Variable",
