@@ -121,10 +121,13 @@ export async function updateSession(request: NextRequest) {
   if (isComingSoonMode && isSignupPage && bypassParam !== 'true') {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    // Clear search params to avoid conflicts
+    url.search = ''
     // Ensure we use the correct protocol for localhost
     if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
       url.protocol = 'http:'
     }
+    console.log(`[Middleware] Coming Soon redirect to: ${url.toString()}`)
     return NextResponse.redirect(url)
   }
 
@@ -141,11 +144,14 @@ export async function updateSession(request: NextRequest) {
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    // Clear existing search params to avoid double redirects
+    url.search = ''
     url.searchParams.set('redirect', request.nextUrl.pathname)
     // Ensure we use the correct protocol for localhost
     if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
       url.protocol = 'http:'
     }
+    console.log(`[Middleware] Redirecting unauthenticated user to: ${url.toString()}`)
     return NextResponse.redirect(url)
   }
 
@@ -166,10 +172,13 @@ export async function updateSession(request: NextRequest) {
         console.log('User is not admin, creator, or reviewer, redirecting. Role:', userRole)
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'
+        // Clear search params to avoid conflicts
+        url.search = ''
         // Ensure we use the correct protocol for localhost
         if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
           url.protocol = 'http:'
         }
+        console.log(`[Middleware] Non-admin redirect to: ${url.toString()}`)
         return NextResponse.redirect(url)
       }
     }
@@ -185,10 +194,13 @@ export async function updateSession(request: NextRequest) {
         console.log('Redirecting admin/creator/reviewer user from dashboard to admin dashboard (metadata)')
         const url = request.nextUrl.clone()
         url.pathname = '/admin/dashboard'
+        // Clear search params to avoid conflicts
+        url.search = ''
         // Ensure we use the correct protocol for localhost
         if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
           url.protocol = 'http:'
         }
+        console.log(`[Middleware] Admin metadata redirect to: ${url.toString()}`)
         return NextResponse.redirect(url)
       }
 
@@ -204,10 +216,13 @@ export async function updateSession(request: NextRequest) {
         console.log('Redirecting admin/creator/reviewer user from dashboard to admin dashboard (database)')
         const url = request.nextUrl.clone()
         url.pathname = '/admin/dashboard'
+        // Clear search params to avoid conflicts
+        url.search = ''
         // Ensure we use the correct protocol for localhost
         if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
           url.protocol = 'http:'
         }
+        console.log(`[Middleware] Admin database redirect to: ${url.toString()}`)
         return NextResponse.redirect(url)
       }
     } catch (error) {
