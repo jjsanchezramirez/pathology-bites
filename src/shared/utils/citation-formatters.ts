@@ -13,9 +13,23 @@ let JOURNAL_ABBREVIATIONS: Record<string, string> = {}
  * Load journal abbreviations from JSON file
  */
 async function loadJournalAbbreviations(): Promise<void> {
+  // Skip loading during build time or server-side rendering without proper environment
+  if (typeof window === 'undefined' && !process.env.VERCEL_URL && !process.env.NEXT_PUBLIC_VERCEL_URL) {
+    // Use fallback immediately during build time
+    console.warn('Skipping journal abbreviations load during build time, using fallback')
+    return
+  }
+
   try {
     // Construct the full URL for the API endpoint
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001'
+    const baseUrl = typeof window !== 'undefined'
+      ? window.location.origin
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : process.env.NEXT_PUBLIC_VERCEL_URL
+          ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+          : 'http://localhost:3001'
+
     const apiUrl = `${baseUrl}/api/journal-abbreviations`
 
     const response = await fetch(apiUrl)
@@ -56,8 +70,10 @@ async function loadJournalAbbreviations(): Promise<void> {
   }
 }
 
-// Initialize abbreviations on module load
-loadJournalAbbreviations()
+// Initialize abbreviations on module load (with fallback for build time)
+loadJournalAbbreviations().catch(() => {
+  // Fallback is already handled in the function
+})
 
 /**
  * Check if journal abbreviations are loaded
@@ -106,19 +122,45 @@ function formatEditionForCitation(value: string): string {
 }
 
 /**
+ * Normalize text by removing diacritics and special characters
+ * Exported for testing and potential reuse
+ */
+export function normalizeText(text: string): string {
+  return text
+    .normalize('NFD')                    // Decompose characters with diacritics
+    .replace(/[\u0300-\u036f]/g, '')     // Remove diacritical marks
+    .replace(/[øØ]/g, 'o')               // Handle special cases like Ø
+    .replace(/[æÆ]/g, 'ae')              // Handle æ ligature
+    .replace(/[œŒ]/g, 'oe')              // Handle œ ligature
+    .replace(/[ßẞ]/g, 'ss')              // Handle German ß
+    .replace(/[^\w\s]/g, '')             // Remove special characters except word chars and spaces
+    .replace(/\s+/g, ' ')                // Normalize whitespace
+    .trim()
+    .toLowerCase()
+}
+
+/**
  * Helper function to abbreviate journal names using the NLM database
  */
 function abbreviateJournal(journalName: string): string {
   if (!journalName) return ''
-  
+
   // Direct lookup first
   const directMatch = JOURNAL_ABBREVIATIONS[journalName]
   if (directMatch) return directMatch
-  
+
   // Try case-insensitive lookup
   const lowerJournal = journalName.toLowerCase()
   for (const [title, abbr] of Object.entries(JOURNAL_ABBREVIATIONS)) {
     if (title.toLowerCase() === lowerJournal) {
+      return abbr
+    }
+  }
+
+  // Try normalized lookup (handles diacritics and special characters)
+  const normalizedInput = normalizeText(journalName)
+  for (const [title, abbr] of Object.entries(JOURNAL_ABBREVIATIONS)) {
+    if (normalizeText(title) === normalizedInput) {
       return abbr
     }
   }
@@ -132,22 +174,38 @@ function abbreviateJournal(journalName: string): string {
       return abbr
     }
   }
-  
+
+  // Try normalized matching with subtitle removal
+  for (const [title, abbr] of Object.entries(JOURNAL_ABBREVIATIONS)) {
+    const cleanedDbTitle = normalizeText(title.replace(/\s*:\s*.*$/, ''))
+    if (cleanedDbTitle === normalizedInput) {
+      return abbr
+    }
+  }
+
   // Try partial matching (remove common prefixes/suffixes)
   const cleanedJournal = journalName
     .replace(/^(The|An|A)\s+/i, '')  // Remove articles
     .replace(/\s*:\s*.*$/, '')        // Remove subtitles after colon
     .replace(/\s*\([^)]*\)$/, '')     // Remove parenthetical info
     .trim()
-  
+
   if (cleanedJournal !== journalName) {
     const cleanedMatch = JOURNAL_ABBREVIATIONS[cleanedJournal]
     if (cleanedMatch) return cleanedMatch
-    
+
     // Try case-insensitive on cleaned version
     const lowerCleaned = cleanedJournal.toLowerCase()
     for (const [title, abbr] of Object.entries(JOURNAL_ABBREVIATIONS)) {
       if (title.toLowerCase() === lowerCleaned) {
+        return abbr
+      }
+    }
+
+    // Try normalized matching on cleaned version
+    const normalizedCleaned = normalizeText(cleanedJournal)
+    for (const [title, abbr] of Object.entries(JOURNAL_ABBREVIATIONS)) {
+      if (normalizeText(title) === normalizedCleaned) {
         return abbr
       }
     }
@@ -299,7 +357,7 @@ export function formatAMA(data: CitationData): string {
     default:
       citation = formatWebsiteAMA(authors, title, data)
   }
-  
+
   return cleanCitation(citation)
 }
 
@@ -324,7 +382,7 @@ export function formatVancouver(data: CitationData): string {
     default:
       citation = formatWebsiteVancouver(authors, title, data)
   }
-  
+
   return cleanCitation(citation)
 }
 
@@ -480,7 +538,7 @@ function formatJournalAMA(authors: string, title: string, data: CitationData): s
   const issue = data.issue ? `(${data.issue})` : ''
   const pages = data.pages ? `:${data.pages}` : ''
   const doi = data.doi ? ` doi:${data.doi}` : ''
-  
+
   return `${authors}. ${toSentenceCase(title)} *${journal}*. ${year};${volume}${issue}${pages}.${doi}`
 }
 
