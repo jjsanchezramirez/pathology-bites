@@ -132,6 +132,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
                 <Link
                   key={item.name}
                   href={isDisabled ? '#' : item.href}
+                  prefetch={process.env.NODE_ENV === 'production'}
                   className={`flex h-10 rounded-lg text-sm font-medium
                     transition-colors duration-200 relative items-center
                     ${isDisabled
