@@ -126,9 +126,34 @@ export default function TermsPage() {
               <h2 className="text-2xl font-bold mb-4">Governing Law</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  These terms shall be governed by and construed in accordance with the laws of the 
-                  state of Delaware, United States of America, without regard to its conflict of 
+                  These terms shall be governed by and construed in accordance with the laws of the
+                  state of Delaware, United States of America, without regard to its conflict of
                   law provisions.
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-8 shadow-lg">
+              <h2 className="text-2xl font-bold mb-4">Third-Party Content Disclaimer</h2>
+              <div className="space-y-4 text-muted-foreground">
+                <p>
+                  Our Virtual Slide Search Engine provides links to third-party whole slide image (WSI) repositories.
+                  We do not host, store, or claim ownership of any of the content linked. All copyrights remain with
+                  the respective content owners. Accessing and using external content is subject to each source's
+                  terms and conditions. No affiliation or endorsement is implied.
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-8 shadow-lg">
+              <h2 className="text-2xl font-bold mb-4">Medical Disclaimer</h2>
+              <div className="space-y-4 text-muted-foreground">
+                <p>
+                  PathologyBites is an educational platform intended for learning purposes only and does not
+                  constitute medical advice, diagnosis, or treatment recommendations. The content provided should
+                  not be used as a substitute for professional medical judgment or clinical decision-making.
+                  Always consult qualified healthcare professionals for medical decisions, patient care, and
+                  diagnostic interpretations.
                 </p>
               </div>
             </Card>

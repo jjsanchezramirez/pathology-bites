@@ -345,6 +345,12 @@ export default function LandingPage() {
                     </Button>
                   </Link>
                 </div>
+
+                {/* Mini Disclaimers */}
+                <div className="pt-6 space-y-2 text-xs text-muted-foreground">
+                  <p><span className="font-medium">Content:</span> Links to third-party repositories. No ownership claimed.</p>
+                  <p><span className="font-medium">Medical:</span> Educational tool only. Not medical advice.</p>
+                </div>
               </div>
 
               <div className="relative">

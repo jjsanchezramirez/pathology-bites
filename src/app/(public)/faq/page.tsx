@@ -244,6 +244,43 @@ export default function FAQPage() {
               </AccordionItem>
             </Accordion>
           </Card>
+
+          {/* Disclaimers */}
+          <Card className="p-8 shadow-lg mb-8">
+            <h2 className="text-2xl font-bold mb-6">Important Disclaimers</h2>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="content-disclaimer">
+                <AccordionTrigger className="text-left">Content Ownership & Third-Party Links</AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-4">
+                    Our Virtual Slide Search Engine provides links to third-party whole slide image (WSI) repositories.
+                    We do not host, store, or claim ownership of any of the content linked. All copyrights remain with
+                    the respective content owners.
+                  </p>
+                  <p>
+                    Accessing and using external content is subject to each source's terms and conditions.
+                    No affiliation or endorsement is implied between PathologyBites and the linked repositories.
+                  </p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="medical-disclaimer">
+                <AccordionTrigger className="text-left">Medical & Educational Disclaimer</AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-4">
+                    PathologyBites is an educational platform intended for learning purposes only and does not
+                    constitute medical advice, diagnosis, or treatment recommendations. The content provided should
+                    not be used as a substitute for professional medical judgment or clinical decision-making.
+                  </p>
+                  <p>
+                    Always consult qualified healthcare professionals for medical decisions, patient care, and
+                    diagnostic interpretations. Users are responsible for verifying information and applying
+                    appropriate clinical judgment in their practice.
+                  </p>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </Card>
         </div>
       </section>
 

@@ -1,5 +1,21 @@
 # Technical Architecture
 
+## State Management
+
+Pathology Bites uses a simple, effective state management approach without complex libraries like Redux or Zustand. See [State Management Guide](./state-management-guide.md) for detailed information.
+
+### Key Patterns
+- **Local State**: `useState` for component-specific state
+- **Server State**: Supabase + custom hooks for data fetching
+- **Auth State**: Centralized authentication hook
+- **URL State**: Next.js router + search params (with Suspense boundaries)
+
+### Suspense Usage
+In Next.js 15, components using `useSearchParams()` must be wrapped in Suspense boundaries for static generation. We use this pattern in:
+- Analytics provider (page tracking)
+- Components with URL parameter handling
+- Review queue tab initialization
+
 ## Database Architecture
 
 ### Schema Overview
