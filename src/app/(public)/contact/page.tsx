@@ -2,7 +2,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { Button } from "@/shared/components/ui/button"
 import { Card } from "@/shared/components/ui/card"
 import { Label } from "@/shared/components/ui/label"
@@ -13,6 +12,7 @@ import FloatingCharacter from "@/shared/components/common/dr-albright"
 import { toast } from 'sonner'
 import { Icons } from "@/shared/components/common/icons"
 import { submitContactForm } from '@/app/api/contact/contact'
+import { JoinCommunitySection } from "@/shared/components/common/join-community-section"
 
 type FormData = {
   requestType: 'technical' | 'general'
@@ -285,25 +285,9 @@ export default function ContactPage() {
       </section>
 
       {/* Join Our Learning Community */}
-      <section className="relative py-20">
-        <div className="absolute inset-0 bg-linear-to-b from-transparent to-primary/5" />
-        <div className="container px-4 max-w-3xl mx-auto text-center relative">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Our Learning Community</h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Start your learning journey today. No fees, no subscriptions - just
-            high-quality pathology education available to everyone.
-          </p>
-          <Link href="/signup">
-            <Button
-              size="lg"
-              className="bg-primary hover:bg-primary/90 transform hover:scale-105
-                        transition-all duration-300 ease-in-out"
-            >
-              Create Free Account
-            </Button>
-          </Link>
-        </div>
-      </section>
+      <JoinCommunitySection
+        description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone."
+      />
     </div>
   )
 }

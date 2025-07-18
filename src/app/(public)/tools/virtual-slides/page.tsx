@@ -17,8 +17,8 @@ import Image from 'next/image'
 import FloatingCharacter from '@/shared/components/common/dr-albright'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
 
-// Import the filtered virtual slides data (unknown diagnoses removed)
-import virtualSlidesDataRaw from '@/data/virtual-slides-filtered.json'
+// Import the virtual slides data with standardized categories and clean subcategories
+import virtualSlidesDataRaw from '@/data/virtual-slides-standardized-categories.json'
 
 // Import types and utilities
 import { VirtualSlide } from './types'

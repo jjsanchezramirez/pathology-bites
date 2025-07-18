@@ -20,16 +20,25 @@ export function JoinCommunitySection({
   showDiscord = true,
   className = ""
 }: JoinCommunitySectionProps) {
+  const isComingSoon = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
+
+  // Override props for coming soon mode
+  const finalTitle = isComingSoon ? "Get Notified When We Launch" : title
+  const finalDescription = isComingSoon
+    ? "Be the first to know when Pathology Bites goes live. Subscribe to receive launch updates and join our community."
+    : description
+  const finalShowCreateAccount = isComingSoon ? false : showCreateAccount
+
   return (
     <section className={`relative py-20 ${className}`}>
       <div className="absolute inset-0 bg-linear-to-b from-transparent to-primary/5" />
       <div className="container px-4 max-w-3xl mx-auto text-center relative">
-        <h2 className="text-3xl md:text-4xl font-bold mb-6">{title}</h2>
+        <h2 className="text-3xl md:text-4xl font-bold mb-6">{finalTitle}</h2>
         <p className="text-xl text-muted-foreground mb-8">
-          {description}
+          {finalDescription}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          {showCreateAccount && (
+          {finalShowCreateAccount && (
             <Link href="/signup">
               <Button
                 size="lg"
@@ -37,6 +46,17 @@ export function JoinCommunitySection({
                           transition-all duration-300 ease-in-out"
               >
                 Create Free Account
+              </Button>
+            </Link>
+          )}
+          {isComingSoon && (
+            <Link href="/">
+              <Button
+                size="lg"
+                className="bg-primary hover:bg-primary/90 transform hover:scale-105
+                          transition-all duration-300 ease-in-out"
+              >
+                Get Launch Updates
               </Button>
             </Link>
           )}
