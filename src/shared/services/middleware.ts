@@ -121,6 +121,10 @@ export async function updateSession(request: NextRequest) {
   if (isComingSoonMode && isSignupPage && bypassParam !== 'true') {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    // Ensure we use the correct protocol for localhost
+    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+      url.protocol = 'http:'
+    }
     return NextResponse.redirect(url)
   }
 
@@ -138,6 +142,10 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirect', request.nextUrl.pathname)
+    // Ensure we use the correct protocol for localhost
+    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+      url.protocol = 'http:'
+    }
     return NextResponse.redirect(url)
   }
 
@@ -158,6 +166,10 @@ export async function updateSession(request: NextRequest) {
         console.log('User is not admin, creator, or reviewer, redirecting. Role:', userRole)
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'
+        // Ensure we use the correct protocol for localhost
+        if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+          url.protocol = 'http:'
+        }
         return NextResponse.redirect(url)
       }
     }
@@ -173,6 +185,10 @@ export async function updateSession(request: NextRequest) {
         console.log('Redirecting admin/creator/reviewer user from dashboard to admin dashboard (metadata)')
         const url = request.nextUrl.clone()
         url.pathname = '/admin/dashboard'
+        // Ensure we use the correct protocol for localhost
+        if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+          url.protocol = 'http:'
+        }
         return NextResponse.redirect(url)
       }
 
@@ -188,6 +204,10 @@ export async function updateSession(request: NextRequest) {
         console.log('Redirecting admin/creator/reviewer user from dashboard to admin dashboard (database)')
         const url = request.nextUrl.clone()
         url.pathname = '/admin/dashboard'
+        // Ensure we use the correct protocol for localhost
+        if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+          url.protocol = 'http:'
+        }
         return NextResponse.redirect(url)
       }
     } catch (error) {
