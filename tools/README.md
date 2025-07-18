@@ -6,9 +6,11 @@ This directory contains utility scripts and tools for processing and validating 
 
 ```
 tools/
-├── data-processing/     # Scripts for processing and transforming data
-├── scripts/            # Development and deployment scripts
-├── database/           # Database migrations and SQL scripts
+├── python/             # Python scripts for data processing and analysis
+├── javascript/         # JavaScript tools and utilities
+├── sql/               # Database migrations and SQL scripts
+├── shell/             # Shell scripts for automation
+├── json/              # JSON data files and reference lists
 └── README.md          # This file
 ```
 
@@ -93,15 +95,18 @@ Database security patches and fixes.
 ## Data Directory Structure
 
 ```
-src/data/
+data/                        # Active data files used by application
+├── cell-data.json          # Cell quiz data
+├── blood_cells_reference.json  # Blood cell reference data
+├── content_specifications_merged.json  # Consolidated content specifications
+├── nlm_journal_abbreviations.json  # Journal abbreviations
+└── virtual-slides-standardized-categories.json  # Virtual slides data
+
+docs/json/                   # Archived and reference data
 ├── question-specs/          # Question specification data
 │   ├── ap/                 # Anatomic Pathology sections
 │   └── cp/                 # Clinical Pathology sections
-├── content_specifications_merged.json  # Consolidated file
-├── cell-data.json          # Cell quiz data
-├── blood_cells_reference.json  # Blood cell reference data
-├── nlm_journal_abbreviations.json  # Journal abbreviations
-└── api-examples/           # API example files
+└── virtual-slides-clean-subcategory.json  # Intermediate virtual slides data
 ```
 
 ## Usage Notes

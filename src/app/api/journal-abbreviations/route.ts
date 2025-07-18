@@ -4,8 +4,8 @@ import path from 'path'
 
 export async function GET() {
   try {
-    // Read the journal abbreviations file from the src/data directory
-    const filePath = path.join(process.cwd(), 'src', 'data', 'nlm_journal_abbreviations.json')
+    // Read the journal abbreviations file from the data directory
+    const filePath = path.join(process.cwd(), 'data', 'nlm_journal_abbreviations.json')
     
     if (!fs.existsSync(filePath)) {
       throw new Error('Journal abbreviations file not found')

@@ -101,7 +101,7 @@ function analyzeCellImages() {
   });
 
   // Save to JSON file
-  const outputPath = path.join(__dirname, '../../src/data/cell-data.json');
+  const outputPath = path.join(__dirname, '../../data/cell-data.json');
   fs.writeFileSync(outputPath, JSON.stringify(cellData, null, 2));
   console.log(`Cell data saved to: ${outputPath}`);
 

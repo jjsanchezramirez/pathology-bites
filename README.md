@@ -86,14 +86,20 @@ pathology-bites/
 │   ├── components/        # Reusable UI components
 │   ├── features/          # Feature-specific modules
 │   └── shared/           # Shared utilities and types
-├── data/                  # Data files and content
-│   ├── content-specs/    # Pathology content specifications
-│   └── pathology-outlines/ # Future pathology outline data
-├── tools/                 # Utility scripts and development tools
-│   ├── data-processing/  # Data transformation scripts
-│   ├── validation/       # Data validation scripts
-│   ├── scripts/          # Development and deployment scripts
-│   └── database/         # Database migrations and SQL scripts
+├── data/                  # Active data files used by application
+│   ├── cell-data.json    # Cell quiz data
+│   ├── blood_cells_reference.json  # Blood cell reference data
+│   ├── content_specifications_merged.json  # Content specifications
+│   ├── nlm_journal_abbreviations.json  # Journal abbreviations
+│   └── virtual-slides-standardized-categories.json  # Virtual slides data
+├── docs/                  # Documentation and archived data
+│   └── json/             # Non-active JSON files and specifications
+├── tools/                 # Utility scripts organized by file type
+│   ├── python/           # Python scripts
+│   ├── javascript/       # JavaScript tools
+│   ├── sql/              # Database migrations and SQL scripts
+│   ├── shell/            # Shell scripts
+│   └── json/             # JSON data files and lists
 ├── docs/                  # Comprehensive documentation
 ├── tests/                 # End-to-end and integration tests
 └── public/               # Static assets and public files

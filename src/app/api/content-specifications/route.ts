@@ -4,8 +4,8 @@ import path from 'path'
 
 export async function GET() {
   try {
-    // Read the content specifications file from src/data
-    const filePath = path.join(process.cwd(), 'src', 'data', 'content_specifications_merged.json')
+    // Read the content specifications file from data
+    const filePath = path.join(process.cwd(), 'data', 'content_specifications_merged.json')
     
     if (!fs.existsSync(filePath)) {
       throw new Error('Content specifications file not found')
