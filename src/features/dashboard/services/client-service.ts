@@ -101,7 +101,7 @@ class ClientDashboardService {
           .limit(3),
         this.supabase
           .from('inquiries')
-          .select('id, subject, created_at, user_email')
+          .select('id, first_name, last_name, email, request_type, created_at')
           .order('created_at', { ascending: false })
           .limit(3)
       ])
@@ -144,9 +144,9 @@ class ClientDashboardService {
             id: `inquiry-${inquiry.id}`,
             type: 'inquiry',
             title: 'New Inquiry Received',
-            description: inquiry.subject || 'General Inquiry',
+            description: `${inquiry.request_type} inquiry from ${inquiry.first_name} ${inquiry.last_name}`.trim(),
             timestamp: this.formatTimestamp(inquiry.created_at),
-            user: inquiry.user_email || 'Anonymous'
+            user: inquiry.email || 'Anonymous'
           })
         })
       }
