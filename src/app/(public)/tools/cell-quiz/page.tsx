@@ -9,7 +9,7 @@ import FloatingCharacter from '@/shared/components/common/dr-albright'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
 import cellData from '@/data/cell-data.json'
 import bloodCellsReference from '@/data/blood_cells_reference.json'
-import { generateBiologicalOptions } from '@/features/cell-quiz/data/cell-pathways'
+import { generateLookAlikeOptions, generateBiologicalOptions } from '@/features/cell-quiz/data/cell-pathways'
 
 interface Question {
   cellType: string
@@ -56,11 +56,11 @@ function generateRandomQuestion(): Question {
   // Use reference name if available, otherwise fall back to cell data name
   const correctAnswerName = referenceInfo ? referenceInfo.name : cellInfo.name
 
-  // Generate biologically meaningful options using maturation pathways
-  const biologicalOptions = generateBiologicalOptions(correctCellType)
+  // Generate challenging options using look-alikes data
+  const lookAlikeOptions = generateLookAlikeOptions(correctCellType, cellData)
 
   // Map cell types to display names, preferring reference names when available
-  const options = biologicalOptions.map(cellType => {
+  const options = lookAlikeOptions.map(cellType => {
     const cellInfo = cellData[cellType as keyof typeof cellData]
     if (!cellInfo) return null
 
@@ -68,17 +68,19 @@ function generateRandomQuestion(): Question {
     return referenceInfo ? referenceInfo.name : cellInfo.name
   }).filter(Boolean) as string[]
 
-  // Ensure we have exactly 4 options, fallback to random if needed
+  // Ensure we have exactly 4 options, fallback to biological options if needed
   if (options.length < 4) {
-    const fallbackOptions = allCells
-      .filter(cell => !biologicalOptions.includes(cell))
-      .sort(() => Math.random() - 0.5)
+    const biologicalOptions = generateBiologicalOptions(correctCellType)
+    const fallbackOptions = biologicalOptions
+      .filter(cellType => !lookAlikeOptions.includes(cellType))
       .slice(0, 4 - options.length)
       .map(cell => {
         const cellInfo = cellData[cell as keyof typeof cellData]
+        if (!cellInfo) return null
         const referenceInfo = findReferenceCellInfo(cellInfo.name)
         return referenceInfo ? referenceInfo.name : cellInfo.name
       })
+      .filter(Boolean) as string[]
 
     options.push(...fallbackOptions)
   }

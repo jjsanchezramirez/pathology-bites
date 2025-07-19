@@ -22,12 +22,12 @@ export interface CellRelationship {
 export const CELL_PATHWAYS: CellPathway[] = [
   {
     name: 'myeloid',
-    cells: ['blast', 'promyelocyte', 'myelocyte', 'metamyelocyte', 'band', 'segmented'],
+    cells: ['blast', 'promyelocyte', 'myelocyte', 'metamyelocyte', 'band_neutrophil', 'segmented_neutrophil'],
     description: 'Neutrophil maturation pathway from blast to mature segmented neutrophil'
   },
   {
-    name: 'erythroid', 
-    cells: ['proerythroblast', 'basophilic', 'polychromatic', 'orthochromatic'],
+    name: 'erythroid',
+    cells: ['proerythroblast', 'basophilic_erythroblast', 'polychromatic_erythroblast', 'orthochromatic_erythroblast'],
     description: 'Red blood cell maturation pathway from proerythroblast to mature RBC'
   },
   {
@@ -37,12 +37,12 @@ export const CELL_PATHWAYS: CellPathway[] = [
   },
   {
     name: 'lymphoid',
-    cells: ['lymphocyte', 'plasma'],
+    cells: ['lymphocyte', 'plasma_cell'],
     description: 'Lymphoid pathway including lymphocytes and plasma cells'
   },
   {
     name: 'granulocytes',
-    cells: ['eosinophil', 'basophil', 'segmented'],
+    cells: ['eosinophil', 'basophil', 'segmented_neutrophil', 'mast_cell'],
     description: 'Mature granulocytes with specific granule types'
   }
 ];
@@ -65,11 +65,11 @@ export function generateCellRelationships(): Record<string, CellRelationship> {
   
   // Get all available cell types from our data
   const allCellTypes = [
-    'blast', 'promyelocyte', 'myelocyte', 'metamyelocyte', 'band', 'segmented',
-    'proerythroblast', 'basophilic', 'polychromatic', 'orthochromatic', 
+    'blast', 'promyelocyte', 'myelocyte', 'metamyelocyte', 'band_neutrophil', 'segmented_neutrophil',
+    'proerythroblast', 'basophilic_erythroblast', 'polychromatic_erythroblast', 'orthochromatic_erythroblast',
     'promonocyte', 'monocyte', 'macrophage',
-    'lymphocyte', 'plasma',
-    'eosinophil', 'basophil'
+    'lymphocyte', 'plasma_cell',
+    'eosinophil', 'basophil', 'mast_cell'
   ];
 
   allCellTypes.forEach(cellType => {
@@ -133,13 +133,70 @@ export function generateCellRelationships(): Record<string, CellRelationship> {
 export const CELL_RELATIONSHIPS = generateCellRelationships();
 
 /**
- * Generate quiz options based on biological relationships
+ * Generate quiz options using look_alikes data from cell-data.json
+ * @param correctCellType The correct answer cell type
+ * @param cellData The cell data object containing look_alikes
+ * @returns Array of 4 options: [correct, look_alike1, look_alike2, pathway_related/unrelated]
+ */
+export function generateLookAlikeOptions(correctCellType: string, cellData: any): string[] {
+  const cellInfo = cellData[correctCellType];
+  const options: string[] = [correctCellType];
+
+  if (cellInfo && cellInfo.look_alikes && cellInfo.look_alikes.length > 0) {
+    // Add look-alikes (these are the most challenging distractors)
+    const lookAlikes = [...cellInfo.look_alikes];
+
+    // Add up to 2 look-alikes
+    while (options.length < 3 && lookAlikes.length > 0) {
+      const randomIndex = Math.floor(Math.random() * lookAlikes.length);
+      const lookAlike = lookAlikes.splice(randomIndex, 1)[0];
+      if (!options.includes(lookAlike)) {
+        options.push(lookAlike);
+      }
+    }
+  }
+
+  // Fill remaining slots with pathway-related or random cells
+  if (options.length < 4) {
+    const relationship = CELL_RELATIONSHIPS[correctCellType];
+    const availableCells = Object.keys(cellData);
+
+    // Try to add pathway-related cells first
+    if (relationship) {
+      const pathwayOptions = [
+        ...relationship.closelyRelated,
+        ...relationship.moderatelyRelated,
+        ...relationship.unrelated
+      ].filter(cell => !options.includes(cell) && availableCells.includes(cell));
+
+      while (options.length < 4 && pathwayOptions.length > 0) {
+        const randomIndex = Math.floor(Math.random() * pathwayOptions.length);
+        const pathwayCell = pathwayOptions.splice(randomIndex, 1)[0];
+        options.push(pathwayCell);
+      }
+    }
+
+    // Fill any remaining slots with random cells
+    while (options.length < 4) {
+      const randomCell = availableCells[Math.floor(Math.random() * availableCells.length)];
+      if (!options.includes(randomCell)) {
+        options.push(randomCell);
+      }
+    }
+  }
+
+  // Shuffle the options so correct answer isn't always first
+  return options.sort(() => Math.random() - 0.5);
+}
+
+/**
+ * Generate quiz options based on biological relationships (fallback method)
  * @param correctCellType The correct answer cell type
  * @returns Array of 4 options: [correct, closely related, moderately related, unrelated]
  */
 export function generateBiologicalOptions(correctCellType: string): string[] {
   const relationship = CELL_RELATIONSHIPS[correctCellType];
-  
+
   if (!relationship) {
     // Fallback to random selection if no relationship found
     const allCells = Object.keys(CELL_RELATIONSHIPS);

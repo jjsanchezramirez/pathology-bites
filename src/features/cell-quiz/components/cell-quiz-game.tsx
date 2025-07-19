@@ -8,7 +8,7 @@ import { Progress } from '@/shared/components/ui/progress'
 import { Check, X, RotateCcw, Target, Zap, ChevronRight, Trophy, BookOpen } from 'lucide-react'
 import Image from 'next/image'
 import cellData from '@/data/cell-data.json'
-import { generateBiologicalOptions, CELL_RELATIONSHIPS } from '@/features/cell-quiz/data/cell-pathways'
+import { generateLookAlikeOptions, generateBiologicalOptions, CELL_RELATIONSHIPS } from '@/features/cell-quiz/data/cell-pathways'
 
 type QuizSet = 'myeloid' | 'erythroid' | 'other_cells' | 'all_cells'
 
@@ -55,21 +55,25 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
       const [correctCellType, correctCell] = availableCells[Math.floor(Math.random() * availableCells.length)]
       const randomImage = correctCell.images[Math.floor(Math.random() * correctCell.images.length)]
 
-      // Generate biologically meaningful options using maturation pathways
-      const biologicalOptions = generateBiologicalOptions(correctCellType)
+      // Generate challenging options using look-alikes data
+      const lookAlikeOptions = generateLookAlikeOptions(correctCellType, cellData)
 
       // Map cell types to display names from our cell data
-      const options = biologicalOptions.map(cellType => {
+      const options = lookAlikeOptions.map(cellType => {
         const cellInfo = cellData[cellType as keyof typeof cellData]
         return cellInfo ? cellInfo.name : cellType
       }).filter(Boolean) // Remove any undefined values
 
-      // Ensure we have exactly 4 options, fallback to random if needed
+      // Ensure we have exactly 4 options, fallback to biological options if needed
       if (options.length < 4) {
-        const fallbackOptions = availableCells
-          .filter(([cellType]) => !biologicalOptions.includes(cellType))
-          .map(([_, cell]) => cell.name)
-          .sort(() => Math.random() - 0.5)
+        const biologicalOptions = generateBiologicalOptions(correctCellType)
+        const fallbackOptions = biologicalOptions
+          .filter(cellType => !lookAlikeOptions.includes(cellType))
+          .map(cellType => {
+            const cellInfo = cellData[cellType as keyof typeof cellData]
+            return cellInfo ? cellInfo.name : cellType
+          })
+          .filter(Boolean)
           .slice(0, 4 - options.length)
 
         options.push(...fallbackOptions)

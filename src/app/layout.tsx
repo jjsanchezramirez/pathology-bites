@@ -85,7 +85,7 @@ export const metadata = {
       { url: '/icons/favicon.svg', type: 'image/svg+xml' },
     ],
     apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     ],
     other: [
       { rel: 'android-chrome', url: '/icons/android-chrome-192x192.png', sizes: '192x192' },

@@ -1,10 +1,9 @@
 {
-  "band": {
-    "name": "Band",
+  "band_neutrophil": {
+    "name": "Band neutrophil",
     "description": "Immature neutrophil with a horseshoe-shaped nucleus that hasn't fully segmented yet",
     "categories": [
-      "myeloid",
-      "all_cells"
+      "myeloid"
     ],
     "images": [
       "/images/cells/band_000.png",
@@ -13,28 +12,36 @@
       "/images/cells/band_003.png",
       "/images/cells/band_004.png"
     ],
+    "look_alikes": [
+      "segmented_neutrophil",
+      "metamyelocyte"
+    ],
     "count": 5
   },
   "basophil": {
     "name": "Basophil",
     "description": "Granulocyte with dark blue-purple granules, involved in inflammatory responses",
     "categories": [
-      "other_cells",
-      "all_cells"
+      "myeloid",
+      "granulocytes"
     ],
     "images": [
       "/images/cells/basophil_000.png",
       "/images/cells/basophil_001.png",
       "/images/cells/basophil_002.png"
     ],
-    "count": 3
+    "count": 3,
+    "look_alikes": [
+      "eosinophil",
+      "segmented_neutrophil",
+      "mast_cell"
+    ]
   },
-  "basophilic": {
-    "name": "Basophilic",
+  "basophilic_erythroblast": {
+    "name": "Basophilic erythroblast",
     "description": "Early red blood cell precursor with basophilic cytoplasm due to ribosomes",
     "categories": [
-      "erythroid",
-      "all_cells"
+      "erythroid"
     ],
     "images": [
       "/images/cells/basophilic_000.png",
@@ -43,14 +50,17 @@
       "/images/cells/basophilic_003.png",
       "/images/cells/basophilic_004.png"
     ],
-    "count": 5
+    "count": 5,
+    "look_alikes": [
+      "orthochromatic_erythroblast",
+      "polychromatic_erythroblast"
+    ]
   },
   "blast": {
     "name": "Blast",
     "description": "Immature hematopoietic cell, the earliest recognizable cell in a lineage",
     "categories": [
-      "myeloid",
-      "all_cells"
+      "myeloid"
     ],
     "images": [
       "/images/cells/blast_000.png",
@@ -59,14 +69,18 @@
       "/images/cells/blast_003.png",
       "/images/cells/blast_004.png"
     ],
-    "count": 5
+    "count": 5,
+    "look_alikes": [
+      "promyelocyte",
+      "proerythroblast"
+    ]
   },
   "eosinophil": {
     "name": "Eosinophil",
     "description": "Granulocyte with bright orange-red granules, involved in allergic reactions",
     "categories": [
-      "other_cells",
-      "all_cells"
+      "myeloid",
+      "granulocytes"
     ],
     "images": [
       "/images/cells/eosinophil_000.png",
@@ -75,14 +89,18 @@
       "/images/cells/eosinophil_003.png",
       "/images/cells/eosinophil_004.png"
     ],
+    "look_alikes": [
+      "basophil",
+      "segmented_neutrophil",
+      "mast_cell"
+    ],
     "count": 5
   },
   "lymphocyte": {
     "name": "Lymphocyte",
     "description": "Small mononuclear cell including T cells, B cells, and NK cells",
     "categories": [
-      "other_cells",
-      "all_cells"
+      "lymphoid"
     ],
     "images": [
       "/images/cells/lymphocyte_000.png",
@@ -91,14 +109,19 @@
       "/images/cells/lymphocyte_003.png",
       "/images/cells/lymphocyte_004.png"
     ],
+    "look_alikes": [
+      "plasma",
+      "basophilic_erythroblast",
+      "orthochromatic_erythroblast"
+    ],
     "count": 5
   },
   "macrophage": {
     "name": "Macrophage",
     "description": "Large phagocytic cell derived from monocytes, part of innate immunity",
     "categories": [
-      "other_cells",
-      "all_cells"
+      "myeloid",
+      "monocytic"
     ],
     "images": [
       "/images/cells/macrophage_000.png",
@@ -107,17 +130,24 @@
       "/images/cells/macrophage_003.png",
       "/images/cells/macrophage_004.png"
     ],
+    "look_alikes": [
+      "monocyte"
+    ],
     "count": 5
   },
-  "mast": {
-    "name": "Mast",
+  "mast_cell": {
+    "name": "Mast cell",
     "description": "Mast cell involved in allergic reactions and inflammation",
     "categories": [
-      "other_cells",
-      "all_cells"
+      "myeloid",
+      "granulocytes"
     ],
     "images": [
       "/images/cells/mast_cell_000.png"
+    ],
+    "look_alikes": [
+      "basophil",
+      "eosinophil"
     ],
     "count": 1
   },
@@ -125,8 +155,7 @@
     "name": "Metamyelocyte",
     "description": "Intermediate stage in neutrophil development with kidney-shaped nucleus",
     "categories": [
-      "myeloid",
-      "all_cells"
+      "myeloid"
     ],
     "images": [
       "/images/cells/metamyelocyte_000.png",
@@ -135,14 +164,18 @@
       "/images/cells/metamyelocyte_003.png",
       "/images/cells/metamyelocyte_004.png"
     ],
+    "look_alikes": [
+      "band_neutrophil",
+      "myelocyte"
+    ],
     "count": 5
   },
   "monocyte": {
     "name": "Monocyte",
     "description": "Large mononuclear cell that differentiates into macrophages",
     "categories": [
-      "other_cells",
-      "all_cells"
+      "myeloid",
+      "monocytic"
     ],
     "images": [
       "/images/cells/monocyte_000.png",
@@ -150,14 +183,17 @@
       "/images/cells/monocyte_002.png",
       "/images/cells/monocyte_003.png"
     ],
+    "look_alikes": [
+      "macrophage",
+      "promonocyte"
+    ],
     "count": 4
   },
   "myelocyte": {
     "name": "Myelocyte",
     "description": "Intermediate stage in granulocyte development with round nucleus",
     "categories": [
-      "myeloid",
-      "all_cells"
+      "myeloid"
     ],
     "images": [
       "/images/cells/myelocyte_000.png",
@@ -166,14 +202,17 @@
       "/images/cells/myelocyte_003.png",
       "/images/cells/myelocyte_004.png"
     ],
+    "look_alikes": [
+      "metamyelocyte",
+      "promyelocyte"
+    ],
     "count": 5
   },
-  "orthochromatic": {
-    "name": "Orthochromatic",
+  "orthochromatic_erythroblast": {
+    "name": "Orthochromatic erythroblast",
     "description": "Late red blood cell precursor with pink cytoplasm and condensed nucleus",
     "categories": [
-      "erythroid",
-      "all_cells"
+      "erythroid"
     ],
     "images": [
       "/images/cells/orthochromatic_000.png",
@@ -182,14 +221,18 @@
       "/images/cells/orthochromatic_003.png",
       "/images/cells/orthochromatic_004.png"
     ],
+    "look_alikes": [
+      "polychromatic_erythroblast",
+      "basophilic_erythroblast",
+      "plasma cell"
+    ],
     "count": 5
   },
-  "plasma": {
+  "plasma_cell": {
     "name": "Plasma",
     "description": "Antibody-producing cell derived from B lymphocytes with eccentric nucleus",
     "categories": [
-      "other_cells",
-      "all_cells"
+      "lymphoid"
     ],
     "images": [
       "/images/cells/plasma_000.png",
@@ -198,14 +241,18 @@
       "/images/cells/plasma_003.png",
       "/images/cells/plasma_004.png"
     ],
+    "look_alikes": [
+      "orthochromatic_erythroblast",
+      "basophilic_erythroblast",
+      "lymphocyte"
+    ],
     "count": 5
   },
-  "polychromatic": {
-    "name": "Polychromatic",
+  "polychromatic_erythroblast": {
+    "name": "Polychromatic erythroblast",
     "description": "Intermediate red blood cell precursor with mixed blue-pink cytoplasm",
     "categories": [
-      "erythroid",
-      "all_cells"
+      "erythroid"
     ],
     "images": [
       "/images/cells/polychromatic_000.png",
@@ -214,14 +261,18 @@
       "/images/cells/polychromatic_003.png",
       "/images/cells/polychromatic_004.png"
     ],
+    "look_alikes": [
+      "orthochromatic_erythroblast",
+      "basophilic_erythroblast",
+      "plasma cell"
+    ],
     "count": 5
   },
   "proerythroblast": {
     "name": "Proerythroblast",
     "description": "Earliest recognizable red blood cell precursor with large nucleus",
     "categories": [
-      "erythroid",
-      "all_cells"
+      "erythroid"
     ],
     "images": [
       "/images/cells/proerythroblast_000.png",
@@ -230,17 +281,25 @@
       "/images/cells/proerythroblast_003.png",
       "/images/cells/proerythroblast_004.png"
     ],
+    "look_alikes": [
+      "blast",
+      "basophilic_erythroblast"
+    ],
     "count": 5
   },
   "promonocyte": {
     "name": "Promonocyte",
     "description": "Immature monocyte precursor with large nucleus and abundant cytoplasm",
     "categories": [
-      "other_cells",
-      "all_cells"
+      "myeloid",
+      "monocytic"
     ],
     "images": [
       "/images/cells/promonocyte_000.png"
+    ],
+    "look_alikes": [
+      "monocyte",
+      "macrophage"
     ],
     "count": 1
   },
@@ -248,8 +307,7 @@
     "name": "Promyelocyte",
     "description": "Early granulocyte precursor with prominent nucleoli and primary granules",
     "categories": [
-      "myeloid",
-      "all_cells"
+      "myeloid"
     ],
     "images": [
       "/images/cells/promyelocyte_000.png",
@@ -258,14 +316,17 @@
       "/images/cells/promyelocyte_003.png",
       "/images/cells/promyelocyte_004.png"
     ],
+    "look_alikes": [
+      "blast",
+      "myelocyte"
+    ],
     "count": 5
   },
-  "segmented": {
+  "segmented_neutrophil": {
     "name": "Segmented",
     "description": "Mature neutrophil with segmented nucleus and fine granules",
     "categories": [
-      "myeloid",
-      "all_cells"
+      "myeloid"
     ],
     "images": [
       "/images/cells/segmented_000.png",
@@ -273,6 +334,10 @@
       "/images/cells/segmented_002.png",
       "/images/cells/segmented_003.png",
       "/images/cells/segmented_004.png"
+    ],
+    "look_alikes": [
+      "band_neutrophil",
+      "metamyelocyte"
     ],
     "count": 5
   }
