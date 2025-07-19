@@ -14,41 +14,33 @@ import {
   GitBranch
 } from "lucide-react"
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section"
+import FloatingCharacter from '@/shared/components/common/dr-albright'
 
 export default function AboutPage() {
   return (
     <div className="flex min-h-screen flex-col">
 
       {/* Hero Section */}
-      <section className="relative flex min-h-[calc(100vh-3.5rem)] items-center justify-center overflow-hidden">
-        {/* Enhanced Background Gradients */}
+      <section className="relative py-20 bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800">
         <div className="absolute inset-0 bg-linear-to-b from-primary/5 via-transparent to-transparent animate-gradient" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.12),transparent_25%)] animate-gradient" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.13),transparent_25%)] animate-gradient" />
-        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] opacity-[0.15]" />
 
-        {/* Content Container */}
-        <div className="container px-4 sm:px-6 lg:px-8 relative flex justify-center">
-          <div className="relative max-w-5xl space-y-8 text-center">
-            {/* Main Headline */}
-            <h1 className="font-heading text-4xl font-bold sm:text-5xl md:text-6xl lg:text-7xl animate-fade-in">
-              About{" "}
-              <span className="bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent animate-gradient">
-                Pathology Bites
-              </span>
-            </h1>
-
-            {/* Supporting Content */}
-            <div className="space-y-6 animate-fade-in opacity-0" style={{ animationDelay: '0.5s' }}>
-              <p className="mx-auto max-w-3xl text-xl text-muted-foreground">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="flex items-center justify-between gap-8">
+            {/* Content */}
+            <div className="flex-1 space-y-6 max-w-2xl">
+              <h1 className="text-3xl md:text-5xl font-bold">
+                About{" "}
+                <span className="bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent animate-gradient">
+                  Pathology Bites
+                </span>
+              </h1>
+              <p className="text-lg text-muted-foreground">
                 We believe quality pathology education should be accessible to all. Our platform provides
                 comprehensive practice questions, detailed explanations, and learning resources - completely free, forever.
               </p>
-            </div>
-
-            {/* CTA Button */}
-            <div className="space-y-6 animate-fade-in opacity-0" style={{ animationDelay: '0.9s' }}>
-              <div className="flex justify-center pt-4">
+              <div className="pt-4">
                 <Link href="/signup">
                   <Button
                     size="lg"
@@ -58,6 +50,16 @@ export default function AboutPage() {
                   </Button>
                 </Link>
               </div>
+            </div>
+
+            {/* Character - hidden on mobile */}
+            <div className="hidden md:block w-[350px]">
+              <FloatingCharacter
+                imagePath="/images/dr-albright.png"
+                imageAlt="Dr. Albright Character"
+                size={350}
+                wrapperClassName="w-full flex justify-center"
+              />
             </div>
           </div>
         </div>
