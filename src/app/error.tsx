@@ -112,9 +112,13 @@ export default function ErrorPage({
             Error Code: {error?.digest || errorCode}
           </p>
           
-          <Button 
-            onClick={() => window.location.href = '/'}
-            className="mt-4 bg-primary hover:bg-primary/90 shadow-lg 
+          <Button
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.location.href = '/'
+              }
+            }}
+            className="mt-4 bg-primary hover:bg-primary/90 shadow-lg
               hover:shadow-primary/25 transition-all duration-300"
             aria-label={buttonText}
           >

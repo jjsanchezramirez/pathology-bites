@@ -218,6 +218,7 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
                     fill
                     className="object-contain"
                     priority
+                    unoptimized={true}
                   />
                 </div>
               </div>

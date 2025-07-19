@@ -1,6 +1,4 @@
 // src/features/dashboard/services/client-service.ts
-'use client'
-
 import { createClient } from '@/shared/services/client'
 import { DashboardStats, RecentActivity, QuickAction } from './service'
 

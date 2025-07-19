@@ -46,7 +46,7 @@ const navigation = [
     requiredPermission: "questions.review"
   },
   {
-    name: "Tags, Sets & Categories",
+    name: "Tags & Categories",
     href: "/admin/question-management",
     icon: Tags,
     requiredPermission: "categories.manage",

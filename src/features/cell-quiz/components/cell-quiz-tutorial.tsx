@@ -34,6 +34,7 @@ const TUTORIAL_STEPS = [
                 alt="Blast cell"
                 fill
                 className="object-contain"
+                unoptimized={true}
               />
             </div>
           </div>
@@ -79,6 +80,7 @@ const TUTORIAL_STEPS = [
                 alt="Promyelocyte"
                 fill
                 className="object-contain"
+                unoptimized={true}
               />
             </div>
           </div>
@@ -128,6 +130,7 @@ const TUTORIAL_STEPS = [
                   alt="Lymphocyte"
                   fill
                   className="object-contain"
+                  unoptimized={true}
                 />
               </div>
             </div>
@@ -146,6 +149,7 @@ const TUTORIAL_STEPS = [
                   alt="Monocyte"
                   fill
                   className="object-contain"
+                  unoptimized={true}
                 />
               </div>
             </div>
@@ -176,6 +180,7 @@ const TUTORIAL_STEPS = [
                   alt="Basophilic erythroblast"
                   fill
                   className="object-contain"
+                  unoptimized={true}
                 />
               </div>
             </div>
@@ -194,6 +199,7 @@ const TUTORIAL_STEPS = [
                   alt="Orthochromatic erythroblast"
                   fill
                   className="object-contain"
+                  unoptimized={true}
                 />
               </div>
             </div>
@@ -224,6 +230,7 @@ const TUTORIAL_STEPS = [
                   alt="Blast cell"
                   fill
                   className="object-contain"
+                  unoptimized={true}
                 />
               </div>
             </div>
@@ -242,6 +249,7 @@ const TUTORIAL_STEPS = [
                   alt="Plasma cell"
                   fill
                   className="object-contain"
+                  unoptimized={true}
                 />
               </div>
             </div>

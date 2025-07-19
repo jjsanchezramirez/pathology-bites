@@ -231,6 +231,7 @@ export default function CellQuizPage() {
                           alt="Cell to identify"
                           fill
                           className="object-contain"
+                          unoptimized={true}
                         />
                       </div>
                     </div>
@@ -473,6 +474,7 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
                         alt={currentReferenceCell.name}
                         fill
                         className="object-contain"
+                        unoptimized={true}
                       />
                     </div>
                   ) : (

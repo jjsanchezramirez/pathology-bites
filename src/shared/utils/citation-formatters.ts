@@ -23,12 +23,14 @@ async function loadJournalAbbreviations(): Promise<void> {
   try {
     // Construct the full URL for the API endpoint
     const baseUrl = typeof window !== 'undefined'
-      ? window.location.origin
+      ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? `http://${window.location.host}`
+        : window.location.origin
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.NEXT_PUBLIC_VERCEL_URL
           ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-          : 'http://localhost:3001'
+          : 'http://localhost:3000'
 
     const apiUrl = `${baseUrl}/api/journal-abbreviations`
 

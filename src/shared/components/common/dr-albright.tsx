@@ -144,6 +144,7 @@ const FloatingCharacter = ({
             sizes={`${size}px`}
             className="object-contain"
             priority
+            unoptimized={imagePath.startsWith('/')}
           />
         </div>
       </div>
