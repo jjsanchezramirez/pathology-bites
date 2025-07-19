@@ -19,28 +19,11 @@ interface Question {
   explanation: string
 }
 
-// Helper function to find reference cell info by cell data name
-function findReferenceCellInfo(cellDataName: string) {
-  return bloodCellsReference.cells.find(refCell => {
-    const refName = refCell.name.toLowerCase()
-    const cellName = cellDataName.toLowerCase()
-
-    // Direct name matches
-    if (cellName === refName) return true
-
-    // Special cases for naming mismatches
-    if ((cellName === 'segmented' || cellName === 'band') && refName === 'neutrophil (segmented or band)') return true
-    if (cellName === 'blast' && refName === 'myeloblast') return true
-    if (cellName === 'proerythroblast' && refName === 'erythroid precursor, pronormoblast') return true
-    if (cellName === 'basophilic' && refName === 'erythroid precursor, basophilic normoblast') return true
-    if (cellName === 'polychromatic' && refName === 'erythroid precursor, polychromatophilic normoblast') return true
-    if (cellName === 'orthochromatic' && refName === 'erythroid precursor, orthochromic normoblast') return true
-    if (cellName === 'promonocyte' && refName === 'monocyte, immature (promonocyte)') return true
-    if (cellName === 'macrophage' && refName === 'foamy macrophage') return true
-    if (cellName === 'plasma' && refName === 'plasma cell') return true
-
-    return false
-  })
+// Helper function to find reference cell info by cell data key
+function findReferenceCellInfo(cellDataKey: string) {
+  return bloodCellsReference.cells.find(refCell =>
+    refCell.short_name === cellDataKey
+  )
 }
 
 // Helper function to generate a single random question with biological relationships
@@ -48,7 +31,7 @@ function generateRandomQuestion(): Question {
   const allCells = Object.keys(cellData)
   const correctCellType = allCells[Math.floor(Math.random() * allCells.length)]
   const cellInfo = cellData[correctCellType as keyof typeof cellData]
-  const referenceInfo = findReferenceCellInfo(cellInfo.name)
+  const referenceInfo = findReferenceCellInfo(correctCellType)
 
   // Pick a random image for this cell type
   const randomImage = cellInfo.images[Math.floor(Math.random() * cellInfo.images.length)]
@@ -64,7 +47,7 @@ function generateRandomQuestion(): Question {
     const cellInfo = cellData[cellType as keyof typeof cellData]
     if (!cellInfo) return null
 
-    const referenceInfo = findReferenceCellInfo(cellInfo.name)
+    const referenceInfo = findReferenceCellInfo(cellType)
     return referenceInfo ? referenceInfo.name : cellInfo.name
   }).filter(Boolean) as string[]
 
@@ -77,7 +60,7 @@ function generateRandomQuestion(): Question {
       .map(cell => {
         const cellInfo = cellData[cell as keyof typeof cellData]
         if (!cellInfo) return null
-        const referenceInfo = findReferenceCellInfo(cellInfo.name)
+        const referenceInfo = findReferenceCellInfo(cell)
         return referenceInfo ? referenceInfo.name : cellInfo.name
       })
       .filter(Boolean) as string[]
@@ -181,10 +164,6 @@ export default function CellQuizPage() {
                 Test your hematology skills with our interactive cell identification quiz.
                 Identify different types of blood cells and learn from detailed explanations.
               </p>
-
-
-
-
             </div>
 
             {/* Character - hidden on mobile */}
@@ -302,12 +281,13 @@ export default function CellQuizPage() {
                       {/* Get detailed information for the correct answer */}
                       {(() => {
                         // Find the cell data for the correct answer
-                        const correctCellData = Object.entries(cellData).find(([, cell]) => {
-                          const referenceInfo = findReferenceCellInfo(cell.name)
+                        const correctCellEntry = Object.entries(cellData).find(([cellKey, cell]) => {
+                          const referenceInfo = findReferenceCellInfo(cellKey)
                           return (referenceInfo ? referenceInfo.name : cell.name) === currentQuestion.correctAnswer
-                        })?.[1]
+                        })
 
-                        const referenceInfo = correctCellData ? findReferenceCellInfo(correctCellData.name) : null
+                        const correctCellKey = correctCellEntry?.[0]
+                        const referenceInfo = correctCellKey ? findReferenceCellInfo(correctCellKey) : null
 
                         if (!referenceInfo) {
                           return <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
@@ -414,7 +394,8 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
     if (cellName === refName) return true
 
     // Special cases for naming mismatches
-    if (refName === 'neutrophil (segmented or band)' && (cellName === 'segmented' || cellName === 'band')) return true
+    if (refName === 'segmented neutrophil' && cellName === 'segmented_neutrophil') return true
+    if (refName === 'band neutrophil' && cellName === 'band_neutrophil') return true
     if (refName === 'myeloblast' && cellName === 'blast') return true
     if (refName === 'erythroid precursor, pronormoblast' && cellName === 'proerythroblast') return true
     if (refName === 'erythroid precursor, basophilic normoblast' && cellName === 'basophilic') return true
@@ -472,7 +453,7 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
 
       {/* Tutorial Content */}
       <section className="relative py-8">
-        <div className="container px-4 max-w-4xl mx-auto">
+        <div className="container px-4 max-w-5xl mx-auto">
           <Card className="p-8 shadow-lg">
             <CardContent className="space-y-6">
               {/* Header Navigation */}
@@ -515,11 +496,8 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
                   <h2 className="text-3xl font-bold">{currentReferenceCell.name}</h2>
 
                   <div className="space-y-3">
-                    {/* Lineage, Size, and N:C Ratio in one line */}
+                    {/* Size, N:C Ratio, Normal Range in one line */}
                     <div className="flex flex-wrap gap-4 text-sm">
-                      <div>
-                        <span className="font-semibold text-muted-foreground">Lineage:</span> {currentReferenceCell.lineage}
-                      </div>
                       {currentReferenceCell.size && (
                         <div>
                           <span className="font-semibold text-muted-foreground">Size:</span> {currentReferenceCell.size}
@@ -530,14 +508,12 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
                           <span className="font-semibold text-muted-foreground">N:C Ratio:</span> {currentReferenceCell.nc_ratio}
                         </div>
                       )}
+                      {currentReferenceCell.normal_percentage && (
+                        <div className="text-sm">
+                          <span className="font-semibold text-muted-foreground">Normal Range:</span> {currentReferenceCell.normal_percentage}
+                        </div>
+                      )}
                     </div>
-
-                    {/* Percentage */}
-                    {currentReferenceCell.normal_percentage && (
-                      <div className="text-sm">
-                        <span className="font-semibold text-muted-foreground">Normal Percentage:</span> {currentReferenceCell.normal_percentage}
-                      </div>
-                    )}
 
                     {/* Key Features */}
                     {currentReferenceCell.key_features && (
@@ -591,7 +567,6 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
                   </div>
                 </div>
               </div>
-
               {/* Bottom Navigation */}
               <div className="flex justify-between items-center pt-4 border-t">
                 <Button
@@ -611,29 +586,28 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
-
-              {/* References Section */}
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">References</h3>
-                <div className="text-sm text-gray-600 leading-relaxed flex items-start space-x-2">
-                  <a
-                    href="https://doi.org/10.1007/s00277-020-04255-4"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:text-primary/80 transition-colors mt-0.5"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                  <span>
-                    Parmentier S, Kramer M, Weller S, Schuler U, Ordemann R, Rall G, et al. (2020).
-                    Reevaluation of reference values for bone marrow differential counts in 236 healthy bone marrow donors.
-                    <em> Ann Hematol</em>, 99(12), 2723-2729.
-                  </span>
-                </div>
-              </div>
-
             </CardContent>
           </Card>
+
+          {/* References Section */}
+          <div className="mt-8 pt-0">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">References</h3>
+            <div className="text-sm text-gray-600 leading-relaxed flex items-start space-x-2">
+              <a
+                href="https://doi.org/10.1007/s00277-020-04255-4"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:text-primary/80 transition-colors mt-0.5"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
+              <span>
+                Parmentier S, Kramer M, Weller S, Schuler U, Ordemann R, Rall G, et al. (2020).
+                Reevaluation of reference values for bone marrow differential counts in 236 healthy bone marrow donors.
+                <em> Ann Hematol</em>, 99(12), 2723-2729.
+              </span>
+            </div>
+          </div>
         </div>
       </section>
     </div>
