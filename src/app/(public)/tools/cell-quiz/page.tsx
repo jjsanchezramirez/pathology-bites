@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
-import { Check, X, RotateCcw, ArrowLeft, ArrowRight, ChevronRight } from 'lucide-react'
+import { Check, X, RotateCcw, ArrowLeft, ArrowRight, ChevronRight, ExternalLink } from 'lucide-react'
 import Image from 'next/image'
 import FloatingCharacter from '@/shared/components/common/dr-albright'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
@@ -332,6 +332,13 @@ export default function CellQuizPage() {
                               )}
                             </div>
 
+                            {/* Percentage */}
+                            {referenceInfo.normal_percentage && (
+                              <div>
+                                <span className="font-semibold text-muted-foreground">Normal Percentage:</span> {referenceInfo.normal_percentage}
+                              </div>
+                            )}
+
                             {/* Key Features */}
                             {referenceInfo.key_features && (
                               <div>
@@ -525,6 +532,13 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
                       )}
                     </div>
 
+                    {/* Percentage */}
+                    {currentReferenceCell.normal_percentage && (
+                      <div className="text-sm">
+                        <span className="font-semibold text-muted-foreground">Normal Percentage:</span> {currentReferenceCell.normal_percentage}
+                      </div>
+                    )}
+
                     {/* Key Features */}
                     {currentReferenceCell.key_features && (
                       <div>
@@ -596,6 +610,26 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
                   Next
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
+              </div>
+
+              {/* References Section */}
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">References</h3>
+                <div className="text-sm text-gray-600 leading-relaxed flex items-start space-x-2">
+                  <a
+                    href="https://doi.org/10.1007/s00277-020-04255-4"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:text-primary/80 transition-colors mt-0.5"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                  <span>
+                    Parmentier S, Kramer M, Weller S, Schuler U, Ordemann R, Rall G, et al. (2020).
+                    Reevaluation of reference values for bone marrow differential counts in 236 healthy bone marrow donors.
+                    <em> Ann Hematol</em>, 99(12), 2723-2729.
+                  </span>
+                </div>
               </div>
 
             </CardContent>

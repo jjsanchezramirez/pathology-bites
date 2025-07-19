@@ -176,7 +176,7 @@ const TUTORIAL_STEPS = [
             <div className="relative w-full h-48 rounded-lg overflow-hidden border bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
               <div className="relative w-full h-full aspect-square">
                 <Image
-                  src="/images/cells/basophilic_000.png"
+                  src="/images/cells/basophilic_erythroblast_000.png"
                   alt="Basophilic erythroblast"
                   fill
                   className="object-contain"
@@ -193,20 +193,61 @@ const TUTORIAL_STEPS = [
           </div>
           <div className="space-y-4">
             <div className="relative w-full h-48 rounded-lg overflow-hidden border bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-              <div className="relative w-full h-full aspect-square">
-                <Image
-                  src="/images/cells/orthochromatic_000.png"
-                  alt="Orthochromatic erythroblast"
-                  fill
-                  className="object-contain"
-                  unoptimized={true}
-                />
+              <div className="flex flex-col items-center justify-center text-center p-4">
+                <Microscope className="h-12 w-12 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  Image not available
+                </p>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-semibold">Polychromatic Erythroblast</h4>
+              <p className="text-sm text-muted-foreground">
+                Middle stage with mixed blue-pink cytoplasm as hemoglobin synthesis increases while ribosomes decrease.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    title: 'Mature Granulocytes',
+    content: (
+      <div className="space-y-6">
+        <p className="text-lg">
+          Mature neutrophils and other granulocytes found in peripheral blood and bone marrow.
+        </p>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div className="relative w-full h-48 rounded-lg overflow-hidden border bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center text-center p-4">
+                <Microscope className="h-12 w-12 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  Image not available
+                </p>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-semibold">Segmented Neutrophil</h4>
+              <p className="text-sm text-muted-foreground">
+                Mature neutrophil with segmented nucleus (2-5 lobes) connected by thin chromatin filaments and pale pink cytoplasm.
+              </p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="relative w-full h-48 rounded-lg overflow-hidden border bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center text-center p-4">
+                <Microscope className="h-12 w-12 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  Image not available
+                </p>
               </div>
             </div>
             <div>
               <h4 className="font-semibold">Orthochromatic Erythroblast</h4>
               <p className="text-sm text-muted-foreground">
-                Late stage with pink cytoplasm from hemoglobin accumulation and small, condensed nucleus ready for extrusion.
+                Late stage erythroid precursor with pink cytoplasm from hemoglobin accumulation and small, condensed nucleus ready for extrusion.
               </p>
             </div>
           </div>
