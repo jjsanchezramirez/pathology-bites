@@ -5,20 +5,47 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
 import { Progress } from '@/shared/components/ui/progress'
-import { 
-  ArrowLeft, 
-  ArrowRight, 
+import {
+  ArrowLeft,
+  ArrowRight,
   BookOpen,
   Microscope,
   Target,
   Lightbulb,
-  CheckCircle
+  CheckCircle,
+  ExternalLink
 } from 'lucide-react'
 import Image from 'next/image'
 import cellData from '@/data/cell-data.json'
+import bloodCellsReference from '@/data/blood_cells_reference.json'
+import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
 
 interface CellQuizTutorialProps {
   onComplete: () => void
+}
+
+// Helper function to find reference cell info by name (temporary until short_name is added)
+function findReferenceCellInfo(cellName: string) {
+  return bloodCellsReference.cells.find(refCell => {
+    const refName = refCell.name.toLowerCase()
+    const searchName = cellName.toLowerCase()
+
+    // Direct matches
+    if (searchName === refName) return true
+
+    // Special cases for naming mismatches
+    if (searchName === 'blast' && refName === 'myeloblast') return true
+    if (searchName === 'promyelocyte' && refName === 'promyelocyte') return true
+    if (searchName === 'lymphocyte' && refName === 'lymphocyte') return true
+    if (searchName === 'monocyte' && refName === 'monocyte') return true
+    if (searchName === 'basophilic erythroblast' && refName === 'basophilic erythroblast') return true
+    if (searchName === 'polychromatophilic erythroblast' && refName === 'polychromatophilic erythroblast') return true
+    if (searchName === 'orthochromic erythroblast' && refName === 'orthochromic erythroblast') return true
+    if (searchName === 'segmented neutrophil' && refName === 'neutrophil (segmented or band)') return true
+    if (searchName === 'band neutrophil' && refName === 'neutrophil (segmented or band)') return true
+
+    return false
+  })
 }
 
 const TUTORIAL_STEPS = [
@@ -400,6 +427,31 @@ export function CellQuizTutorial({ onComplete }: CellQuizTutorialProps) {
           )}
         </Button>
       </div>
+
+      {/* References Section */}
+      <div className="mt-8 pt-6 border-t border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-3">References</h3>
+        <div className="text-sm text-gray-600 leading-relaxed flex items-start space-x-2">
+          <a
+            href="https://doi.org/10.1007/s00277-020-04255-4"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:text-primary/80 transition-colors mt-0.5"
+          >
+            <ExternalLink className="w-4 h-4" />
+          </a>
+          <span>
+            Parmentier S, Kramer M, Weller S, Schuler U, Ordemann R, Rall G, et al. (2020).
+            Reevaluation of reference values for bone marrow differential counts in 236 healthy bone marrow donors.
+            <em> Ann Hematol</em>, 99(12), 2723-2729.
+          </span>
+        </div>
+      </div>
+
+      {/* Join Our Learning Community */}
+      <JoinCommunitySection
+        description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone."
+      />
     </div>
   )
 }
