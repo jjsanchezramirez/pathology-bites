@@ -9,6 +9,7 @@ import FloatingCharacter from '@/shared/components/common/dr-albright'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
 import cellData from '@/data/cell-data.json'
 import bloodCellsReference from '@/data/blood_cells_reference.json'
+import { generateBiologicalOptions } from '@/features/cell-quiz/data/cell-pathways'
 
 interface Question {
   cellType: string
@@ -42,7 +43,7 @@ function findReferenceCellInfo(cellDataName: string) {
   })
 }
 
-// Helper function to generate a single random question
+// Helper function to generate a single random question with biological relationships
 function generateRandomQuestion(): Question {
   const allCells = Object.keys(cellData)
   const correctCellType = allCells[Math.floor(Math.random() * allCells.length)]
@@ -55,24 +56,40 @@ function generateRandomQuestion(): Question {
   // Use reference name if available, otherwise fall back to cell data name
   const correctAnswerName = referenceInfo ? referenceInfo.name : cellInfo.name
 
-  // Generate wrong options using reference names when available
-  const wrongOptions = allCells
-    .filter(cell => cell !== correctCellType)
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 3)
-    .map(cell => {
-      const wrongCellInfo = cellData[cell as keyof typeof cellData]
-      const wrongReferenceInfo = findReferenceCellInfo(wrongCellInfo.name)
-      return wrongReferenceInfo ? wrongReferenceInfo.name : wrongCellInfo.name
-    })
+  // Generate biologically meaningful options using maturation pathways
+  const biologicalOptions = generateBiologicalOptions(correctCellType)
 
-  // Create options array and shuffle
-  const options = [correctAnswerName, ...wrongOptions].sort(() => Math.random() - 0.5)
+  // Map cell types to display names, preferring reference names when available
+  const options = biologicalOptions.map(cellType => {
+    const cellInfo = cellData[cellType as keyof typeof cellData]
+    if (!cellInfo) return null
+
+    const referenceInfo = findReferenceCellInfo(cellInfo.name)
+    return referenceInfo ? referenceInfo.name : cellInfo.name
+  }).filter(Boolean) as string[]
+
+  // Ensure we have exactly 4 options, fallback to random if needed
+  if (options.length < 4) {
+    const fallbackOptions = allCells
+      .filter(cell => !biologicalOptions.includes(cell))
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 4 - options.length)
+      .map(cell => {
+        const cellInfo = cellData[cell as keyof typeof cellData]
+        const referenceInfo = findReferenceCellInfo(cellInfo.name)
+        return referenceInfo ? referenceInfo.name : cellInfo.name
+      })
+
+    options.push(...fallbackOptions)
+  }
+
+  // Shuffle the final options
+  const shuffledOptions = options.sort(() => Math.random() - 0.5)
 
   return {
     cellType: correctCellType,
     imagePath: randomImage,
-    options,
+    options: shuffledOptions,
     correctAnswer: correctAnswerName,
     explanation: referenceInfo ?
       `${referenceInfo.key_features || cellInfo.description}` :

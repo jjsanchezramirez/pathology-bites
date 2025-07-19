@@ -8,6 +8,7 @@ import { Progress } from '@/shared/components/ui/progress'
 import { Check, X, RotateCcw, Target, Zap, ChevronRight, Trophy, BookOpen } from 'lucide-react'
 import Image from 'next/image'
 import cellData from '@/data/cell-data.json'
+import { generateBiologicalOptions, CELL_RELATIONSHIPS } from '@/features/cell-quiz/data/cell-pathways'
 
 type QuizSet = 'myeloid' | 'erythroid' | 'other_cells' | 'all_cells'
 
@@ -49,26 +50,38 @@ export function CellQuizGame({ quizSet, onComplete, onExit, stats: externalStats
     if (availableCells.length === 0) return []
 
     const questions: Question[] = []
-    
+
     for (let i = 0; i < QUESTIONS_PER_QUIZ; i++) {
       const [correctCellType, correctCell] = availableCells[Math.floor(Math.random() * availableCells.length)]
       const randomImage = correctCell.images[Math.floor(Math.random() * correctCell.images.length)]
-      
-      // Get unique wrong options, excluding the correct answer
-      const wrongOptions = availableCells
-        .filter(([cellType]) => cellType !== correctCellType)
-        .map(([cellType, cell]) => cell.name)
-        .filter((name, index, array) => array.indexOf(name) === index) // Remove duplicates
-        .filter(name => name !== correctCell.name) // Ensure correct answer isn't included
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 3)
 
-      const options = [correctCell.name, ...wrongOptions].sort(() => Math.random() - 0.5)
-      
+      // Generate biologically meaningful options using maturation pathways
+      const biologicalOptions = generateBiologicalOptions(correctCellType)
+
+      // Map cell types to display names from our cell data
+      const options = biologicalOptions.map(cellType => {
+        const cellInfo = cellData[cellType as keyof typeof cellData]
+        return cellInfo ? cellInfo.name : cellType
+      }).filter(Boolean) // Remove any undefined values
+
+      // Ensure we have exactly 4 options, fallback to random if needed
+      if (options.length < 4) {
+        const fallbackOptions = availableCells
+          .filter(([cellType]) => !biologicalOptions.includes(cellType))
+          .map(([_, cell]) => cell.name)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 4 - options.length)
+
+        options.push(...fallbackOptions)
+      }
+
+      // Shuffle the final options
+      const shuffledOptions = options.sort(() => Math.random() - 0.5)
+
       questions.push({
         cellType: correctCellType,
         imagePath: randomImage,
-        options,
+        options: shuffledOptions,
         correctAnswer: correctCell.name,
         explanation: correctCell.description
       })
