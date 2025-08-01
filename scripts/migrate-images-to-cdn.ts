@@ -1,22 +1,23 @@
 #!/usr/bin/env tsx
 
 /**
- * Image CDN Migration Script
- * 
- * This script optimizes images and migrates them to an external CDN
- * to reduce Supabase egress usage by ~95%.
- * 
- * Supported CDNs:
- * - Cloudinary (25GB free, 25GB bandwidth)
- * - ImageKit (20GB free, 20GB bandwidth)
- * - Uploadcare (3GB free, unlimited bandwidth)
- * 
- * Usage: npx tsx scripts/migrate-images-to-cdn.ts [--provider=cloudinary] [--dry-run]
+ * Cloudflare Images Migration Script
+ *
+ * Migrates images from Supabase Storage to Cloudflare Images to eliminate egress charges.
+ *
+ * Cloudflare Images Benefits:
+ * - NO egress charges (unlimited bandwidth)
+ * - 100k images free tier
+ * - Automatic optimization (WebP/AVIF)
+ * - Global CDN performance
+ * - On-demand resizing via URL parameters
+ *
+ * Current Usage: 85 images, ~548MB/month egress → $0 egress with Cloudflare
+ *
+ * Usage: npx tsx scripts/migrate-images-to-cdn.ts [--dry-run]
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { v2 as cloudinary } from 'cloudinary'
-import sharp from 'sharp'
 import fetch from 'node-fetch'
 import { promises as fs } from 'fs'
 import path from 'path'
@@ -24,20 +25,11 @@ import path from 'path'
 // Configuration
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME
-const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY
-const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET
+const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID
+const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN
+const CLOUDFLARE_IMAGES_DOMAIN = process.env.CLOUDFLARE_IMAGES_DOMAIN // Optional custom domain
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-
-// Configure Cloudinary
-if (CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
-  cloudinary.config({
-    cloud_name: CLOUDINARY_CLOUD_NAME,
-    api_key: CLOUDINARY_API_KEY,
-    api_secret: CLOUDINARY_API_SECRET,
-  })
-}
 
 interface ImageRecord {
   id: string
@@ -50,12 +42,11 @@ interface ImageRecord {
   height?: number
 }
 
-interface OptimizationResult {
+interface CloudflareUploadResult {
   originalSize: number
-  optimizedSize: number
-  compressionRatio: number
   newUrl: string
-  provider: string
+  cloudflareId: string
+  variants: string[]
 }
 
 interface MigrationStats {
@@ -63,8 +54,7 @@ interface MigrationStats {
   processedImages: number
   failedImages: number
   originalSizeBytes: number
-  optimizedSizeBytes: number
-  compressionRatio: number
+  estimatedMonthlySavings: number
   errors: string[]
 }
 
@@ -117,85 +107,75 @@ async function downloadImage(url: string): Promise<Buffer> {
   return Buffer.from(await response.arrayBuffer())
 }
 
-async function optimizeImage(imageBuffer: Buffer, category: string): Promise<Buffer> {
-  let pipeline = sharp(imageBuffer)
-  
-  // Get image metadata
-  const metadata = await pipeline.metadata()
-  const { width = 0, height = 0, format } = metadata
-  
-  // Resize based on category and current size
-  const maxWidth = getMaxWidthForCategory(category)
-  if (width > maxWidth) {
-    pipeline = pipeline.resize(maxWidth, null, {
-      withoutEnlargement: true,
-      fit: 'inside'
-    })
+async function uploadToCloudflareImages(imageBuffer: Buffer, imageId: string, category: string): Promise<CloudflareUploadResult> {
+  if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN) {
+    throw new Error('Cloudflare configuration missing. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN')
   }
-  
-  // Optimize format and quality
-  if (format === 'png') {
-    // Convert PNG to JPEG for photos, keep PNG for diagrams/tables
-    if (category === 'microscopic') {
-      pipeline = pipeline.jpeg({ quality: 85, progressive: true })
-    } else {
-      pipeline = pipeline.png({ compressionLevel: 9, progressive: true })
-    }
-  } else if (format === 'jpeg' || format === 'jpg') {
-    pipeline = pipeline.jpeg({ quality: 85, progressive: true })
-  }
-  
-  return pipeline.toBuffer()
-}
 
-function getMaxWidthForCategory(category: string): number {
-  switch (category) {
-    case 'microscopic':
-      return 1200 // High detail needed for pathology
-    case 'figure':
-    case 'table':
-      return 1000 // Readable text/diagrams
-    default:
-      return 800 // General images
-  }
-}
+  const formData = new FormData()
+  formData.append('file', new Blob([imageBuffer]))
+  formData.append('id', `pathology-${category}-${imageId}`)
+  formData.append('metadata', JSON.stringify({
+    category,
+    originalId: imageId,
+    source: 'pathology-bites'
+  }))
 
-async function uploadToCloudinary(imageBuffer: Buffer, imageId: string, category: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        public_id: `pathology-bites/${category}/${imageId}`,
-        folder: 'pathology-bites',
-        resource_type: 'image',
-        format: 'auto',
-        quality: 'auto:good',
-        fetch_format: 'auto',
-        flags: 'progressive',
-        transformation: [
-          { quality: 'auto:good' },
-          { fetch_format: 'auto' }
-        ]
+  const response = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/images/v1`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${CLOUDFLARE_API_TOKEN}`,
       },
-      (error, result) => {
-        if (error) {
-          reject(new Error(`Cloudinary upload failed: ${error.message}`))
-        } else {
-          resolve(result!.secure_url)
-        }
-      }
-    )
-    
-    uploadStream.end(imageBuffer)
-  })
+      body: formData,
+    }
+  )
+
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(`Cloudflare upload failed: ${response.status} ${error}`)
+  }
+
+  const result = await response.json() as any
+
+  if (!result.success) {
+    throw new Error(`Cloudflare upload failed: ${result.errors?.[0]?.message || 'Unknown error'}`)
+  }
+
+  const baseUrl = CLOUDFLARE_IMAGES_DOMAIN
+    ? `https://${CLOUDFLARE_IMAGES_DOMAIN}`
+    : `https://imagedelivery.net/${CLOUDFLARE_ACCOUNT_ID}`
+
+  return {
+    originalSize: imageBuffer.length,
+    newUrl: `${baseUrl}/${result.result.id}/public`,
+    cloudflareId: result.result.id,
+    variants: result.result.variants || []
+  }
 }
 
-async function updateImageUrl(imageId: string, newUrl: string): Promise<boolean> {
+async function migrateImage(image: ImageRecord): Promise<CloudflareUploadResult> {
+  console.log(`🔄 Processing: ${image.url}`)
+
+  // Download original image
+  const originalBuffer = await downloadImage(image.url)
+
+  // Upload to Cloudflare Images (no optimization needed - Cloudflare handles it)
+  const result = await uploadToCloudflareImages(originalBuffer, image.id, image.category)
+
+  console.log(`✅ Migrated: ${(result.originalSize / 1024).toFixed(1)}KB → Cloudflare Images`)
+
+  return result
+}
+
+async function updateImageUrl(imageId: string, newUrl: string, cloudflareId: string): Promise<boolean> {
   const { error } = await supabase
     .from('images')
-    .update({ 
+    .update({
       url: newUrl,
-      // Add migration metadata
-      storage_path: `cdn:${newUrl}` 
+      // Store Cloudflare metadata for future reference
+      storage_path: `cloudflare:${cloudflareId}`
     })
     .eq('id', imageId)
 
@@ -207,66 +187,41 @@ async function updateImageUrl(imageId: string, newUrl: string): Promise<boolean>
   return true
 }
 
-async function migrateImage(image: ImageRecord, provider: string = 'cloudinary'): Promise<OptimizationResult> {
-  console.log(`🔄 Processing: ${image.url}`)
-  
-  // Download original image
-  const originalBuffer = await downloadImage(image.url)
-  const originalSize = originalBuffer.length
-  
-  // Optimize image
-  const optimizedBuffer = await optimizeImage(originalBuffer, image.category)
-  const optimizedSize = optimizedBuffer.length
-  
-  // Upload to CDN
-  let newUrl: string
-  switch (provider) {
-    case 'cloudinary':
-      newUrl = await uploadToCloudinary(optimizedBuffer, image.id, image.category)
-      break
-    default:
-      throw new Error(`Unsupported CDN provider: ${provider}`)
-  }
-  
-  const compressionRatio = ((originalSize - optimizedSize) / originalSize) * 100
-  
-  console.log(`✅ Optimized: ${(originalSize / 1024).toFixed(1)}KB → ${(optimizedSize / 1024).toFixed(1)}KB (${compressionRatio.toFixed(1)}% reduction)`)
-  
-  return {
-    originalSize,
-    optimizedSize,
-    compressionRatio,
-    newUrl,
-    provider
-  }
-}
-
-async function migrateImagesToCDN(provider: string = 'cloudinary', dryRun: boolean = true): Promise<MigrationStats> {
+async function migrateImagesToCloudflare(dryRun: boolean = true): Promise<MigrationStats> {
   const stats: MigrationStats = {
     totalImages: 0,
     processedImages: 0,
     failedImages: 0,
     originalSizeBytes: 0,
-    optimizedSizeBytes: 0,
-    compressionRatio: 0,
+    estimatedMonthlySavings: 0,
     errors: []
   }
 
   try {
-    // Validate CDN configuration
-    if (provider === 'cloudinary' && (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET)) {
-      throw new Error('Cloudinary configuration missing. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET')
+    // Validate Cloudflare configuration
+    if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN) {
+      throw new Error('Cloudflare configuration missing. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN')
     }
 
-    // Get active images
+    // Get active images (only those used in questions)
     const images = await getActiveImages()
     stats.totalImages = images.length
     stats.originalSizeBytes = images.reduce((sum, img) => sum + (img.file_size_bytes || 0), 0)
 
-    console.log(`\n📊 Migration Plan:`)
+    // Calculate estimated monthly egress savings (based on quiz activity)
+    const { data: monthlyAttempts } = await supabase
+      .from('quiz_attempts')
+      .select('id')
+      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+
+    const attemptCount = monthlyAttempts?.length || 0
+    stats.estimatedMonthlySavings = stats.originalSizeBytes * attemptCount
+
+    console.log(`\n📊 Cloudflare Images Migration Plan:`)
     console.log(`Images to migrate: ${stats.totalImages}`)
     console.log(`Total size: ${(stats.originalSizeBytes / 1024 / 1024).toFixed(2)} MB`)
-    console.log(`CDN Provider: ${provider}`)
+    console.log(`Monthly quiz attempts: ${attemptCount}`)
+    console.log(`Estimated monthly egress savings: ${(stats.estimatedMonthlySavings / 1024 / 1024).toFixed(2)} MB`)
     console.log(`Mode: ${dryRun ? 'DRY RUN' : 'LIVE'}`)
 
     if (dryRun) {
@@ -283,24 +238,23 @@ async function migrateImagesToCDN(provider: string = 'cloudinary', dryRun: boole
     await fs.writeFile(backupFile, JSON.stringify(images.map(img => ({ id: img.id, url: img.url })), null, 2))
     console.log(`💾 URL backup created: ${backupFile}`)
 
-    // Migrate images
-    console.log('\n🚀 Starting migration...')
+    // Migrate images to Cloudflare
+    console.log('\n🚀 Starting Cloudflare Images migration...')
     for (const image of images) {
       try {
-        const result = await migrateImage(image, provider)
-        
-        // Update database with new URL
-        const updated = await updateImageUrl(image.id, result.newUrl)
-        
+        const result = await migrateImage(image)
+
+        // Update database with new Cloudflare URL
+        const updated = await updateImageUrl(image.id, result.newUrl, result.cloudflareId)
+
         if (updated) {
           stats.processedImages++
-          stats.optimizedSizeBytes += result.optimizedSize
-          console.log(`✅ Migrated: ${image.id}`)
+          console.log(`✅ Migrated: ${image.id} → ${result.newUrl}`)
         } else {
           stats.failedImages++
           stats.errors.push(`Failed to update database for ${image.id}`)
         }
-        
+
       } catch (error) {
         stats.failedImages++
         const errorMsg = `Failed to migrate ${image.id}: ${error}`
@@ -309,13 +263,11 @@ async function migrateImagesToCDN(provider: string = 'cloudinary', dryRun: boole
       }
     }
 
-    stats.compressionRatio = ((stats.originalSizeBytes - stats.optimizedSizeBytes) / stats.originalSizeBytes) * 100
-
-    console.log('\n🎉 Migration Complete!')
+    console.log('\n🎉 Cloudflare Images Migration Complete!')
     console.log(`Processed: ${stats.processedImages}/${stats.totalImages}`)
     console.log(`Failed: ${stats.failedImages}`)
-    console.log(`Size reduction: ${(stats.originalSizeBytes / 1024 / 1024).toFixed(2)} MB → ${(stats.optimizedSizeBytes / 1024 / 1024).toFixed(2)} MB`)
-    console.log(`Compression: ${stats.compressionRatio.toFixed(1)}%`)
+    console.log(`Monthly egress eliminated: ${(stats.estimatedMonthlySavings / 1024 / 1024).toFixed(2)} MB`)
+    console.log(`💰 Cost savings: ~$0 (Cloudflare Images free tier + no egress charges)`)
 
   } catch (error) {
     console.error('❌ Migration failed:', error)
@@ -328,17 +280,17 @@ async function migrateImagesToCDN(provider: string = 'cloudinary', dryRun: boole
 // CLI handling
 async function main() {
   const args = process.argv.slice(2)
-  const providerArg = args.find(arg => arg.startsWith('--provider='))
-  const provider = providerArg ? providerArg.split('=')[1] : 'cloudinary'
   const dryRun = args.includes('--dry-run')
 
-  console.log('🌐 Image CDN Migration Tool')
-  console.log('===========================')
+  console.log('☁️  Cloudflare Images Migration Tool')
+  console.log('====================================')
+  console.log('🎯 Goal: Eliminate Supabase egress charges by migrating to Cloudflare Images')
+  console.log('💰 Cloudflare Images: 100k images free + unlimited bandwidth (no egress charges)')
 
-  const stats = await migrateImagesToCDN(provider, dryRun)
-  
+  const stats = await migrateImagesToCloudflare(dryRun)
+
   // Save stats
-  const statsFile = path.join(process.cwd(), 'migration-stats.json')
+  const statsFile = path.join(process.cwd(), 'cloudflare-migration-stats.json')
   await fs.writeFile(statsFile, JSON.stringify(stats, null, 2))
   console.log(`📊 Stats saved to: ${statsFile}`)
 }
@@ -347,4 +299,4 @@ if (require.main === module) {
   main().catch(console.error)
 }
 
-export { migrateImagesToCDN, getActiveImages }
+export { migrateImagesToCloudflare, getActiveImages }
