@@ -133,7 +133,7 @@ $RECYCLE.BIN/
 # DATA FILES (PRIVATE)
 # ==============================================================================
 # Private data folder - keep out of public repository
-data/
+# data/
 
 # ==============================================================================
 # TEST & DEBUG FILES
