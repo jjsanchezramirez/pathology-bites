@@ -3,6 +3,7 @@ import { createClient } from '@/shared/services/client';
 import { toast } from 'sonner';
 import { FileProgress, ImageCategory } from '@/features/images/types/images';
 import { compressImage, cleanFileName, formatImageName, getImageDimensions } from '@/features/images/services/image-upload';
+import { uploadToR2, generateImageStoragePath } from '@/shared/services/r2-storage';
 
 interface UseImageUploadOptions {
   onUploadComplete?: () => void;
@@ -102,26 +103,25 @@ export function useImageUpload({
             progress: 40
           });
 
-          // Generate storage path
-          const timestamp = Date.now();
-          const storagePath = `${timestamp}-${cleanFileName(file.name)}`;
+          // Generate R2 storage path
+          const storagePath = generateImageStoragePath(file.name, category);
 
-          // Upload to storage
-          const { error: uploadError } = await supabase.storage
-            .from('images')
-            .upload(storagePath, fileToUpload, {
-              cacheControl: '3600',
-              upsert: false
-            });
-
-          if (uploadError) throw uploadError;
+          // Upload to R2
+          const uploadResult = await uploadToR2(fileToUpload, storagePath, {
+            contentType: fileToUpload.type,
+            cacheControl: '3600',
+            metadata: {
+              originalName: file.name,
+              category,
+              uploadedBy: user.id,
+              uploadedAt: new Date().toISOString()
+            }
+          });
 
           updateFileProgress(file.name, { progress: 60 });
 
-          // Get public URL
-          const { data: { publicUrl } } = supabase.storage
-            .from('images')
-            .getPublicUrl(storagePath);
+          // R2 upload result contains the public URL
+          const publicUrl = uploadResult.url;
 
           updateFileProgress(file.name, { progress: 80 });
 
@@ -144,10 +144,13 @@ export function useImageUpload({
             });
 
           if (dbError) {
-            // Clean up storage on database error
-            await supabase.storage
-              .from('images')
-              .remove([storagePath]);
+            // Clean up R2 storage on database error
+            try {
+              const { deleteFromR2 } = await import('@/shared/services/r2-storage');
+              await deleteFromR2(storagePath);
+            } catch (cleanupError) {
+              console.warn('Failed to cleanup R2 file after database error:', cleanupError);
+            }
             throw dbError;
           }
 

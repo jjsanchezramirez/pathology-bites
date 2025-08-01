@@ -1,5 +1,6 @@
 // Storage synchronization utilities
 import { createClient } from '@/shared/services/client';
+import { getR2FileInfo, extractR2KeyFromUrl } from '@/shared/services/r2-storage';
 
 export interface StorageFileInfo {
   name: string;
@@ -17,35 +18,52 @@ export interface SyncResult {
 }
 
 /**
- * Get file metadata from Supabase Storage
+ * Get file metadata from R2 Storage (or legacy Supabase Storage)
  */
-export async function getStorageFileInfo(fileName: string): Promise<StorageFileInfo | null> {
-  const supabase = createClient();
-
+export async function getStorageFileInfo(filePathOrUrl: string): Promise<StorageFileInfo | null> {
   try {
-    // List the specific file to get metadata
-    const { data: files, error } = await supabase.storage
-      .from('images')
-      .list('', {
-        search: fileName
-      });
+    // Try to extract R2 key from URL first (for migrated images)
+    const r2Key = extractR2KeyFromUrl(filePathOrUrl);
 
-    if (error) {
-      console.error('Storage list error:', error);
-      return null;
+    if (r2Key) {
+      // Get file info from R2
+      const r2FileInfo = await getR2FileInfo(r2Key);
+      if (r2FileInfo && r2FileInfo.exists) {
+        return {
+          name: r2Key.split('/').pop() || r2Key,
+          size: r2FileInfo.size,
+          mimetype: r2FileInfo.contentType,
+          lastModified: r2FileInfo.lastModified.toISOString()
+        };
+      }
+    } else {
+      // Fallback: try legacy Supabase Storage for non-migrated images
+      const supabase = createClient();
+      const fileName = filePathOrUrl.split('/').pop() || filePathOrUrl;
+
+      const { data: files, error } = await supabase.storage
+        .from('images')
+        .list('', {
+          search: fileName
+        });
+
+      if (error) {
+        console.error('Storage list error:', error);
+        return null;
+      }
+
+      const file = files?.find(f => f.name === fileName);
+      if (file && file.metadata) {
+        return {
+          name: file.name,
+          size: file.metadata.size || file.metadata.contentLength || 0,
+          mimetype: file.metadata.mimetype || 'unknown',
+          lastModified: file.metadata.lastModified || file.updated_at
+        };
+      }
     }
 
-    const file = files?.find(f => f.name === fileName);
-    if (!file || !file.metadata) {
-      return null;
-    }
-
-    return {
-      name: file.name,
-      size: file.metadata.size || file.metadata.contentLength || 0,
-      mimetype: file.metadata.mimetype || 'unknown',
-      lastModified: file.metadata.lastModified || file.updated_at
-    };
+    return null;
   } catch (error) {
     console.error('Get storage file info error:', error);
     return null;

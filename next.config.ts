@@ -8,10 +8,17 @@ const nextConfig = {
     // All images use unoptimized=true to avoid Vercel optimization costs
     // remotePatterns are configured for security but optimization is disabled
     remotePatterns: [
+      // Legacy Supabase Storage (for any remaining images during transition)
       {
         protocol: 'https',
         hostname: process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '') || 'htsnkuudinrcgfqlqmpi.supabase.co',
         pathname: '/storage/v1/object/public/images/**',
+      },
+      // Cloudflare R2 CDN (primary image storage)
+      {
+        protocol: 'https',
+        hostname: 'pub-a4bec7073d99465f99043c842be6318c.r2.dev',
+        pathname: '/**',
       },
       {
         protocol: 'https',

@@ -1,20 +1,41 @@
 // src/lib/images/images.ts
 import { createClient } from '@/shared/services/client';
+import { deleteFromR2, bulkDeleteFromR2, extractR2KeyFromUrl } from '@/shared/services/r2-storage';
 import type { ImageData } from '@/features/images/types/images';
 
 export async function deleteImage(imagePath: string | null, imageId: string) {
-  const supabase = createClient(); // Remove <Database>
+  const supabase = createClient();
 
   try {
-    // Only delete from storage if imagePath exists (not for external images)
-    if (imagePath) {
-      const { error: storageError } = await supabase.storage
-        .from('images')
-        .remove([imagePath]);
+    // Get image details to determine storage location
+    const { data: imageData, error: fetchError } = await supabase
+      .from('images')
+      .select('url, storage_path, category')
+      .eq('id', imageId)
+      .single();
 
-      if (storageError) {
-        console.error('Storage deletion error:', storageError);
-        throw new Error(`Failed to delete image from storage: ${storageError.message}`);
+    if (fetchError) {
+      console.error('Failed to fetch image details:', fetchError);
+      throw new Error(`Failed to fetch image details: ${fetchError.message}`);
+    }
+
+    // Only delete from storage if it's not an external image
+    if (imageData && imageData.category !== 'external') {
+      try {
+        // Try to extract R2 key from URL first (for migrated images)
+        const r2Key = extractR2KeyFromUrl(imageData.url);
+        if (r2Key) {
+          await deleteFromR2(r2Key);
+        } else if (imagePath || imageData.storage_path) {
+          // Fallback: use storage_path or imagePath for legacy images
+          const keyToDelete = imagePath || imageData.storage_path;
+          if (keyToDelete) {
+            await deleteFromR2(keyToDelete);
+          }
+        }
+      } catch (storageError) {
+        console.warn('R2 deletion error (continuing with database deletion):', storageError);
+        // Continue with database deletion even if R2 deletion fails
       }
     }
 
@@ -179,39 +200,40 @@ export async function uploadImage(
     source_ref?: string;
   }
 ): Promise<ImageData> {
-  const supabase = createClient(); // Remove <Database>
+  const supabase = createClient();
 
   try {
-    // Generate unique filename
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const filePath = `${fileName}`;
+    // Import R2 functions
+    const { uploadToR2, generateImageStoragePath } = await import('@/shared/services/r2-storage');
 
-    // Upload file to storage
-    const { error: uploadError } = await supabase.storage
-      .from('images')
-      .upload(filePath, file);
+    // Generate R2 storage path
+    const storagePath = generateImageStoragePath(file.name, metadata.category);
 
-    if (uploadError) {
-      console.error('Upload error:', uploadError);
-      throw new Error(`Failed to upload image: ${uploadError.message}`);
-    }
+    // Upload file to R2
+    const uploadResult = await uploadToR2(file, storagePath, {
+      contentType: metadata.file_type,
+      metadata: {
+        originalName: file.name,
+        category: metadata.category,
+        uploadedBy: metadata.created_by,
+        uploadedAt: new Date().toISOString()
+      }
+    });
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('images')
-      .getPublicUrl(filePath);
+    // R2 upload result contains the public URL
+    const publicUrl = uploadResult.url;
 
     // Save metadata to database
     const { data: imageData, error: dbError } = await supabase
       .from('images')
       .insert({
         url: publicUrl,
-        storage_path: filePath,
+        storage_path: storagePath, // Use R2 storage path
         description: metadata.description,
         alt_text: metadata.alt_text,
         category: metadata.category,
         file_type: metadata.file_type,
+        file_size_bytes: uploadResult.size,
         source_ref: metadata.source_ref || null,
         created_by: metadata.created_by,
       })
@@ -219,8 +241,13 @@ export async function uploadImage(
       .single();
 
     if (dbError) {
-      // If database insertion fails, clean up the uploaded file
-      await supabase.storage.from('images').remove([filePath]);
+      // If database insertion fails, clean up the R2 uploaded file
+      try {
+        const { deleteFromR2 } = await import('@/shared/services/r2-storage');
+        await deleteFromR2(storagePath);
+      } catch (cleanupError) {
+        console.warn('Failed to cleanup R2 file after database error:', cleanupError);
+      }
       console.error('Database insert error:', dbError);
       throw new Error(`Failed to save image metadata: ${dbError.message}`);
     }
@@ -330,7 +357,7 @@ export async function bulkDeleteImages(imageIds: string[]): Promise<{ success: b
     // Get image details for storage cleanup
     const { data: images, error: fetchError } = await supabase
       .from('images')
-      .select('id, storage_path')
+      .select('id, storage_path, url, category')
       .in('id', imageIds)
       .neq('category', 'external'); // Don't try to delete storage for external images
 
@@ -338,19 +365,32 @@ export async function bulkDeleteImages(imageIds: string[]): Promise<{ success: b
       throw fetchError;
     }
 
-    // Delete from storage first (for uploaded images)
-    const storagePaths = images
-      .filter(img => img.storage_path)
-      .map(img => img.storage_path);
+    // Delete from R2 storage first (for uploaded images)
+    const r2Keys: string[] = [];
 
-    if (storagePaths.length > 0) {
-      const { error: storageError } = await supabase.storage
-        .from('images')
-        .remove(storagePaths);
+    for (const image of images) {
+      if (image.category !== 'external') {
+        // Try to extract R2 key from URL first (for migrated images)
+        const r2Key = extractR2KeyFromUrl(image.url);
+        if (r2Key) {
+          r2Keys.push(r2Key);
+        } else if (image.storage_path) {
+          // Fallback: use storage_path for legacy images
+          r2Keys.push(image.storage_path);
+        }
+      }
+    }
 
-      if (storageError) {
-        console.warn('Storage deletion error:', storageError);
-        // Continue with database deletion even if storage fails
+    if (r2Keys.length > 0) {
+      try {
+        const deleteResult = await bulkDeleteFromR2(r2Keys);
+        if (deleteResult.errors.length > 0) {
+          console.warn('Some R2 deletions failed:', deleteResult.errors);
+          // Continue with database deletion even if some R2 deletions fail
+        }
+      } catch (storageError) {
+        console.warn('R2 bulk deletion error:', storageError);
+        // Continue with database deletion even if R2 deletion fails
       }
     }
 
