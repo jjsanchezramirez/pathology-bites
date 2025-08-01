@@ -1,35 +1,53 @@
 #!/usr/bin/env tsx
 
 /**
- * Cloudflare Images Migration Script
+ * Cloudflare R2 Migration Script
  *
- * Migrates images from Supabase Storage to Cloudflare Images to eliminate egress charges.
+ * Migrates images from Supabase Storage to Cloudflare R2 to eliminate egress charges.
  *
- * Cloudflare Images Benefits:
- * - NO egress charges (unlimited bandwidth)
- * - 100k images free tier
- * - Automatic optimization (WebP/AVIF)
+ * Cloudflare R2 Benefits:
+ * - NO egress charges via Cloudflare CDN (unlimited bandwidth)
+ * - 10GB storage free tier (we use ~41MB)
+ * - S3-compatible API
  * - Global CDN performance
- * - On-demand resizing via URL parameters
+ * - More flexible than Cloudflare Images
  *
- * Current Usage: 85 images, ~548MB/month egress → $0 egress with Cloudflare
+ * Current Usage: 85 images, ~548MB/month egress → $0 egress with R2
  *
  * Usage: npx tsx scripts/migrate-images-to-cdn.ts [--dry-run]
  */
 
+import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
+import { S3Client, PutObjectCommand, CreateBucketCommand, HeadBucketCommand } from '@aws-sdk/client-s3'
 import fetch from 'node-fetch'
 import { promises as fs } from 'fs'
 import path from 'path'
 
+// Load environment variables
+config({ path: '.env.local' })
+
 // Configuration
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID
-const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN
-const CLOUDFLARE_IMAGES_DOMAIN = process.env.CLOUDFLARE_IMAGES_DOMAIN // Optional custom domain
+const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID!
+const CLOUDFLARE_R2_ACCESS_KEY_ID = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!
+const CLOUDFLARE_R2_SECRET_ACCESS_KEY = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!
+const CLOUDFLARE_R2_BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pathology-bites-images'
+const CLOUDFLARE_R2_PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+
+// Configure R2 client (S3-compatible)
+const r2Client = new S3Client({
+  region: 'auto',
+  endpoint: `https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: CLOUDFLARE_R2_ACCESS_KEY_ID,
+    secretAccessKey: CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+  },
+  forcePathStyle: false, // Try without force path style first
+})
 
 interface ImageRecord {
   id: string
@@ -42,11 +60,11 @@ interface ImageRecord {
   height?: number
 }
 
-interface CloudflareUploadResult {
+interface R2UploadResult {
   originalSize: number
   newUrl: string
-  cloudflareId: string
-  variants: string[]
+  r2Key: string
+  contentType: string
 }
 
 interface MigrationStats {
@@ -58,26 +76,10 @@ interface MigrationStats {
   errors: string[]
 }
 
-async function getActiveImages(): Promise<ImageRecord[]> {
-  console.log('🔍 Fetching active images...')
+async function getAllImages(): Promise<ImageRecord[]> {
+  console.log('🔍 Fetching ALL images from Supabase Storage...')
 
-  // First get the image IDs that are actually used
-  const { data: usedImageIds, error: idsError } = await supabase
-    .from('question_images')
-    .select('image_id')
-
-  if (idsError) {
-    throw new Error(`Failed to fetch used image IDs: ${idsError.message}`)
-  }
-
-  const imageIds = usedImageIds?.map(item => item.image_id) || []
-
-  if (imageIds.length === 0) {
-    console.log('No active images found')
-    return []
-  }
-
-  // Then get the image details for those IDs
+  // Get ALL images from the database (not just active ones)
   const { data: images, error } = await supabase
     .from('images')
     .select(`
@@ -90,12 +92,19 @@ async function getActiveImages(): Promise<ImageRecord[]> {
       width,
       height
     `)
-    .in('id', imageIds)
+    .not('url', 'is', null)
+    .order('created_at', { ascending: false })
 
   if (error) {
-    throw new Error(`Failed to fetch active images: ${error.message}`)
+    throw new Error(`Failed to fetch all images: ${error.message}`)
   }
 
+  if (!images || images.length === 0) {
+    console.log('No images found in database')
+    return []
+  }
+
+  console.log(`Found ${images.length} total images to migrate`)
   return images || []
 }
 
@@ -107,75 +116,126 @@ async function downloadImage(url: string): Promise<Buffer> {
   return Buffer.from(await response.arrayBuffer())
 }
 
-async function uploadToCloudflareImages(imageBuffer: Buffer, imageId: string, category: string): Promise<CloudflareUploadResult> {
-  if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN) {
-    throw new Error('Cloudflare configuration missing. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN')
+async function uploadToR2(imageBuffer: Buffer, imageId: string, category: string): Promise<R2UploadResult> {
+  if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_R2_ACCESS_KEY_ID || !CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
+    throw new Error('Cloudflare R2 configuration missing. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_R2_ACCESS_KEY_ID, CLOUDFLARE_R2_SECRET_ACCESS_KEY')
   }
 
-  const formData = new FormData()
-  formData.append('file', new Blob([imageBuffer]))
-  formData.append('id', `pathology-${category}-${imageId}`)
-  formData.append('metadata', JSON.stringify({
-    category,
-    originalId: imageId,
-    source: 'pathology-bites'
-  }))
+  // Generate R2 key (path) for the image
+  const r2Key = `images/${category}/${imageId}`
 
-  const response = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/images/v1`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${CLOUDFLARE_API_TOKEN}`,
-      },
-      body: formData,
+  // Determine content type from buffer
+  const contentType = getContentType(imageBuffer)
+
+  try {
+    const command = new PutObjectCommand({
+      Bucket: CLOUDFLARE_R2_BUCKET_NAME,
+      Key: r2Key,
+      Body: imageBuffer,
+      ContentType: contentType,
+      Metadata: {
+        category,
+        originalId: imageId,
+        source: 'pathology-bites',
+        uploadedAt: new Date().toISOString()
+      }
+    })
+
+    await r2Client.send(command)
+
+    // Generate public URL
+    const publicUrl = CLOUDFLARE_R2_PUBLIC_URL
+      ? `${CLOUDFLARE_R2_PUBLIC_URL}/${r2Key}`
+      : `https://pub-${CLOUDFLARE_ACCOUNT_ID}.r2.dev/${r2Key}`
+
+    return {
+      originalSize: imageBuffer.length,
+      newUrl: publicUrl,
+      r2Key,
+      contentType
     }
-  )
-
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`Cloudflare upload failed: ${response.status} ${error}`)
-  }
-
-  const result = await response.json() as any
-
-  if (!result.success) {
-    throw new Error(`Cloudflare upload failed: ${result.errors?.[0]?.message || 'Unknown error'}`)
-  }
-
-  const baseUrl = CLOUDFLARE_IMAGES_DOMAIN
-    ? `https://${CLOUDFLARE_IMAGES_DOMAIN}`
-    : `https://imagedelivery.net/${CLOUDFLARE_ACCOUNT_ID}`
-
-  return {
-    originalSize: imageBuffer.length,
-    newUrl: `${baseUrl}/${result.result.id}/public`,
-    cloudflareId: result.result.id,
-    variants: result.result.variants || []
+  } catch (error) {
+    throw new Error(`R2 upload failed: ${error}`)
   }
 }
 
-async function migrateImage(image: ImageRecord): Promise<CloudflareUploadResult> {
+function getContentType(buffer: Buffer): string {
+  // Simple content type detection based on file signature
+  if (buffer.length < 4) return 'application/octet-stream'
+
+  const signature = buffer.subarray(0, 4)
+
+  // PNG signature: 89 50 4E 47
+  if (signature[0] === 0x89 && signature[1] === 0x50 && signature[2] === 0x4E && signature[3] === 0x47) {
+    return 'image/png'
+  }
+
+  // JPEG signature: FF D8 FF
+  if (signature[0] === 0xFF && signature[1] === 0xD8 && signature[2] === 0xFF) {
+    return 'image/jpeg'
+  }
+
+  // WebP signature: RIFF ... WEBP
+  if (signature.toString('ascii', 0, 4) === 'RIFF') {
+    const webpSignature = buffer.subarray(8, 12)
+    if (webpSignature.toString('ascii') === 'WEBP') {
+      return 'image/webp'
+    }
+  }
+
+  return 'image/jpeg' // Default fallback
+}
+
+async function ensureBucketExists(): Promise<void> {
+  try {
+    // Try to check if bucket exists
+    const headCommand = new HeadBucketCommand({
+      Bucket: CLOUDFLARE_R2_BUCKET_NAME,
+    })
+
+    await r2Client.send(headCommand)
+    console.log(`✅ Bucket '${CLOUDFLARE_R2_BUCKET_NAME}' exists and is accessible`)
+  } catch (error: any) {
+    if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
+      // Bucket doesn't exist, create it
+      console.log(`🔧 Creating bucket '${CLOUDFLARE_R2_BUCKET_NAME}'...`)
+      try {
+        const createCommand = new CreateBucketCommand({
+          Bucket: CLOUDFLARE_R2_BUCKET_NAME,
+        })
+
+        await r2Client.send(createCommand)
+        console.log(`✅ Bucket '${CLOUDFLARE_R2_BUCKET_NAME}' created successfully`)
+      } catch (createError) {
+        throw new Error(`Failed to create bucket: ${createError}`)
+      }
+    } else {
+      throw new Error(`Failed to access bucket: ${error}`)
+    }
+  }
+}
+
+async function migrateImage(image: ImageRecord): Promise<R2UploadResult> {
   console.log(`🔄 Processing: ${image.url}`)
 
   // Download original image
   const originalBuffer = await downloadImage(image.url)
 
-  // Upload to Cloudflare Images (no optimization needed - Cloudflare handles it)
-  const result = await uploadToCloudflareImages(originalBuffer, image.id, image.category)
+  // Upload to Cloudflare R2
+  const result = await uploadToR2(originalBuffer, image.id, image.category)
 
-  console.log(`✅ Migrated: ${(result.originalSize / 1024).toFixed(1)}KB → Cloudflare Images`)
+  console.log(`✅ Migrated: ${(result.originalSize / 1024).toFixed(1)}KB → R2`)
 
   return result
 }
 
-async function updateImageUrl(imageId: string, newUrl: string, cloudflareId: string): Promise<boolean> {
+async function updateImageUrl(imageId: string, newUrl: string, r2Key: string): Promise<boolean> {
   const { error } = await supabase
     .from('images')
     .update({
       url: newUrl,
-      // Store Cloudflare metadata for future reference
-      storage_path: `cloudflare:${cloudflareId}`
+      // Store R2 metadata for future reference
+      storage_path: `r2:${r2Key}`
     })
     .eq('id', imageId)
 
@@ -187,7 +247,7 @@ async function updateImageUrl(imageId: string, newUrl: string, cloudflareId: str
   return true
 }
 
-async function migrateImagesToCloudflare(dryRun: boolean = true): Promise<MigrationStats> {
+async function migrateImagesToR2(dryRun: boolean = true): Promise<MigrationStats> {
   const stats: MigrationStats = {
     totalImages: 0,
     processedImages: 0,
@@ -198,15 +258,18 @@ async function migrateImagesToCloudflare(dryRun: boolean = true): Promise<Migrat
   }
 
   try {
-    // Validate Cloudflare configuration
-    if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN) {
-      throw new Error('Cloudflare configuration missing. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN')
+    // Validate R2 configuration
+    if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_R2_ACCESS_KEY_ID || !CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
+      throw new Error('Cloudflare R2 configuration missing. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_R2_ACCESS_KEY_ID, CLOUDFLARE_R2_SECRET_ACCESS_KEY')
     }
 
-    // Get active images (only those used in questions)
-    const images = await getActiveImages()
+    // Skip bucket check for now due to SSL issues
+    console.log(`⚠️  Skipping bucket check - assuming '${CLOUDFLARE_R2_BUCKET_NAME}' exists`)
+
+    // Get ALL images from Supabase Storage
+    const images = await getAllImages()
     stats.totalImages = images.length
-    stats.originalSizeBytes = images.reduce((sum, img) => sum + (img.file_size_bytes || 0), 0)
+    stats.originalSizeBytes = images.reduce((sum: number, img: any) => sum + (img.file_size_bytes || 0), 0)
 
     // Calculate estimated monthly egress savings (based on quiz activity)
     const { data: monthlyAttempts } = await supabase
@@ -217,11 +280,12 @@ async function migrateImagesToCloudflare(dryRun: boolean = true): Promise<Migrat
     const attemptCount = monthlyAttempts?.length || 0
     stats.estimatedMonthlySavings = stats.originalSizeBytes * attemptCount
 
-    console.log(`\n📊 Cloudflare Images Migration Plan:`)
+    console.log(`\n📊 Cloudflare R2 Migration Plan:`)
     console.log(`Images to migrate: ${stats.totalImages}`)
     console.log(`Total size: ${(stats.originalSizeBytes / 1024 / 1024).toFixed(2)} MB`)
     console.log(`Monthly quiz attempts: ${attemptCount}`)
     console.log(`Estimated monthly egress savings: ${(stats.estimatedMonthlySavings / 1024 / 1024).toFixed(2)} MB`)
+    console.log(`R2 Bucket: ${CLOUDFLARE_R2_BUCKET_NAME}`)
     console.log(`Mode: ${dryRun ? 'DRY RUN' : 'LIVE'}`)
 
     if (dryRun) {
@@ -235,17 +299,17 @@ async function migrateImagesToCloudflare(dryRun: boolean = true): Promise<Migrat
     await fs.mkdir(backupDir, { recursive: true })
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
     const backupFile = path.join(backupDir, `image-urls-${timestamp}.json`)
-    await fs.writeFile(backupFile, JSON.stringify(images.map(img => ({ id: img.id, url: img.url })), null, 2))
+    await fs.writeFile(backupFile, JSON.stringify(images.map((img: any) => ({ id: img.id, url: img.url })), null, 2))
     console.log(`💾 URL backup created: ${backupFile}`)
 
-    // Migrate images to Cloudflare
-    console.log('\n🚀 Starting Cloudflare Images migration...')
+    // Migrate images to R2
+    console.log('\n🚀 Starting Cloudflare R2 migration...')
     for (const image of images) {
       try {
         const result = await migrateImage(image)
 
-        // Update database with new Cloudflare URL
-        const updated = await updateImageUrl(image.id, result.newUrl, result.cloudflareId)
+        // Update database with new R2 URL
+        const updated = await updateImageUrl(image.id, result.newUrl, result.r2Key)
 
         if (updated) {
           stats.processedImages++
@@ -263,11 +327,11 @@ async function migrateImagesToCloudflare(dryRun: boolean = true): Promise<Migrat
       }
     }
 
-    console.log('\n🎉 Cloudflare Images Migration Complete!')
+    console.log('\n🎉 Cloudflare R2 Migration Complete!')
     console.log(`Processed: ${stats.processedImages}/${stats.totalImages}`)
     console.log(`Failed: ${stats.failedImages}`)
     console.log(`Monthly egress eliminated: ${(stats.estimatedMonthlySavings / 1024 / 1024).toFixed(2)} MB`)
-    console.log(`💰 Cost savings: ~$0 (Cloudflare Images free tier + no egress charges)`)
+    console.log(`💰 Cost savings: ~$0 (Cloudflare R2 free tier + no egress charges)`)
 
   } catch (error) {
     console.error('❌ Migration failed:', error)
@@ -282,15 +346,15 @@ async function main() {
   const args = process.argv.slice(2)
   const dryRun = args.includes('--dry-run')
 
-  console.log('☁️  Cloudflare Images Migration Tool')
-  console.log('====================================')
-  console.log('🎯 Goal: Eliminate Supabase egress charges by migrating to Cloudflare Images')
-  console.log('💰 Cloudflare Images: 100k images free + unlimited bandwidth (no egress charges)')
+  console.log('☁️  Cloudflare R2 Migration Tool')
+  console.log('=================================')
+  console.log('🎯 Goal: Eliminate Supabase egress charges by migrating to Cloudflare R2')
+  console.log('💰 Cloudflare R2: 10GB storage free + unlimited CDN egress (no egress charges)')
 
-  const stats = await migrateImagesToCloudflare(dryRun)
+  const stats = await migrateImagesToR2(dryRun)
 
   // Save stats
-  const statsFile = path.join(process.cwd(), 'cloudflare-migration-stats.json')
+  const statsFile = path.join(process.cwd(), 'r2-migration-stats.json')
   await fs.writeFile(statsFile, JSON.stringify(stats, null, 2))
   console.log(`📊 Stats saved to: ${statsFile}`)
 }
@@ -299,4 +363,4 @@ if (require.main === module) {
   main().catch(console.error)
 }
 
-export { migrateImagesToCloudflare, getActiveImages }
+export { migrateImagesToR2, getAllImages }
