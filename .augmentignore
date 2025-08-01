@@ -1,0 +1,170 @@
+# ==============================================================================
+# PATHOLOGY BITES - AUGMENT IGNORE CONFIGURATION
+# ==============================================================================
+# Excludes files from Augment's context engine for better performance and security
+# Documentation: https://docs.augmentcode.com/ignore-files
+
+# ==============================================================================
+# ENVIRONMENT & SECRETS (Security)
+# ==============================================================================
+# Keep .env.example for reference, exclude actual secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+secrets/
+*.pem
+*.key
+*.crt
+*.cert
+
+# ==============================================================================
+# DEPENDENCIES & PACKAGES (Performance)
+# ==============================================================================
+node_modules/
+.pnp
+.pnp.*
+.yarn/
+.npm/
+.pnpm-store/
+
+# ==============================================================================
+# BUILD OUTPUTS & CACHE (Performance)
+# ==============================================================================
+.next/
+out/
+build/
+dist/
+.vercel/
+.turbo/
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+next-env.d.ts
+
+# ==============================================================================
+# TESTING & COVERAGE (Performance)
+# ==============================================================================
+coverage/
+.nyc_output/
+.jest/
+test-results/
+playwright-report/
+
+# ==============================================================================
+# LOGS & DEBUGGING (Performance)
+# ==============================================================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+lerna-debug.log*
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ==============================================================================
+# OPERATING SYSTEM FILES (Noise Reduction)
+# ==============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ==============================================================================
+# IDE & EDITOR FILES (Noise Reduction)
+# ==============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ==============================================================================
+# TEMPORARY & BACKUP FILES (Noise Reduction)
+# ==============================================================================
+*.tmp
+*.temp
+.tmp/
+.temp/
+*.backup
+*.bak
+*.orig
+
+# ==============================================================================
+# ARCHIVES & BINARIES (Performance)
+# ==============================================================================
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.tgz
+
+# ==============================================================================
+# LARGE MEDIA FILES (Optional - Performance)
+# ==============================================================================
+# Uncomment if you have large media files that slow down context loading
+# *.mp4
+# *.avi
+# *.mov
+# *.wmv
+# *.flv
+# *.webm
+# *.mkv
+
+# ==============================================================================
+# AUTO-GENERATED DOCUMENTATION (Noise Reduction)
+# ==============================================================================
+docs/build/
+storybook-static/
+
+# ==============================================================================
+# TEST & DEBUG FILES (Noise Reduction)
+# ==============================================================================
+# Test data files (keep sample files in docs/api/)
+test-*.json
+*-test.json
+*-debug.json
+*-fixed.json
+*-final.json
+*-v*.json
+*.scraped.json
+
+# Scraped content (keep organized scraped-questions/ folder)
+pathoutlines/*.html
+
+# ==============================================================================
+# PACKAGE MANAGER FILES (Optional)
+# ==============================================================================
+# Uncomment if you want to exclude lock files from context
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ==============================================================================
+# DATABASE & EXTERNAL SERVICES (Performance)
+# ==============================================================================
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Supabase local development
+supabase/.branches/
+supabase/.temp/
+supabase/logs/
+
+# ==============================================================================
+# MISCELLANEOUS (Cleanup)
+# ==============================================================================
+.node_repl_history
+.yarn-integrity
