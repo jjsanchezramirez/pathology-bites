@@ -638,7 +638,7 @@ export function WSIQuestionGenerator({
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
           <div className="flex items-center gap-2 text-sm text-red-700">
             <Info className="h-4 w-4 flex-shrink-0" />
-            <span>AI-generated content without human oversight. Verify with authoritative sources.</span>
+            <span>AI-generated content without human oversight. May contain incorrect information.</span>
           </div>
         </div>
       </div>
@@ -742,7 +742,7 @@ export function WSIQuestionGenerator({
                 <div className="pt-2 border-t">
                   <div className="flex items-start gap-2 text-xs text-amber-700">
                     <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                    <span>AI-generated content. Verify with authoritative sources.</span>
+                    <span>AI-generated content. May contain inaccuracies. Verify with authoritative sources.</span>
                   </div>
                 </div>
 
