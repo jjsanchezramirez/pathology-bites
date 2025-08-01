@@ -321,8 +321,8 @@ export function WSIQuestionGenerator({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          imageUrl: selectedWSI.image_url,
-          thumbnailUrl: selectedWSI.thumbnail_url
+          imageUrl: selectedWSI.slide_url || selectedWSI.case_url,
+          thumbnailUrl: selectedWSI.preview_image_url
         })
       })
 
@@ -347,8 +347,14 @@ export function WSIQuestionGenerator({
     imageVerification: any,
     wsiData: any,
     contextData: any,
-    modelIndex: number = 0
+    modelIndex: number = 0,
+    recursionDepth: number = 0
   ) => {
+    // Prevent infinite recursion
+    if (recursionDepth > WSI_FALLBACK_MODEL_NAMES.length) {
+      throw new Error('Maximum recursion depth exceeded. Please try again later.')
+    }
+    
     if (modelIndex >= WSI_FALLBACK_MODEL_NAMES.length) {
       throw new Error('All fallback models have been exhausted. Please try again later.')
     }
@@ -383,8 +389,9 @@ export function WSIQuestionGenerator({
 
       if (!questionResponse.ok) {
         // Check if we should try the next model
-        if (questionData.nextModelIndex !== null && questionData.nextModelIndex !== undefined) {
-          console.warn(`WSI Question Generator: Model ${currentModelName} failed, trying next model...`)
+        const nextIndex = questionData.nextModelIndex
+        if (nextIndex !== null && nextIndex !== undefined && nextIndex > modelIndex && nextIndex < WSI_FALLBACK_MODEL_NAMES.length) {
+          console.warn(`WSI Question Generator: Model ${currentModelName} failed, trying next model (index ${nextIndex})...`)
           // Recursively try the next model
           return await generateQuestionWithModelFallback(
             selectedWSI,
@@ -392,7 +399,8 @@ export function WSIQuestionGenerator({
             imageVerification,
             wsiData,
             contextData,
-            questionData.nextModelIndex
+            nextIndex,
+            recursionDepth + 1
           )
         } else {
           throw new Error(questionData.error || `Question generation failed: ${questionResponse.status} ${questionResponse.statusText}`)
@@ -442,7 +450,8 @@ export function WSIQuestionGenerator({
           imageVerification,
           wsiData,
           contextData,
-          nextModelIndex
+          nextModelIndex,
+          recursionDepth + 1
         )
       } else {
         throw new Error(`All ${WSI_FALLBACK_MODEL_NAMES.length} fallback models failed. Please try again later.`)
