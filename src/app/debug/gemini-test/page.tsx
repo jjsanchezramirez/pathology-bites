@@ -38,7 +38,7 @@ interface GeminiResponse {
 }
 
 export default function GeminiTestPage() {
-  const [apiKey, setApiKey] = useState('AIzaSyBcav6xZOlMpQyRJHvNLeyYHRmMlGEPQGw')
+  const [apiKey, setApiKey] = useState(process.env.NEXT_PUBLIC_GOOGLE_API_KEY || '')
   const [prompt, setPrompt] = useState('Explain how AI works in a few words')
   const [model, setModel] = useState('gemini-2.0-flash')
   const [loading, setLoading] = useState(false)
