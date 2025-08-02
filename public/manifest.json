@@ -1,15 +1,15 @@
 {
-  "name": "Pathology Bites - Free Pathology Education",
+  "name": "Pathology Bites",
   "short_name": "Pathology Bites",
-  "description": "Master pathology with free practice questions, detailed explanations, and comprehensive study materials.",
+  "description": "Master pathology with practice questions, detailed explanations, virtual slides, and comprehensive study tools for medical education.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0066cc",
-  "orientation": "portrait-primary",
+  "theme_color": "#2563eb",
+  "orientation": "any",
   "scope": "/",
-  "lang": "en-US",
-  "categories": ["education", "medical", "learning"],
+  "lang": "en",
+  "categories": ["education", "medical", "healthcare"],
   "icons": [
     {
       "src": "/icons/favicon.svg",
@@ -35,56 +35,60 @@
     {
       "src": "/icons/android-chrome-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icons/android-chrome-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/images/screenshot-desktop.png",
-      "sizes": "1280x720",
       "type": "image/png",
-      "form_factor": "wide",
-      "label": "Pathology Bites Desktop View"
-    },
-    {
-      "src": "/images/screenshot-mobile.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Pathology Bites Mobile View"
+      "purpose": "any"
     }
   ],
   "shortcuts": [
     {
-      "name": "Take a Quiz",
+      "name": "Practice Quiz",
       "short_name": "Quiz",
-      "description": "Start a new pathology quiz",
-      "url": "/quiz/new",
+      "description": "Start a pathology practice quiz",
+      "url": "/quiz",
       "icons": [
         {
-          "src": "/icons/quiz-shortcut.png",
-          "sizes": "96x96"
+          "src": "/icons/android-chrome-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     },
     {
-      "name": "Browse Questions",
-      "short_name": "Questions",
-      "description": "Browse pathology questions by category",
-      "url": "/categories",
+      "name": "Virtual Slides",
+      "short_name": "Slides", 
+      "description": "Explore virtual microscopy slides",
+      "url": "/tools/virtual-slides",
       "icons": [
         {
-          "src": "/icons/questions-shortcut.png",
-          "sizes": "96x96"
+          "src": "/icons/android-chrome-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Cell Quiz",
+      "short_name": "Cells",
+      "description": "Practice cell identification",
+      "url": "/tools/cell-quiz",
+      "icons": [
+        {
+          "src": "/icons/android-chrome-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     }
   ],
-  "related_applications": [],
-  "prefer_related_applications": false
+  "display_override": ["window-controls-overlay"],
+  "protocol_handlers": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }
