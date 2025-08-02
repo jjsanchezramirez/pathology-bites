@@ -1,24 +1,37 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
+import { createOptimizedResponse } from '@/shared/utils/compression'
+
+// R2 URL for content specifications (migrated from local file)
+const CONTENT_SPECS_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/abpath-content-specs.json'
 
 export async function GET() {
   try {
-    // Read the content specifications file from data
-    const filePath = path.join(process.cwd(), 'data', 'abpath-content-specs.json')
-    
-    if (!fs.existsSync(filePath)) {
-      throw new Error('Content specifications file not found')
+    // Fetch from R2 instead of local file system
+    const response = await fetch(CONTENT_SPECS_R2_URL, {
+      headers: {
+        'Cache-Control': 'public, max-age=3600' // 1 hour cache
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch content specifications: ${response.status}`)
     }
-    
-    const fileContent = fs.readFileSync(filePath, 'utf8')
-    const data = JSON.parse(fileContent)
-    
-    return NextResponse.json(data)
-    
+
+    const data = await response.json()
+
+    // Return with compression and caching
+    return createOptimizedResponse(data, {
+      compress: true,
+      cache: {
+        maxAge: 3600, // 1 hour
+        staleWhileRevalidate: 300, // 5 minutes
+        public: true
+      }
+    })
+
   } catch (error) {
     console.error('Error loading content specifications:', error)
-    
+
     return NextResponse.json(
       { error: 'Failed to load content specifications' },
       { status: 500 }

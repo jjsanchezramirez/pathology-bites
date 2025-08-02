@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { readFile } from 'fs/promises'
-import { join } from 'path'
+import { createOptimizedResponse } from '@/shared/utils/compression'
+
+// Base R2 URL for PathPrimer data files
+const PATHPRIMER_R2_BASE = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/pathprimer'
 
 export async function GET(
   request: NextRequest,
@@ -8,7 +10,7 @@ export async function GET(
 ) {
   try {
     const { filename } = await params
-    
+
     // Validate filename to prevent directory traversal
     if (!filename || filename.includes('..') || !filename.endsWith('.json')) {
       return NextResponse.json(
@@ -17,21 +19,40 @@ export async function GET(
       )
     }
 
-    // Read the PathPrimer data file
-    const filePath = join(process.cwd(), 'data', 'pathprimer', filename)
-    const fileContent = await readFile(filePath, 'utf-8')
-    const data = JSON.parse(fileContent)
+    // Construct R2 URL for the PathPrimer file
+    const pathprimerFileUrl = `${PATHPRIMER_R2_BASE}/${filename}`
 
-    return NextResponse.json(data)
+    // Fetch from R2 instead of local file system
+    const response = await fetch(pathprimerFileUrl, {
+      headers: {
+        'Cache-Control': 'public, max-age=3600' // 1 hour cache
+      }
+    })
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return NextResponse.json(
+          { error: 'File not found' },
+          { status: 404 }
+        )
+      }
+      throw new Error(`Failed to fetch PathPrimer file: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    // Return with compression for PathPrimer data
+    return createOptimizedResponse(data, {
+      compress: true,
+      cache: {
+        maxAge: 3600, // 1 hour
+        staleWhileRevalidate: 600, // 10 minutes
+        public: true
+      }
+    })
+
   } catch (error) {
     console.error('Error reading PathPrimer file:', error)
-    
-    if (error instanceof Error && error.message.includes('ENOENT')) {
-      return NextResponse.json(
-        { error: 'File not found' },
-        { status: 404 }
-      )
-    }
 
     return NextResponse.json(
       { error: 'Internal server error' },

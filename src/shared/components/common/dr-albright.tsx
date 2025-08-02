@@ -143,8 +143,8 @@ const FloatingCharacter = ({
             fill
             sizes={`${size}px`}
             className="object-contain"
-            priority
             unoptimized
+            priority
           />
         </div>
       </div>

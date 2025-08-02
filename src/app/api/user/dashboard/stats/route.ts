@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { createOptimizedResponse, optimizedAuth } from '@/shared/services/egress-optimization'
 
 // Type definitions for dashboard stats API
 interface PerformanceData {
@@ -74,14 +75,14 @@ export async function GET() {
       })
     }
 
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      console.error('Dashboard stats auth error:', authError)
+    // Use optimized auth to reduce egress
+    const authResult = await optimizedAuth({ extendSession: true })
+    if (!authResult.user) {
+      console.error('Dashboard stats auth error:', authResult.error)
       return NextResponse.json({
         error: 'Unauthorized',
         success: false,
-        details: authError?.message || 'Authentication required'
+        details: 'Authentication required'
       }, {
         status: 401,
         headers: {
@@ -89,6 +90,8 @@ export async function GET() {
         }
       })
     }
+
+    const user = authResult.user
 
     // Get total questions count
     const { count: totalQuestions } = await supabase
@@ -209,9 +212,17 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({
+    // Return optimized response with compression and caching
+    return createOptimizedResponse({
       success: true,
       data: stats
+    }, {
+      compress: true,
+      cache: {
+        maxAge: 300, // 5 minutes cache for dashboard stats
+        staleWhileRevalidate: 60,
+        public: false // User-specific data
+      }
     })
 
   } catch (error) {

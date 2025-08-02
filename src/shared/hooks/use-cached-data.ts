@@ -48,11 +48,7 @@ export function useCachedData<T>(
   const mounted = useRef(true)
   const fetchingRef = useRef(false)
 
-  // Check if data is stale
-  const checkStaleStatus = useCallback((timestamp: number) => {
-    const now = Date.now()
-    return now - timestamp > staleTime
-  }, [staleTime])
+
 
   // Fetch data with caching
   const fetchData = useCallback(async (force = false) => {
@@ -64,11 +60,12 @@ export function useCachedData<T>(
       if (cached) {
         setData(cached.data)
         setLastFetch(cached.timestamp)
-        setIsStale(checkStaleStatus(cached.timestamp))
+        const isStaleData = Date.now() - cached.timestamp > staleTime
+        setIsStale(isStaleData)
         setError(null)
 
         // If data is not stale, don't fetch
-        if (!checkStaleStatus(cached.timestamp)) {
+        if (!isStaleData) {
           return
         }
       }
@@ -112,7 +109,7 @@ export function useCachedData<T>(
       }
       fetchingRef.current = false
     }
-  }, [key, fetcher, enabled, storage, prefix, ttl, staleTime, checkStaleStatus, onSuccess, onError])
+  }, [key, enabled, storage, prefix, ttl, staleTime]) // ✅ FIXED: Removed unstable dependencies
 
   // Invalidate cache and refetch
   const invalidate = useCallback(() => {
@@ -123,12 +120,12 @@ export function useCachedData<T>(
     if (enabled) {
       fetchData(true)
     }
-  }, [key, storage, prefix, enabled, fetchData])
+  }, [key, storage, prefix, enabled]) // ✅ FIXED: Removed fetchData dependency
 
   // Refetch data
   const refetch = useCallback(async () => {
     await fetchData(true)
-  }, [fetchData])
+  }, []) // ✅ FIXED: Removed fetchData dependency
 
   // Initial fetch
   useEffect(() => {
@@ -141,7 +138,7 @@ export function useCachedData<T>(
     return () => {
       mounted.current = false
     }
-  }, [enabled, refetchOnMount, fetchData])
+  }, [enabled, refetchOnMount, key]) // ✅ FIXED: Use key instead of fetchData
 
   // Window focus refetch
   useEffect(() => {
@@ -149,14 +146,14 @@ export function useCachedData<T>(
 
     const handleFocus = () => {
       // Only refetch if data is stale
-      if (lastFetch && checkStaleStatus(lastFetch)) {
+      if (lastFetch && Date.now() - lastFetch > staleTime) {
         fetchData()
       }
     }
 
     window.addEventListener('focus', handleFocus)
     return () => window.removeEventListener('focus', handleFocus)
-  }, [refetchOnWindowFocus, enabled, lastFetch, checkStaleStatus, fetchData])
+  }, [refetchOnWindowFocus, enabled, lastFetch, staleTime]) // ✅ FIXED: Removed unstable dependencies
 
   return {
     data,

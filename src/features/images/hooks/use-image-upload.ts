@@ -3,7 +3,6 @@ import { createClient } from '@/shared/services/client';
 import { toast } from 'sonner';
 import { FileProgress, ImageCategory } from '@/features/images/types/images';
 import { compressImage, cleanFileName, formatImageName, getImageDimensions } from '@/features/images/services/image-upload';
-import { uploadToR2, generateImageStoragePath } from '@/shared/services/r2-storage';
 
 interface UseImageUploadOptions {
   onUploadComplete?: () => void;
@@ -81,11 +80,8 @@ export function useImageUpload({
 
           let fileToUpload = file;
 
-          // Get image dimensions before compression
-          updateFileProgress(file.name, { status: 'compressing', progress: 10 });
-          const dimensions = await getImageDimensions(file);
-
           // Compress if needed
+          updateFileProgress(file.name, { status: 'compressing', progress: 10 });
           if (file.size > maxSizeBytes) {
             updateFileProgress(file.name, { status: 'compressing', progress: 20 });
             fileToUpload = await compressImage(file, maxSizeBytes);
@@ -103,56 +99,26 @@ export function useImageUpload({
             progress: 40
           });
 
-          // Generate R2 storage path
-          const storagePath = generateImageStoragePath(file.name, category);
-
-          // Upload to R2
-          const uploadResult = await uploadToR2(fileToUpload, storagePath, {
-            contentType: fileToUpload.type,
-            cacheControl: '3600',
-            metadata: {
-              originalName: file.name,
-              category,
-              uploadedBy: user.id,
-              uploadedAt: new Date().toISOString()
-            }
-          });
+          // Upload via API endpoint
+          const formData = new FormData();
+          formData.append('file', fileToUpload);
+          formData.append('category', category);
+          if (sourceRef) formData.append('sourceRef', sourceRef);
+          if (description) formData.append('description', description);
 
           updateFileProgress(file.name, { progress: 60 });
 
-          // R2 upload result contains the public URL
-          const publicUrl = uploadResult.url;
+          const response = await fetch('/api/images/upload', {
+            method: 'POST',
+            body: formData
+          });
 
-          updateFileProgress(file.name, { progress: 80 });
-
-          // Insert database record with metadata
-          const { error: dbError } = await supabase
-            .from('images')
-            .insert({
-              url: publicUrl,
-              storage_path: storagePath,
-              description: description?.trim() || formatImageName(fileToUpload.name),
-              alt_text: formatImageName(fileToUpload.name),
-              category,
-              file_type: fileToUpload.type,
-              file_size_bytes: fileToUpload.size,
-              width: dimensions.width,
-              height: dimensions.height,
-              // Store sourceRef if provided for any category, otherwise null
-              source_ref: sourceRef?.trim() || null,
-              created_by: user.id
-            });
-
-          if (dbError) {
-            // Clean up R2 storage on database error
-            try {
-              const { deleteFromR2 } = await import('@/shared/services/r2-storage');
-              await deleteFromR2(storagePath);
-            } catch (cleanupError) {
-              console.warn('Failed to cleanup R2 file after database error:', cleanupError);
-            }
-            throw dbError;
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Upload failed');
           }
+
+          const result = await response.json();
 
           updateFileProgress(file.name, { status: 'completed', progress: 100 });
 

@@ -4,6 +4,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { createOptimizedResponse } from '@/shared/utils/compression'
 
 // Type definitions for quiz options API
 interface QuestionStats {
@@ -112,7 +113,7 @@ async function getFallbackUserStats(
 
     const sessionIds = userSessions?.map(s => s.id) || []
 
-    // Get attempts and favorites using the denormalized fields
+    // Get attempts and favorites using optimized queries with pagination
     const [attemptsResult, favoritesResult] = await Promise.all([
       sessionIds.length > 0
         ? supabase
@@ -120,6 +121,7 @@ async function getFallbackUserStats(
             .select('question_id, is_correct, category_id')
             .eq('user_id', userId)
             .in('category_id', categoryIds)
+            .limit(1000) // Limit to prevent excessive data transfer
         : { data: [], error: null },
 
       supabase
@@ -127,6 +129,7 @@ async function getFallbackUserStats(
         .select('question_id, questions!inner(category_id)')
         .eq('user_id', userId)
         .in('questions.category_id', categoryIds)
+        .limit(500) // Limit favorites to reasonable amount
     ])
 
     const attempts = attemptsResult.data || []
@@ -252,19 +255,21 @@ export async function GET() {
       return NextResponse.json(cached.data)
     }
 
-    // Fetch categories and question counts in parallel
+    // Fetch categories and question counts in parallel with selective loading
     const [categoriesResult, questionCountsResult] = await Promise.all([
-      // Get categories
+      // Get only essential category fields
       supabase
         .from('categories')
         .select('id, name, short_form, parent_id, level')
-        .order('name'),
-      
-      // Get question counts efficiently
+        .order('name')
+        .limit(100), // Reasonable limit for categories
+
+      // Get question counts efficiently with minimal data transfer
       supabase
         .from('questions')
         .select('category_id, status')
         .eq('status', 'approved') // Focus on approved questions only for better performance
+        .limit(5000) // Limit to prevent excessive data transfer
     ])
 
     if (categoriesResult.error) {
@@ -360,7 +365,15 @@ export async function GET() {
     const duration = Date.now() - startTime
     console.log(`Optimized API completed in ${duration}ms`)
 
-    return NextResponse.json(responseData)
+    // Return with compression for large quiz options data
+    return createOptimizedResponse(responseData, {
+      compress: true,
+      cache: {
+        maxAge: 300, // 5 minutes
+        staleWhileRevalidate: 60, // 1 minute
+        public: false // User-specific data should not be public
+      }
+    })
 
   } catch (error) {
     const duration = Date.now() - startTime

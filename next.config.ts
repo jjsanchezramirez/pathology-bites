@@ -5,6 +5,8 @@ const nextConfig = {
   },
 
   images: {
+    // Disable Vercel image optimization globally to avoid free tier limits
+    unoptimized: true,
     // All images use unoptimized=true to avoid Vercel optimization costs
     // remotePatterns are configured for security but optimization is disabled
     remotePatterns: [

@@ -1,26 +1,39 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
+import { createOptimizedResponse } from '@/shared/utils/compression'
+
+// R2 URL for journal abbreviations (migrated from local file)
+const JOURNAL_ABBREV_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/nlm-journal-abbreviations.json'
 
 export async function GET() {
   try {
-    // Read the journal abbreviations file from the data directory
-    const filePath = path.join(process.cwd(), 'data', 'nlm-journal-abbreviations.json')
-    
-    if (!fs.existsSync(filePath)) {
-      throw new Error('Journal abbreviations file not found')
+    // Fetch from R2 instead of local file system (5-10MB file)
+    const response = await fetch(JOURNAL_ABBREV_R2_URL, {
+      headers: {
+        'Cache-Control': 'public, max-age=86400' // 24 hour cache for stable data
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch journal abbreviations: ${response.status}`)
     }
-    
-    const fileContent = fs.readFileSync(filePath, 'utf8')
-    const data = JSON.parse(fileContent)
-    
-    return NextResponse.json(data)
-    
+
+    const data = await response.json()
+
+    // Return with compression (60-80% bandwidth savings)
+    return createOptimizedResponse(data, {
+      compress: true,
+      cache: {
+        maxAge: 86400, // 24 hours (stable reference data)
+        staleWhileRevalidate: 3600, // 1 hour
+        public: true
+      }
+    })
+
   } catch (error) {
     console.error('Error loading journal abbreviations:', error)
-    
-    // Return fallback abbreviations
-    return NextResponse.json({
+
+    // Return fallback abbreviations with compression
+    return createOptimizedResponse({
       abbreviations: {
         'New England Journal of Medicine': 'N Engl J Med',
         'Journal of the American Medical Association': 'JAMA',
@@ -42,6 +55,12 @@ export async function GET() {
         'Clinical Cancer Research': 'Clin Cancer Res',
         'Journal of Biological Chemistry': 'J Biol Chem',
         'Molecular Cell': 'Mol Cell'
+      }
+    }, {
+      compress: true,
+      cache: {
+        maxAge: 3600, // 1 hour for fallback
+        public: true
       }
     })
   }

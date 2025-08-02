@@ -7,23 +7,41 @@
 
 import { S3Client, PutObjectCommand, DeleteObjectCommand, DeleteObjectsCommand, HeadObjectCommand } from '@aws-sdk/client-s3'
 
-// R2 Configuration
-const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID!
-const CLOUDFLARE_R2_ACCESS_KEY_ID = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!
-const CLOUDFLARE_R2_SECRET_ACCESS_KEY = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!
-const CLOUDFLARE_R2_BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pathology-bites-images'
-const CLOUDFLARE_R2_PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL || `https://pub-${CLOUDFLARE_ACCOUNT_ID}.r2.dev`
+// R2 Configuration - Load dynamically to support scripts
+function getR2Config() {
+  const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID
+  const CLOUDFLARE_R2_ACCESS_KEY_ID = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID
+  const CLOUDFLARE_R2_SECRET_ACCESS_KEY = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
+  const CLOUDFLARE_R2_BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pathology-bites-images'
+  const CLOUDFLARE_R2_PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL || (CLOUDFLARE_ACCOUNT_ID ? `https://pub-${CLOUDFLARE_ACCOUNT_ID}.r2.dev` : '')
 
-// Configure R2 client (S3-compatible)
-const r2Client = new S3Client({
-  region: 'auto',
-  endpoint: `https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: CLOUDFLARE_R2_ACCESS_KEY_ID,
-    secretAccessKey: CLOUDFLARE_R2_SECRET_ACCESS_KEY,
-  },
-  forcePathStyle: false,
-})
+  if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_R2_ACCESS_KEY_ID || !CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
+    throw new Error('Missing required Cloudflare R2 environment variables. Please check CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_R2_ACCESS_KEY_ID, and CLOUDFLARE_R2_SECRET_ACCESS_KEY.')
+  }
+
+  return {
+    CLOUDFLARE_ACCOUNT_ID,
+    CLOUDFLARE_R2_ACCESS_KEY_ID,
+    CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+    CLOUDFLARE_R2_BUCKET_NAME,
+    CLOUDFLARE_R2_PUBLIC_URL
+  }
+}
+
+// Create R2 client dynamically
+function createR2Client() {
+  const config = getR2Config()
+
+  return new S3Client({
+    region: 'auto',
+    endpoint: `https://${config.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: config.CLOUDFLARE_R2_ACCESS_KEY_ID,
+      secretAccessKey: config.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+    },
+    forcePathStyle: false,
+  })
+}
 
 export interface R2UploadResult {
   url: string
@@ -52,11 +70,14 @@ export async function uploadToR2(
   } = {}
 ): Promise<R2UploadResult> {
   try {
+    const config = getR2Config()
+    const r2Client = createR2Client()
+
     const contentType = options.contentType || (file instanceof File ? file.type : 'application/octet-stream')
     const fileBuffer = file instanceof File ? Buffer.from(await file.arrayBuffer()) : file
 
     const command = new PutObjectCommand({
-      Bucket: CLOUDFLARE_R2_BUCKET_NAME,
+      Bucket: config.CLOUDFLARE_R2_BUCKET_NAME,
       Key: key,
       Body: fileBuffer,
       ContentType: contentType,
@@ -66,7 +87,7 @@ export async function uploadToR2(
 
     await r2Client.send(command)
 
-    const publicUrl = `${CLOUDFLARE_R2_PUBLIC_URL}/${key}`
+    const publicUrl = `${config.CLOUDFLARE_R2_PUBLIC_URL}/${key}`
 
     return {
       url: publicUrl,
@@ -85,8 +106,11 @@ export async function uploadToR2(
  */
 export async function deleteFromR2(key: string): Promise<void> {
   try {
+    const config = getR2Config()
+    const r2Client = createR2Client()
+
     const command = new DeleteObjectCommand({
-      Bucket: CLOUDFLARE_R2_BUCKET_NAME,
+      Bucket: config.CLOUDFLARE_R2_BUCKET_NAME,
       Key: key
     })
 
@@ -106,6 +130,9 @@ export async function bulkDeleteFromR2(keys: string[]): Promise<{ deleted: strin
   if (keys.length === 0) return result
 
   try {
+    const config = getR2Config()
+    const r2Client = createR2Client()
+
     // R2 supports bulk delete up to 1000 objects
     const chunks = []
     for (let i = 0; i < keys.length; i += 1000) {
@@ -115,7 +142,7 @@ export async function bulkDeleteFromR2(keys: string[]): Promise<{ deleted: strin
     for (const chunk of chunks) {
       try {
         const command = new DeleteObjectsCommand({
-          Bucket: CLOUDFLARE_R2_BUCKET_NAME,
+          Bucket: config.CLOUDFLARE_R2_BUCKET_NAME,
           Delete: {
             Objects: chunk.map(key => ({ Key: key }))
           }
@@ -153,8 +180,11 @@ export async function bulkDeleteFromR2(keys: string[]): Promise<{ deleted: strin
  */
 export async function getR2FileInfo(key: string): Promise<R2FileInfo | null> {
   try {
+    const config = getR2Config()
+    const r2Client = createR2Client()
+
     const command = new HeadObjectCommand({
-      Bucket: CLOUDFLARE_R2_BUCKET_NAME,
+      Bucket: config.CLOUDFLARE_R2_BUCKET_NAME,
       Key: key
     })
 
@@ -184,7 +214,8 @@ export async function getR2FileInfo(key: string): Promise<R2FileInfo | null> {
  * Generate R2 public URL for a given key
  */
 export function getR2PublicUrl(key: string): string {
-  return `${CLOUDFLARE_R2_PUBLIC_URL}/${key}`
+  const config = getR2Config()
+  return `${config.CLOUDFLARE_R2_PUBLIC_URL}/${key}`
 }
 
 /**

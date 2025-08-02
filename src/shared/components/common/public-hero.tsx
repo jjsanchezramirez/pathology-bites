@@ -159,7 +159,7 @@ export function PublicHero({
           {showCharacter && (
             <div className="hidden md:block w-[350px]">
               <FloatingCharacter
-                imagePath="/images/dr-albright.png"
+                imagePath="https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/images/dr-albright.png"
                 imageAlt="Dr. Albright Character"
                 size={350}
                 wrapperClassName="w-full flex justify-center"

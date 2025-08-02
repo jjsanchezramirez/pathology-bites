@@ -81,7 +81,7 @@ export default function ErrorPage({
       <div className="relative z-10 flex flex-col items-center">
         <div className="flex justify-center w-full">
           <FloatingCharacter
-            imagePath="/images/dr-albright.png"
+            imagePath="https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/images/dr-albright.png"
             imageAlt="Dr. Albright Character"
             size={320}
             wrapperClassName="w-full md:w-auto"

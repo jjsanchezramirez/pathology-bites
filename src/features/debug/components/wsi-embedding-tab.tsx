@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/shared/components/ui/badge'
 import { RefreshCw, ExternalLink, Info, Eye } from 'lucide-react'
 import { WSIEmbeddingViewer } from '@/shared/components/common/wsi-viewer'
+import { useOptimizedVirtualSlides } from '@/shared/hooks/use-optimized-quiz-data'
 
 interface VirtualSlide {
   slide_id: string
@@ -28,31 +29,32 @@ export function WSIEmbeddingTab() {
   const [currentSlide, setCurrentSlide] = useState<VirtualSlide | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Load slides from virtual slides JSON file
+  // Load slides using optimized hook with caching
+  const { data: slidesData, isLoading: slidesLoading, error: slidesError } = useOptimizedVirtualSlides(
+    1, // page
+    1000, // limit - get more slides for repository analysis
+    {} // no filters initially
+  )
+
   useEffect(() => {
-    const loadSlides = async () => {
-      try {
-        const response = await fetch('/data/virtual-slides.json')
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    if (slidesData?.data) {
+      const slides = slidesData.data
+      setAllSlides(slides)
 
-        const slides = await response.json()
-        setAllSlides(slides)
+      const uniqueRepos = [...new Set(slides.map((slide: VirtualSlide) => slide.repository))]
+        .filter(Boolean)
+        .filter((repo: unknown) => typeof repo === 'string' && !repo.toLowerCase().includes('debug')) as string[]
 
-        const uniqueRepos = [...new Set(slides.map((slide: VirtualSlide) => slide.repository))]
-          .filter(Boolean)
-          .filter((repo: unknown) => typeof repo === 'string' && !repo.toLowerCase().includes('debug')) as string[]
-
-        setRepositories(uniqueRepos)
-        if (uniqueRepos.length > 0) {
-          setSelectedRepository(uniqueRepos[0])
-        }
-      } catch (error) {
-        console.error('Failed to load slides:', error)
+      setRepositories(uniqueRepos)
+      if (uniqueRepos.length > 0) {
+        setSelectedRepository(uniqueRepos[0])
       }
     }
 
-    loadSlides()
-  }, [])
+    if (slidesError) {
+      console.error('Failed to load slides:', slidesError)
+    }
+  }, [slidesData, slidesError])
 
   // Load a specific slide
   const loadSlide = useCallback((slide: VirtualSlide) => {

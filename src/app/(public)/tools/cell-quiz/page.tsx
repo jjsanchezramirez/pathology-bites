@@ -7,8 +7,7 @@ import { Check, X, RotateCcw, ArrowLeft, ArrowRight, ChevronRight, ExternalLink 
 import Image from 'next/image'
 import { PublicHero } from '@/shared/components/common/public-hero'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
-import cellData from '@/data/cell-quiz-images.json'
-import bloodCellsReference from '@/data/cell-quiz-references.json'
+import { useCachedData } from '@/shared/hooks/use-cached-data'
 import { generateLookAlikeOptions, generateBiologicalOptions } from '@/features/cell-quiz/data/cell-pathways'
 
 interface Question {
@@ -20,18 +19,22 @@ interface Question {
 }
 
 // Helper function to find reference cell info by cell data key
-function findReferenceCellInfo(cellDataKey: string) {
-  return bloodCellsReference.cells.find(refCell =>
+function findReferenceCellInfo(cellDataKey: string, bloodCellsReference: any) {
+  return bloodCellsReference?.cells?.find((refCell: any) =>
     refCell.short_name === cellDataKey
   )
 }
 
 // Helper function to generate a single random question with biological relationships
-function generateRandomQuestion(): Question {
+function generateRandomQuestion(cellData: any, bloodCellsReference: any): Question {
+  if (!cellData || !bloodCellsReference) {
+    throw new Error('Cell data not loaded')
+  }
+
   const allCells = Object.keys(cellData)
   const correctCellType = allCells[Math.floor(Math.random() * allCells.length)]
   const cellInfo = cellData[correctCellType as keyof typeof cellData]
-  const referenceInfo = findReferenceCellInfo(correctCellType)
+  const referenceInfo = findReferenceCellInfo(correctCellType, bloodCellsReference)
 
   // Pick a random image for this cell type
   const randomImage = cellInfo.images[Math.floor(Math.random() * cellInfo.images.length)]
@@ -47,7 +50,7 @@ function generateRandomQuestion(): Question {
     const cellInfo = cellData[cellType as keyof typeof cellData]
     if (!cellInfo) return null
 
-    const referenceInfo = findReferenceCellInfo(cellType)
+    const referenceInfo = findReferenceCellInfo(cellType, bloodCellsReference)
     return referenceInfo ? referenceInfo.name : cellInfo.name
   }).filter(Boolean) as string[]
 
@@ -60,7 +63,7 @@ function generateRandomQuestion(): Question {
       .map(cell => {
         const cellInfo = cellData[cell as keyof typeof cellData]
         if (!cellInfo) return null
-        const referenceInfo = findReferenceCellInfo(cell)
+        const referenceInfo = findReferenceCellInfo(cell, bloodCellsReference)
         return referenceInfo ? referenceInfo.name : cellInfo.name
       })
       .filter(Boolean) as string[]
@@ -83,8 +86,38 @@ function generateRandomQuestion(): Question {
 }
 
 export default function CellQuizPage() {
-  const [mode, setMode] = useState<'menu' | 'quiz' | 'tutorial'>('menu')
+  // Fetch cell quiz data from optimized API endpoints
+  const { data: cellData, isLoading: cellDataLoading, error: cellDataError } = useCachedData(
+    'cell-quiz-images',
+    async () => {
+      const response = await fetch('/api/tools/cell-quiz/images')
+      if (!response.ok) throw new Error('Failed to fetch cell quiz images')
+      return response.json()
+    },
+    {
+      ttl: 30 * 60 * 1000, // 30 minutes cache
+      staleTime: 15 * 60 * 1000, // 15 minutes stale time
+      storage: 'localStorage',
+      prefix: 'pathology-bites-cell-quiz'
+    }
+  )
 
+  const { data: bloodCellsReference, isLoading: referencesLoading, error: referencesError } = useCachedData(
+    'cell-quiz-references',
+    async () => {
+      const response = await fetch('/api/tools/cell-quiz/references')
+      if (!response.ok) throw new Error('Failed to fetch cell quiz references')
+      return response.json()
+    },
+    {
+      ttl: 30 * 60 * 1000, // 30 minutes cache
+      staleTime: 15 * 60 * 1000, // 15 minutes stale time
+      storage: 'localStorage',
+      prefix: 'pathology-bites-cell-quiz'
+    }
+  )
+
+  const [mode, setMode] = useState<'menu' | 'quiz' | 'tutorial'>('menu')
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [showExplanation, setShowExplanation] = useState(false)
@@ -93,9 +126,14 @@ export default function CellQuizPage() {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // Show loading state while data is being fetched
+  const isLoading = cellDataLoading || referencesLoading
+  const hasError = cellDataError || referencesError
+
   const startGame = () => {
+    if (!cellData || !bloodCellsReference) return
     setMode('quiz')
-    setCurrentQuestion(generateRandomQuestion())
+    setCurrentQuestion(generateRandomQuestion(cellData, bloodCellsReference))
     setSelectedAnswer(null)
     setShowExplanation(false)
     setScore(0)
@@ -125,7 +163,8 @@ export default function CellQuizPage() {
   }
 
   const nextQuestion = () => {
-    setCurrentQuestion(generateRandomQuestion())
+    if (!cellData || !bloodCellsReference) return
+    setCurrentQuestion(generateRandomQuestion(cellData, bloodCellsReference))
     setSelectedAnswer(null)
     setShowExplanation(false)
     setIsCorrect(null)
@@ -152,9 +191,65 @@ export default function CellQuizPage() {
     setTotalQuestions(0)
   }
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <PublicHero
+          title="Cell Identification Quiz"
+          description="Test your hematology skills with our interactive cell identification quiz."
+        />
+        <section className="relative py-8">
+          <div className="flex items-center justify-center p-4">
+            <Card className="w-full max-w-sm p-6 md:p-8 text-center shadow-lg">
+              <CardContent className="space-y-4">
+                <div className="animate-pulse">
+                  <div className="h-6 bg-gray-200 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-10 bg-gray-200 rounded"></div>
+                </div>
+                <p className="text-sm text-muted-foreground">Loading cell quiz data...</p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (hasError) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <PublicHero
+          title="Cell Identification Quiz"
+          description="Test your hematology skills with our interactive cell identification quiz."
+        />
+        <section className="relative py-8">
+          <div className="flex items-center justify-center p-4">
+            <Card className="w-full max-w-sm p-6 md:p-8 text-center shadow-lg">
+              <CardContent className="space-y-4">
+                <div className="text-red-600">
+                  <X className="h-8 w-8 mx-auto mb-2" />
+                  <h3 className="font-semibold">Failed to Load Quiz Data</h3>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {cellDataError?.message || referencesError?.message || 'Unknown error occurred'}
+                  </p>
+                </div>
+                <Button onClick={() => window.location.reload()} variant="outline">
+                  Try Again
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
   // Tutorial mode
   if (mode === 'tutorial') {
-    return <CellTutorial onBack={backToMenu} />
+    return <CellTutorial onBack={backToMenu} bloodCellsReference={bloodCellsReference} cellData={cellData} />
   }
 
   return (
@@ -268,12 +363,12 @@ export default function CellQuizPage() {
                       {(() => {
                         // Find the cell data for the correct answer
                         const correctCellEntry = Object.entries(cellData).find(([cellKey, cell]) => {
-                          const referenceInfo = findReferenceCellInfo(cellKey)
-                          return (referenceInfo ? referenceInfo.name : cell.name) === currentQuestion.correctAnswer
+                          const referenceInfo = findReferenceCellInfo(cellKey, bloodCellsReference)
+                          return (referenceInfo ? referenceInfo.name : (cell as any).name) === currentQuestion.correctAnswer
                         })
 
                         const correctCellKey = correctCellEntry?.[0]
-                        const referenceInfo = correctCellKey ? findReferenceCellInfo(correctCellKey) : null
+                        const referenceInfo = correctCellKey ? findReferenceCellInfo(correctCellKey, bloodCellsReference) : null
 
                         if (!referenceInfo) {
                           return <p className="text-xs md:text-sm text-muted-foreground">{currentQuestion.explanation}</p>
@@ -368,7 +463,11 @@ export default function CellQuizPage() {
 }
 
 // Cell Tutorial Component
-function CellTutorial({ onBack }: { onBack: () => void }) {
+function CellTutorial({ onBack, bloodCellsReference, cellData }: {
+  onBack: () => void
+  bloodCellsReference: any
+  cellData: any
+}) {
   const [currentCellIndex, setCurrentCellIndex] = useState(0)
 
   const referenceCells = bloodCellsReference.cells
@@ -423,10 +522,10 @@ function CellTutorial({ onBack }: { onBack: () => void }) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                 {/* Image - Smaller area */}
                 <div className="flex justify-center">
-                  {matchingCellData ? (
+                  {matchingCellData && (matchingCellData as any).images && (matchingCellData as any).images.length > 0 ? (
                     <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-lg overflow-hidden border bg-gray-50 dark:bg-gray-900">
                       <Image
-                        src={matchingCellData.images[0]}
+                        src={(matchingCellData as any).images[0]}
                         alt={currentReferenceCell.name}
                         fill
                         className="object-contain"

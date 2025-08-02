@@ -1,12 +1,14 @@
 // src/app/api/debug/database-schema/route.ts
 /**
- * API endpoint for fetching database schema information from JSON file
+ * API endpoint for fetching database schema information from R2
  * Returns tables, functions, views, triggers, policies, and other database objects
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { readFileSync } from 'fs'
-import { join } from 'path'
+import { createOptimizedResponse } from '@/shared/utils/compression'
+
+// R2 URL for database schema (migrated from local file)
+const DATABASE_SCHEMA_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/database-schema.json'
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,9 +20,18 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Read the database schema JSON file
-    const schemaPath = join(process.cwd(), 'data', 'database-schema.json')
-    const schemaData = JSON.parse(readFileSync(schemaPath, 'utf8'))
+    // Fetch from R2 instead of local file system
+    const response = await fetch(DATABASE_SCHEMA_R2_URL, {
+      headers: {
+        'Cache-Control': 'public, max-age=1800' // 30 minutes cache
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch database schema: ${response.status}`)
+    }
+
+    const schemaData = await response.json()
 
     // Extract data by object type
     const tablesData = schemaData.find((item: any) => item.object_type === 'tables')?.data || []
@@ -32,8 +43,7 @@ export async function GET(request: NextRequest) {
     const materializedViewsData = schemaData.find((item: any) => item.object_type === 'materialized_views')?.data || []
     const statisticsData = schemaData.find((item: any) => item.object_type === 'statistics')?.data || {}
 
-    // Return the data from JSON file
-    return NextResponse.json({
+    const result = {
       tables: tablesData,
       views: [...viewsData, ...materializedViewsData],
       functions: functionsData,
@@ -41,6 +51,16 @@ export async function GET(request: NextRequest) {
       policies: policiesData,
       customTypes: customTypesData,
       statistics: statisticsData
+    }
+
+    // Return with compression for debug data
+    return createOptimizedResponse(result, {
+      compress: true,
+      cache: {
+        maxAge: 1800, // 30 minutes
+        staleWhileRevalidate: 300, // 5 minutes
+        public: false // Debug data should not be public
+      }
     })
 
   } catch (error) {

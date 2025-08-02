@@ -27,8 +27,23 @@ class RealtimeService {
   private databaseListeners: Map<string, Set<DatabaseListener>> = new Map()
 
   private constructor() {
-    this.initializeAuthSubscription()
+    // Only initialize auth subscription if not on a public page
+    if (typeof window !== 'undefined') {
+      const isPublicPage = window.location.pathname.startsWith('/tools/') ||
+                          window.location.pathname === '/' ||
+                          window.location.pathname.startsWith('/login') ||
+                          window.location.pathname.startsWith('/signup')
+
+      if (!isPublicPage) {
+        this.initializeAuthSubscription()
+      }
+    } else {
+      // Server-side: defer initialization
+      this.deferredInit = true
+    }
   }
+
+  private deferredInit = false
 
   public static getInstance(): RealtimeService {
     if (!RealtimeService.instance) {
@@ -62,6 +77,26 @@ class RealtimeService {
   }
 
   public addAuthListener(listener: AuthListener): () => void {
+    // Check if we're on a public page and should skip auth
+    if (typeof window !== 'undefined') {
+      const isPublicPage = window.location.pathname.startsWith('/tools/') ||
+                          window.location.pathname === '/' ||
+                          window.location.pathname.startsWith('/login') ||
+                          window.location.pathname.startsWith('/signup')
+
+      if (isPublicPage) {
+        console.log('🚫 Skipping auth listener on public page:', window.location.pathname)
+        // Return no-op cleanup function
+        return () => {}
+      }
+    }
+
+    // Initialize auth subscription if deferred
+    if (this.deferredInit && !this.authSubscription) {
+      this.initializeAuthSubscription()
+      this.deferredInit = false
+    }
+
     this.authListeners.add(listener)
 
     console.log(`📡 Added auth listener (total: ${this.authListeners.size})`)

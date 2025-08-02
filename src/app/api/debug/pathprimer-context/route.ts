@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
+import { createOptimizedResponse } from '@/shared/utils/compression'
+
+// Base R2 URL for PathPrimer context files
+const PATHPRIMER_CONTEXT_R2_BASE = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/context'
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,21 +32,38 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const filePath = path.join(process.cwd(), 'data', 'pathprimer', filename)
+    // Construct R2 URL for the context file
+    const contextFileUrl = `${PATHPRIMER_CONTEXT_R2_BASE}/${filename}`
 
-    // Check if file exists
-    if (!fs.existsSync(filePath)) {
-      return NextResponse.json(
-        { error: 'File not found' },
-        { status: 404 }
-      )
+    // Fetch from R2 instead of local file system
+    const response = await fetch(contextFileUrl, {
+      headers: {
+        'Cache-Control': 'public, max-age=3600' // 1 hour cache
+      }
+    })
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return NextResponse.json(
+          { error: 'File not found' },
+          { status: 404 }
+        )
+      }
+      throw new Error(`Failed to fetch context file: ${response.status}`)
     }
 
-    // Read and parse the JSON file
-    const fileContent = fs.readFileSync(filePath, 'utf-8')
-    const jsonData = JSON.parse(fileContent)
+    const jsonData = await response.json()
 
-    return NextResponse.json(jsonData)
+    // Return with compression for context data
+    return createOptimizedResponse(jsonData, {
+      compress: true,
+      cache: {
+        maxAge: 3600, // 1 hour
+        staleWhileRevalidate: 600, // 10 minutes
+        public: false // Debug/context data should not be public
+      }
+    })
+
   } catch (error) {
     console.error('Error loading pathprimer context:', error)
     return NextResponse.json(

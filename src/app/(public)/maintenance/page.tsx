@@ -136,7 +136,7 @@ export default function MaintenancePage() {
             {/* Right Column - Dr. Albright (Hidden on mobile) */}
             <div className="hidden lg:block w-full lg:w-2/5">
               <FloatingCharacter
-                imagePath="/images/dr-albright.png"
+                imagePath="https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/images/dr-albright.png"
                 imageAlt="Dr. Albright Character"
                 size={400}
                 wrapperClassName="w-full flex justify-center"

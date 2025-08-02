@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { readFile } from 'fs/promises'
-import { join } from 'path'
 
 // Types for WSI data
 interface VirtualSlide {
@@ -29,13 +27,24 @@ interface VirtualSlide {
   updated_at?: string
 }
 
+// R2 URL for virtual slides data
+const VIRTUAL_SLIDES_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/virtual-slides.json'
+
 // Get random WSI with repository filtering
 async function getRandomWSI(categoryFilter?: string): Promise<VirtualSlide> {
   try {
-    console.log('[WSI Select] Loading virtual slides data...')
-    const filePath = join(process.cwd(), 'data', 'virtual-slides.json')
-    const fileContent = await readFile(filePath, 'utf-8')
-    const data = JSON.parse(fileContent)
+    console.log('[WSI Select] Loading virtual slides data from R2...')
+    const response = await fetch(VIRTUAL_SLIDES_R2_URL, {
+      headers: {
+        'Cache-Control': 'public, max-age=3600' // 1 hour cache
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch virtual slides data: ${response.status}`)
+    }
+
+    const data = await response.json()
 
     // Handle both array format and object with slides property
     let slides: VirtualSlide[] = Array.isArray(data) ? data : (data.slides || [])

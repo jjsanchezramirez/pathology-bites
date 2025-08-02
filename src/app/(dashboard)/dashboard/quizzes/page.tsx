@@ -2,6 +2,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useCachedData } from "@/shared/hooks/use-cached-data"
 import { Card, CardContent } from "@/shared/components/ui/card"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Button } from "@/shared/components/ui/button"
@@ -81,10 +82,10 @@ export default function QuizzesPage() {
   const [selectedQuiz, setSelectedQuiz] = useState<QuizSessionListItem | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Fetch quizzes on component mount
-  const fetchQuizzes = useCallback(async () => {
-    try {
-      setLoading(true)
+  // Optimized quiz fetching with caching
+  const { data: quizzesData, isLoading, error } = useCachedData(
+    `quiz-sessions-${statusFilter}`,
+    async () => {
       const params = new URLSearchParams()
       if (statusFilter !== "all") {
         params.append("status", statusFilter)
@@ -97,18 +98,26 @@ export default function QuizzesPage() {
       }
 
       const result = await response.json()
-      setQuizzes(result.data)
-    } catch (error) {
+      return result.data
+    },
+    {
+      ttl: 2 * 60 * 1000, // 2 minutes cache
+      staleTime: 1 * 60 * 1000, // 1 minute stale time
+      storage: 'memory', // Use memory for session data
+      prefix: 'pathology-bites-quizzes'
+    }
+  )
+
+  // Update quizzes when data changes
+  useEffect(() => {
+    if (quizzesData) {
+      setQuizzes(quizzesData)
+    }
+    if (error) {
       console.error('Error fetching quizzes:', error)
       toast.error('Failed to load quizzes')
-    } finally {
-      setLoading(false)
     }
-  }, [statusFilter])
-
-  useEffect(() => {
-    fetchQuizzes()
-  }, [fetchQuizzes])
+  }, [quizzesData, error])
 
   const handleDeleteClick = (quiz: QuizSessionListItem) => {
     setSelectedQuiz(quiz)
@@ -129,7 +138,8 @@ export default function QuizzesPage() {
       }
 
       toast.success('Quiz deleted successfully')
-      fetchQuizzes() // Refresh the list
+      // Refresh the list by removing the deleted quiz
+      setQuizzes(prev => prev.filter(quiz => quiz.id !== selectedQuiz.id))
       setShowDeleteDialog(false)
       setSelectedQuiz(null)
     } catch (error) {

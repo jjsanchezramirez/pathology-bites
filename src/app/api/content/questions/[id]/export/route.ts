@@ -1,6 +1,7 @@
 // src/app/api/questions/[id]/export/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/shared/services/server';
+import { createOptimizedResponse, optimizedAuth } from '@/shared/services/egress-optimization';
 
 export async function GET(
   request: NextRequest,
@@ -10,11 +11,13 @@ export async function GET(
     const { id: questionId } = await params;
     const supabase = await createClient();
 
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    // Use optimized auth to reduce egress
+    const authResult = await optimizedAuth();
+    if (!authResult.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const user = authResult.user;
 
     // Fetch the complete question data with all associated materials
     const { data: question, error: questionError } = await supabase
@@ -128,7 +131,15 @@ export async function GET(
       }
     };
 
-    return NextResponse.json(exportData);
+    // Return optimized response with compression for large question data
+    return createOptimizedResponse(exportData, {
+      compress: true,
+      cache: {
+        maxAge: 1800, // 30 minutes cache for question exports
+        staleWhileRevalidate: 300,
+        public: false
+      }
+    });
 
   } catch (error) {
     console.error('Error exporting question:', error);
