@@ -16,14 +16,12 @@ import {
   EyeOff,
   Shuffle,
   RefreshCw,
-  ArrowLeft
+  ArrowLeft,
+  AlertCircle
 } from 'lucide-react'
 import Image from 'next/image'
 import { PublicHero } from '@/shared/components/common/public-hero'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
-
-// Import the virtual slides data with standardized categories and clean subcategories
-import virtualSlidesDataRaw from '@/data/virtual-slides.json'
 
 // Import types and utilities
 import { VirtualSlide } from './types'
@@ -42,10 +40,12 @@ import { SlideRow } from './components/slide-row'
 import { Pagination } from './components/pagination'
 import { LoadingSkeleton } from './components/loading-skeleton'
 
-// Type cast the imported data
-const virtualSlidesData = virtualSlidesDataRaw as VirtualSlide[]
-
 export default function VirtualSlidesPage() {
+  // Data state
+  const [virtualSlidesData, setVirtualSlidesData] = useState<VirtualSlide[]>([])
+  const [isLoadingData, setIsLoadingData] = useState(true)
+  const [dataError, setDataError] = useState<string | null>(null)
+
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [selectedRepository, setSelectedRepository] = useState('all')
@@ -76,14 +76,41 @@ export default function VirtualSlidesPage() {
     return () => clearTimeout(timer)
   }, [searchTerm])
 
+  // Fetch virtual slides data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoadingData(true)
+        setDataError(null)
+
+        const response = await fetch('/api/virtual-slides')
+        if (!response.ok) {
+          throw new Error(`Failed to fetch virtual slides: ${response.status}`)
+        }
+
+        const result = await response.json()
+        // The API returns { data: slides[], metadata: {...} }
+        const slides = result.data || result
+        setVirtualSlidesData(slides)
+      } catch (error) {
+        console.error('Error fetching virtual slides:', error)
+        setDataError(error instanceof Error ? error.message : 'Failed to load virtual slides')
+      } finally {
+        setIsLoadingData(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
   // Get unique values for filters
-  const repositories = useMemo(() => getUniqueRepositories(virtualSlidesData), [])
-  const categories = useMemo(() => getUniqueCategories(virtualSlidesData), [])
-  const organSystems = useMemo(() => getUniqueOrganSystems(virtualSlidesData), [])
+  const repositories = useMemo(() => getUniqueRepositories(virtualSlidesData), [virtualSlidesData])
+  const categories = useMemo(() => getUniqueCategories(virtualSlidesData), [virtualSlidesData])
+  const organSystems = useMemo(() => getUniqueOrganSystems(virtualSlidesData), [virtualSlidesData])
 
   // Dynamic acronym mapping and search index
-  const acronymMap = useMemo(() => createAcronymMap(virtualSlidesData), [])
-  const searchIndex = useMemo(() => createSearchIndex(virtualSlidesData), [])
+  const acronymMap = useMemo(() => createAcronymMap(virtualSlidesData), [virtualSlidesData])
+  const searchIndex = useMemo(() => createSearchIndex(virtualSlidesData), [virtualSlidesData])
 
   // Search function using utility
   const searchSlidesCallback = useCallback((searchTerm: string): VirtualSlide[] => {
@@ -218,6 +245,46 @@ export default function VirtualSlidesPage() {
         setIsLoading(false)
       }, 100)
     }
+  }
+
+  // Show loading state while fetching data
+  if (isLoadingData) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <PublicHero
+          title="Virtual Slide Search Engine"
+          description="Loading virtual pathology slides from leading institutions worldwide..."
+        />
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <LoadingSkeleton />
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state if data failed to load
+  if (dataError) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <PublicHero
+          title="Virtual Slide Search Engine"
+          description="Search and explore thousands of virtual pathology slides from leading institutions worldwide."
+        />
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <Card className="p-6 text-center">
+            <div className="text-red-500 mb-4">
+              <AlertCircle className="h-12 w-12 mx-auto" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Failed to Load Virtual Slides</h3>
+            <p className="text-muted-foreground mb-4">{dataError}</p>
+            <Button onClick={() => window.location.reload()}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Try Again
+            </Button>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
