@@ -10,7 +10,6 @@ export const R2_PUBLIC_URLS = {
   CELL_QUIZ_IMAGES_JSON: '',
   CELL_QUIZ_REFERENCES_JSON: '',
   NLM_JOURNAL_ABBREVIATIONS_JSON: '',
-  VIRTUAL_SLIDES_JSON: '',
   CONTEXT_DATA_URL: '',
   PATHOLOGY_BITES_IMAGES_URL: 's',
   PATHPRIMER_DATA: '',
@@ -134,16 +133,7 @@ export const r2Cache = new R2Cache()
  * Direct R2 data fetchers - no Vercel API usage
  */
 export const r2DirectAccess = {
-  /**
-   * Fetch virtual slides data directly from R2
-   */
-  async getVirtualSlides(options: CacheOptions = {}) {
-    return r2Cache.fetch(R2_PUBLIC_URLS.VIRTUAL_SLIDES_JSON, {
-      ttl: 10 * 60 * 1000, // 10 minutes (this data changes infrequently)
-      staleWhileRevalidate: 5 * 60 * 1000, // 5 minutes
-      ...options
-    })
-  },
+
 
   /**
    * Fetch PathPrimer data directly from R2
@@ -186,9 +176,6 @@ export const r2DirectAccess = {
    */
   async preloadCriticalData() {
     try {
-      // Preload virtual slides in background
-      this.getVirtualSlides().catch(console.error)
-      
       console.log('R2 critical data preloading initiated')
     } catch (error) {
       console.error('R2 preload failed:', error)
