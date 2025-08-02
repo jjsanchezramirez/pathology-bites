@@ -256,7 +256,7 @@ export default function VirtualSlidesPage() {
           description="Loading virtual pathology slides from leading institutions worldwide..."
         />
         <div className="container mx-auto px-4 py-8 max-w-6xl">
-          <LoadingSkeleton />
+          <LoadingSkeleton variant="cards" />
         </div>
       </div>
     )
@@ -665,7 +665,7 @@ export default function VirtualSlidesPage() {
                         </th>
                       </tr>
                     </thead>
-                    <LoadingSkeleton />
+                    <LoadingSkeleton variant="table" />
                   </table>
                 </div>
               </CardContent>

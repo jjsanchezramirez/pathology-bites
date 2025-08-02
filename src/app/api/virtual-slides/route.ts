@@ -12,8 +12,17 @@ import { VirtualSlide } from '@/shared/types/virtual-slides'
 const VIRTUAL_SLIDES_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/virtual-slides.json'
 
 // Check if request can be redirected to direct R2 access
-function shouldRedirectToR2(searchParams: URLSearchParams): boolean {
-  // Only redirect simple requests without complex filtering
+function shouldRedirectToR2(searchParams: URLSearchParams, request: NextRequest): boolean {
+  // Never redirect browser requests due to CORS issues
+  const userAgent = request.headers.get('user-agent') || ''
+  const isBrowserRequest = userAgent.includes('Mozilla') ||
+                          request.headers.get('accept')?.includes('text/html')
+
+  if (isBrowserRequest) {
+    return false
+  }
+
+  // Only redirect simple requests without complex filtering (for API clients like curl)
   const hasComplexFilters = searchParams.has('search') ||
                            searchParams.has('repository') ||
                            searchParams.has('category')
@@ -28,16 +37,26 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
 
-    // For simple requests, redirect directly to R2 to save Vercel bandwidth
-    if (shouldRedirectToR2(searchParams)) {
-      return NextResponse.redirect(VIRTUAL_SLIDES_R2_URL, {
-        status: 302,
-        headers: {
-          'Cache-Control': 'public, max-age=3600',
-          'X-Redirect-Reason': 'direct-r2-access'
-        }
-      })
-    }
+    // Debug: Log request headers to understand browser behavior
+    const userAgent = request.headers.get('user-agent') || ''
+    const accept = request.headers.get('accept') || ''
+    console.log('Virtual slides API request:', {
+      userAgent: userAgent.substring(0, 100),
+      accept: accept.substring(0, 100),
+      isBrowser: userAgent.includes('Mozilla') || accept.includes('text/html')
+    })
+
+    // TEMPORARILY DISABLED: For simple requests, redirect directly to R2 to save Vercel bandwidth
+    // Always return data directly to avoid CORS issues with browser redirects
+    // if (shouldRedirectToR2(searchParams, request)) {
+    //   return NextResponse.redirect(VIRTUAL_SLIDES_R2_URL, {
+    //     status: 302,
+    //     headers: {
+    //       'Cache-Control': 'public, max-age=3600',
+    //       'X-Redirect-Reason': 'direct-r2-access'
+    //     }
+    //   })
+    // }
 
     // Check if pagination is requested
     const page = searchParams.get('page')
