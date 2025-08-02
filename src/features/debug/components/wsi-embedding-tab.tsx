@@ -8,19 +8,7 @@ import { Badge } from '@/shared/components/ui/badge'
 import { RefreshCw, ExternalLink, Info, Eye } from 'lucide-react'
 import { WSIEmbeddingViewer } from '@/shared/components/common/wsi-viewer'
 import { useOptimizedVirtualSlides } from '@/shared/hooks/use-optimized-quiz-data'
-
-interface VirtualSlide {
-  slide_id: string
-  slide_url: string
-  slide_name: string
-  diagnosis: string
-  repository: string
-  preview_image_url?: string
-  age?: string
-  gender?: string
-  clinical_history?: string
-  stain_type?: string
-}
+import { VirtualSlide } from '@/shared/types/virtual-slides'
 
 export function WSIEmbeddingTab() {
   const [allSlides, setAllSlides] = useState<VirtualSlide[]>([])
@@ -58,7 +46,7 @@ export function WSIEmbeddingTab() {
 
   // Load a specific slide
   const loadSlide = useCallback((slide: VirtualSlide) => {
-    console.log('🔄 Loading slide:', slide.slide_name)
+    console.log('🔄 Loading slide:', slide.diagnosis)
     setCurrentSlide(slide)
   }, [])
 
@@ -109,7 +97,7 @@ export function WSIEmbeddingTab() {
             {currentSlide ? (
               <WSIEmbeddingViewer
                 url={currentSlide.slide_url}
-                filename={currentSlide.slide_name}
+                filename={currentSlide.diagnosis}
                 diagnosis={currentSlide.diagnosis}
               />
             ) : (
@@ -177,7 +165,7 @@ export function WSIEmbeddingTab() {
 
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Slide Name</label>
-                    <p className="text-sm font-medium">{currentSlide.slide_name}</p>
+                    <p className="text-sm font-medium">{currentSlide.diagnosis}</p>
                   </div>
 
                   <div>

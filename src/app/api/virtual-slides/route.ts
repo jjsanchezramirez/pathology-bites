@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createOptimizedResponse } from '@/shared/utils/compression'
+import { VirtualSlide } from '@/shared/types/virtual-slides'
 
 // R2 URL for virtual slides data (migrated from massive local file)
 const VIRTUAL_SLIDES_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/virtual-slides.json'
@@ -21,23 +22,7 @@ function shouldRedirectToR2(searchParams: URLSearchParams): boolean {
   return !hasComplexFilters && !searchParams.has('page') && !searchParams.has('limit')
 }
 
-interface VirtualSlide {
-  id: string
-  repository: string
-  category: string
-  subcategory: string
-  diagnosis: string
-  patient_info: string
-  age: number | null
-  gender: string | null
-  clinical_history: string
-  stain_type: string
-  preview_image_url: string
-  slide_url: string
-  case_url: string
-  other_urls: string[]
-  source_metadata: Record<string, unknown>
-}
+
 
 export async function GET(request: NextRequest) {
   try {

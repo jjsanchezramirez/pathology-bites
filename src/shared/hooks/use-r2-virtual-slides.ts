@@ -6,24 +6,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { r2DirectAccess, r2Cache } from '@/shared/utils/r2-direct-access'
-
-interface VirtualSlide {
-  id: string
-  repository: string
-  category: string
-  subcategory: string
-  diagnosis: string
-  patient_info: string
-  age: number | null
-  gender: string | null
-  clinical_history: string
-  stain_type: string
-  preview_image_url: string
-  slide_url: string
-  case_url: string
-  other_urls: string[]
-  source_metadata: Record<string, unknown>
-}
+import { VirtualSlide } from '@/shared/types/virtual-slides'
 
 interface UseR2VirtualSlidesOptions {
   search?: string

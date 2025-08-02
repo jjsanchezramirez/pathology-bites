@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createOptimizedResponse } from '@/shared/utils/compression'
+import { VirtualSlide } from '@/shared/types/virtual-slides'
 
 // This will be replaced with R2 URL after migration
 const VIRTUAL_SLIDES_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/virtual-slides.json'
@@ -56,21 +57,21 @@ export async function GET(request: NextRequest) {
     
     if (params.search) {
       const searchLower = params.search.toLowerCase()
-      filteredSlides = filteredSlides.filter((slide: any) =>
+      filteredSlides = filteredSlides.filter((slide: VirtualSlide) =>
         slide.diagnosis?.toLowerCase().includes(searchLower) ||
         slide.repository?.toLowerCase().includes(searchLower) ||
         slide.category?.toLowerCase().includes(searchLower)
       )
     }
-    
+
     if (params.repository) {
-      filteredSlides = filteredSlides.filter((slide: any) =>
+      filteredSlides = filteredSlides.filter((slide: VirtualSlide) =>
         slide.repository === params.repository
       )
     }
-    
+
     if (params.category) {
-      filteredSlides = filteredSlides.filter((slide: any) =>
+      filteredSlides = filteredSlides.filter((slide: VirtualSlide) =>
         slide.category === params.category
       )
     }
