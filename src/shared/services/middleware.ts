@@ -8,11 +8,16 @@ const ROLE_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 const processingRequests = new Set<string>()
 
 export async function updateSession(request: NextRequest) {
-  console.log(`[Middleware] Processing: ${request.nextUrl.pathname}`)
+  // Only log in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Middleware] Processing: ${request.nextUrl.pathname}`)
+  }
 
   // CRITICAL: Immediately return for all API routes to avoid interference
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    console.log('API route detected, bypassing middleware:', request.nextUrl.pathname)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API route detected, bypassing middleware:', request.nextUrl.pathname)
+    }
     return NextResponse.next()
   }
 
@@ -29,7 +34,9 @@ export async function updateSession(request: NextRequest) {
     const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true'
     const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
 
-    console.log(`[Middleware] Maintenance: ${isMaintenanceMode}, Coming Soon: ${isComingSoonMode}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Middleware] Maintenance: ${isMaintenanceMode}, Coming Soon: ${isComingSoonMode}`)
+    }
 
     // Simple redirect helper
     function redirect(pathname: string) {
@@ -61,8 +68,18 @@ export async function updateSession(request: NextRequest) {
       }
     )
 
-    // Get user for protected route checks
-    const { data: { user } } = await supabase.auth.getUser()
+    // Only get user for routes that actually need authentication
+    const needsAuth = request.nextUrl.pathname.startsWith('/dashboard') || 
+                     request.nextUrl.pathname.startsWith('/admin') ||
+                     request.nextUrl.pathname.startsWith('/quiz') ||
+                     request.nextUrl.pathname.startsWith('/profile') ||
+                     request.nextUrl.pathname.startsWith('/settings')
+    
+    let user = null
+    if (needsAuth || isMaintenanceMode || isComingSoonMode) {
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      user = authUser
+    }
 
     // Special handling for debug interface - disable in production
     if (request.nextUrl.pathname.startsWith('/debug')) {
@@ -86,10 +103,14 @@ export async function updateSession(request: NextRequest) {
       const isAllowed = request.nextUrl.pathname === '/' ||
                        allowedPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
-      console.log(`[Middleware] Path: ${request.nextUrl.pathname}, Allowed: ${isAllowed}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Middleware] Path: ${request.nextUrl.pathname}, Allowed: ${isAllowed}`)
+      }
 
       if (!isAllowed) {
-        console.log(`[Middleware] Maintenance mode blocking: ${request.nextUrl.pathname}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[Middleware] Maintenance mode blocking: ${request.nextUrl.pathname}`)
+        }
         return redirect('/maintenance')
       }
     }
