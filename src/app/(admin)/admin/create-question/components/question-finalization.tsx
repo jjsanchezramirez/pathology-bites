@@ -13,7 +13,7 @@ import { Upload, Check, AlertCircle, Loader2 } from 'lucide-react'
 import { createClient } from '@/shared/services/client'
 import { useSharedAuth } from '@/shared/hooks/use-shared-auth'
 import { toast } from 'sonner'
-import { getCategoryIdFromPathPrimer } from '../utils/category-mapping'
+import { getCategoryIdFromContent } from '../utils/category-mapping'
 
 interface GeneratedQuestion {
   title: string
@@ -87,21 +87,21 @@ export function QuestionFinalization({ question, uploadedFiles, attachedImages, 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Function to automatically assign category based on PathPrimer content
+  // Function to automatically assign category based on educational content
   const getAutoCategoryId = (sourceContent: any): string => {
     if (!sourceContent) return ''
 
     const { category, subject } = sourceContent
 
     // Use the proper mapping function
-    const categoryId = getCategoryIdFromPathPrimer(category, subject)
+    const categoryId = getCategoryIdFromContent(category, subject)
 
     if (categoryId) {
-      console.log(`Auto-mapped PathPrimer "${category} > ${subject}" to category ID: ${categoryId}`)
+      console.log(`Auto-mapped educational content "${category} > ${subject}" to category ID: ${categoryId}`)
       return categoryId
     }
 
-    console.warn(`No mapping found for PathPrimer "${category} > ${subject}"`)
+    console.warn(`No mapping found for educational content "${category} > ${subject}"`)
     return ''
   }
 
@@ -259,7 +259,7 @@ export function QuestionFinalization({ question, uploadedFiles, attachedImages, 
           toast.error(`Failed to load question sets: ${errorData.error || 'Unknown error'}`)
         }
 
-        // Auto-assign category based on PathPrimer content after all data is loaded
+        // Auto-assign category based on educational content after all data is loaded
         const sourceContent = question?.metadata?.source_content
         const autoCategoryId = getAutoCategoryId(sourceContent)
         if (autoCategoryId) {
@@ -538,7 +538,7 @@ export function QuestionFinalization({ question, uploadedFiles, attachedImages, 
               <Label>Select Category</Label>
               {selectedCategory && question?.metadata?.source_content && (
                 <Badge variant="secondary" className="text-xs">
-                  Auto-assigned from PathPrimer
+                  Auto-assigned from educational content
                 </Badge>
               )}
             </div>

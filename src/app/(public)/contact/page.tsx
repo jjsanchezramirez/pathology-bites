@@ -79,8 +79,6 @@ export default function ContactPage() {
             newErrors[path as keyof FormData] = error.message
           })
           setErrors(newErrors)
-
-          toast.error("Please check the form for errors.")
         } else {
           toast.error(result.error || 'Something went wrong. Please try again.')
         }
@@ -164,7 +162,6 @@ export default function ContactPage() {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
-                    required
                     className={errors.firstName ? "border-destructive" : ""}
                   />
                   {errors.firstName && (
@@ -178,7 +175,6 @@ export default function ContactPage() {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
-                    required
                     className={errors.lastName ? "border-destructive" : ""}
                   />
                   {errors.lastName && (
@@ -213,7 +209,6 @@ export default function ContactPage() {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  required
                   className={errors.email ? "border-destructive" : ""}
                 />
                 {errors.email && (
@@ -232,7 +227,6 @@ export default function ContactPage() {
                   name="inquiry"
                   value={formData.inquiry}
                   onChange={handleChange}
-                  required
                   className={`min-h-[150px] ${errors.inquiry ? "border-destructive" : ""}`}
                 />
                 {errors.inquiry && (

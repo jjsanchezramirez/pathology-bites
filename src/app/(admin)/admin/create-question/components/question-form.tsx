@@ -20,7 +20,7 @@ import {
   type AIModel
 } from '@/shared/config/ai-models'
 
-interface PathPrimerContent {
+interface EducationalContent {
   category: string
   subject: string
   lesson: string
@@ -55,7 +55,7 @@ interface GeneratedQuestion {
 }
 
 interface QuestionFormProps {
-  selectedContent: PathPrimerContent | null
+  selectedContent: EducationalContent | null
   onQuestionGenerated: (question: GeneratedQuestion) => void
   onFilesUploaded: (files: File[]) => void
   isEditMode?: boolean
@@ -65,7 +65,7 @@ const DEFAULT_INSTRUCTIONS = `You are an expert pathology educator creating mult
 
 Requirements:
 1. Create a clinically relevant scenario-based question
-2. Include 4-5 answer choices with one clearly correct answer
+2. Include 5 answer choices with one clearly correct answer
 3. Provide detailed explanations for each choice
 4. Ensure the question tests understanding, not just memorization
 5. Use appropriate medical terminology
@@ -83,10 +83,34 @@ Return the response in this exact JSON format:
   "status": "draft",
   "answer_options": [
     {
-      "text": "Answer choice text",
-      "is_correct": true|false,
-      "explanation": "Detailed explanation",
+      "text": "Answer choice A text",
+      "is_correct": false,
+      "explanation": "Detailed explanation for A",
       "order_index": 0
+    },
+    {
+      "text": "Answer choice B text", 
+      "is_correct": true,
+      "explanation": "Detailed explanation for B (correct answer)",
+      "order_index": 1
+    },
+    {
+      "text": "Answer choice C text",
+      "is_correct": false,
+      "explanation": "Detailed explanation for C",
+      "order_index": 2
+    },
+    {
+      "text": "Answer choice D text",
+      "is_correct": false,
+      "explanation": "Detailed explanation for D",
+      "order_index": 3
+    },
+    {
+      "text": "Answer choice E text",
+      "is_correct": false,
+      "explanation": "Detailed explanation for E",
+      "order_index": 4
     }
   ]
 }`

@@ -26,12 +26,12 @@ async function verifyImageAccessibility(imageUrl: string): Promise<ImageVerifica
       }
     }
 
-    // Make HEAD request to check accessibility without downloading full image
+    // Try HEAD request first, fallback to GET with range if HEAD fails with 405
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
 
     try {
-      const response = await fetch(imageUrl, {
+      let response = await fetch(imageUrl, {
         method: 'HEAD',
         signal: controller.signal,
         headers: {
@@ -39,12 +39,25 @@ async function verifyImageAccessibility(imageUrl: string): Promise<ImageVerifica
         }
       })
 
+      // If HEAD request fails with 405 (Method Not Allowed), try GET with Range header
+      if (response.status === 405) {
+        console.log(`[Image Verify] HEAD not supported, trying GET with range...`)
+        response = await fetch(imageUrl, {
+          method: 'GET',
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'PathologyBites-WSI-Verifier/1.0',
+            'Range': 'bytes=0-1023' // Only download first 1KB to check accessibility
+          }
+        })
+      }
+
       clearTimeout(timeoutId)
       const responseTime = Date.now() - startTime
 
       console.log(`[Image Verify] Response: ${response.status} in ${responseTime}ms`)
 
-      if (response.ok) {
+      if (response.ok || response.status === 206) { // 206 = Partial Content (range request)
         const contentType = response.headers.get('content-type') || 'unknown'
         const contentLength = response.headers.get('content-length')
         

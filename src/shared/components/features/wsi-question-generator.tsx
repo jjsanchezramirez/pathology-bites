@@ -12,8 +12,16 @@ import {
 import { WSIViewer } from '@/shared/components/common/wsi-viewer'
 import { useOptimizedVirtualSlides } from '@/shared/hooks/use-optimized-quiz-data'
 
-// Types
-interface VirtualSlide {
+// Import client-side utilities for reduced API calls
+import { selectRandomWSIClientSide, clearWSICache, getWSICacheStatus } from '@/shared/utils/client-wsi-selection'
+import { findContextPureClient } from '@/shared/utils/pure-client-context-search'
+import { dataManager } from '@/shared/utils/client-data-manager'
+
+// Import the canonical VirtualSlide interface
+import { VirtualSlide } from '@/shared/types/virtual-slides'
+
+// Client-side WSI interface (from client utilities)
+interface ClientVirtualSlide {
   id: string
   repository: string
   category: string
@@ -24,11 +32,44 @@ interface VirtualSlide {
   gender: string | null
   clinical_history: string
   stain_type: string
-  preview_image_url: string
-  slide_url: string
-  case_url: string
-  other_urls: string[]
-  source_metadata: Record<string, unknown>
+  image_url?: string
+  slide_url?: string
+  case_url?: string
+  thumbnail_url?: string
+  preview_image_url?: string
+  magnification?: string
+  organ_system?: string
+  difficulty_level?: string
+  keywords?: string[]
+  other_urls?: string[]
+  source_metadata?: Record<string, unknown>
+  created_at?: string
+  updated_at?: string
+}
+
+// Function to convert client WSI to canonical format
+function normalizeClientWSI(clientWSI: ClientVirtualSlide): VirtualSlide {
+  // Ensure we have a valid image URL (prefer slide_url, then case_url, then image_url)
+  const imageUrl = clientWSI.slide_url || clientWSI.case_url || clientWSI.image_url || ''
+  
+  return {
+    id: clientWSI.id,
+    repository: clientWSI.repository,
+    category: clientWSI.category,
+    subcategory: clientWSI.subcategory,
+    diagnosis: clientWSI.diagnosis,
+    patient_info: clientWSI.patient_info,
+    age: clientWSI.age,
+    gender: clientWSI.gender,
+    clinical_history: clientWSI.clinical_history,
+    stain_type: clientWSI.stain_type,
+    image_url: imageUrl, // Add the image_url field that LLM generation expects
+    preview_image_url: clientWSI.preview_image_url || clientWSI.thumbnail_url || '',
+    slide_url: clientWSI.slide_url || clientWSI.image_url || '',
+    case_url: clientWSI.case_url || clientWSI.slide_url || clientWSI.image_url || '',
+    other_urls: clientWSI.other_urls || [],
+    source_metadata: clientWSI.source_metadata || {}
+  }
 }
 
 interface QuestionOption {
@@ -151,38 +192,39 @@ export function WSIQuestionGenerator({
   const [currentModelIndex, setCurrentModelIndex] = useState(0)
   const [modelAttempts, setModelAttempts] = useState<string[]>([])
   const [fallbackInProgress, setFallbackInProgress] = useState(false)
+  const [recentWSIIds, setRecentWSIIds] = useState<string[]>([]) // Track recent WSI IDs to avoid duplicates
   const containerRef = useRef<HTMLDivElement>(null)
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Load available categories from virtual slides using optimized hook
-  const { data: slidesData, isLoading: categoriesLoading, error: categoriesError } = useOptimizedVirtualSlides(
-    1, // page
-    1000, // limit - get enough slides for category analysis
-    {} // no filters
-  )
-
+  // Load available categories using optimized endpoint
   useEffect(() => {
     if (!showCategoryFilter) return
 
-    if (slidesData?.data) {
-      const slides = slidesData.data
-
-      // Filter to embeddable repositories only
-      const embeddableSlides = slides.filter((slide: VirtualSlide) =>
-        EMBEDDABLE_REPOSITORIES.includes(slide.repository)
-      )
-
-      const uniqueCategories = [...new Set(embeddableSlides.map((slide: VirtualSlide) => slide.category))]
-        .filter(Boolean) as string[]
-
-      setAvailableCategories(uniqueCategories)
+    const loadCategories = async () => {
+      try {
+        console.log('[WSI Question Generator] Loading categories via optimized endpoint...')
+        const response = await fetch('/api/tools/wsi-question-generator/categories')
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch categories: ${response.status}`)
+        }
+        
+        const result = await response.json()
+        
+        if (result.success && result.categories) {
+          setAvailableCategories(result.categories)
+          console.log(`[WSI Question Generator] Loaded ${result.categories.length} categories`)
+        } else {
+          throw new Error('Invalid categories response')
+        }
+      } catch (error) {
+        console.error('Failed to load categories:', error)
+        setError(`Failed to load slide categories: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
     }
 
-    if (categoriesError) {
-      console.error('Failed to load categories:', categoriesError)
-      setError(`Failed to load slide categories: ${categoriesError.message}`)
-    }
-  }, [showCategoryFilter, slidesData, categoriesError])
+    loadCategories()
+  }, [showCategoryFilter])
 
   // Auto-scroll to top when new question is generated
   useEffect(() => {
@@ -264,56 +306,70 @@ export function WSIQuestionGenerator({
   const generateQuestionWithFallback = async (modelIndex: number = 0) => {
     console.log('WSI Question Generator: Starting multi-step generation process')
 
-    // Step 1: Select WSI
-    console.log('WSI Question Generator: Step 1 - Selecting WSI...')
-    setLoadingStep('Preparing question...')
-    const wsiUrl = selectedCategory && selectedCategory !== 'all'
-      ? `/api/tools/wsi-question-generator/select-wsi?category=${encodeURIComponent(selectedCategory)}`
-      : '/api/tools/wsi-question-generator/select-wsi'
+    // Step 1: Select WSI using CLIENT-SIDE selection (saves API calls!)
+    console.log('WSI Question Generator: Step 1 - Selecting WSI client-side...')
+    setLoadingStep('Selecting slide...')
+    
+    console.log(`WSI Question Generator: Category filter: ${selectedCategory !== 'all' ? selectedCategory : 'none'}`)
+    console.log(`WSI Question Generator: Excluding recent WSI IDs: ${recentWSIIds.join(', ')}`)
 
-    const wsiResponse = await fetch(wsiUrl, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    })
+    // Use client-side WSI selection
+    const wsiResult = await selectRandomWSIClientSide(
+      selectedCategory !== 'all' ? selectedCategory : undefined,
+      recentWSIIds
+    )
 
-    if (!wsiResponse.ok) {
-      throw new Error(`WSI Selection failed: ${wsiResponse.status} ${wsiResponse.statusText}`)
+    if (!wsiResult.success || !wsiResult.wsi) {
+      throw new Error(wsiResult.error || 'Failed to select WSI client-side')
     }
 
-    const wsiData = await wsiResponse.json()
-    if (!wsiData.success || !wsiData.wsi) {
-      throw new Error('Failed to select WSI')
-    }
-
-    const selectedWSI = wsiData.wsi
+    const clientWSI = wsiResult.wsi
+    const selectedWSI = normalizeClientWSI(clientWSI)
     console.log(`WSI Question Generator: Selected WSI - ${selectedWSI.diagnosis}`)
 
-    // Step 2: Find context
-    console.log('WSI Question Generator: Step 2 - Finding context...')
-    setLoadingStep('Gathering information...')
-    const contextResponse = await fetch('/api/tools/wsi-question-generator/find-context', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        diagnosis: selectedWSI.diagnosis,
-        category: selectedWSI.category
-      })
-    })
+    // Step 2: Find context using CLIENT-SIDE search (saves more API calls!)
+    console.log('WSI Question Generator: Step 2 - Finding context (pure client-side)...')
+    setLoadingStep('Searching educational content...')
 
-    if (!contextResponse.ok) {
-      throw new Error(`Context search failed: ${contextResponse.status} ${contextResponse.statusText}`)
+    // Use pure client-side context search (ZERO Vercel API calls)
+    // Data manager is already initialized by WSI selection step
+    const contextResult = await findContextPureClient(
+      selectedWSI.diagnosis,
+      selectedWSI.category,
+      selectedWSI.subcategory
+    )
+
+    if (!contextResult.success) {
+      throw new Error('Failed to find context client-side')
     }
 
-    const contextData = await contextResponse.json()
-    if (!contextData.success) {
-      throw new Error('Failed to find context')
-    }
-
-    const context = contextData.context
+    const context = contextResult.context
+    const shouldReject = contextResult.shouldReject
+    
     console.log(`WSI Question Generator: Context found - ${!!context}`)
+    console.log(`WSI Question Generator: Context quality - ${contextResult.metadata?.context_quality || 'unknown'}`)
+    
+    // If context search recommends rejecting this slide, try another one
+    if (shouldReject) {
+      console.log('WSI Question Generator: Poor context match detected, trying another slide...')
+      setLoadingStep('Finding better slide...')
+      
+      // Update exclusion list synchronously and wait for state update
+      const updatedRecentIds = [selectedWSI.id, ...recentWSIIds.filter(id => id !== selectedWSI.id)].slice(0, 5)
+      console.log(`WSI Question Generator: Added '${selectedWSI.id}' to exclusion list. Recent IDs: ${updatedRecentIds.join(', ')}`)
+      
+      setRecentWSIIds(updatedRecentIds)
+      
+      // Small delay to ensure state is updated before recursive call
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Recursively try to generate with another slide (with depth limit)
+      if (modelIndex === 0) { // Only retry on first model attempt to avoid infinite loops
+        return await generateQuestionWithFallback(0)
+      } else {
+        console.log('WSI Question Generator: Already in fallback mode, proceeding with poor context')
+      }
+    }
 
     // Step 3: Verify image accessibility (optional, non-blocking)
     console.log('WSI Question Generator: Step 3 - Verifying image accessibility...')
@@ -326,8 +382,8 @@ export function WSIQuestionGenerator({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          imageUrl: selectedWSI.slide_url || selectedWSI.case_url,
-          thumbnailUrl: selectedWSI.preview_image_url
+          imageUrl: clientWSI.slide_url || clientWSI.case_url || clientWSI.image_url,
+          thumbnailUrl: clientWSI.thumbnail_url
         })
       })
 
@@ -343,15 +399,15 @@ export function WSIQuestionGenerator({
     }
 
     // Step 4: Generate question with fallback system
-    await generateQuestionWithModelFallback(selectedWSI, context, imageVerification, wsiData, contextData, modelIndex)
+    await generateQuestionWithModelFallback(selectedWSI, context, imageVerification, wsiResult, contextResult, modelIndex)
   }
 
   const generateQuestionWithModelFallback = async (
     selectedWSI: VirtualSlide,
     context: any,
     imageVerification: any,
-    wsiData: any,
-    contextData: any,
+    wsiResult: any,
+    contextResult: any,
     modelIndex: number = 0,
     recursionDepth: number = 0
   ) => {
@@ -378,7 +434,7 @@ export function WSIQuestionGenerator({
     console.log(`WSI Question Generator: Step 4 - Generating question with model ${modelIndex + 1}/${WSI_FALLBACK_MODEL_NAMES.length}: ${currentModelName}`)
 
     try {
-      const questionResponse = await fetch('/api/tools/wsi-question-generator/generate-question', {
+      const questionResponse = await fetch('/api/tools/wsi-question-generator/generate-llm-question', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -402,8 +458,8 @@ export function WSIQuestionGenerator({
             selectedWSI,
             context,
             imageVerification,
-            wsiData,
-            contextData,
+            wsiResult,
+            contextResult,
             nextIndex,
             recursionDepth + 1
           )
@@ -418,18 +474,31 @@ export function WSIQuestionGenerator({
 
       console.log(`WSI Question Generator: Successfully generated question with ${currentModelName}`)
 
+      // Transform API response to frontend format
+      const apiQuestion = questionData.question
+      const transformedQuestion: QuestionData = {
+        stem: apiQuestion.text || apiQuestion.stem || '', // Handle both formats
+        options: apiQuestion.options?.map((opt: any) => ({
+          id: opt.id || String.fromCharCode(65 + apiQuestion.options.indexOf(opt)), // A, B, C, D
+          text: opt.text || '',
+          is_correct: opt.isCorrect || opt.is_correct || false,
+          explanation: opt.explanation || ''
+        })) || [],
+        references: apiQuestion.references || []
+      }
+
       // Combine all data into the expected format
       const generatedQuestion = {
         id: `wsi-${selectedWSI.id}-${Date.now()}`,
         wsi: selectedWSI,
-        question: questionData.question,
+        question: transformedQuestion,
         context: context,
         metadata: {
           generated_at: new Date().toISOString(),
           model: questionData.metadata?.model || currentModelName,
           modelIndex: questionData.metadata?.modelIndex || modelIndex,
-          generation_time_ms: (wsiData.metadata?.selection_time_ms || 0) +
-                              (contextData.metadata?.search_time_ms || 0) +
+          generation_time_ms: (wsiResult.metadata?.selection_time_ms || 0) +
+                              (contextResult.metadata?.search_time_ms || 0) +
                               (questionData.metadata?.generation_time_ms || 0),
           image_verification: imageVerification,
           fallback_attempts: modelAttempts.length,
@@ -441,6 +510,12 @@ export function WSIQuestionGenerator({
 
       setCurrentQuestion(generatedQuestion)
       setShouldScrollToTop(true)
+      
+      // Track this WSI ID to avoid immediate repeats (keep last 5)
+      setRecentWSIIds(prev => {
+        const updated = [selectedWSI.id, ...prev.filter(id => id !== selectedWSI.id)]
+        return updated.slice(0, 5) // Keep only 5 most recent
+      })
 
     } catch (modelError) {
       console.error(`WSI Question Generator: Model ${currentModelName} failed:`, modelError)
@@ -453,8 +528,8 @@ export function WSIQuestionGenerator({
           selectedWSI,
           context,
           imageVerification,
-          wsiData,
-          contextData,
+          wsiResult,
+          contextResult,
           nextModelIndex,
           recursionDepth + 1
         )
@@ -775,8 +850,8 @@ export function WSIQuestionGenerator({
                         : 'Tokens: N/A'
                     } • {
                       currentQuestion.context
-                        ? 'Context: Yes'
-                        : 'Context: No'
+                        ? `Context: ${currentQuestion.context.subject} - ${currentQuestion.context.topic}`
+                        : 'Context: None'
                     } • {currentQuestion.metadata.generation_time_ms}ms
                     {(currentQuestion.metadata.fallback_attempts || 0) > 1 && (
                       <span className="text-amber-600"> • Backup system used</span>

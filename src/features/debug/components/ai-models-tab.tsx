@@ -68,7 +68,7 @@ interface GeminiResponse {
 export function AiModelsTab() {
   // Unified state
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL)
-  const [prompt, setPrompt] = useState('Create a pathology MCQ following the ABP format using the provided pathprimer context.')
+  const [prompt, setPrompt] = useState('Create a pathology MCQ following the ABP format using the provided educational context.')
   const [instructions, setInstructions] = useState('')
   const [attachments, setAttachments] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
@@ -76,8 +76,8 @@ export function AiModelsTab() {
   const [rawResponse, setRawResponse] = useState('')
   const [responseTime, setResponseTime] = useState<number | null>(null)
   const [tokenUsage, setTokenUsage] = useState<{input?: number, output?: number, total?: number} | null>(null)
-  const [pathprimerContext, setPathprimerContext] = useState<string>('')
-  const [selectedPathprimerFile, setSelectedPathprimerFile] = useState<string>('')
+  const [educationalContext, setEducationalContext] = useState<string>('')
+  const [selectedEducationalFile, setSelectedEducationalFile] = useState<string>('')
 
   // Get all models (active + disabled)
   const activeModels = ACTIVE_AI_MODELS.map(model => ({
@@ -101,8 +101,8 @@ export function AiModelsTab() {
   // File input ref
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Pathprimer files list
-  const pathprimerFiles = [
+  // Educational files list
+  const educationalFiles = [
     'anatomic-pathology.json',
     'clinical-pathology.json',
     'cytopathology.json',
@@ -136,7 +136,7 @@ Guidelines:
 6. Use proper medical terminology
 7. Follow ABP question style and format
 
-When pathprimer context is provided, use it as reference material for creating questions about specific topics, diagnoses, or pathological processes.`
+When educational context is provided, use it as reference material for creating questions about specific topics, diagnoses, or pathological processes.`
 
     setInstructions(defaultInstructions)
   }
@@ -151,27 +151,27 @@ When pathprimer context is provided, use it as reference material for creating q
     setAttachments(prev => [...prev, ...files])
   }
 
-  const handlePathprimerFileChange = async (fileName: string) => {
-    setSelectedPathprimerFile(fileName)
+  const handleEducationalFileChange = async (fileName: string) => {
+    setSelectedEducationalFile(fileName)
     if (!fileName) {
-      setPathprimerContext('')
+      setEducationalContext('')
       return
     }
 
     try {
-      const response = await fetch(`/pathprimer/${fileName}`)
+      const response = await fetch(`/educational/${fileName}`)
       if (response.ok) {
         const context = await response.text()
-        setPathprimerContext(context)
+        setEducationalContext(context)
         toast.success(`Loaded ${fileName}`)
       } else {
         toast.error(`Failed to load ${fileName}`)
-        setPathprimerContext('')
+        setEducationalContext('')
       }
     } catch (error) {
-      console.error('Error loading pathprimer file:', error)
+      console.error('Error loading educational file:', error)
       toast.error(`Error loading ${fileName}`)
-      setPathprimerContext('')
+      setEducationalContext('')
     }
   }
 
@@ -212,8 +212,8 @@ When pathprimer context is provided, use it as reference material for creating q
         formData.append('model', selectedModel)
         formData.append('prompt', prompt)
         formData.append('instructions', instructions)
-        if (pathprimerContext) {
-          formData.append('pathprimerContext', pathprimerContext)
+        if (educationalContext) {
+          formData.append('educationalContext', educationalContext)
         }
 
         // Add attachments
@@ -235,7 +235,7 @@ When pathprimer context is provided, use it as reference material for creating q
             model: selectedModel,
             prompt,
             instructions,
-            pathprimerContext: pathprimerContext || undefined
+            educationalContext: educationalContext || undefined
           })
         })
         data = await apiResponse.json()
@@ -248,7 +248,7 @@ When pathprimer context is provided, use it as reference material for creating q
             model: selectedModel,
             prompt,
             instructions,
-            pathprimerContext: pathprimerContext || undefined
+            educationalContext: educationalContext || undefined
           })
         })
         data = await apiResponse.json()
@@ -261,7 +261,7 @@ When pathprimer context is provided, use it as reference material for creating q
             model: selectedModel,
             prompt,
             instructions,
-            pathprimerContext: pathprimerContext || undefined
+            educationalContext: educationalContext || undefined
           })
         })
         data = await apiResponse.json()
@@ -274,7 +274,7 @@ When pathprimer context is provided, use it as reference material for creating q
             model: selectedModel,
             prompt,
             instructions,
-            pathprimerContext: pathprimerContext || undefined
+            educationalContext: educationalContext || undefined
           })
         })
         data = await apiResponse.json()
@@ -287,7 +287,7 @@ When pathprimer context is provided, use it as reference material for creating q
             model: selectedModel,
             prompt,
             instructions,
-            pathprimerContext: pathprimerContext || undefined
+            educationalContext: educationalContext || undefined
           })
         })
         data = await apiResponse.json()
@@ -388,15 +388,15 @@ When pathprimer context is provided, use it as reference material for creating q
             rawResponse={rawResponse}
             responseTime={responseTime}
             tokenUsage={tokenUsage}
-            pathprimerContext={pathprimerContext}
-            selectedPathprimerFile={selectedPathprimerFile}
+            educationalContext={educationalContext}
+            selectedEducationalFile={selectedEducationalFile}
             activeModels={activeModels}
             disabledModels={disabledModels}
             allModels={allModels}
             fileInputRef={fileInputRef}
-            pathprimerFiles={pathprimerFiles}
+            educationalFiles={educationalFiles}
             handleFileUpload={handleFileUpload}
-            handlePathprimerFileChange={handlePathprimerFileChange}
+            handleEducationalFileChange={handleEducationalFileChange}
             resetToDefaultInstructions={resetToDefaultInstructions}
             saveInstructions={saveInstructions}
             testAPI={testAPI}
@@ -430,15 +430,15 @@ interface AiQuestionTestingContentProps {
   rawResponse: string
   responseTime: number | null
   tokenUsage: {input?: number, output?: number, total?: number} | null
-  pathprimerContext: string
-  selectedPathprimerFile: string
+  educationalContext: string
+  selectedEducationalFile: string
   activeModels: any[]
   disabledModels: any[]
   allModels: any[]
   fileInputRef: React.RefObject<HTMLInputElement | null>
-  pathprimerFiles: string[]
+  educationalFiles: string[]
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
-  handlePathprimerFileChange: (file: string) => void
+  handleEducationalFileChange: (file: string) => void
   resetToDefaultInstructions: () => void
   saveInstructions: (instructions: string) => void
   testAPI: () => void
@@ -462,15 +462,15 @@ function AiQuestionTestingContent({
   rawResponse,
   responseTime,
   tokenUsage,
-  pathprimerContext,
-  selectedPathprimerFile,
+  educationalContext,
+  selectedEducationalFile,
   activeModels,
   disabledModels,
   allModels,
   fileInputRef,
-  pathprimerFiles,
+  educationalFiles,
   handleFileUpload,
-  handlePathprimerFileChange,
+  handleEducationalFileChange,
   resetToDefaultInstructions,
   saveInstructions,
   testAPI,
@@ -548,25 +548,25 @@ function AiQuestionTestingContent({
               />
             </div>
 
-            {/* Pathprimer Context */}
+            {/* Educational Context */}
             <div>
-              <Label htmlFor="pathprimer-file">Pathprimer Context</Label>
+              <Label htmlFor="educational-file">Educational Context</Label>
               <select
-                id="pathprimer-file"
-                value={selectedPathprimerFile}
-                onChange={(e) => handlePathprimerFileChange(e.target.value)}
+                id="educational-file"
+                value={selectedEducationalFile}
+                onChange={(e) => handleEducationalFileChange(e.target.value)}
                 className="w-full p-2 border border-input rounded-md bg-background mb-2"
               >
-                <option value="">Select pathprimer file...</option>
-                {pathprimerFiles.map(file => (
+                <option value="">Select educational file...</option>
+                {educationalFiles.map(file => (
                   <option key={file} value={file}>
                     {file.replace('.json', '').replace(/\-/g, ' ').toUpperCase()}
                   </option>
                 ))}
               </select>
-              {pathprimerContext && (
+              {educationalContext && (
                 <div className="text-xs text-gray-500 mb-2">
-                  Context loaded: {(pathprimerContext.length / 1024).toFixed(1)}KB
+                  Context loaded: {(educationalContext.length / 1024).toFixed(1)}KB
                 </div>
               )}
             </div>

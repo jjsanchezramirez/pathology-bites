@@ -109,7 +109,11 @@ export function useCachedData<T>(
       }
       fetchingRef.current = false
     }
-  }, [key, enabled, storage, prefix, ttl, staleTime]) // ✅ FIXED: Removed unstable dependencies
+  }, [key, enabled, storage, prefix, ttl, fetcher])
+
+  // Create refs for stable function references
+  const fetchDataRef = useRef(fetchData)
+  fetchDataRef.current = fetchData
 
   // Invalidate cache and refetch
   const invalidate = useCallback(() => {
@@ -118,27 +122,27 @@ export function useCachedData<T>(
     setIsStale(false)
     setLastFetch(0)
     if (enabled) {
-      fetchData(true)
+      fetchDataRef.current(true)
     }
-  }, [key, storage, prefix, enabled]) // ✅ FIXED: Removed fetchData dependency
+  }, [key, storage, prefix, enabled])
 
   // Refetch data
   const refetch = useCallback(async () => {
-    await fetchData(true)
-  }, []) // ✅ FIXED: Removed fetchData dependency
+    await fetchDataRef.current(true)
+  }, [])
 
   // Initial fetch
   useEffect(() => {
     mounted.current = true
 
     if (enabled && refetchOnMount) {
-      fetchData()
+      fetchDataRef.current()
     }
 
     return () => {
       mounted.current = false
     }
-  }, [enabled, refetchOnMount, key]) // ✅ FIXED: Use key instead of fetchData
+  }, [enabled, refetchOnMount])
 
   // Window focus refetch
   useEffect(() => {
@@ -147,13 +151,13 @@ export function useCachedData<T>(
     const handleFocus = () => {
       // Only refetch if data is stale
       if (lastFetch && Date.now() - lastFetch > staleTime) {
-        fetchData()
+        fetchDataRef.current()
       }
     }
 
     window.addEventListener('focus', handleFocus)
     return () => window.removeEventListener('focus', handleFocus)
-  }, [refetchOnWindowFocus, enabled, lastFetch, staleTime]) // ✅ FIXED: Removed unstable dependencies
+  }, [refetchOnWindowFocus, enabled, lastFetch, staleTime])
 
   return {
     data,

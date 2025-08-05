@@ -94,8 +94,8 @@ export default function WSIGeneratorDebugPage() {
         data: { slideUrl: testSlide.slide_url, diagnosis: testSlide.diagnosis }
       })
 
-      // Step 2: Test PathPrimer content search
-      addStep({ name: 'PathPrimer Content Search', status: 'running' })
+      // Step 2: Test Educational content search
+      addStep({ name: 'Educational Content Search', status: 'running' })
       const searchStart = Date.now()
       
       try {
@@ -109,21 +109,21 @@ export default function WSIGeneratorDebugPage() {
         
         if (searchResponse.ok) {
           const searchData = await searchResponse.json()
-          updateStep('PathPrimer Content Search', { 
+          updateStep('Educational Content Search', { 
             status: 'success', 
             data: searchData,
             duration: searchDuration
           })
         } else {
           const errorData = await searchResponse.json()
-          updateStep('PathPrimer Content Search', { 
+          updateStep('Educational Content Search', { 
             status: 'error', 
             error: errorData.error || 'Search failed',
             duration: searchDuration
           })
         }
       } catch (error) {
-        updateStep('PathPrimer Content Search', { 
+        updateStep('Educational Content Search', { 
           status: 'error', 
           error: error instanceof Error ? error.message : 'Network error'
         })

@@ -10,7 +10,7 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area'
 import { Loader2, FileText, BookOpen, GraduationCap, Target } from 'lucide-react'
 import { toast } from 'sonner'
 
-interface PathPrimerContent {
+interface EducationalContent {
   category: string
   subject: string
   lesson: string
@@ -19,17 +19,17 @@ interface PathPrimerContent {
 }
 
 interface ContentSelectorProps {
-  onContentSelect: (content: PathPrimerContent) => void
-  selectedContent: PathPrimerContent | null
+  onContentSelect: (content: EducationalContent) => void
+  selectedContent: EducationalContent | null
 }
 
-interface PathPrimerFile {
+interface ContentFile {
   filename: string
   category: string
   subject: string
 }
 
-interface PathPrimerData {
+interface ContentData {
   category: string
   subject: {
     name: string
@@ -47,17 +47,17 @@ interface PathPrimerData {
 }
 
 export function ContentSelector({ onContentSelect, selectedContent }: ContentSelectorProps) {
-  const [availableFiles, setAvailableFiles] = useState<PathPrimerFile[]>([])
+  const [availableFiles, setAvailableFiles] = useState<ContentFile[]>([])
   const [selectedFile, setSelectedFile] = useState<string>('')
-  const [pathPrimerData, setPathPrimerData] = useState<PathPrimerData | null>(null)
+  const [contentData, setContentData] = useState<ContentData | null>(null)
   const [selectedLesson, setSelectedLesson] = useState<string>('')
   const [selectedTopic, setSelectedTopic] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [contentPreview, setContentPreview] = useState<string>('')
 
-  // Parse available PathPrimer files
+  // Parse available educational content files
   useEffect(() => {
-    const files: PathPrimerFile[] = [
+    const files: ContentFile[] = [
       // Anatomic Pathology files
       { filename: 'ap-bone.json', category: 'Anatomic Pathology', subject: 'Bone' },
       { filename: 'ap-breast.json', category: 'Anatomic Pathology', subject: 'Breast' },
@@ -91,14 +91,14 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
     setAvailableFiles(files)
   }, [])
 
-  // Load PathPrimer data when file is selected
+  // Load educational content data when file is selected
   useEffect(() => {
     if (selectedFile) {
-      const loadPathPrimerData = async () => {
+      const loadContentData = async () => {
         try {
           setLoading(true)
 
-          const response = await fetch(`/api/content/pathprimer/${selectedFile}`, {
+          const response = await fetch(`/api/content/${selectedFile}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -106,19 +106,19 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
           })
 
           if (!response.ok) {
-            throw new Error(`Failed to load PathPrimer content`)
+            throw new Error(`Failed to load educational content`)
           }
 
           const data = await response.json()
-          setPathPrimerData(data)
+          setContentData(data)
           setSelectedLesson('')
           setSelectedTopic('')
           setContentPreview('')
 
         } catch (error) {
-          console.error('Error loading PathPrimer data:', error)
-          toast.error('Failed to load PathPrimer content. Please try again.')
-          setPathPrimerData(null)
+          console.error('Error loading educational content data:', error)
+          toast.error('Failed to load educational content. Please try again.')
+          setContentData(null)
           setSelectedLesson('')
           setSelectedTopic('')
           setContentPreview('')
@@ -127,7 +127,7 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
         }
       }
 
-      loadPathPrimerData()
+      loadContentData()
 
       // Cleanup function to abort request if component unmounts
       return () => {
@@ -135,7 +135,7 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
       }
     } else {
       // Reset state when no file is selected
-      setPathPrimerData(null)
+      setContentData(null)
       setSelectedLesson('')
       setSelectedTopic('')
       setContentPreview('')
@@ -144,24 +144,24 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
 
   // Update content preview when topic is selected
   useEffect(() => {
-    if (pathPrimerData && selectedLesson && selectedTopic) {
-      const lesson = pathPrimerData.subject.lessons[selectedLesson]
+    if (contentData && selectedLesson && selectedTopic) {
+      const lesson = contentData.subject.lessons[selectedLesson]
       const topic = lesson?.topics[selectedTopic]
       if (topic?.content) {
         const contentStr = JSON.stringify(topic.content, null, 2)
         setContentPreview(contentStr.substring(0, 2000) + (contentStr.length > 2000 ? '...' : ''))
       }
     }
-  }, [pathPrimerData, selectedLesson, selectedTopic])
+  }, [contentData, selectedLesson, selectedTopic])
 
   const handleSelectContent = () => {
-    if (pathPrimerData && selectedLesson && selectedTopic) {
-      const lesson = pathPrimerData.subject.lessons[selectedLesson]
+    if (contentData && selectedLesson && selectedTopic) {
+      const lesson = contentData.subject.lessons[selectedLesson]
       const topic = lesson?.topics[selectedTopic]
       if (topic) {
         onContentSelect({
-          category: pathPrimerData.category,
-          subject: pathPrimerData.subject.name,
+          category: contentData.category,
+          subject: contentData.subject.name,
           lesson: selectedLesson,
           topic: selectedTopic,
           content: topic.content
@@ -176,7 +176,7 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
     }
     acc[file.category].push(file)
     return acc
-  }, {} as Record<string, PathPrimerFile[]>)
+  }, {} as Record<string, ContentFile[]>)
 
   return (
     <div className="space-y-6">
@@ -186,7 +186,7 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
           <label className="text-sm font-medium">Category & Subject</label>
           <Select value={selectedFile} onValueChange={setSelectedFile}>
             <SelectTrigger>
-              <SelectValue placeholder="Select a PathPrimer subject..." />
+              <SelectValue placeholder="Select an educational content subject..." />
             </SelectTrigger>
             <SelectContent>
               {Object.entries(groupedFiles).map(([category, files]) => (
@@ -208,7 +208,7 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
           </Select>
         </div>
 
-        {pathPrimerData && (
+        {contentData && (
           <div className="space-y-2">
             <label className="text-sm font-medium">Lesson</label>
             <Select value={selectedLesson} onValueChange={setSelectedLesson}>
@@ -216,7 +216,7 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
                 <SelectValue placeholder="Select a lesson..." />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(pathPrimerData.subject.lessons).map(([lessonKey, lesson]) => (
+                {Object.entries(contentData.subject.lessons).map(([lessonKey, lesson]) => (
                   <SelectItem key={lessonKey} value={lessonKey}>
                     <div className="flex items-center gap-2">
                       <GraduationCap className="h-4 w-4" />
@@ -239,7 +239,7 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
       )}
 
       {/* Topic Selection */}
-      {pathPrimerData && selectedLesson && (
+      {contentData && selectedLesson && (
         <div className="space-y-2">
           <label className="text-sm font-medium">Topic</label>
           <Select value={selectedTopic} onValueChange={setSelectedTopic}>
@@ -247,7 +247,7 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
               <SelectValue placeholder="Select a topic..." />
             </SelectTrigger>
             <SelectContent>
-              {Object.entries(pathPrimerData.subject.lessons[selectedLesson].topics).map(([topicKey, topic]) => (
+              {Object.entries(contentData.subject.lessons[selectedLesson].topics).map(([topicKey, topic]) => (
                 <SelectItem key={topicKey} value={topicKey}>
                   <div className="flex items-center gap-2">
                     <Target className="h-4 w-4" />
@@ -301,7 +301,7 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
       <div className="flex justify-end gap-2">
         <Button
           onClick={handleSelectContent}
-          disabled={!pathPrimerData || !selectedLesson || !selectedTopic || loading}
+          disabled={!contentData || !selectedLesson || !selectedTopic || loading}
         >
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Select This Content

@@ -182,6 +182,73 @@ export function ApiTestsTab() {
       description: 'Generate sample user activities for testing',
       category: 'Debug',
       requiresAuth: false
+    },
+
+    // Storage APIs
+    {
+      name: 'List R2 Files',
+      method: 'GET',
+      path: '/api/r2/files',
+      description: 'List files in Cloudflare R2 storage with pagination and filtering',
+      category: 'Storage',
+      requiresAuth: false
+    },
+    {
+      name: 'Generate R2 Signed URL',
+      method: 'POST',
+      path: '/api/r2/signed-url',
+      description: 'Generate a signed URL for R2 file upload',
+      category: 'Storage',
+      requiresAuth: true,
+      samplePayload: JSON.stringify({
+        key: 'images/test-file.jpg',
+        contentType: 'image/jpeg'
+      }, null, 2)
+    },
+    {
+      name: 'Generate Private File URL',
+      method: 'POST',
+      path: '/api/r2/private-url',
+      description: 'Generate a signed URL for accessing private R2 files',
+      category: 'Storage',
+      requiresAuth: false,
+      samplePayload: JSON.stringify({
+        key: 'abpath-content-specs.json',
+        bucket: 'pathology-bites-data',
+        expiresIn: 3600
+      }, null, 2)
+    },
+    {
+      name: 'R2 Reorganization Status',
+      method: 'GET',
+      path: '/api/r2/reorganize',
+      description: 'Check current R2 folder structure and planned reorganization operations',
+      category: 'Storage',
+      requiresAuth: false
+    },
+    {
+      name: 'R2 Reorganization (Dry Run)',
+      method: 'POST',
+      path: '/api/r2/reorganize',
+      description: 'Preview R2 folder reorganization without making changes',
+      category: 'Storage',
+      requiresAuth: false,
+      samplePayload: JSON.stringify({
+        operation: 'all',
+        dryRun: true
+      }, null, 2)
+    },
+    {
+      name: 'R2 Reorganization (Execute)',
+      method: 'POST',
+      path: '/api/r2/reorganize',
+      description: 'Execute R2 folder reorganization operations',
+      category: 'Storage',
+      requiresAuth: false,
+      samplePayload: JSON.stringify({
+        operation: 'all',
+        dryRun: false
+      }, null, 2)
     }
   ]
 

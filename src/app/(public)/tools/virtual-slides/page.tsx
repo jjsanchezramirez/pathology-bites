@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useCachedData } from '@/shared/hooks/use-cached-data'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -22,6 +23,7 @@ import {
 import Image from 'next/image'
 import { PublicHero } from '@/shared/components/common/public-hero'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
+import { ContentDisclaimer } from '@/shared/components/common/content-disclaimer'
 
 // Import types and utilities
 import { VirtualSlide } from './types'
@@ -41,10 +43,43 @@ import { Pagination } from './components/pagination'
 import { LoadingSkeleton } from './components/loading-skeleton'
 
 export default function VirtualSlidesPage() {
-  // Data state
-  const [virtualSlidesData, setVirtualSlidesData] = useState<VirtualSlide[]>([])
-  const [isLoadingData, setIsLoadingData] = useState(true)
-  const [dataError, setDataError] = useState<string | null>(null)
+  // Use cached data hook for better performance
+  const { data: virtualSlidesData, isLoading: isLoadingData, error: dataError } = useCachedData(
+    'virtual-slides',
+    async () => {
+      console.log('🔄 Fetching virtual slides from R2 via API...')
+      const response = await fetch('/api/virtual-slides', {
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'public, max-age=86400' // 24 hour browser cache
+        }
+      })
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('❌ Virtual slides fetch failed:', response.status, errorText)
+        throw new Error(`Failed to fetch virtual slides: ${response.status} ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      const slides = result.data || result
+      
+      console.log('✅ Virtual slides loaded from R2:', {
+        totalSlides: slides.length,
+        dataSize: `${(JSON.stringify(slides).length / (1024 * 1024)).toFixed(1)}MB`,
+        source: result.metadata?.performance?.source || 'api',
+        cacheStrategy: 'client-side-filtering'
+      })
+      
+      return slides
+    },
+    {
+      ttl: 24 * 60 * 60 * 1000, // 24 hours cache
+      staleTime: 12 * 60 * 60 * 1000, // 12 hours stale time
+      storage: 'localStorage',
+      prefix: 'pathology-bites-virtual-slides'
+    }
+  )
 
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
@@ -54,7 +89,7 @@ export default function VirtualSlidesPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(true)
-  const [itemsPerPage, setItemsPerPage] = useState(30)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   // New state for enhanced features
   const [showDiagnoses, setShowDiagnoses] = useState(true)
@@ -76,41 +111,15 @@ export default function VirtualSlidesPage() {
     return () => clearTimeout(timer)
   }, [searchTerm])
 
-  // Fetch virtual slides data from API
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoadingData(true)
-        setDataError(null)
 
-        const response = await fetch('/api/virtual-slides')
-        if (!response.ok) {
-          throw new Error(`Failed to fetch virtual slides: ${response.status}`)
-        }
-
-        const result = await response.json()
-        // The API returns { data: slides[], metadata: {...} }
-        const slides = result.data || result
-        setVirtualSlidesData(slides)
-      } catch (error) {
-        console.error('Error fetching virtual slides:', error)
-        setDataError(error instanceof Error ? error.message : 'Failed to load virtual slides')
-      } finally {
-        setIsLoadingData(false)
-      }
-    }
-
-    fetchData()
-  }, [])
-
-  // Get unique values for filters
-  const repositories = useMemo(() => getUniqueRepositories(virtualSlidesData), [virtualSlidesData])
-  const categories = useMemo(() => getUniqueCategories(virtualSlidesData), [virtualSlidesData])
-  const organSystems = useMemo(() => getUniqueOrganSystems(virtualSlidesData), [virtualSlidesData])
+  // Get unique values for filters from full dataset
+  const repositories = useMemo(() => getUniqueRepositories(virtualSlidesData || []), [virtualSlidesData])
+  const categories = useMemo(() => getUniqueCategories(virtualSlidesData || []), [virtualSlidesData])
+  const organSystems = useMemo(() => getUniqueOrganSystems(virtualSlidesData || []), [virtualSlidesData])
 
   // Dynamic acronym mapping and search index
-  const acronymMap = useMemo(() => createAcronymMap(virtualSlidesData), [virtualSlidesData])
-  const searchIndex = useMemo(() => createSearchIndex(virtualSlidesData), [virtualSlidesData])
+  const acronymMap = useMemo(() => createAcronymMap(virtualSlidesData || []), [virtualSlidesData])
+  const searchIndex = useMemo(() => createSearchIndex(virtualSlidesData || []), [virtualSlidesData])
 
   // Search function using utility
   const searchSlidesCallback = useCallback((searchTerm: string): VirtualSlide[] => {
@@ -120,29 +129,28 @@ export default function VirtualSlidesPage() {
   // Random slide generation function with filter support
   const generateRandomSlides = useCallback((count: number): VirtualSlide[] => {
     // First apply filters to get eligible slides
-    let eligibleSlides = virtualSlidesData
+    let eligibleSlides = virtualSlidesData || []
 
     if (selectedRepository !== 'all') {
-      eligibleSlides = eligibleSlides.filter(slide => slide.repository === selectedRepository)
+      eligibleSlides = eligibleSlides.filter((slide: any) => slide.repository === selectedRepository)
     }
 
     if (selectedCategory !== 'all') {
-      eligibleSlides = eligibleSlides.filter(slide => slide.category === selectedCategory)
+      eligibleSlides = eligibleSlides.filter((slide: any) => slide.category === selectedCategory)
     }
 
     if (selectedOrganSystem !== 'all') {
-      eligibleSlides = eligibleSlides.filter(slide => slide.subcategory === selectedOrganSystem)
+      eligibleSlides = eligibleSlides.filter((slide: any) => slide.subcategory === selectedOrganSystem)
     }
 
     // Then shuffle and return the requested count
     const shuffled = [...eligibleSlides].sort(() => 0.5 - Math.random())
     return shuffled.slice(0, count)
-  }, [selectedRepository, selectedCategory, selectedOrganSystem])
+  }, [virtualSlidesData, selectedRepository, selectedCategory, selectedOrganSystem])
 
-  // Filtering logic using utilities
+  // Client-side filtering and pagination
   const filteredSlides = useMemo(() => {
     if (isRandomMode) {
-      // Generate random slides to fill the current page
       return generateRandomSlides(itemsPerPage)
     }
 
@@ -153,14 +161,21 @@ export default function VirtualSlidesPage() {
     return applyFilters(searchResults, selectedRepository, selectedCategory, selectedOrganSystem)
   }, [debouncedSearchTerm, selectedRepository, selectedCategory, selectedOrganSystem, searchSlidesCallback, isRandomMode, generateRandomSlides, itemsPerPage])
 
-  // Pagination
+  // Pagination calculation
   const totalPages = isRandomMode ? 1 : Math.ceil(filteredSlides.length / itemsPerPage)
-  const paginatedSlides = isRandomMode
-    ? filteredSlides // Random mode already returns the right amount
-    : filteredSlides.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-      )
+  
+  const paginatedSlides = useMemo(() => {
+    if (isRandomMode) {
+      // Random mode already returns the right amount
+      return filteredSlides
+    }
+    
+    // Apply client-side pagination
+    return filteredSlides.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    )
+  }, [filteredSlides, currentPage, itemsPerPage, isRandomMode])
 
   const handleSearch = () => {
     setIsLoading(true)
@@ -253,7 +268,19 @@ export default function VirtualSlidesPage() {
       <div className="flex min-h-screen flex-col bg-background">
         <PublicHero
           title="Virtual Slide Search Engine"
-          description="Loading virtual pathology slides from leading institutions worldwide..."
+          description="Search and explore thousands of virtual pathology slides from leading institutions worldwide. Find cases by diagnosis, organ system, repository, and more."
+          actions={
+            <div className="flex gap-4 pt-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Microscope className="h-4 w-4" />
+                <span>Loading...</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <FileText className="h-4 w-4" />
+                <span>Loading...</span>
+              </div>
+            </div>
+          }
         />
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           <LoadingSkeleton variant="cards" />
@@ -276,7 +303,19 @@ export default function VirtualSlidesPage() {
               <AlertCircle className="h-12 w-12 mx-auto" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Failed to Load Virtual Slides</h3>
-            <p className="text-muted-foreground mb-4">{dataError}</p>
+            <p className="text-muted-foreground mb-4">
+              {dataError?.message?.includes('timeout') || dataError?.message?.includes('504')
+                ? 'The dataset is too large for the current server configuration. The 32.5MB virtual slides dataset exceeds serverless function limits.'
+                : dataError?.message || 'Unknown error occurred'
+              }
+            </p>
+            {(dataError?.message?.includes('timeout') || dataError?.message?.includes('504')) && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-4 mb-4 text-left">
+                <p className="text-sm text-yellow-800">
+                  <strong>Technical Details:</strong> Consider implementing direct R2 access, data compression, or pagination to handle the large dataset.
+                </p>
+              </div>
+            )}
             <Button onClick={() => window.location.reload()}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Try Again
@@ -297,7 +336,7 @@ export default function VirtualSlidesPage() {
           <div className="flex gap-4 pt-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Microscope className="h-4 w-4" />
-              <span>{virtualSlidesData.length.toLocaleString()} Virtual Slides</span>
+              <span>{(virtualSlidesData?.length || 0).toLocaleString()} Virtual Slides</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <FileText className="h-4 w-4" />
@@ -544,7 +583,7 @@ export default function VirtualSlidesPage() {
                           <>
                             <Filter className="h-4 w-4" />
                             <span>
-                              Showing {filteredSlides.length.toLocaleString()} of {virtualSlidesData.length.toLocaleString()} slides
+                              Showing {filteredSlides.length.toLocaleString()} of {(virtualSlidesData?.length || 0).toLocaleString()} slides
                             </span>
                           </>
                         )}
@@ -626,7 +665,7 @@ export default function VirtualSlidesPage() {
                           <>
                             <Filter className="h-4 w-4" />
                             <span>
-                              Showing {filteredSlides.length.toLocaleString()} of {virtualSlidesData.length.toLocaleString()} slides
+                              Showing {filteredSlides.length.toLocaleString()} of {(virtualSlidesData?.length || 0).toLocaleString()} slides
                             </span>
                           </>
                         )}
@@ -753,17 +792,7 @@ export default function VirtualSlidesPage() {
         </section>
       )}
 
-      {/* Content Disclaimer Section */}
-      <section className="py-8 bg-muted/30">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="text-sm text-muted-foreground text-center">
-            <span className="font-medium text-foreground">Content Disclaimer:</span>
-            <span className="ml-2">
-              This tool provides links to third-party whole slide image (WSI) repositories. We do not host, store, or claim ownership of any of the content linked. All copyrights remain with the respective content owners. Accessing and using external content is subject to each source's terms and conditions. No affiliation or endorsement is implied.
-            </span>
-          </div>
-        </div>
-      </section>
+      <ContentDisclaimer />
 
       {/* Spacer to push community section to bottom */}
       <div className="flex-1" />

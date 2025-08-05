@@ -6,10 +6,11 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
-import { Copy, BookOpen, FileText, Globe, Search, CheckCircle, Edit, Save, X, Plus, Minus } from 'lucide-react'
+import { Copy, BookOpen, FileText, Globe, Search, CheckCircle, Edit, Save, X, Plus, Minus, Database, Trash2 } from 'lucide-react'
 import { PublicHero } from '@/shared/components/common/public-hero'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
-import { extractMetadata, CitationData } from '@/shared/utils/citation-extractor'
+import { useSmartCitations } from '@/shared/hooks/use-smart-citations'
+import { CitationData } from '@/shared/utils/citation-extractor'
 import {
   formatAPA,
   formatMLA,
@@ -19,12 +20,12 @@ import {
 
 export default function CitationGeneratorPage() {
   const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [citationData, setCitationData] = useState<CitationData | null>(null)
   const [editableData, setEditableData] = useState<CitationData | null>(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [copiedFormat, setCopiedFormat] = useState<string | null>(null)
+  
+  const { generateCitation, isLoading, error } = useSmartCitations()
 
 
   const detectInputType = (input: string): 'url' | 'doi' | 'isbn' | 'unknown' => {
@@ -73,8 +74,6 @@ export default function CitationGeneratorPage() {
   const handleGenerate = async () => {
     if (!input.trim()) return
 
-    setIsLoading(true)
-    setError(null)
     setCitationData(null)
 
     try {
@@ -92,15 +91,13 @@ export default function CitationGeneratorPage() {
         processedInput = `https://${trimmedInput}`
       }
 
-      const metadata = await extractMetadata(processedInput, inputType)
+      const metadata = await generateCitation(processedInput, inputType)
       setCitationData(metadata)
       setEditableData(metadata)
       setIsEditing(false)
     } catch (err) {
       console.error('Citation generation error:', err)
-      setError(err instanceof Error ? err.message : 'Failed to generate citation. Please check your input and try again.')
-    } finally {
-      setIsLoading(false)
+      // Error is already handled by the hook
     }
   }
 

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createOptimizedResponse } from '@/shared/utils/compression'
 
-// Base R2 URL for PathPrimer context files
-const PATHPRIMER_CONTEXT_R2_BASE = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/context'
+// Base R2 URL for educational content context files
+const CONTENT_CONTEXT_R2_BASE = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/context'
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Construct R2 URL for the context file
-    const contextFileUrl = `${PATHPRIMER_CONTEXT_R2_BASE}/${filename}`
+    const contextFileUrl = `${CONTENT_CONTEXT_R2_BASE}/${filename}`
 
     // Fetch from R2 instead of local file system
     const response = await fetch(contextFileUrl, {
@@ -65,9 +65,9 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error loading pathprimer context:', error)
+    console.error('Error loading educational content context:', error)
     return NextResponse.json(
-      { error: 'Failed to load pathprimer context' },
+      { error: 'Failed to load educational content context' },
       { status: 500 }
     )
   }

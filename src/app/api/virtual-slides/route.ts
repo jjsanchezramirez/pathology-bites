@@ -1,34 +1,43 @@
 // src/app/api/virtual-slides/route.ts
 /**
- * Optimized virtual slides API endpoint
- * Redirects to direct R2 URLs when possible to minimize Vercel usage
+ * Virtual slides API endpoint using R2 private bucket access
+ * Uses S3Client to fetch data from private bucket with proper authentication
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createOptimizedResponse } from '@/shared/utils/compression'
 import { VirtualSlide } from '@/shared/types/virtual-slides'
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 
-// R2 URL for virtual slides data (migrated from massive local file)
-const VIRTUAL_SLIDES_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/virtual-slides.json'
+// R2 Configuration (same as cell quiz)
+function getR2Config() {
+  const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID
+  const CLOUDFLARE_R2_ACCESS_KEY_ID = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID
+  const CLOUDFLARE_R2_SECRET_ACCESS_KEY = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
 
-// Check if request can be redirected to direct R2 access
-function shouldRedirectToR2(searchParams: URLSearchParams, request: NextRequest): boolean {
-  // Never redirect browser requests due to CORS issues
-  const userAgent = request.headers.get('user-agent') || ''
-  const isBrowserRequest = userAgent.includes('Mozilla') ||
-                          request.headers.get('accept')?.includes('text/html')
-
-  if (isBrowserRequest) {
-    return false
+  if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_R2_ACCESS_KEY_ID || !CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
+    throw new Error('Missing required Cloudflare R2 environment variables')
   }
 
-  // Only redirect simple requests without complex filtering (for API clients like curl)
-  const hasComplexFilters = searchParams.has('search') ||
-                           searchParams.has('repository') ||
-                           searchParams.has('category')
+  return {
+    CLOUDFLARE_ACCOUNT_ID,
+    CLOUDFLARE_R2_ACCESS_KEY_ID,
+    CLOUDFLARE_R2_SECRET_ACCESS_KEY
+  }
+}
 
-  // Redirect if no filters or pagination
-  return !hasComplexFilters && !searchParams.has('page') && !searchParams.has('limit')
+// Create R2 client
+function createR2Client() {
+  const config = getR2Config()
+
+  return new S3Client({
+    region: 'auto',
+    endpoint: `https://${config.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: config.CLOUDFLARE_R2_ACCESS_KEY_ID,
+      secretAccessKey: config.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+    },
+  })
 }
 
 
@@ -37,54 +46,49 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
 
-    // Debug: Log request headers to understand browser behavior
-    const userAgent = request.headers.get('user-agent') || ''
-    const accept = request.headers.get('accept') || ''
-    console.log('Virtual slides API request:', {
-      userAgent: userAgent.substring(0, 100),
-      accept: accept.substring(0, 100),
-      isBrowser: userAgent.includes('Mozilla') || accept.includes('text/html')
-    })
+    console.log('🔄 Virtual slides API called - using R2 private bucket access')
 
-    // TEMPORARILY DISABLED: For simple requests, redirect directly to R2 to save Vercel bandwidth
-    // Always return data directly to avoid CORS issues with browser redirects
-    // if (shouldRedirectToR2(searchParams, request)) {
-    //   return NextResponse.redirect(VIRTUAL_SLIDES_R2_URL, {
-    //     status: 302,
-    //     headers: {
-    //       'Cache-Control': 'public, max-age=3600',
-    //       'X-Redirect-Reason': 'direct-r2-access'
-    //     }
-    //   })
-    // }
-
-    // Check if pagination is requested
-    const page = searchParams.get('page')
-    const limit = searchParams.get('limit')
-    const usePagination = page !== null || limit !== null
-
-    if (usePagination) {
-      // Redirect to paginated endpoint for better performance
-      const paginatedUrl = new URL('/api/virtual-slides/paginated', request.url)
-      searchParams.forEach((value, key) => {
-        paginatedUrl.searchParams.set(key, value)
+    let slides: VirtualSlide[]
+    
+    try {
+      console.log('🌐 Fetching from R2 private bucket...')
+      const r2Client = createR2Client()
+      
+      const command = new GetObjectCommand({
+        Bucket: 'pathology-bites-data',
+        Key: 'virtual-slides.json'
       })
 
-      return NextResponse.redirect(paginatedUrl.toString())
-    }
-
-    // For full dataset requests, fetch from R2 with aggressive caching
-    const response = await fetch(VIRTUAL_SLIDES_R2_URL, {
-      headers: {
-        'Cache-Control': 'public, max-age=3600' // 1 hour cache
+      const response = await r2Client.send(command)
+      
+      if (!response.Body) {
+        throw new Error('No response body from R2')
       }
-    })
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch virtual slides data: ${response.status}`)
+      console.log('📊 R2 response received, parsing JSON...')
+      const bodyContent = await response.Body.transformToString()
+      const contentSize = bodyContent.length
+      console.log('📏 Content size:', `${(contentSize / (1024 * 1024)).toFixed(1)}MB`)
+      
+      slides = JSON.parse(bodyContent)
+      console.log(`✅ Virtual slides parsed successfully: ${slides.length} slides`)
+
+    } catch (fetchError) {
+      console.error('❌ Virtual slides R2 fetch error details:')
+      console.error('   Error type:', fetchError?.constructor?.name)
+      console.error('   Error message:', (fetchError as any)?.message)
+      console.error('   Full error:', fetchError)
+      
+      return NextResponse.json(
+        { 
+          error: 'Failed to fetch virtual slides from R2 private bucket',
+          details: (fetchError as any)?.message || 'Unknown error',
+          bucket: 'pathology-bites-data',
+          key: 'virtual-slides.json'
+        },
+        { status: 500 }
+      )
     }
-
-    const slides: VirtualSlide[] = await response.json()
 
     // Apply basic filters if provided
     let filteredSlides = slides
@@ -113,7 +117,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Return with aggressive compression (this is a HUGE dataset)
+    // Return with aggressive compression and 24-hour caching (this is a HUGE dataset)
     return createOptimizedResponse({
       data: filteredSlides,
       metadata: {
@@ -133,7 +137,7 @@ export async function GET(request: NextRequest) {
     }, {
       compress: true,
       cache: {
-        maxAge: 3600, // 1 hour
+        maxAge: 86400, // 24 hours - static data can be cached aggressively
         staleWhileRevalidate: 1800, // 30 minutes
         public: true
       }

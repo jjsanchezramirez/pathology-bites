@@ -1,4 +1,4 @@
-// Utility to map PathPrimer categories and subjects to database category IDs
+// Utility to map educational content categories and subjects to database category IDs
 
 interface CategoryMapping {
   [key: string]: {
@@ -7,10 +7,10 @@ interface CategoryMapping {
 }
 
 /**
- * Maps PathPrimer category + subject combinations to database category IDs
+ * Maps educational content category + subject combinations to database category IDs
  * Based on the actual categories in the database
  */
-export const PATHPRIMER_TO_CATEGORY_MAPPING: CategoryMapping = {
+export const CONTENT_TO_CATEGORY_MAPPING: CategoryMapping = {
   "Anatomic Pathology": {
     "Bone": "fdaf44b9-b8e7-4f33-ad04-0c005aaafe4d", // Bone & Soft Tissue
     "Breast": "e9032a40-2d26-43b0-965b-2188e949b76e", // Breast
@@ -42,18 +42,18 @@ export const PATHPRIMER_TO_CATEGORY_MAPPING: CategoryMapping = {
 };
 
 /**
- * Get the database category ID for a PathPrimer category and subject combination
+ * Get the database category ID for an educational content category and subject combination
  */
-export function getCategoryIdFromPathPrimer(category: string, subject: string): string | null {
-  const categoryMapping = PATHPRIMER_TO_CATEGORY_MAPPING[category];
+export function getCategoryIdFromContent(category: string, subject: string): string | null {
+  const categoryMapping = CONTENT_TO_CATEGORY_MAPPING[category];
   if (!categoryMapping) {
-    console.warn(`No mapping found for PathPrimer category: ${category}`);
+    console.warn(`No mapping found for educational content category: ${category}`);
     return null;
   }
 
   const categoryId = categoryMapping[subject];
   if (!categoryId) {
-    console.warn(`No mapping found for PathPrimer subject: ${subject} in category: ${category}`);
+    console.warn(`No mapping found for educational content subject: ${subject} in category: ${category}`);
     return null;
   }
 
@@ -68,7 +68,7 @@ export function getCategoryDisplayInfo(category: string, subject: string): {
   displayName: string;
   hasMapping: boolean;
 } {
-  const categoryId = getCategoryIdFromPathPrimer(category, subject);
+  const categoryId = getCategoryIdFromContent(category, subject);
   
   return {
     categoryId,

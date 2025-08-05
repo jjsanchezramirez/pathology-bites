@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Images feature provides comprehensive image management for the Pathology Bites application, including upload, organization, search, analytics, and cleanup functionality.
+The Images feature provides comprehensive image management for the Pathology Bites application, with R2-optimized storage, smart caching, and advanced analytics. All content images are served from Cloudflare R2 for zero-egress cost optimization.
 
 ## 📁 Structure
 
@@ -30,12 +30,12 @@ src/features/images/
 
 ## 🎯 Key Features
 
-### Storage Management
-- **Real-time statistics**: Total images, storage used, unused images (uploaded only)
-- **Storage limits**: 1GB Supabase free tier monitoring (excludes external images)
-- **Auto-compression**: Images >1MB automatically compressed
-- **Cleanup tools**: Batch deletion of unused images
-- **External exclusion**: All analytics exclude external images from calculations
+### R2-Optimized Storage
+- **Cloudflare R2 Integration**: All content images served from R2 CDN
+- **Zero Egress Costs**: No bandwidth charges for image delivery
+- **Smart Caching**: Client-side caching with configurable TTL
+- **Unoptimized Strategy**: Images served directly to avoid Vercel transformation costs
+- **Global CDN**: Fast worldwide delivery via Cloudflare network
 
 ### Image Operations
 - **Upload**: Single/multiple files with drag & drop

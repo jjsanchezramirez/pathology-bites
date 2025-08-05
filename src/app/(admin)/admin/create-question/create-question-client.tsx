@@ -14,7 +14,7 @@ import { FileText, Brain, Image as ImageIcon, Eye, Upload, ChevronLeft } from 'l
 import { Button } from '@/shared/components/ui/button'
 import { SessionStatusIndicator } from '@/shared/components/auth/session-status-indicator'
 
-interface PathPrimerContent {
+interface EducationalContent {
   category: string
   subject: string
   lesson: string
@@ -58,7 +58,7 @@ const STORAGE_KEY = 'create-question-state'
 
 export function CreateQuestionClient() {
   const [activeTab, setActiveTab] = useState('content')
-  const [selectedContent, setSelectedContent] = useState<PathPrimerContent | null>(null)
+  const [selectedContent, setSelectedContent] = useState<EducationalContent | null>(null)
   const [generatedQuestion, setGeneratedQuestion] = useState<GeneratedQuestion | null>(null)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [attachedImages, setAttachedImages] = useState<ImageAttachment[]>([])
@@ -111,7 +111,7 @@ export function CreateQuestionClient() {
     }
   }, [hasUnsavedChanges])
 
-  const handleContentSelect = (content: PathPrimerContent) => {
+  const handleContentSelect = (content: EducationalContent) => {
     setSelectedContent(content)
     setActiveTab('generate')
     setHasUnsavedChanges(true)
@@ -200,7 +200,7 @@ export function CreateQuestionClient() {
         <TabsContent value="content" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Select PathPrimer Content</CardTitle>
+              <CardTitle>Select Educational Content</CardTitle>
             </CardHeader>
             <CardContent>
               <ErrorBoundary>

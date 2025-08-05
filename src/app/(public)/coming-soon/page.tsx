@@ -87,7 +87,7 @@ export default function ComingSoonPage() {
                 
               {/* Subscription Form */}
               <div className="mt-8">
-                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto lg:mx-0">
+                <form onSubmit={handleSubmit} noValidate className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto lg:mx-0">
                   <div className="flex items-center rounded-full bg-white p-2 pl-4 shadow-xs border border-gray-100 grow">
                     <span className="sr-only">
                       <Label htmlFor="email-input">Email address</Label>
@@ -108,7 +108,6 @@ export default function ComingSoonPage() {
                       placeholder="email@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      required
                       className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm grow"
                       aria-label="Email address"
                     />

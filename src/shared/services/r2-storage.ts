@@ -5,7 +5,7 @@
  * Provides S3-compatible API for image upload, deletion, and management.
  */
 
-import { S3Client, PutObjectCommand, DeleteObjectCommand, DeleteObjectsCommand, HeadObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, DeleteObjectCommand, DeleteObjectsCommand, HeadObjectCommand, ListObjectsV2Command, CopyObjectCommand } from '@aws-sdk/client-s3'
 
 // R2 Configuration - Load dynamically to support scripts
 function getR2Config() {
@@ -57,6 +57,23 @@ export interface R2FileInfo {
   exists: boolean
 }
 
+export interface R2FileListItem {
+  key: string
+  url: string
+  size: number
+  lastModified: Date
+  contentType?: string
+  etag?: string
+}
+
+export interface R2ListResult {
+  files: R2FileListItem[]
+  totalCount: number
+  isTruncated: boolean
+  nextContinuationToken?: string
+  prefix?: string
+}
+
 /**
  * Upload file to R2 storage
  */
@@ -104,17 +121,20 @@ export async function uploadToR2(
 /**
  * Delete single file from R2 storage
  */
-export async function deleteFromR2(key: string): Promise<void> {
+export async function deleteFromR2(key: string, bucket?: string): Promise<void> {
   try {
     const config = getR2Config()
     const r2Client = createR2Client()
 
+    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME
+
     const command = new DeleteObjectCommand({
-      Bucket: config.CLOUDFLARE_R2_BUCKET_NAME,
+      Bucket: bucketName,
       Key: key
     })
 
     await r2Client.send(command)
+    console.log(`Successfully deleted ${key} from R2 bucket ${bucketName}`)
   } catch (error) {
     console.error('R2 delete error:', error)
     throw new Error(`Failed to delete from R2: ${error}`)
@@ -212,10 +232,19 @@ export async function getR2FileInfo(key: string): Promise<R2FileInfo | null> {
 
 /**
  * Generate R2 public URL for a given key
+ * Returns public URL for public buckets, or indicates private access needed
  */
-export function getR2PublicUrl(key: string): string {
+export function getR2PublicUrl(key: string, bucket?: string): string {
   const config = getR2Config()
-  return `${config.CLOUDFLARE_R2_PUBLIC_URL}/${key}`
+  const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME
+
+  // Only pathology-bites-images has public access
+  if (bucketName === 'pathology-bites-images') {
+    return `${config.CLOUDFLARE_R2_PUBLIC_URL}/${key}`
+  }
+
+  // For private buckets, return a placeholder that indicates signed URL needed
+  return `[PRIVATE:${bucketName}]${key}`
 }
 
 /**
@@ -243,10 +272,141 @@ export function generateImageStoragePath(filename: string, category: string): st
 }
 
 /**
+ * List files in R2 storage with pagination support
+ */
+export async function listR2Files(options: {
+  prefix?: string
+  maxKeys?: number
+  continuationToken?: string
+  bucket?: string
+} = {}): Promise<R2ListResult> {
+  try {
+    const config = getR2Config()
+    const r2Client = createR2Client()
+
+    // Use provided bucket or default to configured bucket
+    const bucketName = options.bucket || config.CLOUDFLARE_R2_BUCKET_NAME
+
+    const command = new ListObjectsV2Command({
+      Bucket: bucketName,
+      Prefix: options.prefix,
+      MaxKeys: Math.min(options.maxKeys || 1000, 1000), // AWS S3 limit is 1000
+      ContinuationToken: options.continuationToken
+    })
+
+    const response = await r2Client.send(command)
+
+    const files: R2FileListItem[] = (response.Contents || []).map(object => ({
+      key: object.Key || '',
+      url: getR2PublicUrl(object.Key || '', bucketName),
+      size: object.Size || 0,
+      lastModified: object.LastModified || new Date(),
+      etag: object.ETag
+    }))
+
+    return {
+      files,
+      totalCount: response.KeyCount || 0,
+      isTruncated: response.IsTruncated || false,
+      nextContinuationToken: response.NextContinuationToken,
+      prefix: options.prefix
+    }
+  } catch (error) {
+    console.error('R2 list files error:', error)
+    throw new Error(`Failed to list R2 files: ${error}`)
+  }
+}
+
+/**
  * Generate storage path for data files
  */
 export function generateDataStoragePath(filename: string): string {
   return `data/${filename}`
+}
+
+/**
+ * Copy an object within R2 storage
+ */
+export async function copyR2Object(sourceKey: string, destinationKey: string, sourceBucket?: string, destinationBucket?: string): Promise<void> {
+  try {
+    const config = getR2Config()
+    const r2Client = createR2Client()
+
+    const srcBucket = sourceBucket || config.CLOUDFLARE_R2_BUCKET_NAME
+    const destBucket = destinationBucket || config.CLOUDFLARE_R2_BUCKET_NAME
+
+    const command = new CopyObjectCommand({
+      Bucket: destBucket,
+      CopySource: `${srcBucket}/${sourceKey}`,
+      Key: destinationKey
+    })
+
+    await r2Client.send(command)
+    console.log(`Successfully copied ${sourceKey} to ${destinationKey}`)
+  } catch (error) {
+    console.error('R2 copy error:', error)
+    throw new Error(`Failed to copy R2 object: ${error}`)
+  }
+}
+
+/**
+ * Move an object within R2 storage (copy then delete)
+ */
+export async function moveR2Object(sourceKey: string, destinationKey: string, bucket?: string): Promise<void> {
+  try {
+    // First copy the object
+    await copyR2Object(sourceKey, destinationKey, bucket, bucket)
+
+    // Then delete the original
+    await deleteFromR2(sourceKey, bucket)
+
+    console.log(`Successfully moved ${sourceKey} to ${destinationKey}`)
+  } catch (error) {
+    console.error('R2 move error:', error)
+    throw new Error(`Failed to move R2 object: ${error}`)
+  }
+}
+
+/**
+ * Move multiple objects with a common prefix (folder rename)
+ */
+export async function moveR2Folder(sourcePrefix: string, destinationPrefix: string, bucket?: string): Promise<{ moved: number; errors: string[] }> {
+  try {
+    const config = getR2Config()
+    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME
+
+    // List all objects with the source prefix
+    const listResult = await listR2Files({
+      prefix: sourcePrefix,
+      maxKeys: 1000,
+      bucket: bucketName
+    })
+
+    const results = {
+      moved: 0,
+      errors: [] as string[]
+    }
+
+    // Move each file
+    for (const file of listResult.files) {
+      try {
+        // Calculate new key by replacing the prefix
+        const newKey = file.key.replace(sourcePrefix, destinationPrefix)
+        await moveR2Object(file.key, newKey, bucketName)
+        results.moved++
+      } catch (error) {
+        const errorMsg = `Failed to move ${file.key}: ${error}`
+        console.error(errorMsg)
+        results.errors.push(errorMsg)
+      }
+    }
+
+    console.log(`Folder move completed: ${results.moved} files moved, ${results.errors.length} errors`)
+    return results
+  } catch (error) {
+    console.error('R2 folder move error:', error)
+    throw new Error(`Failed to move R2 folder: ${error}`)
+  }
 }
 
 export default {
@@ -256,6 +416,10 @@ export default {
   getFileInfo: getR2FileInfo,
   getPublicUrl: getR2PublicUrl,
   extractKeyFromUrl: extractR2KeyFromUrl,
+  listFiles: listR2Files,
   generateImagePath: generateImageStoragePath,
-  generateDataPath: generateDataStoragePath
+  generateDataPath: generateDataStoragePath,
+  copyObject: copyR2Object,
+  moveObject: moveR2Object,
+  moveFolder: moveR2Folder
 }

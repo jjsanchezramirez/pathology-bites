@@ -15,15 +15,15 @@ export interface AIModel {
 
 // Helper function to determine provider from model ID
 export function getModelProvider(model: string): string {
-  if (model.startsWith('llama-') || model.startsWith('Llama-')) return 'llama'
-  if (model.startsWith('Cerebras-') || model.startsWith('cerebras-')) return 'llama'
-  if (model.startsWith('Groq-') || model.startsWith('groq-')) return 'llama'
-  if (model.startsWith('gemini-')) return 'gemini'
+  if (model.startsWith('llama-') || model.startsWith('Llama-')) return 'groq'
+  if (model.startsWith('Cerebras-') || model.startsWith('cerebras-')) return 'groq'
+  if (model.startsWith('Groq-') || model.startsWith('groq-')) return 'groq'
+  if (model.startsWith('gemini-')) return 'google'
   if (model.startsWith('mistral-') || model.startsWith('open-mistral') || model.startsWith('open-mixtral') || model.startsWith('magistral-') || model.startsWith('ministral-')) return 'mistral'
   if (model.startsWith('deepseek-')) return 'deepseek'
   if (model.startsWith('claude-')) return 'claude'
   if (model.startsWith('gpt-')) return 'chatgpt'
-  return 'gemini' // default
+  return 'google' // default to google instead of gemini
 }
 
 // Active models (available for selection) - Prioritized for WSI Question Generator
@@ -328,8 +328,8 @@ export const DEFAULT_MODEL = 'gemini-1.5-flash'
 
 // API key configuration - All keys must be provided via environment variables
 export const API_KEYS = {
-  llama: process.env.NEXT_PUBLIC_LLAMA_API_KEY || '',
-  gemini: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '',
+  groq: process.env.NEXT_PUBLIC_LLAMA_API_KEY || '',
+  google: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '',
   claude: process.env.NEXT_PUBLIC_CLAUDE_API_KEY || '',
   chatgpt: process.env.NEXT_PUBLIC_OPENAI_API_KEY || '',
   mistral: process.env.NEXT_PUBLIC_MISTRAL_API_KEY || '',

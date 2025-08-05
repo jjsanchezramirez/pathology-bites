@@ -1,6 +1,6 @@
 # Cell Identification Quiz
 
-An interactive educational tool for learning hematologic cell identification. Users can test their knowledge across different cell categories with immediate feedback and progress tracking.
+An interactive educational tool for learning hematologic cell identification with R2-optimized image delivery and smart caching. Users can test their knowledge across different cell categories with immediate feedback and progress tracking.
 
 ## Features
 
@@ -15,6 +15,7 @@ An interactive educational tool for learning hematologic cell identification. Us
 - **Multiple choice format** with 4 options per question
 - **Immediate feedback** with detailed explanations
 - **Progress tracking** with accuracy and streak statistics
+- **Smart caching** with R2-optimized image delivery
 - **Local storage** for persistent statistics
 
 ### 📚 Educational Components
@@ -34,13 +35,15 @@ src/features/cell-quiz/
 └── README.md                   # This file
 ```
 
-## Data Source
+## Data Source & Optimization
 
-Cell data is sourced from `/data/cell-quiz-images.json`, which contains:
+Cell data is optimized for performance and cost efficiency:
+- **R2 Storage**: All data served from Cloudflare R2 private buckets
+- **Zero Egress Costs**: No bandwidth charges for image delivery
+- **Smart Caching**: Client-side caching with TTL management
 - **16 different cell types** with 538 total images
 - **Categorization** by myeloid, erythroid, peripheral blood, and bone marrow
-- **Descriptions** with educational explanations for each cell type
-- **Image paths** for all available cell images
+- **Global CDN**: Fast worldwide delivery via Cloudflare network
 
 ## Usage
 

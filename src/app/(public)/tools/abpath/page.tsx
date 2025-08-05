@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useSmartABPath } from '@/shared/hooks/use-smart-abpath';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
 import { Badge } from '@/shared/components/ui/badge';
@@ -60,9 +61,8 @@ interface ContentSpecifications {
 }
 
 export default function ABPathContentPage() {
-  const [data, setData] = useState<ContentSpecifications | null>(null);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -72,6 +72,45 @@ export default function ABPathContentPage() {
   const [showC, setShowC] = useState(true);
   const [showAR, setShowAR] = useState(true);
   const [showF, setShowF] = useState(true);
+
+  // Use smart loading hook
+  const {
+    sections: paginatedSections,
+    allSections,
+    metadata,
+    pagination,
+    isLoading: loading,
+    error: loadingError,
+    actions,
+    strategy
+  } = useSmartABPath({
+    search: debouncedSearchTerm || undefined,
+    category: selectedCategory !== 'all' ? selectedCategory : undefined,
+    showAP,
+    showCP,
+    sectionsPerPage: 7
+  });
+
+  // Create compatibility data structure
+  const data = useMemo(() => {
+    if (!metadata) return null;
+    return {
+      content_specifications: {
+        ap_sections: paginatedSections.filter(s => s.type === 'ap'),
+        cp_sections: paginatedSections.filter(s => s.type === 'cp')
+      },
+      metadata
+    };
+  }, [paginatedSections, metadata]);
+
+  // Debounce search term to reduce API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 300) // 300ms delay
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
 
   // Helper function to check if an item or its subitems match search
   const itemMatchesSearch = (item: PathologyItem, search: string): boolean => {
@@ -119,74 +158,43 @@ export default function ABPathContentPage() {
     });
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/api/tools/abpath-content-specs');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const jsonData = await response.json();
+  // Smart pagination handler
+  const handlePageChange = (page: number) => {
+    actions.loadPage(page);
+  };
 
-        // Validate the data structure
-        if (!jsonData || !jsonData.content_specifications) {
-          throw new Error('Invalid data structure in content specifications file');
-        }
-
-        setData(jsonData);
-      } catch (error) {
-        console.error('Error loading content specifications:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  // Get all available categories
+  // Get all available categories - now from all available sections
   const categories = useMemo(() => {
     if (!data) return [];
 
-    const allSections = [...data.content_specifications.ap_sections, ...data.content_specifications.cp_sections];
-    return allSections.map(section => ({
+    // For now, we'll need to build categories from what we can see
+    // This could be enhanced by adding a separate endpoint for all categories
+    const visibleSections = paginatedSections;
+    return visibleSections.map(section => ({
       value: `${section.type.toUpperCase()}_${section.section}`,
       label: `${section.type.toUpperCase()} ${section.section}: ${section.title}`,
       title: section.title
     }));
-  }, [data]);
+  }, [data, paginatedSections]);
 
-  // Filter and search logic
+  // Filter and search logic - now works with paginated sections
   const filteredData = useMemo(() => {
-    if (!data) return [];
+    // Check if user has deselected all section types (AP & CP)
+    if (!showAP && !showCP) return [];
+    
+    // Check if user has deselected all designations (C, AR, F)
+    if (!showC && !showAR && !showF) return [];
+    
+    // Server-side filtering handles type, category, and search filters
+    // Client-side filtering only handles designation filters (C, AR, F)
+    
+    if (!paginatedSections.length) return [];
 
-    let sections: PathologySection[] = [];
-
-    // Filter by section type (AP/CP)
-    if (showAP && showCP) {
-      sections = [...data.content_specifications.ap_sections, ...data.content_specifications.cp_sections];
-    } else if (showAP) {
-      sections = data.content_specifications.ap_sections;
-    } else if (showCP) {
-      sections = data.content_specifications.cp_sections;
-    } else {
-      sections = []; // Neither AP nor CP selected
-    }
-
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      const [type, sectionNum] = selectedCategory.split('_');
-      sections = sections.filter(section =>
-        section.type.toUpperCase() === type && section.section.toString() === sectionNum
-      );
-    }
-
-    // Apply search and designation filters
-    sections = sections.map(section => {
+    const sections = paginatedSections.map(section => {
       const filteredSection = { ...section };
 
       if (section.items) {
-        filteredSection.items = filterItems(section.items, searchTerm);
+        filteredSection.items = filterItems(section.items, ''); // No search term needed, server handles it
       }
 
       if (section.subsections) {
@@ -194,14 +202,14 @@ export default function ABPathContentPage() {
           const filteredSubsection = { ...subsection };
 
           if (subsection.items) {
-            filteredSubsection.items = filterItems(subsection.items, searchTerm);
+            filteredSubsection.items = filterItems(subsection.items, '');
           }
 
           if (subsection.sections) {
-            filteredSubsection.sections = subsection.sections.map(subSection => ({
+            filteredSubsection.sections = subsection.sections.map((subSection: any) => ({
               ...subSection,
-              items: subSection.items ? filterItems(subSection.items, searchTerm) : undefined
-            })).filter(subSection => !subSection.items || subSection.items.length > 0);
+              items: subSection.items ? filterItems(subSection.items, '') : undefined
+            })).filter((subSection: any) => !subSection.items || subSection.items.length > 0);
           }
 
           return filteredSubsection;
@@ -215,15 +223,17 @@ export default function ABPathContentPage() {
     }).filter(section =>
       (section.items && section.items.length > 0) ||
       (section.subsections && section.subsections.length > 0) ||
-      (!searchTerm && showC && showAR && showF && selectedCategory === 'all') // Keep sections without items if no filters
+      (showC && showAR && showF) // Keep sections without items if no designation filters
     );
 
     return sections;
-  }, [data, searchTerm, showAP, showCP, showC, showAR, showF, selectedCategory, filterItems]);
+  }, [paginatedSections, showC, showAR, showF, filterItems]);
 
-  // Statistics calculation
+  // Accurate statistics calculation using full dataset
   const stats = useMemo(() => {
-    if (!data) return { totalVisible: 0, totalAll: 0, cCount: 0, arCount: 0, fCount: 0, totalPercentage: 0, cPercentage: 0, arPercentage: 0, fPercentage: 0 };
+    const defaultStats = { totalVisible: 0, totalAll: 0, cCount: 0, arCount: 0, fCount: 0, totalPercentage: 0, cPercentage: 0, arPercentage: 0, fPercentage: 0 };
+    
+    if (!allSections.length) return defaultStats;
 
     const countItems = (items: PathologyItem[]): { total: number; c: number; ar: number; f: number } => {
       let total = 0, c = 0, ar = 0, f = 0;
@@ -284,18 +294,7 @@ export default function ABPathContentPage() {
       return counts;
     };
 
-    // Count visible items (filtered)
-    const visibleCounts = filteredData.reduce((acc, section) => {
-      const sectionCounts = countSection(section);
-      acc.total += sectionCounts.total;
-      acc.c += sectionCounts.c;
-      acc.ar += sectionCounts.ar;
-      acc.f += sectionCounts.f;
-      return acc;
-    }, { total: 0, c: 0, ar: 0, f: 0 });
-
-    // Count all items (unfiltered)
-    const allSections = [...data.content_specifications.ap_sections, ...data.content_specifications.cp_sections];
+    // Count ALL items from full dataset (never changes)
     const allCounts = allSections.reduce((acc, section) => {
       const sectionCounts = countSection(section);
       acc.total += sectionCounts.total;
@@ -304,6 +303,70 @@ export default function ABPathContentPage() {
       acc.f += sectionCounts.f;
       return acc;
     }, { total: 0, c: 0, ar: 0, f: 0 });
+
+    // Apply user filters to determine what's visible
+    let visibleSections = allSections;
+    
+    // Filter by section type (AP/CP)
+    if (!showAP && !showCP) {
+      visibleSections = [];
+    } else if (!showAP) {
+      visibleSections = visibleSections.filter(s => s.type === 'cp');
+    } else if (!showCP) {
+      visibleSections = visibleSections.filter(s => s.type === 'ap');
+    }
+
+    // Apply same server-side filters (search, category)
+    if (debouncedSearchTerm) {
+      const searchLower = debouncedSearchTerm.toLowerCase();
+      visibleSections = visibleSections.filter(section => {
+        const titleMatch = section.title.toLowerCase().includes(searchLower);
+        const noteMatch = section.note?.toLowerCase().includes(searchLower);
+        // Add content search logic here if needed
+        return titleMatch || noteMatch;
+      });
+    }
+
+    if (selectedCategory !== 'all') {
+      const [filterType, sectionNum] = selectedCategory.split('_');
+      if (filterType && sectionNum) {
+        visibleSections = visibleSections.filter(section =>
+          section.type.toUpperCase() === filterType.toUpperCase() && 
+          section.section.toString() === sectionNum
+        );
+      }
+    }
+
+    // Count visible items and apply designation filters
+    const visibleCounts = visibleSections.reduce((acc, section) => {
+      const sectionCounts = countSection(section);
+      
+      // Apply designation filters
+      if (showC) acc.c += sectionCounts.c;
+      if (showAR) acc.ar += sectionCounts.ar;
+      if (showF) acc.f += sectionCounts.f;
+      
+      // Total visible includes all items from visible sections, then filtered by designations
+      let sectionVisibleTotal = 0;
+      if (showC) sectionVisibleTotal += sectionCounts.c;
+      if (showAR) sectionVisibleTotal += sectionCounts.ar;
+      if (showF) sectionVisibleTotal += sectionCounts.f;
+      // Add items without designations if any designation is shown
+      if (showC || showAR || showF) {
+        sectionVisibleTotal += (sectionCounts.total - sectionCounts.c - sectionCounts.ar - sectionCounts.f);
+      }
+      
+      acc.total += sectionVisibleTotal;
+      return acc;
+    }, { total: 0, c: 0, ar: 0, f: 0 });
+
+    // If no designations are selected, show 0
+    if (!showC && !showAR && !showF) {
+      visibleCounts.total = 0;
+      visibleCounts.c = 0;
+      visibleCounts.ar = 0;
+      visibleCounts.f = 0;
+    }
 
     const totalVisible = visibleCounts.total;
     const totalAll = allCounts.total;
@@ -322,7 +385,7 @@ export default function ABPathContentPage() {
       arPercentage: totalVisible > 0 ? Math.round((arCount / totalVisible) * 100) : 0,
       fPercentage: totalVisible > 0 ? Math.round((fCount / totalVisible) * 100) : 0
     };
-  }, [filteredData, data]);
+  }, [allSections, showAP, showCP, showC, showAR, showF, debouncedSearchTerm, selectedCategory]);
 
   // PDF generation function
   const generatePDF = async () => {
@@ -510,7 +573,7 @@ export default function ABPathContentPage() {
     );
   }
 
-  if (!data) {
+  if (loadingError) {
     return (
       <div className="flex min-h-screen flex-col">
         {/* Hero Section */}
@@ -523,7 +586,35 @@ export default function ABPathContentPage() {
         <section className="flex-1 py-12">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="text-center py-8">
-              <p className="text-red-600">Error loading content specifications. Please try again later.</p>
+              <p className="text-red-600">Error loading content specifications: {loadingError.message}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="mt-4"
+                variant="outline"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        {/* Hero Section */}
+        <PublicHero
+          title="ABPath Content Specifications"
+          description="Interactive ABPath content specifications with filtering by section, category, and designation."
+        />
+
+        {/* Loading Content */}
+        <section className="flex-1 py-12">
+          <div className="container mx-auto px-4 max-w-7xl">
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Loading content specifications...</p>
             </div>
           </div>
         </section>
@@ -546,6 +637,12 @@ export default function ABPathContentPage() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{data.metadata.ap_sections} AP • {data.metadata.cp_sections} CP</span>
             </div>
+            {strategy && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>•</span>
+                <span className="capitalize">{strategy.replace('-', ' ')}</span>
+              </div>
+            )}
           </div>
         }
       />
@@ -647,6 +744,7 @@ export default function ABPathContentPage() {
                   </Button>
                 )}
 
+
                 {/* PDF Export */}
                 <Button
                   onClick={generatePDF}
@@ -668,7 +766,7 @@ export default function ABPathContentPage() {
                   <div className="text-xs text-gray-500">Visible Items</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-slate-500">{stats.totalAll}</div>
+                  <div className="text-2xl font-bold text-slate-700">{stats.totalAll}</div>
                   <div className="text-xs text-gray-500">Total Items</div>
                 </div>
                 <div>
@@ -755,19 +853,19 @@ export default function ABPathContentPage() {
                                 {/* Subsection direct items */}
                                 {subsection.items && subsection.items.length > 0 && (
                                   <div className="mb-3">
-                                    {subsection.items.map(item => renderItem(item, 0, subsectionKey))}
+                                    {subsection.items.map((item: any) => renderItem(item, 0, subsectionKey))}
                                   </div>
                                 )}
 
                                 {/* Subsection sections */}
-                                {subsection.sections && subsection.sections.map((subSection, subSectionIndex) => (
+                                {subsection.sections && subsection.sections.map((subSection: any, subSectionIndex: number) => (
                                   <div key={`${subsectionKey}-section-${subSectionIndex}`} className="mb-3 last:mb-0">
                                     <div className="font-medium text-sm text-gray-600 mb-1 pl-2 border-l-2 border-gray-200">
                                       {subSection.title}
                                     </div>
                                     {subSection.items && subSection.items.length > 0 && (
                                       <div className="ml-4">
-                                        {subSection.items.map(item => renderItem(item, 0, `${subsectionKey}-section-${subSectionIndex}`))}
+                                        {subSection.items.map((item: any) => renderItem(item, 0, `${subsectionKey}-section-${subSectionIndex}`))}
                                       </div>
                                     )}
                                   </div>
@@ -782,6 +880,71 @@ export default function ABPathContentPage() {
                 ))
               )}
             </div>
+
+            {/* Pagination Controls */}
+            {pagination.totalPages > 1 && (
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <span>
+                    Page {pagination.currentPage} of {pagination.totalPages}
+                  </span>
+                  <span>•</span>
+                  <span>
+                    {pagination.totalSections} sections total
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.currentPage - 1)}
+                    disabled={!pagination.hasPrevPage || loading}
+                  >
+                    Previous
+                  </Button>
+                  
+                  {/* Page numbers */}
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (pagination.totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else {
+                        const start = Math.max(1, pagination.currentPage - 2);
+                        const end = Math.min(pagination.totalPages, start + 4);
+                        const adjustedStart = Math.max(1, end - 4);
+                        pageNum = adjustedStart + i;
+                      }
+                      
+                      if (pageNum > pagination.totalPages) return null;
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={pageNum === pagination.currentPage ? "default" : "outline"}
+                          size="sm"
+                          className="w-8 h-8 p-0"
+                          onClick={() => handlePageChange(pageNum)}
+                          disabled={loading}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    }).filter(Boolean)}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                    disabled={!pagination.hasNextPage || loading}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>

@@ -66,11 +66,11 @@ async function generateQuestionMultiStep(category?: string): Promise<GeneratedQu
     // Determine base URL for internal API calls
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
-    // Step 1: Select WSI
-    console.log('[WSI Generator] Step 1 - Selecting WSI...')
+    // Step 1: Select WSI using metadata API
+    console.log('[WSI Generator] Step 1 - Selecting WSI via metadata API...')
     const wsiUrl = category && category !== 'all'
-      ? `${baseUrl}/api/tools/wsi-question-generator/select-wsi?category=${encodeURIComponent(category)}`
-      : `${baseUrl}/api/tools/wsi-question-generator/select-wsi`
+      ? `${baseUrl}/api/tools/wsi-question-generator/wsi-metadata?category=${encodeURIComponent(category)}`
+      : `${baseUrl}/api/tools/wsi-question-generator/wsi-metadata`
 
     const wsiResponse = await fetch(wsiUrl, {
       headers: {
@@ -90,25 +90,16 @@ async function generateQuestionMultiStep(category?: string): Promise<GeneratedQu
     const selectedWSI = wsiData.wsi
     console.log(`[WSI Generator] Selected WSI - ${selectedWSI.diagnosis}`)
 
-    // Step 2: Find context
-    console.log('[WSI Generator] Step 2 - Finding context...')
-    const contextResponse = await fetch(`${baseUrl}/api/tools/wsi-question-generator/find-context`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        diagnosis: selectedWSI.diagnosis
-      })
-    })
-
-    if (!contextResponse.ok) {
-      throw new Error(`Context search failed: ${contextResponse.status} ${contextResponse.statusText}`)
-    }
-
-    const contextData = await contextResponse.json()
-    if (!contextData.success) {
-      throw new Error('Failed to find context')
+    // Step 2: Context search now happens client-side (ZERO API calls)
+    console.log('[WSI Generator] Step 2 - Context search moved to client-side')
+    console.log('[WSI Generator] No server-side context search needed - all client-side now!')
+    
+    // Mock context data for server-side WSI generation (if needed)
+    // In practice, context search should happen client-side before calling this API
+    const contextData = {
+      success: true,
+      context: null, // Client will handle context search
+      shouldReject: false
     }
 
     const context = contextData.context

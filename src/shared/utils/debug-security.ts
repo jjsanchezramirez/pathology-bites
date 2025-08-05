@@ -10,8 +10,7 @@ import React from 'react'
 type UserRole = 'admin' | 'creator' | 'reviewer' | 'user'
 
 // Build-time compilation flags
-const DEBUG_ENABLED = process.env.NODE_ENV !== 'production' && 
-                     process.env.NEXT_PUBLIC_DEBUG_MODE !== 'false'
+const DEBUG_ENABLED = process.env.NODE_ENV !== 'production'
 
 const STAGING_DEBUG_ENABLED = process.env.NODE_ENV === 'development' || 
                              process.env.VERCEL_ENV === 'preview' ||

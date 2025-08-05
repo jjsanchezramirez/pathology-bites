@@ -12,7 +12,7 @@ export const R2_PUBLIC_URLS = {
   NLM_JOURNAL_ABBREVIATIONS_JSON: '',
   CONTEXT_DATA_URL: '',
   PATHOLOGY_BITES_IMAGES_URL: 's',
-  PATHPRIMER_DATA: '',
+  EDUCATIONAL_CONTENT_DATA: '',
   IMAGES: '',
 } as const
 
@@ -136,10 +136,10 @@ export const r2DirectAccess = {
 
 
   /**
-   * Fetch PathPrimer data directly from R2
+   * Fetch educational content data directly from R2
    */
-  async getPathPrimerData(filename: string, options: CacheOptions = {}) {
-    const url = `${R2_PUBLIC_URLS.PATHPRIMER_DATA}/${filename}`
+  async getEducationalContentData(filename: string, options: CacheOptions = {}) {
+    const url = `${R2_PUBLIC_URLS.EDUCATIONAL_CONTENT_DATA}/${filename}`
     return r2Cache.fetch(url, {
       ttl: 30 * 60 * 1000, // 30 minutes (educational content is stable)
       staleWhileRevalidate: 10 * 60 * 1000, // 10 minutes

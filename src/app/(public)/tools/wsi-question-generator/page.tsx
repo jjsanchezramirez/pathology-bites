@@ -3,6 +3,7 @@
 import { Brain, Microscope } from 'lucide-react'
 import { PublicHero } from '@/shared/components/common/public-hero'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
+import { ContentDisclaimer } from '@/shared/components/common/content-disclaimer'
 import { WSIQuestionGenerator } from '@/shared/components/features/wsi-question-generator'
 
 export default function WSIQuestionGeneratorPage() {
@@ -32,6 +33,8 @@ export default function WSIQuestionGeneratorPage() {
           <WSIQuestionGenerator showCategoryFilter={true} />
         </div>
       </section>
+
+      <ContentDisclaimer />
 
       <JoinCommunitySection />
     </div>

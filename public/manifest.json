@@ -1,7 +1,7 @@
 {
   "name": "Pathology Bites",
   "short_name": "Pathology Bites",
-  "description": "Interactive pathology learning platform featuring virtual microscopy slides, cell identification tools, and educational resources for medical students and professionals.",
+  "description": "Advanced pathology education platform with smart caching, interactive tools, and comprehensive learning resources optimized for medical professionals worldwide.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -9,7 +9,7 @@
   "orientation": "any",
   "scope": "/",
   "lang": "en",
-  "categories": ["education", "medical", "healthcare"],
+  "categories": ["education", "medical", "healthcare", "reference"],
   "icons": [
     {
       "src": "/icons/favicon.svg",
@@ -49,8 +49,34 @@
     {
       "name": "Virtual Slides",
       "short_name": "Slides", 
-      "description": "Explore virtual microscopy slides",
+      "description": "Explore virtual microscopy slides with R2-optimized delivery",
       "url": "/tools/virtual-slides",
+      "icons": [
+        {
+          "src": "/icons/android-chrome-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Citations Manager",
+      "short_name": "Citations",
+      "description": "Smart citation generator with caching",
+      "url": "/tools/citations",
+      "icons": [
+        {
+          "src": "/icons/android-chrome-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Gene Lookup",
+      "short_name": "Genes",
+      "description": "Medical gene information with pre-loading",
+      "url": "/tools/gene-lookup",
       "icons": [
         {
           "src": "/icons/android-chrome-192x192.png",
@@ -62,7 +88,7 @@
     {
       "name": "Cell Quiz",
       "short_name": "Cells",
-      "description": "Practice cell identification",
+      "description": "Practice cell identification with smart caching",
       "url": "/tools/cell-quiz",
       "icons": [
         {

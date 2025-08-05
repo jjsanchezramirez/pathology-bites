@@ -31,12 +31,16 @@ interface VirtualSlide {
 const VIRTUAL_SLIDES_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/virtual-slides.json'
 
 // Get random WSI with repository filtering
-async function getRandomWSI(categoryFilter?: string): Promise<VirtualSlide> {
+async function getRandomWSI(categoryFilter?: string, excludeIds?: string[]): Promise<VirtualSlide> {
   try {
     console.log('[WSI Select] Loading virtual slides data from R2...')
-    const response = await fetch(VIRTUAL_SLIDES_R2_URL, {
+    // Add timestamp to prevent caching issues
+    const cacheBuster = Date.now()
+    const response = await fetch(`${VIRTUAL_SLIDES_R2_URL}?t=${cacheBuster}`, {
       headers: {
-        'Cache-Control': 'public, max-age=3600' // 1 hour cache
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       }
     })
 
@@ -77,12 +81,19 @@ async function getRandomWSI(categoryFilter?: string): Promise<VirtualSlide> {
     })
     console.log(`[WSI Select] After URL validation: ${slides.length} slides`)
 
+    // Exclude previously selected slides to avoid repetition
+    if (excludeIds && excludeIds.length > 0) {
+      slides = slides.filter(slide => !excludeIds.includes(slide.id))
+      console.log(`[WSI Select] After excluding ${excludeIds.length} previous slides: ${slides.length} slides`)
+    }
+
     if (slides.length === 0) {
       throw new Error('No suitable WSI slides found after filtering')
     }
 
-    // Select random slide
-    const randomIndex = Math.floor(Math.random() * slides.length)
+    // Improved random selection with better entropy
+    const randomSeed = Date.now() + Math.random() * 1000000
+    const randomIndex = Math.floor((randomSeed % slides.length))
     const selectedSlide = slides[randomIndex]
     
     console.log(`[WSI Select] Selected slide: ${selectedSlide.id} - ${selectedSlide.diagnosis}`)
@@ -106,10 +117,14 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
+    const excludeParam = searchParams.get('exclude')
+    const excludeIds = excludeParam ? excludeParam.split(',').filter(id => id.trim()) : []
+    
     console.log('[WSI Select] Category filter:', category)
+    console.log('[WSI Select] Excluding slide IDs:', excludeIds)
 
     // Get random WSI
-    const wsi = await getRandomWSI(category || undefined)
+    const wsi = await getRandomWSI(category || undefined, excludeIds)
     
     const selectionTime = Date.now() - startTime
     console.log(`[WSI Select] WSI selection completed in ${selectionTime}ms`)

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { PublicHero } from '@/shared/components/common/public-hero'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
+import { useSmartGeneLookup } from '@/shared/hooks/use-smart-gene-lookup'
 
 interface GeneInfo {
   hgncId: string
@@ -32,31 +33,21 @@ interface GeneInfo {
 
 export default function GeneLookupPage() {
   const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [geneInfo, setGeneInfo] = useState<GeneInfo | null>(null)
-  const [error, setError] = useState<string | null>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [searchHistory, setSearchHistory] = useState<GeneInfo[]>([])
+  
+  const { lookupGene, isLoading, error } = useSmartGeneLookup()
 
   const fetchGeneInformation = async () => {
     if (!input.trim()) {
-      setError('Please enter a gene name before searching.')
       return
     }
 
-    setIsLoading(true)
-    setError(null)
     setGeneInfo(null)
 
     try {
-      const response = await fetch(`/api/tools/gene-lookup?symbol=${encodeURIComponent(input.trim())}`)
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to fetch gene information')
-      }
-
-      const geneInfo = result.data
+      const geneInfo = await lookupGene(input.trim())
       setGeneInfo(geneInfo)
 
       // Add to search history (keep last 5)
@@ -67,9 +58,7 @@ export default function GeneLookupPage() {
 
     } catch (error) {
       console.error('Error fetching gene information:', error)
-      setError(error instanceof Error ? error.message : 'Failed to fetch gene information. Please try again.')
-    } finally {
-      setIsLoading(false)
+      // Error is already handled by the hook
     }
   }
 
@@ -284,7 +273,6 @@ export default function GeneLookupPage() {
                         onClick={() => {
                           setInput(gene.geneName)
                           setGeneInfo(gene)
-                          setError(null)
                         }}
                         className="text-xs"
                       >

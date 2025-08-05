@@ -11,7 +11,7 @@ interface BatchTestRequest {
   models: string[]
   prompt: string
   instructions?: string
-  pathprimerContext?: string
+  educationalContext?: string
 }
 
 interface ModelTestResult {
@@ -30,7 +30,7 @@ interface ModelTestResult {
 export async function POST(request: NextRequest) {
   try {
     const body: BatchTestRequest = await request.json()
-    const { models, prompt, instructions, pathprimerContext } = body
+    const { models, prompt, instructions, educationalContext } = body
 
     // Validate required fields
     if (!models || !Array.isArray(models) || models.length === 0) {
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       
       try {
         const provider = getModelProvider(modelId)
-        const result = await testSingleModel(modelId, provider, prompt, instructions, pathprimerContext)
+        const result = await testSingleModel(modelId, provider, prompt, instructions, educationalContext)
         
         results.push({
           modelId,
@@ -109,7 +109,7 @@ async function testSingleModel(
   provider: string, 
   prompt: string, 
   instructions?: string, 
-  pathprimerContext?: string
+  educationalContext?: string
 ) {
   // Get API key from environment
   const apiKeys = {
@@ -136,7 +136,7 @@ async function testSingleModel(
       model: modelId,
       prompt,
       instructions: instructions || 'Provide a clear, concise response.',
-      pathprimerContext: pathprimerContext || undefined
+      educationalContext: educationalContext || undefined
     })
   })
 

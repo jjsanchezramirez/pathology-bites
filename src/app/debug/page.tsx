@@ -16,7 +16,8 @@ import {
   Settings,
   Server,
   Bot,
-  Palette
+  Palette,
+  HardDrive
 } from 'lucide-react'
 
 // Import tab components
@@ -26,6 +27,7 @@ import { ToolsTab } from '@/features/debug/components/tools-tab'
 import { SystemTab } from '@/features/debug/components/system-tab'
 import { AiModelsTab } from '@/features/debug/components/ai-models-tab'
 import { UiComponentsTab } from '@/features/debug/components/ui-components-tab'
+import { R2StorageTab } from '@/features/debug/components/r2-storage-tab'
 
 function UnifiedDebugInterface() {
   const [activeTab, setActiveTab] = useState('api-tests')
@@ -68,7 +70,7 @@ function UnifiedDebugInterface() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="api-tests" className="flex items-center space-x-2">
               <TestTube className="h-4 w-4" />
               <span className="hidden sm:inline">API Tests</span>
@@ -76,6 +78,10 @@ function UnifiedDebugInterface() {
             <TabsTrigger value="database" className="flex items-center space-x-2">
               <Database className="h-4 w-4" />
               <span className="hidden sm:inline">Database</span>
+            </TabsTrigger>
+            <TabsTrigger value="r2-storage" className="flex items-center space-x-2">
+              <HardDrive className="h-4 w-4" />
+              <span className="hidden sm:inline">Cloudflare R2</span>
             </TabsTrigger>
             <TabsTrigger value="ai-models" className="flex items-center space-x-2">
               <Bot className="h-4 w-4" />
@@ -101,6 +107,10 @@ function UnifiedDebugInterface() {
 
           <TabsContent value="database">
             <DatabaseTab />
+          </TabsContent>
+
+          <TabsContent value="r2-storage">
+            <R2StorageTab />
           </TabsContent>
 
           <TabsContent value="ai-models">

@@ -37,7 +37,7 @@ interface VirtualSlide {
   updated_at: string
 }
 
-interface PathPresenterContent {
+interface EducationalContent {
   category: string
   subject: string
   lesson: string
@@ -96,7 +96,7 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
 
 
 // Generate question using AI
-async function generateQuestion(wsi: VirtualSlide, context: PathPresenterContent | null, modelId?: string): Promise<{ questionData: QuestionData; debug: any; modelUsed: string; tokenUsage?: any }> {
+async function generateQuestion(wsi: VirtualSlide, context: EducationalContent | null, modelId?: string): Promise<{ questionData: QuestionData; debug: any; modelUsed: string; tokenUsage?: any }> {
   try {
     console.log('[Question Gen] Starting AI question generation')
 
@@ -158,7 +158,7 @@ CRITICAL: You must return ONLY valid JSON in the exact format below. Do not incl
   "references": ["Relevant pathology textbook or journal citation", "Additional authoritative reference"]
 }`
 
-    // Prepare comprehensive prompt with WSI and PathPrimer content (matching admin quality)
+    // Prepare comprehensive prompt with WSI and educational content (matching admin quality)
     const prompt = `Create a board-style pathology multiple-choice question based on the following comprehensive content:
 
 **VIRTUAL SLIDE CASE INFORMATION:**
@@ -172,7 +172,7 @@ Patient Age: ${wsi.age || 'Not specified'}
 Patient Gender: ${wsi.gender || 'Not specified'}
 Staining: ${wsi.stain_type || 'H&E'}
 
-${context ? `**EDUCATIONAL REFERENCE CONTENT (PathPrimer Database):**
+${context ? `**EDUCATIONAL REFERENCE CONTENT:**
 Medical Category: ${context.category}
 Subject Area: ${context.subject}
 Lesson Module: ${context.lesson}
@@ -284,22 +284,87 @@ The virtual slide images will be displayed to the user, so do not describe micro
 
       // Try multiple JSON extraction strategies
       const strategies = [
-        // Strategy 1: Look for complete JSON object
+        // Strategy 1: Smart brace counting (handles extra content after JSON)
         () => {
-          const match = generatedText.match(/\{[\s\S]*\}/)
-          return match ? match[0] : null
+          const firstBrace = generatedText.indexOf('{')
+          if (firstBrace === -1) return null
+          
+          let braceCount = 0
+          let i = firstBrace
+          let inString = false
+          let escapeNext = false
+          
+          while (i < generatedText.length) {
+            const char = generatedText[i]
+            
+            if (escapeNext) {
+              escapeNext = false
+            } else if (char === '\\' && inString) {
+              escapeNext = true
+            } else if (char === '"' && !escapeNext) {
+              inString = !inString
+            } else if (!inString) {
+              if (char === '{') {
+                braceCount++
+              } else if (char === '}') {
+                braceCount--
+                if (braceCount === 0) {
+                  return generatedText.substring(firstBrace, i + 1)
+                }
+              }
+            }
+            i++
+          }
+          return null
         },
         // Strategy 2: Look for JSON between code blocks
         () => {
           const match = generatedText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/)
           return match ? match[1] : null
         },
-        // Strategy 3: Look for JSON after specific markers
+        // Strategy 3: Look for JSON after specific markers with proper ending
         () => {
-          const match = generatedText.match(/(?:json|JSON|response):\s*(\{[\s\S]*\})/)
-          return match ? match[1] : null
+          const afterMatch = generatedText.match(/(?:json|JSON|response|answer):\s*([\s\S]*)/)
+          if (afterMatch) {
+            const content = afterMatch[1]
+            const firstBrace = content.indexOf('{')
+            if (firstBrace === -1) return null
+            
+            let braceCount = 0
+            let i = firstBrace
+            let inString = false
+            let escapeNext = false
+            
+            while (i < content.length) {
+              const char = content[i]
+              
+              if (escapeNext) {
+                escapeNext = false
+              } else if (char === '\\' && inString) {
+                escapeNext = true
+              } else if (char === '"' && !escapeNext) {
+                inString = !inString
+              } else if (!inString) {
+                if (char === '{') {
+                  braceCount++
+                } else if (char === '}') {
+                  braceCount--
+                  if (braceCount === 0) {
+                    return content.substring(firstBrace, i + 1)
+                  }
+                }
+              }
+              i++
+            }
+          }
+          return null
         },
-        // Strategy 4: Extract everything between first { and last }
+        // Strategy 4: Look for complete JSON object (greedy match - fallback)
+        () => {
+          const match = generatedText.match(/\{[\s\S]*\}/)
+          return match ? match[0] : null
+        },
+        // Strategy 5: Extract everything between first { and last } (last resort)
         () => {
           const firstBrace = generatedText.indexOf('{')
           const lastBrace = generatedText.lastIndexOf('}')
@@ -323,10 +388,12 @@ The virtual slide images will be displayed to the user, so do not describe micro
         throw new Error('No JSON found in AI response using any extraction strategy')
       }
 
-      // Clean the JSON string
+      // Clean the JSON string more aggressively
       jsonStr = jsonStr
         .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
         .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+        .replace(/([}\]])([^,\s}\]]*)/g, '$1') // Remove any text after closing braces/brackets
+        .replace(/}\s*[^}\s]+\s*$/g, '}') // Remove any trailing text after final closing brace
         .trim()
 
       console.log(`[Question Gen] Cleaned JSON (first 200 chars): ${jsonStr.substring(0, 200)}`)

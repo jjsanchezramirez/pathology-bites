@@ -15,6 +15,7 @@ export interface VirtualSlide {
   gender: string | null
   clinical_history: string
   stain_type: string
+  image_url?: string  // Optional for compatibility with different data sources
   preview_image_url: string
   slide_url: string
   case_url: string

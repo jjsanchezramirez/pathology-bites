@@ -67,24 +67,6 @@ export function SystemManagementPanel({
       scope: 'global',
       requiresRestart: false,
       dangerLevel: 'medium'
-    },
-    {
-      id: 'debug_mode',
-      name: 'Debug Mode',
-      description: 'Enable additional debugging features and logging',
-      enabled: process.env.NEXT_PUBLIC_DEBUG_MODE === 'true',
-      scope: 'session',
-      requiresRestart: false,
-      dangerLevel: 'low'
-    },
-    {
-      id: 'beta_features',
-      name: 'Beta Features',
-      description: 'Enable experimental features for testing',
-      enabled: process.env.NEXT_PUBLIC_ENABLE_BETA_FEATURES === 'true',
-      scope: 'session',
-      requiresRestart: false,
-      dangerLevel: 'medium'
     }
   ]
 
