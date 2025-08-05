@@ -8,35 +8,24 @@ const ROLE_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 const processingRequests = new Set<string>()
 
 export async function updateSession(request: NextRequest) {
-  // Only log in development
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[Middleware] Processing: ${request.nextUrl.pathname}`)
-  }
-
   // CRITICAL: Immediately return for all API routes to avoid interference
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('API route detected, bypassing middleware:', request.nextUrl.pathname)
-    }
     return NextResponse.next()
   }
 
-  try {
-    // Check for dev bypass first - if enabled, allow everything
-    const bypassParam = request.nextUrl.searchParams.get('bypass')
-    const isDevBypass = process.env.NODE_ENV !== 'production' && bypassParam === 'true'
-
-    if (isDevBypass) {
-      console.log(`[Middleware] Dev bypass enabled for: ${request.nextUrl.pathname}`)
+  // ULTRA-FAST: Check maintenance/coming soon modes without any setup
+  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true'
+  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
+  
+  // Skip all auth setup if not in special modes and path is admin/dashboard
+  if (!isMaintenanceMode && !isComingSoonMode) {
+    // For dashboard and admin paths, we need auth - but skip everything else
+    if (!request.nextUrl.pathname.startsWith('/dashboard') && !request.nextUrl.pathname.startsWith('/admin')) {
       return NextResponse.next()
     }
+  }
 
-    const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true'
-    const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[Middleware] Maintenance: ${isMaintenanceMode}, Coming Soon: ${isComingSoonMode}`)
-    }
+  try {
 
     // Simple redirect helper
     function redirect(pathname: string) {
@@ -46,9 +35,8 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    // Set up Supabase for auth checks (needed for debug panel protection)
+    // Set up Supabase ONLY when absolutely needed
     let supabaseResponse = NextResponse.next({ request })
-
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -68,76 +56,18 @@ export async function updateSession(request: NextRequest) {
       }
     )
 
-    // Only get user for routes that actually need authentication
-    const needsAuth = request.nextUrl.pathname.startsWith('/dashboard') || 
-                     request.nextUrl.pathname.startsWith('/admin') ||
-                     request.nextUrl.pathname.startsWith('/quiz') ||
-                     request.nextUrl.pathname.startsWith('/profile') ||
-                     request.nextUrl.pathname.startsWith('/settings')
-    
-    let user = null
-    if (needsAuth || isMaintenanceMode || isComingSoonMode) {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      user = authUser
-    }
+    // Get user for protected routes
+    const { data: { user } } = await supabase.auth.getUser()
 
-    // Special handling for debug interface - disable in production
-    if (request.nextUrl.pathname.startsWith('/debug')) {
-      if (process.env.NODE_ENV === 'production') {
-        return redirect('/404')
-      }
-    }
-
-    // Maintenance mode: block everything except essentials
-    if (isMaintenanceMode) {
-      const allowedPaths = [
-        '/maintenance',
-        '/login',
-        '/dashboard',
-        '/admin',
-        '/api/',
-        '/_next/',
-        '/favicon.ico'
-      ]
-
-      const isAllowed = request.nextUrl.pathname === '/' ||
-                       allowedPaths.some(path => request.nextUrl.pathname.startsWith(path))
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[Middleware] Path: ${request.nextUrl.pathname}, Allowed: ${isAllowed}`)
-      }
-
-      if (!isAllowed) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[Middleware] Maintenance mode blocking: ${request.nextUrl.pathname}`)
-        }
-        return redirect('/maintenance')
-      }
-    }
-
-    // Block signup paths in both coming soon and maintenance modes
-    if (isComingSoonMode || isMaintenanceMode) {
-      const signupPaths = ['/signup', '/verify-email', '/check-email', '/email-verified', '/email-already-verified']
-      const isSignupPath = signupPaths.some(path =>
-        request.nextUrl.pathname.startsWith(path)
-      )
-
-      if (isSignupPath) {
-        console.log(`[Middleware] Blocking signup path: ${request.nextUrl.pathname}`)
-        return redirect('/login')
-      }
+    // Ultra-simple maintenance mode (since matcher is now minimal)
+    if (isMaintenanceMode && !request.nextUrl.pathname.startsWith('/admin')) {
+      return redirect('/maintenance')
     }
 
 
 
-    // Protected routes that require authentication
-    const protectedPaths = ['/dashboard', '/admin', '/quiz', '/profile', '/settings']
-    const isProtectedPath = protectedPaths.some(path =>
-      request.nextUrl.pathname.startsWith(path)
-    )
-
-    // Redirect unauthenticated users from protected routes
-    if (isProtectedPath && !user) {
+    // Ultra-simple auth check (matcher only includes dashboard/admin)
+    if (!user) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       url.search = ''
@@ -150,10 +80,8 @@ export async function updateSession(request: NextRequest) {
       const userRole = await getUserRoleWithCache(user.id, user, supabase)
 
       if (userRole !== 'admin' && userRole !== 'creator' && userRole !== 'reviewer') {
-        console.log('User is not admin, creator, or reviewer, redirecting. Role:', userRole)
         return redirect('/dashboard')
       }
-      console.log('Admin/Creator/Reviewer access granted:', userRole)
     }
 
     // Redirect admin/creator/reviewer users from /dashboard to /admin/dashboard
@@ -163,33 +91,22 @@ export async function updateSession(request: NextRequest) {
         const metadataRole = user.user_metadata?.role || user.app_metadata?.role
 
         if (metadataRole === 'admin' || metadataRole === 'creator' || metadataRole === 'reviewer') {
-          console.log('Redirecting admin/creator/reviewer user from dashboard to admin dashboard (metadata)')
           return redirect('/admin/dashboard')
         }
 
         // Check database role
         const userRole = await getUserRoleWithCache(user.id, user, supabase)
         if (userRole === 'admin' || userRole === 'creator' || userRole === 'reviewer') {
-          console.log('Redirecting admin/creator/reviewer user from dashboard to admin dashboard (database)')
           return redirect('/admin/dashboard')
         }
       } catch (error) {
-        console.error('Error checking role for dashboard redirect:', error)
+        // Silent error handling
       }
     }
 
     return supabaseResponse
   } catch (error) {
-    console.error('[Middleware] Error processing request:', error)
-
-    // Handle auth timeouts gracefully
-    if (error instanceof Error && error.message.includes('timeout')) {
-      console.log('[Middleware] Auth timeout detected, allowing request to proceed')
-      return NextResponse.next()
-    }
-
-    // For other errors, allow the request to proceed to avoid breaking the app
-    console.log('[Middleware] Allowing request to proceed despite error')
+    // Silent error handling - just allow request to proceed
     return NextResponse.next()
   }
 }
@@ -233,7 +150,6 @@ async function getUserRoleWithCache(userId: string, user: any, supabase: any): P
       .single()
 
     if (error) {
-      console.error('Error fetching user role from database:', error)
       return 'user' // Default fallback
     }
 
@@ -244,7 +160,6 @@ async function getUserRoleWithCache(userId: string, user: any, supabase: any): P
 
     return dbRole
   } catch (error) {
-    console.error('Error in getUserRoleWithCache:', error)
     return 'user' // Default fallback
   } finally {
     // Remove from processing set

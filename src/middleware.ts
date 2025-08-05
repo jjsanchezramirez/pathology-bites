@@ -16,20 +16,10 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Only match paths that actually need middleware:
-     * - /dashboard/* (protected routes)
-     * - /admin/* (admin routes)
-     * - /debug/* (debug protection)
-     * - / (root for maintenance/coming soon)
-     * - /login, /signup (auth redirects)
+     * ULTRA-MINIMAL: Only match absolutely essential paths
+     * Skip most routes entirely to reduce function invocations
      */
-    '/(dashboard|admin|debug)/:path*',
-    '/',
-    '/login',
-    '/signup',
-    '/verify-email',
-    '/check-email',
-    '/email-verified',
-    '/email-already-verified'
+    '/dashboard/:path*',
+    '/admin/:path*'
   ],
 }
