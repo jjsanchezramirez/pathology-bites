@@ -110,6 +110,7 @@ export function useSmartGeneLookup(): UseSmartGeneLookupResult {
       if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL) {
         console.log(`🎯 Gene cache hit: ${normalizedSymbol}`)
         setIsLoading(false)
+        setError(null) // Ensure error is cleared on cache hit
         return cachedEntry.data
       }
 
@@ -120,7 +121,9 @@ export function useSmartGeneLookup(): UseSmartGeneLookupResult {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to fetch gene information')
+        const errorMessage = result.error || 'Failed to fetch gene information'
+        setError(errorMessage)
+        throw new Error(errorMessage)
       }
 
       const geneInfo = result.data
@@ -138,11 +141,13 @@ export function useSmartGeneLookup(): UseSmartGeneLookupResult {
       saveCache(newCache)
       console.log(`✅ Gene cached: ${normalizedSymbol}`)
       
+      // Clear any previous errors on successful lookup
+      setError(null)
+      
       return geneInfo
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to lookup gene'
-      setError(errorMessage)
+      // Error already set above, don't set it again to prevent flashing
       throw err
     } finally {
       setIsLoading(false)
@@ -168,13 +173,14 @@ export function useSmartGeneLookup(): UseSmartGeneLookupResult {
   }, [cache])
 
   // Initialize pre-loading of common genes after user interaction
-  useEffect(() => {
-    initializePreloading(lookupGene, {
-      maxGenes: 8, // Conservative number for background loading
-      batchSize: 2,
-      delayBetweenBatches: 3000 // 3 second delays
-    })
-  }, [lookupGene])
+  // Disabled to prevent interference with user searches
+  // useEffect(() => {
+  //   initializePreloading(lookupGene, {
+  //     maxGenes: 8, // Conservative number for background loading
+  //     batchSize: 2,
+  //     delayBetweenBatches: 3000 // 3 second delays
+  //   })
+  // }, [lookupGene])
 
   return {
     lookupGene,

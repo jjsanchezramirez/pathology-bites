@@ -44,7 +44,8 @@ export default function GeneLookupPage() {
       return
     }
 
-    setGeneInfo(null)
+    // Don't clear geneInfo immediately to prevent flashing
+    // Let the loading state handle the UI transition
 
     try {
       const geneInfo = await lookupGene(input.trim())
@@ -58,7 +59,8 @@ export default function GeneLookupPage() {
 
     } catch (error) {
       console.error('Error fetching gene information:', error)
-      // Error is already handled by the hook
+      // Clear gene info only on error to show error state
+      setGeneInfo(null)
     }
   }
 
@@ -145,8 +147,8 @@ export default function GeneLookupPage() {
               )}
 
               {/* Gene Information Display */}
-              {geneInfo && (
-                <div className="space-y-6">
+              {geneInfo && !isLoading && (
+                <div className="space-y-6 transition-opacity duration-200">
                   <div className="border-t pt-6">
                     <h2 className="text-2xl font-bold text-primary mb-6 flex items-center gap-2">
                       <Dna className="h-6 w-6" />
