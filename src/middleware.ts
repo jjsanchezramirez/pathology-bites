@@ -16,8 +16,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * ULTRA-MINIMAL: Only match absolutely essential paths
-     * Skip most routes entirely to reduce function invocations
+     * ULTRA-MINIMAL: Only match paths that absolutely need middleware
+     * Handle other redirects at page level to minimize function invocations
      */
     '/dashboard/:path*',
     '/admin/:path*'

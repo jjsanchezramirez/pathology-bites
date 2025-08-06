@@ -21,7 +21,13 @@ interface CountdownTimerProps {
 
 export function CountdownTimer({ launchDateStr }: CountdownTimerProps) {
   // Memoize the launch date to avoid recreating it on every render
-  const launchDate = useMemo(() => new Date(launchDateStr), [launchDateStr])
+  // Ensure proper date parsing for mobile browsers by adding time if not present
+  const launchDate = useMemo(() => {
+    const dateStr = launchDateStr.includes('T') ? launchDateStr : `${launchDateStr}T00:00:00`
+    const date = new Date(dateStr)
+    // Fallback to a valid date if parsing fails
+    return isNaN(date.getTime()) ? new Date(`${launchDateStr.replace(/-/g, '/')} 00:00:00`) : date
+  }, [launchDateStr])
   const [isClient, setIsClient] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   
@@ -41,12 +47,17 @@ export function CountdownTimer({ launchDateStr }: CountdownTimerProps) {
     const now = new Date()
     const difference = launchDate.getTime() - now.getTime()
     
-    if (difference > 0) {
+    if (difference > 0 && !isNaN(difference)) {
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24))
+      const hours = Math.floor((difference / (1000 * 60 * 60)) % 24)
+      const minutes = Math.floor((difference / 1000 / 60) % 60)
+      const seconds = Math.floor((difference / 1000) % 60)
+      
       setCountdown({
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((difference / 1000 / 60) % 60),
-        seconds: Math.floor((difference / 1000) % 60)
+        days: isNaN(days) ? 0 : days,
+        hours: isNaN(hours) ? 0 : hours,
+        minutes: isNaN(minutes) ? 0 : minutes,
+        seconds: isNaN(seconds) ? 0 : seconds
       })
     }
 
@@ -66,27 +77,33 @@ export function CountdownTimer({ launchDateStr }: CountdownTimerProps) {
       const now = new Date()
       const difference = launchDate.getTime() - now.getTime()
       
-      if (difference <= 0) {
-        // Launch date has passed
+      if (difference <= 0 || isNaN(difference)) {
+        // Launch date has passed or calculation failed
         setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 })
         return false
       }
       
-      // Calculate time units
+      // Calculate time units with NaN protection
       const days = Math.floor(difference / (1000 * 60 * 60 * 24))
       const hours = Math.floor((difference / (1000 * 60 * 60)) % 24)
       const minutes = Math.floor((difference / 1000 / 60) % 60)
       const seconds = Math.floor((difference / 1000) % 60)
       
+      // Ensure no NaN values
+      const safeDays = isNaN(days) ? 0 : days
+      const safeHours = isNaN(hours) ? 0 : hours
+      const safeMinutes = isNaN(minutes) ? 0 : minutes
+      const safeSeconds = isNaN(seconds) ? 0 : seconds
+      
       // Only update state if values have changed
       setCountdown(prev => {
         if (
-          prev.days !== days ||
-          prev.hours !== hours ||
-          prev.minutes !== minutes ||
-          prev.seconds !== seconds
+          prev.days !== safeDays ||
+          prev.hours !== safeHours ||
+          prev.minutes !== safeMinutes ||
+          prev.seconds !== safeSeconds
         ) {
-          return { days, hours, minutes, seconds }
+          return { days: safeDays, hours: safeHours, minutes: safeMinutes, seconds: safeSeconds }
         }
         return prev
       })
@@ -127,7 +144,7 @@ export function CountdownTimer({ launchDateStr }: CountdownTimerProps) {
                 ${isVisible ? "opacity-100 transform translate-y-0" : "opacity-0 transform translate-y-4"}`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
-              {unit.value}
+              {isNaN(unit.value) ? 0 : unit.value}
             </span>
           </div>
           <span className="text-xs md:text-sm text-muted-foreground mt-2">{unit.label}</span>

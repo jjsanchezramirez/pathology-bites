@@ -60,7 +60,6 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
       setError(null)
       
       // Always use main API for full dataset (ABPath is small, R2 egress is free)
-      console.log('🔄 ABPath API call: full dataset for accurate statistics')
       const response = await fetch('/api/tools/abpath-content-specs', {
         headers: {
           'Accept': 'application/json',
@@ -73,14 +72,15 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
       }
 
       const result = await response.json()
-      console.log('✅ ABPath full dataset loaded')
+      
+      const allSections = [
+        ...(result.content_specifications.ap_sections || []),
+        ...(result.content_specifications.cp_sections || [])
+      ]
       
       // Store complete dataset for client-side filtering and accurate statistics
       setApiResponse({
-        allSections: [
-          ...(result.content_specifications.ap_sections || []),
-          ...(result.content_specifications.cp_sections || [])
-        ],
+        allSections,
         metadata: result.metadata,
         strategy: 'full-dataset-client-filtering'
       })
@@ -97,6 +97,33 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  // Memoize filtering functions for better performance
+  const filterHelpers = useMemo(() => {
+    // Helper function to check if an item matches search
+    const itemMatches = (item: any, searchLower: string): boolean => {
+      const title = (item.title || '').toLowerCase()
+      const note = (item.note || '').toLowerCase()
+      const designation = (item.designation || '').toLowerCase()
+      
+      return title.includes(searchLower) || note.includes(searchLower) || designation.includes(searchLower)
+    }
+    
+    // Helper function to filter items recursively
+    const filterItems = (items: any[], searchLower: string): any[] => {
+      return items.filter(item => {
+        const matches = itemMatches(item, searchLower)
+        const hasMatchingSubitems = item.subitems ? filterItems(item.subitems, searchLower).length > 0 : false
+        
+        return matches || hasMatchingSubitems
+      }).map(item => ({
+        ...item,
+        subitems: item.subitems ? filterItems(item.subitems, searchLower) : undefined
+      }))
+    }
+    
+    return { itemMatches, filterItems }
+  }, [])
 
   // Client-side filtering and pagination logic
   const processedData = useMemo(() => {
@@ -130,35 +157,77 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
       }
     }
 
-    // Search filter
+    // Search filter - content-aware filtering that filters items within sections
     if (options.search) {
       const searchLower = options.search.toLowerCase()
-      filteredSections = filteredSections.filter((section: any) => {
-        const titleMatch = section.title.toLowerCase().includes(searchLower)
-        const noteMatch = section.note?.toLowerCase().includes(searchLower)
+      const { filterItems } = filterHelpers
+      
+      filteredSections = filteredSections.map((section: any) => {
+        const sectionTitle = (section.title || '').toLowerCase()
+        const sectionNote = (section.note || '').toLowerCase()
+        const sectionMatches = sectionTitle.includes(searchLower) || sectionNote.includes(searchLower)
         
-        // Search within items and subsections
-        let contentMatch = false
+        // If section title/note matches, keep entire section
+        if (sectionMatches) {
+          return section
+        }
         
+        const filteredSection = { ...section }
+        
+        // Filter direct items
         if (section.items) {
-          contentMatch = section.items.some((item: any) => 
-            item.title?.toLowerCase().includes(searchLower) ||
-            item.note?.toLowerCase().includes(searchLower)
+          filteredSection.items = filterItems(section.items, searchLower)
+        }
+        
+        // Filter subsections
+        if (section.subsections) {
+          filteredSection.subsections = section.subsections.map((subsection: any) => {
+            const subsectionTitle = (subsection.title || '').toLowerCase()
+            const subsectionMatches = subsectionTitle.includes(searchLower)
+            
+            // If subsection title matches, keep entire subsection
+            if (subsectionMatches) {
+              return subsection
+            }
+            
+            const filteredSubsection = { ...subsection }
+            
+            // Filter subsection items
+            if (subsection.items) {
+              filteredSubsection.items = filterItems(subsection.items, searchLower)
+            }
+            
+            // Filter subsection sections
+            if (subsection.sections) {
+              filteredSubsection.sections = subsection.sections.map((subSection: any) => {
+                const subSectionTitle = (subSection.title || '').toLowerCase()
+                const subSectionMatches = subSectionTitle.includes(searchLower)
+                
+                if (subSectionMatches) {
+                  return subSection
+                }
+                
+                return {
+                  ...subSection,
+                  items: subSection.items ? filterItems(subSection.items, searchLower) : undefined
+                }
+              }).filter((subSection: any) => 
+                subSection.items && subSection.items.length > 0
+              )
+            }
+            
+            return filteredSubsection
+          }).filter((subsection: any) => 
+            (subsection.items && subsection.items.length > 0) ||
+            (subsection.sections && subsection.sections.length > 0)
           )
         }
         
-        if (!contentMatch && section.subsections) {
-          contentMatch = section.subsections.some((subsection: any) =>
-            subsection.title?.toLowerCase().includes(searchLower) ||
-            subsection.items?.some((item: any) =>
-              item.title?.toLowerCase().includes(searchLower) ||
-              item.note?.toLowerCase().includes(searchLower)
-            )
-          )
-        }
-        
-        return titleMatch || noteMatch || contentMatch
-      })
+        return filteredSection
+      }).filter((section: any) => 
+        (section.items && section.items.length > 0) ||
+        (section.subsections && section.subsections.length > 0)
+      )
     }
 
     // Calculate pagination
@@ -174,17 +243,15 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
       totalFiltered,
       totalPages
     }
-  }, [apiResponse, typeFilter, options.category, options.search, currentPage, sectionsPerPage])
+  }, [apiResponse, typeFilter, options.category, options.search, currentPage, sectionsPerPage, filterHelpers])
 
   // Actions
   const loadPage = useCallback((page: number) => {
-    console.log(`🔄 ABPath loading page ${page}`)
     setCurrentPage(page)
   }, [])
 
   const switchToFullDataset = useCallback(() => {
     // No-op since we're already using full dataset
-    console.log('💡 ABPath already using full dataset')
   }, [])
 
   const reset = useCallback(() => {

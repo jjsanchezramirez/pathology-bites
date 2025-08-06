@@ -20,11 +20,23 @@ class NetworkService {
   private authCheckIntervalId?: NodeJS.Timeout;
   private reconnectAttempts: number = 0;
   private pingUrl: string = '/api/health'; // Use internal health check instead
+  private lastConnectivityCheck: number = 0;
+  private lastAuthCheck: number = 0;
+  private readonly CONNECTIVITY_CACHE_MS = 120000; // Cache connectivity status for 2 minutes
+  private readonly AUTH_CACHE_MS = 300000; // Cache auth status for 5 minutes
 
   private constructor() {
     if (typeof window !== 'undefined') {
       this.setupListeners();
-      this.startPeriodicChecks();
+      
+      // In production, disable periodic checks to minimize function calls
+      // Browser events (online/offline/focus) will handle immediate status changes
+      if (process.env.NODE_ENV === 'production') {
+        console.log('Network service: Production mode - periodic checks disabled');
+        // Only rely on browser events in production
+      } else {
+        this.startPeriodicChecks();
+      }
     }
   }
 
@@ -67,9 +79,10 @@ class NetworkService {
     }
   };
 
-  private startPeriodicChecks(pingInterval: number = 300000, authInterval: number = 600000): void {
-    // Optimized: Much less aggressive - check connectivity every 5 minutes, auth every 10 minutes
-    // This significantly reduces database load from frequent checks
+  private startPeriodicChecks(pingInterval: number = 1800000, authInterval: number = 3600000): void {
+    // Ultra-conservative: check connectivity every 30 minutes, auth every 60 minutes
+    // Use browser events (online/offline, focus) for immediate status changes
+    // This dramatically reduces function invocations from 2k+ to ~50/day
     this.pingIntervalId = setInterval(() => {
       this.checkConnectivity();
     }, pingInterval);
@@ -96,6 +109,12 @@ class NetworkService {
       return;
     }
 
+    // Use cached result if recent enough
+    const now = Date.now();
+    if (now - this.lastConnectivityCheck < this.CONNECTIVITY_CACHE_MS) {
+      return; // Skip check, use cached status
+    }
+
     try {
       const controller = new AbortController();
       // Exponential backoff for timeout based on attempts
@@ -116,6 +135,7 @@ class NetworkService {
         const wasOffline = !this.hasConnectivity;
         this.hasConnectivity = true;
         this.reconnectAttempts = 0;
+        this.lastConnectivityCheck = now; // Update cache timestamp
 
         if (wasOffline) {
           console.log('Network connectivity restored');
@@ -154,6 +174,12 @@ class NetworkService {
       return; // Don't try to check auth when offline
     }
 
+    // Use cached result if recent enough
+    const now = Date.now();
+    if (now - this.lastAuthCheck < this.AUTH_CACHE_MS) {
+      return; // Skip check, use cached status
+    }
+
     try {
       const supabase = createClient();
 
@@ -167,6 +193,7 @@ class NetworkService {
 
         const wasUnauthenticated = !this.isAuthenticated;
         this.isAuthenticated = !!session;
+        this.lastAuthCheck = now; // Update cache timestamp
 
         if (wasUnauthenticated !== !this.isAuthenticated) {
           console.log('Authentication status changed:', this.isAuthenticated ? 'authenticated' : 'unauthenticated');
@@ -185,6 +212,7 @@ class NetworkService {
 
           const wasUnauthenticated = !this.isAuthenticated;
           this.isAuthenticated = !!user;
+          this.lastAuthCheck = now; // Update cache timestamp
 
           if (wasUnauthenticated !== !this.isAuthenticated) {
             console.log('Authentication status changed:', this.isAuthenticated ? 'authenticated' : 'unauthenticated');
@@ -229,17 +257,28 @@ class NetworkService {
   }
 
   /**
-   * Force a connectivity check
+   * Disable periodic checks and rely only on browser events
+   * Recommended for production to minimize function calls
+   */
+  public disablePeriodicChecks(): void {
+    this.stopPeriodicChecks();
+    console.log('Network service: Periodic checks disabled, using browser events only');
+  }
+
+  /**
+   * Force a connectivity check (bypasses cache)
    */
   public async checkConnection(): Promise<boolean> {
+    this.lastConnectivityCheck = 0; // Reset cache to force check
     await this.checkConnectivity();
     return this.isConnected();
   }
 
   /**
-   * Force an authentication check
+   * Force an authentication check (bypasses cache)
    */
   public async checkAuthentication(): Promise<boolean> {
+    this.lastAuthCheck = 0; // Reset cache to force check
     await this.checkAuthStatus();
     return this.isUserAuthenticated();
   }

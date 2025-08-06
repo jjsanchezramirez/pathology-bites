@@ -129,6 +129,36 @@ export function InteractiveLearningTools({
               </Button>
             </Link>
           </div>
+
+          <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold mb-2">Diagnostic Entity Search</h3>
+              <p className="text-muted-foreground">Comprehensive diagnostic information</p>
+            </div>
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              Search diagnostic entities for differential diagnosis, immunohistochemistry, and histologic clues.
+            </p>
+            <Link href="/tools/diagnostic-search">
+              <Button className="w-full">
+                Search Diagnostics
+              </Button>
+            </Link>
+          </div>
+
+          <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold mb-2">Cell Counter Tool</h3>
+              <p className="text-muted-foreground">Efficient cell counting</p>
+            </div>
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              Customizable cell counter with keyboard shortcuts for differential counts and laboratory work.
+            </p>
+            <Link href="/tools/cell-counter">
+              <Button className="w-full">
+                Start Counting
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </section>

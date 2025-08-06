@@ -15,12 +15,21 @@ import { useState } from "react"
 
 export function Footer() {
   const [isToolsOpen, setIsToolsOpen] = useState(false)
+  const [isDesktopToolsOpen, setIsDesktopToolsOpen] = useState(false)
 
   // Check if we're in maintenance mode (hide tools and virtual slides)
   const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true'
 
   const toggleTools = () => {
     setIsToolsOpen(!isToolsOpen)
+  }
+
+  const handleDesktopToolsEnter = () => {
+    setIsDesktopToolsOpen(true)
+  }
+
+  const handleDesktopToolsLeave = () => {
+    setIsDesktopToolsOpen(false)
   }
 
   return (
@@ -141,6 +150,12 @@ export function Footer() {
                     >
                       ABPath Content
                     </Link>
+                    <Link
+                      href="/tools/cell-counter"
+                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                    >
+                      Cell Counter
+                    </Link>
                     </div>
                   )}
                 </div>
@@ -151,9 +166,9 @@ export function Footer() {
             <div className="hidden lg:flex gap-6 text-sm text-muted-foreground items-center">
               {!isMaintenanceMode && (
                 <>
-                  <div className="relative group">
-                    <span className="hover:text-primary transition-colors cursor-pointer py-2 block">Tools</span>
-                    <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-background border rounded-md shadow-lg p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 min-w-96 z-50">
+                  <div className="relative" onMouseEnter={handleDesktopToolsEnter} onMouseLeave={handleDesktopToolsLeave}>
+                    <span className="hover:text-primary transition-colors cursor-pointer py-2 px-2 block">Tools</span>
+                    <div className={`absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-background border rounded-md shadow-lg p-2 min-w-96 z-50 transition-all duration-200 ${isDesktopToolsOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
                       <div className="grid grid-cols-2 gap-1">
                         <Link href="/tools/images" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
                           Image Database
@@ -175,6 +190,9 @@ export function Footer() {
                         </Link>
                         <Link href="/tools/abpath" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
                           ABPath Content
+                        </Link>
+                        <Link href="/tools/cell-counter" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                          Cell Counter
                         </Link>
                       </div>
                     </div>

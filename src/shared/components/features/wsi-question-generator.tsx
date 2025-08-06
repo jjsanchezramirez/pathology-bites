@@ -14,7 +14,7 @@ import { useOptimizedVirtualSlides } from '@/shared/hooks/use-optimized-quiz-dat
 
 // Import client-side utilities for reduced API calls
 import { selectRandomWSIClientSide, clearWSICache, getWSICacheStatus } from '@/shared/utils/client-wsi-selection'
-import { findContextPureClient } from '@/shared/utils/pure-client-context-search'
+import { findContextUnifiedClient } from '@/shared/utils/unified-client-context-search'
 import { dataManager } from '@/shared/utils/client-data-manager'
 
 // Import the canonical VirtualSlide interface
@@ -327,16 +327,17 @@ export function WSIQuestionGenerator({
     const selectedWSI = normalizeClientWSI(clientWSI)
     console.log(`WSI Question Generator: Selected WSI - ${selectedWSI.diagnosis}`)
 
-    // Step 2: Find context using CLIENT-SIDE search (saves more API calls!)
-    console.log('WSI Question Generator: Step 2 - Finding context (pure client-side)...')
+    // Step 2: Find context using UNIFIED CLIENT-SIDE search (enhanced medical intelligence!)
+    console.log('WSI Question Generator: Step 2 - Finding context (unified medical algorithm)...')
     setLoadingStep('Searching educational content...')
 
-    // Use pure client-side context search (ZERO Vercel API calls)
+    // Use unified client-side context search with enhanced medical intelligence
     // Data manager is already initialized by WSI selection step
-    const contextResult = await findContextPureClient(
+    const contextResult = await findContextUnifiedClient(
       selectedWSI.diagnosis,
       selectedWSI.category,
-      selectedWSI.subcategory
+      selectedWSI.subcategory,
+      'wsiQuestions' // Use strict mode for high-quality WSI questions
     )
 
     if (!contextResult.success) {
@@ -348,6 +349,8 @@ export function WSIQuestionGenerator({
     
     console.log(`WSI Question Generator: Context found - ${!!context}`)
     console.log(`WSI Question Generator: Context quality - ${contextResult.metadata?.context_quality || 'unknown'}`)
+    console.log(`WSI Question Generator: Search algorithm - ${contextResult.metadata?.search_algorithm || 'legacy'}`)
+    console.log(`WSI Question Generator: Medical terms extracted - ${contextResult.metadata?.medical_terms_count || 0}`)
     
     // If context search recommends rejecting this slide, try another one
     if (shouldReject) {

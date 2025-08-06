@@ -13,16 +13,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // ULTRA-FAST: Check maintenance/coming soon modes without any setup
+  // At this point, we only get dashboard and admin paths due to matcher
+  // Maintenance mode blocks dashboard, but allows admin
   const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true'
-  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
-  
-  // Skip all auth setup if not in special modes and path is admin/dashboard
-  if (!isMaintenanceMode && !isComingSoonMode) {
-    // For dashboard and admin paths, we need auth - but skip everything else
-    if (!request.nextUrl.pathname.startsWith('/dashboard') && !request.nextUrl.pathname.startsWith('/admin')) {
-      return NextResponse.next()
-    }
+  if (isMaintenanceMode && request.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/maintenance', request.url))
   }
 
   try {

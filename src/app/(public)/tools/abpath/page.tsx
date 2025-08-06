@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSmartABPath } from '@/shared/hooks/use-smart-abpath';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
@@ -103,17 +103,17 @@ export default function ABPathContentPage() {
     };
   }, [paginatedSections, metadata]);
 
-  // Debounce search term to reduce API calls
+  // Debounce search term to reduce processing
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm)
-    }, 300) // 300ms delay
+    }, 150) // Reduced delay for better responsiveness
 
     return () => clearTimeout(timer)
   }, [searchTerm])
 
-  // Helper function to check if an item or its subitems match search
-  const itemMatchesSearch = (item: PathologyItem, search: string): boolean => {
+  // Memoized helper function to check if an item or its subitems match search
+  const itemMatchesSearch = useCallback((item: PathologyItem, search: string): boolean => {
     if (!search) return true;
 
     // Check if this item matches
@@ -129,10 +129,10 @@ export default function ABPathContentPage() {
     }
 
     return false;
-  };
+  }, []);
 
-  // Define filterItems function before using it
-  const filterItems = (items: PathologyItem[], search: string): PathologyItem[] => {
+  // Memoized filterItems function to prevent re-creation
+  const filterItems = useCallback((items: PathologyItem[], search: string): PathologyItem[] => {
     return items.filter(item => {
       // Apply search filter first
       if (search && !itemMatchesSearch(item, search)) {
@@ -156,7 +156,7 @@ export default function ABPathContentPage() {
       }
       return item;
     });
-  };
+  }, [showC, showAR, showF, itemMatchesSearch]);
 
   // Smart pagination handler
   const handlePageChange = (page: number) => {
@@ -177,24 +177,23 @@ export default function ABPathContentPage() {
     }));
   }, [data, paginatedSections]);
 
-  // Filter and search logic - now works with paginated sections
+  // Client-side filtering for designation filters only (C, AR, F)
   const filteredData = useMemo(() => {
-    // Check if user has deselected all section types (AP & CP)
-    if (!showAP && !showCP) return [];
-    
     // Check if user has deselected all designations (C, AR, F)
-    if (!showC && !showAR && !showF) return [];
+    if (!showC && !showAR && !showF) {
+      return []
+    }
     
-    // Server-side filtering handles type, category, and search filters
-    // Client-side filtering only handles designation filters (C, AR, F)
-    
-    if (!paginatedSections.length) return [];
+    if (!paginatedSections.length) {
+      return []
+    }
 
+    // Apply only designation filtering since the hook handles type, category, and search
     const sections = paginatedSections.map(section => {
       const filteredSection = { ...section };
 
       if (section.items) {
-        filteredSection.items = filterItems(section.items, ''); // No search term needed, server handles it
+        filteredSection.items = filterItems(section.items, '');
       }
 
       if (section.subsections) {
@@ -223,18 +222,19 @@ export default function ABPathContentPage() {
     }).filter(section =>
       (section.items && section.items.length > 0) ||
       (section.subsections && section.subsections.length > 0) ||
-      (showC && showAR && showF) // Keep sections without items if no designation filters
+      (showC && showAR && showF) // Keep sections without items if all designations shown
     );
 
     return sections;
   }, [paginatedSections, showC, showAR, showF, filterItems]);
 
-  // Accurate statistics calculation using full dataset
+  // Simplified statistics calculation using filtered data
   const stats = useMemo(() => {
     const defaultStats = { totalVisible: 0, totalAll: 0, cCount: 0, arCount: 0, fCount: 0, totalPercentage: 0, cPercentage: 0, arPercentage: 0, fPercentage: 0 };
     
     if (!allSections.length) return defaultStats;
 
+    // Helper function to count items recursively
     const countItems = (items: PathologyItem[]): { total: number; c: number; ar: number; f: number } => {
       let total = 0, c = 0, ar = 0, f = 0;
       
@@ -256,6 +256,7 @@ export default function ABPathContentPage() {
       return { total, c, ar, f };
     };
 
+    // Helper function to count all items in a section
     const countSection = (section: PathologySection) => {
       const counts = { total: 0, c: 0, ar: 0, f: 0 };
       
@@ -294,7 +295,7 @@ export default function ABPathContentPage() {
       return counts;
     };
 
-    // Count ALL items from full dataset (never changes)
+    // Count ALL items from complete dataset (baseline)
     const allCounts = allSections.reduce((acc, section) => {
       const sectionCounts = countSection(section);
       acc.total += sectionCounts.total;
@@ -304,69 +305,15 @@ export default function ABPathContentPage() {
       return acc;
     }, { total: 0, c: 0, ar: 0, f: 0 });
 
-    // Apply user filters to determine what's visible
-    let visibleSections = allSections;
-    
-    // Filter by section type (AP/CP)
-    if (!showAP && !showCP) {
-      visibleSections = [];
-    } else if (!showAP) {
-      visibleSections = visibleSections.filter(s => s.type === 'cp');
-    } else if (!showCP) {
-      visibleSections = visibleSections.filter(s => s.type === 'ap');
-    }
-
-    // Apply same server-side filters (search, category)
-    if (debouncedSearchTerm) {
-      const searchLower = debouncedSearchTerm.toLowerCase();
-      visibleSections = visibleSections.filter(section => {
-        const titleMatch = section.title.toLowerCase().includes(searchLower);
-        const noteMatch = section.note?.toLowerCase().includes(searchLower);
-        // Add content search logic here if needed
-        return titleMatch || noteMatch;
-      });
-    }
-
-    if (selectedCategory !== 'all') {
-      const [filterType, sectionNum] = selectedCategory.split('_');
-      if (filterType && sectionNum) {
-        visibleSections = visibleSections.filter(section =>
-          section.type.toUpperCase() === filterType.toUpperCase() && 
-          section.section.toString() === sectionNum
-        );
-      }
-    }
-
-    // Count visible items and apply designation filters
-    const visibleCounts = visibleSections.reduce((acc, section) => {
+    // Count currently visible items from filtered data
+    const visibleCounts = filteredData.reduce((acc, section) => {
       const sectionCounts = countSection(section);
-      
-      // Apply designation filters
-      if (showC) acc.c += sectionCounts.c;
-      if (showAR) acc.ar += sectionCounts.ar;
-      if (showF) acc.f += sectionCounts.f;
-      
-      // Total visible includes all items from visible sections, then filtered by designations
-      let sectionVisibleTotal = 0;
-      if (showC) sectionVisibleTotal += sectionCounts.c;
-      if (showAR) sectionVisibleTotal += sectionCounts.ar;
-      if (showF) sectionVisibleTotal += sectionCounts.f;
-      // Add items without designations if any designation is shown
-      if (showC || showAR || showF) {
-        sectionVisibleTotal += (sectionCounts.total - sectionCounts.c - sectionCounts.ar - sectionCounts.f);
-      }
-      
-      acc.total += sectionVisibleTotal;
+      acc.total += sectionCounts.total;
+      acc.c += sectionCounts.c;
+      acc.ar += sectionCounts.ar;
+      acc.f += sectionCounts.f;
       return acc;
     }, { total: 0, c: 0, ar: 0, f: 0 });
-
-    // If no designations are selected, show 0
-    if (!showC && !showAR && !showF) {
-      visibleCounts.total = 0;
-      visibleCounts.c = 0;
-      visibleCounts.ar = 0;
-      visibleCounts.f = 0;
-    }
 
     const totalVisible = visibleCounts.total;
     const totalAll = allCounts.total;
@@ -385,7 +332,7 @@ export default function ABPathContentPage() {
       arPercentage: totalVisible > 0 ? Math.round((arCount / totalVisible) * 100) : 0,
       fPercentage: totalVisible > 0 ? Math.round((fCount / totalVisible) * 100) : 0
     };
-  }, [allSections, showAP, showCP, showC, showAR, showF, debouncedSearchTerm, selectedCategory]);
+  }, [allSections, filteredData]);
 
   // PDF generation function
   const generatePDF = async () => {
