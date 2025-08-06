@@ -29,7 +29,7 @@ export interface CacheOptions {
 }
 
 /**
- * Create optimized paginated response with compression
+ * Create optimized paginated response with Next.js Brotli compression
  */
 export function createOptimizedResponse<T>(
   data: T,
@@ -46,9 +46,10 @@ export function createOptimizedResponse<T>(
 ) {
   const response = NextResponse.json(data)
   
-  // Add compression headers
+  // REMOVED: Manual compression headers to avoid ERR_CONTENT_DECODING_FAILED
+  // Next.js automatically handles Brotli/gzip compression when appropriate
+  // Only set Vary header for cache optimization
   if (options.compress !== false) {
-    response.headers.set('Content-Encoding', 'gzip')
     response.headers.set('Vary', 'Accept-Encoding')
   }
   

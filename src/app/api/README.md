@@ -110,6 +110,6 @@ try {
 - User-friendly error messages
 
 ### Performance Optimization
-- Response compression (gzip/brotli)
+- Response compression (Brotli/gzip via Next.js)
 - Cache headers for optimal caching
 - Minimal response payloads
