@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -60,12 +60,81 @@ interface SearchMetadata {
   }
 }
 
+// Funny loading messages for diagnostic search
+const DIAGNOSTIC_LOADING_MESSAGES = [
+  "Consulting the pathology oracle (results may vary)...",
+  "Teaching AI that 'reactive changes' is a real diagnosis...",
+  "Searching through mountains of medical mystery...",
+  "Asking slides to reveal their diagnostic secrets...",
+  "Translating 'pink and purple stuff' into medical terminology...",
+  "Convincing the algorithm that everything isn't cancer...",
+  "Channeling the spirit of Rudolf Virchow for guidance...",
+  "Performing digital differential diagnosis dance...",
+  "Teaching AI the fine art of 'consistent with'...",
+  "Consulting with Dr. Google (but medically accurate)...",
+  "Searching for that one case that makes everything clear...",
+  "Teaching the computer about zebras in pathology...",
+  "Asking 'What would your attending diagnose?' (nervously)...",
+  "Generating results that won't make you second-guess yourself...",
+  "Calibrating the 'atypical' detection algorithm...",
+  "Teaching AI that morphology is everything (usually)...",
+  "Searching through the diagnostic haystack for answers...",
+  "Consulting the ancient texts of Robbins and Cotran...",
+  "Teaching the algorithm about immunohistochemistry magic...",
+  "Asking the stains to cooperate for once...",
+  "Searching for clues like Sherlock Holmes, MD...",
+  "Teaching AI that 'favor' means 'probably but not certain'...",
+  "Calibrating the diagnostic confidence meter...",
+  "Searching through case files with digital magnifying glass...",
+  "Teaching the computer about the beauty of H&E stains...",
+  "Consulting with pathology residents (virtually)...",
+  "Generating insights that would make Osler proud...",
+  "Teaching AI the difference between dysplasia and cancer...",
+  "Searching for patterns in the diagnostic chaos...",
+  "Asking the tissue to confess its true identity..."
+]
+
 export default function DiagnosticSearchPage() {
   const [entity, setEntity] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [results, setResults] = useState<DiagnosticResults | null>(null)
   const [metadata, setMetadata] = useState<SearchMetadata | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [currentLoadingMessage, setCurrentLoadingMessage] = useState('')
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
+  const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Cycle through loading messages while searching
+  useEffect(() => {
+    if (isLoading) {
+      // Set initial message
+      const initialIndex = Math.floor(Math.random() * DIAGNOSTIC_LOADING_MESSAGES.length)
+      setLoadingMessageIndex(initialIndex)
+      setCurrentLoadingMessage(DIAGNOSTIC_LOADING_MESSAGES[initialIndex])
+
+      // Cycle through messages every 3.5 seconds
+      loadingIntervalRef.current = setInterval(() => {
+        setLoadingMessageIndex(prev => {
+          const nextIndex = (prev + 1) % DIAGNOSTIC_LOADING_MESSAGES.length
+          setCurrentLoadingMessage(DIAGNOSTIC_LOADING_MESSAGES[nextIndex])
+          return nextIndex
+        })
+      }, 3500)
+    } else {
+      // Clear interval when not loading
+      if (loadingIntervalRef.current) {
+        clearInterval(loadingIntervalRef.current)
+        loadingIntervalRef.current = null
+      }
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (loadingIntervalRef.current) {
+        clearInterval(loadingIntervalRef.current)
+      }
+    }
+  }, [isLoading])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -177,6 +246,42 @@ export default function DiagnosticSearchPage() {
               </form>
             </CardContent>
           </Card>
+
+          {/* Funny Loading Screen */}
+          {isLoading && (
+            <Card className="mb-8">
+              <CardContent className="p-12">
+                <div className="text-center space-y-6">
+                  <div className="relative">
+                    <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+                    <div className="absolute -top-2 -right-2">
+                      <Microscope className="h-6 w-6 text-muted-foreground animate-bounce" />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-primary">
+                      Searching Diagnostic Database...
+                    </h3>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Analyzing "{entity}" across our educational content
+                    </p>
+                    
+                    <div className="min-h-[3rem] flex items-center justify-center">
+                      <p className="text-sm text-primary font-medium italic leading-relaxed max-w-md transition-opacity duration-500">
+                        {currentLoadingMessage || "Consulting the pathology oracle (results may vary)..."}
+                      </p>
+                    </div>
+                    
+                    <div className="flex justify-center items-center gap-2 text-xs text-muted-foreground">
+                      <FlaskConical className="h-3 w-3" />
+                      <span>Searching for differential diagnoses, immunostains, and histologic clues</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Error Message */}
           {error && (

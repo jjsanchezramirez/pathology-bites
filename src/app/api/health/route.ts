@@ -1,8 +1,9 @@
 // src/app/api/health/route.ts
 import { NextResponse } from 'next/server'
 
-// Cache the response for 5 minutes to reduce function invocations
-const CACHE_DURATION = 300 // 5 minutes in seconds
+// Ultra-aggressive caching for health checks - 30 minutes
+// Health check is static and doesn't need frequent updates
+const CACHE_DURATION = 1800 // 30 minutes in seconds
 
 export async function GET() {
   const response = NextResponse.json({ 

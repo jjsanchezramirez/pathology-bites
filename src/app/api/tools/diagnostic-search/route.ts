@@ -249,11 +249,21 @@ async function extractDiagnosticInfo(content: any, entity: string): Promise<{
   // First, extract raw information using existing patterns
   const rawInfo = extractRawDiagnosticInfo(content, entity)
 
-  // If we have raw information, use AI to organize it
+  // If we have raw information, use AI to organize it (with timeout)
   if (hasSignificantContent(rawInfo)) {
     try {
       const aiStartTime = Date.now()
-      const organizedInfo = await organizeWithAI(rawInfo, entity, 0) // Start with model index 0
+      
+      // Add timeout to prevent 504 errors - 20 second max for AI organization
+      const aiTimeout = new Promise<null>((_, reject) => {
+        setTimeout(() => reject(new Error('AI organization timeout after 20 seconds')), 20000)
+      })
+      
+      const organizedInfo = await Promise.race([
+        organizeWithAI(rawInfo, entity, 0), // Start with model index 0
+        aiTimeout
+      ])
+      
       const aiGenerationTime = Date.now() - aiStartTime
       
       if (organizedInfo) {
@@ -266,7 +276,7 @@ async function extractDiagnosticInfo(content: any, entity: string): Promise<{
       }
       return rawInfo // Fallback to raw if AI fails
     } catch (error) {
-      console.warn('[Diagnostic Search] AI organization failed, using raw extraction:', error)
+      console.warn('[Diagnostic Search] AI organization failed (timeout or error), using raw extraction:', error)
       return rawInfo
     }
   }
@@ -516,17 +526,28 @@ async function organizeWithAI(rawInfo: any, entity: string, modelIndex: number =
         throw new Error('No Gemini API key available')
       }
 
-      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.1,
-            maxOutputTokens: 2000
-          }
+      // Add AbortController for timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 second timeout
+
+      try {
+        response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 2000
+            }
+          })
         })
-      })
+        clearTimeout(timeoutId)
+      } catch (error) {
+        clearTimeout(timeoutId)
+        throw error
+      }
 
       if (!response.ok) {
         throw new Error(`Gemini API error: ${response.status}`)
@@ -552,19 +573,30 @@ async function organizeWithAI(rawInfo: any, entity: string, modelIndex: number =
         ? 'https://api.mistral.ai/v1/chat/completions'
         : `https://api.deepinfra.com/v1/openai/chat/completions`
 
-      response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: currentModel,
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.1,
-          max_tokens: 2000
+      // Add AbortController for timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 second timeout
+
+      try {
+        response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model: currentModel,
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.1,
+            max_tokens: 2000
+          })
         })
-      })
+        clearTimeout(timeoutId)
+      } catch (error) {
+        clearTimeout(timeoutId)
+        throw error
+      }
 
       if (!response.ok) {
         throw new Error(`${modelProvider} API error: ${response.status}`)
@@ -748,6 +780,9 @@ function calculateRelevanceScore(
   
   return { score, medicalTerms, matchDetails }
 }
+
+// Set a shorter timeout for diagnostic search to prevent 504 errors
+export const maxDuration = 30 // 30 seconds timeout
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
