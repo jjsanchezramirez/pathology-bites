@@ -310,6 +310,14 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
     if (bucketName === 'pathology-bites-images') {
       return `${config.CLOUDFLARE_R2_PUBLIC_URL}/${key}`
     }
+    
+    // Anki media bucket uses its own domain
+    if (bucketName === 'pathology-bites-anki') {
+      return `https://pathology-bites-anki.r2.dev/${key}`
+    }
+
+    // For private buckets, return a placeholder that indicates signed URL needed
+    return `[PRIVATE:${bucketName}]${key}`
   } catch (error) {
     // Fallback for client-side or when env vars are not available
     const bucketName = bucket || 'pathology-bites-images'
