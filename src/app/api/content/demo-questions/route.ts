@@ -163,7 +163,7 @@ export async function GET(request: Request) {
           ?.filter((qi: any) => qi.question_section === 'stem')
           ?.sort((a: any, b: any) => a.order_index - b.order_index)
           ?.map((qi: any) => {
-            const imageDetail = qi.images;
+            const imageDetail = Array.isArray(qi.images) ? qi.images[0] : qi.images;
             return {
               url: imageDetail?.url || '',
               caption: imageDetail?.description || '',
@@ -173,7 +173,9 @@ export async function GET(request: Request) {
 
         const explanationImageData = questionImagesWithDetails
           ?.find((qi: any) => qi.question_section === 'explanation');
-        const explanationImageDetail = explanationImageData?.images;
+        const explanationImageDetail = Array.isArray(explanationImageData?.images) 
+          ? explanationImageData?.images[0] 
+          : explanationImageData?.images;
 
         const processedQuestion = {
           id: questionData.id,
@@ -290,7 +292,7 @@ export async function GET(request: Request) {
           ?.filter((qi: any) => qi.question_section === 'stem')
           ?.sort((a: any, b: any) => a.order_index - b.order_index)
           ?.map((qi: any) => {
-            const imageDetail = qi.images;
+            const imageDetail = Array.isArray(qi.images) ? qi.images[0] : qi.images;
             return {
               url: imageDetail?.url || '',
               caption: imageDetail?.description || '',
@@ -300,7 +302,9 @@ export async function GET(request: Request) {
 
         const explanationImageData = questionImagesWithDetails
           ?.find((qi: any) => qi.question_section === 'explanation');
-        const explanationImageDetail = explanationImageData?.images;
+        const explanationImageDetail = Array.isArray(explanationImageData?.images) 
+          ? explanationImageData?.images[0] 
+          : explanationImageData?.images;
 
         const processedQuestion = {
           id: questionData.id,
