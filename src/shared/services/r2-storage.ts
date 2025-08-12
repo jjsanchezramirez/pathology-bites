@@ -5,7 +5,7 @@
  * Provides S3-compatible API for image upload, deletion, and management.
  */
 
-import { S3Client, PutObjectCommand, DeleteObjectCommand, DeleteObjectsCommand, HeadObjectCommand, ListObjectsV2Command, CopyObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, DeleteObjectCommand, DeleteObjectsCommand, HeadObjectCommand, ListObjectsV2Command, CopyObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
 
 // R2 Configuration - Load dynamically to support scripts
 function getR2Config() {
@@ -84,6 +84,7 @@ export async function uploadToR2(
     contentType?: string
     metadata?: Record<string, string>
     cacheControl?: string
+    bucket?: string
   } = {}
 ): Promise<R2UploadResult> {
   try {
@@ -92,9 +93,10 @@ export async function uploadToR2(
 
     const contentType = options.contentType || (file instanceof File ? file.type : 'application/octet-stream')
     const fileBuffer = file instanceof File ? Buffer.from(await file.arrayBuffer()) : file
+    const bucketName = options.bucket || config.CLOUDFLARE_R2_BUCKET_NAME
 
     const command = new PutObjectCommand({
-      Bucket: config.CLOUDFLARE_R2_BUCKET_NAME,
+      Bucket: bucketName,
       Key: key,
       Body: fileBuffer,
       ContentType: contentType,
@@ -104,7 +106,9 @@ export async function uploadToR2(
 
     await r2Client.send(command)
 
-    const publicUrl = `${config.CLOUDFLARE_R2_PUBLIC_URL}/${key}`
+    // Use custom bucket URL if specified
+    const baseUrl = options.bucket ? `https://${options.bucket}.r2.dev` : config.CLOUDFLARE_R2_PUBLIC_URL
+    const publicUrl = `${baseUrl}/${key}`
 
     return {
       url: publicUrl,
@@ -144,7 +148,7 @@ export async function deleteFromR2(key: string, bucket?: string): Promise<void> 
 /**
  * Delete multiple files from R2 storage
  */
-export async function bulkDeleteFromR2(keys: string[]): Promise<{ deleted: string[], errors: string[] }> {
+export async function bulkDeleteFromR2(keys: string[], bucket?: string): Promise<{ deleted: string[], errors: string[] }> {
   const result = { deleted: [] as string[], errors: [] as string[] }
 
   if (keys.length === 0) return result
@@ -152,6 +156,8 @@ export async function bulkDeleteFromR2(keys: string[]): Promise<{ deleted: strin
   try {
     const config = getR2Config()
     const r2Client = createR2Client()
+
+    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME
 
     // R2 supports bulk delete up to 1000 objects
     const chunks = []
@@ -162,7 +168,7 @@ export async function bulkDeleteFromR2(keys: string[]): Promise<{ deleted: strin
     for (const chunk of chunks) {
       try {
         const command = new DeleteObjectsCommand({
-          Bucket: config.CLOUDFLARE_R2_BUCKET_NAME,
+          Bucket: bucketName,
           Delete: {
             Objects: chunk.map(key => ({ Key: key }))
           }
@@ -231,20 +237,97 @@ export async function getR2FileInfo(key: string): Promise<R2FileInfo | null> {
 }
 
 /**
+ * Get file content from R2 storage
+ */
+export async function getFileContent(bucket: string, key: string): Promise<Uint8Array | null> {
+  try {
+    const r2Client = createR2Client()
+
+    const command = new GetObjectCommand({
+      Bucket: bucket,
+      Key: key
+    })
+
+    const response = await r2Client.send(command)
+    
+    if (!response.Body) {
+      return null
+    }
+
+    // Convert stream to bytes
+    const chunks: any[] = []
+    const stream = response.Body as any
+    
+    // Handle different stream types
+    if (stream.transformToByteArray) {
+      // AWS SDK v3 stream
+      return await stream.transformToByteArray()
+    } else if (stream.getReader) {
+      // Web Streams API
+      const reader = stream.getReader()
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        chunks.push(value)
+      }
+    } else {
+      // Node.js stream
+      for await (const chunk of stream) {
+        chunks.push(chunk)
+      }
+    }
+
+    // Combine all chunks
+    const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0)
+    const result = new Uint8Array(totalLength)
+    let offset = 0
+    
+    for (const chunk of chunks) {
+      result.set(chunk, offset)
+      offset += chunk.length
+    }
+
+    return result
+  } catch (error: any) {
+    if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) {
+      return null
+    }
+    console.error('R2 get file content error:', error)
+    throw error
+  }
+}
+
+/**
  * Generate R2 public URL for a given key
  * Returns public URL for public buckets, or indicates private access needed
  */
 export function getR2PublicUrl(key: string, bucket?: string): string {
-  const config = getR2Config()
-  const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME
+  try {
+    const config = getR2Config()
+    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME
 
-  // Only pathology-bites-images has public access
-  if (bucketName === 'pathology-bites-images') {
-    return `${config.CLOUDFLARE_R2_PUBLIC_URL}/${key}`
+    // Public access buckets
+    if (bucketName === 'pathology-bites-images') {
+      return `${config.CLOUDFLARE_R2_PUBLIC_URL}/${key}`
+    }
+  } catch (error) {
+    // Fallback for client-side or when env vars are not available
+    const bucketName = bucket || 'pathology-bites-images'
+    
+    // Public access buckets
+    if (bucketName === 'pathology-bites-images') {
+      const publicUrl = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev'
+      return `${publicUrl}/${key}`
+    }
+    
+    // Anki media bucket uses its own domain
+    if (bucketName === 'pathology-bites-anki') {
+      return `https://pathology-bites-anki.r2.dev/${key}`
+    }
+
+    // For private buckets, return a placeholder that indicates signed URL needed
+    return `[PRIVATE:${bucketName}]${key}`
   }
-
-  // For private buckets, return a placeholder that indicates signed URL needed
-  return `[PRIVATE:${bucketName}]${key}`
 }
 
 /**
@@ -263,12 +346,33 @@ export function extractR2KeyFromUrl(url: string): string | null {
 }
 
 /**
- * Generate storage path for images (maintains compatibility with existing structure)
+ * Generate standardized storage path for images in library folder
+ * Format: library/YYYYMMDDHHMMSS-{cleaned-filename}
  */
 export function generateImageStoragePath(filename: string, category: string): string {
-  const timestamp = Date.now()
-  const cleanName = filename.toLowerCase().replace(/[^a-z0-9.-]/g, '-')
-  return `images/${category}/${timestamp}-${cleanName}`
+  const now = new Date()
+  const dateStr = now.toISOString().slice(0, 19).replace(/[-:T]/g, '').slice(0, 14) // YYYYMMDDHHMMSS (no hyphens)
+
+  // Clean filename with graceful special character handling, preserve extension
+  const nameParts = filename.split('.')
+  const extension = nameParts.pop()?.toLowerCase() || 'jpg'
+  const baseName = nameParts.join('.')
+    .toLowerCase()
+    .trim()
+    // Replace common special characters with meaningful equivalents
+    .replace(/&/g, 'and')
+    .replace(/\+/g, 'plus')
+    .replace(/%/g, 'percent')
+    .replace(/@/g, 'at')
+    .replace(/\$/g, 'dollar')
+    // Replace whitespace and punctuation with single hyphens
+    .replace(/[\s\-_]+/g, '-') // Multiple spaces, hyphens, underscores → single hyphen
+    .replace(/[^\w\-]/g, '-') // Non-word characters (except existing hyphens) → hyphen
+    .replace(/-+/g, '-') // Multiple consecutive hyphens → single hyphen
+    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+
+  // Format: library/YYYYMMDDHHMMSS-{cleaned-name}.{ext}
+  return `library/${dateStr}-${baseName}.${extension}`
 }
 
 /**
@@ -414,6 +518,7 @@ export default {
   delete: deleteFromR2,
   bulkDelete: bulkDeleteFromR2,
   getFileInfo: getR2FileInfo,
+  getFileContent: getFileContent,
   getPublicUrl: getR2PublicUrl,
   extractKeyFromUrl: extractR2KeyFromUrl,
   listFiles: listR2Files,
