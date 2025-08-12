@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// Cache for gene lookup results with 1-hour TTL
+const CACHE_TTL = 60 * 60 * 1000 // 1 hour
+const geneCache = new Map<string, { data: any, timestamp: number }>()
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const geneSymbol = searchParams.get('symbol')
@@ -12,6 +16,17 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const cacheKey = geneSymbol.trim().toUpperCase()
+    const now = Date.now()
+
+    // Check cache first
+    const cached = geneCache.get(cacheKey)
+    if (cached && (now - cached.timestamp) < CACHE_TTL) {
+      return NextResponse.json({ 
+        data: cached.data,
+        cached: true
+      })
+    }
     // Fetch from both APIs in parallel
     const [hugoResponse, harmonizomeResponse] = await Promise.all([
       fetch(`https://rest.genenames.org/fetch/symbol/${geneSymbol.trim()}`, {
@@ -68,6 +83,21 @@ export async function GET(request: NextRequest) {
       ...hugoGeneInfo,
       aliasSymbols: [...new Set([...hugoGeneInfo.aliasSymbols, ...harmonizomeGeneInfo.aliasSymbols])],
       description: hugoGeneInfo.description || harmonizomeGeneInfo.description || ''
+    }
+
+    // Cache the result
+    geneCache.set(cacheKey, {
+      data: combinedGeneInfo,
+      timestamp: now
+    })
+
+    // Clean up old cache entries (keep only last 1000 entries)
+    if (geneCache.size > 1000) {
+      const entries = Array.from(geneCache.entries())
+      entries.sort((a, b) => b[1].timestamp - a[1].timestamp)
+      const toKeep = entries.slice(0, 1000)
+      geneCache.clear()
+      toKeep.forEach(([key, value]) => geneCache.set(key, value))
     }
 
     return NextResponse.json({ data: combinedGeneInfo })
@@ -141,4 +171,14 @@ function parseHarmonizomeData(data: any) {
     aliasSymbols: data.synonyms || [],
     description: data.description || ''
   }
+}
+
+// Cache management endpoint
+export async function DELETE() {
+  geneCache.clear()
+  
+  return NextResponse.json({
+    success: true,
+    message: 'Gene lookup cache cleared'
+  })
 }

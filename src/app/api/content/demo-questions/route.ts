@@ -102,21 +102,52 @@ export async function GET(request: Request) {
         );
       }
 
-      // Fetch the full question data
-      const { data: questionData, error: questionError } = await supabase
-        .from('questions')
-        .select(`
-          id,
-          title,
-          stem,
-          teaching_point,
-          question_references,
-          status,
-          difficulty
-        `)
-        .eq('id', demoData.question_id)
-        .eq('status', 'approved')
-        .single();
+      // Consolidated query to fetch all question data in parallel
+      const [
+        { data: questionData, error: questionError },
+        { data: answerOptions, error: optionsError },
+        { data: questionImagesWithDetails, error: imagesError }
+      ] = await Promise.all([
+        // Get question data
+        supabase
+          .from('questions')
+          .select(`
+            id,
+            title,
+            stem,
+            teaching_point,
+            question_references,
+            status,
+            difficulty
+          `)
+          .eq('id', demoData.question_id)
+          .eq('status', 'approved')
+          .single(),
+
+        // Get answer options
+        supabase
+          .from('question_options')
+          .select('id, text, is_correct, explanation')
+          .eq('question_id', demoData.question_id)
+          .order('order_index'),
+
+        // Get question images with image details in one query
+        supabase
+          .from('question_images')
+          .select(`
+            image_id,
+            question_section,
+            order_index,
+            images:image_id (
+              id,
+              url,
+              alt_text,
+              description
+            )
+          `)
+          .eq('question_id', demoData.question_id)
+          .order('order_index')
+      ]);
 
       if (questionError || !questionData) {
         console.error('Error fetching question data:', questionError);
@@ -126,38 +157,13 @@ export async function GET(request: Request) {
         );
       }
 
-      // Fetch question options separately
-      const { data: answerOptions, error: optionsError } = await supabase
-        .from('question_options')
-        .select('id, text, is_correct, explanation')
-        .eq('question_id', demoData.question_id)
-        .order('order_index');
-
-      // Fetch question images with a simpler query
-      const { data: questionImages, error: imagesError } = await supabase
-        .from('question_images')
-        .select('image_id, question_section, order_index')
-        .eq('question_id', demoData.question_id)
-        .order('order_index');
-
-      // Fetch image details separately
-      let imageDetails: any[] = [];
-      if (questionImages && questionImages.length > 0) {
-        const imageIds = questionImages.map((qi: any) => qi.image_id);
-        const { data: images, error: imageError } = await supabase
-          .from('images')
-          .select('id, url, alt_text, description')
-          .in('id', imageIds);
-        imageDetails = images || [];
-      }
-
       try {
         // Process the question data to match expected format
-        const stemImages = questionImages
+        const stemImages = questionImagesWithDetails
           ?.filter((qi: any) => qi.question_section === 'stem')
           ?.sort((a: any, b: any) => a.order_index - b.order_index)
           ?.map((qi: any) => {
-            const imageDetail = imageDetails.find((img: any) => img.id === qi.image_id);
+            const imageDetail = qi.images;
             return {
               url: imageDetail?.url || '',
               caption: imageDetail?.description || '',
@@ -165,10 +171,9 @@ export async function GET(request: Request) {
             };
           }) || [];
 
-        const explanationImageData = questionImages
+        const explanationImageData = questionImagesWithDetails
           ?.find((qi: any) => qi.question_section === 'explanation');
-        const explanationImageDetail = explanationImageData ?
-          imageDetails.find((img: any) => img.id === explanationImageData.image_id) : null;
+        const explanationImageDetail = explanationImageData?.images;
 
         const processedQuestion = {
           id: questionData.id,
@@ -193,7 +198,7 @@ export async function GET(request: Request) {
             url: explanationImageDetail.url || '',
             caption: explanationImageDetail.description || '',
             alt: explanationImageDetail.alt_text || 'Comparative image'
-          } : undefined
+          } : null
         };
 
         return NextResponse.json(processedQuestion, { status: 200 });
@@ -232,13 +237,44 @@ export async function GET(request: Request) {
       // Include next index in response for client to track
       const nextIndex = (selectedIndex + 1) % demoQuestions.length;
 
-      // Fetch the basic question data
-      const { data: questionData, error: questionError } = await supabase
-        .from('questions')
-        .select('id, title, stem, teaching_point, question_references, status, difficulty')
-        .eq('id', selectedDemo.question_id)
-        .eq('status', 'approved')
-        .single();
+      // Consolidated query to fetch all question data in parallel
+      const [
+        { data: questionData, error: questionError },
+        { data: answerOptions, error: optionsError },
+        { data: questionImagesWithDetails, error: imagesError }
+      ] = await Promise.all([
+        // Get question data
+        supabase
+          .from('questions')
+          .select('id, title, stem, teaching_point, question_references, status, difficulty')
+          .eq('id', selectedDemo.question_id)
+          .eq('status', 'approved')
+          .single(),
+
+        // Get answer options
+        supabase
+          .from('question_options')
+          .select('id, text, is_correct, explanation')
+          .eq('question_id', selectedDemo.question_id)
+          .order('order_index'),
+
+        // Get question images with image details in one query
+        supabase
+          .from('question_images')
+          .select(`
+            image_id,
+            question_section,
+            order_index,
+            images:image_id (
+              id,
+              url,
+              alt_text,
+              description
+            )
+          `)
+          .eq('question_id', selectedDemo.question_id)
+          .order('order_index')
+      ]);
 
       if (questionError || !questionData) {
         console.error('Error fetching question data:', questionError);
@@ -248,38 +284,13 @@ export async function GET(request: Request) {
         );
       }
 
-      // Fetch question options separately
-      const { data: answerOptions, error: optionsError } = await supabase
-        .from('question_options')
-        .select('id, text, is_correct, explanation')
-        .eq('question_id', selectedDemo.question_id)
-        .order('order_index');
-
-      // Fetch question images with a simpler query
-      const { data: questionImages, error: imagesError } = await supabase
-        .from('question_images')
-        .select('image_id, question_section, order_index')
-        .eq('question_id', selectedDemo.question_id)
-        .order('order_index');
-
-      // Fetch image details separately
-      let imageDetails: any[] = [];
-      if (questionImages && questionImages.length > 0) {
-        const imageIds = questionImages.map((qi: any) => qi.image_id);
-        const { data: images } = await supabase
-          .from('images')
-          .select('id, url, alt_text, description')
-          .in('id', imageIds);
-        imageDetails = images || [];
-      }
-
       try {
         // Process the question data to match expected format
-        const stemImages = questionImages
+        const stemImages = questionImagesWithDetails
           ?.filter((qi: any) => qi.question_section === 'stem')
           ?.sort((a: any, b: any) => a.order_index - b.order_index)
           ?.map((qi: any) => {
-            const imageDetail = imageDetails.find((img: any) => img.id === qi.image_id);
+            const imageDetail = qi.images;
             return {
               url: imageDetail?.url || '',
               caption: imageDetail?.description || '',
@@ -287,10 +298,9 @@ export async function GET(request: Request) {
             };
           }) || [];
 
-        const explanationImageData = questionImages
+        const explanationImageData = questionImagesWithDetails
           ?.find((qi: any) => qi.question_section === 'explanation');
-        const explanationImageDetail = explanationImageData ?
-          imageDetails.find((img: any) => img.id === explanationImageData.image_id) : null;
+        const explanationImageDetail = explanationImageData?.images;
 
         const processedQuestion = {
           id: questionData.id,
@@ -315,7 +325,7 @@ export async function GET(request: Request) {
             url: explanationImageDetail.url || '',
             caption: explanationImageDetail.description || '',
             alt: explanationImageDetail.alt_text || 'Comparative image'
-          } : undefined,
+          } : null,
           // Include metadata for sequential ordering
           _metadata: {
             currentIndex: selectedIndex,

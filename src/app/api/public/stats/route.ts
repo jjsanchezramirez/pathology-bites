@@ -5,27 +5,49 @@ import { withRateLimit, generalAPIRateLimiter } from '@/shared/utils/api-rate-li
 
 const rateLimitedHandler = withRateLimit(generalAPIRateLimiter)
 
+// Cache for public stats with 5-minute TTL
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+let cachedStats: any = null
+let cacheTimestamp: number = 0
+
 export const GET = rateLimitedHandler(async function() {
   try {
+    // Check cache first
+    const now = Date.now()
+    if (cachedStats && (now - cacheTimestamp) < CACHE_TTL) {
+      return NextResponse.json({
+        success: true,
+        data: cachedStats,
+        cached: true
+      })
+    }
+
     const supabase = await createClient()
 
-    // Get approved questions count directly (published questions are now 'approved')
-    const { count: questionCount, error: questionError } = await supabase
-      .from('questions')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'approved')
-
-    // Get total images count
-    const { count: imageCount, error: imageError } = await supabase
-      .from('images')
-      .select('*', { count: 'exact', head: true })
-
-    // Get unique categories from approved questions
-    const { data: questionsWithCategories, error: categoryError } = await supabase
-      .from('questions')
-      .select('category_id')
-      .eq('status', 'approved')
-      .not('category_id', 'is', null)
+    // Parallel execution of all queries
+    const [
+      { count: questionCount, error: questionError },
+      { count: imageCount, error: imageError },
+      { data: questionsWithCategories, error: categoryError }
+    ] = await Promise.all([
+      // Get approved questions count
+      supabase
+        .from('questions')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'approved'),
+      
+      // Get total images count
+      supabase
+        .from('images')
+        .select('*', { count: 'exact', head: true }),
+      
+      // Get unique categories from approved questions
+      supabase
+        .from('questions')
+        .select('category_id')
+        .eq('status', 'approved')
+        .not('category_id', 'is', null)
+    ])
 
     // Calculate unique categories count
     const uniqueCategories = questionsWithCategories
@@ -43,13 +65,19 @@ export const GET = rateLimitedHandler(async function() {
       console.error('Error fetching category data:', categoryError)
     }
 
+    const stats = {
+      questions: questionCount || 0,
+      images: imageCount || 0,
+      categories: uniqueCategories || 0
+    }
+
+    // Update cache
+    cachedStats = stats
+    cacheTimestamp = now
+
     return NextResponse.json({
       success: true,
-      data: {
-        questions: questionCount || 0,
-        images: imageCount || 0,
-        categories: uniqueCategories || 0
-      }
+      data: stats
     })
 
   } catch (error) {
@@ -66,3 +94,14 @@ export const GET = rateLimitedHandler(async function() {
     })
   }
 })
+
+// Cache invalidation endpoint for admin use
+export async function DELETE() {
+  cachedStats = null
+  cacheTimestamp = 0
+  
+  return NextResponse.json({
+    success: true,
+    message: 'Public stats cache cleared'
+  })
+}
