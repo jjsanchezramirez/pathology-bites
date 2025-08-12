@@ -2,15 +2,16 @@
 
 import { useRef } from 'react'
 import Image from 'next/image'
+import { getR2PublicUrl } from '@/shared/services/r2-storage'
 
 const logos = [
-  { id: 'leeds', src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/university-of-leeds-logo.png', alt: 'University of Leeds' },
-  { id: 'pathpresenter', src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/path-presenter-logo.png', alt: 'PathPresenter' },
-  { id: 'mgh', src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/mgh-logo.png', alt: 'MGH' },
-  { id: 'toronto', src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/university-of-toronto-logo.png', alt: 'University of Toronto' },
-  { id: 'rosai', src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/rosai-collection-logo.png', alt: 'Rosai Collection' },
-  { id: 'hematopathology', src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/hematopathology-etutorial-logo.png', alt: 'Hematopathology eTutorial' },
-  { id: 'recut', src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/recut-club-logo.png', alt: 'Recut Club' }
+  { id: 'leeds', src: getR2PublicUrl('logos/university-of-leeds-logo.png'), alt: 'University of Leeds' },
+  { id: 'pathpresenter', src: getR2PublicUrl('logos/path-presenter-logo.png'), alt: 'PathPresenter' },
+  { id: 'mgh', src: getR2PublicUrl('logos/mgh-logo.png'), alt: 'MGH' },
+  { id: 'toronto', src: getR2PublicUrl('logos/university-of-toronto-logo.png'), alt: 'University of Toronto' },
+  { id: 'rosai', src: getR2PublicUrl('logos/rosai-collection-logo.png'), alt: 'Rosai Collection' },
+  { id: 'hematopathology', src: getR2PublicUrl('logos/hematopathology-etutorial-logo.png'), alt: 'Hematopathology eTutorial' },
+  { id: 'recut', src: getR2PublicUrl('logos/recut-club-logo.png'), alt: 'Recut Club' }
 ]
 
 export function MouseAvoidingLogos() {

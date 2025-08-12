@@ -24,6 +24,7 @@ import Image from 'next/image'
 import { PublicHero } from '@/shared/components/common/public-hero'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
 import { ContentDisclaimer } from '@/shared/components/common/content-disclaimer'
+import { getR2PublicUrl } from '@/shared/services/r2-storage'
 
 // Import types and utilities
 import { VirtualSlide } from './types'
@@ -351,13 +352,13 @@ export default function VirtualSlidesPage() {
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="flex items-center justify-center gap-4 md:gap-6 lg:gap-8 overflow-x-auto">
             {[
-              { src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/university-of-leeds-logo.png', alt: 'University of Leeds' },
-              { src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/mgh-logo.png', alt: 'MGH Pathology' },
-              { src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/path-presenter-logo.png', alt: 'PathPresenter' },
-              { src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/rosai-collection-logo.png', alt: 'Rosai Collection' },
-              { src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/university-of-toronto-logo.png', alt: 'University of Toronto LMP' },
-              { src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/hematopathology-etutorial-logo.png', alt: 'Hematopathology eTutorial' },
-              { src: 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/logos/recut-club-logo.png', alt: 'Recut Club' }
+              { src: getR2PublicUrl('logos/university-of-leeds-logo.png'), alt: 'University of Leeds' },
+              { src: getR2PublicUrl('logos/mgh-logo.png'), alt: 'MGH Pathology' },
+              { src: getR2PublicUrl('logos/path-presenter-logo.png'), alt: 'PathPresenter' },
+              { src: getR2PublicUrl('logos/rosai-collection-logo.png'), alt: 'Rosai Collection' },
+              { src: getR2PublicUrl('logos/university-of-toronto-logo.png'), alt: 'University of Toronto LMP' },
+              { src: getR2PublicUrl('logos/hematopathology-etutorial-logo.png'), alt: 'Hematopathology eTutorial' },
+              { src: getR2PublicUrl('logos/recut-club-logo.png'), alt: 'Recut Club' }
             ].map((logo, index) => (
               <div
                 key={index}
