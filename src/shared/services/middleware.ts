@@ -7,8 +7,142 @@ const roleCache = new Map<string, { role: string; timestamp: number }>()
 const ROLE_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 const processingRequests = new Set<string>()
 
+// Admin API endpoints that don't require authentication (health checks, etc.)
+const PUBLIC_ADMIN_ENDPOINTS = [
+  '/api/admin/system-status'
+]
+
+// Admin API endpoints that require admin-only access (not creator/reviewer)
+const ADMIN_ONLY_ENDPOINTS = [
+  '/api/admin/users',
+  '/api/admin/invite-users', 
+  '/api/admin/notifications',
+  '/api/admin/rate-limit-status',
+  '/api/admin/refresh-stats'
+]
+
+// Handle authentication for admin API routes
+async function handleAdminApiAuth(request: NextRequest) {
+  // Allow public endpoints without auth
+  if (PUBLIC_ADMIN_ENDPOINTS.some(endpoint => request.nextUrl.pathname.startsWith(endpoint))) {
+    return NextResponse.next()
+  }
+
+  try {
+    // Set up Supabase client
+    let response = NextResponse.next({ request })
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+            response = NextResponse.next({ request })
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            )
+          },
+        },
+      }
+    )
+
+    // Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Get user role with caching
+    const userRole = await getUserRoleWithCache(user.id, user, supabase)
+
+    // Check if endpoint requires admin-only access
+    const requiresAdminOnly = ADMIN_ONLY_ENDPOINTS.some(endpoint => 
+      request.nextUrl.pathname.startsWith(endpoint)
+    )
+
+    if (requiresAdminOnly && userRole !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
+    }
+
+    // Check if user has any admin privileges (admin, creator, reviewer)
+    if (!['admin', 'creator', 'reviewer'].includes(userRole)) {
+      return NextResponse.json({ error: 'Forbidden - Admin privileges required' }, { status: 403 })
+    }
+
+    // Add user info to headers for the endpoint to use
+    response.headers.set('x-user-id', user.id)
+    response.headers.set('x-user-role', userRole)
+    response.headers.set('x-user-email', user.email || '')
+
+    return response
+
+  } catch (error) {
+    console.error('Admin API auth error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+// Handle authentication for user and quiz API routes
+async function handleUserApiAuth(request: NextRequest) {
+  try {
+    // Set up Supabase client
+    let response = NextResponse.next({ request })
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+            response = NextResponse.next({ request })
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            )
+          },
+        },
+      }
+    )
+
+    // Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Add user info to headers for the endpoint to use
+    response.headers.set('x-user-id', user.id)
+    response.headers.set('x-user-email', user.email || '')
+
+    return response
+
+  } catch (error) {
+    console.error('User API auth error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
 export async function updateSession(request: NextRequest) {
-  // CRITICAL: Immediately return for all API routes to avoid interference
+  // Handle admin API routes with authentication
+  if (request.nextUrl.pathname.startsWith('/api/admin/')) {
+    return handleAdminApiAuth(request)
+  }
+  
+  // Handle user and quiz API routes with authentication  
+  if (request.nextUrl.pathname.startsWith('/api/user/') || 
+      request.nextUrl.pathname.startsWith('/api/quiz/')) {
+    return handleUserApiAuth(request)
+  }
+  
+  // Skip middleware for other API routes  
   if (request.nextUrl.pathname.startsWith('/api/')) {
     return NextResponse.next()
   }
@@ -142,7 +276,7 @@ async function getUserRoleWithCache(userId: string, user: any, supabase: any): P
       .from('users')
       .select('role')
       .eq('id', userId)
-      .single()
+      .maybeSingle() // Use maybeSingle to handle missing users gracefully
 
     if (error) {
       return 'user' // Default fallback

@@ -76,7 +76,6 @@ export function useCachedData<T>(
       setIsLoading(true)
       setError(null)
 
-      console.log(`🔄 Fetching fresh data for key: ${key}`)
       const result = await fetcher()
 
       if (!mounted.current) return
@@ -101,7 +100,6 @@ export function useCachedData<T>(
       const error = err instanceof Error ? err : new Error('Fetch failed')
       setError(error)
       onError?.(error)
-      console.error(`❌ Failed to fetch data for key: ${key}`, error)
 
     } finally {
       if (mounted.current) {

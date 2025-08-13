@@ -2,250 +2,248 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
+import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
-import { Progress } from "@/shared/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
-import { 
-  TrendingUp, 
+import {
+  TrendingUp,
   Calendar,
-  Award,
-  Clock,
-  Target,
+  Trophy,
   BarChart3,
-  Activity,
-  CheckCircle
+  Clock,
+  Star,
+  Zap,
+  CheckCircle,
+  Settings
 } from "lucide-react"
+import Link from "next/link"
 
 export default function ProgressPage() {
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Learning Progress</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Progress</h1>
         <p className="text-muted-foreground">
-          Track your learning journey and celebrate your achievements
+          Track your learning journey, milestones, and personal growth
         </p>
       </div>
 
-      {/* Progress Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Progress</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+      {/* Coming Soon Hero */}
+      <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
+        <CardContent className="p-12 text-center">
+          <TrendingUp className="h-16 w-16 text-purple-500 mx-auto mb-6" />
+          <h2 className="text-2xl font-bold text-purple-900 mb-4">
+            Progress Tracking In Development
+          </h2>
+          <p className="text-purple-700 mb-6 max-w-2xl mx-auto">
+            We're building a comprehensive progress tracking system to help you monitor your learning journey, 
+            track milestones, view learning streaks, and celebrate achievements. This will include detailed 
+            analytics of your study patterns and personalized insights for improvement.
+          </p>
+          <Badge variant="secondary" className="mb-4">
+            Launching Soon
+          </Badge>
+        </CardContent>
+      </Card>
+
+      {/* Progress vs Performance Explanation */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="border-purple-200 bg-purple-50/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-purple-800">
+              <TrendingUp className="h-5 w-5" />
+              Progress Tracking
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">68%</div>
-            <p className="text-xs text-muted-foreground">
-              +12% this month
+            <p className="text-sm text-purple-700 mb-4">
+              <strong>Progress</strong> focuses on your learning journey over time - tracking milestones, 
+              study streaks, module completion, and personal growth metrics.
             </p>
+            <ul className="text-sm text-purple-600 space-y-1">
+              <li>• Learning milestones and achievements</li>
+              <li>• Study streaks and consistency</li>
+              <li>• Module and lesson completion rates</li>
+              <li>• Time spent learning</li>
+              <li>• Personal growth over time</li>
+            </ul>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Study Days</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+        <Card className="border-blue-200 bg-blue-50/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-800">
+              <BarChart3 className="h-5 w-5" />
+              Performance Analytics
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">45</div>
-            <p className="text-xs text-muted-foreground">
-              This month
+            <p className="text-sm text-blue-700 mb-4">
+              <strong>Performance</strong> focuses on your competency and accuracy - analyzing quiz results, 
+              identifying knowledge gaps, and measuring mastery of pathology topics.
             </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Achievements</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">
-              Badges earned
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Study Time</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">127h</div>
-            <p className="text-xs text-muted-foreground">
-              Total time
-            </p>
+            <ul className="text-sm text-blue-600 space-y-1">
+              <li>• Quiz scores and accuracy trends</li>
+              <li>• Knowledge gaps analysis</li>
+              <li>• Topic mastery levels</li>
+              <li>• Comparative performance metrics</li>
+              <li>• Areas needing improvement</li>
+            </ul>
           </CardContent>
         </Card>
       </div>
 
-      {/* Progress Details */}
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="categories">By Category</TabsTrigger>
-          <TabsTrigger value="achievements">Achievements</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-        </TabsList>
+      {/* Preview Features */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="opacity-75">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Calendar className="h-5 w-5 text-green-500" />
+              Learning Streaks
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Track your daily study streaks and maintain consistency in 
+              your pathology learning journey.
+            </p>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Current streak:</span>
+              <Badge variant="outline">12 days</Badge>
+            </div>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Weekly Progress
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { week: "This Week", questions: 45, target: 50, percentage: 90 },
-                    { week: "Last Week", questions: 52, target: 50, percentage: 104 },
-                    { week: "2 Weeks Ago", questions: 38, target: 50, percentage: 76 },
-                    { week: "3 Weeks Ago", questions: 41, target: 50, percentage: 82 },
-                  ].map((week) => (
-                    <div key={week.week} className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>{week.week}</span>
-                        <span>{week.questions}/{week.target} questions</span>
-                      </div>
-                      <Progress value={week.percentage} className="h-2" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+        <Card className="opacity-75">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              Milestones
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Celebrate major learning milestones and track your progress 
+              through different pathology topics.
+            </p>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Next milestone:</span>
+              <Badge variant="outline">100 questions</Badge>
+            </div>
+          </CardContent>
+        </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Current Streak
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center space-y-4">
-                <div className="text-4xl font-bold text-primary">12</div>
-                <p className="text-muted-foreground">days in a row</p>
-                <div className="flex justify-center gap-1">
-                  {Array.from({ length: 7 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`w-3 h-3 rounded-full ${
-                        i < 5 ? 'bg-primary' : 'bg-gray-200'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <p className="text-sm text-muted-foreground">This week</p>
-              </CardContent>
-            </Card>
+        <Card className="opacity-75">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Clock className="h-5 w-5 text-blue-500" />
+              Study Time
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Monitor total time spent learning and track your dedication 
+              to mastering pathology concepts.
+            </p>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Total time:</span>
+              <Badge variant="outline">47 hours</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="opacity-75">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Star className="h-5 w-5 text-orange-500" />
+              Achievement Badges
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Unlock achievement badges as you reach study goals and 
+              demonstrate mastery in various areas.
+            </p>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Badges earned:</span>
+              <Badge variant="outline">8 badges</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="opacity-75">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Zap className="h-5 w-5 text-red-500" />
+              Learning Velocity
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Track your learning pace and see how your study speed 
+              improves over time.
+            </p>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">This week:</span>
+              <Badge variant="outline">+15% faster</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="opacity-75">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <CheckCircle className="h-5 w-5 text-purple-500" />
+              Module Completion
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Monitor completion rates across different learning modules 
+              and track your overall progress.
+            </p>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Overall progress:</span>
+              <Badge variant="outline">34%</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Temporary Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            In the Meantime
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground">
+            While we're building the Progress feature, you can still track your learning using these existing tools:
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/dashboard/performance">
+              <Button variant="outline" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                View Performance Analytics
+              </Button>
+            </Link>
+            <Link href="/dashboard/quizzes">
+              <Button variant="outline" className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                Review Quiz History
+              </Button>
+            </Link>
+            <Link href="/dashboard/learning">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                Continue Learning Modules
+              </Button>
+            </Link>
           </div>
-        </TabsContent>
-
-        <TabsContent value="categories" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Progress by Category</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                { name: "General Pathology", progress: 95, questions: 156, mastery: "Expert" },
-                { name: "Renal Pathology", progress: 88, questions: 89, mastery: "Advanced" },
-                { name: "Dermatopathology", progress: 72, questions: 67, mastery: "Intermediate" },
-                { name: "Hematopathology", progress: 65, questions: 45, mastery: "Intermediate" },
-                { name: "GI Pathology", progress: 58, questions: 78, mastery: "Beginner" },
-                { name: "Neuropathology", progress: 23, questions: 12, mastery: "Beginner" },
-              ].map((category) => (
-                <div key={category.name} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">{category.name}</span>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">{category.mastery}</Badge>
-                      <span className="text-sm">{category.progress}%</span>
-                    </div>
-                  </div>
-                  <Progress value={category.progress} className="h-2" />
-                  <p className="text-xs text-muted-foreground">
-                    {category.questions} questions completed
-                  </p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="achievements" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              { name: "First Steps", description: "Complete your first quiz", earned: true, date: "2 weeks ago" },
-              { name: "Week Warrior", description: "Study for 7 consecutive days", earned: true, date: "1 week ago" },
-              { name: "Century Club", description: "Answer 100 questions", earned: true, date: "5 days ago" },
-              { name: "Perfect Score", description: "Get 100% on a quiz", earned: true, date: "3 days ago" },
-              { name: "Category Master", description: "Achieve 90% in any category", earned: false },
-              { name: "Marathon", description: "Study for 30 consecutive days", earned: false },
-            ].map((achievement) => (
-              <Card key={achievement.name} className={achievement.earned ? "border-yellow-200 bg-yellow-50/50" : ""}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-full ${achievement.earned ? "bg-yellow-100" : "bg-gray-100"}`}>
-                      <Award className={`h-5 w-5 ${achievement.earned ? "text-yellow-600" : "text-gray-400"}`} />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{achievement.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">{achievement.description}</p>
-                      {achievement.earned ? (
-                        <Badge className="bg-yellow-100 text-yellow-800">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Earned {achievement.date}
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline">Not earned</Badge>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="activity" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Recent Activity
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { action: "Completed Renal Pathology Quiz", score: "85%", time: "2 hours ago" },
-                  { action: "Started Inflammation module", score: null, time: "1 day ago" },
-                  { action: "Achieved Perfect Score badge", score: "100%", time: "3 days ago" },
-                  { action: "Completed Cell Death quiz", score: "92%", time: "4 days ago" },
-                  { action: "Started learning path", score: null, time: "1 week ago" },
-                ].map((activity, index) => (
-                  <div key={index} className="flex items-center gap-4 p-3 border rounded-lg">
-                    <div className="w-2 h-2 bg-primary rounded-full" />
-                    <div className="flex-1">
-                      <p className="font-medium">{activity.action}</p>
-                      <p className="text-sm text-muted-foreground">{activity.time}</p>
-                    </div>
-                    {activity.score && (
-                      <Badge variant="outline">{activity.score}</Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        </CardContent>
+      </Card>
     </div>
   )
 }

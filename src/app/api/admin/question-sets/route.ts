@@ -6,23 +6,7 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (userError || !['admin', 'creator', 'reviewer'].includes(userData?.role)) {
-      return NextResponse.json({ error: 'Forbidden - Admin, Creator, or Reviewer access required' }, { status: 403 })
-    }
+    // Auth is now handled by middleware
 
     // Get query parameters
     const { searchParams } = new URL(request.url)
@@ -54,20 +38,35 @@ export async function GET(request: NextRequest) {
       throw dataError
     }
 
-    // Get question counts for each set
-    const setsWithCounts = await Promise.all(
-      (data || []).map(async (set) => {
-        const { count: questionCount } = await supabase
-          .from('questions')
-          .select('*', { count: 'exact', head: true })
-          .eq('question_set_id', set.id)
-
-        return {
-          ...set,
-          question_count: questionCount || 0
-        }
+    if (!data || data.length === 0) {
+      return NextResponse.json({
+        questionSets: [],
+        totalSets: count || 0,
+        totalPages: Math.ceil((count || 0) / pageSize),
+        currentPage: page
       })
-    )
+    }
+
+    // Get question counts for all sets in a single query (eliminates N+1 problem)
+    const setIds = data.map(set => set.id)
+    const { data: questionCounts } = await supabase
+      .from('questions')
+      .select('question_set_id')
+      .in('question_set_id', setIds)
+
+    // Create a map of set_id -> question_count
+    const countMap = new Map<string, number>()
+    questionCounts?.forEach(q => {
+      if (q.question_set_id) {
+        countMap.set(q.question_set_id, (countMap.get(q.question_set_id) || 0) + 1)
+      }
+    })
+
+    // Transform the data to include question counts
+    const setsWithCounts = data.map(set => ({
+      ...set,
+      question_count: countMap.get(set.id) || 0
+    }))
 
     return NextResponse.json({
       questionSets: setsWithCounts,

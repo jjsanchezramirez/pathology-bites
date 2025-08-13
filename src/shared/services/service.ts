@@ -127,11 +127,11 @@ export class NotificationsService {
       ])
 
       // Create lookup maps for all source types
-      const inquiryMap = new Map(inquiries.map(i => [i.id, i]))
-      const reportMap = new Map(reports.map(r => [r.id, r]))
-      const systemUpdateMap = new Map(systemUpdates.map(u => [u.id, u]))
-      const milestoneMap = new Map(milestones.map(m => [m.id, m]))
-      const reminderMap = new Map(reminders.map(r => [r.id, r]))
+      const inquiryMap = new Map(inquiries.map(i => [i.id, i] as const))
+      const reportMap = new Map(reports.map(r => [r.id, r] as const))
+      const systemUpdateMap = new Map(systemUpdates.map(u => [u.id, u] as const))
+      const milestoneMap = new Map(milestones.map(m => [m.id, m] as const))
+      const reminderMap = new Map(reminders.map(r => [r.id, r] as const))
 
       // Combine notification states with source data
       const notifications: NotificationWithSource[] = notificationStates

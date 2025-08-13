@@ -6,28 +6,26 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      console.error('Categories API - Authentication error:', authError)
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // Auth is now handled by middleware - get user info from headers
+    const userId = request.headers.get('x-user-id')
+    const userRole = request.headers.get('x-user-role')
+    
+    // Fallback to manual auth check if headers are missing (for backward compatibility)
+    if (!userId || !userRole) {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
 
-    // Check if user is admin
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
 
-    if (userError) {
-      console.error('Categories API - User lookup error:', userError)
-      return NextResponse.json({ error: 'User lookup failed' }, { status: 500 })
-    }
-
-    if (!['admin', 'creator', 'reviewer'].includes(userData?.role)) {
-      console.error('Categories API - User does not have required role:', userData?.role)
-      return NextResponse.json({ error: 'Forbidden - Admin, Creator, or Reviewer access required' }, { status: 403 })
+      if (userError || !['admin', 'creator', 'reviewer'].includes(userData?.role)) {
+        return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
+      }
     }
 
     // Get query parameters
@@ -36,8 +34,8 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get('pageSize') || '10')
     const search = searchParams.get('search')
 
-    // Build query
-    let query = supabase
+    // Build base query for categories
+    let baseQuery = supabase
       .from('categories')
       .select(`
         *,
@@ -45,14 +43,14 @@ export async function GET(request: NextRequest) {
       `, { count: 'exact' })
 
     if (search) {
-      query = query.ilike('name', `%${search}%`)
+      baseQuery = baseQuery.ilike('name', `%${search}%`)
     }
 
     // Get total count
-    const { count } = await query
+    const { count } = await baseQuery
 
     // Get paginated data
-    const { data, error: dataError } = await query
+    const { data: categories, error: dataError } = await baseQuery
       .order('level, name')
       .range(page * pageSize, (page + 1) * pageSize - 1)
 
@@ -60,23 +58,38 @@ export async function GET(request: NextRequest) {
       throw dataError
     }
 
-    // Get question counts for each category
-    const categoriesWithCounts = await Promise.all(
-      (data || []).map(async (category) => {
-        const { count: questionCount } = await supabase
-          .from('questions')
-          .select('*', { count: 'exact', head: true })
-          .eq('category_id', category.id)
-
-        return {
-          ...category,
-          question_count: questionCount || 0,
-          parent_name: category.parent?.name,
-          parent_short_form: category.parent?.short_form,
-          parent_color: category.parent?.color
-        }
+    if (!categories || categories.length === 0) {
+      return NextResponse.json({
+        categories: [],
+        totalCategories: count || 0,
+        totalPages: Math.ceil((count || 0) / pageSize),
+        currentPage: page
       })
-    )
+    }
+
+    // Get question counts for all categories in a single query
+    const categoryIds = categories.map(cat => cat.id)
+    const { data: questionCounts } = await supabase
+      .from('questions')
+      .select('category_id')
+      .in('category_id', categoryIds)
+
+    // Create a map of category_id -> question_count
+    const countMap = new Map<string, number>()
+    questionCounts?.forEach(q => {
+      if (q.category_id) {
+        countMap.set(q.category_id, (countMap.get(q.category_id) || 0) + 1)
+      }
+    })
+
+    // Transform the data to include question counts
+    const categoriesWithCounts = categories.map(category => ({
+      ...category,
+      question_count: countMap.get(category.id) || 0,
+      parent_name: category.parent?.name,
+      parent_short_form: category.parent?.short_form,
+      parent_color: category.parent?.color
+    }))
 
     return NextResponse.json({
       categories: categoriesWithCounts,
@@ -98,23 +111,7 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (userError || !['admin', 'creator', 'reviewer'].includes(userData?.role)) {
-      return NextResponse.json({ error: 'Forbidden - Admin, Creator, or Reviewer access required' }, { status: 403 })
-    }
+    // Auth is now handled by middleware
 
     const body = await request.json()
     const { name, description, parentId, color } = body
@@ -172,23 +169,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (userError || !['admin', 'creator', 'reviewer'].includes(userData?.role)) {
-      return NextResponse.json({ error: 'Forbidden - Admin, Creator, or Reviewer access required' }, { status: 403 })
-    }
+    // Auth is now handled by middleware
 
     const body = await request.json()
     const { categoryId, name, description, parentId, color } = body
@@ -247,23 +228,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (userError || !['admin', 'creator', 'reviewer'].includes(userData?.role)) {
-      return NextResponse.json({ error: 'Forbidden - Admin, Creator, or Reviewer access required' }, { status: 403 })
-    }
+    // Auth is now handled by middleware
 
     const body = await request.json()
     const { categoryId } = body

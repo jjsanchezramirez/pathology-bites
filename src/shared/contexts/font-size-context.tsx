@@ -1,7 +1,7 @@
 // src/shared/contexts/font-size-context.tsx
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from 'react'
 import {
   getTextZoomConfig,
   applyTextZoom,
@@ -30,6 +30,10 @@ export function TextZoomProvider({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const config = getTextZoomConfig()
+  
+  // Debounce database updates to avoid API calls on every button press
+  const dbUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const pendingZoomRef = useRef<number | null>(null)
 
   // Load text zoom from database/localStorage on mount
   useEffect(() => {
@@ -94,28 +98,55 @@ export function TextZoomProvider({ children }: { children: ReactNode }) {
     loadTextZoom()
   }, [config.default])
 
-  const updateTextZoom = async (newZoom: number) => {
-    const validZoom = getValidZoomLevel(newZoom)
-    setTextZoomState(validZoom)
-    applyTextZoom(validZoom)
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (dbUpdateTimeoutRef.current) {
+        clearTimeout(dbUpdateTimeoutRef.current)
+      }
+    }
+  }, [])
 
-    // Update localStorage immediately
-    localStorage.setItem(STORAGE_KEY, validZoom.toString())
-
-    // Try to update database only if user is authenticated (don't block UI if it fails)
+  // Debounced database update function
+  const debouncedDatabaseUpdate = useCallback(async (zoom: number) => {
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
 
       if (user) {
         await userSettingsService.updateUISettings({
-          text_zoom: validZoom
+          text_zoom: zoom
         })
       }
     } catch (error) {
-      console.warn('Error saving text zoom to database:', error)
-      // Continue with localStorage-only operation
+      // Silently fail - localStorage is already updated
     }
+  }, [])
+
+  const updateTextZoom = (newZoom: number) => {
+    const validZoom = getValidZoomLevel(newZoom)
+    setTextZoomState(validZoom)
+    applyTextZoom(validZoom)
+
+    // Update localStorage immediately for instant response
+    localStorage.setItem(STORAGE_KEY, validZoom.toString())
+
+    // Store the pending zoom value
+    pendingZoomRef.current = validZoom
+
+    // Clear any existing timeout
+    if (dbUpdateTimeoutRef.current) {
+      clearTimeout(dbUpdateTimeoutRef.current)
+    }
+
+    // Debounce database update for 1 second
+    dbUpdateTimeoutRef.current = setTimeout(() => {
+      const finalZoom = pendingZoomRef.current
+      if (finalZoom !== null) {
+        debouncedDatabaseUpdate(finalZoom)
+        pendingZoomRef.current = null
+      }
+    }, 1000)
   }
 
   const increaseTextZoom = () => {

@@ -3,14 +3,30 @@ import { createClient } from '@/shared/services/server'
 import { deleteFromR2, extractR2KeyFromUrl } from '@/shared/services/r2-storage'
 
 export async function DELETE(request: NextRequest) {
+  console.log('🗑️ DELETE /api/images/delete called');
+  console.log('🍪 Request headers:', {
+    cookie: request.headers.get('cookie') ? 'present' : 'missing',
+    authorization: request.headers.get('authorization') ? 'present' : 'missing',
+    userAgent: request.headers.get('user-agent')
+  });
+
   try {
     const supabase = await createClient()
+    console.log('✅ Supabase client created');
 
     // Verify user is authenticated admin
     const { data: { user }, error: userError } = await supabase.auth.getUser()
+    console.log('👤 Auth check:', {
+      hasUser: !!user,
+      userError: userError?.message,
+      userId: user?.id,
+      userEmail: user?.email
+    });
+
     if (userError || !user) {
+      console.log('❌ Authentication failed');
       return NextResponse.json(
-        { error: 'You must be logged in to delete images' },
+        { error: 'You must be logged in to delete images', details: userError?.message },
         { status: 401 }
       )
     }
@@ -21,22 +37,29 @@ export async function DELETE(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
+    console.log('🔐 Role check:', { userData, roleError: roleError?.message });
+
     if (roleError || !userData || userData.role !== 'admin') {
+      console.log('❌ Authorization failed');
       return NextResponse.json(
-        { error: 'Only administrators can delete images' },
+        { error: 'Only administrators can delete images', details: roleError?.message },
         { status: 403 }
       )
     }
 
     // Parse request body
     const { imageId, imagePath } = await request.json()
+    console.log('📋 Request data:', { imageId, imagePath });
 
     if (!imageId) {
+      console.log('❌ Missing imageId');
       return NextResponse.json(
         { error: 'Image ID is required' },
         { status: 400 }
       )
     }
+
+
 
     // Get image details to determine storage location
     const { data: imageData, error: fetchError } = await supabase
@@ -85,13 +108,14 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
+    console.log('✅ Image deleted successfully');
     return NextResponse.json({
       success: true,
       message: 'Image deleted successfully'
     })
 
   } catch (error) {
-    console.error('Image deletion error:', error)
+    console.error('❌ Image deletion error:', error)
     return NextResponse.json(
       { error: 'Failed to delete image' },
       { status: 500 }

@@ -19,7 +19,7 @@ class NetworkService {
   private pingIntervalId?: NodeJS.Timeout;
   private authCheckIntervalId?: NodeJS.Timeout;
   private reconnectAttempts: number = 0;
-  private pingUrl: string = '/api/health'; // Use internal health check instead
+  private pingUrl: string = '/health.json'; // Use static file to avoid function calls
   private lastConnectivityCheck: number = 0;
   private lastAuthCheck: number = 0;
   private readonly CONNECTIVITY_CACHE_MS = 120000; // Cache connectivity status for 2 minutes

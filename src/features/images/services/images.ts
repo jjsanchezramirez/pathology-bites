@@ -2,26 +2,67 @@
 import { createClient } from '@/shared/services/client';
 import type { ImageData } from '@/features/images/types/images';
 
+
 export async function deleteImage(imagePath: string | null, imageId: string) {
   try {
-    const response = await fetch('/api/images/delete', {
+    console.log('🗑️ Deleting image:', { imageId, imagePath });
+
+    const url = '/api/images/delete';
+    console.log('📡 Making DELETE request to:', url);
+
+    const response = await fetch(url, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include', // Ensure cookies are sent
       body: JSON.stringify({
         imageId,
         imagePath
       })
     });
 
+    console.log('📥 Delete response:', {
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText,
+      contentType: response.headers.get('content-type')
+    });
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to delete image');
+      // Check if response is HTML (error page) or JSON
+      const contentType = response.headers.get('content-type');
+      console.log('❌ Error response content-type:', contentType);
+
+      if (contentType && contentType.includes('text/html')) {
+        const htmlText = await response.text();
+        console.error('❌ Received HTML error page instead of JSON:', htmlText.substring(0, 500));
+        throw new Error(`Server error (${response.status}): Received HTML error page instead of JSON response`);
+      }
+
+      try {
+        const errorData = await response.json();
+        console.log('❌ Error data:', errorData);
+        throw new Error(errorData.error || 'Failed to delete image');
+      } catch (parseError) {
+        console.error('❌ Failed to parse error response as JSON:', parseError);
+        const responseText = await response.text();
+        console.error('❌ Raw response text:', responseText.substring(0, 500));
+        throw new Error(`Server error (${response.status}): ${response.statusText}`);
+      }
     }
 
-    const result = await response.json();
-    return result;
+    // Try to parse success response
+    try {
+      const result = await response.json();
+      console.log('✅ Delete successful:', result);
+      return result;
+    } catch (parseError) {
+      console.error('❌ Failed to parse success response as JSON:', parseError);
+      const responseText = await response.text();
+      console.error('❌ Raw success response text:', responseText.substring(0, 500));
+      throw new Error('Failed to parse server response');
+    }
   } catch (error) {
     console.error('Delete image error:', error);
     throw error;
@@ -137,12 +178,22 @@ export async function fetchImages(params: {
 
     if (countResult.error) {
       console.error('Count query error:', countResult.error);
-      throw new Error(`Failed to count images: ${countResult.error.message}`);
+      // Return default values instead of throwing to prevent UI crashes
+      return {
+        data: [],
+        total: 0,
+        error: `Failed to count images: ${countResult.error.message}`
+      };
     }
 
     if (dataResult.error) {
       console.error('Data query error:', dataResult.error);
-      throw new Error(`Failed to fetch images: ${dataResult.error.message}`);
+      // Return default values instead of throwing to prevent UI crashes
+      return {
+        data: [],
+        total: 0,
+        error: `Failed to fetch images: ${dataResult.error.message}`
+      };
     }
 
     return {
@@ -297,6 +348,7 @@ export async function bulkDeleteImages(imageIds: string[]): Promise<{ success: b
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include', // Ensure cookies are sent
       body: JSON.stringify({
         imageIds
       })

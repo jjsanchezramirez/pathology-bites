@@ -76,30 +76,114 @@ export function ApiTestsTab() {
 
     // Question APIs
     {
-      name: 'Get Questions',
+      name: 'Create Question (Admin)',
+      method: 'POST',
+      path: '/api/admin/questions-create',
+      description: 'Create a new question with answer options, images, and tags',
+      category: 'Questions',
+      requiresAuth: true,
+      samplePayload: JSON.stringify({
+        title: 'Sample Pathology Question',
+        stem: 'A 45-year-old patient presents with a liver biopsy. What is the most likely diagnosis?',
+        difficulty: 'medium',
+        teaching_point: 'This case demonstrates typical features of hepatocellular carcinoma.',
+        question_references: 'Robbins Pathologic Basis of Disease, 9th ed.',
+        status: 'draft',
+        question_set_id: null,
+        category_id: null,
+        answer_options: [
+          {
+            text: 'Hepatocellular carcinoma',
+            is_correct: true,
+            explanation: 'Correct. The histologic features are consistent with HCC.',
+            order_index: 0
+          },
+          {
+            text: 'Cholangiocarcinoma',
+            is_correct: false,
+            explanation: 'Incorrect. This would show different glandular patterns.',
+            order_index: 1
+          },
+          {
+            text: 'Metastatic adenocarcinoma',
+            is_correct: false,
+            explanation: 'Incorrect. The cellular morphology differs from metastatic disease.',
+            order_index: 2
+          },
+          {
+            text: 'Hepatic adenoma',
+            is_correct: false,
+            explanation: 'Incorrect. Adenomas are benign and show different histology.',
+            order_index: 3
+          },
+          {
+            text: 'Focal nodular hyperplasia',
+            is_correct: false,
+            explanation: 'Incorrect. FNH has characteristic stellate scarring.',
+            order_index: 4
+          }
+        ],
+        question_images: [],
+        tag_ids: []
+      }, null, 2)
+    },
+    {
+      name: 'Get Admin Users',
       method: 'GET',
-      path: '/api/content/questions',
-      description: 'Fetch questions with pagination and filters',
+      path: '/api/admin/users',
+      description: 'Get list of users (admin only)',
       category: 'Questions',
       requiresAuth: true
     },
     {
-      name: 'Create Question',
+      name: 'Get Admin Categories',
+      method: 'GET',
+      path: '/api/admin/categories',
+      description: 'Get list of question categories',
+      category: 'Questions',
+      requiresAuth: true
+    },
+    {
+      name: 'Create Admin Category',
       method: 'POST',
-      path: '/api/content/questions/create',
-      description: 'Create a new question',
+      path: '/api/admin/categories',
+      description: 'Create a new question category',
       category: 'Questions',
       requiresAuth: true,
       samplePayload: JSON.stringify({
-        title: 'Sample Question',
-        stem: 'What is the diagnosis?',
-        difficulty: 'intermediate',
-        category_id: 'uuid-here',
-        options: [
-          { text: 'Option A', is_correct: true },
-          { text: 'Option B', is_correct: false }
-        ]
+        name: 'Hepatic Pathology',
+        color: '#3B82F6',
+        level: 1,
+        parent_id: null,
+        short_form: 'HEPA'
       }, null, 2)
+    },
+    {
+      name: 'Get Admin Tags',
+      method: 'GET',
+      path: '/api/admin/tags',
+      description: 'Get list of question tags',
+      category: 'Questions',
+      requiresAuth: true
+    },
+    {
+      name: 'Create Admin Tag',
+      method: 'POST',
+      path: '/api/admin/tags',
+      description: 'Create a new question tag',
+      category: 'Questions',
+      requiresAuth: true,
+      samplePayload: JSON.stringify({
+        name: 'hepatocellular-carcinoma'
+      }, null, 2)
+    },
+    {
+      name: 'Get Question Sets',
+      method: 'GET',
+      path: '/api/admin/question-sets',
+      description: 'Get list of question sets',
+      category: 'Questions',
+      requiresAuth: true
     },
 
     // Quiz APIs
@@ -183,8 +267,80 @@ export function ApiTestsTab() {
       category: 'Debug',
       requiresAuth: false
     },
+    {
+      name: 'Preview Anki Media Upload',
+      method: 'GET',
+      path: '/api/debug/anki-media-upload',
+      description: 'Preview image files that would be uploaded from json/anki/media/ to R2',
+      category: 'Debug',
+      requiresAuth: false
+    },
+    {
+      name: 'Bulk Upload Anki Media',
+      method: 'POST',
+      path: '/api/debug/anki-media-upload',
+      description: 'Upload all image files from json/anki/media/ to Cloudflare R2 bucket',
+      category: 'Debug',
+      requiresAuth: false
+    },
+    {
+      name: 'Analyze Anki Media Upload',
+      method: 'GET',
+      path: '/api/debug/anki-media-analysis',
+      description: 'Analyze upload results and identify failed files with failure reasons',
+      category: 'Debug',
+      requiresAuth: false
+    },
+    {
+      name: 'Preview Anki Media Retry',
+      method: 'GET',
+      path: '/api/debug/anki-media-retry',
+      description: 'Preview failed files that would be retried with sanitized filenames',
+      category: 'Debug',
+      requiresAuth: false
+    },
+    {
+      name: 'Retry Failed Anki Media Uploads',
+      method: 'POST',
+      path: '/api/debug/anki-media-retry',
+      description: 'Retry uploading failed files with sanitized filenames (fixes space issues)',
+      category: 'Debug',
+      requiresAuth: false
+    },
+    {
+      name: 'Check Ankoma JSON in R2',
+      method: 'GET',
+      path: '/api/debug/upload-ankoma',
+      description: 'Check if ankoma.json exists in R2 bucket',
+      category: 'Debug',
+      requiresAuth: false
+    },
+    {
+      name: 'Upload Ankoma JSON to R2',
+      method: 'POST',
+      path: '/api/debug/upload-ankoma',
+      description: 'Upload ankoma.json file to R2 bucket for Anki Viewer',
+      category: 'Debug',
+      requiresAuth: false
+    },
+    {
+      name: 'Preview Anki Media Organization',
+      method: 'GET',
+      path: '/api/debug/anki-media-organize',
+      description: 'Preview which Anki media files would be moved to anki/ subfolder',
+      category: 'Debug',
+      requiresAuth: false
+    },
+    {
+      name: 'Organize Anki Media Files',
+      method: 'POST',
+      path: '/api/debug/anki-media-organize',
+      description: 'Move all Anki media files to anki/ subfolder for better organization',
+      category: 'Debug',
+      requiresAuth: false
+    },
 
-    // Storage APIs
+    // Storage APIs (Debug - No Auth Required)
     {
       name: 'List R2 Files',
       method: 'GET',
@@ -199,7 +355,7 @@ export function ApiTestsTab() {
       path: '/api/r2/signed-url',
       description: 'Generate a signed URL for R2 file upload',
       category: 'Storage',
-      requiresAuth: true,
+      requiresAuth: false,
       samplePayload: JSON.stringify({
         key: 'images/test-file.jpg',
         contentType: 'image/jpeg'
@@ -248,6 +404,157 @@ export function ApiTestsTab() {
       samplePayload: JSON.stringify({
         operation: 'all',
         dryRun: false
+      }, null, 2)
+    },
+    {
+      name: 'Delete All Anki Media Files',
+      method: 'POST',
+      path: '/api/r2/anki-media/delete-all',
+      description: 'Delete all files in the Anki Media bucket (Debug - No Auth Required)',
+      category: 'Storage',
+      requiresAuth: false
+    },
+    {
+      name: 'Security Events (Debug)',
+      method: 'GET',
+      path: '/api/security/events',
+      description: 'Retrieve security events for debugging (No Auth Required)',
+      category: 'Debug',
+      requiresAuth: false
+    },
+    {
+      name: 'List Context Files',
+      method: 'GET',
+      path: '/api/debug/list-context-files',
+      description: 'List all educational content files in R2 context/ folder',
+      category: 'Debug',
+      requiresAuth: false
+    },
+    {
+      name: 'Create Sample Content',
+      method: 'POST',
+      path: '/api/debug/create-sample-content',
+      description: 'Create a sample educational content file for testing',
+      category: 'Debug',
+      requiresAuth: false,
+      samplePayload: JSON.stringify({
+        filename: 'ap-general-topics.json'
+      }, null, 2)
+    },
+    {
+      name: 'Create Test Context Files',
+      method: 'POST',
+      path: '/api/debug/create-test-context-files',
+      description: 'Create multiple test context files needed for AI question generation',
+      category: 'Debug',
+      requiresAuth: false,
+      samplePayload: JSON.stringify({}, null, 2)
+    },
+    {
+      name: 'Get Educational Content',
+      method: 'GET',
+      path: '/api/educational/anatomic-pathology.json',
+      description: 'Get educational content for AI question testing',
+      category: 'Debug',
+      requiresAuth: false
+    },
+
+    // AI Question Generation APIs
+    {
+      name: 'Test Google/Gemini AI',
+      method: 'POST',
+      path: '/api/debug/google-test',
+      description: 'Test Google Gemini AI for question generation',
+      category: 'AI Generation',
+      requiresAuth: false,
+      samplePayload: JSON.stringify({
+        apiKey: 'your-google-api-key',
+        model: 'gemini-1.5-flash',
+        prompt: 'Create a pathology multiple choice question about liver disease.',
+        instructions: 'You are an expert pathology educator. Create a high-quality multiple choice question with 5 options and detailed explanations.'
+      }, null, 2)
+    },
+    {
+      name: 'Test Mistral AI',
+      method: 'POST',
+      path: '/api/debug/mistral-test',
+      description: 'Test Mistral AI for question generation',
+      category: 'AI Generation',
+      requiresAuth: false,
+      samplePayload: JSON.stringify({
+        apiKey: 'your-mistral-api-key',
+        model: 'mistral-large-latest',
+        prompt: 'Create a pathology multiple choice question about kidney disease.',
+        instructions: 'You are an expert pathology educator. Create a high-quality multiple choice question with 5 options and detailed explanations.'
+      }, null, 2)
+    },
+    {
+      name: 'Test Groq/LLAMA AI',
+      method: 'POST',
+      path: '/api/debug/groq-test',
+      description: 'Test Groq/LLAMA AI for question generation',
+      category: 'AI Generation',
+      requiresAuth: false,
+      samplePayload: JSON.stringify({
+        apiKey: 'your-groq-api-key',
+        model: 'Llama-3.3-70B-Instruct',
+        prompt: 'Create a pathology multiple choice question about cardiac pathology.',
+        instructions: 'You are an expert pathology educator. Create a high-quality multiple choice question with 5 options and detailed explanations.'
+      }, null, 2)
+    },
+    {
+      name: 'Test Claude AI',
+      method: 'POST',
+      path: '/api/debug/claude-test',
+      description: 'Test Claude AI for question generation',
+      category: 'AI Generation',
+      requiresAuth: false,
+      samplePayload: JSON.stringify({
+        apiKey: 'your-claude-api-key',
+        model: 'claude-3-5-sonnet-20241022',
+        prompt: 'Create a pathology multiple choice question about lung pathology.',
+        instructions: 'You are an expert pathology educator. Create a high-quality multiple choice question with 5 options and detailed explanations.'
+      }, null, 2)
+    },
+    {
+      name: 'Test ChatGPT AI',
+      method: 'POST',
+      path: '/api/debug/chatgpt-test',
+      description: 'Test OpenAI ChatGPT for question generation',
+      category: 'AI Generation',
+      requiresAuth: false,
+      samplePayload: JSON.stringify({
+        apiKey: 'your-openai-api-key',
+        model: 'gpt-4o',
+        prompt: 'Create a pathology multiple choice question about brain pathology.',
+        instructions: 'You are an expert pathology educator. Create a high-quality multiple choice question with 5 options and detailed explanations.'
+      }, null, 2)
+    },
+    {
+      name: 'Test DeepSeek AI',
+      method: 'POST',
+      path: '/api/debug/deepseek-test',
+      description: 'Test DeepSeek AI for question generation',
+      category: 'AI Generation',
+      requiresAuth: false,
+      samplePayload: JSON.stringify({
+        apiKey: 'your-deepseek-api-key',
+        model: 'deepseek-chat',
+        prompt: 'Create a pathology multiple choice question about gastrointestinal pathology.',
+        instructions: 'You are an expert pathology educator. Create a high-quality multiple choice question with 5 options and detailed explanations.'
+      }, null, 2)
+    },
+    {
+      name: 'Batch Model Test',
+      method: 'POST',
+      path: '/api/debug/batch-model-test',
+      description: 'Test multiple AI models simultaneously for comparison',
+      category: 'AI Generation',
+      requiresAuth: false,
+      samplePayload: JSON.stringify({
+        models: ['gemini-1.5-flash', 'mistral-large-latest'],
+        prompt: 'Explain the pathophysiology of myocardial infarction in 2-3 sentences.',
+        instructions: 'Provide a clear, concise medical explanation.'
       }, null, 2)
     }
   ]

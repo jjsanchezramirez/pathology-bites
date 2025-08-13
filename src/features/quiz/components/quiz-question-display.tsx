@@ -49,6 +49,7 @@ export function QuizQuestionDisplay({
   onAnswerSelect
 }: QuizQuestionDisplayProps) {
 
+
   // Get answer options with fallback for backward compatibility
   const answerOptions = question.question_options || question.answer_options || []
 

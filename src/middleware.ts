@@ -20,6 +20,9 @@ export const config = {
      * Handle other redirects at page level to minimize function invocations
      */
     '/dashboard/:path*',
-    '/admin/:path*'
+    '/admin/:path*',
+    '/api/admin/:path*',  // Add admin API routes for centralized auth
+    '/api/user/:path*',   // Add user API routes for centralized auth
+    '/api/quiz/:path*'    // Add quiz API routes for centralized auth
   ],
 }

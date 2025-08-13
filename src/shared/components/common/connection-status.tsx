@@ -2,12 +2,12 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { useNetworkStatus } from '@/shared/hooks/use-network-status'
+import { useZeroApiNetworkStatus } from '@/shared/hooks/use-zero-api-network-status'
 import { cn } from '@/shared/utils'
 import { Wifi, WifiOff } from 'lucide-react'
 
 export function ConnectionStatus() {
-  const isOnline = useNetworkStatus()
+  const { isOnline } = useZeroApiNetworkStatus()
   const [show, setShow] = useState(false)
   const [wasOffline, setWasOffline] = useState(false)
 

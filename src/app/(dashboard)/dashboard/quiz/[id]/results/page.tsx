@@ -8,16 +8,17 @@ import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
 import { Progress } from "@/shared/components/ui/progress"
+import { CircularProgress } from "@/shared/components/ui/circular-progress"
 import {
-  Trophy,
   Target,
   CheckCircle,
   XCircle,
   RotateCcw,
   Eye,
   BarChart3,
-  Home,
-  Plus
+  Clock,
+  Plus,
+  FileText
 } from "lucide-react"
 import { QuizResult } from "@/features/quiz/types/quiz"
 import { toast } from "sonner"
@@ -84,7 +85,8 @@ export default function QuizResultsPage() {
       } catch (error) {
         console.error('Error fetching quiz results:', error)
         toast.error('Failed to load quiz results')
-        router.push('/dashboard')
+        // Keep consistent with other pages - don't auto-redirect
+        setResult(null)
       } finally {
         setLoading(false)
       }
@@ -98,6 +100,26 @@ export default function QuizResultsPage() {
   const handleReviewQuestion = (questionId: string) => {
     setReviewQuestionId(questionId)
     setReviewDialogOpen(true)
+  }
+
+  const handleRetakeQuiz = () => {
+    if (isMockSession) {
+      // For mock sessions, redirect to new quiz page
+      router.push('/dashboard/quiz/new')
+    } else {
+      // For real sessions, we'd need to create a new session with same parameters
+      toast.info('Retake functionality coming soon!')
+      router.push('/dashboard/quiz/new')
+    }
+  }
+
+  const handleReviewQuiz = () => {
+    // Navigate to review mode - we'll implement this as a query parameter
+    if (isMockSession) {
+      router.push(`/dashboard/quiz/${sessionId}?review=true`)
+    } else {
+      router.push(`/dashboard/quiz/${sessionId}?review=true`)
+    }
   }
 
   const formatTime = (seconds: number) => {
@@ -190,15 +212,20 @@ export default function QuizResultsPage() {
 
   if (!result) {
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto space-y-6">
         <div className="text-center py-12">
-          <h1 className="text-2xl font-bold text-red-600">Results not found</h1>
+          <h1 className="text-2xl font-bold text-red-600">Quiz Results Not Available</h1>
           <p className="text-muted-foreground mt-2">
             The quiz results you're looking for don't exist or couldn't be loaded.
           </p>
-          <Link href="/dashboard">
-            <Button className="mt-4">Back to dashboard</Button>
-          </Link>
+          <div className="flex justify-center gap-2 mt-4">
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+            <Link href="/dashboard">
+              <Button variant="outline">Back to Dashboard</Button>
+            </Link>
+          </div>
         </div>
       </div>
     )
@@ -210,49 +237,68 @@ export default function QuizResultsPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="text-center space-y-4">
-        <div className="flex justify-center">
-          <Trophy className={`h-12 w-12 ${getScoreColor(result.score)}`} />
-        </div>
         <div>
-          <h1 className="text-2xl font-bold">Quiz complete</h1>
+          <h1 className="text-2xl font-bold">Quiz Complete</h1>
           <p className="text-muted-foreground text-sm">Here's how you performed</p>
         </div>
       </div>
 
-      {/* Score Overview */}
+      {/* Score Overview with Circular Progress */}
       <Card>
         <CardContent className="pt-6">
           <div className="text-center space-y-6">
-            <div className="space-y-2">
-              <div className={`text-5xl font-bold ${getScoreColor(result.score)}`}>
-                {result.score}%
-              </div>
-              <Badge variant="outline" className={scoreBadge.color}>
-                {scoreBadge.label}
-              </Badge>
+            <div className="flex justify-center">
+              <CircularProgress value={result.score} size={140} strokeWidth={10} />
             </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center space-y-1">
-                <div className="text-xl font-bold text-green-600">{result.correctAnswers}</div>
-                <div className="text-xs text-muted-foreground">Correct</div>
-              </div>
-              <div className="text-center space-y-1">
-                <div className="text-xl font-bold text-red-600">{result.totalQuestions - result.correctAnswers}</div>
-                <div className="text-xs text-muted-foreground">Incorrect</div>
-              </div>
-              <div className="text-center space-y-1">
-                <div className="text-xl font-bold">{formatTime(result.totalTimeSpent)}</div>
-                <div className="text-xs text-muted-foreground">Total time</div>
-              </div>
-              <div className="text-center space-y-1">
-                <div className="text-xl font-bold">{formatTime(result.averageTimePerQuestion)}</div>
-                <div className="text-xs text-muted-foreground">Avg per question</div>
-              </div>
-            </div>
+            <Badge variant="outline" className={scoreBadge.color}>
+              {scoreBadge.label}
+            </Badge>
           </div>
         </CardContent>
       </Card>
+
+      {/* Performance Metrics Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="space-y-2">
+              <CheckCircle className="h-8 w-8 text-green-500 mx-auto" />
+              <div className="text-2xl font-bold text-green-600">{result.correctAnswers}</div>
+              <div className="text-sm text-muted-foreground">Correct</div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="space-y-2">
+              <XCircle className="h-8 w-8 text-red-500 mx-auto" />
+              <div className="text-2xl font-bold text-red-600">{result.totalQuestions - result.correctAnswers}</div>
+              <div className="text-sm text-muted-foreground">Incorrect</div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="space-y-2">
+              <Clock className="h-8 w-8 text-blue-500 mx-auto" />
+              <div className="text-2xl font-bold text-blue-600">{formatTime(result.totalTimeSpent)}</div>
+              <div className="text-sm text-muted-foreground">Total Time</div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="space-y-2">
+              <Target className="h-8 w-8 text-purple-500 mx-auto" />
+              <div className="text-2xl font-bold text-purple-600">{formatTime(result.averageTimePerQuestion)}</div>
+              <div className="text-sm text-muted-foreground">Avg per Question</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Performance Breakdown */}
       <div className="grid gap-4 md:grid-cols-2">
@@ -356,7 +402,12 @@ export default function QuizResultsPage() {
                     <span>Time spent: {formatTime(question.timeSpent)}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span>{question.successRate}% of people got this correct</span>
+                    <span>
+                      {question.totalAttempts && question.totalAttempts >= 30 
+                        ? `${question.successRate}% of people got this correct`
+                        : 'Still collecting data...'
+                      }
+                    </span>
                   </div>
                 </div>
               </div>
@@ -370,19 +421,17 @@ export default function QuizResultsPage() {
         <Link href="/dashboard/quiz/new">
           <Button>
             <Plus className="h-4 w-4 mr-2" />
-            New quiz
+            New Quiz
           </Button>
         </Link>
-        <Button variant="outline">
+        <Button variant="outline" onClick={handleRetakeQuiz}>
           <RotateCcw className="h-4 w-4 mr-2" />
-          Retake quiz
+          Retake Quiz
         </Button>
-        <Link href="/dashboard">
-          <Button variant="outline">
-            <Home className="h-4 w-4 mr-2" />
-            Dashboard
-          </Button>
-        </Link>
+        <Button variant="outline" onClick={handleReviewQuiz}>
+          <FileText className="h-4 w-4 mr-2" />
+          Review Quiz
+        </Button>
       </div>
 
       {/* Question Review Dialog */}

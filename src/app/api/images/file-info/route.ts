@@ -56,36 +56,6 @@ export async function POST(request: NextRequest) {
           }
         })
       }
-    } else {
-      // Fallback: try legacy Supabase Storage for non-migrated images
-      const fileName = filePathOrUrl.split('/').pop() || filePathOrUrl
-
-      const { data: files, error } = await supabase.storage
-        .from('images')
-        .list('', {
-          search: fileName
-        })
-
-      if (error) {
-        return NextResponse.json(
-          { error: 'Failed to access storage' },
-          { status: 500 }
-        )
-      }
-
-      const file = files?.find(f => f.name === fileName)
-      if (file) {
-        return NextResponse.json({
-          success: true,
-          fileInfo: {
-            name: file.name,
-            size: file.metadata?.size || 0,
-            mimetype: file.metadata?.mimetype || 'application/octet-stream',
-            lastModified: file.updated_at || file.created_at || new Date().toISOString(),
-            source: 'supabase'
-          }
-        })
-      }
     }
 
     return NextResponse.json(

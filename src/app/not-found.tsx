@@ -15,6 +15,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from "@/shared/components/ui/button";
 import FloatingCharacter from "@/shared/components/common/dr-albright";
+import { getR2PublicUrl } from "@/shared/services/r2-storage";
 
 const ERROR_CONTENT = {
   headlines: [
@@ -81,7 +82,7 @@ export default function NotFoundPage() {
       <div className="relative z-10 flex flex-col items-center">
         <div className="flex justify-center w-full">
           <FloatingCharacter
-            imagePath="https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/images/dr-albright.png"
+            imagePath={getR2PublicUrl("assets/dr-albright.png")}
             imageAlt="Dr. Albright Character"
             size={320}
             wrapperClassName="w-full md:w-auto"

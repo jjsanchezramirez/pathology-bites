@@ -19,11 +19,11 @@
     "test:auth": "jest --testPathPattern=auth",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "migrate-r2": "tsx scripts/migrate-images-to-cdn.ts --dry-run",
-    "migrate-r2:live": "tsx scripts/migrate-images-to-cdn.ts",
     "optimize-egress": "tsx src/scripts/complete-egress-optimization.ts",
     "migrate-assets": "tsx src/scripts/migrate-static-assets.ts",
-    "update-asset-refs": "tsx src/scripts/update-asset-references.ts"
+    "update-asset-refs": "tsx src/scripts/update-asset-references.ts",
+    "generate-search-index": "node scripts/generate-virtual-slides-search-v2.js",
+    "prebuild": "node -e \"process.exit(process.env.CLOUDFLARE_ACCOUNT_ID&&process.env.CLOUDFLARE_ACCESS_KEY_ID&&process.env.CLOUDFLARE_SECRET_ACCESS_KEY?0:1)\" && npm run generate-search-index || echo 'Skipping search index generation (missing R2 credentials)'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.858.0",

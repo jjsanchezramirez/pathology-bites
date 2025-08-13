@@ -46,7 +46,11 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
 
-    console.log('🔄 Virtual slides API called - using R2 private bucket access')
+    // ✅ MANDATORY PAGINATION: Prevent large responses
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '20'))) // Max 50 items per request
+
+    console.log(`🔄 Virtual slides API called - page ${page}, limit ${limit}`)
 
     let slides: VirtualSlide[]
     
@@ -112,16 +116,33 @@ export async function GET(request: NextRequest) {
 
     const category = searchParams.get('category')
     if (category) {
-      filteredSlides = filteredSlides.filter(slide => 
+      filteredSlides = filteredSlides.filter(slide =>
         slide.category === category
       )
     }
 
-    // Return with aggressive compression and 24-hour caching (this is a HUGE dataset)
+    // ✅ APPLY PAGINATION: Calculate pagination after filtering
+    const totalItems = filteredSlides.length
+    const totalPages = Math.ceil(totalItems / limit)
+    const startIndex = (page - 1) * limit
+    const endIndex = startIndex + limit
+    const paginatedSlides = filteredSlides.slice(startIndex, endIndex)
+
+    console.log(`📄 Returning page ${page}/${totalPages} (${paginatedSlides.length}/${totalItems} slides)`)
+
+    // Return with aggressive compression and 24-hour caching
     return createOptimizedResponse({
-      data: filteredSlides,
+      data: paginatedSlides, // ✅ Return only paginated data
+      pagination: {
+        page,
+        limit,
+        totalItems,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1
+      },
       metadata: {
-        totalSlides: filteredSlides.length,
+        totalSlides: paginatedSlides.length,
         originalTotal: slides.length,
         filters: {
           search,

@@ -8,8 +8,14 @@ export interface NavigationItem {
   adminOnly?: boolean
 }
 
-export interface NavigationConfig {
+export interface NavigationSection {
+  title: string
   items: NavigationItem[]
+}
+
+export interface NavigationConfig {
+  items?: NavigationItem[]
+  sections?: NavigationSection[]
   userRole?: 'admin' | 'creator' | 'reviewer' | 'user'
 }
 
@@ -108,6 +114,121 @@ export const adminNavigationItems: NavigationItem[] = [
   }
 ]
 
+// Admin/Creator/Reviewer Navigation Sections Configuration
+export const adminNavigationSections: NavigationSection[] = [
+  {
+    title: "Overview",
+    items: [
+      {
+        name: "Dashboard",
+        href: "/admin/dashboard",
+        icon: "LayoutDashboard",
+        requiredPermission: "dashboard.view"
+      }
+    ]
+  },
+  {
+    title: "Question Management",
+    items: [
+      {
+        name: "Question Base",
+        href: "/admin/questions",
+        icon: "FileQuestion",
+        requiredPermission: "questions.view"
+      },
+      {
+        name: "My Questions",
+        href: "/admin/my-questions",
+        icon: "FileQuestion",
+        requiredPermission: "questions.create"
+      },
+      {
+        name: "My Review Queue",
+        href: "/admin/review-queue",
+        icon: "ClipboardList",
+        requiredPermission: "questions.review"
+      },
+      {
+        name: "Create Question",
+        href: "/admin/create-question",
+        icon: "Brain",
+        requiredPermission: "questions.create"
+      },
+      {
+        name: "Question Labels",
+        href: "/admin/labels",
+        icon: "Tags",
+        requiredPermission: "categories.manage",
+        adminOnly: true
+      }
+    ]
+  },
+  {
+    title: "Content Management",
+    items: [
+      {
+        name: "Images",
+        href: "/admin/images",
+        icon: "Image",
+        requiredPermission: "images.manage",
+        adminOnly: true
+      }
+    ]
+  },
+  {
+    title: "User Management",
+    items: [
+      {
+        name: "Users",
+        href: "/admin/users",
+        icon: "Users",
+        requiredPermission: "users.manage",
+        adminOnly: true
+      },
+      {
+        name: "Invite Users",
+        href: "/admin/invite-users",
+        icon: "User",
+        requiredPermission: "users.manage",
+        adminOnly: true
+      },
+      {
+        name: "Manage Inquiries",
+        href: "/admin/inquiries",
+        icon: "MessageSquare",
+        requiredPermission: "inquiries.manage",
+        adminOnly: true
+      }
+    ]
+  },
+  {
+    title: "System Administration",
+    items: [
+      {
+        name: "Site Analytics",
+        href: "/admin/analytics",
+        icon: "BarChart",
+        requiredPermission: "analytics.view",
+        adminOnly: true
+      },
+      {
+        name: "Notifications",
+        href: "/admin/notifications",
+        icon: "MessageSquare",
+        requiredPermission: "notifications.manage",
+        adminOnly: true
+      },
+      {
+        name: "Settings",
+        href: "/admin/settings",
+        icon: "Settings",
+        requiredPermission: "settings.manage",
+        adminOnly: true
+      }
+    ]
+  }
+]
+
 // User Navigation Configuration
 export const userNavigationItems: NavigationItem[] = [
   {
@@ -136,8 +257,8 @@ export const userNavigationItems: NavigationItem[] = [
     icon: "BarChart2",
   },
   {
-    name: "Learning Path",
-    href: "/dashboard/learning-path",
+    name: "Learning Modules",
+    href: "/dashboard/learning",
     icon: "BookOpen",
   },
   {
@@ -162,6 +283,80 @@ export const userNavigationItems: NavigationItem[] = [
   },
 ]
 
+// User Navigation Sections Configuration
+export const userNavigationSections: NavigationSection[] = [
+  {
+    title: "Overview",
+    items: [
+      {
+        name: "Dashboard",
+        href: "/dashboard",
+        icon: "LayoutDashboard",
+      }
+    ]
+  },
+  {
+    title: "Study & Practice",
+    items: [
+      {
+        name: "New Quiz",
+        href: "/dashboard/quiz/new",
+        icon: "Plus",
+      },
+      {
+        name: "My Quizzes",
+        href: "/dashboard/quizzes",
+        icon: "ClipboardList",
+      },
+      {
+        name: "WSI Questions (Beta)",
+        href: "/dashboard/wsi-questions",
+        icon: "Microscope",
+      },
+      {
+        name: "Learning Modules",
+        href: "/dashboard/learning",
+        icon: "BookOpen",
+      }
+    ]
+  },
+  {
+    title: "Analytics",
+    items: [
+      {
+        name: "Performance",
+        href: "/dashboard/performance",
+        icon: "BarChart2",
+      },
+      {
+        name: "Goals",
+        href: "/dashboard/goals",
+        icon: "Target",
+      },
+      {
+        name: "Progress",
+        href: "/dashboard/progress",
+        icon: "TrendingUp",
+      }
+    ]
+  },
+  {
+    title: "Account",
+    items: [
+      {
+        name: "Profile",
+        href: "/dashboard/profile",
+        icon: "User",
+      },
+      {
+        name: "Settings",
+        href: "/dashboard/settings",
+        icon: "Settings",
+      }
+    ]
+  }
+]
+
 // Navigation configuration factory
 export function getNavigationConfig(userRole: 'admin' | 'creator' | 'reviewer' | 'user'): NavigationConfig {
   switch (userRole) {
@@ -169,13 +364,15 @@ export function getNavigationConfig(userRole: 'admin' | 'creator' | 'reviewer' |
     case 'creator':
     case 'reviewer':
       return {
-        items: adminNavigationItems,
+        sections: adminNavigationSections,
+        items: adminNavigationItems, // Keep for backward compatibility
         userRole
       }
     case 'user':
     default:
       return {
-        items: userNavigationItems,
+        sections: userNavigationSections,
+        items: userNavigationItems, // Keep for backward compatibility
         userRole: 'user'
       }
   }
@@ -194,4 +391,19 @@ export function filterNavigationItems(
     if (item.requiredPermission && !canAccess(item.requiredPermission)) return false
     return true
   })
+}
+
+// Helper function to filter navigation sections based on permissions
+export function filterNavigationSections(
+  sections: NavigationSection[],
+  canAccess: (permission: string) => boolean,
+  isAdmin: boolean,
+  isLoading: boolean
+): NavigationSection[] {
+  return sections
+    .map(section => ({
+      ...section,
+      items: filterNavigationItems(section.items, canAccess, isAdmin, isLoading)
+    }))
+    .filter(section => section.items.length > 0) // Only show sections that have visible items
 }

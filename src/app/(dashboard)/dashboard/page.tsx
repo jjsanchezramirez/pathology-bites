@@ -162,7 +162,6 @@ export default function DashboardPage() {
           setIsReturningUser(!hasRecentActivity || statsResult.data.recentQuizzes === 0)
         }
       } catch (error) {
-        console.error('Error fetching dashboard data:', error)
 
         // Provide more specific error messages
         if (error instanceof Error) {
@@ -273,70 +272,7 @@ export default function DashboardPage() {
 
 
 
-      {/* Goals Section */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        {/* Simple Goals Widget */}
-        {user ? (
-          <FeatureErrorBoundary featureName="Goals Widget">
-            <SimpleGoalsWidget userId={user.id} />
-          </FeatureErrorBoundary>
-        ) : (
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>Goals</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-20 w-full" />
-            </CardContent>
-          </Card>
-        )}
 
-        {/* Quick Actions */}
-        {loading ? (
-          <Card className="md:col-span-5">
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="md:col-span-5">
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Link href="/dashboard/quiz/new" className="block">
-                <Button className="w-full justify-between">
-                  Start New Quiz
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/dashboard/quiz/continue" className="block">
-                <Button variant="outline" className="w-full justify-between">
-                  Continue Quiz
-                  <Play className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/dashboard/performance" className="block">
-                <Button variant="outline" className="w-full justify-between">
-                  View Performance
-                  <BarChart3 className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/dashboard/wsi-questions" className="block">
-                <Button variant="outline" className="w-full justify-between">
-                  WSI Questions
-                  <Microscope className="h-4 w-4" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
-      </div>
 
       {/* Recent Activity Section */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
@@ -353,46 +289,44 @@ export default function DashboardPage() {
                 {stats?.recentActivity && stats.recentActivity.length > 0 ? (
                   stats.recentActivity.map((activity) => {
                     const activityContent = (
-                      <div className={`flex items-start gap-4 rounded-lg border p-4 transition-colors ${
-                        activity.navigationUrl ? 'hover:bg-muted/50 cursor-pointer' : ''
-                      } ${
-                        activity.priority === 'high' ? 'border-l-4 border-l-green-500' :
-                        activity.priority === 'medium' ? 'border-l-4 border-l-blue-500' :
-                        'border-l-4 border-l-gray-300'
-                      }`}>
-                        {/* Activity Icons */}
-                        {activity.type === 'quiz_completed' && <Award className="h-5 w-5 mt-0.5 text-green-500" />}
-                        {activity.type === 'study_streak' && <TrendingUp className="h-5 w-5 mt-0.5 text-blue-500" />}
-                        {activity.type === 'quiz_started' && <Play className="h-5 w-5 mt-0.5 text-orange-500" />}
-                        {activity.type === 'performance_milestone' && <Target className="h-5 w-5 mt-0.5 text-purple-500" />}
-                        {!['quiz_completed', 'study_streak', 'quiz_started', 'performance_milestone'].includes(activity.type) &&
-                          <BookOpen className="h-5 w-5 mt-0.5 text-gray-500" />}
+                      <div className={`flex items-start gap-4 rounded-lg border p-4 transition-all duration-200 ${
+                        activity.navigationUrl ? 'hover:bg-muted/30 hover:shadow-sm cursor-pointer' : ''
+                      } bg-card/50`}>
+                        {/* Activity Icons - simplified without colors */}
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center">
+                          {activity.type === 'quiz_completed' && <Award className="h-4 w-4 text-muted-foreground" />}
+                          {activity.type === 'study_streak' && <TrendingUp className="h-4 w-4 text-muted-foreground" />}
+                          {activity.type === 'quiz_started' && <Play className="h-4 w-4 text-muted-foreground" />}
+                          {activity.type === 'performance_milestone' && <Target className="h-4 w-4 text-muted-foreground" />}
+                          {!['quiz_completed', 'study_streak', 'quiz_started', 'performance_milestone'].includes(activity.type) &&
+                            <BookOpen className="h-4 w-4 text-muted-foreground" />}
+                        </div>
 
-                        <div className="space-y-1 flex-1">
+                        <div className="space-y-1 flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium leading-none">{activity.title}</p>
+                            <p className="text-sm font-medium leading-none truncate">{activity.title}</p>
                             {activity.timeGroup === 'today' && (
-                              <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">Today</span>
+                              <span className="px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded-md font-medium">Today</span>
                             )}
                             {activity.timeGroup === 'yesterday' && (
-                              <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">Yesterday</span>
+                              <span className="px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded-md font-medium">Yesterday</span>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">{activity.description}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{activity.description}</p>
                           {activity.metadata?.improvement && (
-                            <p className="text-xs text-green-600 font-medium">
+                            <p className="text-xs text-foreground/70 font-medium">
                               {activity.metadata.improvement > 0 ? '↗' : '↘'} {Math.abs(activity.metadata.improvement)}% change
                             </p>
                           )}
                         </div>
 
-                        <div className="text-right">
+                        <div className="text-right flex-shrink-0">
                           <div className="text-xs text-muted-foreground">{activity.timestamp}</div>
                           {activity.score && (
                             <div className="text-sm font-medium mt-1">{activity.score}%</div>
                           )}
                           {activity.navigationUrl && (
-                            <div className="text-xs text-blue-600 mt-1">Click to view →</div>
+                            <div className="text-xs text-muted-foreground mt-1 opacity-70">View →</div>
                           )}
                         </div>
                       </div>
@@ -460,6 +394,26 @@ export default function DashboardPage() {
                   <Clock className="h-4 w-4" />
                 </Button>
               </Link>
+
+              <Button
+                variant="outline"
+                className="w-full justify-between opacity-50 cursor-not-allowed"
+                disabled
+                onClick={() => toast.info('Goals feature coming soon!')}
+              >
+                Goals
+                <Target className="h-4 w-4" />
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full justify-between opacity-50 cursor-not-allowed"
+                disabled
+                onClick={() => toast.info('Learning Modules feature coming soon!')}
+              >
+                Learning Modules
+                <BookOpen className="h-4 w-4" />
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -537,6 +491,83 @@ export default function DashboardPage() {
           </FeatureErrorBoundary>
         )
       )}
+
+      {/* Goals and Learning Modules Section - In Development */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {/* Goals Section - 1/3 width */}
+        <Card className="md:col-span-1">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Goals
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Set and track objectives
+                </p>
+              </div>
+              <div className="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded-full">
+                In Dev
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-6 text-muted-foreground">
+              <Target className="h-10 w-10 mx-auto mb-3 opacity-50" />
+              <p className="mb-2 text-sm">Goals coming soon!</p>
+              <p className="text-xs mb-4">Track your progress and stay motivated.</p>
+              <Button
+                className="w-full"
+                variant="outline"
+                size="sm"
+                disabled
+                onClick={() => toast.info('Goals feature is currently in development!')}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Goal
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Learning Modules Section - 2/3 width */}
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5" />
+                  Learning Modules
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Structured learning paths for comprehensive education
+                </p>
+              </div>
+              <div className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded-full">
+                In Development
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-muted-foreground">
+              <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="mb-2">Learning Modules coming soon!</p>
+              <p className="text-sm mb-6">Follow guided learning paths with interactive content, assessments, and progress tracking.</p>
+              <Button
+                className="w-full"
+                variant="outline"
+                disabled
+                onClick={() => toast.info('Learning Modules feature is currently in development!')}
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Browse Modules
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       </div>
     </PageErrorBoundary>
   )

@@ -48,30 +48,28 @@ export function ProfileDropdown() {
           .from('users')
           .select('id, email, role, first_name, last_name')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
 
         if (!mounted) return
 
         if (profileError) {
-          console.error('Profile error:', profileError)
           setUserProfile(null)
-          // If user data doesn't exist, they might have been deleted - sign them out
-          if (profileError.code === 'PGRST116') {
-            console.log('User data not found, signing out...')
-            try {
-              await supabase.auth.signOut()
-              window.location.href = '/login'
-            } catch (signOutError) {
-              console.error('Error signing out:', signOutError)
-              window.location.href = '/login'
-            }
-          }
-        } else {
+        } else if (profile) {
           setUserProfile(profile)
+        } else {
+          // User exists in auth but not found in database - this shouldn't happen
+          // Let's use the auth data as fallback
+          const fallbackProfile = {
+            id: user.id,
+            email: user.email || null,
+            role: 'user',
+            first_name: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || null,
+            last_name: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null
+          }
+          setUserProfile(fallbackProfile)
         }
       } catch (err) {
         if (!mounted) return
-        console.error('Profile fetch error:', err)
         setUserProfile(null)
       } finally {
         if (mounted) {
@@ -92,7 +90,6 @@ export function ProfileDropdown() {
       const { error } = await supabase.auth.signOut()
 
       if (error) {
-        console.error('Sign out error:', error)
         throw error
       }
 
@@ -105,7 +102,6 @@ export function ProfileDropdown() {
       // Force a hard refresh to clear all cached data and redirect to login
       window.location.href = '/login'
     } catch (err) {
-      console.error('Error during sign out:', err)
       // Still redirect to login even if there's an error
       window.location.href = '/login'
     }

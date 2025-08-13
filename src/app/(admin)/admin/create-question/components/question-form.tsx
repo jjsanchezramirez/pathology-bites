@@ -226,6 +226,8 @@ Please generate a question following the instructions provided.
       const provider = getModelProvider(selectedModel)
       const apiKey = getApiKey(provider)
       const apiEndpoint = `/api/debug/${provider}-test`
+      
+      console.log('🔍 Model:', selectedModel, 'Provider:', provider, 'Endpoint:', apiEndpoint)
 
       const response = await fetchWithRetry(apiEndpoint, {
         method: 'POST',
@@ -247,7 +249,7 @@ Please generate a question following the instructions provided.
         let generatedText = ''
 
         // Extract text based on provider response format
-        if (provider === 'gemini' && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        if ((provider === 'gemini' || provider === 'google') && data.candidates?.[0]?.content?.parts?.[0]?.text) {
           generatedText = data.candidates[0].content.parts[0].text
         } else if ((provider === 'claude') && data.content?.[0]?.text) {
           generatedText = data.content[0].text

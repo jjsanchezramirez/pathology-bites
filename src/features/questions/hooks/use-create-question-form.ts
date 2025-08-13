@@ -8,7 +8,7 @@ import * as z from 'zod';
 import { toast } from 'sonner';
 import { useQuestions } from './use-questions';
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status';
-import { QuestionOptionFormData, QuestionImageFormData } from '../types/questions';
+import { QuestionOptionFormData, QuestionImageFormData, QuestionInsert } from '../types/questions';
 
 // Schema for create question form
 const createQuestionSchema = z.object({
@@ -157,12 +157,16 @@ export function useCreateQuestionForm({ open, onSave, onClose }: UseCreateQuesti
     setIsSubmitting(true);
     try {
       // Create the question
-      const questionData = {
-        ...data,
+      const questionData: QuestionInsert = {
+        title: data.title,
+        stem: data.stem,
+        difficulty: data.difficulty,
+        teaching_point: data.teaching_point,
+        question_references: data.question_references || null,
+        status: data.status,
         created_by: user.id,
         updated_by: user.id,
         question_set_id: data.question_set_id === 'none' ? null : data.question_set_id,
-        question_references: data.question_references || null,
         category_id: data.category_id || null,
       };
 

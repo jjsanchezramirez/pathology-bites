@@ -47,7 +47,7 @@ export async function getImageUsageStats(): Promise<ImageUsageStats[]> {
     if (error) throw error;
 
     // Process the data to add formatted fields
-    const usageStats: ImageUsageStats[] = data.map(image => ({
+    const usageStats: ImageUsageStats[] = (data || []).map(image => ({
       id: image.id,
       url: image.url,
       alt_text: image.alt_text,
@@ -67,13 +67,20 @@ export async function getImageUsageStats(): Promise<ImageUsageStats[]> {
     return usageStats;
   } catch (error) {
     console.error('Get image usage stats error:', error);
-    throw error;
+    // Return empty array instead of throwing to prevent UI crashes
+    return [];
   }
 }
 
 export async function getOrphanedImages(): Promise<ImageUsageStats[]> {
-  const stats = await getImageUsageStats();
-  return stats.filter(stat => stat.is_orphaned);
+  try {
+    const stats = await getImageUsageStats();
+    return stats.filter(stat => stat.is_orphaned);
+  } catch (error) {
+    console.error('Get orphaned images error:', error);
+    // Return empty array instead of throwing to prevent UI crashes
+    return [];
+  }
 }
 
 export async function getStorageStats(): Promise<StorageStats> {
@@ -127,6 +134,15 @@ export async function getStorageStats(): Promise<StorageStats> {
     };
   } catch (error) {
     console.error('Get storage stats error:', error);
-    throw error;
+    // Return default stats instead of throwing to prevent UI crashes
+    return {
+      total_images: 0,
+      total_size_bytes: 0,
+      formatted_total_size: '0 Bytes',
+      by_category: [],
+      orphaned_count: 0,
+      orphaned_size_bytes: 0,
+      formatted_orphaned_size: '0 Bytes'
+    };
   }
 }

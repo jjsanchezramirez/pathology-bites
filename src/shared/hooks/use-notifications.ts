@@ -17,10 +17,7 @@ export function useNotifications(page: number = 1, limit: number = 20) {
   const { user, isAuthenticated } = useAuthStatus()
 
   const loadNotifications = useCallback(async () => {
-    console.log('🔔 useNotifications.loadNotifications called with:', { isAuthenticated, user: user?.id, page, limit })
-
     if (!isAuthenticated || !user) {
-      console.log('🔔 User not authenticated or missing, clearing notifications')
       setNotifications([])
       setUnreadCount(0)
       setTotal(0)
@@ -33,21 +30,16 @@ export function useNotifications(page: number = 1, limit: number = 20) {
       setLoading(true)
       setError(null)
 
-      console.log('🔔 Fetching notifications for user:', user.id)
-
       const [paginatedNotifications, count] = await Promise.all([
         notificationsService.getNotifications(user.id, page, limit),
         notificationsService.getUnreadCount(user.id)
       ])
-
-      console.log('🔔 Notifications fetched:', { paginatedNotifications, count })
 
       setNotifications(paginatedNotifications.notifications)
       setTotal(paginatedNotifications.total)
       setHasMore(paginatedNotifications.hasMore)
       setUnreadCount(count)
     } catch (err) {
-      console.error('Error loading notifications:', err)
       setError(err instanceof Error ? err : new Error('Failed to load notifications'))
     } finally {
       setLoading(false)
@@ -74,7 +66,6 @@ export function useNotifications(page: number = 1, limit: number = 20) {
       // Update unread count
       setUnreadCount(prev => Math.max(0, prev - 1))
     } catch (err) {
-      console.error('Error marking notification as read:', err)
       throw err
     }
   }, [user])
@@ -92,7 +83,6 @@ export function useNotifications(page: number = 1, limit: number = 20) {
 
       setUnreadCount(0)
     } catch (err) {
-      console.error('Error marking all notifications as read:', err)
       throw err
     }
   }, [user])

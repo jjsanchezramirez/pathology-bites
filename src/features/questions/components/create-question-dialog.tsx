@@ -326,7 +326,6 @@ export function CreateQuestionDialog({
   const [tagSearch, setTagSearch] = useState('');
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [availableCategories, setAvailableCategories] = useState<any[]>([]);
-  const { createQuestion } = useQuestions();
   const { questionSets } = useQuestionSets();
   const { user } = useAuthStatus();
 
@@ -510,6 +509,8 @@ export function CreateQuestionDialog({
       return;
     }
 
+    console.log('👤 User authenticated:', { id: user.id, email: user.email });
+
     // Validate answer options
     const optionErrors = validateAnswerOptions();
     if (Object.keys(optionErrors).length > 0) {
@@ -519,110 +520,64 @@ export function CreateQuestionDialog({
 
     setIsSubmitting(true);
     try {
-      // Create the question
+      // Prepare the complete question data for the API
       const questionData = {
-        ...data,
-        created_by: user.id,
-        updated_by: user.id,
-        question_set_id: data.question_set_id === 'none' ? null : data.question_set_id,
+        title: data.title,
+        stem: data.stem,
+        difficulty: data.difficulty,
+        teaching_point: data.teaching_point,
         question_references: data.question_references || null,
+        status: data.status,
+        question_set_id: data.question_set_id === 'none' ? null : data.question_set_id,
         category_id: selectedCategoryId || null,
-      };
-
-      const newQuestion = await createQuestion(questionData);
-
-      // Create all related records in parallel
-      const promises = [];
-
-      // 1. Create answer options
-      if (answerOptions.length > 0) {
-        const answerOptionsData = answerOptions.map(option => ({
-          question_id: newQuestion.id,
+        answer_options: answerOptions.map((option, index) => ({
           text: option.text,
           is_correct: option.is_correct,
           explanation: option.explanation || null,
-          order_index: option.order_index,
-        }));
-
-        promises.push(
-          fetch('/api/questions/answer-options', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ answerOptions: answerOptionsData }),
-          })
-        );
-      }
-
-      // 2. Create question images
-      if (questionImages.length > 0) {
-        const questionImagesData = questionImages.map(img => ({
-          question_id: newQuestion.id,
+          order_index: index,
+        })),
+        question_images: questionImages.map(img => ({
           image_id: img.image_id,
           question_section: img.question_section,
           order_index: img.order_index,
-        }));
+        })),
+        tag_ids: selectedTagIds,
+      };
 
-        promises.push(
-          fetch('/api/question-images', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ questionImages: questionImagesData }),
-          })
-        );
-      }
+      // Use the comprehensive API endpoint that handles everything in one transaction
+      console.log('🔍 Making request to /api/admin/questions-create with data:', questionData);
+      
+      const response = await fetch('/api/admin/questions-create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Ensure cookies are sent
+        body: JSON.stringify(questionData),
+      });
 
-      // 3. Create question tags
-      if (selectedTagIds.length > 0) {
-        const questionTagsData = selectedTagIds.map(tagId => ({
-          question_id: newQuestion.id,
-          tag_id: tagId,
-        }));
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
 
-        promises.push(
-          fetch('/api/questions/tags', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ questionTags: questionTagsData }),
-          })
-        );
-      }
-
-      // Note: Category is now set directly on the question via category_id field
-
-      // Create array to track which API each promise corresponds to
-      const promiseLabels = [];
-      if (answerOptions.length > 0) promiseLabels.push('answer-options');
-      if (questionImages.length > 0) promiseLabels.push('question-images');
-      if (selectedTagIds.length > 0) promiseLabels.push('question-tags');
-
-      // Wait for all related records to be created and check for errors
-      const results = await Promise.allSettled(promises);
-
-      // Check if any requests failed
-      const errors = [];
-
-      for (let i = 0; i < results.length; i++) {
-        const result = results[i];
-        const apiName = promiseLabels[i] || `API ${i + 1}`;
-
-        if (result.status === 'rejected') {
-          errors.push(`${apiName}: ${result.reason?.message || 'Network error'}`);
-        } else if (!result.value.ok) {
-          try {
-            const errorData = await result.value.json();
-            errors.push(`${apiName}: ${errorData.error || 'Unknown error'}`);
-          } catch {
-            errors.push(`${apiName}: Failed to parse error response`);
-          }
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (parseError) {
+          // If we can't parse as JSON, get the text response
+          const textResponse = await response.text();
+          console.error('❌ Failed to parse error response as JSON:', parseError);
+          console.error('❌ Raw response:', textResponse);
+          throw new Error(`HTTP ${response.status}: ${textResponse.substring(0, 200)}...`);
         }
+        throw new Error(errorData.error || 'Failed to create question');
       }
 
-      if (errors.length > 0) {
-        console.error('Some related records failed to create:', errors);
-        toast.warning(`Question created but some related data failed: ${errors.join(', ')}`);
-      } else {
-        toast.success('Question created successfully with all related data');
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create question');
       }
+
+      toast.success('Question created successfully');
 
       // Reset form state
       setHasUnsavedChanges(false);

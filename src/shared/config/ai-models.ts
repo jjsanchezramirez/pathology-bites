@@ -15,7 +15,7 @@ export interface AIModel {
 
 // Helper function to determine provider from model ID
 export function getModelProvider(model: string): string {
-  if (model.startsWith('llama-') || model.startsWith('Llama-')) return 'groq'
+  if (model.startsWith('llama-') || model.startsWith('Llama-')) return 'llama'
   if (model.startsWith('Cerebras-') || model.startsWith('cerebras-')) return 'groq'
   if (model.startsWith('Groq-') || model.startsWith('groq-')) return 'groq'
   if (model.startsWith('gemini-')) return 'google'
@@ -135,14 +135,7 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     description: 'Mistral\'s largest and most capable model',
     contextLength: '128K tokens'
   },
-  {
-    id: 'mistral-small-2407',
-    name: 'Mistral Small 2',
-    provider: 'mistral',
-    available: true,
-    description: 'Mistral Small 2 model - efficient and fast',
-    contextLength: '32K tokens'
-  },
+
   {
     id: 'magistral-small-2507',
     name: 'Magistral Small 1.1',
@@ -233,30 +226,7 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     description: 'LLAMA 4 Scout model optimized for fast inference',
     contextLength: '128K tokens'
   },
-  {
-    id: 'Cerebras-Llama-4-Maverick-17B-128E-Instruct',
-    name: 'Cerebras LLAMA 4 Maverick 17B',
-    provider: 'llama',
-    available: true,
-    description: 'LLAMA 4 Maverick optimized for Cerebras hardware',
-    contextLength: '128K tokens'
-  },
-  {
-    id: 'Cerebras-Llama-4-Scout-17B-16E-Instruct',
-    name: 'Cerebras LLAMA 4 Scout 17B',
-    provider: 'llama',
-    available: true,
-    description: 'LLAMA 4 Scout optimized for Cerebras hardware',
-    contextLength: '128K tokens'
-  },
-  {
-    id: 'Groq-Llama-4-Maverick-17B-128E-Instruct',
-    name: 'Groq LLAMA 4 Maverick 17B',
-    provider: 'llama',
-    available: true,
-    description: 'LLAMA 4 Maverick optimized for Groq hardware',
-    contextLength: '128K tokens'
-  }
+
 ]
 
 // Disabled models (show in UI but not selectable)
@@ -277,6 +247,16 @@ export const DISABLED_AI_MODELS: AIModel[] = [
     description: 'OpenAI GPT-4o Mini model (currently unavailable)'
   },
 
+  // GPT-5 model (disabled - not yet available)
+  {
+    id: 'gpt-5',
+    name: 'GPT-5',
+    provider: 'chatgpt',
+    available: false,
+    description: 'OpenAI GPT-5 (not yet available)',
+    contextLength: 'TBD'
+  },
+
   // Claude models (disabled due to API issues)
   {
     id: 'claude-3-5-sonnet-20241022',
@@ -291,6 +271,38 @@ export const DISABLED_AI_MODELS: AIModel[] = [
     provider: 'claude',
     available: false,
     description: 'Anthropic Claude 3.5 Haiku (currently unavailable)'
+  },
+
+  // Mistral models (disabled due to issues)
+  {
+    id: 'mistral-small-2407',
+    name: 'Mistral Small 2',
+    provider: 'mistral',
+    available: false,
+    description: 'Mistral Small 2 model (disabled - API issues)'
+  },
+
+  // Groq and Cerebras models (disabled - excluded from configuration)
+  {
+    id: 'Cerebras-Llama-4-Maverick-17B-128E-Instruct',
+    name: 'Cerebras LLAMA 4 Maverick 17B',
+    provider: 'llama',
+    available: false,
+    description: 'LLAMA 4 Maverick optimized for Cerebras hardware (unavailable)'
+  },
+  {
+    id: 'Cerebras-Llama-4-Scout-17B-16E-Instruct',
+    name: 'Cerebras LLAMA 4 Scout 17B',
+    provider: 'llama',
+    available: false,
+    description: 'LLAMA 4 Scout optimized for Cerebras hardware (unavailable)'
+  },
+  {
+    id: 'Groq-Llama-4-Maverick-17B-128E-Instruct',
+    name: 'Groq LLAMA 4 Maverick 17B',
+    provider: 'llama',
+    available: false,
+    description: 'LLAMA 4 Maverick optimized for Groq hardware (unavailable)'
   }
 ]
 
@@ -328,7 +340,8 @@ export const DEFAULT_MODEL = 'gemini-1.5-flash'
 
 // API key configuration - All keys must be provided via environment variables
 export const API_KEYS = {
-  groq: process.env.NEXT_PUBLIC_LLAMA_API_KEY || '',
+  llama: process.env.NEXT_PUBLIC_LLAMA_API_KEY || '',
+  groq: process.env.NEXT_PUBLIC_GROQ_API_KEY || process.env.NEXT_PUBLIC_LLAMA_API_KEY || '', // Fallback to LLAMA key for compatibility
   google: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '',
   claude: process.env.NEXT_PUBLIC_CLAUDE_API_KEY || '',
   chatgpt: process.env.NEXT_PUBLIC_OPENAI_API_KEY || '',

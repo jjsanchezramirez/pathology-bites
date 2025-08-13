@@ -1,18 +1,29 @@
 // src/shared/components/seo/structured-data.tsx
-'use client'
 
 interface StructuredDataProps {
   data: Record<string, any> | Record<string, any>[]
 }
 
 export function StructuredData({ data }: StructuredDataProps) {
+  // Add safety check for data
+  if (!data) {
+    return null
+  }
+
   const jsonLd = Array.isArray(data) ? data : [data]
-  
+
+  // Additional safety check for array elements
+  const safeJsonLd = jsonLd.filter(item => item && typeof item === 'object')
+
+  if (safeJsonLd.length === 0) {
+    return null
+  }
+
   return (
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(jsonLd, null, 0),
+        __html: JSON.stringify(safeJsonLd, null, 0),
       }}
     />
   )
@@ -34,6 +45,11 @@ export function OrganizationSchema({
   description = 'Free pathology education platform with practice questions and comprehensive study materials.',
   sameAs = [],
 }: OrganizationSchemaProps) {
+  // Ensure all required values are present
+  if (!name || !url || !description) {
+    return null
+  }
+
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -41,7 +57,7 @@ export function OrganizationSchema({
     url,
     logo: `${url}${logo}`,
     description,
-    sameAs,
+    sameAs: Array.isArray(sameAs) ? sameAs : [],
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer service',
@@ -93,13 +109,18 @@ export function WebsiteSchema({
   description = 'Free pathology education platform with practice questions and study materials.',
   potentialAction,
 }: WebsiteSchemaProps) {
+  // Ensure all required values are present
+  if (!name || !url || !description) {
+    return null
+  }
+
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name,
     url,
     description,
-    ...(potentialAction && { potentialAction }),
+    ...(potentialAction && typeof potentialAction === 'object' && { potentialAction }),
   }
 
   return <StructuredData data={schema} />

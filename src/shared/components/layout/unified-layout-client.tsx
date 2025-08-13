@@ -31,6 +31,7 @@ export function UnifiedLayoutClient({
     userType === 'admin' ? (role || 'user') : 'user'
   )
   const navigationItems = navigationConfig.items
+  const navigationSections = navigationConfig.sections
   const { isInQuizMode } = useQuizMode()
   const isMobile = useMobile()
 
@@ -150,6 +151,7 @@ export function UnifiedLayoutClient({
           <UnifiedSidebar
             isCollapsed={sidebarCollapsed}
             navigationItems={navigationItems}
+            navigationSections={navigationSections}
             isMobileMode={true}
           />
         </div>
@@ -159,6 +161,7 @@ export function UnifiedLayoutClient({
           <UnifiedSidebar
             isCollapsed={sidebarCollapsed}
             navigationItems={navigationItems}
+            navigationSections={navigationSections}
             isMobileMode={false}
           />
         </div>

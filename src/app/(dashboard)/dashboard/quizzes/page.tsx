@@ -74,7 +74,6 @@ interface QuizSessionListItem {
 
 export default function QuizzesPage() {
   const [quizzes, setQuizzes] = useState<QuizSessionListItem[]>([])
-  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [modeFilter, setModeFilter] = useState<string>("all")
@@ -114,7 +113,6 @@ export default function QuizzesPage() {
       setQuizzes(quizzesData)
     }
     if (error) {
-      console.error('Error fetching quizzes:', error)
       toast.error('Failed to load quizzes')
     }
   }, [quizzesData, error])
@@ -143,7 +141,6 @@ export default function QuizzesPage() {
       setShowDeleteDialog(false)
       setSelectedQuiz(null)
     } catch (error) {
-      console.error('Error deleting quiz:', error)
       toast.error('Failed to delete quiz')
     } finally {
       setIsDeleting(false)
@@ -242,7 +239,7 @@ export default function QuizzesPage() {
     return iconMap[questionType as keyof typeof iconMap] || <HelpCircle className="h-4 w-4" />
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div>

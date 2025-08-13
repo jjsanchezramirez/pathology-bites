@@ -30,7 +30,6 @@ class ClientDashboardService {
       }
 
       // Fallback to individual queries if view fails
-      console.warn('Dashboard view failed, using individual queries:', viewError);
 
       // Get all stats in parallel
       // Use Promise.allSettled to handle cases where tables might not exist
@@ -66,7 +65,6 @@ class ClientDashboardService {
         pendingReports: getCounts(9)
       }
     } catch (error) {
-      console.error('Error fetching dashboard stats:', error)
       // Return default stats on error
       return {
         totalQuestions: 0,

@@ -6,29 +6,7 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      console.error('Authentication error:', authError)
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (userError) {
-      console.error('User lookup error:', userError)
-      return NextResponse.json({ error: 'User lookup failed' }, { status: 500 })
-    }
-
-    if (!['admin', 'creator', 'reviewer'].includes(userData?.role)) {
-      console.error('User does not have required role:', userData?.role)
-      return NextResponse.json({ error: 'Forbidden - Admin, Creator, or Reviewer access required' }, { status: 403 })
-    }
+    // Auth is now handled by middleware - user info available in headers
 
     // Get query parameters
     const { searchParams } = new URL(request.url)
@@ -67,20 +45,35 @@ export async function GET(request: NextRequest) {
       throw dataError
     }
 
-    // Get question counts for each tag
-    const tagsWithCounts = await Promise.all(
-      (data || []).map(async (tag) => {
-        const { count: questionCount } = await supabase
-          .from('question_tags')
-          .select('*', { count: 'exact', head: true })
-          .eq('tag_id', tag.id)
-
-        return {
-          ...tag,
-          question_count: questionCount || 0
-        }
+    if (!data || data.length === 0) {
+      return NextResponse.json({
+        tags: [],
+        totalTags: count || 0,
+        totalPages: Math.ceil((count || 0) / pageSize),
+        currentPage: page
       })
-    )
+    }
+
+    // Get question counts for all tags in a single query (eliminates N+1 problem)
+    const tagIds = data.map(tag => tag.id)
+    const { data: questionCounts } = await supabase
+      .from('question_tags')
+      .select('tag_id')
+      .in('tag_id', tagIds)
+
+    // Create a map of tag_id -> question_count
+    const countMap = new Map<string, number>()
+    questionCounts?.forEach(qt => {
+      if (qt.tag_id) {
+        countMap.set(qt.tag_id, (countMap.get(qt.tag_id) || 0) + 1)
+      }
+    })
+
+    // Transform the data to include question counts
+    const tagsWithCounts = data.map(tag => ({
+      ...tag,
+      question_count: countMap.get(tag.id) || 0
+    }))
 
     return NextResponse.json({
       tags: tagsWithCounts,

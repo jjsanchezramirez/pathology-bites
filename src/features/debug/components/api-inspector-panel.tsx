@@ -105,9 +105,20 @@ export function ApiInspectorPanel({
     {
       path: '/api/debug/panel',
       method: 'GET',
-      description: 'Get debug panel state',
-      requiresAuth: true,
-      requiredRole: 'admin'
+      description: 'Get debug panel state (No Auth Required)',
+      requiresAuth: false
+    },
+    {
+      path: '/api/r2/anki-media/delete-all',
+      method: 'POST',
+      description: 'Delete all Anki media files (Debug - No Auth Required)',
+      requiresAuth: false
+    },
+    {
+      path: '/api/security/events',
+      method: 'GET',
+      description: 'Get security events for debugging (No Auth Required)',
+      requiresAuth: false
     },
     {
       path: '/api/public/stats',

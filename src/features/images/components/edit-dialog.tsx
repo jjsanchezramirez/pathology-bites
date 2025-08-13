@@ -1,10 +1,11 @@
 // src/components/images/edit-dialog.tsx
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { updateImage } from '@/features/images/services/images';
 import { ImageData, IMAGE_CATEGORIES } from '@/features/images/types/images';
+import { useImageReupload } from '@/features/images/hooks/use-image-reupload';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -26,7 +27,8 @@ import { Input } from '@/shared/components/ui/input';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Button } from '@/shared/components/ui/button';
 
-import { Loader2 } from 'lucide-react';
+
+import { Loader2, Upload, AlertTriangle } from 'lucide-react';
 
 interface EditImageDialogProps {
   image: ImageData | null;
@@ -46,6 +48,19 @@ export function EditImageDialog({
   const [altText, setAltText] = useState('');
   const [category, setCategory] = useState<'gross' | 'microscopic' | 'figure' | 'table'>('microscopic');
   const [sourceRef, setSourceRef] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { reuploadImage, isUploading } = useImageReupload({
+    onSuccess: () => {
+      setSelectedFile(null);
+      onOpenChange(false);
+      setTimeout(() => {
+        onSave();
+      }, 100);
+    }
+  });
 
   // Initialize state when image changes or dialog opens
   useEffect(() => {
@@ -64,6 +79,7 @@ export function EditImageDialog({
       setAltText('');
       setCategory('microscopic');
       setSourceRef('');
+      setSelectedFile(null);
     }
   }, [open]);
 
@@ -98,7 +114,24 @@ export function EditImageDialog({
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && image) {
+      setSelectedFile(file);
+      // Automatically trigger upload
+      reuploadImage(image.id, file, false); // false = don't update metadata
+    }
+  };
 
+
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+  };
 
   if (!image) return null;
 
@@ -128,11 +161,34 @@ export function EditImageDialog({
                 sizes="(max-width: 768px) 100vw, 33vw"
               />
             </div>
+
+            {/* Replace Image Button - Simple and immediate */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              accept="image/*"
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full"
+              disabled={isUploading}
+            >
+              {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Upload className="h-4 w-4 mr-2" />
+              Replace Image
+            </Button>
             <div className="text-xs text-muted-foreground space-y-1 bg-muted/20 rounded-lg p-3">
               <h4 className="font-medium text-foreground mb-1 text-sm">Image Details</h4>
               <p><strong>File Type:</strong> {image.file_type}</p>
+              <p><strong>Size:</strong> {formatFileSize(image.file_size_bytes || 0)}</p>
+              <p><strong>Dimensions:</strong> {image.width}×{image.height}</p>
               <p><strong>Uploaded:</strong> {new Date(image.created_at).toLocaleDateString()}</p>
             </div>
+
           </div>
 
           {/* Edit Form - Takes 2/3 of space */}

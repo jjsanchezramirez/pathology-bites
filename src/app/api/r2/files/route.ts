@@ -58,30 +58,81 @@ export async function GET(request: NextRequest) {
       bucket: bucket
     }
 
-    // Calculate pagination for R2 API
-    const maxKeys = params.limit * 2 // Fetch more to handle filtering
-    
-    // List files from R2
-    const r2Result = await listR2Files({
-      prefix: params.prefix,
-      maxKeys,
-      bucket: params.bucket
-    })
+    // For search queries, we need to fetch all files to get accurate results
+    // For non-search queries, we can use true pagination
+    let allFiles: R2FileListItem[] = []
+    let totalItems = 0
+    let continuationToken: string | undefined = undefined
 
-    let files = r2Result.files
-
-    // Apply search filter if provided
     if (params.search) {
+      // Search mode: fetch all files to search through them
+      let hasMore = true
+      while (hasMore) {
+        const r2Result = await listR2Files({
+          prefix: params.prefix,
+          maxKeys: 1000, // Maximum allowed by AWS S3/R2
+          continuationToken,
+          bucket: params.bucket
+        })
+
+        allFiles.push(...r2Result.files)
+        hasMore = r2Result.isTruncated
+        continuationToken = r2Result.nextContinuationToken
+
+        // Safety break to prevent infinite loops
+        if (allFiles.length > 50000) {
+          console.warn('Breaking search loop at 50,000 files to prevent timeout')
+          break
+        }
+      }
+
+      // Apply search filter
       const searchLower = params.search.toLowerCase()
-      files = files.filter(file => 
+      allFiles = allFiles.filter(file =>
         file.key.toLowerCase().includes(searchLower)
       )
+
+      totalItems = allFiles.length
+    } else {
+      // Non-search mode: fetch enough pages to get the requested page
+      const pagesToFetch = Math.ceil((params.page * params.limit) / 1000) + 1
+      let fetchedPages = 0
+
+      while (fetchedPages < pagesToFetch) {
+        const r2Result = await listR2Files({
+          prefix: params.prefix,
+          maxKeys: 1000,
+          continuationToken,
+          bucket: params.bucket
+        })
+
+        allFiles.push(...r2Result.files)
+        fetchedPages++
+
+        if (!r2Result.isTruncated) {
+          // We've reached the end of all files
+          totalItems = allFiles.length
+          break
+        }
+
+        continuationToken = r2Result.nextContinuationToken
+      }
+
+      // If we haven't reached the end, estimate total count
+      if (continuationToken) {
+        // Rough estimation: assume similar file density across all pages
+        const avgFilesPerPage = allFiles.length / fetchedPages
+        const estimatedTotalPages = Math.ceil(allFiles.length / avgFilesPerPage) * 2 // Conservative estimate
+        totalItems = Math.max(allFiles.length, estimatedTotalPages * avgFilesPerPage)
+      } else {
+        totalItems = allFiles.length
+      }
     }
 
     // Apply sorting
-    files.sort((a, b) => {
+    allFiles.sort((a, b) => {
       let comparison = 0
-      
+
       switch (params.sortBy) {
         case 'name':
           comparison = a.key.localeCompare(b.key)
@@ -93,16 +144,15 @@ export async function GET(request: NextRequest) {
           comparison = a.lastModified.getTime() - b.lastModified.getTime()
           break
       }
-      
+
       return params.sortOrder === 'desc' ? -comparison : comparison
     })
 
-    // Apply pagination
-    const totalItems = files.length
+    // Apply pagination to the sorted results
     const totalPages = Math.ceil(totalItems / params.limit)
     const startIndex = (params.page - 1) * params.limit
     const endIndex = startIndex + params.limit
-    const paginatedFiles = files.slice(startIndex, endIndex)
+    const paginatedFiles = allFiles.slice(startIndex, endIndex)
 
     // Enhance files with content type information for displayed files
     const enhancedFiles = await Promise.all(

@@ -1,4 +1,5 @@
 // Barrel export for all features
+export * from './anki'
 export * from './auth'
 export * from './questions'
 export * from './images'

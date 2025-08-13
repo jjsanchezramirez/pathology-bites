@@ -10,13 +10,7 @@ const nextConfig = {
     // All images use unoptimized=true to avoid Vercel optimization costs
     // remotePatterns are configured for security but optimization is disabled
     remotePatterns: [
-      // Legacy Supabase Storage (for any remaining images during transition)
-      {
-        protocol: 'https',
-        hostname: process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '') || 'htsnkuudinrcgfqlqmpi.supabase.co',
-        pathname: '/storage/v1/object/public/images/**',
-      },
-      // Cloudflare R2 CDN (primary image storage)
+      // Cloudflare R2 CDN (primary image storage - all images now in 'library' folder)
       {
         protocol: 'https',
         hostname: 'pub-a4bec7073d99465f99043c842be6318c.r2.dev',
@@ -134,7 +128,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https: http:",
-              "connect-src 'self' https://*.supabase.co https://vercel.live wss://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://virtualpathology.leeds.ac.uk https://www.virtualpathology.leeds.ac.uk https://images.virtualpathology.leeds.ac.uk https://pub-a4bec7073d99465f99043c842be6318c.r2.dev",
+              "connect-src 'self' https://*.supabase.co https://vercel.live wss://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://virtualpathology.leeds.ac.uk https://www.virtualpathology.leeds.ac.uk https://images.virtualpathology.leeds.ac.uk https://pub-a4bec7073d99465f99043c842be6318c.r2.dev https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev",
               "frame-src 'self' https://accounts.google.com https://vercel.live https://image.upmc.edu https://*.supabase.co https://pathpresenter.net https://pathpresenter.blob.core.windows.net https://pathpresenter2.blob.core.windows.net https://learn.mghpathology.org https://virtualpathology.leeds.ac.uk https://www.virtualpathology.leeds.ac.uk https://images.virtualpathology.leeds.ac.uk https://dlm.lmp.utoronto.ca https://rosai.secondslide.com https://rosaicollection.net http://www.hematopathologyetutorial.com https://hematopathologyetutorial.com https://images.virtualpathology.leeds.ac.uk/",
               "object-src 'none'",
               "base-uri 'self'",

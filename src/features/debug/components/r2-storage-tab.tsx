@@ -13,7 +13,8 @@ import { Badge } from '@/shared/components/ui/badge'
 import {
   HardDrive,
   ImageIcon,
-  Database
+  Database,
+  FolderOpen
 } from 'lucide-react'
 
 import { R2FileBrowser } from './r2-file-browser'
@@ -26,10 +27,11 @@ export function R2StorageTab() {
       <div>
         <h2 className="text-2xl font-bold mb-2 flex items-center space-x-2">
           <HardDrive className="h-6 w-6" />
-          <span>Cloudflare R2</span>
+          <span>Cloudflare R2 Storage</span>
         </h2>
         <p className="text-gray-600">
-          Browse and manage files across Cloudflare R2 storage buckets
+          Browse and manage files across Cloudflare R2 storage buckets with enhanced folder navigation.
+          Navigate through directories and organize your content efficiently.
         </p>
       </div>
 
@@ -51,9 +53,11 @@ export function R2StorageTab() {
               <ImageIcon className="h-5 w-5 text-blue-500" />
               <h3 className="text-lg font-semibold">Images Bucket</h3>
               <Badge variant="outline">pathology-bites-images</Badge>
+              <Badge variant="secondary" className="text-xs">Public</Badge>
             </div>
             <p className="text-sm text-gray-600 mb-4">
-              Medical images, microscopic slides, and visual content
+              Medical images, microscopic slides, visual content, and Anki media files organized in folders.
+              Navigate through the <code className="text-xs bg-gray-100 px-1 rounded">anki/</code> subfolder to access flashcard media.
             </p>
             <R2FileBrowser defaultBucket="pathology-bites-images" />
           </div>
@@ -65,9 +69,11 @@ export function R2StorageTab() {
               <Database className="h-5 w-5 text-green-500" />
               <h3 className="text-lg font-semibold">Data Bucket</h3>
               <Badge variant="outline">pathology-bites-data</Badge>
+              <Badge variant="secondary" className="text-xs">Private</Badge>
             </div>
             <p className="text-sm text-gray-600 mb-4">
-              JSON files, datasets, and structured data
+              JSON files, datasets, structured data, and configuration files organized in folders.
+              Browse through different directories to find specific data types.
             </p>
             <R2FileBrowser defaultBucket="pathology-bites-data" />
           </div>

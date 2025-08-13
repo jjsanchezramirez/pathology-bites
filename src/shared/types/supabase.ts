@@ -30,6 +30,334 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      learning_modules: {
+        Row: {
+          id: string
+          parent_module_id: string | null
+          category_id: string
+          title: string
+          slug: string
+          description: string | null
+          content: string | null
+          learning_objectives: string[] | null
+          difficulty_level: string
+          estimated_duration_minutes: number
+          sort_order: number
+          content_type: string
+          external_content_url: string | null
+          quiz_id: string | null
+          status: string
+          is_featured: boolean
+          published_at: string | null
+          created_by: string | null
+          reviewed_by: string | null
+          view_count: number
+          average_completion_time_minutes: number | null
+          average_rating: number | null
+          rating_count: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          parent_module_id?: string | null
+          category_id: string
+          title: string
+          slug: string
+          description?: string | null
+          content?: string | null
+          learning_objectives?: string[] | null
+          difficulty_level?: string
+          estimated_duration_minutes?: number
+          sort_order?: number
+          content_type?: string
+          external_content_url?: string | null
+          quiz_id?: string | null
+          status?: string
+          is_featured?: boolean
+          published_at?: string | null
+          created_by?: string | null
+          reviewed_by?: string | null
+          view_count?: number
+          average_completion_time_minutes?: number | null
+          average_rating?: number | null
+          rating_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          parent_module_id?: string | null
+          category_id?: string
+          title?: string
+          slug?: string
+          description?: string | null
+          content?: string | null
+          learning_objectives?: string[] | null
+          difficulty_level?: string
+          estimated_duration_minutes?: number
+          sort_order?: number
+          content_type?: string
+          external_content_url?: string | null
+          quiz_id?: string | null
+          status?: string
+          is_featured?: boolean
+          published_at?: string | null
+          created_by?: string | null
+          reviewed_by?: string | null
+          view_count?: number
+          average_completion_time_minutes?: number | null
+          average_rating?: number | null
+          rating_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_modules_parent_module_id_fkey"
+            columns: ["parent_module_id"]
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_modules_category_id_fkey"
+            columns: ["category_id"]
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_modules_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_modules_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      learning_paths: {
+        Row: {
+          id: number
+          title: string
+          slug: string
+          description: string | null
+          difficulty_level: string | null
+          estimated_total_duration_minutes: number | null
+          learning_objectives: string[] | null
+          prerequisites: string[] | null
+          target_audience: string | null
+          thumbnail_image_id: string | null
+          category_id: string | null
+          tags: string[] | null
+          status: string
+          is_featured: boolean
+          published_at: string | null
+          enrollment_count: number
+          completion_count: number
+          average_rating: number | null
+          rating_count: number
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: never
+          title: string
+          slug: string
+          description?: string | null
+          difficulty_level?: string | null
+          estimated_total_duration_minutes?: number | null
+          learning_objectives?: string[] | null
+          prerequisites?: string[] | null
+          target_audience?: string | null
+          thumbnail_image_id?: string | null
+          category_id?: string | null
+          tags?: string[] | null
+          status?: string
+          is_featured?: boolean
+          published_at?: string | null
+          enrollment_count?: number
+          completion_count?: number
+          average_rating?: number | null
+          rating_count?: number
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: never
+          title?: string
+          slug?: string
+          description?: string | null
+          difficulty_level?: string | null
+          estimated_total_duration_minutes?: number | null
+          learning_objectives?: string[] | null
+          prerequisites?: string[] | null
+          target_audience?: string | null
+          thumbnail_image_id?: string | null
+          category_id?: string | null
+          tags?: string[] | null
+          status?: string
+          is_featured?: boolean
+          published_at?: string | null
+          enrollment_count?: number
+          completion_count?: number
+          average_rating?: number | null
+          rating_count?: number
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_paths_thumbnail_image_id_fkey"
+            columns: ["thumbnail_image_id"]
+            referencedRelation: "images"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_paths_category_id_fkey"
+            columns: ["category_id"]
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_paths_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      learning_path_modules: {
+        Row: {
+          id: string
+          learning_path_id: number
+          module_id: string
+          sort_order: number
+          is_required: boolean
+          unlock_criteria: any | null
+          custom_description: string | null
+          estimated_duration_override: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          learning_path_id: number
+          module_id: string
+          sort_order: number
+          is_required?: boolean
+          unlock_criteria?: any | null
+          custom_description?: string | null
+          estimated_duration_override?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          learning_path_id?: number
+          module_id?: string
+          sort_order?: number
+          is_required?: boolean
+          unlock_criteria?: any | null
+          custom_description?: string | null
+          estimated_duration_override?: number | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_path_modules_learning_path_id_fkey"
+            columns: ["learning_path_id"]
+            referencedRelation: "learning_paths"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_path_modules_module_id_fkey"
+            columns: ["module_id"]
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_learning_path_enrollments: {
+        Row: {
+          id: string
+          user_id: string
+          learning_path_id: number
+          status: string
+          enrolled_at: string
+          started_at: string | null
+          completed_at: string | null
+          last_accessed_at: string | null
+          current_module_id: string | null
+          modules_completed: number
+          total_modules: number | null
+          progress_percentage: number
+          total_time_minutes: number
+          average_score: number | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          learning_path_id: number
+          status?: string
+          enrolled_at?: string
+          started_at?: string | null
+          completed_at?: string | null
+          last_accessed_at?: string | null
+          current_module_id?: string | null
+          modules_completed?: number
+          total_modules?: number | null
+          progress_percentage?: number
+          total_time_minutes?: number
+          average_score?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          learning_path_id?: number
+          status?: string
+          enrolled_at?: string
+          started_at?: string | null
+          completed_at?: string | null
+          last_accessed_at?: string | null
+          current_module_id?: string | null
+          modules_completed?: number
+          total_modules?: number | null
+          progress_percentage?: number
+          total_time_minutes?: number
+          average_score?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_learning_path_enrollments_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_learning_path_enrollments_learning_path_id_fkey"
+            columns: ["learning_path_id"]
+            referencedRelation: "learning_paths"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_learning_path_enrollments_current_module_id_fkey"
+            columns: ["current_module_id"]
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       question_options: {
         Row: {
           id: string

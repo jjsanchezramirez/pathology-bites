@@ -1,22 +1,101 @@
 // src/app/(dashboard)/dashboard/learning-path/page.tsx
 "use client"
 
+import { useState } from "react"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { Progress } from "@/shared/components/ui/progress"
 import { Badge } from "@/shared/components/ui/badge"
-import { 
-  BookOpen, 
-  CheckCircle, 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
+import {
+  BookOpen,
+  CheckCircle,
   Circle,
   Lock,
   Play,
   Star,
   Clock,
-  Target
+  Target,
+  Microscope,
+  FlaskConical,
+  ChevronRight,
+  Trophy,
+  TrendingUp
 } from "lucide-react"
+import { AP_CATEGORIES, CP_CATEGORIES } from "@/features/learning-path/data/learning-categories"
+import { LearningCategory } from "@/features/learning-path/types/learning-path"
 
 export default function LearningPathPage() {
+  const [activeTab, setActiveTab] = useState<'overview' | 'ap' | 'cp'>('overview')
+
+  // Calculate overall stats
+  const allCategories = [...AP_CATEGORIES, ...CP_CATEGORIES]
+  const totalModules = allCategories.reduce((sum, cat) => sum + cat.totalModules, 0)
+  const completedModules = allCategories.reduce((sum, cat) => sum + cat.completedModules, 0)
+  const overallProgress = totalModules > 0 ? (completedModules / totalModules) * 100 : 0
+
+  const apTotalModules = AP_CATEGORIES.reduce((sum, cat) => sum + cat.totalModules, 0)
+  const apCompletedModules = AP_CATEGORIES.reduce((sum, cat) => sum + cat.completedModules, 0)
+  const apProgress = apTotalModules > 0 ? (apCompletedModules / apTotalModules) * 100 : 0
+
+  const cpTotalModules = CP_CATEGORIES.reduce((sum, cat) => sum + cat.totalModules, 0)
+  const cpCompletedModules = CP_CATEGORIES.reduce((sum, cat) => sum + cat.completedModules, 0)
+  const cpProgress = cpTotalModules > 0 ? (cpCompletedModules / cpTotalModules) * 100 : 0
+
+  const CategoryCard = ({ category }: { category: LearningCategory }) => {
+    const availableModules = category.modules.filter(m => m.status === 'available' || m.status === 'in_progress').length
+    const nextModule = category.modules.find(m => m.status === 'available' || m.status === 'in_progress')
+
+    return (
+      <Card className="hover:shadow-md transition-shadow">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4">
+            <div className={`w-12 h-12 rounded-lg ${category.color} flex items-center justify-center text-white text-xl shrink-0`}>
+              {category.icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-semibold text-lg truncate">{category.name}</h3>
+                <Badge variant="outline" className="shrink-0">
+                  {category.completedModules}/{category.totalModules}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                {category.description}
+              </p>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Progress</span>
+                  <span>{Math.round(category.progress)}%</span>
+                </div>
+                <Progress value={category.progress} className="w-full" />
+                {nextModule && (
+                  <p className="text-sm text-muted-foreground">
+                    Next: {nextModule.name}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 shrink-0">
+              <Link href={`/dashboard/learning-path/${category.id}`}>
+                <Button size="sm" className="w-full">
+                  {category.progress > 0 ? 'Continue' : 'Start'}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </Link>
+              {availableModules > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {availableModules} available
+                </Badge>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -27,7 +106,7 @@ export default function LearningPathPage() {
         </p>
       </div>
 
-      {/* Progress Overview */}
+      {/* Overall Progress Overview */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -37,189 +116,161 @@ export default function LearningPathPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex justify-between text-sm">
-            <span>Pathology Fundamentals Track</span>
-            <span>3/8 modules completed</span>
+            <span>Pathology Learning Track</span>
+            <span>{completedModules}/{totalModules} modules completed</span>
           </div>
-          <Progress value={37.5} className="w-full" />
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              <span>~15 hours remaining</span>
+          <Progress value={overallProgress} className="w-full" />
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <Microscope className="h-4 w-4 text-blue-500" />
+              <span>AP: {Math.round(apProgress)}% ({apCompletedModules}/{apTotalModules})</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Star className="h-4 w-4" />
-              <span>Beginner to Intermediate</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Learning Modules */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Learning Modules</h2>
-        
-        <div className="grid gap-4">
-          {/* Completed Module */}
-          <Card className="border-green-200 bg-green-50/50">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="shrink-0">
-                  <CheckCircle className="h-6 w-6 text-green-500" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold">1. Introduction to Pathology</h3>
-                    <Badge className="bg-green-100 text-green-800">Completed</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Basic concepts, terminology, and overview of pathological processes
-                  </p>
-                  <div className="flex items-center gap-4 text-sm">
-                    <span>25 questions • 2 hours</span>
-                    <span className="text-green-600">Score: 92%</span>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">
-                  Review
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Completed Module */}
-          <Card className="border-green-200 bg-green-50/50">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="shrink-0">
-                  <CheckCircle className="h-6 w-6 text-green-500" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold">2. Cell Injury and Death</h3>
-                    <Badge className="bg-green-100 text-green-800">Completed</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Mechanisms of cellular damage, adaptation, and death
-                  </p>
-                  <div className="flex items-center gap-4 text-sm">
-                    <span>30 questions • 2.5 hours</span>
-                    <span className="text-green-600">Score: 88%</span>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">
-                  Review
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Current Module */}
-          <Card className="border-blue-200 bg-blue-50/50">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="shrink-0">
-                  <Circle className="h-6 w-6 text-blue-500" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold">3. Inflammation and Repair</h3>
-                    <Badge variant="secondary">In Progress</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Acute and chronic inflammation, wound healing, and tissue repair
-                  </p>
-                  <div className="flex items-center gap-4 text-sm mb-3">
-                    <span>35 questions • 3 hours</span>
-                    <span>Progress: 12/35 questions</span>
-                  </div>
-                  <Progress value={34} className="w-full mb-3" />
-                </div>
-                <Button size="sm">
-                  <Play className="h-4 w-4 mr-2" />
-                  Continue
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Upcoming Modules */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="shrink-0">
-                  <Circle className="h-6 w-6 text-gray-400" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-gray-600">4. Hemodynamic Disorders</h3>
-                    <Badge variant="outline">Upcoming</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Edema, hyperemia, congestion, hemorrhage, and thrombosis
-                  </p>
-                  <div className="flex items-center gap-4 text-sm">
-                    <span>28 questions • 2.5 hours</span>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" disabled>
-                  Locked
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="shrink-0">
-                  <Lock className="h-6 w-6 text-gray-400" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-gray-600">5. Genetic Disorders</h3>
-                    <Badge variant="outline">Locked</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Mendelian disorders, chromosomal abnormalities, and genetic testing
-                  </p>
-                  <div className="flex items-center gap-4 text-sm">
-                    <span>32 questions • 3 hours</span>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" disabled>
-                  <Lock className="h-4 w-4 mr-2" />
-                  Locked
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Recommendations */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recommendations</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-              <BookOpen className="h-5 w-5 text-blue-500 mt-0.5" />
-              <div>
-                <p className="font-medium text-sm">Continue with Inflammation module</p>
-                <p className="text-sm text-muted-foreground">You're making good progress! Complete 5 more questions to unlock the next section.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
-              <Target className="h-5 w-5 text-yellow-500 mt-0.5" />
-              <div>
-                <p className="font-medium text-sm">Review Cell Injury concepts</p>
-                <p className="text-sm text-muted-foreground">Your recent quiz showed some gaps in apoptosis mechanisms. Consider reviewing this topic.</p>
-              </div>
+            <div className="flex items-center gap-2">
+              <FlaskConical className="h-4 w-4 text-green-500" />
+              <span>CP: {Math.round(cpProgress)}% ({cpCompletedModules}/{cpTotalModules})</span>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Tabs for AP/CP */}
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'overview' | 'ap' | 'cp')}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="ap" className="flex items-center gap-2">
+            <Microscope className="h-4 w-4" />
+            Anatomic Pathology
+          </TabsTrigger>
+          <TabsTrigger value="cp" className="flex items-center gap-2">
+            <FlaskConical className="h-4 w-4" />
+            Clinical Pathology
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-yellow-500" />
+                  <div>
+                    <p className="text-2xl font-bold">{completedModules}</p>
+                    <p className="text-sm text-muted-foreground">Modules Completed</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-green-500" />
+                  <div>
+                    <p className="text-2xl font-bold">{Math.round(overallProgress)}%</p>
+                    <p className="text-sm text-muted-foreground">Overall Progress</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-blue-500" />
+                  <div>
+                    <p className="text-2xl font-bold">{totalModules - completedModules}</p>
+                    <p className="text-sm text-muted-foreground">Modules Remaining</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Activity / Recommendations */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Continue Learning</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {/* Show categories with in-progress modules */}
+                {allCategories
+                  .filter(cat => cat.modules.some(m => m.status === 'in_progress'))
+                  .slice(0, 2)
+                  .map(category => {
+                    const inProgressModule = category.modules.find(m => m.status === 'in_progress')
+                    return (
+                      <div key={category.id} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                        <div className={`w-8 h-8 rounded ${category.color} flex items-center justify-center text-white text-sm shrink-0`}>
+                          {category.icon}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{category.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Continue with: {inProgressModule?.name}
+                          </p>
+                        </div>
+                        <Link href={`/dashboard/learning-path/${category.id}`}>
+                          <Button size="sm">Continue</Button>
+                        </Link>
+                      </div>
+                    )
+                  })}
+
+                {/* Show available categories if no in-progress */}
+                {allCategories.filter(cat => cat.modules.some(m => m.status === 'in_progress')).length === 0 && (
+                  <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
+                    <BookOpen className="h-5 w-5 text-green-500 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">Ready to start learning?</p>
+                      <p className="text-sm text-muted-foreground">
+                        Choose from Anatomic Pathology or Clinical Pathology tracks to begin your journey.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ap" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">Anatomic Pathology</h2>
+              <p className="text-muted-foreground">
+                Tissue-based diagnosis and morphological pathology
+              </p>
+            </div>
+            <Badge variant="outline">
+              {apCompletedModules}/{apTotalModules} modules
+            </Badge>
+          </div>
+          <div className="grid gap-4">
+            {AP_CATEGORIES.map(category => (
+              <CategoryCard key={category.id} category={category} />
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="cp" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">Clinical Pathology</h2>
+              <p className="text-muted-foreground">
+                Laboratory medicine and diagnostic testing
+              </p>
+            </div>
+            <Badge variant="outline">
+              {cpCompletedModules}/{cpTotalModules} modules
+            </Badge>
+          </div>
+          <div className="grid gap-4">
+            {CP_CATEGORIES.map(category => (
+              <CategoryCard key={category.id} category={category} />
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

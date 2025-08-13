@@ -3,6 +3,7 @@ import { ConditionalThemeProvider } from '@/shared/components/common/conditional
 import { TextZoomProvider } from '@/shared/contexts/font-size-context'
 import { Toaster as SonnerToaster } from "@/shared/components/ui/sonner"
 import { ConnectionStatus } from "@/shared/components/common/connection-status"
+
 import { cn } from '@/shared/utils'
 import "@/styles/globals.css"
 import { AuthProvider } from '@/features/auth/components/auth-provider'
@@ -131,7 +132,7 @@ export default async function RootLayout({
         <meta name="msapplication-TileColor" content="#ffffff" />
 
         {/* Viewport meta tag for responsive design */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body className={cn('min-h-screen bg-background font-sans antialiased')}>
         {/* Structured Data */}

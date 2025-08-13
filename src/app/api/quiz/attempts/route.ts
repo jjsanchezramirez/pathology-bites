@@ -11,18 +11,15 @@ export async function POST(request: NextRequest) {
   let user: any
 
   try {
-    console.log('[API] /api/quiz/attempts POST request started')
     const supabase = await createClient()
 
     // Check if user is authenticated
     const { data: { user: authenticatedUser }, error: authError } = await supabase.auth.getUser()
     if (authError || !authenticatedUser) {
-      console.error('[API] /api/quiz/attempts - Authentication failed:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     user = authenticatedUser
-    console.log('[API] /api/quiz/attempts - User authenticated:', user.id)
 
     // Parse request body
     const requestBody = await request.json()
@@ -34,14 +31,12 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!sessionId || !questionId || !selectedAnswerId) {
-      console.error('[API] /api/quiz/attempts - Missing required fields:', { sessionId: !!sessionId, questionId: !!questionId, selectedAnswerId: !!selectedAnswerId })
       return NextResponse.json(
         { error: 'Missing required fields: sessionId, questionId, selectedAnswerId' },
         { status: 400 }
       )
     }
 
-    console.log('[API] /api/quiz/attempts - Processing attempt for session:', sessionId, 'question:', questionId)
 
     // Verify user owns the quiz session
     const { data: session, error: sessionError } = await supabase

@@ -6,19 +6,18 @@ import { Button } from '@/shared/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
+// Import the correct type from the QuestionForm component
+type QuestionFormData = {
+  body: string;
+  explanation: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  yield: 'low' | 'medium' | 'high';
+  categories: string[];
+  reference_text?: string;
+};
+
 export default function CreateQuestionPage() {
   const router = useRouter();
-
-  // Define an interface for the form data
-  interface QuestionFormData {
-    body: string;
-    difficulty: string;
-    yield: string;
-    explanation: string;
-    reference_text?: string;
-    categories: string[];
-    // Add any other fields that might be in your form
-  }
 
   const handleSubmit = async (data: QuestionFormData) => {
     try {

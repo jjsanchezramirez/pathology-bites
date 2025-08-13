@@ -9,6 +9,7 @@ import { Label } from "@/shared/components/ui/label"
 import { useMaintenanceNotifications } from "@/shared/hooks/use-maintenance-notifications"
 import { toast } from 'sonner'
 import FloatingCharacter from "@/shared/components/common/dr-albright"
+import { getR2PublicUrl } from "@/shared/services/r2-storage"
 import Link from "next/link"
 
 export default function MaintenancePage() {
@@ -136,7 +137,7 @@ export default function MaintenancePage() {
             {/* Right Column - Dr. Albright (Hidden on mobile) */}
             <div className="hidden lg:block w-full lg:w-2/5">
               <FloatingCharacter
-                imagePath="https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/static/images/dr-albright.png"
+                imagePath={getR2PublicUrl("assets/dr-albright.png")}
                 imageAlt="Dr. Albright Character"
                 size={400}
                 wrapperClassName="w-full flex justify-center"

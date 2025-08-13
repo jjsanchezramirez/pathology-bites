@@ -36,13 +36,27 @@ export const formatImageName = (filename: string): string => {
          nameWithoutExt.slice(1).toLowerCase();
 };
 
-// Clean filename for storage
+// Clean filename for storage with graceful special character handling
 export const cleanFileName = (filename: string): string => {
-  const name = filename.split('.')[0]
+  const nameParts = filename.split('.');
+  const extension = nameParts.pop()?.toLowerCase() || 'jpg';
+  const baseName = nameParts.join('.')
     .toLowerCase()
-    .replace(/[^a-z0-9]/g, '-');
-  const ext = filename.split('.').pop();
-  return `${name}.${ext}`;
+    .trim()
+    // Replace common special characters with meaningful equivalents
+    .replace(/&/g, 'and')
+    .replace(/\+/g, 'plus')
+    .replace(/%/g, 'percent')
+    .replace(/@/g, 'at')
+    .replace(/\$/g, 'dollar')
+    // Replace whitespace and punctuation with single hyphens
+    .replace(/[\s\-_]+/g, '-') // Multiple spaces, hyphens, underscores → single hyphen
+    .replace(/[^\w\-]/g, '-') // Non-word characters (except existing hyphens) → hyphen
+    .replace(/-+/g, '-') // Multiple consecutive hyphens → single hyphen
+    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+    || 'file'; // Fallback if name becomes empty
+
+  return `${baseName}.${extension}`;
 };
 
 // Get image dimensions

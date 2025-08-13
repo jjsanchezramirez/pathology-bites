@@ -38,6 +38,7 @@ interface UseQuizActionsProps {
   firstAnswerId: string | null
   questionStartTime: number
   questionAttempts: Map<string, any>
+  attempts: QuizAttempt[]
   setSelectedAnswerId: (id: string | null) => void
   setFirstAnswerId: (id: string | null) => void
   setShowExplanation: (show: boolean) => void
@@ -56,6 +57,7 @@ export function useQuizActions({
   firstAnswerId,
   questionStartTime,
   questionAttempts,
+  attempts,
   setSelectedAnswerId,
   setFirstAnswerId,
   setShowExplanation,
@@ -443,7 +445,68 @@ export function useQuizActions({
       const isMockSession = sessionId ? (sessionId.startsWith('mock-') || sessionId === 'demo' || sessionId === 'quiz-1') : false
 
       if (isMockSession) {
-        console.log('[Quiz] Mock quiz completed, navigating to results')
+        console.log('[Quiz] Mock quiz completed, generating and saving results')
+        
+        // Generate mock results from current session state
+        const correctAnswers = attempts.filter(a => a.isCorrect).length
+        const totalQuestions = quizSession.totalQuestions
+        const score = Math.round((correctAnswers / totalQuestions) * 100)
+        const totalTimeSpent = attempts.reduce((sum, a) => sum + (a.timeSpent || 0), 0)
+        const averageTimePerQuestion = Math.round(totalTimeSpent / totalQuestions)
+        
+        // Create question details with full question data
+        const questionDetails = quizSession.questions.map((question: any, index: number) => {
+          const attempt = attempts.find(a => a.questionId === question.id)
+          const correctChoice = question.question_options?.find((opt: any) => opt.is_correct)
+          
+          return {
+            id: question.id,
+            title: question.title || `Question ${index + 1}`,
+            stem: question.stem || '',
+            difficulty: 'medium', // Default since we don't have this data
+            category: 'General', // Default since we don't have this data
+            isCorrect: attempt?.isCorrect || false,
+            selectedAnswerId: attempt?.selectedAnswerId || null,
+            correctAnswerId: correctChoice?.id || '',
+            timeSpent: attempt?.timeSpent || 0,
+            successRate: Math.floor(Math.random() * 40) + 60, // Mock 60-100% success rate
+            totalAttempts: Math.floor(Math.random() * 50) + 10, // Mock 10-60 total attempts
+            explanation: question.teaching_point || '',
+            references: question.question_references ? [question.question_references] : [],
+            answerChoices: question.question_options || [],
+            imageUrl: question.question_images?.[0]?.image?.url
+          }
+        })
+        
+        const mockResults = {
+          sessionId: quizSession.id,
+          score,
+          correctAnswers,
+          totalQuestions,
+          totalTimeSpent,
+          averageTimePerQuestion,
+          difficultyBreakdown: {
+            easy: { correct: 0, total: 0 },
+            medium: { correct: correctAnswers, total: totalQuestions },
+            hard: { correct: 0, total: 0 }
+          },
+          categoryBreakdown: [{
+            categoryId: '1',
+            categoryName: 'General',
+            correct: correctAnswers,
+            total: totalQuestions
+          }],
+          questionDetails,
+          attempts: attempts,
+          completedAt: new Date().toISOString()
+        }
+        
+        // Save results to localStorage
+        localStorage.setItem(`quiz-results-${quizSession.id}`, JSON.stringify(mockResults))
+        
+        // Also save session data for review mode
+        localStorage.setItem(`quiz-session-${quizSession.id}`, JSON.stringify(quizSession))
+        
         router.push(`/dashboard/quiz/${quizSession.id}/results`)
       } else {
         const response = await fetch(`/api/quiz/sessions/${quizSession.id}/complete`, {

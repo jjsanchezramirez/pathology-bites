@@ -23,27 +23,9 @@ export async function POST(
     // Simplified versioning - no need to specify update type
     // All updates are treated as minor version increments
 
-    // Check user authentication and admin role
+    // Auth is now handled by middleware
     const userClient = await createClient()
-    const { data: { user }, error: authError } = await userClient.auth.getUser()
-    
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const { data: profile, error: profileError } = await userClient
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (profileError || profile?.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      )
-    }
+    const { data: { user } } = await userClient.auth.getUser() // Still need user ID for changed_by
 
     // Use admin client for the actual operations
     const adminClient = await createAdminClient()
@@ -125,13 +107,8 @@ export async function GET(
     const { id: questionId } = await params
     console.log('Version history API called for question:', questionId)
 
-    // Check user authentication
+    // Auth is now handled by middleware
     const userClient = await createClient()
-    const { data: { user }, error: authError } = await userClient.auth.getUser()
-    
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
 
     // Use admin client to fetch version history
     const adminClient = await createAdminClient()

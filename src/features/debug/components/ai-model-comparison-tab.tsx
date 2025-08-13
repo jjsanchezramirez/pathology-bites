@@ -15,11 +15,11 @@ import { Textarea } from '@/shared/components/ui/textarea'
 import { Label } from '@/shared/components/ui/label'
 import { Checkbox } from '@/shared/components/ui/checkbox'
 import { Progress } from '@/shared/components/ui/progress'
-import { 
-  Bot, 
-  Send, 
-  Copy, 
-  CheckCircle, 
+import {
+  Bot,
+  Send,
+  Copy,
+  CheckCircle,
   AlertCircle,
   RefreshCw,
   Download,
@@ -28,7 +28,10 @@ import {
   Clock,
   Zap,
   FileText,
-  Settings
+  Settings,
+  Brain,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 import { toast } from '@/shared/utils/toast'
 import {
@@ -39,6 +42,7 @@ import {
   DEFAULT_MODEL,
   type AIModel
 } from '@/shared/config/ai-models'
+import { ThinkingContentDisplay } from './thinking-content-display'
 
 interface ModelTestResult {
   modelId: string
@@ -54,6 +58,8 @@ interface ModelTestResult {
   }
   error?: string
   startTime?: number
+  thinkingContent?: string
+  hasThinking?: boolean
 }
 
 interface ComparisonSession {
@@ -71,14 +77,10 @@ export function AiModelComparisonTab() {
   const [isRunning, setIsRunning] = useState(false)
   const [progress, setProgress] = useState(0)
   const [sessions, setSessions] = useState<ComparisonSession[]>([])
+  const [showThinkingContent, setShowThinkingContent] = useState(true)
 
-  // Get all models with prioritized ordering - including both active and disabled models
-  const allModels = [
-    ...ACTIVE_AI_MODELS.filter(m => m.provider === 'gemini'),
-    ...ACTIVE_AI_MODELS.filter(m => m.provider === 'mistral' || m.provider === 'deepseek'),
-    ...ACTIVE_AI_MODELS.filter(m => !['gemini', 'mistral', 'deepseek'].includes(m.provider)),
-    ...DISABLED_AI_MODELS
-  ]
+  // Get all models with prioritized ordering - including both active and disabled models  
+  const allModels = [...ACTIVE_AI_MODELS, ...DISABLED_AI_MODELS]
 
   // Load sessions from localStorage on mount
   useEffect(() => {
@@ -161,12 +163,34 @@ export function AiModelComparisonTab() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error?.message || 'Batch test failed')
+        // Safely extract error message from response
+        let errorMessage = 'Batch test failed'
+        if (data.error) {
+          if (typeof data.error === 'string') {
+            errorMessage = data.error
+          } else if (typeof data.error === 'object' && data.error.message) {
+            errorMessage = data.error.message
+          } else if (typeof data.error === 'object') {
+            errorMessage = JSON.stringify(data.error)
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       // Process results
       const results: ModelTestResult[] = data.results.map((result: any) => {
         const model = allModels.find(m => m.id === result.modelId)!
+
+        // Ensure error is always a string if present
+        let errorMessage: string | undefined = undefined
+        if (result.error) {
+          if (typeof result.error === 'string') {
+            errorMessage = result.error
+          } else if (typeof result.error === 'object') {
+            errorMessage = result.error.message || JSON.stringify(result.error)
+          }
+        }
+
         return {
           modelId: result.modelId,
           modelName: model.name,
@@ -175,7 +199,9 @@ export function AiModelComparisonTab() {
           response: result.response,
           responseTime: result.responseTime,
           tokenUsage: result.tokenUsage,
-          error: result.error
+          error: errorMessage,
+          thinkingContent: result.thinkingContent,
+          hasThinking: result.hasThinking
         }
       })
 
@@ -197,7 +223,18 @@ export function AiModelComparisonTab() {
 
     } catch (error) {
       console.error('Batch test error:', error)
-      toast.error(`Batch test failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+
+      // Safely extract error message for toast
+      let errorMessage = 'Unknown error'
+      if (error instanceof Error) {
+        errorMessage = error.message
+      } else if (typeof error === 'string') {
+        errorMessage = error
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error)
+      }
+
+      toast.error(`Batch test failed: ${errorMessage}`)
 
       // Set all results to error state
       const errorResults: ModelTestResult[] = selectedModels.map(modelId => {
@@ -207,7 +244,7 @@ export function AiModelComparisonTab() {
           modelName: model.name,
           provider: model.provider,
           status: 'error',
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: errorMessage
         }
       })
 
@@ -403,6 +440,21 @@ export function AiModelComparisonTab() {
                 )}
               </Button>
 
+              {/* Thinking Content Toggle */}
+              {testResults.some(r => r.hasThinking) && (
+                <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded border border-blue-200">
+                  <Checkbox
+                    id="show-thinking"
+                    checked={showThinkingContent}
+                    onCheckedChange={(checked) => setShowThinkingContent(checked === true)}
+                  />
+                  <Label htmlFor="show-thinking" className="text-sm flex items-center space-x-1">
+                    <Brain className="h-4 w-4 text-blue-600" />
+                    <span>Show thinking process for models that provide it</span>
+                  </Label>
+                </div>
+              )}
+
               {/* Progress Bar */}
               {isRunning && (
                 <div className="space-y-2">
@@ -503,12 +555,36 @@ export function AiModelComparisonTab() {
 
                       {result.error && (
                         <div className="bg-red-50 border border-red-200 rounded p-3 mb-3">
-                          <p className="text-red-800 text-sm">{result.error}</p>
+                          <p className="text-red-800 text-sm">
+                            {typeof result.error === 'string'
+                              ? result.error
+                              : JSON.stringify(result.error)
+                            }
+                          </p>
+                        </div>
+                      )}
+
+                      {result.hasThinking && result.thinkingContent && showThinkingContent && (
+                        <div className="mb-3">
+                          <ThinkingContentDisplay
+                            thinkingContent={result.thinkingContent}
+                            modelName={result.modelName}
+                            onCopy={copyToClipboard}
+                          />
                         </div>
                       )}
 
                       {result.response && (
-                        <div className="bg-gray-50 rounded p-3">
+                        <div className="bg-gray-50 rounded p-3 mt-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-medium text-gray-600">Final Response</span>
+                            {result.hasThinking && (
+                              <Badge variant="outline" className="text-xs">
+                                <Brain className="h-3 w-3 mr-1" />
+                                Thinking Separated
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm whitespace-pre-wrap">
                             {typeof result.response === 'string'
                               ? result.response

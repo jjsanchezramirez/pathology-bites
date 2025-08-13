@@ -2,6 +2,7 @@
 "use client"
 
 import { useState, useEffect, memo } from 'react'
+import { useCachedData } from '@/shared/hooks/use-cached-data'
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { Progress } from "@/shared/components/ui/progress"
@@ -115,31 +116,30 @@ interface SimpleGoalsWidgetProps {
 }
 
 export function SimpleGoalsWidget({ userId }: SimpleGoalsWidgetProps) {
-  const [goals, setGoals] = useState<Goal[]>([])
-  const [loading, setLoading] = useState(true)
   const [showCompleted, setShowCompleted] = useState(false)
 
-  useEffect(() => {
-    fetchGoals()
-  }, [])
-
-  const fetchGoals = async () => {
-    setLoading(true)
-    try {
+  // Use cached data for goals to reduce API calls
+  const { data: goalsData, isLoading: loading } = useCachedData(
+    'dashboard-goals',
+    async () => {
       const response = await fetch('/api/user/dashboard/goals?active=true')
       const result = await response.json()
 
       if (result.success) {
-        setGoals(result.data.goals)
+        return result.data.goals
       } else {
-        console.error('Failed to fetch goals:', result.error)
+        throw new Error(result.error || 'Failed to fetch goals')
       }
-    } catch (error) {
-      console.error('Error fetching goals:', error)
-    } finally {
-      setLoading(false)
+    },
+    {
+      ttl: 3 * 60 * 1000, // 3 minutes cache
+      staleTime: 1 * 60 * 1000, // 1 minute stale time
+      storage: 'memory',
+      prefix: 'pathology-bites-goals'
     }
-  }
+  )
+
+  const goals = goalsData || []
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -177,9 +177,9 @@ export function SimpleGoalsWidget({ userId }: SimpleGoalsWidgetProps) {
     }
   }
 
-  const activeGoals = goals.filter(g => !g.is_completed && !g.isExpired)
-  const completedGoals = goals.filter(g => g.is_completed)
-  const expiredGoals = goals.filter(g => g.isExpired && !g.is_completed)
+  const activeGoals = goals.filter((g: any) => !g.is_completed && !g.isExpired)
+  const completedGoals = goals.filter((g: any) => g.is_completed)
+  const expiredGoals = goals.filter((g: any) => g.isExpired && !g.is_completed)
 
   if (loading) {
     return (
@@ -241,7 +241,7 @@ export function SimpleGoalsWidget({ userId }: SimpleGoalsWidgetProps) {
         ) : (
           <div className="space-y-4">
             {/* Active Goals */}
-            {activeGoals.map((goal) => (
+            {activeGoals.map((goal: any) => (
               <ActiveGoalCard key={goal.id} goal={goal} />
             ))}
 
@@ -249,7 +249,7 @@ export function SimpleGoalsWidget({ userId }: SimpleGoalsWidgetProps) {
             {expiredGoals.length > 0 && (
               <div className="space-y-2">
                 <h5 className="text-sm font-medium text-muted-foreground">Expired</h5>
-                {expiredGoals.map((goal) => (
+                {expiredGoals.map((goal: any) => (
                   <ExpiredGoalCard key={goal.id} goal={goal} />
                 ))}
               </div>
@@ -259,7 +259,7 @@ export function SimpleGoalsWidget({ userId }: SimpleGoalsWidgetProps) {
             {showCompleted && completedGoals.length > 0 && (
               <div className="space-y-2">
                 <h5 className="text-sm font-medium text-muted-foreground">Completed</h5>
-                {completedGoals.map((goal) => (
+                {completedGoals.map((goal: any) => (
                   <CompletedGoalCard key={goal.id} goal={goal} />
                 ))}
               </div>

@@ -1,12 +1,14 @@
 // src/app/api/tools/cell-quiz/images/route.ts
 /**
  * API endpoint for cell quiz images data
- * Serves data from local file system with compression and caching
+ * Serves data from R2 storage with compression and caching
+ * Transforms image URLs to use Cloudflare R2 public URLs
  */
 
 import { NextResponse } from 'next/server'
 import { createOptimizedResponse } from '@/shared/utils/compression'
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { transformCellQuizData } from '@/shared/utils/r2-url-transformer'
 
 // R2 Configuration
 function getR2Config() {
@@ -57,7 +59,10 @@ export async function GET() {
 
     // Convert stream to string
     const fileContent = await response.Body.transformToString()
-    const data = JSON.parse(fileContent)
+    const rawData = JSON.parse(fileContent)
+
+    // Transform image URLs to use R2 public URLs
+    const data = transformCellQuizData(rawData)
 
     // Return with compression and aggressive 24-hour caching
     return createOptimizedResponse(data, {

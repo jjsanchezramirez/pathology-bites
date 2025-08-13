@@ -107,6 +107,7 @@ export interface QuizResult {
     selectedAnswerId: string | null
     timeSpent: number
     successRate: number
+    totalAttempts?: number
   }>
   attempts: QuizAttempt[]
   completedAt: string

@@ -159,7 +159,7 @@ export async function login(formData: FormData) {
       .from('users')
       .select('role')
       .eq('id', authData.user.id)
-      .single()
+      .maybeSingle()
 
     console.log('[Auth] User role data:', userData)
 

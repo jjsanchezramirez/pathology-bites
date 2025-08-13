@@ -26,6 +26,8 @@
   @apply animate-float;
 }
 
+
+
 @layer utilities {
   /* Grid pattern for the coming soon page */
   .bg-grid-pattern {

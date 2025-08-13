@@ -129,7 +129,6 @@ export default function PerformancePage() {
 
         setCategoryDetails(mockCategoryDetails)
       } catch (error) {
-        console.error('Error fetching performance data:', error)
         toast.error('Failed to load performance data')
       } finally {
         setLoading(false)

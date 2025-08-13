@@ -84,11 +84,9 @@ async function getOptimizedUserStats(
     // The materialized view doesn't have the unique question breakdown we need
     // (questions with only correct attempts vs questions with any incorrect attempts)
     // So we need to fall back to the real-time calculation for now
-    console.log('Materialized view lacks unique question breakdown, falling back to real-time calculation')
     return await getFallbackUserStats(supabase, userId, categoryIds)
 
   } catch (error) {
-    console.error('Error in optimized user stats:', error)
     return await getFallbackUserStats(supabase, userId, categoryIds)
   }
 }
@@ -212,7 +210,6 @@ async function getFallbackUserStats(
 
     return categoryStats
   } catch (error) {
-    console.error('Error in fallback user stats:', error)
     // Return empty stats as last resort
     const categoryStats = new Map()
     for (const categoryId of categoryIds) {
@@ -241,7 +238,6 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('Optimized Quiz options API - User authenticated:', user.id)
 
     // Check cache with version validation
     const cacheKey = `quiz-options-${user.id}`
@@ -251,7 +247,6 @@ export async function GET() {
     if (cached && 
         Date.now() - cached.timestamp < CACHE_TTL && 
         cached.version === userVersion) {
-      console.log('Returning cached quiz options (version match)')
       return NextResponse.json(cached.data)
     }
 
@@ -328,12 +323,18 @@ export async function GET() {
         correct: rawStats.correct        // Questions with only correct attempts
       }
 
-      console.log(`Category ${category.name}: ${questionCount} questions, User stats:`, stats)
+      // Determine parent type
+      const parentName = parentLookup.get(category.parent_id || '')
+      const parent = parentName === 'Anatomic Pathology' ? 'AP' :
+                    parentName === 'Clinical Pathology' ? 'CP' : 'AP'
+
+      console.log(`Category ${category.name}: ${questionCount} questions, Parent: ${parentName} (${parent}), User stats:`, stats)
 
       return {
         id: category.id,
         name: category.name,
         shortName: category.short_form || extractShortName(category.name),
+        parent: parent as 'AP' | 'CP',
         questionStats: stats
       }
     })
@@ -407,8 +408,8 @@ function calculateStatsForParent(categories: any[], parent: 'AP' | 'CP') {
     .reduce((acc, cat) => ({
       all: acc.all + cat.questionStats.all,
       unused: acc.unused + cat.questionStats.unused,
-      needsReview: acc.needsReview + cat.questionStats.needsReview,
+      incorrect: acc.incorrect + cat.questionStats.incorrect,
       marked: acc.marked + cat.questionStats.marked,
-      mastered: acc.mastered + cat.questionStats.mastered
-    }), { all: 0, unused: 0, needsReview: 0, marked: 0, mastered: 0 })
+      correct: acc.correct + cat.questionStats.correct
+    }), { all: 0, unused: 0, incorrect: 0, marked: 0, correct: 0 })
 }

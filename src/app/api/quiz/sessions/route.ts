@@ -8,12 +8,10 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    console.log('Auth check - user:', user?.id, 'error:', authError)
-
-    if (authError || !user) {
-      console.error('Authentication failed:', authError)
+    // Auth is now handled by middleware - get user info from headers
+    const userId = request.headers.get('x-user-id')
+    
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -44,8 +42,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create quiz session using the service with authenticated client
-    const quizSession = await quizService.createQuizSession(user.id, formData, supabase)
+    // Create quiz session using the service
+    const quizSession = await quizService.createQuizSession(userId, formData, supabase)
 
     return NextResponse.json({
       success: true,
@@ -58,7 +56,6 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error creating quiz session:', error)
     
     if (error instanceof Error) {
       return NextResponse.json(
@@ -78,9 +75,10 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    // Auth is now handled by middleware
+    const userId = request.headers.get('x-user-id')
+    
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -94,7 +92,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('quiz_sessions')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -140,7 +138,6 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error fetching quiz sessions:', error)
     return NextResponse.json(
       { error: 'Failed to fetch quiz sessions' },
       { status: 500 }

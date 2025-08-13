@@ -5,24 +5,7 @@ import { createClient } from '@/shared/services/server'
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if user is admin
-    const supabase = await createClient()
-    const { data: { user }, error } = await supabase.auth.getUser()
-    
-    if (error || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Get user role from database
-    const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (userData?.role !== 'admin') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
+    // Auth is now handled by middleware
 
     // Get current client IP
     const clientIP = getClientIP(request)

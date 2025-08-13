@@ -101,17 +101,37 @@ export function AiModelsTab() {
   // File input ref
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Educational files list
+  // Educational files list - complete list from admin create question page
   const educationalFiles = [
-    'anatomic-pathology.json',
-    'clinical-pathology.json',
-    'cytopathology.json',
-    'dermatopathology.json',
-    'forensic-pathology.json',
-    'hematopathology.json',
-    'molecular-pathology.json',
-    'neuropathology.json',
-    'pediatric-pathology.json'
+    // Anatomic Pathology files
+    'ap-bone.json',
+    'ap-breast.json',
+    'ap-cardiovascular-and-thoracic.json',
+    'ap-cytopathology.json',
+    'ap-dermatopathology.json',
+    'ap-forensics-and-autopsy.json',
+    'ap-gastrointestinal.json',
+    'ap-general-topics.json',
+    'ap-genitourinary.json',
+    'ap-gynecological.json',
+    'ap-head-and-neck---endocrine.json',
+    'ap-hematopathology.json',
+    'ap-molecular.json',
+    'ap-neuropathology.json',
+    'ap-pancreas-biliary-liver.json',
+    'ap-pediatrics.json',
+    'ap-soft-tissue.json',
+    
+    // Clinical Pathology files
+    'cp-clinical-chemistry.json',
+    'cp-hematology-hemostasis-and-thrombosis.json',
+    'cp-hematopathology.json',
+    'cp-immunology.json',
+    'cp-laboratory-management-and-clinical-laboratory-informatics.json',
+    'cp-medical-microbiology.json',
+    'cp-molecular-pathology-and-cytogenetics.json',
+    'cp-toxicology-body-fluids-and-special-techniques.json',
+    'cp-transfusion-medicine.json'
   ]
 
   // Load saved instructions on mount
@@ -159,10 +179,30 @@ When educational context is provided, use it as reference material for creating 
     }
 
     try {
-      const response = await fetch(`/educational/${fileName}`)
+      const response = await fetch(`/api/content/${fileName}`)
       if (response.ok) {
-        const context = await response.text()
-        setEducationalContext(context)
+        const contentData = await response.json()
+        // Extract meaningful content for AI context
+        let contextText = `Subject: ${contentData.subject?.name || 'Unknown'}\n\n`
+        
+        if (contentData.subject?.lessons) {
+          Object.entries(contentData.subject.lessons).forEach(([lessonKey, lesson]: [string, any]) => {
+            contextText += `Lesson: ${lesson.name}\n`
+            if (lesson.topics) {
+              Object.entries(lesson.topics).forEach(([topicKey, topic]: [string, any]) => {
+                contextText += `\nTopic: ${topic.name}\n`
+                if (topic.content) {
+                  contextText += `Content: ${JSON.stringify(topic.content, null, 2)}\n\n`
+                }
+              })
+            }
+          })
+        } else {
+          // Fallback if structure is different
+          contextText += JSON.stringify(contentData, null, 2)
+        }
+        
+        setEducationalContext(contextText)
         toast.success(`Loaded ${fileName}`)
       } else {
         toast.error(`Failed to load ${fileName}`)
@@ -205,7 +245,7 @@ When educational context is provided, use it as reference material for creating 
       let apiResponse: Response
       let data: any
 
-      if (provider === 'gemini') {
+      if (provider === 'gemini' || provider === 'google') {
         // Prepare form data for file uploads
         const formData = new FormData()
         formData.append('apiKey', apiKey)
@@ -221,7 +261,7 @@ When educational context is provided, use it as reference material for creating 
           formData.append(`attachment_${index}`, file)
         })
 
-        apiResponse = await fetch('/api/debug/gemini-test', {
+        apiResponse = await fetch('/api/debug/google-test', {
           method: 'POST',
           body: formData
         })
@@ -279,7 +319,22 @@ When educational context is provided, use it as reference material for creating 
         })
         data = await apiResponse.json()
       } else if (provider === 'llama') {
+        // Use direct LLAMA API for pilot program
         apiResponse = await fetch('/api/debug/llama-test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            apiKey,
+            model: selectedModel,
+            prompt,
+            instructions,
+            educationalContext: educationalContext || undefined
+          })
+        })
+        data = await apiResponse.json()
+      } else if (provider === 'groq') {
+        // Use Groq API for Groq-specific models
+        apiResponse = await fetch('/api/debug/groq-test', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -344,20 +399,30 @@ When educational context is provided, use it as reference material for creating 
     const provider = getCurrentProvider()
     if (!response) return null
 
-    if (provider === 'gemini' && response.candidates?.[0]?.content?.parts?.[0]?.text) {
-      return response.candidates[0].content.parts[0].text
+    let text: any = null
+
+    if ((provider === 'gemini' || provider === 'google') && response.candidates?.[0]?.content?.parts?.[0]?.text) {
+      text = response.candidates[0].content.parts[0].text
     } else if (provider === 'claude' && response.content?.[0]?.text) {
-      return response.content[0].text
+      text = response.content[0].text
     } else if (provider === 'chatgpt' && response.choices?.[0]?.message?.content) {
-      return response.choices[0].message.content
+      text = response.choices[0].message.content
     } else if (provider === 'mistral' && response.choices?.[0]?.message?.content) {
-      return response.choices[0].message.content
+      text = response.choices[0].message.content
     } else if (provider === 'deepseek' && response.choices?.[0]?.message?.content) {
-      return response.choices[0].message.content
+      text = response.choices[0].message.content
     } else if (provider === 'llama' && response.choices?.[0]?.message?.content) {
-      return response.choices[0].message.content
+      text = response.choices[0].message.content
+    } else if (provider === 'groq' && response.choices?.[0]?.message?.content) {
+      text = response.choices[0].message.content
     }
-    return null
+
+    // Ensure we return a string, not an object
+    if (text && typeof text === 'object') {
+      return JSON.stringify(text, null, 2)
+    }
+    
+    return typeof text === 'string' ? text : null
   }
 
   return (
@@ -584,7 +649,7 @@ function AiQuestionTestingContent({
             </div>
 
             {/* Attachments (only for Gemini) */}
-            {getCurrentProvider() === 'gemini' && (
+            {(getCurrentProvider() === 'gemini' || getCurrentProvider() === 'google') && (
               <div>
                 <Label>Attachments</Label>
                 <div className="space-y-2">

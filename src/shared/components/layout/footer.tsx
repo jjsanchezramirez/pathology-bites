@@ -108,6 +108,7 @@ export function Footer() {
 
                   {isToolsOpen && (
                     <div id="mobile-tools-menu" className="mt-2 grid grid-cols-2 gap-2">
+                    {/* Core Learning Resources */}
                     <Link
                       href="/tools/images"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
@@ -115,28 +116,30 @@ export function Footer() {
                       Image Database
                     </Link>
                     <Link
+                      href="/tools/abpath"
+                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                    >
+                      ABPath Content
+                    </Link>
+                    {/* Quiz & Practice Tools */}
+                    <Link
+                      href="/tools/cell-quiz"
+                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                    >
+                      Cell Quiz
+                    </Link>
+                    <Link
                       href="/tools/wsi-question-generator"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
                     >
                       WSI Questions (Beta)
                     </Link>
+                    {/* Laboratory Tools */}
                     <Link
-                      href="/tools/cell-quiz"
+                      href="/tools/cell-counter"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
                     >
-                      Hemepath Cell Quiz
-                    </Link>
-                    <Link
-                      href="/tools/gene-lookup"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Gene Lookup
-                    </Link>
-                    <Link
-                      href="/tools/citations"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Citations Generator
+                      Cell Counter (Beta)
                     </Link>
                     <Link
                       href="/tools/lupus-anticoagulant"
@@ -144,17 +147,24 @@ export function Footer() {
                     >
                       Lupus Anticoagulant
                     </Link>
+                    {/* Reference & Search Tools */}
                     <Link
-                      href="/tools/abpath"
+                      href="/tools/gene-lookup"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
                     >
-                      ABPath Content
+                      Gene Lookup
                     </Link>
                     <Link
-                      href="/tools/cell-counter"
+                      href="/tools/diagnostic-search"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
                     >
-                      Cell Counter
+                      Diagnostic Search (Beta)
+                    </Link>
+                    <Link
+                      href="/tools/citations"
+                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                    >
+                      Citations Generator
                     </Link>
                     </div>
                   )}
@@ -170,29 +180,36 @@ export function Footer() {
                     <span className="hover:text-primary transition-colors cursor-pointer py-2 px-2 block">Tools</span>
                     <div className={`absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-background border rounded-md shadow-lg p-2 min-w-96 z-50 transition-all duration-200 ${isDesktopToolsOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
                       <div className="grid grid-cols-2 gap-1">
+                        {/* Core Learning Resources */}
                         <Link href="/tools/images" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
                           Image Database
-                        </Link>
-                        <Link href="/tools/wsi-question-generator" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          WSI Questions (Beta)
-                        </Link>
-                        <Link href="/tools/cell-quiz" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          Hemepath Cell Quiz
-                        </Link>
-                        <Link href="/tools/gene-lookup" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          Gene Lookup
-                        </Link>
-                        <Link href="/tools/citations" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          Citations Generator
-                        </Link>
-                        <Link href="/tools/lupus-anticoagulant" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          Lupus Anticoagulant
                         </Link>
                         <Link href="/tools/abpath" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
                           ABPath Content
                         </Link>
+                        {/* Quiz & Practice Tools */}
+                        <Link href="/tools/cell-quiz" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                          Cell Quiz
+                        </Link>
+                        <Link href="/tools/wsi-question-generator" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                          WSI Questions (Beta)
+                        </Link>
+                        {/* Laboratory Tools */}
                         <Link href="/tools/cell-counter" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          Cell Counter
+                          Cell Counter (Beta)
+                        </Link>
+                        <Link href="/tools/lupus-anticoagulant" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                          Lupus Anticoagulant
+                        </Link>
+                        {/* Reference & Search Tools */}
+                        <Link href="/tools/gene-lookup" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                          Gene Lookup
+                        </Link>
+                        <Link href="/tools/diagnostic-search" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                          Diagnostic Search (Beta)
+                        </Link>
+                        <Link href="/tools/citations" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                          Citations Generator
                         </Link>
                       </div>
                     </div>

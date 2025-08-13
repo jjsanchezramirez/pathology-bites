@@ -99,49 +99,100 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
     }
   }
 
+  // Only show percentile and ranking if there are at least 30 users
+  const showRankingData = data.totalUsers >= 30
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {/* User Percentile */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Target className="h-4 w-4 text-blue-500" />
-            Your Percentile
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center space-y-2">
-          <CircleProgress 
-            percentage={data.userPercentile} 
-            color={getPercentileColor(data.userPercentile)}
-          />
-          <p className="text-xs text-muted-foreground text-center">
-            You scored better than {data.userPercentile}% of users
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Peer Rank */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Users className="h-4 w-4 text-purple-500" />
-            Peer Ranking
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-purple-600 mb-2">
-              {data.peerRank}{getRankSuffix(data.peerRank)}
-            </div>
-            <div className="text-sm text-muted-foreground mb-3">
-              out of {data.totalUsers.toLocaleString()} users
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Based on overall performance
+      {/* User Percentile - Only show if enough users */}
+      {showRankingData ? (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Target className="h-4 w-4 text-blue-500" />
+              Your Percentile
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center space-y-2">
+            <CircleProgress
+              percentage={data.userPercentile}
+              color={getPercentileColor(data.userPercentile)}
+            />
+            <p className="text-xs text-muted-foreground text-center">
+              You scored better than {data.userPercentile}% of users
             </p>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Target className="h-4 w-4 text-muted-foreground" />
+              Your Percentile
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-muted-foreground mb-2">
+                Coming Soon
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Percentile ranking available when we have 30+ active users
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Current users: {data.totalUsers}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Peer Rank - Only show if enough users */}
+      {showRankingData ? (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Users className="h-4 w-4 text-purple-500" />
+              Peer Ranking
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-purple-600 mb-2">
+                {data.peerRank}{getRankSuffix(data.peerRank)}
+              </div>
+              <div className="text-sm text-muted-foreground mb-3">
+                out of {data.totalUsers.toLocaleString()} users
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Based on overall performance
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              Peer Ranking
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-muted-foreground mb-2">
+                Coming Soon
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Peer ranking available when we have 30+ active users
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Current users: {data.totalUsers}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Overall Score */}
       <Card>

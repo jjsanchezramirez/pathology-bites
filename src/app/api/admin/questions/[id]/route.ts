@@ -16,15 +16,11 @@ export async function GET(
   try {
     const { id: questionId } = await params
 
-    // Check user authentication
+    // Auth is now handled by middleware
     const userClient = await createClient()
-    const { data: { user }, error: authError } = await userClient.auth.getUser()
+    const { data: { user } } = await userClient.auth.getUser() // Still need user ID for permission checks
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check user permissions
+    // Still need to get user profile for business logic permission checks  
     const { data: profile, error: profileError } = await userClient
       .from('users')
       .select('role')
@@ -166,15 +162,11 @@ export async function PATCH(
 
 
 
-    // Check user authentication
+    // Auth is now handled by middleware
     const userClient = await createClient()
-    const { data: { user }, error: authError } = await userClient.auth.getUser()
+    const { data: { user } } = await userClient.auth.getUser() // Still need user ID for permission checks
     
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin for published questions
+    // Still need to get user profile for business logic permission checks
     const { data: profile, error: profileError } = await userClient
       .from('users')
       .select('role')

@@ -85,17 +85,19 @@ export function useUserRole(): UserRoleData {
           .from('users')
           .select('role')
           .eq('id', user.id)
-          .single()
+          .maybeSingle() // Use maybeSingle instead of single to handle no results gracefully
 
         if (dbError) {
-          console.error('Error fetching user role:', dbError)
           setError(dbError.message)
           setRole('user') // Default fallback
+        } else if (data) {
+          setRole((data.role as UserRole) || 'user')
         } else {
-          setRole((data?.role as UserRole) || 'user')
+          // User not found in database - this shouldn't happen normally
+          // Default to 'user' role
+          setRole('user')
         }
       } catch (err) {
-        console.error('Error in fetchUserRole:', err)
         setError(err instanceof Error ? err.message : 'Unknown error')
         setRole('user') // Default fallback
       } finally {

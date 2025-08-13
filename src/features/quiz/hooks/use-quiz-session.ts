@@ -59,6 +59,9 @@ export function useQuizSession({ sessionId }: UseQuizSessionProps) {
 
     if (sessionId) {
       fetchQuizSession()
+    } else {
+      // If no sessionId, immediately set loading to false
+      setLoading(false)
     }
   }, [sessionId, router])
 
