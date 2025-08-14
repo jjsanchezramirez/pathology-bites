@@ -12,8 +12,8 @@ const r2Client = new S3Client({
   },
 })
 
-// Fallback to full virtual-slides.json if metadata file doesn't exist yet
-const VIRTUAL_SLIDES_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/wsi/virtual-slides.json'
+// Fallback to full virtual-slides.json if metadata file doesn't exist yet - using correct data bucket
+const VIRTUAL_SLIDES_R2_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/virtual-slides.json'
 
 interface WSIMetadata {
   id: string

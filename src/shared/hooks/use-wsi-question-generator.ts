@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
-import { dataManager } from '@/shared/utils/client-data-manager'
-import type { VirtualSlide, EducationalContent } from '@/shared/utils/client-data-manager'
+import { useClientWSIData } from './use-client-wsi-data'
+import { VirtualSlide } from '@/shared/types/virtual-slides'
 
 interface QuestionData {
   stem: string
@@ -18,7 +18,7 @@ interface GeneratedQuestion {
   id: string
   wsi: VirtualSlide
   question: QuestionData
-  context: EducationalContent | null
+  context: any | null
   metadata: {
     generated_at: string
     model: string
@@ -33,6 +33,8 @@ interface UseWSIQuestionGeneratorReturn {
   isGenerating: boolean
   error: string | null
   clearError: () => void
+  isWSIDataLoading: boolean
+  isReady: boolean
 }
 
 /**
@@ -42,6 +44,7 @@ interface UseWSIQuestionGeneratorReturn {
 export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { wsiData, isLoading: isLoadingWSI, error: wsiError, selectRandomWSI, getWSIByCategory } = useClientWSIData()
 
   const clearError = useCallback(() => {
     setError(null)
@@ -55,69 +58,51 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
     try {
       console.log('[WSI Generator] Starting client-side generation process')
 
-      // Step 1: Select WSI using client data manager
-      console.log('[WSI Generator] Step 1 - Selecting WSI via client data manager...')
+      // Ensure WSI data is available - use direct access to cached promise
+      let finalWSIData = wsiData
+
+      if (!finalWSIData || finalWSIData.length === 0) {
+        if (wsiError) {
+          throw new Error(`WSI data error: ${wsiError}`)
+        }
+
+        console.log('[WSI Generator] WSI data not available in hook, accessing cache directly...')
+
+        try {
+          // Import and call the loadClientWSIData function directly
+          const { loadClientWSIData } = await import('./use-client-wsi-data')
+          finalWSIData = await loadClientWSIData()
+          console.log('[WSI Generator] ✅ WSI data loaded from cache:', finalWSIData.length, 'slides')
+        } catch (cacheError) {
+          throw new Error('Failed to load WSI data from cache: ' + (cacheError as Error).message)
+        }
+      }
+
+      // Step 1: Select WSI using simplified approach
+      console.log('[WSI Generator] Step 1 - Selecting WSI...')
       let selectedWSI: VirtualSlide
 
       if (category && category !== 'all') {
-        const searchResults = await dataManager.searchWSIs({
-          category,
-          limit: 10
-        })
-        
-        if (searchResults.length === 0) {
+        const categorySlides = finalWSIData.filter(slide =>
+          slide.category.toLowerCase().includes(category.toLowerCase())
+        )
+        if (categorySlides.length === 0) {
           throw new Error(`No WSI slides found for category: ${category}`)
         }
-        
-        // Select random slide from category results
-        selectedWSI = searchResults[Math.floor(Math.random() * searchResults.length)]
+        selectedWSI = categorySlides[Math.floor(Math.random() * categorySlides.length)]
       } else {
-        // Get random WSI sample
-        const randomSamples = await dataManager.getRandomWSISample(1)
-        if (randomSamples.length === 0) {
-          throw new Error('No WSI slides available')
+        const randomIndex = Math.floor(Math.random() * finalWSIData.length)
+        selectedWSI = finalWSIData[randomIndex]
+        if (!selectedWSI) {
+          throw new Error('Failed to select random WSI')
         }
-        selectedWSI = randomSamples[0]
       }
 
       console.log(`[WSI Generator] Selected WSI - ${selectedWSI.diagnosis}`)
 
-      // Step 2: Load relevant educational content using targeted file selection
-      console.log('[WSI Generator] Step 2 - Loading educational content...')
-      let context: EducationalContent | null = null
-
-      try {
-        const targetedFiles = dataManager.getTargetedFiles(
-          selectedWSI.category,
-          selectedWSI.subcategory,
-          selectedWSI.diagnosis
-        )
-
-        console.log(`[WSI Generator] Targeting files: ${targetedFiles.join(', ')}`)
-
-        // Load the most relevant content file
-        if (targetedFiles.length > 0) {
-          const contentFile = targetedFiles[0]
-          const contentData = await dataManager.loadContentFile(contentFile)
-          
-          // Find relevant lesson/topic based on WSI metadata
-          if (contentData?.subject?.lessons) {
-            const relevantLesson = findRelevantLesson(contentData, selectedWSI)
-            if (relevantLesson) {
-              context = {
-                category: contentData.category,
-                subject: contentData.subject.name,
-                lesson: relevantLesson.lessonKey,
-                topic: relevantLesson.topicKey,
-                content: relevantLesson.content
-              }
-              console.log(`[WSI Generator] Found relevant context: ${relevantLesson.lessonKey}/${relevantLesson.topicKey}`)
-            }
-          }
-        }
-      } catch (contextError) {
-        console.warn('[WSI Generator] Context loading failed (non-blocking):', contextError)
-      }
+      // Step 2: Skip educational content for simplified approach
+      console.log('[WSI Generator] Step 2 - Skipping educational content (simplified mode)...')
+      const context = null
 
       // Step 3: Generate question using client-side generation
       console.log('[WSI Generator] Step 3 - Generating question via fallback API...')
@@ -182,69 +167,9 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
     generateQuestion,
     isGenerating,
     error,
-    clearError
+    clearError,
+    isWSIDataLoading: isLoadingWSI,
+    isReady: !isLoadingWSI && !wsiError && wsiData && wsiData.length > 0
   }
 }
 
-/**
- * Find the most relevant lesson/topic based on WSI metadata
- */
-function findRelevantLesson(contentData: any, wsi: VirtualSlide): {
-  lessonKey: string
-  topicKey: string
-  content: any
-} | null {
-  if (!contentData?.subject?.lessons) return null
-
-  const searchTerms = [
-    wsi.diagnosis.toLowerCase(),
-    wsi.subcategory.toLowerCase(),
-    wsi.category.toLowerCase(),
-    ...((wsi as any).keywords || []).map((k: string) => k.toLowerCase())
-  ].filter(Boolean)
-
-  // Find the best matching lesson and topic
-  for (const [lessonKey, lesson] of Object.entries(contentData.subject.lessons) as [string, any][]) {
-    if (!lesson.topics) continue
-
-    for (const [topicKey, topic] of Object.entries(lesson.topics) as [string, any][]) {
-      const topicName = topic.name?.toLowerCase() || ''
-      const lessonName = lesson.name?.toLowerCase() || ''
-      
-      // Check if any search term matches lesson or topic name
-      const hasMatch = searchTerms.some(term => 
-        topicName.includes(term) || 
-        lessonName.includes(term) ||
-        term.includes(topicName.split(' ')[0]) ||
-        term.includes(lessonName.split(' ')[0])
-      )
-
-      if (hasMatch && topic.content) {
-        return {
-          lessonKey,
-          topicKey,
-          content: topic.content
-        }
-      }
-    }
-  }
-
-  // Fallback: return first available lesson/topic
-  const firstLesson = Object.entries(contentData.subject.lessons)[0]
-  if (firstLesson) {
-    const [lessonKey, lesson] = firstLesson as [string, any]
-    const firstTopic = Object.entries(lesson.topics || {})[0]
-    if (firstTopic) {
-      const [topicKey, topic] = firstTopic as [string, any]
-      if (topic.content) {
-        return {
-          lessonKey,
-          topicKey,
-          content: topic.content
-        }
-      }
-    }
-  }
-
-  return null
-}

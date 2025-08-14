@@ -2,17 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getApiKey, getModelProvider } from '@/shared/config/ai-models'
 
 // WSI Question Generator fallback model sequence
+// Prioritize models with valid API keys first
 const WSI_FALLBACK_MODELS = [
-  'Llama-4-Maverick-17B-128E-Instruct-FP8', // LLAMA 4 Maverick
-  'Llama-3.3-8B-Instruct',                  // LLAMA 3.3 8B
-  'gemini-2.0-flash',                       // Gemini 2.0 Flash
-  'gemini-2.5-flash-lite',                  // Gemini 2.5 Flash Lite
-  'gemini-2.0-flash-lite',                  // Gemini 2.0 Flash Lite
-  'gemini-1.5-flash-8b',                    // Gemini 1.5 Flash 8B
-  'mistral-small-2506',                     // Mistral Small 3.2
-  'mistral-small-2503',                     // Mistral Small 3.1
-  'ministral-8b-2410',                      // Ministral 8B
-  'ministral-3b-2410'                       // Ministral 3B
+  'gemini-1.5-flash',                       // Gemini 1.5 Flash (has valid API key)
+  'gemini-1.5-pro',                         // Gemini 1.5 Pro (has valid API key)
+  'mistral-large-latest',                   // Mistral Large (has valid API key)
+  'open-mistral-7b',                        // Mistral 7B (has valid API key)
+  'deepseek-chat',                          // DeepSeek Chat (has valid API key)
+  'claude-3-5-haiku-20241022',              // Claude Haiku (has valid API key)
+  'gpt-4o-mini',                            // GPT-4o Mini (has valid API key)
+  'Llama-4-Maverick-17B-128E-Instruct-FP8', // LLAMA 4 Maverick (invalid API key)
+  'Llama-3.3-8B-Instruct',                  // LLAMA 3.3 8B (invalid API key)
+  'gemini-2.0-flash'                        // Gemini 2.0 Flash (may not exist)
 ]
 
 // Types
@@ -219,8 +220,13 @@ EXPLANATION REQUIREMENTS:
 - Include epidemiology and clinical context when relevant
 - Demonstrate expert-level pathology knowledge with focus on morphological differentiation
 
-CRITICAL: You must return ONLY valid JSON in the exact format below. Do not include any text before or after the JSON. Do not use markdown formatting.
+🚨 CRITICAL OUTPUT FORMAT REQUIREMENT 🚨
+YOU MUST RETURN ONLY VALID JSON. NO OTHER TEXT ALLOWED.
+DO NOT INCLUDE ANY TEXT BEFORE OR AFTER THE JSON.
+DO NOT USE MARKDOWN FORMATTING OR CODE BLOCKS.
+START YOUR RESPONSE WITH { AND END WITH }
 
+REQUIRED JSON FORMAT:
 {
   "stem": "Clinical scenario ending with diagnostic question",
   "options": [
@@ -231,7 +237,9 @@ CRITICAL: You must return ONLY valid JSON in the exact format below. Do not incl
     {"id": "E", "text": "Specific diagnosis", "is_correct": false, "explanation": "Detailed explanation for why this diagnosis is incorrect"}
   ],
   "references": ["Relevant pathology textbook or journal citation", "Additional authoritative reference"]
-}`
+}
+
+🚨 REMEMBER: RESPOND WITH ONLY THE JSON OBJECT - NO OTHER TEXT 🚨`
 
     // Prepare comprehensive prompt with WSI and educational content (matching admin quality)
     const prompt = `Create a board-style pathology multiple-choice question based on the following comprehensive content:
@@ -263,7 +271,9 @@ ${JSON.stringify(context.content, null, 2)}
 3. Includes 5 specific diagnostic options with detailed explanations
 4. Matches the quality standards of professional medical examinations
 
-The virtual slide images will be displayed to the user, so do not describe microscopic findings in your question stem.`
+The virtual slide images will be displayed to the user, so do not describe microscopic findings in your question stem.
+
+🚨 FINAL REMINDER: RESPOND WITH ONLY THE JSON OBJECT - NO OTHER TEXT WHATSOEVER 🚨`
 
     // Call AI services directly (no more debug endpoints)
     console.log(`[Question Gen] Using model: ${selectedModel} (${provider})`)
@@ -445,15 +455,69 @@ The virtual slide images will be displayed to the user, so do not describe micro
         }
       }
 
-      // Validate the structure
-      if (parsedQuestion && parsedQuestion.stem && parsedQuestion.options && Array.isArray(parsedQuestion.options)) {
-        console.log('[Question Gen] Successfully parsed and validated AI response')
+      // Validate and normalize the structure to handle different AI response formats
+      if (parsedQuestion && typeof parsedQuestion === 'object') {
+        let normalizedQuestion: any = {}
+
+        // Handle "question" vs "stem" field
+        if (parsedQuestion.question) {
+          normalizedQuestion.stem = parsedQuestion.question
+        } else if (parsedQuestion.stem) {
+          normalizedQuestion.stem = parsedQuestion.stem
+        } else {
+          throw new Error('No question stem found in AI response')
+        }
+
+        // Handle options array
+        if (Array.isArray(parsedQuestion.options) && parsedQuestion.options.length >= 4) {
+          normalizedQuestion.options = parsedQuestion.options.map((opt: any, index: number) => {
+            const optionId = String.fromCharCode(65 + index) // A, B, C, D, E
+
+            // Determine if this is the correct answer
+            let isCorrect = false
+            if (typeof opt.is_correct === 'boolean') {
+              isCorrect = opt.is_correct
+            } else if (parsedQuestion.answer && opt.text && opt.text.toLowerCase().includes(parsedQuestion.answer.toLowerCase())) {
+              isCorrect = true
+            }
+
+            return {
+              id: optionId,
+              text: opt.text || '',
+              is_correct: isCorrect,
+              explanation: opt.explanation || ''
+            }
+          })
+
+          // Ensure we have exactly one correct answer
+          const correctCount = normalizedQuestion.options.filter((opt: any) => opt.is_correct).length
+          if (correctCount !== 1) {
+            console.warn(`[Question Gen] Warning: Found ${correctCount} correct answers, expected 1`)
+            // If no correct answer found, try to find it by matching the answer field
+            if (correctCount === 0 && parsedQuestion.answer) {
+              const answerText = parsedQuestion.answer.toLowerCase()
+              for (let i = 0; i < normalizedQuestion.options.length; i++) {
+                if (normalizedQuestion.options[i].text.toLowerCase().includes(answerText)) {
+                  normalizedQuestion.options[i].is_correct = true
+                  break
+                }
+              }
+            }
+          }
+        } else {
+          throw new Error('Invalid or insufficient options in AI response')
+        }
+
+        // Add references if available
+        normalizedQuestion.references = parsedQuestion.references || []
+
+        console.log('[Question Gen] Successfully parsed and normalized AI response')
         return {
-          questionData: parsedQuestion,
+          questionData: normalizedQuestion,
           debug: {
             prompt: prompt,
             instructions: instructions,
-            rawResponse: generatedText.substring(0, 1000), // Include raw response for debugging
+            rawResponse: generatedText.substring(0, 1000),
             extractedJson: jsonStr.substring(0, 500)
           },
           modelUsed: selectedModel,

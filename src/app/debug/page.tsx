@@ -21,7 +21,7 @@ import {
   BookOpen
 } from 'lucide-react'
 
-// Import tab components from self-contained debug module
+// Import tab components from debug feature
 import {
   ApiTestsTab,
   DatabaseTab,
@@ -31,7 +31,7 @@ import {
   UiComponentsTab,
   R2StorageTab,
   AnkiViewerTab
-} from '@/debug'
+} from '@/features/debug'
 
 function UnifiedDebugInterface() {
   const [activeTab, setActiveTab] = useState('api-tests')

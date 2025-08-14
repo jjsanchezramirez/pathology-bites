@@ -27,8 +27,8 @@ interface VirtualSlide {
   updated_at?: string
 }
 
-// R2 URL for virtual slides data
-const VIRTUAL_SLIDES_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/wsi/virtual-slides.json'
+// R2 URL for virtual slides data - using the correct data bucket
+const VIRTUAL_SLIDES_R2_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/virtual-slides.json'
 
 // Get random WSI with repository filtering
 async function getRandomWSI(categoryFilter?: string, excludeIds?: string[]): Promise<VirtualSlide> {

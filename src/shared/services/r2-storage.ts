@@ -315,10 +315,10 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
   } catch (error) {
     // Fallback for client-side or when env vars are not available
     const bucketName = bucket || 'pathology-bites-images'
-    
+
     // Public access buckets
     if (bucketName === 'pathology-bites-images') {
-      const publicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev'
+      const publicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
       return `${publicUrl}/${key}`
     }
     

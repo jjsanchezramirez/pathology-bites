@@ -34,8 +34,7 @@ async function loadCellQuizImages(): Promise<any> {
       const res = await fetchWithTimeout(CELL_QUIZ_IMAGES_URL, {
         cache: 'force-cache',
         headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'max-age=3600'
+          'Accept': 'application/json'
         },
         timeoutMs: 8000
       })
@@ -82,8 +81,7 @@ async function loadCellQuizReferences(): Promise<any> {
       const res = await fetchWithTimeout(CELL_QUIZ_REFERENCES_URL, {
         cache: 'force-cache',
         headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'max-age=3600'
+          'Accept': 'application/json'
         },
         timeoutMs: 8000
       })

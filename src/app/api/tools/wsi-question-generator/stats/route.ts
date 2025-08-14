@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// R2 URL for virtual slides data
-const VIRTUAL_SLIDES_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/wsi/virtual-slides.json'
+// R2 URL for virtual slides data - using the correct data bucket
+const VIRTUAL_SLIDES_R2_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/virtual-slides.json'
 
 interface VirtualSlide {
   id: string
@@ -56,15 +56,19 @@ export async function GET(request: NextRequest) {
     
     // Handle both array format and object with slides property
     let slides: VirtualSlide[] = Array.isArray(data) ? data : (data.slides || [])
-    console.log(`[WSI Stats] Loaded ${slides.length} total slides`)
+    console.log(`[WSI Stats] Loaded ${slides.length} total slides from R2`)
 
-    // Filter out problematic repositories (as noted in memories)
+    // Filter out problematic repositories (as noted in memories) - only if repository field exists
     const excludedRepositories = ['Leeds', 'Recut Club', 'Toronto']
-    slides = slides.filter(slide => 
-      !excludedRepositories.some(excluded => 
+    slides = slides.filter(slide => {
+      // If no repository field, keep the slide (don't filter it out)
+      if (!slide.repository) return true
+
+      // If repository exists, check if it's in the excluded list
+      return !excludedRepositories.some(excluded =>
         slide.repository.toLowerCase().includes(excluded.toLowerCase())
       )
-    )
+    })
 
     console.log(`[WSI Stats] After filtering: ${slides.length} slides`)
 
