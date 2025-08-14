@@ -147,6 +147,7 @@ test-*.json
 *-v*.json
 
 # Scraped data (keep organized scraped-questions/ folder)
+expertpath/complete_expertpath_data.json
 *.scraped.json
 
 # ==============================================================================
