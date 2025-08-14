@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Save, Eye, Upload, X } from 'lucide-react'
+import { ArrowLeft, Save, Eye, X } from 'lucide-react'
 import { LearningModuleFormData } from '@/features/learning-modules/types/learning-modules'
 import { CategorySelector } from '@/features/learning-modules/components/category-selector'
 import { ImageSelector } from '@/features/learning-modules/components/image-selector'

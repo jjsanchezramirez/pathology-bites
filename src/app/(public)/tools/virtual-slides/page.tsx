@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useClientVirtualSlides } from '@/shared/hooks/use-client-virtual-slides'
 import { VIRTUAL_SLIDES_JSON_URL } from '@/shared/config/virtual-slides'
 import { Card, CardContent } from '@/shared/components/ui/card'

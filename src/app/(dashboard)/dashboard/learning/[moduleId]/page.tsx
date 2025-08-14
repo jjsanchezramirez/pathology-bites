@@ -7,7 +7,7 @@ import { useParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { Progress } from "@/shared/components/ui/progress"
-import { Badge } from "@/shared/components/ui/badge"
+
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import {
   BookOpen,
@@ -16,13 +16,12 @@ import {
   Play,
   Clock,
   Target,
-  ChevronRight,
+
   ChevronLeft,
   ArrowRight,
   Star,
   GraduationCap,
-  Calendar,
-  Users,
+
   FileText,
   Award
 } from "lucide-react"

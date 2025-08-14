@@ -10,11 +10,7 @@ import { Badge } from "@/shared/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
 import {
   BookOpen,
-  CheckCircle,
-  Circle,
-  Lock,
-  Play,
-  Star,
+
   Clock,
   Target,
   Microscope,

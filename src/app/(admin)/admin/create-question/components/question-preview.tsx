@@ -10,9 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/shared/components/ui/badge'
 import { Separator } from '@/shared/components/ui/separator'
 import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group'
-import { Edit, Eye, Save, MessageSquare, Brain } from 'lucide-react'
+import { Edit, Save, MessageSquare, Brain } from 'lucide-react'
 import { toast } from 'sonner'
-import { getModelProvider } from '@/shared/config/ai-models'
+
 
 interface GeneratedQuestion {
   title: string

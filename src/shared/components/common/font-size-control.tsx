@@ -1,7 +1,7 @@
 // src/shared/components/common/font-size-control.tsx
 'use client'
 
-import { Minus, Plus, Type, Check, Palette } from 'lucide-react'
+import { Minus, Plus, Type, Check } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import {
   Popover,

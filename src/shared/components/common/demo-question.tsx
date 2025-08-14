@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/shared/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
+import { Card, CardContent } from "@/shared/components/ui/card"
 import { Check, X, ExternalLink } from "lucide-react"
 import QuestionSkeleton from "./skeletons/demo-question-skeleton"
 import DemoQuestionError from "./demo-question-error"

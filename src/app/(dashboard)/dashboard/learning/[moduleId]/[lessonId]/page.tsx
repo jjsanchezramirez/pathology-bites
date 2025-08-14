@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import Image from "next/image"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { Progress } from "@/shared/components/ui/progress"
@@ -20,7 +20,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowRight,
-  Star,
+
   FileText,
   Award,
   AlertCircle,

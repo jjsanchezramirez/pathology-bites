@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Textarea } from '@/shared/components/ui/textarea'
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/shared/components/ui/checkbox'
 import { Badge } from '@/shared/components/ui/badge'
 import { ScrollArea } from '@/shared/components/ui/scroll-area'
-import { Loader2, Brain, Upload, FileText, Plus, X } from 'lucide-react'
+import { Loader2, Brain, Upload, FileText, X } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   ACTIVE_AI_MODELS,

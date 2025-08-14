@@ -16,13 +16,12 @@ import {
   Clock,
   Target,
   ChevronRight,
-  Trophy,
+
   TrendingUp,
   ArrowRight,
   Star,
   GraduationCap,
-  Calendar,
-  Users
+
 } from "lucide-react"
 import { LEARNING_MODULES, getAllSubModules } from "@/features/learning-path/data/learning-categories"
 import { LearningCategory } from "@/features/learning-path/types/learning-path"

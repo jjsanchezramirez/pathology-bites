@@ -10,10 +10,7 @@ import {
   UserX,
   UserMinus,
   UserCog,
-  Shield,
-  PenTool,
-  Eye,
-  User
+
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getFormattedUserStats, UserStatsFormatted } from '@/features/users/services/user-stats';
