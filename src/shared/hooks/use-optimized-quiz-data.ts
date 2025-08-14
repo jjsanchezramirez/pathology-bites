@@ -133,56 +133,6 @@ export function useOptimizedQuestion(questionId: string) {
   )
 }
 
-/**
- * Hook for virtual slides with pagination and caching
- */
-export function useOptimizedVirtualSlides(
-  page: number = 1,
-  limit: number = 50,
-  filters?: {
-    search?: string
-    repository?: string
-    category?: string
-  }
-) {
-  // Create a stable cache key by sorting the filter keys
-  const filterKey = filters ?
-    Object.keys(filters)
-      .sort()
-      .map(key => `${key}:${filters[key as keyof typeof filters] || ''}`)
-      .join('|')
-    : ''
-  const cacheKey = `virtual-slides-${page}-${limit}-${filterKey}`
-
-  // ✅ FIXED: Use useCallback to create stable fetcher function
-  const fetcher = useCallback(async () => {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString()
-    })
-
-    if (filters?.search) params.append('search', filters.search)
-    if (filters?.repository) params.append('repository', filters.repository)
-    if (filters?.category) params.append('category', filters.category)
-
-    const response = await fetch(`/api/virtual-slides/paginated?${params}`)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch virtual slides: ${response.status}`)
-    }
-    return response.json()
-  }, [page, limit, filters?.search, filters?.repository, filters?.category])
-
-  return useCachedData(
-    cacheKey,
-    fetcher,
-    {
-      ttl: 15 * 60 * 1000, // 15 minutes cache
-      staleTime: 5 * 60 * 1000, // 5 minutes stale time
-      storage: 'localStorage',
-      prefix: 'pathology-bites-slides'
-    }
-  )
-}
 
 /**
  * Utility function to preload commonly accessed data

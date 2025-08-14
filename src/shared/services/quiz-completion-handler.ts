@@ -29,7 +29,6 @@ export class QuizCompletionHandler {
     }
   ): Promise<void> {
     try {
-      console.log(`🎯 Processing quiz completion for user ${userId}`)
 
       // Save quiz results to database
       await this.saveQuizResults(userId, quizAttemptId, quizResults)
@@ -71,9 +70,7 @@ export class QuizCompletionHandler {
         })
       }
 
-      console.log(`✅ Quiz completion processed successfully for user ${userId}`)
     } catch (error) {
-      console.error('Error handling quiz completion:', error)
       throw error
     }
   }
@@ -97,10 +94,8 @@ export class QuizCompletionHandler {
       })
 
       if (!response.ok) {
-        console.error('Failed to update goal progress:', await response.text())
       }
     } catch (error) {
-      console.error('Error updating goal progress:', error)
       // Don't throw - goal progress update shouldn't break quiz completion
     }
   }
@@ -126,7 +121,6 @@ export class QuizCompletionHandler {
         .eq('id', quizAttemptId)
 
       if (updateError) {
-        console.error('Error updating quiz attempt:', updateError)
         throw updateError
       }
 
@@ -146,7 +140,6 @@ export class QuizCompletionHandler {
         .insert(questionResults)
 
       if (resultsError) {
-        console.error('Error saving question results:', resultsError)
         throw resultsError
       }
 
@@ -154,7 +147,6 @@ export class QuizCompletionHandler {
       await this.updateUserStatistics(userId, quizResults)
 
     } catch (error) {
-      console.error('Error saving quiz results:', error)
       throw error
     }
   }
@@ -169,7 +161,6 @@ export class QuizCompletionHandler {
         .single()
 
       if (statsError && statsError.code !== 'PGRST116') { // Not found error
-        console.error('Error fetching user stats:', statsError)
         throw statsError
       }
 
@@ -235,7 +226,6 @@ export class QuizCompletionHandler {
         .upsert(newStats)
 
       if (upsertError) {
-        console.error('Error updating user statistics:', upsertError)
         throw upsertError
       }
 
@@ -243,7 +233,6 @@ export class QuizCompletionHandler {
       await this.updateCategoryStatistics(userId, quizResults)
 
     } catch (error) {
-      console.error('Error updating user statistics:', error)
       throw error
     }
   }
@@ -277,7 +266,6 @@ export class QuizCompletionHandler {
           .single()
 
         if (fetchError && fetchError.code !== 'PGRST116') {
-          console.error('Error fetching category stats:', fetchError)
           continue
         }
 
@@ -304,11 +292,9 @@ export class QuizCompletionHandler {
           .upsert(newCategoryStats)
 
         if (upsertError) {
-          console.error('Error updating category statistics:', upsertError)
         }
       }
     } catch (error) {
-      console.error('Error updating category statistics:', error)
     }
   }
 }

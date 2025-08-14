@@ -10,7 +10,7 @@ import {
   ExternalLink, RefreshCw, Info
 } from 'lucide-react'
 import { WSIViewer } from '@/shared/components/common/wsi-viewer'
-import { useOptimizedVirtualSlides } from '@/shared/hooks/use-optimized-quiz-data'
+import { useClientVirtualSlides } from '@/shared/hooks/use-client-virtual-slides'
 
 // Import client-side utilities for reduced API calls
 import { selectRandomWSIClientSide, clearWSICache, getWSICacheStatus } from '@/shared/utils/client-wsi-selection'

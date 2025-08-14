@@ -239,7 +239,6 @@ export function useImportQuestionForm({ open, onSave, onClose }: UseImportQuesti
       // Check for any failures
       const failures = results.filter(result => result.status === 'rejected');
       if (failures.length > 0) {
-        console.warn('Some related records failed to create:', failures);
         toast.warning('Question imported, but some related data may not have been saved');
       }
 
@@ -248,7 +247,6 @@ export function useImportQuestionForm({ open, onSave, onClose }: UseImportQuesti
       onSave();
       onClose();
     } catch (error) {
-      console.error('Error importing question:', error);
       toast.error('Failed to import question');
       throw error;
     } finally {

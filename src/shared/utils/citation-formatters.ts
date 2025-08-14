@@ -12,63 +12,79 @@ let JOURNAL_ABBREVIATIONS: Record<string, string> = {}
 /**
  * Load journal abbreviations from JSON file
  */
+const STORAGE_KEY = 'nlm-journal-abbreviations'
+const STORAGE_VERSION = '2025.1'
+
 async function loadJournalAbbreviations(): Promise<void> {
-  // Skip loading during build time or server-side rendering without proper environment
-  if (typeof window === 'undefined' && !process.env.VERCEL_URL && !process.env.NEXT_PUBLIC_VERCEL_URL) {
-    // Use fallback immediately during build time
-    console.warn('Skipping journal abbreviations load during build time, using fallback')
+  // Only load in browser environment to avoid SSR issues
+  if (typeof window === 'undefined') {
+    console.log('Skipping journal abbreviations load during SSR')
     return
   }
 
   try {
-    // Construct the full URL for the API endpoint
-    const baseUrl = typeof window !== 'undefined'
-      ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? `http://${window.location.host}`
-        : window.location.origin
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : process.env.NEXT_PUBLIC_VERCEL_URL
-          ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-          : 'http://localhost:3000'
+    // Check if already loaded in memory
+    if (Object.keys(JOURNAL_ABBREVIATIONS).length > 0) {
+      console.log('Journal abbreviations already loaded in memory, skipping...')
+      return
+    }
 
-    const apiUrl = `${baseUrl}/api/tools/citation-generator/journal-abbreviations`
+    // Try to load from localStorage first (fastest)
+    try {
+      const cached = localStorage.getItem(STORAGE_KEY)
+      if (cached) {
+        const { version, data, timestamp } = JSON.parse(cached)
+        const age = Date.now() - timestamp
+        const oneWeek = 7 * 24 * 60 * 60 * 1000
+        
+        if (version === STORAGE_VERSION && age < oneWeek && data?.abbreviations) {
+          JOURNAL_ABBREVIATIONS = data.abbreviations
+          console.log(`✅ Loaded ${Object.keys(JOURNAL_ABBREVIATIONS).length} abbreviations from localStorage cache`)
+          return
+        }
+      }
+    } catch (storageError) {
+      console.log('localStorage cache miss or invalid')
+    }
 
-    const response = await fetch(apiUrl)
+    // Fetch from R2 if not cached
+    const r2Url = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/nlm-journal-abbreviations.json'
+
+    console.log('🔄 Loading NLM journal abbreviations from R2:', r2Url)
+
+    const response = await fetch(r2Url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+      },
+      mode: 'cors',
+      cache: 'force-cache' // Aggressive browser caching - file is immutable
+    })
+
     if (!response.ok) {
-      throw new Error(`Failed to load journal abbreviations: ${response.status}`)
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
 
     const data = await response.json()
     JOURNAL_ABBREVIATIONS = data.abbreviations || {}
 
-    console.log(`Loaded ${Object.keys(JOURNAL_ABBREVIATIONS).length} journal abbreviations from NLM database`)
-  } catch (error) {
-    console.warn('Failed to load NLM journal abbreviations, using fallback:', error)
-    
-    // Fallback to basic abbreviations if file loading fails
-    JOURNAL_ABBREVIATIONS = {
-      'New England Journal of Medicine': 'N Engl J Med',
-      'Journal of the American Medical Association': 'JAMA',
-      'The Lancet': 'Lancet',
-      'Nature': 'Nature',
-      'Science': 'Science',
-      'Cell': 'Cell',
-      'Proceedings of the National Academy of Sciences': 'Proc Natl Acad Sci U S A',
-      'Journal of Clinical Investigation': 'J Clin Invest',
-      'Blood': 'Blood',
-      'Circulation': 'Circulation',
-      'American Journal of Medicine': 'Am J Med',
-      'British Medical Journal': 'BMJ',
-      'Annals of Internal Medicine': 'Ann Intern Med',
-      'Journal of Experimental Medicine': 'J Exp Med',
-      'Nature Medicine': 'Nat Med',
-      'Nature Genetics': 'Nat Genet',
-      'Cancer Research': 'Cancer Res',
-      'Clinical Cancer Research': 'Clin Cancer Res',
-      'Journal of Biological Chemistry': 'J Biol Chem',
-      'Molecular Cell': 'Mol Cell'
+    // Cache in localStorage for future sessions
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        version: STORAGE_VERSION,
+        data,
+        timestamp: Date.now()
+      }))
+    } catch (storageError) {
+      console.log('Failed to cache in localStorage:', storageError)
     }
+
+    console.log(`✅ Loaded ${Object.keys(JOURNAL_ABBREVIATIONS).length} journal abbreviations from R2 and cached`)
+  } catch (error) {
+    console.error('⚠️ Failed to load NLM journal abbreviations:', error)
+    
+    // Keep abbreviations empty - use journal names as-is
+    JOURNAL_ABBREVIATIONS = {}
   }
 }
 
@@ -100,6 +116,19 @@ export function getJournalAbbreviationStats(): { total: number; sampleEntries: s
     total: entries.length,
     sampleEntries: entries.slice(0, 5)
   }
+}
+
+/**
+ * Force reload journal abbreviations (for debugging)
+ */
+export async function forceReloadJournalAbbreviations(): Promise<void> {
+  // Clear existing abbreviations
+  JOURNAL_ABBREVIATIONS = {}
+
+  // Force reload
+  await loadJournalAbbreviations()
+
+  console.log('🔄 Force reloaded journal abbreviations:', Object.keys(JOURNAL_ABBREVIATIONS).length, 'entries')
 }
 
 /**
@@ -142,17 +171,47 @@ export function normalizeText(text: string): string {
 }
 
 /**
+ * Decode HTML entities in text
+ */
+function decodeHtmlEntities(text: string): string {
+  const htmlEntities: Record<string, string> = {
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&#39;': "'",
+    '&apos;': "'",
+    '&nbsp;': ' '
+  }
+  
+  return text.replace(/&[a-zA-Z0-9#]+;/g, (entity) => htmlEntities[entity] || entity)
+}
+
+/**
  * Helper function to abbreviate journal names using the NLM database
  */
 function abbreviateJournal(journalName: string): string {
   if (!journalName) return ''
 
-  // Direct lookup first
-  const directMatch = JOURNAL_ABBREVIATIONS[journalName]
-  if (directMatch) return directMatch
+  // Decode HTML entities first
+  const decodedJournal = decodeHtmlEntities(journalName)
 
-  // Try case-insensitive lookup
-  const lowerJournal = journalName.toLowerCase()
+  // Debug logging
+  console.log(`🔍 Attempting to abbreviate journal: "${journalName}"`)
+  if (decodedJournal !== journalName) {
+    console.log(`🔤 Decoded to: "${decodedJournal}"`)
+  }
+  console.log(`📊 Available abbreviations: ${Object.keys(JOURNAL_ABBREVIATIONS).length}`)
+
+  // Direct lookup first (try both original and decoded)
+  const directMatch = JOURNAL_ABBREVIATIONS[journalName] || JOURNAL_ABBREVIATIONS[decodedJournal]
+  if (directMatch) {
+    console.log(`✅ Direct match found: "${decodedJournal}" → "${directMatch}"`)
+    return directMatch
+  }
+
+  // Try case-insensitive lookup (use decoded version)
+  const lowerJournal = decodedJournal.toLowerCase()
   for (const [title, abbr] of Object.entries(JOURNAL_ABBREVIATIONS)) {
     if (title.toLowerCase() === lowerJournal) {
       return abbr
@@ -160,7 +219,7 @@ function abbreviateJournal(journalName: string): string {
   }
 
   // Try normalized lookup (handles diacritics and special characters)
-  const normalizedInput = normalizeText(journalName)
+  const normalizedInput = normalizeText(decodedJournal)
   for (const [title, abbr] of Object.entries(JOURNAL_ABBREVIATIONS)) {
     if (normalizeText(title) === normalizedInput) {
       return abbr
@@ -185,14 +244,14 @@ function abbreviateJournal(journalName: string): string {
     }
   }
 
-  // Try partial matching (remove common prefixes/suffixes)
-  const cleanedJournal = journalName
+  // Try partial matching (remove common prefixes/suffixes) - use decoded version
+  const cleanedJournal = decodedJournal
     .replace(/^(The|An|A)\s+/i, '')  // Remove articles
     .replace(/\s*:\s*.*$/, '')        // Remove subtitles after colon
     .replace(/\s*\([^)]*\)$/, '')     // Remove parenthetical info
     .trim()
 
-  if (cleanedJournal !== journalName) {
+  if (cleanedJournal !== decodedJournal) {
     const cleanedMatch = JOURNAL_ABBREVIATIONS[cleanedJournal]
     if (cleanedMatch) return cleanedMatch
 
@@ -214,6 +273,7 @@ function abbreviateJournal(journalName: string): string {
   }
   
   // If no match found, return original title
+  console.log(`❌ No abbreviation found for: "${journalName}" - returning original`)
   return journalName
 }
 

@@ -109,7 +109,7 @@ export function useEnhancedImportForm({ open, onSave, onClose }: UseEnhancedImpo
         setCategories(data);
       }
     } catch (error) {
-      console.error('Error loading categories:', error);
+      // Failed to load categories - will use empty array
     }
   }, []);
 
@@ -121,7 +121,7 @@ export function useEnhancedImportForm({ open, onSave, onClose }: UseEnhancedImpo
         setQuestionSets(data);
       }
     } catch (error) {
-      console.error('Error loading question sets:', error);
+      // Failed to load question sets - will use empty array
     }
   }, []);
 
@@ -289,7 +289,6 @@ export function useEnhancedImportForm({ open, onSave, onClose }: UseEnhancedImpo
           await Promise.allSettled(promises);
           successCount++;
         } catch (error) {
-          console.error(`Error importing question ${i + 1}:`, error);
           errorCount++;
         }
 
@@ -311,7 +310,6 @@ export function useEnhancedImportForm({ open, onSave, onClose }: UseEnhancedImpo
         onClose();
       }
     } catch (error) {
-      console.error('Error during import:', error);
       toast.error('Failed to import questions');
     } finally {
       setIsSubmitting(false);

@@ -217,10 +217,24 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
   }
 
   if (citation.trim()) {
-    answerParts.push(`<div class=\"citation-section\"><h4>Citation</h4>${citation}</div>`)
+    // Split multiple citations and format them properly
+    const citations = citation.split(/(?:<br\s*\/?>){2,}|(?:\n\s*){2,}/)
+      .map(c => c.trim())
+      .filter(c => c.length > 0)
+
+    if (citations.length > 1) {
+      // Multiple citations - minimal spacing without borders
+      const formattedCitations = citations.map((cite, index) =>
+        index > 0 ? `<div style="margin-top: 4px;">${cite}</div>` : cite
+      ).join('')
+      answerParts.push(`<div class=\"citation-section\"><h4>Citation</h4>${formattedCitations}</div>`)
+    } else {
+      // Single citation
+      answerParts.push(`<div class=\"citation-section\"><h4>Citation</h4>${citation}</div>`)
+    }
   }
 
-  const answer = answerParts.join('<br><br>')
+  const answer = answerParts.join('')
 
   // Determine card type based on content
   let modelName = 'Basic'

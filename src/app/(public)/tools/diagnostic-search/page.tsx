@@ -189,17 +189,17 @@ export default function DiagnosticSearchPage() {
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
       <PublicHero
-        title="Diagnostic Entity Search"
+        title="Diagnostic Bites"
         description="Search for diagnostic entities and get comprehensive information including differential diagnosis, immunohistochemistry stains, and histologic clues from our educational content database."
         actions={
           <div className="flex gap-4 pt-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Microscope className="h-4 w-4" />
-              <span>Differential Diagnosis</span>
+              <span>Differential</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <FlaskConical className="h-4 w-4" />
-              <span>Immunohistochemistry</span>
+              <span>IHC</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Eye className="h-4 w-4" />
@@ -427,13 +427,13 @@ export default function DiagnosticSearchPage() {
                 </Card>
               )}
 
-              {/* 3. Immunohistochemistry */}
+              {/* 3. IHC */}
               {(results.immunohistochemistry.positive.length > 0 || results.immunohistochemistry.negative.length > 0) && (
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-4">
                       <FlaskConical className="h-5 w-5 text-green-500" />
-                      <h3 className="text-lg font-semibold">Immunohistochemistry</h3>
+                      <h3 className="text-lg font-semibold">IHC</h3>
                     </div>
                     <div className="grid md:grid-cols-2 gap-6">
                       {results.immunohistochemistry.positive.length > 0 && (
@@ -471,13 +471,13 @@ export default function DiagnosticSearchPage() {
                 </Card>
               )}
 
-              {/* 4. Differential Diagnosis */}
+              {/* 4. Differential */}
               {results.differential_diagnosis.length > 0 && (
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-4">
                       <Microscope className="h-5 w-5 text-orange-500" />
-                      <h3 className="text-lg font-semibold">Differential Diagnosis</h3>
+                      <h3 className="text-lg font-semibold">Differential</h3>
                     </div>
                     <div className="space-y-3">
                       {results.differential_diagnosis.map((item, index) => (

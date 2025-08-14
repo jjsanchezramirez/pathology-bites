@@ -20,7 +20,6 @@ export class NotificationTriggers {
     }
   ): Promise<void> {
     try {
-      console.log(`🎯 Quiz completed by user ${userId}:`, quizData)
 
       // Check for perfect score achievement
       if (quizData.score === 100) {
@@ -60,14 +59,12 @@ export class NotificationTriggers {
         }
       }
     } catch (error) {
-      console.error('Error in onQuizCompleted trigger:', error)
     }
   }
 
   // User login trigger
   async onUserLogin(userId: string): Promise<void> {
     try {
-      console.log(`👋 User login: ${userId}`)
 
       // Update login streak
       const loginStreak = await this.updateLoginStreak(userId)
@@ -80,7 +77,6 @@ export class NotificationTriggers {
         await this.checkDailyQuizReminder(userId)
       }, 2 * 60 * 60 * 1000) // 2 hours after login
     } catch (error) {
-      console.error('Error in onUserLogin trigger:', error)
     }
   }
 
@@ -97,7 +93,6 @@ export class NotificationTriggers {
     }
   ): Promise<void> {
     try {
-      console.log(`🎯 Goal completed by user ${userId}:`, goalData)
 
       await notificationGenerators.createAchievementNotification(
         userId,
@@ -112,7 +107,6 @@ export class NotificationTriggers {
         }
       )
     } catch (error) {
-      console.error('Error in onGoalCompleted trigger:', error)
     }
   }
 
@@ -126,7 +120,6 @@ export class NotificationTriggers {
     }
   ): Promise<void> {
     try {
-      console.log(`📚 Study session completed by user ${userId}:`, sessionData)
 
       // Update total study time
       const totalStudyHours = await this.updateStudyTime(userId, sessionData.duration)
@@ -149,7 +142,6 @@ export class NotificationTriggers {
         )
       }
     } catch (error) {
-      console.error('Error in onStudySessionCompleted trigger:', error)
     }
   }
 
@@ -164,7 +156,6 @@ export class NotificationTriggers {
     }
   ): Promise<void> {
     try {
-      console.log(`🗺️ Learning path progress by user ${userId}:`, pathData)
 
       // Check for completion milestones
       const milestones = [25, 50, 75, 100]
@@ -216,7 +207,6 @@ export class NotificationTriggers {
         )
       }
     } catch (error) {
-      console.error('Error in onLearningPathProgress trigger:', error)
     }
   }
 
@@ -228,7 +218,6 @@ export class NotificationTriggers {
     duration: string
   ): Promise<void> {
     try {
-      console.log('🔧 System maintenance notification triggered')
 
       await notificationGenerators.broadcastSystemUpdate(
         title,
@@ -238,7 +227,6 @@ export class NotificationTriggers {
         'all'
       )
     } catch (error) {
-      console.error('Error in onSystemMaintenance trigger:', error)
     }
   }
 
@@ -249,7 +237,6 @@ export class NotificationTriggers {
     targetAudience: 'all' | 'admin' | 'user' | 'creator' | 'reviewer' = 'all'
   ): Promise<void> {
     try {
-      console.log(`✨ New feature announcement: ${featureName}`)
 
       await notificationGenerators.broadcastSystemUpdate(
         `New Feature: ${featureName}`,
@@ -259,7 +246,6 @@ export class NotificationTriggers {
         targetAudience
       )
     } catch (error) {
-      console.error('Error in onNewFeatureAnnouncement trigger:', error)
     }
   }
 
@@ -267,7 +253,6 @@ export class NotificationTriggers {
   private async updateUserStats(userId: string, quizData: any): Promise<void> {
     // This would update user statistics in the database
     // Implementation depends on your user stats schema
-    console.log(`Updating stats for user ${userId}`)
   }
 
   private async getUserStats(userId: string): Promise<{
@@ -332,7 +317,6 @@ export class NotificationTriggers {
       .limit(1)
 
     if (error) {
-      console.error('Error checking daily quiz:', error)
       return false
     }
 

@@ -139,7 +139,7 @@ export function Footer() {
                       href="/tools/cell-counter"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
                     >
-                      Cell Counter (Beta)
+                      Cell Counter
                     </Link>
                     <Link
                       href="/tools/lupus-anticoagulant"
@@ -196,7 +196,7 @@ export function Footer() {
                         </Link>
                         {/* Laboratory Tools */}
                         <Link href="/tools/cell-counter" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          Cell Counter (Beta)
+                          Cell Counter
                         </Link>
                         <Link href="/tools/lupus-anticoagulant" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
                           Lupus Anticoagulant

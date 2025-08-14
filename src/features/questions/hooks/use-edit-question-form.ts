@@ -148,7 +148,6 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
       onSave();
       onClose();
     } catch (error) {
-      console.error('Error updating question:', error);
       toast.error('Failed to update question');
       throw error;
     } finally {

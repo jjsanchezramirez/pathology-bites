@@ -236,7 +236,6 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
 
       return result;
     } catch (error) {
-      console.error('Error updating question:', error);
       throw error;
     }
   }, [fetchQuestions]);

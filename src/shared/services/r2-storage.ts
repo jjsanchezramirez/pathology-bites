@@ -117,7 +117,6 @@ export async function uploadToR2(
       contentType
     }
   } catch (error) {
-    console.error('R2 upload error:', error)
     throw new Error(`Failed to upload to R2: ${error}`)
   }
 }
@@ -138,9 +137,7 @@ export async function deleteFromR2(key: string, bucket?: string): Promise<void> 
     })
 
     await r2Client.send(command)
-    console.log(`Successfully deleted ${key} from R2 bucket ${bucketName}`)
   } catch (error) {
-    console.error('R2 delete error:', error)
     throw new Error(`Failed to delete from R2: ${error}`)
   }
 }
@@ -192,7 +189,6 @@ export async function bulkDeleteFromR2(keys: string[], bucket?: string): Promise
       }
     }
   } catch (error) {
-    console.error('R2 bulk delete error:', error)
     keys.forEach(key => {
       result.errors.push(`${key}: ${error}`)
     })
@@ -231,7 +227,6 @@ export async function getR2FileInfo(key: string): Promise<R2FileInfo | null> {
         exists: false
       }
     }
-    console.error('R2 file info error:', error)
     return null
   }
 }
@@ -292,7 +287,6 @@ export async function getFileContent(bucket: string, key: string): Promise<Uint8
     if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) {
       return null
     }
-    console.error('R2 get file content error:', error)
     throw error
   }
 }
@@ -424,7 +418,6 @@ export async function listR2Files(options: {
       prefix: options.prefix
     }
   } catch (error) {
-    console.error('R2 list files error:', error)
     throw new Error(`Failed to list R2 files: ${error}`)
   }
 }
@@ -454,9 +447,7 @@ export async function copyR2Object(sourceKey: string, destinationKey: string, so
     })
 
     await r2Client.send(command)
-    console.log(`Successfully copied ${sourceKey} to ${destinationKey}`)
   } catch (error) {
-    console.error('R2 copy error:', error)
     throw new Error(`Failed to copy R2 object: ${error}`)
   }
 }
@@ -472,9 +463,7 @@ export async function moveR2Object(sourceKey: string, destinationKey: string, bu
     // Then delete the original
     await deleteFromR2(sourceKey, bucket)
 
-    console.log(`Successfully moved ${sourceKey} to ${destinationKey}`)
   } catch (error) {
-    console.error('R2 move error:', error)
     throw new Error(`Failed to move R2 object: ${error}`)
   }
 }
@@ -508,15 +497,12 @@ export async function moveR2Folder(sourcePrefix: string, destinationPrefix: stri
         results.moved++
       } catch (error) {
         const errorMsg = `Failed to move ${file.key}: ${error}`
-        console.error(errorMsg)
         results.errors.push(errorMsg)
       }
     }
 
-    console.log(`Folder move completed: ${results.moved} files moved, ${results.errors.length} errors`)
     return results
   } catch (error) {
-    console.error('R2 folder move error:', error)
     throw new Error(`Failed to move R2 folder: ${error}`)
   }
 }

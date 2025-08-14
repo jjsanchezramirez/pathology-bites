@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Check, X, RotateCcw, ArrowLeft, ArrowRight, ChevronRight, ExternalLink } from 'lucide-react'
 import Image from 'next/image'
 import { PublicHero } from '@/shared/components/common/public-hero'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
-import { useCachedData } from '@/shared/hooks/use-cached-data'
+import { useClientCellQuiz } from '@/shared/hooks/use-client-cell-quiz'
 import { generateLookAlikeOptions, generateBiologicalOptions } from '@/features/cell-quiz/data/cell-pathways'
 
 interface Question {
@@ -125,72 +125,8 @@ function generateRandomQuestion(cellData: any, bloodCellsReference: any): Questi
 }
 
 export default function CellQuizPage() {
-  // Fetch cell quiz data from optimized API endpoints with aggressive 24-hour caching
-  const { data: cellData, isLoading: cellDataLoading, error: cellDataError } = useCachedData(
-    'cell-quiz-images',
-    async () => {
-      console.log('🔄 Fetching cell quiz images from R2 via API...')
-      const response = await fetch('/api/tools/cell-quiz/images', {
-        headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'public, max-age=86400' // 24 hour browser cache
-        }
-      })
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('❌ Cell quiz images fetch failed:', response.status, errorText)
-        throw new Error(`Failed to fetch cell quiz images: ${response.status} ${response.statusText}`)
-      }
-      const data = await response.json()
-      console.log('✅ Cell quiz images loaded from R2:', {
-        success: !!data,
-        cellCount: data ? Object.keys(data).length : 0,
-        sampleCells: data ? Object.keys(data).slice(0, 3) : [],
-        dataSize: data ? `${(JSON.stringify(data).length / 1024).toFixed(1)}KB` : '0KB'
-      })
-      return data
-    },
-    {
-      ttl: 24 * 60 * 60 * 1000, // 24 hours cache
-      staleTime: 12 * 60 * 60 * 1000, // 12 hours stale time
-      storage: 'localStorage',
-      prefix: 'pathology-bites-cell-quiz'
-    }
-  )
-
-  const { data: bloodCellsReference, isLoading: referencesLoading, error: referencesError } = useCachedData(
-    'cell-quiz-references',
-    async () => {
-      console.log('🔄 Fetching cell quiz references from R2 via API...')
-      const response = await fetch('/api/tools/cell-quiz/references', {
-        headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'public, max-age=86400' // 24 hour browser cache
-        }
-      })
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('❌ Cell quiz references fetch failed:', response.status, errorText)
-        throw new Error(`Failed to fetch cell quiz references: ${response.status} ${response.statusText}`)
-      }
-      const data = await response.json()
-      console.log('✅ Cell quiz references loaded from R2:', {
-        success: !!data,
-        hasCells: !!data?.cells,
-        cellCount: data?.cells?.length || 0,
-        firstCell: data?.cells?.[0]?.name || 'None',
-        sampleFields: data?.cells?.[0] ? Object.keys(data.cells[0]) : [],
-        dataSize: data ? `${(JSON.stringify(data).length / 1024).toFixed(1)}KB` : '0KB'
-      })
-      return data
-    },
-    {
-      ttl: 24 * 60 * 60 * 1000, // 24 hours cache
-      staleTime: 12 * 60 * 60 * 1000, // 12 hours stale time
-      storage: 'localStorage',
-      prefix: 'pathology-bites-cell-quiz'
-    }
-  )
+  // ✅ Use optimized client-side R2 direct fetch - zero Vercel usage in production
+  const { cellData, bloodCellsReference, isLoading, error } = useClientCellQuiz()
 
   const [mode, setMode] = useState<'menu' | 'quiz' | 'tutorial'>('menu')
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
@@ -202,8 +138,55 @@ export default function CellQuizPage() {
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Show loading state while data is being fetched
-  const isLoading = cellDataLoading || referencesLoading
-  const hasError = cellDataError || referencesError
+  const hasError = error
+
+  // Keyboard navigation for quiz mode (desktop only)
+  useEffect(() => {
+    if (mode !== 'quiz' || !currentQuestion) return
+
+    // Check if we're on a mobile device (screen width < 768px)
+    const isMobile = () => window.innerWidth < 768
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Skip keyboard handling on mobile devices
+      if (isMobile()) return
+
+      // Prevent default behavior for our handled keys
+      if (['ArrowLeft', 'ArrowRight', 'Space', 'Enter', '1', '2', '3', '4'].includes(event.code)) {
+        event.preventDefault()
+      }
+
+      // Number keys (1-4) for selecting options
+      if (['Digit1', 'Digit2', 'Digit3', 'Digit4'].includes(event.code)) {
+        const optionIndex = parseInt(event.code.replace('Digit', '')) - 1
+        if (optionIndex < currentQuestion.options.length && !selectedAnswer) {
+          handleAnswerSelect(currentQuestion.options[optionIndex])
+        }
+        return
+      }
+
+      // Space or Enter to proceed to next question (when explanation is shown)
+      if ((event.code === 'Space' || event.code === 'Enter') && showExplanation) {
+        nextQuestion()
+        return
+      }
+
+      // Arrow keys for navigation (when explanation is shown)
+      if (event.code === 'ArrowRight' && showExplanation) {
+        nextQuestion()
+        return
+      }
+
+      // Left arrow key is disabled during quiz to prevent accidental menu return
+      if (event.code === 'ArrowLeft') {
+        // Do nothing - prevents accidental return to menu
+        return
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [mode, currentQuestion, selectedAnswer, showExplanation])
 
 
 
@@ -297,7 +280,7 @@ export default function CellQuizPage() {
 
   // Show error state
   if (hasError) {
-    const errorMessage = cellDataError?.message || referencesError?.message || 'Unknown error occurred'
+    const errorMessage = error || 'Unknown error occurred'
     const isR2Error = errorMessage.includes('Failed to fetch')
     
     return (
@@ -436,6 +419,7 @@ export default function CellQuizPage() {
                               disabled={!!selectedAnswer}
                             >
                               <div className="flex items-center gap-2 md:gap-3">
+                                <span className="text-muted-foreground font-medium flex-shrink-0">{index + 1}.</span>
                                 {showResult && isCorrect && <Check className="h-4 w-4 flex-shrink-0" />}
                                 {showResult && isSelected && !isCorrect && <X className="h-4 w-4 flex-shrink-0" />}
                                 <span className="break-words">{option}</span>
@@ -528,15 +512,24 @@ export default function CellQuizPage() {
                     </div>
                   )}
 
-                  {/* Next Button - responsive positioning */}
+                  {/* Next Button - Mobile only */}
                   {showExplanation && (
-                    <div className="mt-4 md:mt-6 flex justify-center md:justify-end">
+                    <div className="mt-4 flex justify-center md:hidden">
                       <Button onClick={nextQuestion} size="lg" className="gap-2 w-full sm:w-auto">
                         Next Question
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                     </div>
                   )}
+
+                  {/* Keyboard Instructions - Desktop only */}
+                  <div className="border-t pt-6 mt-4 hidden md:block">
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground">
+                        <strong>Keyboard shortcuts:</strong> Press <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">1-4</kbd> to select options and <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Space</kbd> or <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Enter</kbd> to advance
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -579,6 +572,42 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
       sampleKeys: cellData ? Object.keys(cellData).slice(0, 5) : []
     }
   })
+
+  // Keyboard navigation for tutorial mode (desktop only) - must be before early returns
+  useEffect(() => {
+    if (!bloodCellsReference?.cells) return // Don't set up keyboard handling if no data
+    
+    // Check if we're on a mobile device (screen width < 768px)
+    const isMobile = () => window.innerWidth < 768
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Skip keyboard handling on mobile devices
+      if (isMobile()) return
+
+      // Prevent default behavior for our handled keys
+      if (['ArrowLeft', 'ArrowRight', 'Space', 'Enter'].includes(event.code)) {
+        event.preventDefault()
+      }
+
+      // Arrow keys for navigation
+      if (event.code === 'ArrowRight' || event.code === 'Space' || event.code === 'Enter') {
+        if (currentCellIndex < bloodCellsReference.cells.length - 1) {
+          setCurrentCellIndex(prev => prev + 1)
+        }
+        return
+      }
+
+      if (event.code === 'ArrowLeft') {
+        if (currentCellIndex > 0) {
+          setCurrentCellIndex(prev => prev - 1)
+        }
+        return
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [currentCellIndex, bloodCellsReference?.cells])
 
   if (!bloodCellsReference?.cells) {
     console.error('❌ No reference cells data available in tutorial')
@@ -639,7 +668,7 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
   }
 
   const handleNext = () => {
-    if (currentCellIndex < referenceCells.length - 1) {
+    if (currentCellIndex < bloodCellsReference.cells.length - 1) {
       setCurrentCellIndex(prev => prev + 1)
     }
   }
@@ -775,8 +804,9 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
                   </div>
                 </div>
               </div>
-              {/* Bottom Navigation */}
-              <div className="flex justify-between items-center pt-4 border-t gap-2">
+
+              {/* Mobile Navigation Buttons */}
+              <div className="flex justify-between items-center pt-4 gap-2 md:hidden">
                 <Button
                   variant="outline"
                   onClick={handlePrevious}
@@ -797,6 +827,15 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
                   <span className="sm:hidden">Next</span>
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
+              </div>
+
+              {/* Keyboard Instructions - Desktop only */}
+              <div className="border-t pt-6 mt-4 hidden md:block">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Keyboard shortcuts:</strong> Press <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Space</kbd> or <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Enter</kbd> or <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">◀</kbd> <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">▶</kbd> to navigate
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>

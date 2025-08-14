@@ -4,7 +4,7 @@
  */
 
 import { VirtualSlide } from '@/shared/types/virtual-slides'
-import { ExternalLink, Eye, Info, Microscope } from 'lucide-react'
+import { ExternalLink, Eye, Microscope } from 'lucide-react'
 
 interface SlideRowUnifiedProps {
   slide: VirtualSlide
@@ -24,8 +24,8 @@ export function SlideRowUnified({
   return (
     <tr className="border-b border-gray-200 hover:bg-gray-50">
       {/* Preview */}
-      <td className="p-4">
-        <div className="relative w-16 h-16 bg-gray-100 rounded overflow-hidden">
+      <td className="p-2 md:p-4">
+        <div className="relative w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded overflow-hidden">
           {slide.preview_image_url ? (
             <img
               src={slide.preview_image_url}
@@ -42,11 +42,11 @@ export function SlideRowUnified({
       </td>
 
       {/* Diagnosis and Clinical Info */}
-      <td className="p-4">
+      <td className="p-2 md:p-4">
         <div className="space-y-1">
           {showDiagnoses ? (
             <>
-              <h3 className="font-medium text-gray-900 leading-tight">
+              <h3 className="font-medium text-gray-900 leading-tight text-sm md:text-base">
                 {slide.diagnosis}
               </h3>
               {/* Clinical information */}
@@ -72,7 +72,7 @@ export function SlideRowUnified({
             <>
               {isRevealed ? (
                 <div className="space-y-1">
-                  <h3 className="font-medium text-gray-900 leading-tight">
+                  <h3 className="font-medium text-gray-900 leading-tight text-sm md:text-base">
                     {slide.diagnosis}
                   </h3>
                   {/* Clinical information when revealed */}
@@ -109,12 +109,12 @@ export function SlideRowUnified({
       </td>
 
       {/* Repository */}
-      <td className="p-4 hidden lg:table-cell">
+      <td className="p-2 md:p-4 hidden lg:table-cell">
         <span className="text-sm text-gray-600">{slide.repository}</span>
       </td>
 
       {/* Category */}
-      <td className="p-4 hidden md:table-cell">
+      <td className="p-2 md:p-4 hidden md:table-cell">
         <div className="space-y-1">
           <p className="text-sm text-gray-600">{slide.category}</p>
           {slide.subcategory && (
@@ -124,7 +124,7 @@ export function SlideRowUnified({
       </td>
 
       {/* Details */}
-      <td className="p-4 hidden lg:table-cell">
+      <td className="p-2 md:p-4 hidden lg:table-cell">
         <div className="flex items-center gap-2">
           {slide.stain_type && (
             <>
@@ -136,28 +136,30 @@ export function SlideRowUnified({
       </td>
 
       {/* Actions */}
-      <td className="p-4">
+      <td className="p-2 md:p-4">
         <div className="flex gap-2">
           {slide.slide_url && (
             <a
               href={slide.slide_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              aria-label="View Slide"
+              className="inline-flex items-center justify-center rounded-md text-primary-foreground bg-primary hover:bg-primary/90 transition-colors p-2 md:px-3 md:py-1 text-xs font-medium"
             >
-              <ExternalLink className="w-3 h-3" />
-              View Slide
+              <ExternalLink className="w-4 h-4" />
+              <span className="hidden md:inline ml-1">View Slide</span>
             </a>
           )}
-          {slide.case_url && (
+          {slide.repository === 'Hematopathology eTutorial' && slide.other_urls && slide.other_urls.length > 0 && slide.other_urls[0] && (
             <a
-              href={slide.case_url}
+              href={slide.other_urls[0]}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              aria-label="Study Notes"
+              className="inline-flex items-center justify-center rounded-md text-foreground bg-background border border-border hover:bg-muted transition-colors p-2 md:px-3 md:py-1 text-xs font-medium"
             >
-              <Info className="w-3 h-3" />
-              Case
+              <ExternalLink className="w-4 h-4" />
+              <span className="hidden md:inline ml-1">Study Notes</span>
             </a>
           )}
         </div>

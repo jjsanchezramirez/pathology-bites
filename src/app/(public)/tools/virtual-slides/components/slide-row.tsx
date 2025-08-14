@@ -292,7 +292,7 @@ export function SlideRow({ slide, index, showDiagnoses = true, isRevealed = fals
             {slide.slide_url && (
               <Button
                 size="sm"
-                variant="outline"
+                variant="default"
                 asChild
                 className="text-xs"
               >

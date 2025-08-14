@@ -56,7 +56,6 @@ export class NotificationsService {
     limit: number = 20
   ): Promise<PaginatedNotifications> {
     try {
-      console.log('🔔 NotificationsService.getNotifications called with:', { userId, page, limit })
 
       // Calculate offset
       const offset = (page - 1) * limit
@@ -68,7 +67,6 @@ export class NotificationsService {
         .eq('user_id', userId)
 
       if (countError) {
-        console.error('Error fetching notification count:', countError)
         throw countError
       }
 
@@ -80,23 +78,12 @@ export class NotificationsService {
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1)
 
-      console.log('🔔 Notification states query result:', {
-        notificationStates,
-        error,
-        count: notificationStates?.length,
-        totalCount,
-        page,
-        limit,
-        userId
-      })
 
       if (error) {
-        console.error('Error fetching notification states:', error)
         throw error
       }
 
       if (!notificationStates || notificationStates.length === 0) {
-        console.log('🔔 No notification states found for user:', userId)
         return {
           notifications: [],
           total: totalCount || 0,
@@ -115,7 +102,6 @@ export class NotificationsService {
         return acc
       }, {} as Record<string, string[]>)
 
-      console.log('🔔 Source IDs by type:', sourceIdsByType)
 
       // Fetch source data for all types in parallel
       const [inquiries, reports, systemUpdates, milestones, reminders] = await Promise.all([
@@ -237,7 +223,6 @@ export class NotificationsService {
         hasMore
       }
     } catch (error) {
-      console.error('Error in getNotifications:', error)
       throw error
     }
   }
@@ -251,7 +236,6 @@ export class NotificationsService {
       .in('id', ids)
 
     if (error) {
-      console.error('Error fetching inquiries:', error)
       throw error
     }
 
@@ -267,7 +251,6 @@ export class NotificationsService {
       .in('id', ids)
 
     if (error) {
-      console.error('Error fetching reports:', error)
       throw error
     }
 
@@ -283,7 +266,6 @@ export class NotificationsService {
       .in('id', ids)
 
     if (error) {
-      console.error('Error fetching system updates:', error)
       throw error
     }
 
@@ -299,7 +281,6 @@ export class NotificationsService {
       .in('id', ids)
 
     if (error) {
-      console.error('Error fetching milestones:', error)
       throw error
     }
 
@@ -315,7 +296,6 @@ export class NotificationsService {
       .in('id', ids)
 
     if (error) {
-      console.error('Error fetching reminders:', error)
       throw error
     }
 
@@ -329,7 +309,6 @@ export class NotificationsService {
       .eq('id', notificationId)
 
     if (error) {
-      console.error('Error marking notification as read:', error)
       throw error
     }
   }
@@ -342,7 +321,6 @@ export class NotificationsService {
       .eq('read', false)
 
     if (error) {
-      console.error('Error marking all notifications as read:', error)
       throw error
     }
   }
@@ -355,7 +333,6 @@ export class NotificationsService {
       .eq('read', false)
 
     if (error) {
-      console.error('Error getting unread count:', error)
       throw error
     }
 
@@ -379,7 +356,6 @@ export class NotificationsService {
       .insert(notifications)
 
     if (error) {
-      console.error('Error creating system update notifications:', error)
       throw error
     }
   }
@@ -402,7 +378,6 @@ export class NotificationsService {
       })
 
     if (error) {
-      console.error('Error creating milestone notification:', error)
       throw error
     }
   }
@@ -425,7 +400,6 @@ export class NotificationsService {
       })
 
     if (error) {
-      console.error('Error creating reminder notification:', error)
       throw error
     }
   }
@@ -452,7 +426,6 @@ export class NotificationsService {
       })
 
     if (error) {
-      console.error('Error creating achievement notification:', error)
       throw error
     }
   }

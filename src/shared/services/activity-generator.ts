@@ -192,13 +192,11 @@ export class ActivityGenerator {
       })
 
       if (!response.ok) {
-        console.error('Failed to create activity:', await response.text())
         return false
       }
 
       return true
     } catch (error) {
-      console.error('Error creating activity:', error)
       return false
     }
   }

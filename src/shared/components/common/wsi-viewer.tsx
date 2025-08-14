@@ -373,6 +373,19 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const handleIframeLoad = useCallback(() => {
     if (timeoutRef.current) {
@@ -408,35 +421,68 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
 
     const handleWheel = (e: WheelEvent) => {
       // Only prevent if iframe is loaded and user is scrolling over the iframe area
-      if (loaded) {
+      if (loaded && !isMobile) {
         e.stopPropagation()
       }
     }
 
     const handleMouseEnter = () => {
-      // Disable page scroll when mouse enters iframe area
-      if (loaded) {
+      // Disable page scroll when mouse enters iframe area (desktop only)
+      if (loaded && !isMobile) {
         document.body.style.overflow = 'hidden'
       }
     }
 
     const handleMouseLeave = () => {
-      // Re-enable page scroll when mouse leaves iframe area
-      document.body.style.overflow = ''
+      // Re-enable page scroll when mouse leaves iframe area (desktop only)
+      if (!isMobile) {
+        document.body.style.overflow = ''
+      }
     }
 
+    // Mobile touch event handlers
+    const handleTouchStart = (e: TouchEvent) => {
+      if (isMobile && loaded) {
+        e.stopPropagation()
+      }
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (isMobile && loaded) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    }
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (isMobile && loaded) {
+        e.stopPropagation()
+      }
+    }
+
+    // Add event listeners
     container.addEventListener('wheel', handleWheel, { passive: false })
-    container.addEventListener('mouseenter', handleMouseEnter)
-    container.addEventListener('mouseleave', handleMouseLeave)
+
+    if (isMobile) {
+      container.addEventListener('touchstart', handleTouchStart, { passive: false })
+      container.addEventListener('touchmove', handleTouchMove, { passive: false })
+      container.addEventListener('touchend', handleTouchEnd, { passive: false })
+    } else {
+      container.addEventListener('mouseenter', handleMouseEnter)
+      container.addEventListener('mouseleave', handleMouseLeave)
+    }
 
     return () => {
       container.removeEventListener('wheel', handleWheel)
       container.removeEventListener('mouseenter', handleMouseEnter)
       container.removeEventListener('mouseleave', handleMouseLeave)
+      container.removeEventListener('touchstart', handleTouchStart)
+      container.removeEventListener('touchmove', handleTouchMove)
+      container.removeEventListener('touchend', handleTouchEnd)
       // Ensure scroll is re-enabled on cleanup
       document.body.style.overflow = ''
     }
-  }, [loaded])
+  }, [loaded, isMobile])
 
   return (
     <div ref={containerRef} className="relative">
@@ -450,20 +496,51 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
         </div>
       )}
 
-      {/* Iframe viewer */}
-      <iframe
-        ref={iframeRef}
-        src={url}
-        className="w-full h-[600px] border-0"
-        title={title}
-        onLoad={handleIframeLoad}
-        onError={handleIframeError}
-        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-        allow="fullscreen"
-        style={{
-          pointerEvents: loaded ? 'auto' : 'none'
+      {/* Iframe viewer with mobile touch isolation */}
+      <div
+        className="relative w-full h-[600px] overflow-hidden"
+        onTouchStart={(e) => {
+          // On mobile, prevent page scrolling when touching the WSI viewer
+          if (isMobile && loaded) {
+            e.preventDefault()
+            e.stopPropagation()
+          }
         }}
-      />
+        onTouchMove={(e) => {
+          // On mobile, prevent page scrolling during touch gestures
+          if (isMobile && loaded) {
+            e.preventDefault()
+            e.stopPropagation()
+          }
+        }}
+        onTouchEnd={(e) => {
+          // On mobile, prevent page scrolling when touch ends
+          if (isMobile && loaded) {
+            e.preventDefault()
+            e.stopPropagation()
+          }
+        }}
+        style={{
+          // On mobile, prevent scrolling and zooming of the container
+          touchAction: isMobile ? 'none' : 'auto'
+        }}
+      >
+        <iframe
+          ref={iframeRef}
+          src={url}
+          className="w-full h-full border-0"
+          title={title}
+          onLoad={handleIframeLoad}
+          onError={handleIframeError}
+          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          allow="fullscreen"
+          style={{
+            pointerEvents: loaded ? 'auto' : 'none',
+            // On mobile, let the iframe handle all touch events
+            touchAction: isMobile ? 'manipulation' : 'auto'
+          }}
+        />
+      </div>
 
       {/* Scroll hint overlay for loaded iframes */}
       {loaded && (

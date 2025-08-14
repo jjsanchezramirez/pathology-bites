@@ -15,18 +15,19 @@ const R2_PUBLIC_URL = getR2PublicUrl()
 
 /**
  * Transform cell quiz image URLs to use R2 storage
- * Cell quiz images are stored with 'cell-' prefix
+ * Cell quiz images are stored in the 'cell-quiz/' folder
  */
 export function transformCellQuizImageUrl(originalPath: string): string {
   if (!originalPath) return originalPath
-  
+
   // Extract filename from original path
   const filename = originalPath.split('/').pop()
   if (!filename) return originalPath
-  
-  // Cell quiz images are stored as cell-{filename} in R2
-  const r2Key = filename.startsWith('cell-') ? filename : `cell-${filename}`
-  return `${R2_PUBLIC_URL}/${r2Key}`
+
+  // Cell quiz images are stored in cell-quiz/ folder in R2
+  // Remove any existing cell- prefix if present, then add cell-quiz/ folder
+  const cleanFilename = filename.startsWith('cell-') ? filename.substring(5) : filename
+  return `${R2_PUBLIC_URL}/cell-quiz/${cleanFilename}`
 }
 
 /**

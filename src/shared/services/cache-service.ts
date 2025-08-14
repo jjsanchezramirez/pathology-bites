@@ -63,7 +63,6 @@ class CacheService {
           try {
             localStorage.setItem(fullKey, JSON.stringify(entry))
           } catch (error) {
-            console.warn('Failed to set localStorage cache:', error)
             // Fallback to memory cache
             this.memoryCache.set(fullKey, entry)
           }
@@ -74,7 +73,6 @@ class CacheService {
           try {
             sessionStorage.setItem(fullKey, JSON.stringify(entry))
           } catch (error) {
-            console.warn('Failed to set sessionStorage cache:', error)
             // Fallback to memory cache
             this.memoryCache.set(fullKey, entry)
           }
@@ -82,7 +80,6 @@ class CacheService {
         break
     }
 
-    console.log(`💾 Cached data for key: ${fullKey} (TTL: ${ttl}ms)`)
   }
 
   // Get cache entry
@@ -108,7 +105,6 @@ class CacheService {
             const stored = localStorage.getItem(fullKey)
             entry = stored ? JSON.parse(stored) : null
           } catch (error) {
-            console.warn('Failed to get localStorage cache:', error)
             return null
           }
         }
@@ -119,7 +115,6 @@ class CacheService {
             const stored = sessionStorage.getItem(fullKey)
             entry = stored ? JSON.parse(stored) : null
           } catch (error) {
-            console.warn('Failed to get sessionStorage cache:', error)
             return null
           }
         }
@@ -133,12 +128,10 @@ class CacheService {
     // Check if entry has expired
     const now = Date.now()
     if (now - entry.timestamp > entry.ttl) {
-      console.log(`🗑️ Cache expired for key: ${fullKey}`)
       this.delete(key, options)
       return null
     }
 
-    console.log(`✅ Cache hit for key: ${fullKey}`)
     return entry.data
   }
 
@@ -167,7 +160,6 @@ class CacheService {
         break
     }
 
-    console.log(`🗑️ Deleted cache for key: ${fullKey}`)
   }
 
   // Clear all cache entries with optional prefix filter
@@ -203,7 +195,6 @@ class CacheService {
       sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key))
     }
 
-    console.log(`🧹 Cleared all cache entries with prefix: ${targetPrefix}`)
   }
 
   // Clean up expired entries from memory cache
@@ -218,9 +209,6 @@ class CacheService {
       }
     }
 
-    if (cleanedCount > 0) {
-      console.log(`🧹 Cleaned up ${cleanedCount} expired cache entries`)
-    }
   }
 
   // Get cache statistics

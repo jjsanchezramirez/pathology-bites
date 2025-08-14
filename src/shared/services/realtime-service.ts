@@ -56,18 +56,15 @@ class RealtimeService {
   private initializeAuthSubscription(): void {
     if (this.authSubscription) return
 
-    console.log('🔄 Initializing shared auth subscription')
 
     const { data: { subscription } } = this.supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('🔄 Shared auth state change:', { event, hasSession: !!session })
 
         // Notify all registered listeners
         this.authListeners.forEach(listener => {
           try {
             listener(event, session)
           } catch (error) {
-            console.error('Error in auth listener:', error)
           }
         })
       }
@@ -85,7 +82,6 @@ class RealtimeService {
                           window.location.pathname.startsWith('/signup')
 
       if (isPublicPage) {
-        console.log('🚫 Skipping auth listener on public page:', window.location.pathname)
         // Return no-op cleanup function
         return () => {}
       }
@@ -99,12 +95,10 @@ class RealtimeService {
 
     this.authListeners.add(listener)
 
-    console.log(`📡 Added auth listener (total: ${this.authListeners.size})`)
 
     // Return cleanup function
     return () => {
       this.authListeners.delete(listener)
-      console.log(`📡 Removed auth listener (total: ${this.authListeners.size})`)
 
       // Clean up subscription if no listeners remain
       if (this.authListeners.size === 0) {
@@ -115,7 +109,6 @@ class RealtimeService {
 
   private cleanupAuthSubscription(): void {
     if (this.authSubscription) {
-      console.log('🧹 Cleaning up shared auth subscription')
       this.authSubscription.unsubscribe()
       this.authSubscription = null
     }
@@ -138,14 +131,12 @@ class RealtimeService {
       this.createDatabaseSubscription(key, subscription)
     }
 
-    console.log(`📡 Added database listener for ${key} (total: ${this.databaseListeners.get(key)!.size})`)
 
     // Return cleanup function
     return () => {
       const listeners = this.databaseListeners.get(key)
       if (listeners) {
         listeners.delete(subscription.callback)
-        console.log(`📡 Removed database listener for ${key} (total: ${listeners.size})`)
 
         // Clean up subscription if no listeners remain
         if (listeners.size === 0) {
@@ -156,7 +147,6 @@ class RealtimeService {
   }
 
   private createDatabaseSubscription(key: string, subscription: DatabaseSubscription): void {
-    console.log(`🔄 Creating shared database subscription for ${key}`)
 
     const channel = this.supabase.channel(`shared-${key}`)
 
@@ -177,7 +167,6 @@ class RealtimeService {
           try {
             listener(payload)
           } catch (error) {
-            console.error(`Error in database listener for ${key}:`, error)
           }
         })
       }
@@ -190,7 +179,6 @@ class RealtimeService {
   private cleanupDatabaseSubscription(key: string): void {
     const subscription = this.databaseSubscriptions.get(key)
     if (subscription) {
-      console.log(`🧹 Cleaning up shared database subscription for ${key}`)
       subscription.unsubscribe()
       this.databaseSubscriptions.delete(key)
       this.databaseListeners.delete(key)
@@ -209,7 +197,6 @@ class RealtimeService {
   }
 
   public cleanup(): void {
-    console.log('🧹 Cleaning up all realtime subscriptions')
 
     // Cleanup auth subscription
     this.cleanupAuthSubscription()

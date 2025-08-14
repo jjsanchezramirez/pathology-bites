@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
       completedAt: session.completed_at,
       totalTimeSpent: session.total_time_spent,
       currentQuestionIndex: session.current_question_index,
-      timeLimit: session.total_time_limit,
+      totalTimeLimit: session.total_time_limit,
       timeRemaining: session.time_remaining,
       isTimedMode: session.config?.timing === 'timed',
       config: session.config

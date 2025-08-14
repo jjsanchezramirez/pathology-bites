@@ -11,7 +11,6 @@ export class NotificationJobs {
   // Daily reminder job - check user preferences and send reminders
   async processDailyReminders(): Promise<void> {
     try {
-      console.log('🔄 Processing daily reminders...')
 
       // Get all active users who have quiz reminders enabled
       const { data: users, error } = await this.supabase
@@ -20,7 +19,6 @@ export class NotificationJobs {
         .eq('status', 'active')
 
       if (error) {
-        console.error('Error fetching users for reminders:', error)
         return
       }
 
@@ -43,21 +41,17 @@ export class NotificationJobs {
             }
           }
         } catch (error) {
-          console.error(`Error processing reminder for user ${user.user_id}:`, error)
           // Continue with other users
         }
       }
 
-      console.log(`✅ Processed daily reminders for ${users?.length || 0} users`)
     } catch (error) {
-      console.error('Error in processDailyReminders:', error)
     }
   }
 
   // Weekly review reminder job
   async processWeeklyReviews(): Promise<void> {
     try {
-      console.log('🔄 Processing weekly review reminders...')
 
       const { data: users, error } = await this.supabase
         .from('user_profiles')
@@ -65,7 +59,6 @@ export class NotificationJobs {
         .eq('status', 'active')
 
       if (error) {
-        console.error('Error fetching users for weekly reviews:', error)
         return
       }
 
@@ -82,20 +75,16 @@ export class NotificationJobs {
             )
           }
         } catch (error) {
-          console.error(`Error processing weekly review for user ${user.user_id}:`, error)
         }
       }
 
-      console.log(`✅ Processed weekly reviews for ${users?.length || 0} users`)
     } catch (error) {
-      console.error('Error in processWeeklyReviews:', error)
     }
   }
 
   // Milestone detection job - analyze user progress and create milestone notifications
   async processMilestoneDetection(): Promise<void> {
     try {
-      console.log('🔄 Processing milestone detection...')
 
       const { data: users, error } = await this.supabase
         .from('user_profiles')
@@ -103,7 +92,6 @@ export class NotificationJobs {
         .eq('status', 'active')
 
       if (error) {
-        console.error('Error fetching users for milestone detection:', error)
         return
       }
 
@@ -111,13 +99,10 @@ export class NotificationJobs {
         try {
           await this.checkUserMilestones(user.user_id)
         } catch (error) {
-          console.error(`Error checking milestones for user ${user.user_id}:`, error)
         }
       }
 
-      console.log(`✅ Processed milestone detection for ${users?.length || 0} users`)
     } catch (error) {
-      console.error('Error in processMilestoneDetection:', error)
     }
   }
 
@@ -146,14 +131,12 @@ export class NotificationJobs {
         }
       }
     } catch (error) {
-      console.error(`Error checking milestones for user ${userId}:`, error)
     }
   }
 
   // Goal completion detection
   async processGoalCompletions(): Promise<void> {
     try {
-      console.log('🔄 Processing goal completions...')
 
       // This would integrate with a goals system
       // For now, we'll create a placeholder implementation
@@ -164,7 +147,6 @@ export class NotificationJobs {
         .eq('status', 'active')
 
       if (error) {
-        console.error('Error fetching goals:', error)
         return
       }
 
@@ -188,13 +170,10 @@ export class NotificationJobs {
               .eq('id', goal.id)
           }
         } catch (error) {
-          console.error(`Error processing goal ${goal.id}:`, error)
         }
       }
 
-      console.log(`✅ Processed goal completions for ${goals?.length || 0} goals`)
     } catch (error) {
-      console.error('Error in processGoalCompletions:', error)
     }
   }
 
@@ -211,7 +190,6 @@ export class NotificationJobs {
       .limit(1)
 
     if (error) {
-      console.error('Error checking daily quiz:', error)
       return false
     }
 
@@ -234,7 +212,6 @@ export class NotificationJobs {
         .eq('user_id', userId)
 
       if (error) {
-        console.error('Error fetching quiz stats:', error)
         return null
       }
 
@@ -249,7 +226,6 @@ export class NotificationJobs {
         categoryStats: [] // Would calculate from actual data
       }
     } catch (error) {
-      console.error('Error getting user quiz stats:', error)
       return null
     }
   }
@@ -263,7 +239,6 @@ export class NotificationJobs {
   // Cleanup old notifications
   async cleanupOldNotifications(): Promise<void> {
     try {
-      console.log('🔄 Cleaning up old notifications...')
 
       // Delete read notifications older than 30 days
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
@@ -275,13 +250,10 @@ export class NotificationJobs {
         .lt('created_at', thirtyDaysAgo)
 
       if (error) {
-        console.error('Error cleaning up notifications:', error)
         return
       }
 
-      console.log('✅ Cleaned up old notifications')
     } catch (error) {
-      console.error('Error in cleanupOldNotifications:', error)
     }
   }
 }

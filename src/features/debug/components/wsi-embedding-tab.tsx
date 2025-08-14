@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/shared/components/ui/badge'
 import { RefreshCw, ExternalLink, Info, Eye } from 'lucide-react'
 import { WSIEmbeddingViewer } from '@/shared/components/common/wsi-viewer'
-import { useOptimizedVirtualSlides } from '@/shared/hooks/use-optimized-quiz-data'
+import { useClientVirtualSlides } from '@/shared/hooks/use-client-virtual-slides'
 import { VirtualSlide } from '@/shared/types/virtual-slides'
 
 export function WSIEmbeddingTab() {
@@ -17,16 +17,11 @@ export function WSIEmbeddingTab() {
   const [currentSlide, setCurrentSlide] = useState<VirtualSlide | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Load slides using optimized hook with caching
-  const { data: slidesData, isLoading: slidesLoading, error: slidesError } = useOptimizedVirtualSlides(
-    1, // page
-    1000, // limit - get more slides for repository analysis
-    {} // no filters initially
-  )
+  // Load slides using optimized client-side hook with R2 direct fetch
+  const { slides, isLoading: slidesLoading, error: slidesError } = useClientVirtualSlides(1000)
 
   useEffect(() => {
-    if (slidesData?.data) {
-      const slides = slidesData.data
+    if (slides) {
       setAllSlides(slides)
 
       const uniqueRepos = [...new Set(slides.map((slide: VirtualSlide) => slide.repository))]
@@ -42,7 +37,7 @@ export function WSIEmbeddingTab() {
     if (slidesError) {
       console.error('Failed to load slides:', slidesError)
     }
-  }, [slidesData, slidesError])
+  }, [slides, slidesError])
 
   // Load a specific slide
   const loadSlide = useCallback((slide: VirtualSlide) => {

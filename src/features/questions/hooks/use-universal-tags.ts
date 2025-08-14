@@ -64,7 +64,6 @@ export function useUniversalTags(): UseUniversalTagsReturn {
 
       return data || [];
     } catch (err) {
-      console.error('Error searching tags:', err);
       return [];
     }
   }, [supabase, recentTags]);

@@ -74,10 +74,3 @@ export function acceptsCompression(request: Request): boolean {
   return acceptEncoding.includes('brotli') || acceptEncoding.includes('gzip')
 }
 
-/**
- * Legacy function - kept for backward compatibility
- * @deprecated Use acceptsCompression instead
- */
-export function acceptsGzip(request: Request): boolean {
-  return acceptsCompression(request)
-}

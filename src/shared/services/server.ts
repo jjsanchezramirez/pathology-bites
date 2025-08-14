@@ -12,7 +12,6 @@ export async function createClient() {
     const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     if (!url || !anonKey) {
-      console.error('[Supabase Server] Missing environment variables:', { hasUrl: !!url, hasAnonKey: !!anonKey })
       throw new Error('Missing Supabase environment variables')
     }
 
@@ -33,14 +32,12 @@ export async function createClient() {
             // The `setAll` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.
-            console.warn('[Supabase Server] Cookie setting failed (expected in Server Components):', cookieError)
           }
         }
       },
     }
   )
   } catch (error) {
-    console.error('[Supabase Server] Failed to create client:', error)
     throw error
   }
 }

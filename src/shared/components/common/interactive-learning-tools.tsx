@@ -92,7 +92,7 @@ export function InteractiveLearningTools({
           {/* Laboratory Tools */}
           <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
             <div className="mb-6">
-              <h3 className="text-2xl font-bold mb-2">Cell Counter (Beta)</h3>
+              <h3 className="text-2xl font-bold mb-2">Cell Counter</h3>
               <p className="text-muted-foreground">Efficient cell counting</p>
             </div>
             <p className="text-muted-foreground mb-6 leading-relaxed">

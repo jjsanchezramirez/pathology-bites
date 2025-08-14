@@ -1,0 +1,34 @@
+# Vercel: exclude heavy/local files from upload. Vercel will build from package.json.
+
+# Build artifacts (built on Vercel)
+.next
+out
+build
+dist
+
+# Dependencies (installed on Vercel)
+node_modules
+
+# Vercel local metadata
+.vercel
+
+# VCS and editor
+.git
+.gitignore
+.vscode
+
+# Tests/coverage/logs
+coverage
+*.log
+
+# Temporary
+.tmp
+.temp
+tmp
+temp
+
+# Local data/assets not needed in deploy
+expertpath/
+expertpath/complete_expertpath_data.json
+scripts/local/
+

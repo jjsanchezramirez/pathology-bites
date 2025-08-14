@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { PublicHero } from '@/shared/components/common/public-hero'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
+import { KeyboardVisualizer } from '@/shared/components/common/keyboard-visualizer'
 import { toast } from 'sonner'
 
 interface CellType {
@@ -46,11 +47,20 @@ interface CounterState {
 }
 
 const DEFAULT_CELL_TYPES: CellType[] = [
-  { id: '1', name: 'Neutrophils', key: 'n', count: 0, color: 'bg-blue-500' },
-  { id: '2', name: 'Lymphocytes', key: 'l', count: 0, color: 'bg-green-500' },
-  { id: '3', name: 'Monocytes', key: 'm', count: 0, color: 'bg-purple-500' },
-  { id: '4', name: 'Eosinophils', key: 'e', count: 0, color: 'bg-red-500' },
-  { id: '5', name: 'Basophils', key: 'b', count: 0, color: 'bg-yellow-500' }
+  { id: '1', name: 'Blast', key: 't', count: 0, color: 'bg-primary' },
+  { id: '2', name: 'Promyelocyte', key: 'y', count: 0, color: 'bg-blue-600' },
+  { id: '3', name: 'Myelocyte', key: 'u', count: 0, color: 'bg-emerald-600' },
+  { id: '4', name: 'Metamyelocyte', key: 'h', count: 0, color: 'bg-violet-600' },
+  { id: '5', name: 'Band neutrophil', key: 'j', count: 0, color: 'bg-rose-600' },
+  { id: '6', name: 'Segmented neutrophil', key: 'k', count: 0, color: 'bg-amber-600' },
+  { id: '7', name: 'Monocyte', key: 'l', count: 0, color: 'bg-indigo-600' },
+  { id: '8', name: 'Lymphocyte', key: ';', count: 0, color: 'bg-pink-600' },
+  { id: '9', name: 'Plasma cell', key: "'", count: 0, color: 'bg-teal-600' },
+  { id: '10', name: 'Macrophage', key: 'o', count: 0, color: 'bg-orange-600' },
+  { id: '11', name: 'Nucleated erythroid', key: 'p', count: 0, color: 'bg-cyan-600' },
+  { id: '12', name: 'Eosinophil', key: 'n', count: 0, color: 'bg-lime-600' },
+  { id: '13', name: 'Basophil', key: 'b', count: 0, color: 'bg-purple-600' },
+  { id: '14', name: 'Mast cell', key: 'm', count: 0, color: 'bg-slate-600' }
 ]
 
 const DEFAULT_SETTINGS: CounterSettings = {
@@ -83,6 +93,42 @@ export default function CellCounterPage() {
   // Check if counting is complete
   const isComplete = state.settings.enableLimit && totalCount >= state.settings.countLimit
 
+  // Check if current setup is PB/BM preset (based on cell names)
+  const isPBBMPreset = state.cellTypes.some(cell => cell.name === 'Blast') && 
+                       state.cellTypes.some(cell => cell.name === 'Nucleated erythroid') &&
+                       state.cellTypes.length >= 13
+
+  // Calculate M:E ratio for PB/BM preset
+  const calculateMEratio = () => {
+    if (!isPBBMPreset) return null
+
+    const myeloidCells = [
+      'Blast', 'Promyelocyte', 'Myelocyte', 'Metamyelocyte', 
+      'Band neutrophil', 'Segmented neutrophil', 'Eosinophil', 
+      'Basophil', 'Mast cell'
+    ]
+    
+    const erythroidCells = ['Nucleated erythroid']
+    
+    const myeloidCount = state.cellTypes
+      .filter(cell => myeloidCells.includes(cell.name))
+      .reduce((sum, cell) => sum + cell.count, 0)
+    
+    const erythroidCount = state.cellTypes
+      .filter(cell => erythroidCells.includes(cell.name))
+      .reduce((sum, cell) => sum + cell.count, 0)
+    
+    if (erythroidCount === 0) return null
+    
+    return {
+      myeloidCount,
+      erythroidCount,
+      ratio: (myeloidCount / erythroidCount).toFixed(2)
+    }
+  }
+
+  const meRatio = calculateMEratio()
+
   // Load saved state from localStorage
   useEffect(() => {
     try {
@@ -97,7 +143,7 @@ export default function CellCounterPage() {
         }))
       }
     } catch (error) {
-      console.error('Failed to load saved state:', error)
+      // Failed to load saved state - will use defaults
     }
   }, [])
 
@@ -110,7 +156,7 @@ export default function CellCounterPage() {
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave))
     } catch (error) {
-      console.error('Failed to save state:', error)
+      // Failed to save state - operation will continue
     }
   }, [])
 
@@ -125,8 +171,8 @@ export default function CellCounterPage() {
 
   // Add cell type
   const addCellType = useCallback(() => {
-    if (!newCellName.trim() || !newCellKey.trim()) {
-      toast.error('Please enter both cell name and key')
+    if (!newCellName.trim()) {
+      toast.error('Please enter cell name')
       return
     }
 
@@ -135,21 +181,38 @@ export default function CellCounterPage() {
       return
     }
 
-    const keyExists = state.cellTypes.some(cell => cell.key.toLowerCase() === newCellKey.toLowerCase())
+    // Auto-assign key if not provided (mobile case)
+    let assignedKey = newCellKey.trim().toLowerCase()
+    if (!assignedKey) {
+      // Try first letter of cell name, then available letters
+      const availableKeys = 'abcdefghijklmnopqrstuvwxyz0123456789'.split('')
+      const usedKeys = state.cellTypes.map(cell => cell.key.toLowerCase())
+      
+      // Try first letter of name first
+      const firstLetter = newCellName.trim()[0].toLowerCase()
+      if (!usedKeys.includes(firstLetter)) {
+        assignedKey = firstLetter
+      } else {
+        // Find first available key
+        assignedKey = availableKeys.find(key => !usedKeys.includes(key)) || '0'
+      }
+    }
+
+    const keyExists = state.cellTypes.some(cell => cell.key.toLowerCase() === assignedKey)
     if (keyExists) {
       toast.error('Key already in use')
       return
     }
 
     const colors = [
-      'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-red-500', 'bg-yellow-500',
-      'bg-indigo-500', 'bg-pink-500', 'bg-teal-500', 'bg-orange-500', 'bg-cyan-500'
+      'bg-primary', 'bg-blue-600', 'bg-emerald-600', 'bg-violet-600', 'bg-rose-600',
+      'bg-amber-600', 'bg-indigo-600', 'bg-pink-600', 'bg-teal-600', 'bg-orange-600'
     ]
     
     const newCell: CellType = {
       id: Date.now().toString(),
       name: newCellName.trim(),
-      key: newCellKey.toLowerCase().trim(),
+      key: assignedKey,
       count: 0,
       color: colors[state.cellTypes.length % colors.length]
     }
@@ -161,7 +224,7 @@ export default function CellCounterPage() {
 
     setNewCellName('')
     setNewCellKey('')
-    toast.success(`Added ${newCell.name} (${newCell.key})`)
+    // toast.success(`Added ${newCell.name} (${newCell.key})`)
   }, [newCellName, newCellKey, state.cellTypes, updateState])
 
   // Remove cell type
@@ -170,14 +233,13 @@ export default function CellCounterPage() {
       ...prev,
       cellTypes: prev.cellTypes.filter(cell => cell.id !== id)
     }))
-    toast.success('Cell type removed')
+    // toast.success('Cell type removed')
   }, [updateState])
 
   // Increment cell count
   const incrementCell = useCallback((key: string) => {
     if (isComplete) {
-      toast.warning('Count limit reached!')
-      return
+      return // Don't show toast for key presses when limit reached
     }
 
     const cellIndex = state.cellTypes.findIndex(cell => cell.key === key)
@@ -217,12 +279,51 @@ export default function CellCounterPage() {
       })
     }
 
-    // Visual feedback
-    const cellName = state.cellTypes[cellIndex].name
-    toast.success(`${cellName}: ${state.cellTypes[cellIndex].count + 1}`, {
-      duration: 1000
-    })
+    // No toast for individual key presses - removed for better UX
   }, [state.cellTypes, state.settings, isComplete, updateState])
+
+  // Decrement specific cell count
+  const decrementCell = useCallback((key: string) => {
+    const cellIndex = state.cellTypes.findIndex(cell => cell.key === key)
+    if (cellIndex === -1) return
+    
+    const cell = state.cellTypes[cellIndex]
+    if (cell.count === 0) return
+
+    // Save current state to undo history
+    if (state.settings.enableUndo) {
+      updateState(prev => {
+        const newUndoHistory = [...prev.undoHistory, prev.cellTypes]
+        if (newUndoHistory.length > prev.settings.maxUndoHistory) {
+          newUndoHistory.shift()
+        }
+
+        const newCellTypes = [...prev.cellTypes]
+        newCellTypes[cellIndex] = {
+          ...newCellTypes[cellIndex],
+          count: Math.max(0, newCellTypes[cellIndex].count - 1)
+        }
+
+        return {
+          ...prev,
+          cellTypes: newCellTypes,
+          undoHistory: newUndoHistory
+        }
+      })
+    } else {
+      updateState(prev => {
+        const newCellTypes = [...prev.cellTypes]
+        newCellTypes[cellIndex] = {
+          ...newCellTypes[cellIndex],
+          count: Math.max(0, newCellTypes[cellIndex].count - 1)
+        }
+        return {
+          ...prev,
+          cellTypes: newCellTypes
+        }
+      })
+    }
+  }, [state.cellTypes, state.settings, updateState])
 
   // Undo last action
   const undoLastAction = useCallback(() => {
@@ -237,7 +338,7 @@ export default function CellCounterPage() {
       undoHistory: prev.undoHistory.slice(0, -1)
     }))
 
-    toast.success('Undone last action')
+    // toast.success('Undone last action')
   }, [state.undoHistory, updateState])
 
   // Reset all counts
@@ -247,7 +348,7 @@ export default function CellCounterPage() {
       cellTypes: prev.cellTypes.map(cell => ({ ...cell, count: 0 })),
       undoHistory: []
     }))
-    toast.success('All counts reset')
+    // toast.success('All counts reset')
   }, [updateState])
 
   // Export results with RTF table format
@@ -324,9 +425,19 @@ export default function CellCounterPage() {
       // Prevent default for our handled keys
       const key = event.key.toLowerCase()
 
-      // Check if it's a cell type key
+      // Handle Shift + cell key for decrementing first
+      if (event.shiftKey) {
+        const cellExists = state.cellTypes.some(cell => cell.key === key)
+        if (cellExists) {
+          event.preventDefault()
+          decrementCell(key)
+          return
+        }
+      }
+
+      // Check if it's a cell type key (without shift)
       const cellExists = state.cellTypes.some(cell => cell.key === key)
-      if (cellExists) {
+      if (cellExists && !event.shiftKey) {
         event.preventDefault()
         incrementCell(key)
         return
@@ -337,13 +448,17 @@ export default function CellCounterPage() {
         case 'escape':
           event.preventDefault()
           setIsCountingActive(false)
-          toast.info('Counting stopped')
+          // toast.info('Counting stopped')
           break
         case 'z':
           if (event.ctrlKey || event.metaKey) {
             event.preventDefault()
             undoLastAction()
           }
+          break
+        case 'backspace':
+          event.preventDefault()
+          undoLastAction()
           break
         case 'r':
           if (event.ctrlKey || event.metaKey) {
@@ -362,7 +477,7 @@ export default function CellCounterPage() {
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isCountingActive, state.cellTypes, incrementCell, undoLastAction, resetCounts, exportResults])
+  }, [isCountingActive, state.cellTypes, incrementCell, decrementCell, undoLastAction, resetCounts, exportResults])
 
   // Check for completion
   useEffect(() => {
@@ -399,12 +514,12 @@ export default function CellCounterPage() {
       />
 
       {/* Main Content */}
-      <section className="relative py-8">
+      <section className="relative py-4 md:py-8">
         <div className="container mx-auto px-4 max-w-6xl" ref={containerRef}>
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-4 md:gap-6 lg:grid-cols-5">
             
             {/* Simplified Setup Panel */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -412,7 +527,7 @@ export default function CellCounterPage() {
                     Quick Setup
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4 md:space-y-6">
                   {/* Quick Presets */}
                   <div className="space-y-2">
                     <Label>Common Presets</Label>
@@ -426,48 +541,12 @@ export default function CellCounterPage() {
                             cellTypes: DEFAULT_CELL_TYPES,
                             settings: { ...DEFAULT_SETTINGS, countLimit: 100, enableLimit: true }
                           }))
-                          toast.success('Differential count preset loaded')
+                          // toast.success('Peripheral Blood / Bone Marrow preset loaded')
                         }}
                         disabled={isCountingActive}
                         className="justify-start"
                       >
-                        🩸 Differential Count (100 cells)
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const mitoticCells = [
-                            { id: '1', name: 'Mitotic Figures', key: 'm', count: 0, color: 'bg-blue-500' },
-                            { id: '2', name: 'Normal Cells', key: 'n', count: 0, color: 'bg-green-500' }
-                          ]
-                          updateState(prev => ({
-                            ...prev,
-                            cellTypes: mitoticCells,
-                            settings: { ...DEFAULT_SETTINGS, countLimit: 1000, enableLimit: true }
-                          }))
-                          toast.success('Mitotic count preset loaded')
-                        }}
-                        disabled={isCountingActive}
-                        className="justify-start"
-                      >
-                        🔬 Mitotic Count (1000 cells)
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          updateState(prev => ({
-                            ...prev,
-                            cellTypes: [],
-                            settings: { ...DEFAULT_SETTINGS, enableLimit: false }
-                          }))
-                          toast.success('Custom setup ready')
-                        }}
-                        disabled={isCountingActive}
-                        className="justify-start"
-                      >
-                        ⚙️ Custom Setup
+                        🩸 PB/BM Differential (100 cells)
                       </Button>
                     </div>
                   </div>
@@ -488,7 +567,7 @@ export default function CellCounterPage() {
                         value={newCellKey}
                         onChange={(e) => setNewCellKey(e.target.value.toLowerCase())}
                         maxLength={1}
-                        className="w-16"
+                        className="w-16 hidden md:block"
                       />
                       <Button 
                         onClick={addCellType}
@@ -504,15 +583,14 @@ export default function CellCounterPage() {
                   {state.cellTypes.length > 0 && (
                     <div className="space-y-2">
                       <Label>Active Types ({state.cellTypes.length}/20)</Label>
-                      <div className="grid gap-1 max-h-48 overflow-y-auto">
+                      <div className="grid gap-1">
                         {state.cellTypes.map((cell) => (
                           <div key={cell.id} className="flex items-center justify-between p-2 bg-muted/50 rounded">
                             <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${cell.color}`} />
                               <span className="text-sm">{cell.name}</span>
-                              <Badge variant="secondary" className="text-xs px-1">
+                              <kbd className="px-1.5 py-0.5 bg-background border border-gray-300 rounded text-xs font-medium shadow-sm hidden md:inline-flex">
                                 {cell.key}
-                              </Badge>
+                              </kbd>
                             </div>
                             <Button
                               variant="ghost"
@@ -564,18 +642,17 @@ export default function CellCounterPage() {
                       onClick={() => {
                         updateState(prev => ({
                           ...prev,
-                          cellTypes: DEFAULT_CELL_TYPES,
-                          settings: DEFAULT_SETTINGS,
+                          cellTypes: [],
                           undoHistory: []
                         }))
-                        toast.success('Reset to defaults')
+                        // toast.success('Cleared all cell types')
                       }}
                       disabled={isCountingActive}
                       className="w-full"
                       size="sm"
                     >
                       <RotateCcw className="h-4 w-4 mr-2" />
-                      Reset All
+                      Clear All
                     </Button>
                   </div>
                 </CardContent>
@@ -583,18 +660,13 @@ export default function CellCounterPage() {
             </div>
 
             {/* Counting Interface */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-3 space-y-4">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Hash className="h-5 w-5" />
                       Cell Counter
-                      {isCountingActive && (
-                        <Badge variant="default" className="ml-2">
-                          Active
-                        </Badge>
-                      )}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       Total: {totalCount}
@@ -625,36 +697,64 @@ export default function CellCounterPage() {
                           Add cell types first to start counting
                         </p>
                       )}
+                      {totalCount > 0 && (
+                        <Button
+                          variant="outline"
+                          onClick={() => resetCounts()}
+                          className="mt-4"
+                          size="sm"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Reset Counts
+                        </Button>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {/* Active Counting Display */}
-                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {/* Active Counting Display - Mobile Optimized */}
+                      <div className="grid gap-2 md:gap-3 grid-cols-2 lg:grid-cols-3">
                         {state.cellTypes.map((cell) => (
-                          <div
+                          <button
                             key={cell.id}
-                            className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                            className="w-full p-1.5 md:p-3 border rounded-lg hover:bg-muted/50 transition-colors bg-card text-left"
+                            onClick={() => incrementCell(cell.key)}
+                            disabled={isComplete}
                           >
-                            <div className="flex items-center gap-2">
-                              <div className={`w-4 h-4 rounded-full ${cell.color}`} />
-                              <div>
-                                <div className="font-medium text-sm">{cell.name}</div>
-                                <div className="text-xs text-muted-foreground">
+                            <div className="flex items-center justify-between">
+                              <div className="min-w-0 flex-1 pr-1">
+                                <div className="font-medium text-xs leading-none sm:leading-tight break-words">{cell.name}</div>
+                                <div className="text-xs text-muted-foreground hidden md:block">
                                   Press "{cell.key}"
                                 </div>
                               </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-lg font-bold">{cell.count}</div>
-                              {totalCount > 0 && (
+                              <div className="text-right flex-shrink-0">
+                                <div className="text-lg md:text-xl font-bold">{cell.count}</div>
                                 <div className="text-xs text-muted-foreground">
-                                  {((cell.count / totalCount) * 100).toFixed(1)}%
+                                  {totalCount > 0 ? ((cell.count / totalCount) * 100).toFixed(1) : '0.0'}%
                                 </div>
-                              )}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                        
+                        {/* M:E Ratio Card - Non-interactable */}
+                        {isPBBMPreset && meRatio && (
+                          <div className="w-full p-1.5 md:p-3 border rounded-lg bg-accent/50 text-left cursor-default">
+                            <div className="flex items-center justify-between">
+                              <div className="min-w-0 flex-1 pr-1">
+                                <div className="font-medium text-xs leading-none sm:leading-tight break-words">M:E Ratio</div>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <div className="text-lg md:text-xl font-bold">{meRatio.ratio}:1</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {meRatio.myeloidCount}:{meRatio.erythroidCount}
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        ))}
+                        )}
                       </div>
+
 
                       {/* Progress Bar */}
                       {state.settings.enableLimit && (
@@ -666,7 +766,7 @@ export default function CellCounterPage() {
                           <div className="w-full bg-muted rounded-full h-2">
                             <div
                               className={`h-2 rounded-full transition-all duration-300 ${
-                                isComplete ? 'bg-green-500' : 'bg-primary'
+                                isComplete ? 'bg-emerald-600' : 'bg-primary'
                               }`}
                               style={{
                                 width: `${Math.min((totalCount / state.settings.countLimit) * 100, 100)}%`
@@ -680,80 +780,52 @@ export default function CellCounterPage() {
                       <div className="flex flex-wrap gap-2 justify-center">
                         <Button
                           variant="outline"
-                          onClick={() => setIsCountingActive(false)}
-                        >
-                          Stop Counting
-                        </Button>
-                        <Button
-                          variant="outline"
                           onClick={undoLastAction}
                           disabled={state.undoHistory.length === 0}
+                          size="sm"
                         >
-                          <RotateCcw className="h-4 w-4 mr-2" />
+                          <RotateCcw className="h-4 w-4 mr-1" />
                           Undo
                         </Button>
                         <Button
                           variant="outline"
-                          onClick={resetCounts}
+                          onClick={() => {
+                            resetCounts()
+                            setIsCountingActive(false)
+                          }}
                           disabled={totalCount === 0}
+                          size="sm"
                         >
-                          <Trash2 className="h-4 w-4 mr-2" />
+                          <Trash2 className="h-4 w-4 mr-1" />
                           Reset
                         </Button>
-                        <div className="flex gap-1">
-                          <Button
-                            variant="outline"
-                            onClick={() => exportResults('text')}
-                            disabled={totalCount === 0}
-                            size="sm"
-                          >
-                            <Copy className="h-4 w-4 mr-1" />
-                            Table
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => exportResults('rtf')}
-                            disabled={totalCount === 0}
-                            size="sm"
-                          >
-                            📄 RTF
-                          </Button>
-                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={() => exportResults('text')}
+                          disabled={totalCount === 0}
+                          size="sm"
+                        >
+                          <Copy className="h-4 w-4 mr-1" />
+                          Copy
+                        </Button>
                       </div>
 
-                      {/* Keyboard Shortcuts Help - Simplified */}
-                      <div className="bg-muted/50 rounded-lg p-3">
-                        <h4 className="font-medium mb-2 text-sm">Quick Keys:</h4>
-                        <div className="grid gap-1 text-xs text-muted-foreground">
-                          <div className="flex justify-between">
-                            <span>Count cells:</span>
-                            <span className="flex gap-1">
-                              {state.cellTypes.slice(0, 4).map((cell) => (
-                                <kbd key={cell.id} className="px-1 bg-background border rounded">
-                                  {cell.key}
-                                </kbd>
-                              ))}
-                              {state.cellTypes.length > 4 && <span>...</span>}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Undo:</span>
-                            <kbd className="px-1 bg-background border rounded">Ctrl+Z</kbd>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Copy table:</span>
-                            <kbd className="px-1 bg-background border rounded">Ctrl+C</kbd>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Stop:</span>
-                            <kbd className="px-1 bg-background border rounded">Esc</kbd>
-                          </div>
+
+                      {/* Keyboard Instructions - Desktop only */}
+                      <div className="border-t pt-6 mt-4 hidden md:block">
+                        <div className="text-center">
+                          <p className="text-xs text-muted-foreground">
+                            <strong>Instructions:</strong> <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Ctrl+Z</kbd> or <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Backspace</kbd> to undo, and <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Shift+key</kbd> to decrement
+                          </p>
                         </div>
                       </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
+
+              {/* Keyboard Visualizer - Always visible */}
+              <KeyboardVisualizer cellTypes={state.cellTypes} />
             </div>
           </div>
         </div>

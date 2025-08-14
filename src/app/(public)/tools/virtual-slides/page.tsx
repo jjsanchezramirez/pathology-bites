@@ -231,7 +231,7 @@ export default function VirtualSlidesPage() {
             </div>
           }
         />
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
           <LoadingSkeleton variant="cards" />
         </div>
       </div>
@@ -246,7 +246,7 @@ export default function VirtualSlidesPage() {
           title="Virtual Slide Search Engine"
           description="Search and explore thousands of virtual pathology slides from leading institutions worldwide."
         />
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
           <Card className="p-6 text-center">
             <div className="text-red-500 mb-4">
               <AlertCircle className="h-12 w-12 mx-auto" />
@@ -288,12 +288,12 @@ export default function VirtualSlidesPage() {
 
 
       {/* Search and Filter Section */}
-      <section className="py-4">
+      <section className="py-2 md:py-4">
         <div className="container px-4 mx-auto max-w-6xl">
-          <Card className="p-8 shadow-lg">
-            <CardContent className="space-y-6">
+          <Card className="p-4 md:p-8 shadow-lg">
+            <CardContent className="space-y-4 md:space-y-6">
               {/* Search Bar */}
-              <div className="space-y-4">
+              <div className="space-y-2 md:space-y-4">
                 <Label htmlFor="search-input" className="text-lg font-semibold">
                   {isRandomMode ? 'Random Discovery Mode' : 'Search Virtual Slides'}
                 </Label>
@@ -357,7 +357,7 @@ export default function VirtualSlidesPage() {
               </div>
 
                   {/* Filters */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="repository-filter">Web Repository</Label>
                       <Select
@@ -414,7 +414,7 @@ export default function VirtualSlidesPage() {
                   </div>
 
                   {/* Clear Filters Button and Filter Summary */}
-                  <div className="space-y-4">
+                  <div className="space-y-2 md:space-y-4">
                     {/* Desktop: Horizontal layout */}
                     <div className="hidden md:flex items-center justify-between">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -525,7 +525,7 @@ export default function VirtualSlidesPage() {
 
       {/* Results Section */}
       {(isInitialLoading || isLoading) ? (
-        <section className="relative py-8">
+        <section className="relative py-4 md:py-8">
           <div className="container px-4 mx-auto max-w-6xl">
             <Card className="shadow-lg">
               <CardContent className="p-0">
@@ -533,8 +533,8 @@ export default function VirtualSlidesPage() {
                   <table className="w-full">
                     <thead className="bg-muted/50 border-b">
                       <tr>
-                        <th className="text-left p-4 font-semibold">Preview</th>
-                        <th className="text-left p-4 font-semibold">
+                        <th className="text-left p-2 md:p-4 font-semibold">Preview</th>
+                        <th className="text-left p-2 md:p-4 font-semibold">
                           <span className="md:hidden">Slide Info</span>
                           <span className="hidden md:inline lg:hidden">
                             {showDiagnoses ? 'Diagnosis and Clinical Info' : 'Slide Info'}
@@ -543,10 +543,10 @@ export default function VirtualSlidesPage() {
                             {showDiagnoses ? 'Diagnosis and Clinical Info' : 'Slide Info'}
                           </span>
                         </th>
-                        <th className="text-left p-4 font-semibold hidden lg:table-cell">Repository</th>
-                        <th className="text-left p-4 font-semibold hidden md:table-cell">Category</th>
-                        <th className="text-left p-4 font-semibold hidden lg:table-cell">Details</th>
-                        <th className="text-left p-4 font-semibold">
+                        <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell">Repository</th>
+                        <th className="text-left p-2 md:p-4 font-semibold hidden md:table-cell">Category</th>
+                        <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell">Details</th>
+                        <th className="text-left p-2 md:p-4 font-semibold">
                           <span className="md:hidden">Action</span>
                           <span className="hidden md:inline">Actions</span>
                         </th>
@@ -560,7 +560,7 @@ export default function VirtualSlidesPage() {
           </div>
         </section>
       ) : displaySlides.length > 0 && (
-        <section className="relative py-8">
+        <section className="relative py-4 md:py-8">
           <div className="container px-4 mx-auto max-w-6xl">
             <Card className="shadow-lg">
               <CardContent className="p-0">
@@ -569,8 +569,8 @@ export default function VirtualSlidesPage() {
                   <table className="w-full">
                     <thead className="bg-muted/50 border-b">
                       <tr>
-                        <th className="text-left p-4 font-semibold">Preview</th>
-                        <th className="text-left p-4 font-semibold">
+                        <th className="text-left p-2 md:p-4 font-semibold">Preview</th>
+                        <th className="text-left p-2 md:p-4 font-semibold">
                           <span className="md:hidden">Slide Info</span>
                           <span className="hidden md:inline lg:hidden">
                             {showDiagnoses ? 'Diagnosis and Clinical Info' : 'Slide Info'}
@@ -579,10 +579,10 @@ export default function VirtualSlidesPage() {
                             {showDiagnoses ? 'Diagnosis and Clinical Info' : 'Slide Info'}
                           </span>
                         </th>
-                        <th className="text-left p-4 font-semibold hidden lg:table-cell">Repository</th>
-                        <th className="text-left p-4 font-semibold hidden md:table-cell">Category</th>
-                        <th className="text-left p-4 font-semibold hidden lg:table-cell">Details</th>
-                        <th className="text-left p-4 font-semibold">
+                        <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell">Repository</th>
+                        <th className="text-left p-2 md:p-4 font-semibold hidden md:table-cell">Category</th>
+                        <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell">Details</th>
+                        <th className="text-left p-2 md:p-4 font-semibold">
                           <span className="md:hidden">Action</span>
                           <span className="hidden md:inline">Actions</span>
                         </th>

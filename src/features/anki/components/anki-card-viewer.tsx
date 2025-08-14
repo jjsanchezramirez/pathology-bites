@@ -221,16 +221,20 @@ export function AnkiCardViewer({
 
             {/* Question images */}
             {questionImages.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col items-center gap-4">
                 {questionImages.map((src, index) => (
-                  <div key={index} className="relative aspect-video rounded-lg overflow-hidden border">
-                    <Image
-                      src={src}
-                      alt={`Question image ${index + 1}`}
-                      fill
-                      className="object-contain"
-                      unoptimized={true}
-                    />
+                  <div key={index} className="flex justify-center">
+                    <div className="relative max-w-2xl w-full">
+                      <Image
+                        src={src}
+                        alt={`Question image ${index + 1}`}
+                        width={800}
+                        height={600}
+                        className="w-full h-auto rounded-xl border object-contain"
+                        style={{ maxHeight: '70vh' }}
+                        unoptimized={true}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -251,16 +255,20 @@ export function AnkiCardViewer({
 
                 {/* Answer images */}
                 {answerImages.length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col items-center gap-4">
                     {answerImages.map((src, index) => (
-                      <div key={index} className="relative aspect-video rounded-lg overflow-hidden border">
-                        <Image
-                          src={src}
-                          alt={`Answer image ${index + 1}`}
-                          fill
-                          className="object-contain"
-                          unoptimized={true}
-                        />
+                      <div key={index} className="flex justify-center">
+                        <div className="relative max-w-2xl w-full">
+                          <Image
+                            src={src}
+                            alt={`Answer image ${index + 1}`}
+                            width={800}
+                            height={600}
+                            className="w-full h-auto rounded-xl border object-contain"
+                            style={{ maxHeight: '70vh' }}
+                            unoptimized={true}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>

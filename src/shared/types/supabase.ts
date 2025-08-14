@@ -5,7 +5,6 @@ import { QuestionSetSourceDetails } from '@/features/questions/types/question-se
 export interface QuizConfig {
   mode: 'tutor' | 'timed' | 'untimed' | 'practice' | 'review';
   questionCount: number;
-  timeLimit?: number; // deprecated - use totalTimeLimit instead
   timePerQuestion?: number;
   totalTimeLimit?: number; // total time for entire quiz in seconds (global timer)
   difficulty?: 'easy' | 'medium' | 'hard' | 'mixed';

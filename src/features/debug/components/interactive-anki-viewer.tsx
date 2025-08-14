@@ -25,7 +25,7 @@ import {
   hasInteractiveClozes,
   InteractiveCloze
 } from '@/features/anki/utils/interactive-cloze-processor'
-import { extractImagesFromHtml, sanitizeHtmlForSafeRendering } from '@/shared/utils/html-image-extractor'
+import { extractImagesFromHtml, sanitizeHtmlForSafeRendering, replaceImagePlaceholders } from '@/shared/utils/html-image-extractor'
 import { cn } from '@/shared/utils'
 
 interface InteractiveAnkiViewerProps extends Omit<AnkiCardViewerProps, 'showAnswer' | 'onAnswerToggle'> {
@@ -75,6 +75,17 @@ export function InteractiveAnkiViewer({
   const questionHasClozes = !isImageOcclusion && hasInteractiveClozes(card.question)
   const answerHasClozes = !isImageOcclusion && hasInteractiveClozes(card.answer)
   const hasClozes = questionHasClozes || answerHasClozes
+
+  // Debug cloze detection
+  if (card.id === 'syE#c*a5Sg') {
+    console.log('Debug card syE#c*a5Sg:')
+    console.log('Question:', card.question)
+    console.log('Answer:', card.answer)
+    console.log('questionHasClozes:', questionHasClozes)
+    console.log('answerHasClozes:', answerHasClozes)
+    console.log('hasClozes:', hasClozes)
+    console.log('isImageOcclusion:', isImageOcclusion)
+  }
   
   // Check if this is a basic front/back card (no clozes, no image occlusion)
   const isBasicCard = !hasClozes && !isImageOcclusion
@@ -98,19 +109,51 @@ export function InteractiveAnkiViewer({
   // Extract images from question and answer HTML
   const { questionImages, processedQuestionHtml } = useMemo(() => {
     const extracted = extractImagesFromHtml(card.question, true)
-    const sanitizedHtml = sanitizeHtmlForSafeRendering(extracted.cleanHtml)
+
+    // Replace [IMAGE_#] placeholders with actual inline image tags
+    const htmlWithImages = replaceImagePlaceholders(extracted.cleanHtml, (index) => {
+      const image = extracted.images[index]
+      if (image && image.src) {
+        // Check if it's an arrow or small icon (should stay small)
+        const isSmallIcon = image.alt?.toLowerCase().includes('arrow') ||
+                           image.src?.toLowerCase().includes('arrow') ||
+                           image.alt?.toLowerCase().includes('icon')
+
+        const className = isSmallIcon ? 'inline-image-small' : 'inline-image'
+        return `<img src="${image.src}" alt="${image.alt || 'Image'}" class="${className}" loading="lazy" />`
+      }
+      // Show placeholder text if image is missing
+      return `<span class="text-muted-foreground text-sm italic">[Image ${index + 1} not available]</span>`
+    })
+
     return {
       questionImages: extracted.images,
-      processedQuestionHtml: sanitizedHtml
+      processedQuestionHtml: htmlWithImages
     }
   }, [card.question])
 
   const { answerImages, processedAnswerHtml } = useMemo(() => {
     const extracted = extractImagesFromHtml(card.answer, true)
-    const sanitizedHtml = sanitizeHtmlForSafeRendering(extracted.cleanHtml)
+
+    // Replace [IMAGE_#] placeholders with actual inline image tags
+    const htmlWithImages = replaceImagePlaceholders(extracted.cleanHtml, (index) => {
+      const image = extracted.images[index]
+      if (image && image.src) {
+        // Check if it's an arrow or small icon (should stay small)
+        const isSmallIcon = image.alt?.toLowerCase().includes('arrow') ||
+                           image.src?.toLowerCase().includes('arrow') ||
+                           image.alt?.toLowerCase().includes('icon')
+
+        const className = isSmallIcon ? 'inline-image-small' : 'inline-image'
+        return `<img src="${image.src}" alt="${image.alt || 'Image'}" class="${className}" loading="lazy" />`
+      }
+      // Show placeholder text if image is missing
+      return `<span class="text-muted-foreground text-sm italic">[Image ${index + 1} not available]</span>`
+    })
+
     return {
       answerImages: extracted.images,
-      processedAnswerHtml: sanitizedHtml
+      processedAnswerHtml: htmlWithImages
     }
   }, [card.answer])
 
@@ -120,10 +163,14 @@ export function InteractiveAnkiViewer({
       // For image occlusion, treat as no clozes and mark revealed
       return { html: processedQuestionHtml, clozes: [], allRevealed: true }
     } else if (questionHasClozes) {
-      return processInteractiveClozes(processedQuestionHtml, revealedClozes)
+      const processed = processInteractiveClozes(processedQuestionHtml, revealedClozes)
+      if (card.id === 'syE#c*a5Sg') {
+        console.log('Question cloze processing result:', processed)
+      }
+      return processed
     }
     return { html: processedQuestionHtml, clozes: [], allRevealed: true }
-  }, [processedQuestionHtml, questionHasClozes, revealedClozes, isImageOcclusion])
+  }, [processedQuestionHtml, questionHasClozes, revealedClozes, isImageOcclusion, card.id])
 
   const clozeProcessedAnswer = useMemo(() => {
     if (isImageOcclusion) {
@@ -180,9 +227,10 @@ export function InteractiveAnkiViewer({
         case 'NumpadEnter':
           event.preventDefault()
           if (hasClozes && !clozeProcessedQuestion.allRevealed) {
-            // Reveal next cloze
+            // Reveal next cloze in numerical order (c1, c2, c3, etc.)
             const nextClozeIndex = [...questionClozes, ...answerClozes]
               .map(c => c.index)
+              .sort((a, b) => a - b) // Sort by cloze index, not position
               .find(index => !revealedClozes.has(index))
             if (nextClozeIndex !== undefined) {
               handleClozeClick(nextClozeIndex)
@@ -269,18 +317,35 @@ export function InteractiveAnkiViewer({
 
 
   return (
-    <div className={cn("w-full max-w-4xl mx-auto mb-8 pb-8", className)}>
+    <div className={cn("w-full max-w-4xl mx-auto mb-3 md:mb-6 pb-3 md:pb-6 px-2 md:px-0", className)}>
+      <style jsx>{`
+        .inline-image {
+          max-width: 100%;
+          height: auto;
+          display: block;
+          margin: 0.5rem auto;
+          border-radius: 0.75rem;
+          border: 1px solid #e5e7eb;
+        }
+        .inline-image-small {
+          max-width: 2rem;
+          height: auto;
+          display: inline;
+          margin: 0 0.25rem;
+          vertical-align: middle;
+        }
+      `}</style>
       <Card className="w-full">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div>
+        <CardHeader className="pb-2 px-4 md:px-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
               {(() => {
                 const ankomaTag = card.tags?.find(tag => tag.startsWith('#ANKOMA::'))
                 if (ankomaTag) {
                   const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
                   const formattedTag = tagParts.map(part => formatTagName(part)).join(' → ')
                   return (
-                    <span className="text-sm font-semibold text-foreground">
+                    <span className="text-sm md:text-base font-semibold text-foreground truncate block">
                       {formattedTag}
                     </span>
                   )
@@ -288,16 +353,16 @@ export function InteractiveAnkiViewer({
                 return null
               })()}
             </div>
-            <div className="text-sm font-semibold text-foreground font-mono">
+            <div className="text-xs md:text-sm font-semibold text-foreground font-mono shrink-0">
               Card ID #{card.id}
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6 pb-8 overflow-visible">
+        <CardContent className="space-y-3 md:space-y-4 pb-4 md:pb-6 px-4 md:px-6 overflow-visible">
 
           {/* Question */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div className="prose prose-sm max-w-none">
               <div 
                 className={cn(
@@ -309,28 +374,7 @@ export function InteractiveAnkiViewer({
               />
             </div>
 
-            {/* Question images */}
-            {questionImages.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {questionImages.map((image, index) => (
-                  <div key={index} className="relative aspect-video rounded-lg overflow-hidden border">
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      fill
-                      className="object-contain"
-                      unoptimized={true}
-                      onError={(e) => {
-                        console.error(`Failed to load question image: ${image.src}`, e)
-                      }}
-                      onLoad={() => {
-                        console.log(`Successfully loaded question image: ${image.src}`)
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Images are now inline in the content above */}
           </div>
 
           
@@ -338,81 +382,31 @@ export function InteractiveAnkiViewer({
           {(hasClozes ? clozeProcessedQuestion.allRevealed : showAnswer) && card.answer && card.answer.trim() && (
             <>
               <Separator />
-              <div className="space-y-6">
+              <div className="space-y-3">
                 {/* Split answer into parts for better formatting */}
-                {(() => {
-                  const parts = card.answer.split('<br><br>')
-                  const referencesIndex = parts.findIndex(part => 
-                    part.toLowerCase().includes('gupta') || 
-                    part.toLowerCase().includes('citation') ||
-                    part.toLowerCase().includes('reference')
-                  )
-                  
-                  const contentParts = referencesIndex >= 0 ? parts.slice(0, referencesIndex) : parts
-                  const referencesPart = referencesIndex >= 0 ? parts.slice(referencesIndex) : []
-                  
-                  return (
-                    <>
-                      {/* Main content (Extra, Personal Notes, Textbook) */}
-                      {contentParts.length > 0 && (
-                        <div className="prose prose-sm max-w-none">
-                          <div 
-                            className={cn(
-                              "text-foreground leading-relaxed",
-                              isImageOcclusion ? "io-wrapper" : "cursor-pointer"
-                            )}
-                            dangerouslySetInnerHTML={{ __html: processedAnswerHtml }}
-                            onClick={isImageOcclusion ? () => toggleAnswer() : handleContentClick}
-                          />
-                        </div>
-                      )}
-                      
-                      {/* References section */}
-                      {referencesPart.length > 0 && (
-                        <div className="border-t pt-4">
-                          <div className="text-sm text-gray-600 leading-relaxed p-3">
-                            <div dangerouslySetInnerHTML={{ 
-                              __html: referencesPart.join('<br><br>')
-                                .replace(/<br>/g, ' ')
-                                .replace(/&nbsp;/g, ' ')
-                                .replace(/<img[^>]*>/gi, '[IMAGE REMOVED]')
-                                .trim()
-                            }} />
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )
-                })()}
+                {/* Answer content - let ankoma parser CSS classes handle styling */}
+                <div className="prose prose-sm max-w-none">
+                  <div
+                    className={cn(
+                      "text-foreground leading-relaxed",
+                      isImageOcclusion ? "io-wrapper" : "cursor-pointer"
+                    )}
+                    dangerouslySetInnerHTML={{
+                      __html: clozeProcessedAnswer.html
+                        .replace(/\[IMAGE_\d+\]/gi, '') // Remove any remaining image placeholders
+                        .trim()
+                    }}
+                    onClick={isImageOcclusion ? () => toggleAnswer() : handleContentClick}
+                  />
+                </div>
                 
-                {/* Answer images */}
-                {answerImages.length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    {answerImages.map((image, index) => (
-                      <div key={index} className="relative aspect-video rounded-lg overflow-hidden border">
-                        <Image
-                          src={image.src}
-                          alt={image.alt}
-                          fill
-                          className="object-contain"
-                          unoptimized={true}
-                          onError={(e) => {
-                            console.error(`Failed to load answer image: ${image.src}`, e)
-                          }}
-                          onLoad={() => {
-                            console.log(`Successfully loaded answer image: ${image.src}`)
-                          }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* Images are now inline in the content above */}
               </div>
             </>
           )}
 
-          {/* Navigation Controls */}
-          <div className="flex items-center justify-between pt-4">
+          {/* Navigation Controls - Mobile only */}
+          <div className="flex items-center justify-between pt-3 md:hidden">
             <Button
               variant="outline"
               onClick={onPrevious}
@@ -421,10 +415,6 @@ export function InteractiveAnkiViewer({
               <ChevronLeft className="h-4 w-4 mr-2" />
               Previous
             </Button>
-
-            <div className="text-center">
-              {/* Navigation placeholder - instructions moved below */}
-            </div>
 
             <Button
               variant="outline"
@@ -436,14 +426,20 @@ export function InteractiveAnkiViewer({
             </Button>
           </div>
 
-          {/* Instructions below card */}
-          <div className="text-center mt-4">
-            <div className="text-sm text-muted-foreground">
-              {!isImageOcclusion && hasClozes && !clozeProcessedQuestion.allRevealed ? (
-                "Use arrow keys to navigate • Space/Enter to reveal next"
-              ) : (
-                "Use arrow keys to navigate • Space/Enter for next card"
-              )}
+          {/* Instructions - Desktop only */}
+          <div className="border-t pt-6 mt-4 hidden md:block">
+            <div className="text-center">
+              <div className="text-xs text-muted-foreground">
+                {!isImageOcclusion && hasClozes && !clozeProcessedQuestion.allRevealed ? (
+                  <p>
+                    <strong>Instructions:</strong> Use <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">◀</kbd> <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">▶</kbd> to navigate • <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Space</kbd> or <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Enter</kbd> to reveal next
+                  </p>
+                ) : (
+                  <p>
+                    <strong>Instructions:</strong> Use <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">◀</kbd> <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">▶</kbd> to navigate • <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Space</kbd> or <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Enter</kbd> for next card
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -496,18 +492,34 @@ export function InteractiveAnkiViewer({
         /* Answer section styling - simplified */
         .extra-section,
         .personal-notes-section,
-        .textbook-section,
-        .citation-section {
-          margin: 16px 0;
-          padding: 0;
+        .textbook-section {
+          margin: 12px 0;
+          font-size: 0.875rem;
         }
-        
+
+        .citation-section {
+          margin: 4px 0 12px 0;
+          padding: 12px;
+          background-color: #f9fafb;
+          border-radius: 8px;
+          font-size: 0.75rem;
+        }
+
+        .extra-section h4,
         .personal-notes-section h4,
-        .textbook-section h4,
-        .citation-section h4 {
+        .textbook-section h4 {
           margin: 16px 0 8px 0;
           font-size: 0.875rem;
           font-weight: 600;
+          color: #6b7280;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .citation-section h4 {
+          margin: 0 0 8px 0;
+          font-size: 0.75rem;
+          font-weight: 500;
           color: #6b7280;
           text-transform: uppercase;
           letter-spacing: 0.05em;
@@ -537,6 +549,11 @@ export function InteractiveAnkiViewer({
             border-color: #16a34a;
           }
           
+          .citation-section {
+            background-color: rgba(31, 41, 55, 0.5);
+          }
+
+          .extra-section h4,
           .personal-notes-section h4,
           .textbook-section h4,
           .citation-section h4 {

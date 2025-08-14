@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -15,7 +15,9 @@ import {
   formatAPA,
   formatMLA,
   formatAMA,
-  formatVancouver
+  formatVancouver,
+  getJournalAbbreviationStats,
+  forceReloadJournalAbbreviations
 } from '@/shared/utils/citation-formatters'
 
 export default function CitationGeneratorPage() {
@@ -26,6 +28,22 @@ export default function CitationGeneratorPage() {
   const [copiedFormat, setCopiedFormat] = useState<string | null>(null)
   
   const { generateCitation, isLoading, error } = useSmartCitations()
+
+  // Ensure NLM journal abbreviations are loaded
+  useEffect(() => {
+    // Force reload journal abbreviations and show debug info
+    forceReloadJournalAbbreviations()
+      .then(() => {
+        const stats = getJournalAbbreviationStats()
+        console.log('✅ NLM journal abbreviations loaded:', stats.total, 'entries')
+        console.log('📋 Sample entries:', stats.sampleEntries)
+      })
+      .catch(err => {
+        console.warn('⚠️ Failed to load NLM journal abbreviations:', err)
+        const stats = getJournalAbbreviationStats()
+        console.log('📊 Current abbreviations count:', stats.total)
+      })
+  }, [])
 
 
   const detectInputType = (input: string): 'url' | 'doi' | 'isbn' | 'unknown' => {

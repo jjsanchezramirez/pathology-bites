@@ -330,7 +330,7 @@ export function DoubleSidebarAnkomaViewer({
 
   if (loading) {
     return (
-      <div className={cn("w-full h-screen flex items-center justify-center", className)}>
+      <div className={cn("w-full h-full flex items-center justify-center", className)}>
         <Card className="animate-pulse max-w-md mx-4">
           <CardContent className="flex items-center justify-center py-16">
             <div className="text-center space-y-4">
