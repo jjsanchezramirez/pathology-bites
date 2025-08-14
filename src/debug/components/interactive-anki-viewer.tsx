@@ -18,13 +18,13 @@ import {
   Eye,
   ExternalLink
 } from 'lucide-react'
-import { AnkiCard, AnkiCardViewerProps } from '@/features/anki/types/anki-card'
-import { 
-  processInteractiveClozes, 
-  extractClozes, 
+import { AnkiCard, AnkiCardViewerProps } from '../features/anki/types/anki-card'
+import {
+  processInteractiveClozes,
+  extractClozes,
   hasInteractiveClozes,
   InteractiveCloze
-} from '@/features/anki/utils/interactive-cloze-processor'
+} from '../features/anki/interactive-cloze-processor'
 import { extractImagesFromHtml, sanitizeHtmlForSafeRendering, replaceImagePlaceholders } from '@/shared/utils/html-image-extractor'
 import { cn } from '@/shared/utils'
 

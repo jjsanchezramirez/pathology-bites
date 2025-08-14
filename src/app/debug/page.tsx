@@ -21,15 +21,17 @@ import {
   BookOpen
 } from 'lucide-react'
 
-// Import tab components
-import { ApiTestsTab } from '@/features/debug/components/api-tests-tab'
-import { DatabaseTab } from '@/features/debug/components/database-tab'
-import { ToolsTab } from '@/features/debug/components/tools-tab'
-import { SystemTab } from '@/features/debug/components/system-tab'
-import { AiModelsTab } from '@/features/debug/components/ai-models-tab'
-import { UiComponentsTab } from '@/features/debug/components/ui-components-tab'
-import { R2StorageTab } from '@/features/debug/components/r2-storage-tab'
-import { AnkiViewerTab } from '@/features/debug/components/anki-viewer-tab'
+// Import tab components from self-contained debug module
+import {
+  ApiTestsTab,
+  DatabaseTab,
+  ToolsTab,
+  SystemTab,
+  AiModelsTab,
+  UiComponentsTab,
+  R2StorageTab,
+  AnkiViewerTab
+} from '@/debug'
 
 function UnifiedDebugInterface() {
   const [activeTab, setActiveTab] = useState('api-tests')

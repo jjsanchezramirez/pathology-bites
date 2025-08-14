@@ -1,4 +1,7 @@
-// Barrel export for debug feature
+// Self-contained debug module exports
+// All debug functionality is isolated here
+
+// Debug components
 export * from './components/anki-viewer-tab'
 export * from './components/ai-models-tab'
 export * from './components/api-tests-tab'
@@ -8,3 +11,6 @@ export * from './components/ui-components-tab'
 export * from './components/tools-tab'
 export * from './components/system-tab'
 export * from './components/interactive-anki-viewer'
+
+// Debug features
+export * from './features/anki/double-sidebar-ankoma-viewer'

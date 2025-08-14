@@ -25,14 +25,14 @@ import {
   PanelLeftClose,
   PanelLeftOpen
 } from 'lucide-react'
-
-import { AnkomaData, AnkomaSection, AnkomaViewerProps, AnkiCard } from '../types/anki-card'
+import { InteractiveAnkiViewer } from '../../components/interactive-anki-viewer'
+import { AnkomaData, AnkomaSection, AnkomaViewerProps, AnkiCard } from './types/anki-card'
 import {
   findSectionById,
   getAllCardsFromSection,
   getSectionStats
-} from '../utils/ankoma-parser'
-import { useClientAnkoma } from '@/shared/hooks/use-client-ankoma'
+} from './ankoma-parser'
+import { useClientAnkoma } from './use-client-ankoma'
 import { cn } from '@/shared/utils'
 import { toast } from 'sonner'
 
@@ -604,37 +604,12 @@ export function DoubleSidebarAnkomaViewer({
         {/* Card Content */}
         <div className="flex-1 overflow-auto p-6 min-h-0 pb-16">
           {currentCard ? (
-            <div className="w-full">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold">Card {currentCardIndex + 1} of {currentCards.length}</h3>
-                      <div className="flex gap-2">
-                        {currentCardIndex > 0 && (
-                          <Button onClick={handlePreviousCard} size="sm">
-                            Previous
-                          </Button>
-                        )}
-                        {currentCardIndex < currentCards.length - 1 && (
-                          <Button onClick={handleNextCard} size="sm">
-                            Next
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="border rounded-lg p-4">
-                      <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentCard.question }} />
-                    </div>
-
-                    <div className="border rounded-lg p-4 bg-muted/50">
-                      <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentCard.answer }} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <InteractiveAnkiViewer
+              card={currentCard}
+              onNext={currentCardIndex < currentCards.length - 1 ? handleNextCard : undefined}
+              onPrevious={currentCardIndex > 0 ? handlePreviousCard : undefined}
+              className="w-full"
+            />
           ) : selectedCategory ? (
             <div className="max-w-4xl mx-auto">
               <Card>
