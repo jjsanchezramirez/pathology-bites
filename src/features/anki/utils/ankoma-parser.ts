@@ -172,8 +172,30 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
 
   // Default (Cloze/Basic) path
   // Detect CP vs AP to map fields correctly (CP typically uses different field order)
-  const isCPModel = note.note_model_uuid === 'cb0a45d8-e328-11ef-a4df-cf9f22b82781'
-  const isCP = isCPModel || (note.tags && note.tags.some(t => t.startsWith('#ANKOMA::CP::'))) || deckName.startsWith('CP')
+  const AP_MODEL_UUID = 'cb0c02c4-e328-11ef-a4df-cf9f22b82781'
+  const CP_MODEL_UUID = 'cb0a45d8-e328-11ef-a4df-cf9f22b82781'
+
+  const isAPModel = note.note_model_uuid === AP_MODEL_UUID
+  const isCPModel = note.note_model_uuid === CP_MODEL_UUID
+  const tags = note.tags || []
+  const isHemepathTag = tags.some(t => t.startsWith('#ANKOMA::CP::Hemepath'))
+  const isCPTag = tags.some(t => t.startsWith('#ANKOMA::CP::') && !t.startsWith('#ANKOMA::CP::Hemepath'))
+
+  // Treat Hemepath as AP format even if under CP deck/tags
+  const treatAsAP = isAPModel || isHemepathTag || (!isCPModel && (!deckName.startsWith('CP') || deckName.includes('Hemepath')))
+  const isCP = !treatAsAP && (isCPModel || isCPTag || deckName.startsWith('CP'))
+
+  // Debug Hemepath cards specifically
+  if (isHemepathTag || deckName.includes('Hemepath')) {
+    console.log(`🩸 Hemepath card debug:`)
+    console.log('- GUID:', note.guid)
+    console.log('- Deck name:', deckName)
+    console.log('- Tags:', note.tags)
+    console.log('- Note model UUID:', note.note_model_uuid)
+    console.log('- Mapping mode:', treatAsAP ? 'AP (fields[1]=text)' : 'CP (fields[0]=text)')
+    console.log('- Fields count:', fields.length)
+    console.log('- Fields:', fields.map((field, i) => `[${i}]: "${field?.substring(0, 100)}${field?.length > 100 ? '...' : ''}"`))
+  }
 
   // For CP vs AP, the field order differs. Map explicitly.
   let header: string
@@ -192,7 +214,7 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
     textbook = ''
     citation = fields[3] || fields[5] || ''
   } else {
-    // AP/basic: [0]=Header, [1]=Text, [2]=Extra, [3]=Personal Notes, [4]=Textbook, [5]=Citation
+    // AP/basic (default for Hemepath): [0]=Header, [1]=Text, [2]=Extra, [3]=Personal Notes, [4]=Textbook, [5]=Citation
     header = fields[0] || ''
     text = fields[1] || ''
     extra = fields[2] || ''
@@ -401,23 +423,30 @@ export function filterSections(sections: AnkomaSection[], query: string): Ankoma
 }
 
 /**
- * Load ankoma data from API with aggressive caching
+ * Load ankoma data directly from R2 with client-side caching
+ * @deprecated Use useClientAnkoma hook instead for better performance and Vercel cost savings
  */
 export async function loadAnkomaData(): Promise<AnkomaData> {
   try {
-    // Import cache utility dynamically to avoid SSR issues
-    const { cachedFetch } = await import('./anki-cache')
+    console.log('🚀 Loading ankoma.json directly from R2...')
+    
+    const { ANKOMA_JSON_URL } = await import('@/shared/config/ankoma')
 
-    console.log('🚀 Loading ankoma.json from R2 with aggressive caching...')
+    const response = await fetch(ANKOMA_JSON_URL, {
+      cache: 'force-cache', // Aggressive browser caching
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
 
-    const rawData: AnkomaDeck = await cachedFetch<AnkomaDeck>(
-      '/api/debug/anki-data/ankoma.json',
-      'ankoma_json_data',
-      'json'
-    )
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ankoma.json: ${response.status} ${response.statusText}`)
+    }
 
+    const rawData: AnkomaDeck = await response.json()
     const parsedData = parseAnkomaData(rawData)
-    console.log(`🎉 Successfully loaded ${parsedData.totalCards.toLocaleString()} cards from ankoma.json - your brain is about to get a workout!`)
+    
+    console.log(`🎉 Successfully loaded ${parsedData.totalCards.toLocaleString()} cards from R2 - your brain is about to get a workout!`)
 
     return parsedData
   } catch (error) {

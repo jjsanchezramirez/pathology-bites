@@ -64,14 +64,12 @@ async function loadContentFile(filename: string): Promise<any> {
   const startTime = Date.now()
   
   try {
-    // Determine the base URL - works in both browser and server environments
-    const baseUrl = typeof window !== 'undefined' 
-      ? '' // Browser - use relative URLs
-      : process.env.NEXTAUTH_URL || 'http://localhost:3000' // Server - use full URL
+    // Use direct R2 access to avoid Vercel API costs
+    const EDUCATIONAL_CONTENT_BASE = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
     
-    const response = await fetch(`${baseUrl}/api/content/${filename}`, {
+    const response = await fetch(`${EDUCATIONAL_CONTENT_BASE}/context/${filename}`, {
+      cache: 'force-cache', // Aggressive browser caching
       headers: {
-        'Cache-Control': 'public, max-age=86400', // 24 hours browser caching
         'Accept': 'application/json'
       }
     })

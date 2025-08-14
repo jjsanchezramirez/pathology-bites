@@ -13,7 +13,7 @@ const r2Client = new S3Client({
 })
 
 // Fallback to full virtual-slides.json if metadata file doesn't exist yet
-const VIRTUAL_SLIDES_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/virtual-slides.json'
+const VIRTUAL_SLIDES_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/wsi/virtual-slides.json'
 
 interface WSIMetadata {
   id: string
@@ -40,7 +40,7 @@ async function getRandomWSIFromMetadata(categoryFilter?: string, excludeIds?: st
     // Generate signed URL for private WSI metadata file
     const metadataCommand = new GetObjectCommand({
       Bucket: 'pathology-bites-data',
-      Key: 'wsi-embeddable-metadata.json',
+      Key: 'wsi/wsi-embeddable-metadata.json',
     })
 
     const signedMetadataUrl = await getSignedUrl(r2Client, metadataCommand, {

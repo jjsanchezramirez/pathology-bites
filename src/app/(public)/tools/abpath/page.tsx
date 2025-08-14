@@ -77,6 +77,7 @@ export default function ABPathContentPage() {
   const {
     sections: paginatedSections,
     allSections,
+    filteredSections,
     metadata,
     pagination,
     isLoading: loading,
@@ -231,7 +232,7 @@ export default function ABPathContentPage() {
   // Simplified statistics calculation using filtered data
   const stats = useMemo(() => {
     const defaultStats = { totalVisible: 0, totalAll: 0, cCount: 0, arCount: 0, fCount: 0, totalPercentage: 0, cPercentage: 0, arPercentage: 0, fPercentage: 0 };
-    
+
     if (!allSections.length) return defaultStats;
 
     // Helper function to count items recursively
@@ -305,8 +306,43 @@ export default function ABPathContentPage() {
       return acc;
     }, { total: 0, c: 0, ar: 0, f: 0 });
 
-    // Count currently visible items from filtered data
-    const visibleCounts = filteredData.reduce((acc, section) => {
+    // Apply designation filtering to hook-filtered data for accurate statistics
+    const statsFilteredData = filteredSections.map(section => {
+      if (!showC && !showAR && !showF) return { ...section, items: [], subsections: [] };
+
+      const filteredSection = { ...section };
+
+      if (section.items) {
+        filteredSection.items = filterItems(section.items, '');
+      }
+
+      if (section.subsections) {
+        filteredSection.subsections = section.subsections.map(subsection => {
+          const filteredSubsection = { ...subsection };
+
+          if (subsection.items) {
+            filteredSubsection.items = filterItems(subsection.items, '');
+          }
+
+          if (subsection.sections) {
+            filteredSubsection.sections = subsection.sections.map(subSection => {
+              const filteredSubSection = { ...subSection };
+              if (subSection.items) {
+                filteredSubSection.items = filterItems(subSection.items, '');
+              }
+              return filteredSubSection;
+            });
+          }
+
+          return filteredSubsection;
+        });
+      }
+
+      return filteredSection;
+    });
+
+    // Count currently visible items from fully filtered data (AP/CP + designation filtering)
+    const visibleCounts = statsFilteredData.reduce((acc, section) => {
       const sectionCounts = countSection(section);
       acc.total += sectionCounts.total;
       acc.c += sectionCounts.c;
@@ -315,8 +351,9 @@ export default function ABPathContentPage() {
       return acc;
     }, { total: 0, c: 0, ar: 0, f: 0 });
 
-    const totalVisible = visibleCounts.total;
-    const totalAll = allCounts.total;
+    // Visible items should be the sum of items with designations (C + AR + F)
+    const totalVisible = visibleCounts.c + visibleCounts.ar + visibleCounts.f;
+    const totalAll = allCounts.c + allCounts.ar + allCounts.f; // Only designated items
     const cCount = visibleCounts.c;
     const arCount = visibleCounts.ar;
     const fCount = visibleCounts.f;
@@ -332,7 +369,7 @@ export default function ABPathContentPage() {
       arPercentage: totalVisible > 0 ? Math.round((arCount / totalVisible) * 100) : 0,
       fPercentage: totalVisible > 0 ? Math.round((fCount / totalVisible) * 100) : 0
     };
-  }, [allSections, filteredData]);
+  }, [allSections, filteredSections, showC, showAR, showF]);
 
   // PDF generation function
   const generatePDF = async () => {
@@ -710,7 +747,7 @@ export default function ABPathContentPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
                 <div>
                   <div className="text-2xl font-bold text-slate-700">{stats.totalVisible}</div>
-                  <div className="text-xs text-gray-500">Visible Items</div>
+                  <div className="text-xs text-gray-500">Selected Items</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-slate-700">{stats.totalAll}</div>

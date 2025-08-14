@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { CELL_QUIZ_IMAGES_URL, CELL_QUIZ_REFERENCES_URL } from '@/shared/config/cell-quiz'
 import { transformCellQuizData } from '@/shared/utils/r2-url-transformer'
 
@@ -31,7 +31,14 @@ async function loadCellQuizImages(): Promise<any> {
     }
 
     try {
-      const res = await fetchWithTimeout(CELL_QUIZ_IMAGES_URL, { cache: 'force-cache', timeoutMs: 8000 })
+      const res = await fetchWithTimeout(CELL_QUIZ_IMAGES_URL, {
+        cache: 'force-cache',
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'max-age=3600'
+        },
+        timeoutMs: 8000
+      })
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       return res
     } catch (e: any) {
@@ -39,14 +46,9 @@ async function loadCellQuizImages(): Promise<any> {
         ? 'Timed out fetching cell quiz images. Please check your network and try again.'
         : (e?.message || 'Failed to fetch cell quiz images.')
 
-      // In production, do NOT fall back to Vercel proxy to avoid bandwidth/invocations.
-      if (process.env.NODE_ENV === 'production') {
-        console.error('[CellQuiz] R2 fetch failed in production. Check R2 CORS and network.', e)
-        throw new Error(msg)
-      }
-      // In development, fallback to local proxy to ease testing when R2 CORS is not configured.
-      console.warn('[CellQuiz] R2 fetch failed in dev, falling back to /api/tools/cell-quiz/images')
-      return await fetchWithTimeout('/api/tools/cell-quiz/images', { cache: 'force-cache', timeoutMs: 8000 })
+      // No fallback - direct R2 access only for optimal performance
+      console.error('[CellQuiz] R2 fetch failed. Check R2 CORS and network.', e)
+      throw new Error(msg)
     }
   }
 
@@ -77,7 +79,14 @@ async function loadCellQuizReferences(): Promise<any> {
     }
 
     try {
-      const res = await fetchWithTimeout(CELL_QUIZ_REFERENCES_URL, { cache: 'force-cache', timeoutMs: 8000 })
+      const res = await fetchWithTimeout(CELL_QUIZ_REFERENCES_URL, {
+        cache: 'force-cache',
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'max-age=3600'
+        },
+        timeoutMs: 8000
+      })
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       return res
     } catch (e: any) {
@@ -85,14 +94,9 @@ async function loadCellQuizReferences(): Promise<any> {
         ? 'Timed out fetching cell quiz references. Please check your network and try again.'
         : (e?.message || 'Failed to fetch cell quiz references.')
 
-      // In production, do NOT fall back to Vercel proxy to avoid bandwidth/invocations.
-      if (process.env.NODE_ENV === 'production') {
-        console.error('[CellQuiz] R2 fetch failed in production. Check R2 CORS and network.', e)
-        throw new Error(msg)
-      }
-      // In development, fallback to local proxy to ease testing when R2 CORS is not configured.
-      console.warn('[CellQuiz] R2 fetch failed in dev, falling back to /api/tools/cell-quiz/references')
-      return await fetchWithTimeout('/api/tools/cell-quiz/references', { cache: 'force-cache', timeoutMs: 8000 })
+      // No fallback - direct R2 access only for optimal performance
+      console.error('[CellQuiz] R2 fetch failed. Check R2 CORS and network.', e)
+      throw new Error(msg)
     }
   }
 

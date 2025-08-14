@@ -27,11 +27,11 @@ import { InteractiveAnkiViewer } from '../../debug/components/interactive-anki-v
 import { SimplifiedSubdeckSidebar } from './simplified-subdeck-sidebar'
 import { AnkomaData, AnkomaSection, AnkomaViewerProps } from '../types/anki-card'
 import {
-  loadAnkomaData,
   findSectionById,
   getAllCardsFromSection,
   getSectionStats
 } from '../utils/ankoma-parser'
+import { useClientAnkoma } from '@/shared/hooks/use-client-ankoma'
 import { useImagePreloader } from '../hooks/use-image-preloader'
 import { cn } from '@/shared/utils'
 import { toast } from 'sonner'
@@ -67,9 +67,9 @@ export function AnkomaViewer({
   onError,
   className
 }: AnkomaViewerProps) {
-  const [ankomaData, setAnkomaData] = useState<AnkomaData | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  // Use the new client-side hook instead of manual loading
+  const { ankomaData, sections, isLoading, error, totalCards } = useClientAnkoma()
+  
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
 
@@ -80,14 +80,6 @@ export function AnkomaViewer({
   const [showAnswer, setShowAnswer] = useState(false)
   const [isShuffled, setIsShuffled] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
-
-  // Load ankoma data on mount (only once)
-  useEffect(() => {
-    if (autoLoad && !hasLoadedOnce) {
-      handleLoadData()
-    }
-  }, [autoLoad, hasLoadedOnce])
 
   // Set default section when data loads
   useEffect(() => {
@@ -99,9 +91,42 @@ export function AnkomaViewer({
     }
   }, [ankomaData, defaultSection, selectedSectionId])
 
+  // Auto-select first section with cards when data loads
+  useEffect(() => {
+    if (ankomaData && !defaultSection && !selectedSectionId && sections.length > 0) {
+      const findFirstSectionWithCards = (sections: AnkomaSection[]): AnkomaSection | null => {
+        for (const section of sections) {
+          if (section.cardCount > 0) return section
+          const found = findFirstSectionWithCards(section.subsections)
+          if (found) return found
+        }
+        return null
+      }
+
+      const firstSectionWithCards = findFirstSectionWithCards(sections)
+      if (firstSectionWithCards) {
+        setSelectedSectionId(firstSectionWithCards.id)
+      }
+    }
+  }, [ankomaData, sections, defaultSection, selectedSectionId])
+
+  // Show success toast when data loads
+  useEffect(() => {
+    if (ankomaData && totalCards > 0) {
+      toast.success(`Loaded ${totalCards.toLocaleString()} cards from Ankoma deck`)
+    }
+  }, [ankomaData, totalCards])
+
+  // Pass error to parent component
+  useEffect(() => {
+    if (error) {
+      onError?.(error)
+    }
+  }, [error, onError])
+
   // Cycle through loading messages while loading
   useEffect(() => {
-    if (loading) {
+    if (isLoading) {
       // Set initial message
       const initialIndex = Math.floor(Math.random() * ANKI_LOADING_MESSAGES.length)
       setLoadingMessageIndex(initialIndex)
@@ -130,44 +155,7 @@ export function AnkomaViewer({
         loadingIntervalRef.current = null
       }
     }
-  }, [loading])
-
-  const handleLoadData = async () => {
-    setLoading(true)
-    setError(null)
-    
-    try {
-      const data = await loadAnkomaData()
-      setAnkomaData(data)
-      setHasLoadedOnce(true)
-      
-      // Auto-select first section with cards if no default specified
-      if (!defaultSection && data.sections.length > 0) {
-        const findFirstSectionWithCards = (sections: AnkomaSection[]): AnkomaSection | null => {
-          for (const section of sections) {
-            if (section.cardCount > 0) return section
-            const found = findFirstSectionWithCards(section.subsections)
-            if (found) return found
-          }
-          return null
-        }
-
-        const firstSectionWithCards = findFirstSectionWithCards(data.sections)
-        if (firstSectionWithCards) {
-          setSelectedSectionId(firstSectionWithCards.id)
-        }
-      }
-      
-      toast.success(`Loaded ${data.totalCards.toLocaleString()} cards from Ankoma deck`)
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load Anki data'
-      setError(errorMessage)
-      onError?.(errorMessage)
-      toast.error(errorMessage)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [isLoading])
 
   // Get current section and its cards
   const currentSection = useMemo(() => {
@@ -232,7 +220,7 @@ export function AnkomaViewer({
     setIsShuffled(false)
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className={cn("w-full max-w-4xl mx-auto", className)}>
         <Card className="animate-pulse">
@@ -242,7 +230,7 @@ export function AnkomaViewer({
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-foreground">Loading Ankoma Deck</h3>
                 <p className="text-sm text-muted-foreground">
-                  Parsing {ankomaData?.totalCards?.toLocaleString() || 'thousands of'} cards from ankoma.json...
+                  Parsing {totalCards?.toLocaleString() || 'thousands of'} cards from ankoma.json...
                 </p>
               </div>
 
@@ -278,9 +266,9 @@ export function AnkomaViewer({
               <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Failed to Load Deck</h3>
               <p className="text-muted-foreground mb-4">{error}</p>
-              <Button onClick={handleLoadData}>
+              <Button onClick={() => window.location.reload()}>
                 <RotateCcw className="h-4 w-4 mr-2" />
-                Try Again
+                Reload Page
               </Button>
             </div>
           </CardContent>
@@ -296,14 +284,10 @@ export function AnkomaViewer({
           <CardContent className="flex items-center justify-center h-64">
             <div className="text-center">
               <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Deck Loaded</h3>
-              <p className="text-muted-foreground mb-4">
-                Click the button below to load the Ankoma deck
+              <h3 className="text-lg font-semibold mb-2">No Data Available</h3>
+              <p className="text-muted-foreground">
+                The Ankoma deck data could not be loaded. Please try refreshing the page.
               </p>
-              <Button onClick={handleLoadData}>
-                <Play className="h-4 w-4 mr-2" />
-                Load Ankoma Deck
-              </Button>
             </div>
           </CardContent>
         </Card>

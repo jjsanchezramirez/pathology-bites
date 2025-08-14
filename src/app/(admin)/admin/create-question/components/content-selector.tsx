@@ -98,7 +98,9 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
         try {
           setLoading(true)
 
-          const response = await fetch(`/api/content/${selectedFile}`, {
+          // Use direct R2 access to avoid Vercel API costs
+          const EDUCATIONAL_CONTENT_BASE = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
+          const response = await fetch(`${EDUCATIONAL_CONTENT_BASE}/context/${selectedFile}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',

@@ -1,9 +1,9 @@
 /**
  * Unified Medical Search Algorithm
- * 
+ *
  * Combines sophisticated medical term extraction from WSI Question Generator
  * with the flexibility needed for diagnostic search and other use cases.
- * 
+ *
  * Features:
  * - Advanced medical phrase recognition
  * - Abbreviation/expansion mapping
@@ -17,15 +17,15 @@ export interface MedicalSearchOptions {
   searchMode: 'strict' | 'permissive' | 'hybrid'
   earlyTerminationScore?: number
   maxResults?: number
-  
+
   // Category/context weighting
   categoryBoostMultiplier?: number
   subcategoryBoostMultiplier?: number
-  
+
   // Quality thresholds
   minimumScore?: number
   rejectBelowScore?: number
-  
+
   // Performance options
   enableEarlyTermination?: boolean
   logDetailedScoring?: boolean
@@ -77,7 +77,7 @@ const MEDICAL_ABBREVIATIONS: { [key: string]: string } = {
   'hl': 'hodgkin lymphoma',
   'nhl': 'non hodgkin lymphoma',
   'mm': 'multiple myeloma',
-  
+
   // Breast pathology
   'dcis': 'ductal carcinoma in situ',
   'lcis': 'lobular carcinoma in situ',
@@ -85,26 +85,26 @@ const MEDICAL_ABBREVIATIONS: { [key: string]: string } = {
   'ilc': 'invasive lobular carcinoma',
   'adh': 'atypical ductal hyperplasia',
   'alh': 'atypical lobular hyperplasia',
-  
+
   // Gastrointestinal
   'hcc': 'hepatocellular carcinoma',
   'crc': 'colorectal carcinoma',
   'gist': 'gastrointestinal stromal tumor',
   'ibd': 'inflammatory bowel disease',
   'fap': 'familial adenomatous polyposis',
-  
+
   // Skin/Dermatopathology
   'scc': 'squamous cell carcinoma',
   'bcc': 'basal cell carcinoma',
   'ak': 'actinic keratosis',
   'sk': 'seborrheic keratosis',
-  
+
   // Genitourinary
   'rcc': 'renal cell carcinoma',
   'tcc': 'transitional cell carcinoma',
   'pin': 'prostatic intraepithelial neoplasia',
   'cin': 'cervical intraepithelial neoplasia',
-  
+
   // General terms
   'ca': 'carcinoma',
   'adeno': 'adenocarcinoma',
@@ -127,7 +127,7 @@ const MEDICAL_SYNONYMS: { [key: string]: string[] } = {
   'inflammation': ['inflammatory changes', 'inflammatory reaction', 'inflammatory process'],
   'fibrosis': ['fibrotic changes', 'scarring', 'fibrous tissue'],
   'necrosis': ['necrotic changes', 'tissue death', 'cellular death'],
-  
+
   // Dermatology synonyms
   'eczema': ['dermatitis', 'spongiotic dermatitis', 'atopic dermatitis', 'contact dermatitis', 'dyshidrotic', 'pompholyx'],
   'dermatitis': ['eczema', 'spongiotic', 'inflammatory skin condition'],
@@ -143,22 +143,22 @@ const MEDICAL_SYNONYMS: { [key: string]: string[] } = {
  */
 const ORGAN_SYSTEM_MAPPINGS: { [key: string]: string[] } = {
   'genitourinary': [
-    'prostatic', 'prostate', 'bladder', 'kidney', 'renal', 'ureteral', 'urethral', 
+    'prostatic', 'prostate', 'bladder', 'kidney', 'renal', 'ureteral', 'urethral',
     'testicular', 'ovarian', 'uterine', 'cervical', 'glomerular', 'tubular'
   ],
   'gastrointestinal': [
-    'gastric', 'stomach', 'intestinal', 'colonic', 'rectal', 'esophageal', 
+    'gastric', 'stomach', 'intestinal', 'colonic', 'rectal', 'esophageal',
     'duodenal', 'jejunal', 'ileal', 'appendiceal', 'hepatic', 'pancreatic', 'biliary'
   ],
   'breast': [
     'mammary', 'breast', 'ductal', 'lobular', 'nipple', 'areolar'
   ],
   'dermatopathology': [
-    'cutaneous', 'skin', 'dermal', 'epidermal', 'melanocytic', 'keratinocytic', 
+    'cutaneous', 'skin', 'dermal', 'epidermal', 'melanocytic', 'keratinocytic',
     'sebaceous', 'follicular', 'sweat gland'
   ],
   'hematopathology': [
-    'lymphoid', 'lymphoma', 'leukemia', 'myeloid', 'plasma cell', 'lymphocytic', 
+    'lymphoid', 'lymphoma', 'leukemia', 'myeloid', 'plasma cell', 'lymphocytic',
     'bone marrow', 'spleen', 'lymph node'
   ],
   'neuropathology': [
@@ -174,15 +174,15 @@ const ORGAN_SYSTEM_MAPPINGS: { [key: string]: string[] } = {
     'endometrial', 'cervical', 'ovarian', 'fallopian', 'vulvar', 'vaginal', 'uterine'
   ],
   'head-neck-endocrine': [
-    'thyroid', 'parathyroid', 'salivary', 'laryngeal', 'pharyngeal', 'nasal', 
+    'thyroid', 'parathyroid', 'salivary', 'laryngeal', 'pharyngeal', 'nasal',
     'oral', 'tongue', 'pituitary', 'adrenal'
   ],
   'cardiovascular': [
-    'cardiac', 'myocardial', 'pericardial', 'valvular', 'aortic', 'arterial', 
+    'cardiac', 'myocardial', 'pericardial', 'valvular', 'aortic', 'arterial',
     'venous', 'vascular'
   ],
   'pancreas-biliary-liver': [
-    'hepatic', 'pancreatic', 'biliary', 'gallbladder', 'cholangiocarcinoma', 
+    'hepatic', 'pancreatic', 'biliary', 'gallbladder', 'cholangiocarcinoma',
     'hepatocellular', 'ductal pancreatic'
   ]
 }
@@ -209,11 +209,11 @@ export function extractMedicalTerms(diagnosis: string): MedicalTerms {
 
   // 1. EXACT PHRASE MATCHING
   exactPhrases.push(cleaned)
-  
+
   // 2. ENHANCED MEDICAL PHRASE EXTRACTION
   const medicalPhrases = extractMedicalPhrases(cleaned)
   exactPhrases.push(...medicalPhrases)
-  
+
   // 3. ABBREVIATION PROCESSING (exact word boundaries only)
   const words = cleaned.split(/\s+/)
   for (const [abbrev, expansion] of Object.entries(MEDICAL_ABBREVIATIONS)) {
@@ -229,19 +229,19 @@ export function extractMedicalTerms(diagnosis: string): MedicalTerms {
       console.log(`[Unified Medical Search] Found expansion "${expansion}" → "${abbrev}"`)
     }
   }
-  
+
   // 4. DIAGNOSTIC PATTERN NORMALIZATION
   const normalizedPhrases = normalizeDiagnosticPatterns(cleaned)
   exactPhrases.push(...normalizedPhrases)
-  
+
   // 5. WORD ORDER VARIATIONS - Generate common reorderings
   const wordOrderVariations = generateWordOrderVariations(cleaned)
   exactPhrases.push(...wordOrderVariations)
-  
+
   // 6. CORE MEDICAL TERM EXTRACTION
   const coreTerms = extractCoreMedicalTerms(cleaned)
   medicalTerms.push(...coreTerms)
-  
+
   // 7. SYNONYM EXPANSION
   for (const [term, termSynonyms] of Object.entries(MEDICAL_SYNONYMS)) {
     if (cleaned.includes(term)) {
@@ -249,13 +249,13 @@ export function extractMedicalTerms(diagnosis: string): MedicalTerms {
       console.log(`[Unified Medical Search] Added synonyms for "${term}":`, termSynonyms)
     }
   }
-  
+
   // 8. KEY DIAGNOSTIC WORDS
   const diagnosticWords = cleaned.split(/\s+/)
     .filter(word => word.length >= 4)
     .filter(word => !isGenericTerm(word))
     .filter(word => isRelevantMedicalWord(word))
-  
+
   keyWords.push(...diagnosticWords)
 
   // 9. ORGAN SYSTEM IDENTIFICATION
@@ -284,7 +284,7 @@ export function extractMedicalTerms(diagnosis: string): MedicalTerms {
  */
 function extractMedicalPhrases(text: string): string[] {
   const phrases: string[] = []
-  
+
   const medicalPhrasePatterns = [
     // Specific tumor types that should be matched exactly
     /adenomatoid\s+tumor/gi,
@@ -292,37 +292,37 @@ function extractMedicalPhrases(text: string): string[] {
     /warthin\s+tumor/gi,
     /gastrointestinal\s+stromal\s+tumor/gi,
     /pleomorphic\s+adenoma/gi,
-    
+
     // Multi-word carcinomas, lymphomas, sarcomas with modifiers (more specific)
     /(?:atypical\s+)?(?:high\s+grade\s+|low\s+grade\s+)?(?:invasive\s+|in\s+situ\s+|metastatic\s+)?(?:ductal|lobular|follicular|papillary|squamous|basal|clear|granular|serous|mucinous|transitional|pleomorphic)\s+(?:cell\s+)?(?:carcinoma|lymphoma|sarcoma|adenoma|hyperplasia)/gi,
-    
+
     // Specific lymphoma subtypes
     /(?:chronic\s+lymphocytic\s+leukemia|diffuse\s+large\s+b\s+cell\s+lymphoma|follicular\s+lymphoma|mantle\s+cell\s+lymphoma|marginal\s+zone\s+lymphoma|burkitt\s+lymphoma|hodgkin\s+lymphoma)/gi,
-    
+
     // Carcinoma in situ patterns
     /(?:ductal|lobular|squamous)\s+carcinoma\s+in\s+situ/gi,
-    
-    // Hyperplasia and dysplasia patterns  
+
+    // Hyperplasia and dysplasia patterns
     /(?:atypical\s+)?(?:ductal|lobular|squamous|glandular)\s+(?:hyperplasia|dysplasia)/gi,
-    
+
     // Organ-specific patterns
     /(?:hepatocellular|renal\s+cell|transitional\s+cell|small\s+cell|large\s+cell)\s+carcinoma/gi,
-    
+
     // Serous and mucinous patterns
     /(?:high\s+grade\s+|low\s+grade\s+)?(?:serous|mucinous|endometrioid|clear\s+cell)\s+(?:carcinoma|adenocarcinoma|cystadenocarcinoma)/gi,
-    
+
     // General patterns (lower priority) - be more careful here
     /(?:^|\s)(\w+)\s+(?:carcinoma|lymphoma|sarcoma|adenoma|nevus|tumor|syndrome|disease)(?=\s|$)/gi,
     /(?:^|\s)(\w+)\s+cell\s+(\w+)(?=\s|$)/gi
   ]
-  
+
   for (const pattern of medicalPhrasePatterns) {
     const matches = text.match(pattern)
     if (matches) {
       phrases.push(...matches.map(m => m.toLowerCase().replace(/\s+/g, ' ').trim()))
     }
   }
-  
+
   return [...new Set(phrases)]
 }
 
@@ -341,14 +341,14 @@ function getOrganContextsForDescriptor(descriptor: string): string[] {
     'clear': ['renal', 'ovarian'],
     'basal': ['breast'],
     'invasive': ['breast', 'cervical'],
-    
+
     // Dermatology descriptors
     'dyshidrotic': ['contact', 'atopic', 'spongiotic'],
     'atopic': ['allergic', 'spongiotic'],
     'contact': ['allergic', 'irritant'],
     'spongiotic': ['atopic', 'contact']
   }
-  
+
   return descriptorOrganMap[descriptor] || []
 }
 
@@ -359,50 +359,50 @@ function getOrganContextsForDescriptor(descriptor: string): string[] {
 function generateWordOrderVariations(text: string): string[] {
   const variations: string[] = []
   const words = text.split(/\s+/).filter(word => word.length > 0)
-  
+
   // Only process if we have 2-4 words (avoid generating too many variations)
   if (words.length < 2 || words.length > 4) {
     return variations
   }
-  
+
   // Common medical word order patterns
   const medicalModifiers = ['breast', 'lung', 'renal', 'hepatocellular', 'gastric', 'colonic', 'ovarian', 'cervical', 'endometrial', 'testicular', 'prostatic']
   const tumorTypes = ['carcinoma', 'adenocarcinoma', 'sarcoma', 'lymphoma', 'adenoma', 'tumor', 'neoplasm']
   const descriptors = ['metaplastic', 'invasive', 'ductal', 'lobular', 'squamous', 'adenoid', 'mucinous', 'serous', 'clear', 'basal']
-  
+
   // Pattern: [organ] [descriptor] [tumor] → [descriptor] [organ] [tumor]
   // e.g., "breast metaplastic carcinoma" → "metaplastic breast carcinoma"
   if (words.length === 3) {
     const [word1, word2, word3] = words
-    
-    if (medicalModifiers.includes(word1.toLowerCase()) && 
-        descriptors.includes(word2.toLowerCase()) && 
+
+    if (medicalModifiers.includes(word1.toLowerCase()) &&
+        descriptors.includes(word2.toLowerCase()) &&
         tumorTypes.includes(word3.toLowerCase())) {
-      
+
       variations.push(`${word2} ${word1} ${word3}`)
       console.log(`[Word Order] Generated: "${word1} ${word2} ${word3}" → "${word2} ${word1} ${word3}"`)
     }
-    
+
     // Pattern: [descriptor] [organ] [tumor] → [organ] [descriptor] [tumor]
     // e.g., "metaplastic breast carcinoma" → "breast metaplastic carcinoma"
-    if (descriptors.includes(word1.toLowerCase()) && 
-        medicalModifiers.includes(word2.toLowerCase()) && 
+    if (descriptors.includes(word1.toLowerCase()) &&
+        medicalModifiers.includes(word2.toLowerCase()) &&
         tumorTypes.includes(word3.toLowerCase())) {
-      
+
       variations.push(`${word2} ${word1} ${word3}`)
       console.log(`[Word Order] Generated: "${word1} ${word2} ${word3}" → "${word2} ${word1} ${word3}"`)
     }
   }
-  
+
   // Pattern: [descriptor] [tumor] → add common organ context expansions
   // e.g., "metaplastic carcinoma" → ["breast metaplastic carcinoma", "metaplastic breast carcinoma"]
   if (words.length === 2) {
     const [word1, word2] = words
-    
+
     if (descriptors.includes(word1.toLowerCase()) && tumorTypes.includes(word2.toLowerCase())) {
       // Add common organ contexts for this descriptor
       const organContexts = getOrganContextsForDescriptor(word1.toLowerCase())
-      
+
       for (const organ of organContexts) {
         variations.push(`${organ} ${word1} ${word2}`)  // breast metaplastic carcinoma
         variations.push(`${word1} ${organ} ${word2}`)  // metaplastic breast carcinoma
@@ -410,7 +410,7 @@ function generateWordOrderVariations(text: string): string[] {
       }
     }
   }
-  
+
   return [...new Set(variations)]
 }
 
@@ -419,7 +419,7 @@ function generateWordOrderVariations(text: string): string[] {
  */
 function normalizeDiagnosticPatterns(text: string): string[] {
   const normalized: string[] = []
-  
+
   const patterns: { [key: string]: string } = {
     'atypical duct hyperplasia': 'atypical ductal hyperplasia',
     'duct carcinoma in-situ': 'ductal carcinoma in situ',
@@ -432,14 +432,14 @@ function normalizeDiagnosticPatterns(text: string): string[] {
     'large b cell lymphoma': 'diffuse large b cell lymphoma',
     'follicle center lymphoma': 'follicular lymphoma'
   }
-  
+
   for (const [pattern, standard] of Object.entries(patterns)) {
     if (text.includes(pattern)) {
       normalized.push(standard)
       console.log(`[Unified Medical Search] Normalized "${pattern}" → "${standard}"`)
     }
   }
-  
+
   return normalized
 }
 
@@ -448,25 +448,25 @@ function normalizeDiagnosticPatterns(text: string): string[] {
  */
 function extractCoreMedicalTerms(text: string): string[] {
   const terms: string[] = []
-  
+
   const entityPatterns = [
     // Primary pathological entities
     /(?:carcinoma|adenocarcinoma|lymphoma|sarcoma|adenoma|hyperplasia|dysplasia|metaplasia|neoplasia|melanoma|nevus|fibroma|lipoma|hemangioma|leiomyoma)/gi,
-    
+
     // Modifiers and descriptors
     /(?:chronic|acute|invasive|metastatic|inflammatory|atypical|benign|malignant|high\s+grade|low\s+grade|well\s+differentiated|poorly\s+differentiated|moderately\s+differentiated)/gi,
-    
+
     // Cellular descriptors
     /(?:squamous|glandular|ductal|lobular|follicular|papillary|solid|cystic|mucinous|serous|clear\s+cell|spindle\s+cell|giant\s+cell)/gi
   ]
-  
+
   for (const pattern of entityPatterns) {
     const matches = text.match(pattern)
     if (matches) {
       terms.push(...matches.map(m => m.toLowerCase().trim().replace(/\s+/g, ' ')))
     }
   }
-  
+
   return [...new Set(terms)]
 }
 
@@ -482,8 +482,8 @@ function isRelevantMedicalWord(word: string): boolean {
     'hyperplasia', 'dysplasia', 'metaplasia', 'neoplasia', 'proliferation',
     'hepatocellular', 'cutaneous', 'primary', 'secondary', 'transitional', 'pleomorphic'
   ]
-  
-  return medicalWords.includes(word.toLowerCase()) || 
+
+  return medicalWords.includes(word.toLowerCase()) ||
          word.length >= 8 || // Longer words more likely to be medical terms
          /(?:oma|itis|osis|pathy|trophy|plasia|carci|lymph|sarco)$/.test(word) // Medical suffixes
 }
@@ -527,12 +527,12 @@ export function calculateUnifiedMatchScore(
   subcategory?: string,
   options: MedicalSearchOptions = { searchMode: 'hybrid' }
 ): { score: number; matchDetails: SearchResult['matchDetails'] } {
-  
+
   let totalScore = 0
   const topicLower = topicName.toLowerCase()
   const lessonLower = lessonName.toLowerCase()
   const contentLower = contentText.toLowerCase()
-  
+
   const matchDetails: SearchResult['matchDetails'] = {
     exactMatches: [],
     medicalTermMatches: [],
@@ -555,16 +555,16 @@ export function calculateUnifiedMatchScore(
       }
       // Don't early return - let it accumulate more score
     }
-    
+
     // Exact phrase contained in topic name (but not perfect match)
     else if (topicLower.includes(phrase) && phrase.length >= 6) {
       // Check for word boundary matches vs substring matches
       const isWordBoundaryMatch = new RegExp(`\\b${phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(topicLower)
-      
+
       if (isWordBoundaryMatch) {
         // Higher bonus for word boundary matches
-        const bonus = phrase.length >= 15 ? 200000 : 
-                     phrase.length >= 12 ? 150000 : 
+        const bonus = phrase.length >= 15 ? 200000 :
+                     phrase.length >= 12 ? 150000 :
                      phrase.length >= 8 ? 100000 : 75000
         totalScore += bonus
         matchDetails.exactMatches.push(`TOPIC_WORD_BOUNDARY: ${phrase}`)
@@ -581,14 +581,14 @@ export function calculateUnifiedMatchScore(
         }
       }
     }
-    
+
     // Exact phrase in lesson name
     else if (lessonLower.includes(phrase) && phrase.length >= 6) {
       const isWordBoundaryMatch = new RegExp(`\\b${phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(lessonLower)
-      
+
       if (isWordBoundaryMatch) {
-        const bonus = phrase.length >= 15 ? 125000 : 
-                     phrase.length >= 12 ? 100000 : 
+        const bonus = phrase.length >= 15 ? 125000 :
+                     phrase.length >= 12 ? 100000 :
                      phrase.length >= 8 ? 75000 : 50000
         totalScore += bonus
         matchDetails.exactMatches.push(`LESSON_WORD_BOUNDARY: ${phrase}`)
@@ -610,7 +610,7 @@ export function calculateUnifiedMatchScore(
   for (const synonym of medicalTerms.synonyms) {
     // Check for word boundary matches in topic/lesson
     const synonymRegex = new RegExp(`\\b${synonym.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
-    
+
     if (synonymRegex.test(topicLower)) {
       totalScore += 80000 // Increased for exact synonym matches
       matchDetails.medicalTermMatches.push(`SYNONYM_TOPIC: ${synonym}`)
@@ -624,7 +624,7 @@ export function calculateUnifiedMatchScore(
         console.log(`🔄 SYNONYM IN TOPIC (partial): "${synonym}" → +40,000`)
       }
     }
-    
+
     if (synonymRegex.test(lessonLower)) {
       totalScore += 50000
       matchDetails.medicalTermMatches.push(`SYNONYM_LESSON: ${synonym}`)
@@ -687,7 +687,7 @@ export function calculateUnifiedMatchScore(
       }
     }
   }
-  
+
   // 5.5. SYNONYM CONTENT SCORING (Medium Priority: 500-8,000 points)
   for (const synonym of medicalTerms.synonyms) {
     if (contentLower.includes(synonym.toLowerCase())) {
@@ -768,12 +768,12 @@ export function calculateUnifiedMatchScore(
  * Assess search result quality based on score and search mode
  */
 export function assessSearchQuality(
-  score: number, 
+  score: number,
   options: MedicalSearchOptions
 ): 'excellent' | 'good' | 'fair' | 'poor' | 'none' {
-  
+
   const mode = options.searchMode
-  
+
   if (mode === 'strict') {
     if (score >= 100000) return 'excellent'
     if (score >= 50000) return 'good'
@@ -803,11 +803,11 @@ export function shouldRejectResult(
   quality: string,
   options: MedicalSearchOptions
 ): boolean {
-  
+
   if (options.rejectBelowScore && score < options.rejectBelowScore) {
     return true
   }
-  
+
   if (options.searchMode === 'strict') {
     return quality === 'none' || quality === 'poor'
   } else if (options.searchMode === 'permissive') {
@@ -832,7 +832,7 @@ export const SEARCH_PRESETS: { [key: string]: MedicalSearchOptions } = {
     enableEarlyTermination: true,
     logDetailedScoring: false
   },
-  
+
   // For Diagnostic Search - more permissive for broader results
   diagnosticSearch: {
     searchMode: 'hybrid',
@@ -844,7 +844,7 @@ export const SEARCH_PRESETS: { [key: string]: MedicalSearchOptions } = {
     enableEarlyTermination: true,
     logDetailedScoring: false // Disable for production
   },
-  
+
   // For general content search - most permissive
   general: {
     searchMode: 'permissive',

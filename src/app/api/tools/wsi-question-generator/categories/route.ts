@@ -20,7 +20,7 @@ async function getWSICategories(): Promise<string[]> {
     // Generate signed URL for private categories file
     const categoriesCommand = new GetObjectCommand({
       Bucket: 'pathology-bites-data',
-      Key: 'wsi-embeddable-categories.json',
+      Key: 'wsi/wsi-embeddable-categories.json',
     })
 
     const signedCategoriesUrl = await getSignedUrl(r2Client, categoriesCommand, {
@@ -41,7 +41,7 @@ async function getWSICategories(): Promise<string[]> {
     // Fallback to metadata file and extract categories using signed URL
     const metadataCommand = new GetObjectCommand({
       Bucket: 'pathology-bites-data',
-      Key: 'wsi-embeddable-metadata.json',
+      Key: 'wsi/wsi-embeddable-metadata.json',
     })
 
     const signedMetadataUrl = await getSignedUrl(r2Client, metadataCommand, {

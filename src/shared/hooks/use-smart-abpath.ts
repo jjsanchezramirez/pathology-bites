@@ -1,10 +1,11 @@
 // src/shared/hooks/use-smart-abpath.ts
 /**
  * Smart loading hook for ABPath Content Specifications
- * Optimizes API calls with intelligent caching and pagination
+ * Uses client-side direct R2 access for optimal performance and zero Vercel usage
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useClientABPath } from './use-client-abpath'
 
 interface PathologySection {
   section: number
@@ -26,7 +27,8 @@ interface UseSmartABPathOptions {
 
 interface SmartABPathResult {
   sections: PathologySection[]
-  allSections: PathologySection[] // For accurate statistics
+  allSections: PathologySection[] // For accurate statistics (unfiltered)
+  filteredSections: PathologySection[] // For accurate statistics (filtered)
   metadata: any
   pagination: any
   isLoading: boolean
@@ -41,62 +43,34 @@ interface SmartABPathResult {
 
 export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPathResult {
   const [currentPage, setCurrentPage] = useState(1)
-  const [apiResponse, setApiResponse] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<any>(null)
   const sectionsPerPage = options.sectionsPerPage || 7
+
+  // Use client-side direct R2 access - zero Vercel usage
+  const { data: clientData, isLoading, error } = useClientABPath()
 
   // Build type filter
   const typeFilter = useMemo(() => {
     if (options.showAP && !options.showCP) return 'ap'
     if (!options.showAP && options.showCP) return 'cp'
-    return 'all' // Both or neither (default to both)
+    if (options.showAP && options.showCP) return 'all' // Both selected
+    return 'none' // Neither selected - show no results
   }, [options.showAP, options.showCP])
 
-  // Smart data fetching function - always load full dataset for accurate statistics
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      
-      // Always use main API for full dataset (ABPath is small, R2 egress is free)
-      const response = await fetch('/api/tools/abpath-content-specs', {
-        headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'public, max-age=86400'
-        }
-      })
-      
-      if (!response.ok) {
-        throw new Error(`ABPath API failed: ${response.status}`)
-      }
+  // Process client data into the format expected by the component
+  const apiResponse = useMemo(() => {
+    if (!clientData) return null
 
-      const result = await response.json()
-      
-      const allSections = [
-        ...(result.content_specifications.ap_sections || []),
-        ...(result.content_specifications.cp_sections || [])
-      ]
-      
-      // Store complete dataset for client-side filtering and accurate statistics
-      setApiResponse({
-        allSections,
-        metadata: result.metadata,
-        strategy: 'full-dataset-client-filtering'
-      })
-      
-    } catch (err) {
-      console.error('❌ ABPath API error:', err)
-      setError(err)
-    } finally {
-      setIsLoading(false)
+    const allSections = [
+      ...(clientData.content_specifications.ap_sections || []),
+      ...(clientData.content_specifications.cp_sections || [])
+    ]
+
+    return {
+      allSections,
+      metadata: clientData.metadata,
+      strategy: 'client-side-r2-direct'
     }
-  }, []) // No dependencies - only fetch once
-
-  // Fetch data only once on mount
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
+  }, [clientData])
 
   // Memoize filtering functions for better performance
   const filterHelpers = useMemo(() => {
@@ -142,7 +116,9 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
     let filteredSections = allSections
 
     // Type filter (AP/CP)
-    if (typeFilter !== 'all') {
+    if (typeFilter === 'none') {
+      filteredSections = [] // No results when neither AP nor CP is selected
+    } else if (typeFilter !== 'all') {
       filteredSections = filteredSections.filter((section: any) => section.type === typeFilter)
     }
 
@@ -277,7 +253,8 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
 
   return {
     sections: processedData.paginatedSections,
-    allSections: apiResponse?.allSections || [], // For statistics
+    allSections: apiResponse?.allSections || [], // For statistics (unfiltered)
+    filteredSections: processedData.filteredSections, // For statistics (filtered)
     metadata: apiResponse?.metadata,
     pagination,
     isLoading,

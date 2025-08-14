@@ -2,9 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 
-// Cache for dashboard data to reduce database load
+// Cache for dashboard data to reduce database load and Vercel function costs
 let dashboardCache = new Map<string, { data: any; timestamp: number }>()
-const CACHE_TTL = 2 * 60 * 1000 // 2 minutes for dashboard data
+const CACHE_TTL = 10 * 60 * 1000 // 10 minutes for dashboard data (increased from 2 minutes)
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,6 +25,11 @@ export async function GET(request: NextRequest) {
         success: true,
         data: cached.data,
         source: 'cache'
+      }, {
+        headers: {
+          'Cache-Control': 'private, max-age=300, s-maxage=300', // 5 minute cache for dashboard data
+          'Vercel-CDN-Cache-Control': 'max-age=0' // Don't cache user data at CDN level
+        }
       })
     }
 
@@ -83,23 +88,13 @@ export async function GET(request: NextRequest) {
     const settings = settingsResult.data || getDefaultSettings()
     const recentQuizzes = formatRecentQuizzes(recentQuizzesResult.data || [])
 
-    // Calculate weekly progress
-    const weekStart = new Date()
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay())
-    weekStart.setHours(0, 0, 0, 0)
-
-    const weeklyQuizzes = recentQuizzes.filter(quiz => 
-      new Date(quiz.completedAt) >= weekStart
-    )
+    // Note: Weekly progress calculations moved to client-side to reduce server processing
 
     // Combine all dashboard data
     const dashboardData = {
       stats: {
-        ...stats,
-        weeklyQuizzes: weeklyQuizzes.length,
-        avgWeeklyScore: weeklyQuizzes.length > 0 
-          ? Math.round(weeklyQuizzes.reduce((sum, quiz) => sum + quiz.score, 0) / weeklyQuizzes.length)
-          : 0
+        ...stats
+        // Weekly calculations moved to client-side for better performance
       },
       goals: goals.map(goal => ({
         id: goal.id,
@@ -138,6 +133,11 @@ export async function GET(request: NextRequest) {
       success: true,
       data: dashboardData,
       source: 'database'
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=300, s-maxage=300', // 5 minute cache for dashboard data
+        'Vercel-CDN-Cache-Control': 'max-age=0' // Don't cache user data at CDN level
+      }
     })
 
   } catch (error) {

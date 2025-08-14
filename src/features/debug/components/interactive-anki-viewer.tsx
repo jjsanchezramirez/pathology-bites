@@ -76,19 +76,22 @@ export function InteractiveAnkiViewer({
   const answerHasClozes = !isImageOcclusion && hasInteractiveClozes(card.answer)
   const hasClozes = questionHasClozes || answerHasClozes
 
+  // Check if this is a basic front/back card (no clozes, no image occlusion)
+  const isBasicCard = !hasClozes && !isImageOcclusion
+
   // Debug cloze detection
-  if (card.id === 'syE#c*a5Sg') {
-    console.log('Debug card syE#c*a5Sg:')
+  if (card.id === 'syE#c*a5Sg' || card.id === 'x2z}Ku7uG@') {
+    console.log(`Debug card ${card.id}:`)
     console.log('Question:', card.question)
     console.log('Answer:', card.answer)
+    console.log('Tags:', card.tags)
+    console.log('DeckName:', card.deckName)
     console.log('questionHasClozes:', questionHasClozes)
     console.log('answerHasClozes:', answerHasClozes)
     console.log('hasClozes:', hasClozes)
     console.log('isImageOcclusion:', isImageOcclusion)
+    console.log('isBasicCard:', isBasicCard)
   }
-  
-  // Check if this is a basic front/back card (no clozes, no image occlusion)
-  const isBasicCard = !hasClozes && !isImageOcclusion
 
   // Extract clozes for reference
   const questionClozes = useMemo(() => 
@@ -160,27 +163,27 @@ export function InteractiveAnkiViewer({
   // Process content with interactive clozes or handle image occlusion
   const clozeProcessedQuestion = useMemo(() => {
     if (isImageOcclusion) {
-      // For image occlusion, treat as no clozes and mark revealed
       return { html: processedQuestionHtml, clozes: [], allRevealed: true }
-    } else if (questionHasClozes) {
-      const processed = processInteractiveClozes(processedQuestionHtml, revealedClozes)
-      if (card.id === 'syE#c*a5Sg') {
-        console.log('Question cloze processing result:', processed)
-      }
-      return processed
+    }
+    if (questionHasClozes) {
+      return processInteractiveClozes(processedQuestionHtml, revealedClozes)
     }
     return { html: processedQuestionHtml, clozes: [], allRevealed: true }
-  }, [processedQuestionHtml, questionHasClozes, revealedClozes, isImageOcclusion, card.id])
+  }, [processedQuestionHtml, questionHasClozes, revealedClozes, isImageOcclusion])
 
   const clozeProcessedAnswer = useMemo(() => {
     if (isImageOcclusion) {
-      // For image occlusion, the answer contains the revealed version
       return { html: processedAnswerHtml, clozes: [], allRevealed: true }
-    } else if (answerHasClozes) {
+    }
+    if (answerHasClozes) {
       return processInteractiveClozes(processedAnswerHtml, revealedClozes)
     }
     return { html: processedAnswerHtml, clozes: [], allRevealed: true }
   }, [processedAnswerHtml, answerHasClozes, revealedClozes, isImageOcclusion])
+
+  // Combined cloze state across question and answer
+  const hasAnyClozes = hasClozes && ((clozeProcessedQuestion.clozes?.length || 0) + (clozeProcessedAnswer.clozes?.length || 0) > 0)
+  const allClozesRevealed = hasAnyClozes && [...new Set([...(clozeProcessedQuestion.clozes||[]), ...(clozeProcessedAnswer.clozes||[])].map(c => c.index))].every(idx => revealedClozes.has(idx))
 
   // Handle cloze click
   const handleClozeClick = useCallback((clozeIndex: number) => {
@@ -226,27 +229,33 @@ export function InteractiveAnkiViewer({
         case 'Enter':
         case 'NumpadEnter':
           event.preventDefault()
-          if (hasClozes && !clozeProcessedQuestion.allRevealed) {
+          if (hasAnyClozes && !allClozesRevealed) {
             // Reveal next cloze in numerical order (c1, c2, c3, etc.)
             const nextClozeIndex = [...questionClozes, ...answerClozes]
               .map(c => c.index)
-              .sort((a, b) => a - b) // Sort by cloze index, not position
+              .sort((a, b) => a - b)
               .find(index => !revealedClozes.has(index))
             if (nextClozeIndex !== undefined) {
               handleClozeClick(nextClozeIndex)
             } else {
-              // All clozes revealed, go to next card
               onNext?.()
             }
           } else if ((isImageOcclusion || isBasicCard) && !showAnswer && card.answer && card.answer.trim()) {
-            // For basic cards: if the back is citation-only, skip showing it and go next
             if (isBasicCard && !basicHasNonCitationAnswer) {
               onNext?.()
             } else {
               toggleAnswer()
             }
+          } else if (hasAnyClozes && !allClozesRevealed) {
+            // Safety: if we still have clozes not revealed, don't advance
+            const nextClozeIndex = [...questionClozes, ...answerClozes]
+              .map(c => c.index)
+              .sort((a, b) => a - b)
+              .find(index => !revealedClozes.has(index))
+            if (nextClozeIndex !== undefined) {
+              handleClozeClick(nextClozeIndex)
+            }
           } else {
-            // No answer content or answer already shown, go to next card
             onNext?.()
           }
           break
@@ -324,8 +333,6 @@ export function InteractiveAnkiViewer({
           height: auto;
           display: block;
           margin: 0.5rem auto;
-          border-radius: 0.75rem;
-          border: 1px solid #e5e7eb;
         }
         .inline-image-small {
           max-width: 2rem;
@@ -334,6 +341,7 @@ export function InteractiveAnkiViewer({
           margin: 0 0.25rem;
           vertical-align: middle;
         }
+
       `}</style>
       <Card className="w-full">
         <CardHeader className="pb-2 px-4 md:px-6">
@@ -379,7 +387,7 @@ export function InteractiveAnkiViewer({
 
           
           {/* Answer section - show when conditions met */}
-          {(hasClozes ? clozeProcessedQuestion.allRevealed : showAnswer) && card.answer && card.answer.trim() && (
+          {(hasAnyClozes ? allClozesRevealed : showAnswer) && card.answer && card.answer.trim() && (
             <>
               <Separator />
               <div className="space-y-3">
@@ -430,7 +438,7 @@ export function InteractiveAnkiViewer({
           <div className="border-t pt-6 mt-4 hidden md:block">
             <div className="text-center">
               <div className="text-xs text-muted-foreground">
-                {!isImageOcclusion && hasClozes && !clozeProcessedQuestion.allRevealed ? (
+                {!isImageOcclusion && hasAnyClozes && !allClozesRevealed ? (
                   <p>
                     <strong>Instructions:</strong> Use <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">◀</kbd> <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">▶</kbd> to navigate • <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Space</kbd> or <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Enter</kbd> to reveal next
                   </p>
@@ -525,41 +533,7 @@ export function InteractiveAnkiViewer({
           letter-spacing: 0.05em;
         }
         
-        @media (prefers-color-scheme: dark) {
-          .cloze-hidden {
-            background-color: #92400e;
-            border-color: #d97706;
-            color: #fef3c7;
-          }
-          
-          .cloze-hidden:hover {
-            background-color: #d97706;
-            border-color: #f59e0b;
-            color: white;
-          }
-          
-          .cloze-revealed {
-            background-color: #14532d;
-            border-color: #22c55e;
-            color: #dcfce7;
-          }
-          
-          .cloze-revealed:hover {
-            background-color: #166534;
-            border-color: #16a34a;
-          }
-          
-          .citation-section {
-            background-color: rgba(31, 41, 55, 0.5);
-          }
 
-          .extra-section h4,
-          .personal-notes-section h4,
-          .textbook-section h4,
-          .citation-section h4 {
-            color: #9ca3af;
-          }
-        }
 
         /* Image Occlusion styles */
         .io-wrapper {
@@ -572,10 +546,18 @@ export function InteractiveAnkiViewer({
         }
 
         /* Ensure images don't exceed container but keep natural size by default */
-        .io-wrapper img, .prose img {
+        .io-wrapper img {
           max-width: 100%;
           height: auto;
           display: inline-block;
+        }
+
+        /* Center all prose images except small icons */
+        .prose img:not(.inline-image-small) {
+          max-width: 100% !important;
+          height: auto !important;
+          display: block !important;
+          margin: 0.5rem auto !important;
         }
 
         /* Support inline SVG overlays and IMG-wrapped SVG overlays */

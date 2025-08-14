@@ -179,7 +179,9 @@ When educational context is provided, use it as reference material for creating 
     }
 
     try {
-      const response = await fetch(`/api/content/${fileName}`)
+      // Use direct R2 access to avoid Vercel API costs
+      const EDUCATIONAL_CONTENT_BASE = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
+      const response = await fetch(`${EDUCATIONAL_CONTENT_BASE}/context/${fileName}`)
       if (response.ok) {
         const contentData = await response.json()
         // Extract meaningful content for AI context

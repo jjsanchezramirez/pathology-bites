@@ -5,15 +5,17 @@
  */
 
 // R2 public URLs - no Vercel API calls needed
+const DATA_BASE = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
+
 export const R2_PUBLIC_URLS = {
-  ABPATH_CONTENT_SPECS_JSON: '',
-  CELL_QUIZ_IMAGES_JSON: '',
-  CELL_QUIZ_REFERENCES_JSON: '',
-  NLM_JOURNAL_ABBREVIATIONS_JSON: '',
-  CONTEXT_DATA_URL: '',
-  PATHOLOGY_BITES_IMAGES_URL: 's',
-  EDUCATIONAL_CONTENT_DATA: '',
-  IMAGES: '',
+  ABPATH_CONTENT_SPECS_JSON: `${DATA_BASE}/ab-path/content-specs.json`,
+  CELL_QUIZ_IMAGES_JSON: `${DATA_BASE}/cell-quiz/cell-quiz-images.json`,
+  CELL_QUIZ_REFERENCES_JSON: `${DATA_BASE}/cell-quiz/cell-quiz-references.json`,
+  NLM_JOURNAL_ABBREVIATIONS_JSON: `${DATA_BASE}/nlm/journal-abbreviations.json`,
+  CONTEXT_DATA_URL: `${DATA_BASE}/context`,
+  PATHOLOGY_BITES_IMAGES_URL: `${DATA_BASE}/images`,
+  EDUCATIONAL_CONTENT_DATA: `${DATA_BASE}/content`,
+  IMAGES: `${DATA_BASE}/images`,
 } as const
 
 interface CacheOptions {

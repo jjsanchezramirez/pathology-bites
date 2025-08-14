@@ -28,11 +28,11 @@ import {
 import { InteractiveAnkiViewer } from '../../debug/components/interactive-anki-viewer'
 import { AnkomaData, AnkomaSection, AnkomaViewerProps, AnkiCard } from '../types/anki-card'
 import {
-  loadAnkomaData,
   findSectionById,
   getAllCardsFromSection,
   getSectionStats
 } from '../utils/ankoma-parser'
+import { useClientAnkoma } from '@/shared/hooks/use-client-ankoma'
 import { cn } from '@/shared/utils'
 import { toast } from 'sonner'
 
@@ -82,15 +82,13 @@ export function DoubleSidebarAnkomaViewer({
   onError,
   className
 }: AnkomaViewerProps) {
-  const [ankomaData, setAnkomaData] = useState<AnkomaData | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  // Use the new client-side hook instead of manual loading
+  const { ankomaData, sections, isLoading, error, totalCards } = useClientAnkoma()
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null)
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isShuffled, setIsShuffled] = useState(false)
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false)
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
 
@@ -98,6 +96,13 @@ export function DoubleSidebarAnkomaViewer({
   const [currentLoadingMessage, setCurrentLoadingMessage] = useState('')
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Pass error to parent component
+  useEffect(() => {
+    if (error) {
+      onError?.(error)
+    }
+  }, [error, onError])
 
   // Format tag names by separating uppercase letters and symbols
   const formatTagName = (tagName: string): string => {
@@ -221,16 +226,9 @@ export function DoubleSidebarAnkomaViewer({
 
   const currentCard = currentCards[currentCardIndex]
 
-  // Load ankoma data on mount (only once)
-  useEffect(() => {
-    if (autoLoad && !hasLoadedOnce) {
-      handleLoadData()
-    }
-  }, [autoLoad, hasLoadedOnce])
-
   // Cycle through loading messages while loading
   useEffect(() => {
-    if (loading) {
+    if (isLoading) {
       // Set initial message
       const initialIndex = Math.floor(Math.random() * DEBUG_ANKI_LOADING_MESSAGES.length)
       setLoadingMessageIndex(initialIndex)
@@ -259,25 +257,7 @@ export function DoubleSidebarAnkomaViewer({
         loadingIntervalRef.current = null
       }
     }
-  }, [loading])
-
-  const handleLoadData = async () => {
-    setLoading(true)
-    setError(null)
-    
-    try {
-      const data = await loadAnkomaData()
-      setAnkomaData(data)
-      setHasLoadedOnce(true)
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load Anki data'
-      setError(errorMessage)
-      onError?.(errorMessage)
-      toast.error(errorMessage)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [isLoading])
 
   const handleDeckSelect = (deckId: string) => {
     setSelectedDeckId(deckId)
@@ -328,7 +308,7 @@ export function DoubleSidebarAnkomaViewer({
     setRightSidebarCollapsed(!bothCollapsed)
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className={cn("w-full h-full flex items-center justify-center", className)}>
         <Card className="animate-pulse max-w-md mx-4">
@@ -338,7 +318,7 @@ export function DoubleSidebarAnkomaViewer({
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-foreground">Loading Debug Anki Viewer</h3>
                 <p className="text-sm text-muted-foreground">
-                  Parsing {ankomaData?.totalCards?.toLocaleString() || 'thousands of'} cards from ankoma.json...
+                  Parsing {totalCards?.toLocaleString() || 'thousands of'} cards from ankoma.json...
                 </p>
               </div>
 
@@ -374,9 +354,9 @@ export function DoubleSidebarAnkomaViewer({
               <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Failed to Load Deck</h3>
               <p className="text-muted-foreground mb-4">{error}</p>
-              <Button onClick={handleLoadData}>
+              <Button onClick={() => window.location.reload()}>
                 <RotateCcw className="h-4 w-4 mr-2" />
-                Try Again
+                Reload Page
               </Button>
             </div>
           </CardContent>
@@ -392,14 +372,10 @@ export function DoubleSidebarAnkomaViewer({
           <CardContent className="flex items-center justify-center h-64">
             <div className="text-center">
               <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Deck Loaded</h3>
-              <p className="text-muted-foreground mb-4">
-                Click the button below to load the Ankoma deck
+              <h3 className="text-lg font-semibold mb-2">No Data Available</h3>
+              <p className="text-muted-foreground">
+                The Ankoma deck data could not be loaded. Please try refreshing the page.
               </p>
-              <Button onClick={handleLoadData}>
-                <Play className="h-4 w-4 mr-2" />
-                Load Ankoma Deck
-              </Button>
             </div>
           </CardContent>
         </Card>

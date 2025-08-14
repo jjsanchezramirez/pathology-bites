@@ -29,9 +29,12 @@ interface EducationalContent {
   content: any
 }
 
-// Use our Cloudflare R2 APIs for proper authentication to private bucket
+// Use our Cloudflare R2 APIs for proper authentication to private bucket  
 const WSI_METADATA_API = '/api/tools/wsi-question-generator/wsi-metadata'
-const EDUCATIONAL_CONTENT_API = '/api/content/educational'
+
+// Direct R2 access for educational content - avoid Vercel API costs
+const EDUCATIONAL_CONTENT_BASE = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
+const EDUCATIONAL_CONTENT_API = `${EDUCATIONAL_CONTENT_BASE}/context`
 
 // Available educational content files (~40MB total)
 const CONTENT_FILES = [
@@ -219,9 +222,9 @@ class ClientDataManager {
 
     try {
       const response = await fetch(`${EDUCATIONAL_CONTENT_API}/${filename}`, {
+        cache: 'force-cache', // Aggressive browser caching
         headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'public, max-age=86400' // 24 hour browser cache
+          'Accept': 'application/json'
         }
       })
 

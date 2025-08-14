@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // R2 URL for virtual slides data
-const VIRTUAL_SLIDES_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/pathology-bites-data/virtual-slides.json'
+const VIRTUAL_SLIDES_R2_URL = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/wsi/virtual-slides.json'
 
 interface VirtualSlide {
   id: string
