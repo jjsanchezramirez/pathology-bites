@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 // Direct R2 access - CORS is configured on bucket
 const ABPATH_API_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/ab-path/content-specs.json'
 

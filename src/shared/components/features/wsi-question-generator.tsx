@@ -6,11 +6,11 @@ import { Card, CardContent } from '@/shared/components/ui/card'
 import { Badge } from '@/shared/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import {
-  Check, X, Loader2, Brain, Microscope, AlertCircle,
+  Check, X, Loader2, AlertCircle,
   ExternalLink, RefreshCw, Info
 } from 'lucide-react'
 import { WSIViewer } from '@/shared/components/common/wsi-viewer'
-import { useClientVirtualSlides } from '@/shared/hooks/use-client-virtual-slides'
+
 
 // Import client-side hook for WSI question generation
 import { useWSIQuestionGenerator } from '@/shared/hooks/use-wsi-question-generator'

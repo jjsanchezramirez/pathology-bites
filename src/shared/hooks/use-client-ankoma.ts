@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { AnkomaData, AnkomaDeck } from '@/features/anki/types/anki-card'
 import { parseAnkomaData } from '@/features/anki/utils/ankoma-parser'
 import { ANKOMA_JSON_URL } from '@/shared/config/ankoma'

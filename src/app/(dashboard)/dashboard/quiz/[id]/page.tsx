@@ -18,7 +18,7 @@ import { useQuizActions } from "@/features/quiz/hooks/use-quiz-actions"
 import { QuizResult } from "@/features/quiz/types/quiz"
 import { toast } from "sonner"
 import { useState, useEffect, useCallback } from "react"
-import { ArrowLeft, ArrowRight, FileText } from "lucide-react"
+import { ArrowLeft, ArrowRight } from "lucide-react"
 import Link from "next/link"
 
 export default function QuizSessionPage() {

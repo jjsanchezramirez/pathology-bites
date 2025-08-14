@@ -8,14 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Button } from "@/shared/components/ui/button"
 import { Progress } from "@/shared/components/ui/progress"
 import { Badge } from "@/shared/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
 import {
   ArrowLeft,
   CheckCircle,
   Circle,
   Lock,
   Play,
-  Star,
+
   Clock,
   Target,
   Trophy,

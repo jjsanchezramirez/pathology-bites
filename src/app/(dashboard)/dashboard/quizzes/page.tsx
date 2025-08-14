@@ -1,7 +1,7 @@
 // src/app/(dashboard)/dashboard/quizzes/page.tsx
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { useCachedData } from "@/shared/hooks/use-cached-data"
 import { Card, CardContent } from "@/shared/components/ui/card"
 import { Skeleton } from "@/shared/components/ui/skeleton"

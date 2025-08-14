@@ -4,8 +4,8 @@
  * Minimizes API calls with intelligent client-side caching
  */
 
-import { useState, useCallback, useEffect } from 'react'
-import { initializePreloading } from '@/shared/utils/common-data-preloader'
+import { useState } from 'react'
+
 
 interface GeneInfo {
   hgncId: string

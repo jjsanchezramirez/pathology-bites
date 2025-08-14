@@ -2,12 +2,12 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { usePathname } from 'next/navigation'
+
 import { useMobile } from '@/shared/hooks/use-mobile'
 import { useQuizMode } from '@/shared/hooks/use-quiz-mode'
 import { UnifiedSidebar } from './unified-sidebar'
 import { UnifiedHeader, HeaderConfig } from './unified-header'
-import { NavigationItem, getNavigationConfig } from '@/shared/config/navigation'
+import { getNavigationConfig } from '@/shared/config/navigation'
 import { useUserRole } from '@/shared/hooks/use-user-role'
 
 interface UnifiedLayoutClientProps {
