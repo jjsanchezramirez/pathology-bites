@@ -4,7 +4,7 @@
  * Minimizes API calls with intelligent client-side caching
  */
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 
 
 interface GeneInfo {
