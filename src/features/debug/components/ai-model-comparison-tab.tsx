@@ -148,78 +148,9 @@ export function AiModelComparisonTab() {
 
     setTestResults(initialResults)
 
-    // Use batch API for testing all models simultaneously
+    // Batch model testing disabled - debug API removed
     try {
-      const response = await fetch('/api/debug/batch-model-test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          models: selectedModels,
-          prompt,
-          instructions: 'Provide a clear, concise response.'
-        })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        // Safely extract error message from response
-        let errorMessage = 'Batch test failed'
-        if (data.error) {
-          if (typeof data.error === 'string') {
-            errorMessage = data.error
-          } else if (typeof data.error === 'object' && data.error.message) {
-            errorMessage = data.error.message
-          } else if (typeof data.error === 'object') {
-            errorMessage = JSON.stringify(data.error)
-          }
-        }
-        throw new Error(errorMessage)
-      }
-
-      // Process results
-      const results: ModelTestResult[] = data.results.map((result: any) => {
-        const model = allModels.find(m => m.id === result.modelId)!
-
-        // Ensure error is always a string if present
-        let errorMessage: string | undefined = undefined
-        if (result.error) {
-          if (typeof result.error === 'string') {
-            errorMessage = result.error
-          } else if (typeof result.error === 'object') {
-            errorMessage = result.error.message || JSON.stringify(result.error)
-          }
-        }
-
-        return {
-          modelId: result.modelId,
-          modelName: model.name,
-          provider: model.provider,
-          status: result.status,
-          response: result.response,
-          responseTime: result.responseTime,
-          tokenUsage: result.tokenUsage,
-          error: errorMessage,
-          thinkingContent: result.thinkingContent,
-          hasThinking: result.hasThinking
-        }
-      })
-
-      setTestResults(results)
-      setProgress(100)
-
-      // Save session
-      const session: ComparisonSession = {
-        id: Date.now().toString(),
-        prompt,
-        timestamp: Date.now(),
-        results
-      }
-
-      saveSessions([session, ...sessions.slice(0, 9)]) // Keep last 10 sessions
-
-      setIsRunning(false)
-      toast.success(`Comparison completed! Tested ${results.length} models`)
+      throw new Error('Batch model testing is disabled - debug APIs have been removed for production optimization')
 
     } catch (error) {
       console.error('Batch test error:', error)

@@ -33,13 +33,8 @@ async function loadClientAnkoma(): Promise<AnkomaData> {
         : (e?.message || 'Failed to fetch Ankoma dataset.')
 
       // In production, do NOT fall back to Vercel proxy to avoid bandwidth/invocations.
-      if (process.env.NODE_ENV === 'production') {
-        console.error('[Ankoma] R2 fetch failed in production. Check R2 CORS and network.', e)
-        throw new Error(msg)
-      }
-      // In development, fallback to local API route for easier testing
-      console.warn('[Ankoma] R2 fetch failed in dev, falling back to /api/debug/anki-data/ankoma.json')
-      return await fetchWithTimeout('/api/debug/anki-data/ankoma.json', { cache: 'force-cache', timeoutMs: 15000 })
+      console.error('[Ankoma] R2 fetch failed. Check R2 CORS and network.', e)
+      throw new Error(msg)
     }
   }
 

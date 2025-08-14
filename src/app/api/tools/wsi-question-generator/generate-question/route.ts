@@ -91,7 +91,82 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
   throw lastError || new Error('Max retries exceeded')
 }
 
-// Removed hard-coded fallback question generation to keep system simple
+// Direct AI API call functions
+async function callGroqAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 4000
+    })
+  })
+
+  if (!response.ok) {
+    throw new Error(`Groq API error: ${response.status} ${response.statusText}`)
+  }
+
+  const data = await response.json()
+  return {
+    content: data.choices[0]?.message?.content || '',
+    tokenUsage: data.usage
+  }
+}
+
+async function callGoogleAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 4000
+      }
+    })
+  })
+
+  if (!response.ok) {
+    throw new Error(`Google API error: ${response.status} ${response.statusText}`)
+  }
+
+  const data = await response.json()
+  return {
+    content: data.candidates?.[0]?.content?.parts?.[0]?.text || '',
+    tokenUsage: data.usageMetadata
+  }
+}
+
+async function callMistralAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+  const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 4000
+    })
+  })
+
+  if (!response.ok) {
+    throw new Error(`Mistral API error: ${response.status} ${response.statusText}`)
+  }
+
+  const data = await response.json()
+  return {
+    content: data.choices[0]?.message?.content || '',
+    tokenUsage: data.usage
+  }
+}
 
 
 
@@ -190,89 +265,37 @@ ${JSON.stringify(context.content, null, 2)}
 
 The virtual slide images will be displayed to the user, so do not describe microscopic findings in your question stem.`
 
-    // Determine API endpoint based on model provider
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-    let apiEndpoint: string
+    // Call AI services directly (no more debug endpoints)
+    console.log(`[Question Gen] Using model: ${selectedModel} (${provider})`)
+    console.log(`[Question Gen] Calling AI service directly`)
 
+    let apiResponse: { content: string; tokenUsage?: any }
+
+    // Call appropriate AI service based on provider
     switch (provider) {
-      case 'llama':
-        apiEndpoint = `${baseUrl}/api/debug/llama-test`
+      case 'groq':
+        apiResponse = await callGroqAPI(prompt, selectedModel, apiKey)
         break
-      case 'gemini':
-        apiEndpoint = `${baseUrl}/api/debug/gemini-test`
+      case 'google':
+        apiResponse = await callGoogleAPI(prompt, selectedModel, apiKey)
         break
       case 'mistral':
-        apiEndpoint = `${baseUrl}/api/debug/mistral-test`
-        break
-      case 'claude':
-        apiEndpoint = `${baseUrl}/api/debug/claude-test`
-        break
-      case 'chatgpt':
-        apiEndpoint = `${baseUrl}/api/debug/chatgpt-test`
-        break
-      case 'deepseek':
-        apiEndpoint = `${baseUrl}/api/debug/deepseek-test`
+        apiResponse = await callMistralAPI(prompt, selectedModel, apiKey)
         break
       default:
-        console.warn(`[Question Gen] Unknown provider: ${provider}, defaulting to Gemini`)
-        apiEndpoint = `${baseUrl}/api/debug/gemini-test`
-        break
+        throw new Error(`Unsupported model provider: ${provider}`)
     }
 
-    console.log(`[Question Gen] Using model: ${selectedModel} (${provider})`)
-    console.log(`[Question Gen] Calling AI API: ${apiEndpoint}`)
+    console.log(`[Question Gen] AI service response received`)
 
-    // Use retry logic like admin system for better reliability
-    const response = await fetchWithRetry(apiEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        apiKey: apiKey,
-        model: selectedModel,
-        prompt: prompt,
-        instructions: instructions,
-        assumeHistologicImages: true, // Images are provided via WSI viewer
-        temperature: 0.7,
-        maxTokens: 2000 // Increased for more detailed responses
-      })
-    })
+    // Extract token usage and content from direct API response
+    const tokenUsage = apiResponse.tokenUsage || null
+    const generatedText = apiResponse.content
 
-    if (!response.ok) {
-      throw new Error(`AI API request failed: ${response.status} ${response.statusText}`)
+    if (!generatedText) {
+      throw new Error('No content received from AI service')
     }
 
-    const aiResponse = await response.json()
-    console.log('[Question Gen] AI response received')
-
-    // Extract token usage information
-    let tokenUsage = null
-    if (aiResponse.usage) {
-      tokenUsage = {
-        prompt_tokens: aiResponse.usage.prompt_tokens || 0,
-        completion_tokens: aiResponse.usage.completion_tokens || 0,
-        total_tokens: aiResponse.usage.total_tokens || 0
-      }
-    }
-
-    // Handle different response formats from Gemini API
-    let generatedText: string
-    if (aiResponse.response) {
-      // Format from our debug endpoint wrapper
-      generatedText = aiResponse.response
-    } else if (aiResponse.choices?.[0]?.message?.content) {
-      // LLAMA API format (OpenAI-compatible)
-      generatedText = aiResponse.choices[0].message.content
-      console.log('[Question Gen] Using LLAMA response format')
-    } else if (aiResponse.candidates && aiResponse.candidates[0]?.content?.parts?.[0]?.text) {
-      // Direct Gemini API format
-      generatedText = aiResponse.candidates[0].content.parts[0].text
-      console.log('[Question Gen] Using Gemini response format')
-    } else {
-      console.error('[Question Gen] Unexpected AI response format:', JSON.stringify(aiResponse, null, 2))
-      throw new Error('No response content found in AI API response')
-    }
     console.log('[Question Gen] Parsing AI response...')
 
     // Try to parse JSON response

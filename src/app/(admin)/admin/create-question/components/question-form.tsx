@@ -223,85 +223,68 @@ ${additionalContext}
 Please generate a question following the instructions provided.
 `
 
-      const provider = getModelProvider(selectedModel)
-      const apiKey = getApiKey(provider)
-      const apiEndpoint = `/api/debug/${provider}-test`
-      
-      console.log('🔍 Model:', selectedModel, 'Provider:', provider, 'Endpoint:', apiEndpoint)
+      console.log('🔍 Model:', selectedModel, 'Using WSI question generator API')
 
-      const response = await fetchWithRetry(apiEndpoint, {
+      const response = await fetchWithRetry('/api/tools/wsi-question-generator/generate-llm-question', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          apiKey: apiKey,
-          model: selectedModel,
-          prompt: prompt,
-          instructions: instructions,
-          assumeHistologicImages: assumeHistologicImages
+          wsi: {
+            diagnosis: 'Admin Generated Question',
+            category: 'Admin',
+            subcategory: 'Manual Creation',
+            stain_type: 'H&E'
+          },
+          context: null,
+          modelId: selectedModel
         })
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        let generatedText = ''
-
-        // Extract text based on provider response format
-        if ((provider === 'gemini' || provider === 'google') && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-          generatedText = data.candidates[0].content.parts[0].text
-        } else if ((provider === 'claude') && data.content?.[0]?.text) {
-          generatedText = data.content[0].text
-        } else if ((provider === 'chatgpt' || provider === 'mistral' || provider === 'deepseek' || provider === 'llama') && data.choices?.[0]?.message?.content) {
-          generatedText = data.choices[0].message.content
-        } else {
-          // Log the actual response format for debugging
-          console.error('Unexpected response format from AI provider:', provider)
-          console.error('Response data:', JSON.stringify(data, null, 2))
-          throw new Error(`Unexpected response format from AI provider: ${provider}. Check console for details.`)
+        // WSI question generator API returns structured response
+        if (!data.success) {
+          throw new Error(data.error || 'Question generation failed')
         }
 
-        // Try to parse JSON from the response
+        // Extract the generated question data
+        const generatedQuestion = data.question
+        if (!generatedQuestion) {
+          throw new Error('No question data received from API')
+        }
+
+        // Process the structured question data from WSI generator
         try {
-          // Extract JSON from the response (it might be wrapped in markdown)
-          const jsonMatch = generatedText.match(/```json\n([\s\S]*?)\n```/) ||
-                           generatedText.match(/\{[\s\S]*\}/)
-
-          if (jsonMatch) {
-            const jsonStr = jsonMatch[1] || jsonMatch[0]
-            const questionData = JSON.parse(jsonStr)
-
-            // Add required fields that might be missing
-            const completeQuestion: GeneratedQuestion = {
-              ...questionData,
-              status: 'draft',
-              question_set_id: '', // Will be set during finalization
-              category_id: '', // Will be set during finalization
-              answer_options: questionData.answer_options || [], // Ensure answer_options is always an array
-              question_images: questionData.question_images || [],
-              tag_ids: questionData.tag_ids || [],
-              metadata: {
-                exported_at: new Date().toISOString(),
-                exported_by: '', // Will be set during finalization
-                source_content: {
-                  category: selectedContent.category,
-                  subject: selectedContent.subject,
-                  lesson: selectedContent.lesson,
-                  topic: selectedContent.topic
-                },
-                generated_by: {
-                  provider: provider,
-                  model: selectedModel
-                }
+          // Add required fields that might be missing
+          const completeQuestion: GeneratedQuestion = {
+            ...generatedQuestion,
+            status: 'draft',
+            question_set_id: '', // Will be set during finalization
+            category_id: '', // Will be set during finalization
+            answer_options: generatedQuestion.answer_options || [], // Ensure answer_options is always an array
+            question_images: generatedQuestion.question_images || [],
+            tag_ids: generatedQuestion.tag_ids || [],
+            metadata: {
+              exported_at: new Date().toISOString(),
+              exported_by: '', // Will be set during finalization
+              source_content: {
+                category: selectedContent.category,
+                subject: selectedContent.subject,
+                lesson: selectedContent.lesson,
+                topic: selectedContent.topic
+              },
+              generated_by: {
+                provider: 'wsi-generator',
+                model: selectedModel
+              }
               }
             }
 
-            onQuestionGenerated(completeQuestion)
-            toast.success(`Question generated successfully using ${provider.toUpperCase()}!`)
-          } else {
-            throw new Error('No valid JSON found in response')
-          }
+          onQuestionGenerated(completeQuestion)
+          toast.success(`Question generated successfully using ${selectedModel}!`)
         } catch (parseError) {
           console.error('JSON parsing error:', parseError)
           toast.error('Failed to parse generated question. Please try again.')

@@ -167,65 +167,54 @@ Return the modified question in the same JSON format.
 
       // Use the same model that generated the original question, or default to Gemini
       const originalModel = question?.metadata?.generated_by?.model || 'gemini-2.0-flash-exp'
-      const provider = getModelProvider(originalModel)
-      const apiKey = getApiKey(provider)
-      const apiEndpoint = `/api/debug/${provider}-test`
 
-      const response = await fetchWithRetry(apiEndpoint, {
+      const response = await fetchWithRetry('/api/tools/wsi-question-generator/generate-llm-question', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          apiKey: apiKey,
-          model: originalModel,
-          prompt: prompt,
-          instructions: 'You are refining a pathology question. Return only the modified JSON.'
+          wsi: {
+            diagnosis: 'Question Refinement',
+            category: 'Admin',
+            subcategory: 'Refinement',
+            stain_type: 'H&E'
+          },
+          context: null,
+          modelId: originalModel
         })
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        let generatedText = ''
+        // WSI question generator API returns structured response
+        if (!data.success) {
+          throw new Error(data.error || 'Question refinement failed')
+        }
 
-        // Extract text based on provider response format
-        if (provider === 'gemini' && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-          generatedText = data.candidates[0].content.parts[0].text
-        } else if ((provider === 'claude') && data.content?.[0]?.text) {
-          generatedText = data.content[0].text
-        } else if ((provider === 'chatgpt' || provider === 'mistral' || provider === 'deepseek' || provider === 'llama') && data.choices?.[0]?.message?.content) {
-          generatedText = data.choices[0].message.content
-        } else {
-          throw new Error('Unexpected response format from AI provider')
+        // Extract the refined question data
+        const refinedQuestion = data.question
+        if (!refinedQuestion) {
+          throw new Error('No question data received from API')
         }
 
         try {
-          const jsonMatch = generatedText.match(/```json\n([\s\S]*?)\n```/) ||
-                           generatedText.match(/\{[\s\S]*\}/)
-
-          if (jsonMatch) {
-            const jsonStr = jsonMatch[1] || jsonMatch[0]
-            const refinedQuestion = JSON.parse(jsonStr)
-
-            onQuestionUpdated({
-              ...refinedQuestion,
-              metadata: {
-                ...question.metadata,
-                refined_at: new Date().toISOString(),
-                refinement_request: chatMessage,
-                refined_by: {
-                  provider: provider,
-                  model: originalModel
-                }
+          onQuestionUpdated({
+            ...refinedQuestion,
+            metadata: {
+              ...question.metadata,
+              refined_at: new Date().toISOString(),
+              refinement_request: chatMessage,
+              refined_by: {
+                provider: 'wsi-generator',
+                model: originalModel
               }
-            })
+            }
+          })
 
-            setChatMessage('')
-            toast.success(`Question refined successfully using ${provider?.toUpperCase() || 'UNKNOWN'}!`)
-          } else {
-            throw new Error('No valid JSON found in response')
-          }
+          setChatMessage('')
+          toast.success(`Question refined successfully using ${originalModel}!`)
         } catch (parseError) {
           console.error('JSON parsing error:', parseError)
           toast.error('Failed to parse refined question')

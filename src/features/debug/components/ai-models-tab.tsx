@@ -320,31 +320,20 @@ When educational context is provided, use it as reference material for creating 
           })
         })
         data = await apiResponse.json()
-      } else if (provider === 'llama') {
-        // Use direct LLAMA API for pilot program
-        apiResponse = await fetch('/api/debug/llama-test', {
+      } else if (provider === 'llama' || provider === 'groq') {
+        // Use LLM question generator API for LLAMA and Groq models
+        apiResponse = await fetch('/api/tools/wsi-question-generator/generate-llm-question', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            apiKey,
-            model: selectedModel,
-            prompt,
-            instructions,
-            educationalContext: educationalContext || undefined
-          })
-        })
-        data = await apiResponse.json()
-      } else if (provider === 'groq') {
-        // Use Groq API for Groq-specific models
-        apiResponse = await fetch('/api/debug/groq-test', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            apiKey,
-            model: selectedModel,
-            prompt,
-            instructions,
-            educationalContext: educationalContext || undefined
+            wsi: {
+              diagnosis: 'Test Case',
+              category: 'Test',
+              subcategory: 'Debug',
+              stain_type: 'H&E'
+            },
+            context: educationalContext || null,
+            modelId: selectedModel
           })
         })
         data = await apiResponse.json()
