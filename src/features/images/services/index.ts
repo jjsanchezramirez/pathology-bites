@@ -2,4 +2,3 @@
 export * from './image-upload'
 export * from './images'
 export * from './image-analytics'
-export * from './storage-sync'

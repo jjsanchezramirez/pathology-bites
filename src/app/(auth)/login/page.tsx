@@ -1,7 +1,5 @@
 // src/app/(auth)/login/page.tsx
 import { Suspense } from 'react'
-import { redirect } from 'next/navigation'
-import { createClient } from '@/shared/services/server'
 import { login } from '@/features/auth/services/actions'
 import { AuthPageLayout } from '@/features/auth/components/ui/auth-page-layout'
 import { AuthCard } from '@/features/auth/components/ui/auth-card'
@@ -17,14 +15,8 @@ async function LoginPageContent({ searchParams }: LoginPageProps) {
   // Await searchParams for Next.js 15
   const params = await searchParams
 
-  // Check if user is already authenticated
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (user) {
-    const redirectPath = params.redirect || '/dashboard'
-    redirect(redirectPath)
-  }
+  // Note: Authentication check moved to client-side to avoid cookies() during build
+  // The LoginForm component will handle redirecting authenticated users
 
   // Check if coming soon or maintenance mode is enabled
   const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
@@ -42,7 +34,7 @@ async function LoginPageContent({ searchParams }: LoginPageProps) {
           <AlertDescription>{params.error}</AlertDescription>
         </Alert>
       )}
-      
+
       {params.message && (
         <Alert className="mb-4">
           <AlertDescription>{params.message}</AlertDescription>

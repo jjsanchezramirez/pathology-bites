@@ -24,7 +24,7 @@ function generateCSRFToken(): string {
   return result
 }
 
-// Get or create CSRF token for the current session
+// Get or create CSRF token for the current session (API route only)
 export async function getCSRFToken(): Promise<string> {
   const cookieStore = await cookies()
   let token = cookieStore.get(CSRF_TOKEN_NAME)?.value
@@ -43,35 +43,41 @@ export async function getCSRFToken(): Promise<string> {
   return token
 }
 
-// Validate CSRF token from request
+// Validate CSRF token from request (middleware/API route only)
 export async function validateCSRFToken(request: NextRequest): Promise<boolean> {
-  const cookieStore = await cookies()
-  const sessionToken = cookieStore.get(CSRF_TOKEN_NAME)?.value
-  
-  if (!sessionToken) {
+  try {
+    const cookieStore = await cookies()
+    const sessionToken = cookieStore.get(CSRF_TOKEN_NAME)?.value
+
+    if (!sessionToken) {
+      return false
+    }
+
+    // Check token in header
+    const headerToken = request.headers.get(CSRF_HEADER_NAME)
+    if (headerToken && headerToken === sessionToken) {
+      return true
+    }
+
+    // Check token in form data for POST requests
+    if (request.method === 'POST') {
+      try {
+        const formData = await request.clone().formData()
+        const formToken = formData.get('csrf-token') as string
+        if (formToken && formToken === sessionToken) {
+          return true
+        }
+      } catch {
+        // If parsing form data fails, continue to check other methods
+      }
+    }
+
+    return false
+  } catch (error) {
+    // If cookies() fails (e.g., called outside request scope), return false
+    console.warn('CSRF validation failed - cookies not available:', error)
     return false
   }
-
-  // Check token in header
-  const headerToken = request.headers.get(CSRF_HEADER_NAME)
-  if (headerToken && headerToken === sessionToken) {
-    return true
-  }
-
-  // Check token in form data for POST requests
-  if (request.method === 'POST') {
-    try {
-      const formData = await request.clone().formData()
-      const formToken = formData.get('csrf-token') as string
-      if (formToken && formToken === sessionToken) {
-        return true
-      }
-    } catch {
-      // If parsing form data fails, continue to check other methods
-    }
-  }
-
-  return false
 }
 
 // Middleware function to check CSRF protection
