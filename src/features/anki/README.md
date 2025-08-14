@@ -227,7 +227,7 @@ import { AnkomaViewer } from '@/features/anki'
 - `className?: string` - Additional CSS classes
 
 **Features:**
-- **Auto-loading**: Automatically fetches and parses `ankoma.json` from `/api/debug/anki-data/ankoma.json`
+- **Auto-loading**: Automatically fetches and parses `ankoma.json` from R2 storage
 - **Section Navigation**: Hierarchical dropdown with search for AP/CP sections and subsections
 - **Card Browsing**: Navigate through cards within selected sections with "Card X of Y" counter
 - **Error Handling**: Graceful handling of loading failures, invalid JSON, and empty sections

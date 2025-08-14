@@ -12,7 +12,7 @@ import { Separator } from '@/shared/components/ui/separator'
 import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group'
 import { Edit, Eye, Save, MessageSquare, Brain } from 'lucide-react'
 import { toast } from 'sonner'
-import { getApiKey as getCentralizedApiKey, hasApiKey } from '@/shared/config/ai-models'
+import { getModelProvider } from '@/shared/config/ai-models'
 
 interface GeneratedQuestion {
   title: string
@@ -83,20 +83,7 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
     setIsEditing(false)
   }
 
-  // Helper functions for AI provider handling
-  const getModelProvider = (model: string) => {
-    if (model.startsWith('llama-') || model.startsWith('Llama-')) return 'llama'
-    if (model.startsWith('gemini-')) return 'gemini'
-    if (model.startsWith('mistral-') || model.startsWith('open-mistral') || model.startsWith('open-mixtral')) return 'mistral'
-    if (model.startsWith('deepseek-')) return 'deepseek'
-    if (model.startsWith('claude-')) return 'claude'
-    if (model.startsWith('gpt-')) return 'chatgpt'
-    return 'gemini' // default
-  }
 
-  const getApiKey = (provider: string) => {
-    return getCentralizedApiKey(provider)
-  }
 
   // Network retry utility with exponential backoff
   const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 3): Promise<Response> => {

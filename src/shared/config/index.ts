@@ -21,9 +21,5 @@ export const config = {
     anonKey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY,
   },
-  debug: {
-    // Disable all debug flags in production
-    bypassAuth: env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEBUG_BYPASS_AUTH === 'true',
-    showDebugRoutes: env.NODE_ENV !== 'production',
-  },
+
 };

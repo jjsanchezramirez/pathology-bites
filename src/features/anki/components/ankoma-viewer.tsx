@@ -23,7 +23,7 @@ import {
   FolderOpen,
   FileText
 } from 'lucide-react'
-import { InteractiveAnkiViewer } from '../../debug/components/interactive-anki-viewer'
+
 import { SimplifiedSubdeckSidebar } from './simplified-subdeck-sidebar'
 import { AnkomaData, AnkomaSection, AnkomaViewerProps } from '../types/anki-card'
 import {
@@ -384,11 +384,35 @@ export function AnkomaViewer({
         <div className="flex-1 overflow-auto p-6 min-h-0 pb-16">
           {currentCard ? (
             <div className="max-w-4xl mx-auto">
-              <InteractiveAnkiViewer
-                card={currentCard}
-                onNext={currentCardIndex < currentCards.length - 1 ? handleNextCard : undefined}
-                onPrevious={currentCardIndex > 0 ? handlePreviousCard : undefined}
-              />
+              <Card>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold">Card {currentCardIndex + 1} of {currentCards.length}</h3>
+                      <div className="flex gap-2">
+                        {currentCardIndex > 0 && (
+                          <Button onClick={handlePreviousCard} size="sm">
+                            Previous
+                          </Button>
+                        )}
+                        {currentCardIndex < currentCards.length - 1 && (
+                          <Button onClick={handleNextCard} size="sm">
+                            Next
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="border rounded-lg p-4">
+                      <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentCard.question }} />
+                    </div>
+
+                    <div className="border rounded-lg p-4 bg-muted/50">
+                      <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentCard.answer }} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           ) : currentSection ? (
             <div className="max-w-4xl mx-auto">

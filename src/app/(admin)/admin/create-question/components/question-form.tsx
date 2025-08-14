@@ -15,9 +15,7 @@ import {
   ACTIVE_AI_MODELS,
   DISABLED_AI_MODELS,
   getModelProvider,
-  getApiKey,
-  DEFAULT_MODEL,
-  type AIModel
+  DEFAULT_MODEL
 } from '@/shared/config/ai-models'
 
 interface EducationalContent {

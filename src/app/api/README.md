@@ -36,10 +36,7 @@ All APIs implement intelligent caching and optimization strategies:
 - Analytics and monitoring endpoints
 - Bulk operations and maintenance
 
-### **/debug**: Development & Monitoring
-- System health checks and diagnostics
-- Performance monitoring and metrics
-- Development tools and utilities
+
 
 ### **/public**: Public Data Endpoints
 - Publicly accessible statistics and information

@@ -20,7 +20,7 @@ import {
   Target
 } from 'lucide-react'
 import { AnkiDeck, AnkiDeckViewerProps, AnkiCard } from '../types/anki-card'
-import { InteractiveAnkiViewer } from '@/features/debug/components/interactive-anki-viewer'
+
 import { cn } from '@/shared/utils'
 
 export function AnkiDeckViewer({
@@ -253,11 +253,33 @@ export function AnkiDeckViewer({
       </Card>
 
       {/* Card Viewer */}
-      <InteractiveAnkiViewer
-        card={currentCard}
-        onNext={handleNextCard}
-        onPrevious={handlePreviousCard}
-      />
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Card {currentCardIndex + 1} of {deck.cards.length}</h3>
+              <div className="flex gap-2">
+                <Button onClick={handlePreviousCard} disabled={currentCardIndex === 0} size="sm">
+                  <SkipBack className="h-4 w-4" />
+                </Button>
+                <Button onClick={handleNextCard} disabled={currentCardIndex === deck.cards.length - 1} size="sm">
+                  <SkipForward className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4">
+              <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentCard.question }} />
+            </div>
+
+            {showAnswers && (
+              <div className="border rounded-lg p-4 bg-muted/50">
+                <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentCard.answer }} />
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -17,7 +17,7 @@ export * from './public-hero'
 export * from './public-stats-section'
 export * from './role-debug'
 export * from './scroll-to-top'
-export * from './session-debug'
+
 export * from './simple-image-viewer'
 export * from './theme-mode-toggle'
 export * from './toast-test'
