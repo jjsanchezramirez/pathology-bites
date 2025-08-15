@@ -41,13 +41,27 @@ async function loadCellQuizImages(): Promise<any> {
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       return res
     } catch (e: any) {
-      const msg = e?.name === 'AbortError'
-        ? 'Timed out fetching cell quiz images. Please check your network and try again.'
-        : (e?.message || 'Failed to fetch cell quiz images.')
+      console.warn('[CellQuiz Images] R2 fetch failed in dev, falling back to /api/public-data/cell-quiz-images', e)
 
-      // No fallback - direct R2 access only for optimal performance
-      console.error('[CellQuiz] R2 fetch failed. Check R2 CORS and network.', e)
-      throw new Error(msg)
+      // Fallback to server-side API (same as virtual slides)
+      try {
+        const fallbackRes = await fetchWithTimeout('/api/public-data/cell-quiz-images', {
+          cache: 'force-cache',
+          headers: {
+            'Accept': 'application/json'
+          },
+          timeoutMs: 8000
+        })
+        if (!fallbackRes.ok) throw new Error(`Fallback failed: ${fallbackRes.status}`)
+        return fallbackRes
+      } catch (fallbackError) {
+        const msg = e?.name === 'AbortError'
+          ? 'Timed out fetching cell quiz images. Please check your network and try again.'
+          : (e?.message || 'Failed to fetch cell quiz images.')
+
+        console.error('[CellQuiz Images] Both R2 and fallback API failed.', fallbackError)
+        throw new Error(msg)
+      }
     }
   }
 
@@ -88,13 +102,27 @@ async function loadCellQuizReferences(): Promise<any> {
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       return res
     } catch (e: any) {
-      const msg = e?.name === 'AbortError'
-        ? 'Timed out fetching cell quiz references. Please check your network and try again.'
-        : (e?.message || 'Failed to fetch cell quiz references.')
+      console.warn('[CellQuiz References] R2 fetch failed in dev, falling back to /api/public-data/cell-quiz-references', e)
 
-      // No fallback - direct R2 access only for optimal performance
-      console.error('[CellQuiz] R2 fetch failed. Check R2 CORS and network.', e)
-      throw new Error(msg)
+      // Fallback to server-side API (same as virtual slides)
+      try {
+        const fallbackRes = await fetchWithTimeout('/api/public-data/cell-quiz-references', {
+          cache: 'force-cache',
+          headers: {
+            'Accept': 'application/json'
+          },
+          timeoutMs: 8000
+        })
+        if (!fallbackRes.ok) throw new Error(`Fallback failed: ${fallbackRes.status}`)
+        return fallbackRes
+      } catch (fallbackError) {
+        const msg = e?.name === 'AbortError'
+          ? 'Timed out fetching cell quiz references. Please check your network and try again.'
+          : (e?.message || 'Failed to fetch cell quiz references.')
+
+        console.error('[CellQuiz References] Both R2 and fallback API failed.', fallbackError)
+        throw new Error(msg)
+      }
     }
   }
 
