@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/shared/utils';
 import Image from 'next/image';
+import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache';
 
 interface Position {
   top: number;

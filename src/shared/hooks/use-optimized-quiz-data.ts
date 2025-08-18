@@ -112,7 +112,7 @@ export function usePaginatedQuestions(
 }
 
 /**
- * Hook for individual question with aggressive caching
+ * Hook for individual question caching
  */
 export function useOptimizedQuestion(questionId: string) {
   return useCachedData<QuizQuestion>(

@@ -30,6 +30,12 @@ export const INQUIRY_TYPES = {
   TECH: 'tech'
 } as const
 
+export const INQUIRY_STATUSES = {
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  CLOSED: 'closed'
+} as const
+
 export const REPORT_TYPES = {
   INCORRECT_ANSWER: 'incorrect_answer',
   UNCLEAR_QUESTION: 'unclear_question',

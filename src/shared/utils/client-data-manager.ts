@@ -29,8 +29,8 @@ interface EducationalContent {
   content: any
 }
 
-// Use our Cloudflare R2 APIs for proper authentication to private bucket  
-const WSI_METADATA_API = '/api/tools/wsi-question-generator/wsi-metadata'
+// Use direct R2 access for WSI data (same source as use-client-wsi-data.ts)
+const WSI_DATA_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json'
 
 // Direct R2 access for educational content - avoid Vercel API costs
 const EDUCATIONAL_CONTENT_BASE = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
@@ -114,59 +114,79 @@ class ClientDataManager {
   }
 
   private async _loadWSIMetadata(): Promise<VirtualSlide[]> {
-    console.log('[DataManager] 📥 Loading WSI metadata from R2...')
+    console.log('[DataManager] 📥 Loading WSI metadata directly from R2...')
     const startTime = Date.now()
 
     try {
-      // Get multiple samples to build comprehensive metadata cache via API
-      const sampleSize = 100 // Get good sample for client-side operations
-      const promises = Array.from({ length: sampleSize }, async () => {
-        try {
-          const response = await fetch(WSI_METADATA_API, {
-            headers: {
-              'Accept': 'application/json',
-              'Cache-Control': 'public, max-age=3600' // 1 hour browser cache
-            }
-          })
-          
-          if (response.ok) {
-            const result = await response.json()
-            if (result.success && result.wsi) {
-              return result.wsi
-            }
-          }
-          return null
-        } catch {
-          return null
+      const response = await fetch(WSI_DATA_URL, {
+        cache: 'force-cache',
+        headers: {
+          'Accept': 'application/json'
         }
       })
-
-      const results = await Promise.all(promises)
-      const validSlides = results.filter(slide => slide !== null)
-
-      // Remove duplicates and normalize format
-      const data = validSlides.reduce((acc: VirtualSlide[], slide: any) => {
-        if (!acc.find(s => s.id === slide.id)) {
-          acc.push({
-            id: slide.id,
-            repository: slide.repository,
-            category: slide.category,
-            subcategory: slide.subcategory,
-            diagnosis: slide.diagnosis,
-            patient_info: slide.patient_info,
-            age: slide.age,
-            gender: slide.gender,
-            clinical_history: slide.clinical_history,
-            stain_type: slide.stain_type,
-            preview_image_url: slide.preview_image_url || slide.thumbnail_url || '',
-            slide_url: slide.slide_url || slide.case_url || slide.image_url || '',
-            case_url: slide.case_url || slide.slide_url || slide.image_url || '',
-            other_urls: slide.other_urls || [],
-            source_metadata: slide.source_metadata || {}
-          })
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch WSI data: ${response.status} ${response.statusText}`)
+      }
+      
+      const json = await response.json()
+      
+      // Handle the PathPresenter cases JSON format (same as use-client-wsi-data.ts)
+      let pathPresenterCases = json.cases || []
+      
+      // Convert PathPresenter cases to VirtualSlide format
+      const entries: VirtualSlide[] = pathPresenterCases.map((pathCase: any, index: number) => {
+        // Generate consistent ID
+        const caseId = `pathpresenter_${index + 1}`
+        
+        // Parse authors - handle both string and array formats
+        let authorsArray: string[] = []
+        if (pathCase.authors) {
+          if (Array.isArray(pathCase.authors)) {
+            authorsArray = pathCase.authors
+          } else if (typeof pathCase.authors === 'string') {
+            authorsArray = [pathCase.authors]
+          }
         }
-        return acc
-      }, [])
+        
+        // Extract age and gender from clinical history if available
+        const clinicalHistory = pathCase.clinical_history || ''
+        const ageMatch = clinicalHistory.match(/(\d+)[-\s]?year[-\s]?old/i)
+        const genderMatch = clinicalHistory.match(/\b(male|female|man|woman)\b/i)
+        
+        return {
+          id: caseId,
+          repository: 'PathPresenter',
+          category: pathCase.chapter || 'Unknown',
+          subcategory: pathCase.organ_system || 'Unknown',
+          diagnosis: pathCase.diagnosis || 'Unknown diagnosis',
+          patient_info: `${pathCase.organ_system || 'Unknown organ'} case from PathPresenter`,
+          age: ageMatch ? ageMatch[1] : null,
+          gender: genderMatch ? genderMatch[1].toLowerCase() : null,
+          clinical_history: clinicalHistory,
+          stain_type: 'H&E', // Assume H&E for PathPresenter cases
+          preview_image_url: '',
+          slide_url: pathCase.url,
+          case_url: pathCase.url,
+          other_urls: [],
+          source_metadata: {
+            pages: pathCase.pages,
+            microscopic_features: pathCase.microscopic_features,
+            other_prognostic_factors: pathCase.other_prognostic_factors,
+            immuno_profile: pathCase.immuno_profile,
+            molecular_profile: pathCase.molecular_profile,
+            differential_diagnosis: pathCase.differential_diagnosis,
+            authors: authorsArray
+          }
+        }
+      })
+      
+      // Filter out any entries without valid URLs
+      const data = entries.filter(slide => 
+        slide.slide_url && 
+        slide.slide_url.startsWith('http') && 
+        !slide.slide_url.includes('localhost')
+      )
 
       const loadTime = Date.now() - startTime
       const sizeBytes = JSON.stringify(data).length
@@ -178,7 +198,7 @@ class ClientDataManager {
         error: null
       }
 
-      console.log(`[DataManager] ✅ WSI metadata loaded via API: ${data.length} unique slides, ${(sizeBytes / (1024 * 1024)).toFixed(1)}MB in ${loadTime}ms`)
+      console.log(`[DataManager] ✅ WSI metadata loaded directly from R2: ${data.length} slides, ${(sizeBytes / (1024 * 1024)).toFixed(1)}MB in ${loadTime}ms`)
       return data
 
     } catch (error) {

@@ -21,8 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select"
-import { Eye, Search, Filter, MessageSquare } from 'lucide-react'
+import { Search, Filter, MessageSquare, AlertCircle } from 'lucide-react'
 import { InquiryDetailsDialog } from './inquiry-details-dialog'
+import { InquiryActionsDropdown } from './inquiry-actions-dropdown'
+import { InquiryStatusBadge } from './inquiry-status-badge'
 import { toast } from 'sonner'
 
 interface Inquiry {
@@ -33,8 +35,9 @@ interface Inquiry {
   organization: string | null
   email: string
   inquiry: string
+  status: string
   created_at: string
-  status?: string
+  updated_at: string
 }
 
 interface GeneralInquiriesTableProps {
@@ -99,20 +102,39 @@ export function GeneralInquiriesTable({ type }: GeneralInquiriesTableProps) {
     setDetailsOpen(true)
   }
 
-  const getStatusBadge = (inquiry: Inquiry) => {
-    // For now, we'll determine status based on creation date
-    // In a real implementation, you might have a status field
-    const daysSinceCreated = Math.floor(
-      (new Date().getTime() - new Date(inquiry.created_at).getTime()) / (1000 * 60 * 60 * 24)
-    )
+  const handleReply = (inquiry: Inquiry) => {
+    setSelectedInquiry(inquiry)
+    setDetailsOpen(true)
+  }
 
-    if (daysSinceCreated === 0) {
-      return <Badge variant="default">New</Badge>
-    } else if (daysSinceCreated <= 3) {
-      return <Badge variant="secondary">Recent</Badge>
-    } else {
-      return <Badge variant="outline">Older</Badge>
-    }
+  const handleStatusUpdate = (inquiryId: string, newStatus: string) => {
+    setInquiries(prev =>
+      prev.map(inquiry =>
+        inquiry.id === inquiryId
+          ? { ...inquiry, status: newStatus, updated_at: new Date().toISOString() }
+          : inquiry
+      )
+    )
+  }
+
+  const handleDelete = (inquiryId: string) => {
+    setInquiries(prev => prev.filter(inquiry => inquiry.id !== inquiryId))
+  }
+
+  const getStatusBadge = (inquiry: Inquiry) => {
+    return <InquiryStatusBadge status={inquiry.status || 'pending'} />
+  }
+
+  const isOldInquiry = (createdAt: string) => {
+    const inquiryDate = new Date(createdAt)
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    return inquiryDate < sevenDaysAgo
+  }
+
+  const truncateText = (text: string, maxLength: number = 100) => {
+    if (text.length <= maxLength) return text
+    return text.substring(0, maxLength) + '...'
   }
 
   if (loading) {
@@ -164,9 +186,8 @@ export function GeneralInquiriesTable({ type }: GeneralInquiriesTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Organization</TableHead>
+              <TableHead className="w-[200px]">Contact</TableHead>
+              <TableHead>Inquiry</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
@@ -175,7 +196,7 @@ export function GeneralInquiriesTable({ type }: GeneralInquiriesTableProps) {
           <TableBody>
             {filteredInquiries.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12">
+                <TableCell colSpan={5} className="text-center py-12">
                   <div className="flex flex-col items-center gap-3">
                     <MessageSquare className="h-12 w-12 text-muted-foreground/50" />
                     <div className="space-y-1">
@@ -199,22 +220,35 @@ export function GeneralInquiriesTable({ type }: GeneralInquiriesTableProps) {
               filteredInquiries.map((inquiry) => (
                 <TableRow key={inquiry.id}>
                   <TableCell className="font-medium">
-                    {inquiry.first_name} {inquiry.last_name}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span>{inquiry.first_name} {inquiry.last_name}</span>
+                        {isOldInquiry(inquiry.created_at) && (
+                          <AlertCircle className="h-4 w-4 text-orange-500" title="Old inquiry (>7 days)" />
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">{inquiry.email}</div>
+                      {inquiry.organization && (
+                        <div className="text-xs text-muted-foreground">{inquiry.organization}</div>
+                      )}
+                    </div>
                   </TableCell>
-                  <TableCell>{inquiry.email}</TableCell>
-                  <TableCell>{inquiry.organization || '-'}</TableCell>
+                  <TableCell className="max-w-md">
+                    <div className="text-sm">
+                      {truncateText(inquiry.inquiry)}
+                    </div>
+                  </TableCell>
                   <TableCell>{getStatusBadge(inquiry)}</TableCell>
                   <TableCell>
                     {new Date(inquiry.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleViewDetails(inquiry)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                    <InquiryActionsDropdown
+                      inquiry={inquiry}
+                      onReply={handleReply}
+                      onStatusUpdate={handleStatusUpdate}
+                      onDelete={handleDelete}
+                    />
                   </TableCell>
                 </TableRow>
               ))

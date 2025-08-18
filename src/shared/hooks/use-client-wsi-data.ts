@@ -6,8 +6,8 @@ import { VirtualSlide } from '@/shared/types/virtual-slides'
 // Module-scope cache so we only fetch once per session
 let cachedWSIPromise: Promise<VirtualSlide[]> | null = null
 
-// WSI data URL - using the same file as virtual slides
-const WSI_DATA_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/virtual-slides.json'
+// WSI data URL - using the optimized PathPresenter cases
+const WSI_DATA_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json'
 
 export async function loadClientWSIData(): Promise<VirtualSlide[]> {
   if (cachedWSIPromise) return cachedWSIPromise
@@ -24,49 +24,98 @@ export async function loadClientWSIData(): Promise<VirtualSlide[]> {
       }
     }
 
-    try {
-      const res = await fetchWithTimeout(WSI_DATA_URL, {
-        cache: 'force-cache',
-        headers: {
-          'Accept': 'application/json'
-        },
-        timeoutMs: 8000
-      })
-      if (!res.ok) throw new Error(`Failed: ${res.status}`)
-      return res
-    } catch (e: any) {
-      console.warn('[WSI Data] R2 fetch failed in dev, falling back to /api/public-data/virtual-slides', e)
-
-      // Fallback to server-side API (same as virtual slides)
-      try {
-        const fallbackRes = await fetchWithTimeout('/api/public-data/virtual-slides', {
-          cache: 'force-cache',
-          headers: {
-            'Accept': 'application/json'
-          },
-          timeoutMs: 8000
-        })
-        if (!fallbackRes.ok) throw new Error(`Fallback failed: ${fallbackRes.status}`)
-        return fallbackRes
-      } catch (fallbackError) {
-        const msg = e?.name === 'AbortError'
-          ? 'Timed out fetching WSI data. Please check your network and try again.'
-          : (e?.message || 'Failed to fetch WSI dataset.')
-
-        console.error('[WSI Data] Both R2 and fallback API failed.', fallbackError)
-        throw new Error(msg)
-      }
+    const res = await fetchWithTimeout(WSI_DATA_URL, {
+      cache: 'force-cache',
+      headers: {
+        'Accept': 'application/json'
+      },
+      timeoutMs: 8000
+    })
+    
+    if (!res.ok) {
+      throw new Error(`Failed to fetch WSI data: ${res.status} ${res.statusText}`)
     }
+    
+    return res
   }
 
   cachedWSIPromise = fetchWithFallback()
     .then(async (res) => {
       if (!res.ok) throw new Error(`Failed to fetch WSI data: ${res.status}`)
       const json = await res.json()
-      // Support both array and wrapped formats
-      const entries: VirtualSlide[] = Array.isArray(json) ? json : (json.data ?? [])
-      console.log(`[WSI Data] ✅ Loaded ${entries.length} WSI slides`)
-      return entries
+      
+      // Handle the new PathPresenter cases JSON format
+      let pathPresenterCases = json.cases || []
+      
+      // Convert PathPresenter cases to VirtualSlide format
+      const entries: VirtualSlide[] = pathPresenterCases.map((pathCase: any, index: number) => {
+        // Generate consistent ID
+        const caseId = `pathpresenter_${index + 1}`
+        
+        // Parse authors - handle both string and array formats
+        let authorsArray: string[] = []
+        if (pathCase.authors) {
+          if (Array.isArray(pathCase.authors)) {
+            authorsArray = pathCase.authors
+          } else if (typeof pathCase.authors === 'string') {
+            authorsArray = [pathCase.authors]
+          }
+        }
+        
+        // Extract age and gender from clinical history if available
+        const clinicalHistory = pathCase.clinical_history || ''
+        const ageMatch = clinicalHistory.match(/(\d+)[-\s]?year[-\s]?old/i)
+        const genderMatch = clinicalHistory.match(/\b(male|female|man|woman)\b/i)
+        
+        return {
+          id: caseId,
+          repository: 'PathPresenter',
+          category: pathCase.chapter || 'Unknown',
+          subcategory: pathCase.organ_system || 'Unknown',
+          diagnosis: pathCase.diagnosis || 'Unknown diagnosis',
+          patient_info: `${pathCase.organ_system || 'Unknown organ'} case from PathPresenter`,
+          age: ageMatch ? ageMatch[1] : null,
+          gender: genderMatch ? genderMatch[1].toLowerCase() : null,
+          clinical_history: clinicalHistory,
+          stain_type: 'H&E', // Assume H&E for PathPresenter cases
+          image_url: pathCase.url,
+          slide_url: pathCase.url,
+          case_url: pathCase.url,
+          thumbnail_url: '',
+          preview_image_url: '',
+          magnification: 'Variable',
+          organ_system: pathCase.organ_system,
+          difficulty_level: 'medium',
+          keywords: [],
+          other_urls: [],
+          source_metadata: {
+            pages: pathCase.pages,
+            microscopic_features: pathCase.microscopic_features,
+            other_prognostic_factors: pathCase.other_prognostic_factors,
+            immuno_profile: pathCase.immuno_profile,
+            molecular_profile: pathCase.molecular_profile,
+            differential_diagnosis: pathCase.differential_diagnosis,
+            authors: authorsArray
+          },
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      })
+      
+      // Filter out any entries without valid URLs
+      const validEntries = entries.filter(slide => 
+        slide.image_url && 
+        slide.image_url.startsWith('http') && 
+        !slide.image_url.includes('localhost')
+      )
+      
+      console.log(`[WSI Data] ✅ Loaded ${validEntries.length} PathPresenter cases (from ${pathPresenterCases.length} total cases)`)
+      
+      if (validEntries.length === 0) {
+        console.warn('[WSI Data] ⚠️ No valid PathPresenter cases found! This may cause loading issues.')
+      }
+      
+      return validEntries
     })
 
   return cachedWSIPromise

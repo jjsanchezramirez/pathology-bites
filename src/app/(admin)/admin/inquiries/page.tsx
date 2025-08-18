@@ -11,7 +11,7 @@ import {
 
 export const metadata: Metadata = {
   title: 'Inquiries - Admin Dashboard',
-  description: 'Manage user inquiries and question reports',
+  description: 'Manage user inquiries and support requests',
 }
 
 export default function InquiriesPage() {
@@ -21,7 +21,7 @@ export default function InquiriesPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Inquiries</h1>
         <p className="text-muted-foreground">
-          Manage user inquiries, technical support requests, and question reports.
+          Manage user inquiries and technical support requests.
         </p>
       </div>
 
@@ -29,7 +29,7 @@ export default function InquiriesPage() {
         <CardHeader>
           <CardTitle>Inquiry Management</CardTitle>
           <CardDescription>
-            View and respond to general inquiries, technical support requests, and question reports from users.
+            View and respond to general inquiries and technical support requests from users.
           </CardDescription>
         </CardHeader>
         <CardContent>

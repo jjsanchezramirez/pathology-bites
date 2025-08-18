@@ -155,7 +155,7 @@ Return the modified question in the same JSON format.
       // Use the same model that generated the original question, or default to Gemini
       const originalModel = question?.metadata?.generated_by?.model || 'gemini-2.0-flash-exp'
 
-      const response = await fetchWithRetry('/api/tools/wsi-question-generator/generate-llm-question', {
+      const response = await fetchWithRetry('/api/tools/wsi-question-generator/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

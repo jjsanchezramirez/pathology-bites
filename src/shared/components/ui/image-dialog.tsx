@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache'
 import { X } from 'lucide-react'
 
 interface ImageDialogProps {
@@ -29,6 +30,7 @@ export function ImageDialog({ src, alt, caption, className = '' }: ImageDialogPr
           className="w-full h-auto object-contain hover:opacity-90 transition-opacity"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           unoptimized
+          onLoad={useImageCacheHandler(src)}
         />
       </div>
 
@@ -47,6 +49,7 @@ export function ImageDialog({ src, alt, caption, className = '' }: ImageDialogPr
               className="w-full h-full object-contain"
               sizes="100vw"
               unoptimized
+              onLoad={useImageCacheHandler(src)}
             />
             
             {/* Close button */}

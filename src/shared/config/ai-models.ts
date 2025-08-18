@@ -15,8 +15,8 @@ export interface AIModel {
 
 // Helper function to determine provider from model ID
 export function getModelProvider(model: string): string {
-  // LLAMA models are served via Groq API
-  if (model.startsWith('llama-') || model.startsWith('Llama-')) return 'groq'
+  // LLAMA models use Meta's direct API
+  if (model.startsWith('llama-') || model.startsWith('Llama-')) return 'llama'
   if (model.startsWith('Cerebras-') || model.startsWith('cerebras-')) return 'groq'
   if (model.startsWith('Groq-') || model.startsWith('groq-')) return 'groq'
   if (model.startsWith('gemini-')) return 'google'
@@ -341,8 +341,8 @@ export const DEFAULT_MODEL = 'gemini-1.5-flash'
 
 // API key configuration - All keys must be provided via environment variables
 export const API_KEYS = {
-  llama: process.env.NEXT_PUBLIC_GROQ_API_KEY || process.env.NEXT_PUBLIC_LLAMA_API_KEY || '', // LLAMA models use Groq API
-  groq: process.env.NEXT_PUBLIC_GROQ_API_KEY || process.env.NEXT_PUBLIC_LLAMA_API_KEY || '', // Groq API key
+  llama: process.env.NEXT_PUBLIC_LLAMA_API_KEY || process.env.LLAMA_API_KEY || '', // LLAMA models use Meta's direct API ONLY
+  groq: process.env.NEXT_PUBLIC_GROQ_API_KEY || '', // Groq API key (separate from LLAMA)
   google: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '',
   claude: process.env.NEXT_PUBLIC_CLAUDE_API_KEY || '',
   chatgpt: process.env.NEXT_PUBLIC_OPENAI_API_KEY || '',

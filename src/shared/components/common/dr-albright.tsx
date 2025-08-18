@@ -1,8 +1,9 @@
 // src/shared/components/common/dr-albright.tsx
 'use client'
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
+import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache';
 
 interface Particle {
   id: string;
@@ -44,18 +45,28 @@ const Smoke = ({
   );
 };
 
-const FloatingCharacter = ({ 
-  imagePath, 
+const FloatingCharacter = ({
+  imagePath,
   imageAlt,
   size = DEFAULT_SIZE,
   wrapperClassName = "",
 }: FloatingCharacterProps) => {
   const [particles, setParticles] = useState<Particle[]>([]);
+  const [mounted, setMounted] = useState(false);
+  const particleCounter = useRef(0);
+  const handleImageLoad = useImageCacheHandler(imagePath, true); // Priority cache for Dr. Albright
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const addParticle = useCallback(() => {
+    if (!mounted) return;
+    
+    particleCounter.current += 1;
     const newParticle = {
-      id: crypto.randomUUID(),
-      offset: Math.random() * 20 - 10
+      id: `particle-${particleCounter.current}`,
+      offset: (particleCounter.current * 7) % 20 - 10 // Deterministic offset
     };
 
     setParticles(prev => [...prev, newParticle]);
@@ -63,9 +74,11 @@ const FloatingCharacter = ({
     setTimeout(() => {
       setParticles(prev => prev.filter(p => p.id !== newParticle.id));
     }, 2000);
-  }, []);
+  }, [mounted]);
 
   useEffect(() => {
+    if (!mounted) return;
+    
     const particleInterval = setInterval(addParticle, 300);
 
     const resetInterval = setInterval(() => {
@@ -80,7 +93,7 @@ const FloatingCharacter = ({
       clearInterval(particleInterval);
       clearInterval(resetInterval);
     };
-  }, [addParticle]);
+  }, [addParticle, mounted]);
 
   return (
     <>
@@ -128,7 +141,7 @@ const FloatingCharacter = ({
           maxWidth: '100%'
         }}
       >
-        {particles.map((particle) => (
+        {mounted && particles.map((particle) => (
           <Smoke 
             key={particle.id} 
             offset={particle.offset} 
@@ -137,15 +150,22 @@ const FloatingCharacter = ({
         ))}
         
         <div className="floating relative w-full h-full z-0">
-          <Image
-            src={imagePath}
-            alt={imageAlt}
-            fill
-            sizes={`${size}px`}
-            className="object-contain"
-            unoptimized
-            priority
-          />
+          {mounted ? (
+            <Image
+              src={imagePath}
+              alt={imageAlt}
+              fill
+              sizes={`${size}px`}
+              className="object-contain"
+              unoptimized
+              onLoad={handleImageLoad}
+            />
+          ) : (
+            <div
+              className="w-full h-full bg-muted/20 rounded animate-pulse"
+              style={{ aspectRatio: '1' }}
+            />
+          )}
         </div>
       </div>
     </>

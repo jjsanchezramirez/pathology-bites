@@ -4,8 +4,7 @@
 import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
 import { GeneralInquiriesTable } from './general-inquiries-table'
-import { QuestionReportsTable } from './question-reports-table'
-import { MessageSquare, AlertTriangle, HelpCircle } from 'lucide-react'
+import { MessageSquare, HelpCircle } from 'lucide-react'
 
 export function InquiriesTable() {
   const [activeTab, setActiveTab] = useState('general')
@@ -13,7 +12,7 @@ export function InquiriesTable() {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
             General Inquiries
@@ -21,10 +20,6 @@ export function InquiriesTable() {
           <TabsTrigger value="tech" className="flex items-center gap-2">
             <HelpCircle className="h-4 w-4" />
             Tech Support
-          </TabsTrigger>
-          <TabsTrigger value="reports" className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4" />
-            Question Reports
           </TabsTrigger>
         </TabsList>
 
@@ -34,10 +29,6 @@ export function InquiriesTable() {
 
         <TabsContent value="tech" className="space-y-4">
           <GeneralInquiriesTable type="tech" />
-        </TabsContent>
-
-        <TabsContent value="reports" className="space-y-4">
-          <QuestionReportsTable />
         </TabsContent>
       </Tabs>
     </div>

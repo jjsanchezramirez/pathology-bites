@@ -24,6 +24,7 @@ interface GeneratedQuestion {
     model: string
     generation_time_ms: number
     image_verification?: any
+    token_usage?: any
   }
   debug?: any
 }
@@ -35,6 +36,7 @@ interface UseWSIQuestionGeneratorReturn {
   clearError: () => void
   isWSIDataLoading: boolean
   isReady: boolean
+  wsiData: VirtualSlide[] | null
 }
 
 /**
@@ -78,8 +80,13 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         }
       }
 
+      // Check if we have any WSI data at all
+      if (!finalWSIData || finalWSIData.length === 0) {
+        throw new Error('No WSI slides available. This may be due to repository filtering or data loading issues.')
+      }
+
       // Step 1: Select WSI using simplified approach
-      console.log('[WSI Generator] Step 1 - Selecting WSI...')
+      console.log(`[WSI Generator] Step 1 - Selecting WSI from ${finalWSIData.length} available slides...`)
       let selectedWSI: VirtualSlide
 
       if (category && category !== 'all') {
@@ -87,24 +94,23 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
           slide.category.toLowerCase().includes(category.toLowerCase())
         )
         if (categorySlides.length === 0) {
-          throw new Error(`No WSI slides found for category: ${category}`)
+          throw new Error(`No WSI slides found for category: ${category}. Available slides: ${finalWSIData.length}`)
         }
         selectedWSI = categorySlides[Math.floor(Math.random() * categorySlides.length)]
+        console.log(`[WSI Generator] Selected from ${categorySlides.length} slides in category: ${category}`)
       } else {
         const randomIndex = Math.floor(Math.random() * finalWSIData.length)
         selectedWSI = finalWSIData[randomIndex]
         if (!selectedWSI) {
           throw new Error('Failed to select random WSI')
         }
+        console.log(`[WSI Generator] Selected random slide (index ${randomIndex} of ${finalWSIData.length})`)
       }
 
       console.log(`[WSI Generator] Selected WSI - ${selectedWSI.diagnosis}`)
 
-      // Step 2: Skip educational content for simplified approach
-      console.log('[WSI Generator] Step 2 - Skipping educational content (simplified mode)...')
-      const context = null
-
-      // Step 3: Generate question using client-side generation
+      // Step 2: Generate question using simplified approach (no context needed)
+      console.log('[WSI Generator] Step 2 - Generating question using simplified approach...')
       console.log('[WSI Generator] Step 3 - Generating question via fallback API...')
       
       // For now, we still need to call the question generation API since it involves AI
@@ -113,27 +119,56 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         ? window.location.origin 
         : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
-      const questionResponse = await fetch(`${baseUrl}/api/tools/wsi-question-generator/generate-question`, {
+      const questionResponse = await fetch(`${baseUrl}/api/tools/wsi-question-generator/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          wsi: selectedWSI,
-          context: context
+          wsi: selectedWSI
         })
       })
 
       if (!questionResponse.ok) {
-        throw new Error(`Question generation failed: ${questionResponse.status} ${questionResponse.statusText}`)
+        // Try to get detailed error information
+        try {
+          const errorData = await questionResponse.json()
+          if (errorData.nextModelIndex !== null) {
+            // There's a fallback model available, try it
+            console.log(`[WSI Generator] Trying fallback model: ${errorData.nextModel}`)
+            return generateQuestionWithFallback(selectedWSI, errorData.nextModelIndex)
+          } else {
+            // No more models available
+            const errorMsg = errorData.error || `Question generation failed: ${questionResponse.status} ${questionResponse.statusText}`
+            throw new Error(errorMsg)
+          }
+        } catch (parseError) {
+          throw new Error(`Question generation failed: ${questionResponse.status} ${questionResponse.statusText}`)
+        }
       }
 
       const questionData = await questionResponse.json()
+      console.log('[WSI Generator Hook] Full API response:', questionData)
+      console.log('[WSI Generator Hook] Token usage in response:', questionData.metadata?.token_usage)
+      
       if (!questionData.success || !questionData.question) {
         throw new Error('Failed to generate question')
       }
 
-      console.log('[WSI Generator] Successfully generated question')
+      // Log retry information if available
+      if (questionData.metadata?.retry_info) {
+        const retryInfo = questionData.metadata.retry_info
+        if (retryInfo.retries > 0) {
+          console.log(`[WSI Generator] ✅ Success after ${retryInfo.retries} retries in ${retryInfo.totalTime}ms`)
+        } else {
+          console.log(`[WSI Generator] ✅ Success on first attempt in ${retryInfo.totalTime}ms`)
+        }
+      } else {
+        console.log('[WSI Generator] Successfully generated question')
+      }
+
+      // Log token usage for debugging
+      console.log('[WSI Generator] Token usage from API:', questionData.metadata?.token_usage)
 
       // Combine all data into the expected format
       const generationTime = Date.now() - startTime
@@ -141,12 +176,15 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         id: `wsi-${selectedWSI.id}-${Date.now()}`,
         wsi: selectedWSI,
         question: questionData.question,
-        context: context,
+        context: null,
         metadata: {
           generated_at: new Date().toISOString(),
           model: questionData.metadata?.model || 'unknown',
           generation_time_ms: generationTime,
-          image_verification: null // Image verification happens client-side if needed
+          image_verification: null, // Image verification happens client-side if needed
+          token_usage: questionData.metadata?.token_usage || null,
+          successful_model: questionData.metadata?.model,
+          fallback_attempts: questionData.metadata?.modelIndex ? questionData.metadata.modelIndex + 1 : 1
         },
         debug: questionData.debug
       }
@@ -163,13 +201,55 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
     }
   }, [])
 
+  // Helper function to handle model fallback
+  const generateQuestionWithFallback = useCallback(async (wsi: any, modelIndex: number): Promise<any> => {
+    console.log(`[WSI Generator] Attempting fallback with model index: ${modelIndex}`)
+
+    const fallbackResponse = await fetch('/api/tools/wsi-question-generator/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        wsi: wsi,
+        modelIndex: modelIndex
+      })
+    })
+
+    if (!fallbackResponse.ok) {
+      // Try to get detailed error information for further fallback
+      try {
+        const errorData = await fallbackResponse.json()
+        if (errorData.nextModelIndex !== null) {
+          // Recursive fallback to next model
+          console.log(`[WSI Generator] Continuing fallback to model: ${errorData.nextModel}`)
+          return generateQuestionWithFallback(wsi, errorData.nextModelIndex)
+        } else {
+          // No more models available
+          const errorMsg = errorData.error || `All models exhausted: ${fallbackResponse.status} ${fallbackResponse.statusText}`
+          throw new Error(errorMsg)
+        }
+      } catch (parseError) {
+        throw new Error(`Fallback failed: ${fallbackResponse.status} ${fallbackResponse.statusText}`)
+      }
+    }
+
+    const questionData = await fallbackResponse.json()
+    if (!questionData.success || !questionData.question) {
+      throw new Error('Fallback question generation failed')
+    }
+
+    return questionData
+  }, [])
+
   return {
     generateQuestion,
     isGenerating,
     error,
     clearError,
     isWSIDataLoading: isLoadingWSI,
-    isReady: !isLoadingWSI && !wsiError && wsiData && wsiData.length > 0
+    isReady: !isLoadingWSI && !wsiError && wsiData !== null,
+    wsiData
   }
 }
 

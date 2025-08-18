@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
 import Image from "next/image"
+import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache'
 import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useMobile } from "@/shared/hooks/use-mobile"
 
@@ -91,6 +92,7 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
               className="object-contain hover:opacity-90 transition-opacity"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               unoptimized={true}
+              onLoad={useImageCacheHandler(currentImage.url)}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
@@ -183,6 +185,7 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
                   height={800}
                   className="max-w-[90vw] max-h-[90vh] object-contain"
                   unoptimized={true}
+                  onLoad={useImageCacheHandler(currentImage.url)}
                 />
               </div>
             ) : (

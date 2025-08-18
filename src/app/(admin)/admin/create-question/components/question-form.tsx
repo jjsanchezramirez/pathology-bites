@@ -223,7 +223,7 @@ Please generate a question following the instructions provided.
 
       console.log('🔍 Model:', selectedModel, 'Using WSI question generator API')
 
-      const response = await fetchWithRetry('/api/tools/wsi-question-generator/generate-llm-question', {
+      const response = await fetchWithRetry('/api/tools/wsi-question-generator/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Check, X, RotateCcw, ArrowLeft, ArrowRight, ChevronRight, ExternalLink } from 'lucide-react'
 import Image from 'next/image'
+import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache'
 import { PublicHero } from '@/shared/components/common/public-hero'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
 import { useClientCellQuiz } from '@/shared/hooks/use-client-cell-quiz'
@@ -389,6 +390,7 @@ export default function CellQuizPage() {
                           fill
                           className="object-contain"
                           unoptimized={true}
+                          onLoad={useImageCacheHandler(currentQuestion.imagePath, true)}
                         />
                       </div>
                     </div>
@@ -719,6 +721,7 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
                         fill
                         className="object-contain"
                         unoptimized={true}
+                        onLoad={useImageCacheHandler((matchingCellData as any).images[0], true)}
                       />
                     </div>
                   ) : (

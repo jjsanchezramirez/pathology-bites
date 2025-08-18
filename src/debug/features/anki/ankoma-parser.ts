@@ -433,7 +433,6 @@ export async function loadAnkomaData(): Promise<AnkomaData> {
     const { ANKOMA_JSON_URL } = await import('@/shared/config/ankoma')
 
     const response = await fetch(ANKOMA_JSON_URL, {
-      cache: 'force-cache', // Aggressive browser caching
       headers: {
         'Accept': 'application/json'
       }

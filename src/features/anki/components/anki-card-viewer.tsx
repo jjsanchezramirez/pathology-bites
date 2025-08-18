@@ -4,6 +4,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
+import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
@@ -222,21 +223,25 @@ export function AnkiCardViewer({
             {/* Question images */}
             {questionImages.length > 0 && (
               <div className="flex flex-col items-center gap-4">
-                {questionImages.map((src, index) => (
-                  <div key={index} className="flex justify-center">
-                    <div className="relative max-w-2xl w-full">
-                      <Image
-                        src={src}
-                        alt={`Question image ${index + 1}`}
-                        width={800}
-                        height={600}
-                        className="w-full h-auto rounded-xl border object-contain"
-                        style={{ maxHeight: '70vh' }}
-                        unoptimized={true}
-                      />
+                {questionImages.map((src, index) => {
+                  const handleImageLoad = useImageCacheHandler(src, true); // Priority cache for Anki images
+                  return (
+                    <div key={index} className="flex justify-center">
+                      <div className="relative max-w-2xl w-full">
+                        <Image
+                          src={src}
+                          alt={`Question image ${index + 1}`}
+                          width={800}
+                          height={600}
+                          className="w-full h-auto rounded-xl border object-contain"
+                          style={{ maxHeight: '70vh' }}
+                          unoptimized={true}
+                          onLoad={handleImageLoad}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
@@ -256,21 +261,25 @@ export function AnkiCardViewer({
                 {/* Answer images */}
                 {answerImages.length > 0 && (
                   <div className="flex flex-col items-center gap-4">
-                    {answerImages.map((src, index) => (
-                      <div key={index} className="flex justify-center">
-                        <div className="relative max-w-2xl w-full">
-                          <Image
-                            src={src}
-                            alt={`Answer image ${index + 1}`}
-                            width={800}
-                            height={600}
-                            className="w-full h-auto rounded-xl border object-contain"
-                            style={{ maxHeight: '70vh' }}
-                            unoptimized={true}
-                          />
+                    {answerImages.map((src, index) => {
+                      const handleImageLoad = useImageCacheHandler(src, true); // Priority cache for Anki images
+                      return (
+                        <div key={index} className="flex justify-center">
+                          <div className="relative max-w-2xl w-full">
+                            <Image
+                              src={src}
+                              alt={`Answer image ${index + 1}`}
+                              width={800}
+                              height={600}
+                              className="w-full h-auto rounded-xl border object-contain"
+                              style={{ maxHeight: '70vh' }}
+                              unoptimized={true}
+                              onLoad={handleImageLoad}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>

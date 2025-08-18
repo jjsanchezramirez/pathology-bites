@@ -1,4 +1,5 @@
 // Client-side WSI selection to reduce Vercel API calls
+// Updated to use direct R2 access instead of deleted API endpoints
 
 interface VirtualSlide {
   id: string
@@ -42,10 +43,13 @@ interface WSISelectionResult {
   }
 }
 
-// Cache for virtual slides data
+// Cache for virtual slides data  
 let cachedWSIData: VirtualSlide[] | null = null
 let cacheTimestamp: number = 0
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
+
+// Direct R2 access URL (same as other files)
+const WSI_DATA_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json'
 
 // Embeddable repositories (matching server-side logic)
 const EMBEDDABLE_REPOSITORIES = [
@@ -56,7 +60,7 @@ const EMBEDDABLE_REPOSITORIES = [
 ]
 
 /**
- * Load and cache virtual slides data via WSI metadata API
+ * Load and cache virtual slides data directly from R2
  */
 async function loadVirtualSlidesData(): Promise<VirtualSlide[]> {
   const now = Date.now()
@@ -67,83 +71,90 @@ async function loadVirtualSlidesData(): Promise<VirtualSlide[]> {
     return cachedWSIData
   }
   
-  console.log('[Client WSI] Loading virtual slides data via WSI metadata API...')
+  console.log('[Client WSI] Loading virtual slides data directly from R2...')
   const startTime = Date.now()
   
   try {
-    // Use the WSI metadata API to get all slides (it handles R2 access with proper auth)
-    const response = await fetch('/api/tools/wsi-question-generator/wsi-metadata', {
+    const response = await fetch(WSI_DATA_URL, {
+      cache: 'force-cache',
       headers: {
-        'Cache-Control': 'public, max-age=86400' // 24 hours browser caching
+        'Accept': 'application/json'
       }
     })
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch WSI metadata: ${response.status}`)
+      throw new Error(`Failed to fetch WSI data: ${response.status} ${response.statusText}`)
     }
     
-    const result = await response.json()
-    if (!result.success || !result.wsi) {
-      throw new Error('Invalid WSI metadata response')
-    }
+    const json = await response.json()
     
-    // Since the metadata API returns a single random WSI, we need to get multiple samples
-    // Let's make several requests to build our cache
-    const slides: VirtualSlide[] = []
-    const sampleSize = 50 // Get a good sample size for client-side selection
+    // Handle the PathPresenter cases JSON format (same as use-client-wsi-data.ts)
+    let pathPresenterCases = json.cases || []
     
-    const promises = Array.from({ length: sampleSize }, async () => {
-      try {
-        const resp = await fetch('/api/tools/wsi-question-generator/wsi-metadata')
-        if (resp.ok) {
-          const data = await resp.json()
-          if (data.success && data.wsi) {
-            return data.wsi
-          }
+    // Convert PathPresenter cases to VirtualSlide format
+    const entries: VirtualSlide[] = pathPresenterCases.map((pathCase: any, index: number) => {
+      // Generate consistent ID
+      const caseId = `pathpresenter_${index + 1}`
+      
+      // Parse authors - handle both string and array formats
+      let authorsArray: string[] = []
+      if (pathCase.authors) {
+        if (Array.isArray(pathCase.authors)) {
+          authorsArray = pathCase.authors
+        } else if (typeof pathCase.authors === 'string') {
+          authorsArray = [pathCase.authors]
         }
-        return null
-      } catch {
-        return null
+      }
+      
+      // Extract age and gender from clinical history if available
+      const clinicalHistory = pathCase.clinical_history || ''
+      const ageMatch = clinicalHistory.match(/(\d+)[-\s]?year[-\s]?old/i)
+      const genderMatch = clinicalHistory.match(/\b(male|female|man|woman)\b/i)
+      
+      return {
+        id: caseId,
+        repository: 'PathPresenter',
+        category: pathCase.chapter || 'Unknown',
+        subcategory: pathCase.organ_system || 'Unknown',
+        diagnosis: pathCase.diagnosis || 'Unknown diagnosis',
+        patient_info: `${pathCase.organ_system || 'Unknown organ'} case from PathPresenter`,
+        age: ageMatch ? ageMatch[1] : null,
+        gender: genderMatch ? genderMatch[1].toLowerCase() : null,
+        clinical_history: clinicalHistory,
+        stain_type: 'H&E', // Assume H&E for PathPresenter cases
+        image_url: pathCase.url,
+        slide_url: pathCase.url,
+        case_url: pathCase.url,
+        thumbnail_url: '',
+        preview_image_url: '',
+        magnification: 'Variable',
+        organ_system: pathCase.organ_system,
+        difficulty_level: 'medium',
+        keywords: [],
+        other_urls: [],
+        source_metadata: {
+          pages: pathCase.pages,
+          microscopic_features: pathCase.microscopic_features,
+          other_prognostic_factors: pathCase.other_prognostic_factors,
+          immuno_profile: pathCase.immuno_profile,
+          molecular_profile: pathCase.molecular_profile,
+          differential_diagnosis: pathCase.differential_diagnosis,
+          authors: authorsArray
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
     })
     
-    const results = await Promise.all(promises)
-    const validSlides = results.filter(slide => slide !== null)
-    
-    // Remove duplicates based on ID
-    const uniqueSlides = validSlides.reduce((acc: VirtualSlide[], slide: any) => {
-      if (!acc.find(s => s.id === slide.id)) {
-        acc.push({
-          id: slide.id,
-          repository: slide.repository,
-          category: slide.category,
-          subcategory: slide.subcategory,
-          diagnosis: slide.diagnosis,
-          patient_info: slide.patient_info,
-          age: slide.age,
-          gender: slide.gender,
-          clinical_history: slide.clinical_history,
-          stain_type: slide.stain_type,
-          image_url: slide.image_url || slide.slide_url || slide.case_url,
-          slide_url: slide.slide_url,
-          case_url: slide.case_url,
-          thumbnail_url: slide.thumbnail_url || slide.preview_image_url,
-          preview_image_url: slide.preview_image_url,
-          magnification: slide.magnification,
-          organ_system: slide.organ_system,
-          difficulty_level: slide.difficulty_level,
-          keywords: slide.keywords || [],
-          other_urls: slide.other_urls || [],
-          source_metadata: slide.source_metadata || {},
-          created_at: slide.created_at,
-          updated_at: slide.updated_at
-        })
-      }
-      return acc
-    }, [])
+    // Filter out any entries without valid URLs
+    const uniqueSlides = entries.filter(slide => 
+      slide.image_url && 
+      slide.image_url.startsWith('http') && 
+      !slide.image_url.includes('localhost')
+    )
     
     const loadTime = Date.now() - startTime
-    console.log(`[Client WSI] Loaded ${uniqueSlides.length} unique slides via API in ${loadTime}ms`)
+    console.log(`[Client WSI] Loaded ${uniqueSlides.length} slides directly from R2 in ${loadTime}ms`)
     
     // Cache the data
     cachedWSIData = uniqueSlides
@@ -153,7 +164,7 @@ async function loadVirtualSlidesData(): Promise<VirtualSlide[]> {
     
   } catch (error) {
     console.error('[Client WSI] Error loading virtual slides data:', error)
-    throw new Error('Failed to load virtual slides data via API')
+    throw new Error('Failed to load virtual slides data from R2')
   }
 }
 

@@ -77,7 +77,7 @@ export function InteractiveLearningTools({
           <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
             <div className="mb-6">
               <h3 className="text-2xl font-bold mb-2">WSI Questions (Beta)</h3>
-              <p className="text-muted-foreground">AI-powered virtual slide questions</p>
+              <p className="text-muted-foreground">AI-driven virtual slide questions</p>
             </div>
             <p className="text-muted-foreground mb-6 leading-relaxed">
               Practice with AI-generated questions based on real virtual slide images and educational content.

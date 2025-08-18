@@ -89,6 +89,78 @@ const nextConfig = {
     }
   },
   async headers() {
+    const cacheHeaders = [
+      // Aggressive caching for images and static assets
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable', // 1 year cache for images
+          },
+          {
+            key: 'CDN-Cache-Control',
+            value: 'public, max-age=31536000',
+          },
+          {
+            key: 'Vercel-CDN-Cache-Control',
+            value: 'public, max-age=31536000',
+          },
+        ],
+      },
+      // Cache for R2 assets (like Dr. Albright character and Anki images)
+      {
+        source: '/assets/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+          {
+            key: 'CDN-Cache-Control',
+            value: 'public, max-age=31536000',
+          },
+        ],
+      },
+      // Cache for R2 storage images (external URLs get cached by browser)
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'header',
+            key: 'host',
+            value: '.*pathology-bites.*',
+          },
+        ],
+        headers: [
+          {
+            key: 'Vary',
+            value: 'Accept-Encoding',
+          },
+        ],
+      },
+      // Cache for static files
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // Cache for icons and favicons
+      {
+        source: '/icons/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400', // 24 hours for icons
+          },
+        ],
+      },
+    ]
+
     const securityHeaders = [
       {
         // Apply security headers to all routes
@@ -154,7 +226,7 @@ const nextConfig = {
       },
     ]
 
-    return securityHeaders
+    return [...cacheHeaders, ...securityHeaders]
   },
 }
 

@@ -593,7 +593,9 @@ export interface Database {
           organization: string | null
           email: string
           inquiry: string
+          status: string
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
@@ -603,7 +605,9 @@ export interface Database {
           organization?: string | null
           email: string
           inquiry: string
+          status?: string
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
@@ -613,7 +617,9 @@ export interface Database {
           organization?: string | null
           email?: string
           inquiry?: string
+          status?: string
           created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }

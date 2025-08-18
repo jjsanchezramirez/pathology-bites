@@ -13,6 +13,7 @@ import {
   RefreshCw
 } from 'lucide-react'
 import Image from 'next/image'
+import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache'
 
 // Unified interface for all WSI slide types
 interface VirtualSlide {
@@ -420,24 +421,20 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
     if (!container) return
 
     const handleWheel = (e: WheelEvent) => {
-      // Only prevent if iframe is loaded and user is scrolling over the iframe area
-      if (loaded && !isMobile) {
+      // Only prevent on mobile/small screens to avoid desktop scrollbar glitch
+      if (loaded && isMobile) {
         e.stopPropagation()
       }
     }
 
     const handleMouseEnter = () => {
-      // Disable page scroll when mouse enters iframe area (desktop only)
-      if (loaded && !isMobile) {
-        document.body.style.overflow = 'hidden'
-      }
+      // Don't prevent scroll on desktop - only needed for mobile
+      // Desktop users can use regular page scrolling
     }
 
     const handleMouseLeave = () => {
-      // Re-enable page scroll when mouse leaves iframe area (desktop only)
-      if (!isMobile) {
-        document.body.style.overflow = ''
-      }
+      // Don't prevent scroll on desktop - only needed for mobile
+      // Desktop users can use regular page scrolling
     }
 
     // Mobile touch event handlers
@@ -467,19 +464,15 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
       container.addEventListener('touchstart', handleTouchStart, { passive: false })
       container.addEventListener('touchmove', handleTouchMove, { passive: false })
       container.addEventListener('touchend', handleTouchEnd, { passive: false })
-    } else {
-      container.addEventListener('mouseenter', handleMouseEnter)
-      container.addEventListener('mouseleave', handleMouseLeave)
     }
+    // Desktop doesn't need mouse enter/leave handlers anymore - removed scroll prevention
 
     return () => {
       container.removeEventListener('wheel', handleWheel)
-      container.removeEventListener('mouseenter', handleMouseEnter)
-      container.removeEventListener('mouseleave', handleMouseLeave)
       container.removeEventListener('touchstart', handleTouchStart)
       container.removeEventListener('touchmove', handleTouchMove)
       container.removeEventListener('touchend', handleTouchEnd)
-      // Ensure scroll is re-enabled on cleanup
+      // Ensure scroll is re-enabled on cleanup (for mobile)
       document.body.style.overflow = ''
     }
   }, [loaded, isMobile])
@@ -606,6 +599,7 @@ function FallbackViewer({ slide, onOpenExternal }: FallbackViewerProps) {
               fill
               unoptimized
               className="object-cover rounded-lg border"
+              onLoad={useImageCacheHandler(slide.preview_image_url)}
               onError={(e) => {
                 const target = e.target as HTMLImageElement
                 target.style.display = 'none'

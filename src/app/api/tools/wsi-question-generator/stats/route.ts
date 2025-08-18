@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// R2 URL for virtual slides data - using the correct data bucket
-const VIRTUAL_SLIDES_R2_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/virtual-slides.json'
+// R2 URL for virtual slides data - using the same file as client-side data
+const VIRTUAL_SLIDES_R2_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json'
 
 interface VirtualSlide {
   id: string
@@ -41,12 +41,7 @@ export async function GET(request: NextRequest) {
   try {
     console.log('[WSI Stats] Loading virtual slides data from R2...')
     
-    // Fetch with aggressive caching since stats don't change often
-    const response = await fetch(VIRTUAL_SLIDES_R2_URL, {
-      headers: {
-        'Cache-Control': 'public, max-age=86400' // 24 hour cache
-      }
-    })
+    const response = await fetch(VIRTUAL_SLIDES_R2_URL)
 
     if (!response.ok) {
       throw new Error(`Failed to fetch virtual slides data: ${response.status}`)
@@ -58,17 +53,33 @@ export async function GET(request: NextRequest) {
     let slides: VirtualSlide[] = Array.isArray(data) ? data : (data.slides || [])
     console.log(`[WSI Stats] Loaded ${slides.length} total slides from R2`)
 
-    // Filter out problematic repositories (as noted in memories) - only if repository field exists
-    const excludedRepositories = ['Leeds', 'Recut Club', 'Toronto']
+    // Filter to only include specified repositories (using ID prefixes since repository field doesn't exist)
+    const allowedPrefixes = ['mgh', 'hemepath', 'rosai', 'pathpresenter']
+    
     slides = slides.filter(slide => {
-      // If no repository field, keep the slide (don't filter it out)
-      if (!slide.repository) return true
-
-      // If repository exists, check if it's in the excluded list
-      return !excludedRepositories.some(excluded =>
-        slide.repository.toLowerCase().includes(excluded.toLowerCase())
-      )
+      const prefix = slide.id?.split('_')[0]
+      return prefix && allowedPrefixes.includes(prefix) &&
+             (slide.image_url || slide.slide_url || slide.case_url) && // Has accessible image
+             (slide.image_url || slide.slide_url || slide.case_url)?.startsWith('http') && // Valid URL
+             !(slide.image_url || slide.slide_url || slide.case_url)?.includes('localhost') // Not localhost
     })
+
+    // Add repository field to each slide for consistency
+    const getRepositoryFromId = (id: string): string => {
+      const prefix = id.split('_')[0]
+      const repoMap: Record<string, string> = {
+        'mgh': 'MGH Pathology',
+        'hemepath': 'Hematopathology eTutorial',
+        'rosai': 'Rosai Collection',
+        'pathpresenter': 'PathPresenter'
+      }
+      return repoMap[prefix] || prefix
+    }
+
+    slides = slides.map(slide => ({
+      ...slide,
+      repository: getRepositoryFromId(slide.id)
+    }))
 
     console.log(`[WSI Stats] After filtering: ${slides.length} slides`)
 
