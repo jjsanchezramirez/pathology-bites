@@ -138,6 +138,9 @@ export default function CellQuizPage() {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // ✅ Fix: Call useImageCacheHandler at top level to avoid hook rule violations
+  const handleImageLoad = useImageCacheHandler(currentQuestion?.imagePath || '', true)
+
   // Show loading state while data is being fetched
   const hasError = error
 
@@ -390,7 +393,7 @@ export default function CellQuizPage() {
                           fill
                           className="object-contain"
                           unoptimized={true}
-                          onLoad={useImageCacheHandler(currentQuestion.imagePath, true)}
+                          onLoad={handleImageLoad}
                         />
                       </div>
                     </div>
@@ -560,6 +563,22 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
 }) {
   const [currentCellIndex, setCurrentCellIndex] = useState(0)
 
+  // Get current cell data for image cache handler
+  const currentReferenceCell = bloodCellsReference?.cells?.[currentCellIndex]
+
+  // Find matching cell data using the same logic as below
+  const matchingCellDataEntry = currentReferenceCell ? Object.entries(cellData || {}).find(([cellKey, cellValue]) => {
+    const normalizedRefName = currentReferenceCell.name.toLowerCase().replace(/\s+/g, '_')
+    const cellValueName = (cellValue as any)?.name?.toLowerCase()
+    const refCellName = currentReferenceCell.name.toLowerCase()
+    return cellKey === normalizedRefName || cellValueName === refCellName
+  }) : null
+
+  const currentImageSrc = matchingCellDataEntry ? (matchingCellDataEntry[1] as any)?.images?.[0] || '' : ''
+
+  // ✅ Fix: Call useImageCacheHandler at top level to avoid hook rule violations
+  const handleTutorialImageLoad = useImageCacheHandler(currentImageSrc, true)
+
   // Debug logging
   console.log('🔍 Tutorial Debug Info:', {
     bloodCellsReference: {
@@ -631,7 +650,7 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
   }
 
   const referenceCells = bloodCellsReference.cells
-  const currentReferenceCell = referenceCells[currentCellIndex]
+  // currentReferenceCell is already declared above for image cache handler
 
   console.log('📋 Current cell data:', {
     index: currentCellIndex,
@@ -721,7 +740,7 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
                         fill
                         className="object-contain"
                         unoptimized={true}
-                        onLoad={useImageCacheHandler((matchingCellData as any).images[0], true)}
+                        onLoad={handleTutorialImageLoad}
                       />
                     </div>
                   ) : (
