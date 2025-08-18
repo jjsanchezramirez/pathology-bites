@@ -258,18 +258,25 @@ async function callGroqAPI(prompt: string, model: string, apiKey: string): Promi
     })
     clearTimeout(timeoutId)
 
-  if (!response.ok) {
-    throw new Error(`Groq API error: ${response.status} ${response.statusText}`)
-  }
+    if (!response.ok) {
+      throw new Error(`Groq API error: ${response.status} ${response.statusText}`)
+    }
 
-  const data = await response.json()
-  return {
-    content: data.choices[0]?.message?.content || '',
-    tokenUsage: data.usage ? {
-      prompt_tokens: data.usage.prompt_tokens,
-      completion_tokens: data.usage.completion_tokens,
-      total_tokens: data.usage.total_tokens
-    } : undefined
+    const data = await response.json()
+    return {
+      content: data.choices[0]?.message?.content || '',
+      tokenUsage: data.usage ? {
+        prompt_tokens: data.usage.prompt_tokens,
+        completion_tokens: data.usage.completion_tokens,
+        total_tokens: data.usage.total_tokens
+      } : undefined
+    }
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Groq API timeout after 15 seconds')
+    }
+    throw error
   }
 }
 
