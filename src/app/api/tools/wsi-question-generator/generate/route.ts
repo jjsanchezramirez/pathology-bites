@@ -116,28 +116,42 @@ function normalizeWSI(wsi: VirtualSlide): VirtualSlide {
 
 // API call functions with token usage tracking
 async function callMetaAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
-  const response = await fetch('https://api.llama.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: model,
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert pathologist creating educational multiple-choice questions for medical students and residents. Focus on clinical correlation, diagnosis, and educational value.'
-        },
-        {
-          role: 'user', 
-          content: prompt 
-        }
-      ],
-      max_completion_tokens: 4000,
-      temperature: 0.7
+  // Add AbortController for timeout
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 20000) // 20 second timeout
+
+  try {
+    const response = await fetch('https://api.llama.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert pathologist creating educational multiple-choice questions for medical students and residents. Focus on clinical correlation, diagnosis, and educational value.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_completion_tokens: 4000,
+        temperature: 0.7
+      })
     })
-  })
+    clearTimeout(timeoutId)
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Meta LLAMA API timeout after 20 seconds')
+    }
+    throw error
+  }
 
   if (!response.ok) {
     const errorText = await response.text()
@@ -223,19 +237,26 @@ async function callMetaAPI(prompt: string, model: string, apiKey: string): Promi
 }
 
 async function callGroqAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: model,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      max_tokens: 4000
+  // Add AbortController for timeout
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 second timeout
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 4000
+      })
     })
-  })
+    clearTimeout(timeoutId)
 
   if (!response.ok) {
     throw new Error(`Groq API error: ${response.status} ${response.statusText}`)
@@ -403,6 +424,9 @@ Return the response in this exact JSON format:
 }
 
 
+
+// Set timeout for WSI question generation to prevent 504 errors
+export const maxDuration = 45 // 45 seconds timeout (longer than diagnostic search due to AI complexity)
 
 // Enhanced question generation with retry logic for each model
 async function generateQuestionWithRetries(wsi: VirtualSlide, modelId: string, context: any | null = null, customPrompt?: string): Promise<{ questionData: QuestionData; debug: any; modelUsed: string; tokenUsage?: any; retryInfo?: any }> {

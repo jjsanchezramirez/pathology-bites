@@ -109,48 +109,42 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
       console.log(`[WSI Generator] Selected WSI - ${selectedWSI.diagnosis}`)
 
-      // Step 2: Generate question using simplified approach (no context needed)
-      console.log('[WSI Generator] Step 2 - Generating question using simplified approach...')
-      console.log('[WSI Generator] Step 3 - Generating question via fallback API...')
-      
-      // For now, we still need to call the question generation API since it involves AI
-      // But we've eliminated the WSI selection and context search API calls
-      const baseUrl = typeof window !== 'undefined' 
-        ? window.location.origin 
+      // Step 2: Generate question using new multi-step approach
+      console.log('[WSI Generator] Step 2 - Using new multi-step generation approach...')
+
+      const baseUrl = typeof window !== 'undefined'
+        ? window.location.origin
         : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
-      const questionResponse = await fetch(`${baseUrl}/api/tools/wsi-question-generator/generate`, {
+      // Step 2a: Prepare WSI and build prompt (fast, <5s)
+      console.log('[WSI Generator] Step 2a - Preparing WSI and building prompt...')
+      const prepareResponse = await fetch(`${baseUrl}/api/tools/wsi-question-generator/prepare`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          wsi: selectedWSI
+          wsi: selectedWSI,
+          context: null
         })
       })
 
-      if (!questionResponse.ok) {
-        // Try to get detailed error information
-        try {
-          const errorData = await questionResponse.json()
-          if (errorData.nextModelIndex !== null) {
-            // There's a fallback model available, try it
-            console.log(`[WSI Generator] Trying fallback model: ${errorData.nextModel}`)
-            return generateQuestionWithFallback(selectedWSI, errorData.nextModelIndex)
-          } else {
-            // No more models available
-            const errorMsg = errorData.error || `Question generation failed: ${questionResponse.status} ${questionResponse.statusText}`
-            throw new Error(errorMsg)
-          }
-        } catch (parseError) {
-          throw new Error(`Question generation failed: ${questionResponse.status} ${questionResponse.statusText}`)
-        }
+      if (!prepareResponse.ok) {
+        const errorText = await prepareResponse.text()
+        throw new Error(`WSI preparation failed: ${prepareResponse.status} ${errorText}`)
       }
 
-      const questionData = await questionResponse.json()
-      console.log('[WSI Generator Hook] Full API response:', questionData)
-      console.log('[WSI Generator Hook] Token usage in response:', questionData.metadata?.token_usage)
-      
+      const prepareData = await prepareResponse.json()
+      if (!prepareData.success) {
+        throw new Error(prepareData.error || 'WSI preparation failed')
+      }
+
+      console.log('[WSI Generator] ✅ WSI preparation completed')
+
+      // Step 2b: Generate AI content with fallback (fast, <15s per attempt)
+      console.log('[WSI Generator] Step 2b - Generating AI content...')
+      const questionData = await generateQuestionWithNewFallback(prepareData.prompt, prepareData.wsi, prepareData.metadata)
+
       if (!questionData.success || !questionData.question) {
         throw new Error('Failed to generate question')
       }
@@ -201,7 +195,79 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
     }
   }, [])
 
-  // Helper function to handle model fallback
+  // New multi-step fallback function
+  const generateQuestionWithNewFallback = useCallback(async (prompt: string, wsi: any, prepareMetadata: any, modelIndex: number = 0): Promise<any> => {
+    console.log(`[WSI Generator] Attempting AI generation with model index: ${modelIndex}`)
+
+    const baseUrl = typeof window !== 'undefined'
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+
+    // Step 2b: Generate AI content (fast, <15s)
+    const aiResponse = await fetch(`${baseUrl}/api/tools/wsi-question-generator/ai-generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        modelIndex: modelIndex
+      })
+    })
+
+    if (!aiResponse.ok) {
+      try {
+        const errorData = await aiResponse.json()
+        if (errorData.nextModelIndex !== null) {
+          // Try the next model
+          console.log(`[WSI Generator] Trying next AI model: ${errorData.nextModel}`)
+          return generateQuestionWithNewFallback(prompt, wsi, prepareMetadata, errorData.nextModelIndex)
+        } else {
+          // No more models available
+          throw new Error(errorData.error || 'All AI models exhausted')
+        }
+      } catch (parseError) {
+        throw new Error(`AI generation failed: ${aiResponse.status} ${aiResponse.statusText}`)
+      }
+    }
+
+    const aiData = await aiResponse.json()
+    if (!aiData.success || !aiData.content) {
+      throw new Error('AI generation failed')
+    }
+
+    console.log('[WSI Generator] ✅ AI content generated')
+
+    // Step 2c: Parse AI response (fast, <5s)
+    console.log('[WSI Generator] Step 2c - Parsing AI response...')
+    const parseResponse = await fetch(`${baseUrl}/api/tools/wsi-question-generator/parse`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        content: aiData.content,
+        wsi: wsi,
+        metadata: { ...prepareMetadata, ...aiData.metadata }
+      })
+    })
+
+    if (!parseResponse.ok) {
+      const errorText = await parseResponse.text()
+      throw new Error(`Response parsing failed: ${parseResponse.status} ${errorText}`)
+    }
+
+    const parseData = await parseResponse.json()
+    if (!parseData.success) {
+      throw new Error(parseData.error || 'Response parsing failed')
+    }
+
+    console.log('[WSI Generator] ✅ Response parsing completed')
+
+    return parseData
+  }, [])
+
+  // Legacy helper function to handle model fallback
   const generateQuestionWithFallback = useCallback(async (wsi: any, modelIndex: number): Promise<any> => {
     console.log(`[WSI Generator] Attempting fallback with model index: ${modelIndex}`)
 

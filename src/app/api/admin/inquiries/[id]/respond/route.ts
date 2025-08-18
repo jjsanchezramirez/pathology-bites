@@ -13,9 +13,10 @@ const responseSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params
     console.log('Inquiry response API called for ID:', params.id)
 
     const supabase = await createClient()

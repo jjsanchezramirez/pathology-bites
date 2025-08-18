@@ -22,6 +22,10 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const isMobile = useMobile()
+  
+  // Get the current image for hook usage
+  const currentImage = images && images.length > 0 ? images[currentIndex] : null
+  const handleImageLoad = useImageCacheHandler(currentImage?.url || '')
 
   // Keyboard navigation for fullscreen - must be before early return
   useEffect(() => {
@@ -51,7 +55,6 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
 
   if (!images || images.length === 0) return null
 
-  const currentImage = images[currentIndex]
   const hasMultiple = images.length > 1
 
   const nextImage = () => {
@@ -92,7 +95,7 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
               className="object-contain hover:opacity-90 transition-opacity"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               unoptimized={true}
-              onLoad={useImageCacheHandler(currentImage.url)}
+              onLoad={handleImageLoad}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
@@ -185,7 +188,7 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
                   height={800}
                   className="max-w-[90vw] max-h-[90vh] object-contain"
                   unoptimized={true}
-                  onLoad={useImageCacheHandler(currentImage.url)}
+                  onLoad={handleImageLoad}
                 />
               </div>
             ) : (
