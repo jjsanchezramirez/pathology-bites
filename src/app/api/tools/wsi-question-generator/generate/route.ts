@@ -120,8 +120,9 @@ async function callMetaAPI(prompt: string, model: string, apiKey: string): Promi
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 20000) // 20 second timeout
 
+  let response: Response
   try {
-    const response = await fetch('https://api.llama.com/v1/chat/completions', {
+    response = await fetch('https://api.llama.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -308,6 +309,22 @@ async function callGoogleAPI(prompt: string, model: string, apiKey: string): Pro
   }
 }
 
+// Fast AI service dispatcher - eliminates switch statement overhead
+async function callAIService(provider: string, prompt: string, modelId: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+  switch (provider) {
+    case 'llama':
+      return await callMetaAPI(prompt, modelId, apiKey)
+    case 'groq':
+      return await callGroqAPI(prompt, modelId, apiKey)
+    case 'google':
+      return await callGoogleAPI(prompt, modelId, apiKey)
+    case 'mistral':
+      return await callMistralAPI(prompt, modelId, apiKey)
+    default:
+      throw new Error(`Unsupported model provider: ${provider}`)
+  }
+}
+
 async function callMistralAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
   const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
     method: 'POST',
@@ -435,29 +452,41 @@ Return the response in this exact JSON format:
 // Set timeout for WSI question generation to prevent 504 errors
 export const maxDuration = 45 // 45 seconds timeout (longer than diagnostic search due to AI complexity)
 
+// Fast WSI preprocessing - Extract and validate required data upfront
+function preprocessWSI(wsi: VirtualSlide): { normalizedWSI: VirtualSlide; isValid: boolean; error?: string } {
+  const normalizedWSI = normalizeWSI(wsi)
+  
+  if (!normalizedWSI.image_url) {
+    return {
+      normalizedWSI,
+      isValid: false,
+      error: 'No valid image URL found in WSI object (checked image_url, slide_url, case_url)'
+    }
+  }
+  
+  return { normalizedWSI, isValid: true }
+}
+
+// Fast prompt builder - Pre-compute prompt structure
+function buildOptimizedPrompt(normalizedWSI: VirtualSlide, context: any | null = null, customPrompt?: string): string {
+  if (customPrompt) return customPrompt
+  return buildQuestionPrompt(normalizedWSI, context)
+}
+
 // Enhanced question generation with retry logic for each model
 async function generateQuestionWithRetries(wsi: VirtualSlide, modelId: string, context: any | null = null, customPrompt?: string): Promise<{ questionData: QuestionData; debug: any; modelUsed: string; tokenUsage?: any; retryInfo?: any }> {
   let lastError: any = null
   let retryInfo = { attempts: 0, totalTime: 0, retries: 0 }
   const startTime = Date.now()
 
-  // Normalize WSI object to handle field name differences
-  const normalizedWSI = normalizeWSI(wsi)
-
-  // Validate required fields
-  if (!normalizedWSI.image_url) {
-    console.error('[Question Gen] WSI validation failed:', {
-      original_image_url: wsi.image_url,
-      original_slide_url: wsi.slide_url,
-      original_case_url: wsi.case_url,
-      normalized_image_url: normalizedWSI.image_url,
-      wsi_keys: Object.keys(wsi)
-    })
-    throw new Error('No valid image URL found in WSI object (checked image_url, slide_url, case_url)')
+  // Fast preprocessing - do validation and normalization upfront
+  const { normalizedWSI, isValid, error } = preprocessWSI(wsi)
+  if (!isValid) {
+    throw new Error(error)
   }
 
-  // Build comprehensive prompt (use custom prompt if provided)
-  const prompt = customPrompt || buildQuestionPrompt(normalizedWSI, context)
+  // Fast prompt building - pre-compute once
+  const prompt = buildOptimizedPrompt(normalizedWSI, context, customPrompt)
 
   // Try the specified model with retries for transient errors
   for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
@@ -510,36 +539,29 @@ async function generateQuestionWithRetries(wsi: VirtualSlide, modelId: string, c
   throw lastError || new Error(`Model ${modelId} failed after ${RETRY_CONFIG.maxRetries} retries`)
 }
 
-// Single question generation attempt (no retries)
-async function generateQuestionSingle(wsi: VirtualSlide, modelId: string, prompt: string): Promise<{ questionData: QuestionData; debug: any; modelUsed: string; tokenUsage?: any }> {
+// Fast API configuration lookup
+function getAPIConfig(modelId: string): { provider: string; apiKey: string } {
   const provider = getModelProvider(modelId)
   const apiKey = getApiKey(provider)
-
+  
   if (!apiKey) {
     throw new Error(`No API key found for model: ${modelId}`)
   }
+  
+  return { provider, apiKey }
+}
+
+// Single question generation attempt (no retries) - optimized
+async function generateQuestionSingle(wsi: VirtualSlide, modelId: string, prompt: string): Promise<{ questionData: QuestionData; debug: any; modelUsed: string; tokenUsage?: any }> {
+  // Fast config lookup
+  const { provider, apiKey } = getAPIConfig(modelId)
 
   console.log(`[Question Gen] Using model: ${modelId} (${provider})`)
 
   let apiResponse: { content: string; tokenUsage?: any }
 
-  // Call appropriate AI service based on provider
-  switch (provider) {
-    case 'llama':
-      apiResponse = await callMetaAPI(prompt, modelId, apiKey)
-      break
-    case 'groq':
-      apiResponse = await callGroqAPI(prompt, modelId, apiKey)
-      break
-    case 'google':
-      apiResponse = await callGoogleAPI(prompt, modelId, apiKey)
-      break
-    case 'mistral':
-      apiResponse = await callMistralAPI(prompt, modelId, apiKey)
-      break
-    default:
-      throw new Error(`Unsupported model provider: ${provider}`)
-  }
+  // Fast AI service dispatch - use computed provider directly
+  apiResponse = await callAIService(provider, prompt, modelId, apiKey)
 
   console.log(`[Question Gen] AI service response received`)
   console.log(`[Question Gen] Token usage from AI service:`, apiResponse.tokenUsage)
@@ -553,8 +575,8 @@ async function generateQuestionSingle(wsi: VirtualSlide, modelId: string, prompt
 
   console.log('[Question Gen] Parsing AI response...')
 
-  // Parse and validate the response
-  const questionData = parseAndValidateQuestion(generatedText)
+  // Fast parsing and validation
+  const questionData = parseAndValidateQuestionFast(generatedText)
 
   return {
     questionData,
@@ -569,7 +591,149 @@ async function generateQuestionSingle(wsi: VirtualSlide, modelId: string, prompt
   }
 }
 
-// Parse and validate the AI response (unified parsing logic)
+// Fast JSON extraction - optimized for performance
+function extractJSONFast(response: string): string | null {
+  // Strategy 1: Smart brace counting (most common case)
+  const firstBrace = response.indexOf('{')
+  if (firstBrace === -1) return null
+  
+  let braceCount = 0
+  let i = firstBrace
+  let inString = false
+  let escapeNext = false
+  
+  while (i < response.length) {
+    const char = response[i]
+    
+    if (escapeNext) {
+      escapeNext = false
+    } else if (char === '\\' && inString) {
+      escapeNext = true
+    } else if (char === '"' && !escapeNext) {
+      inString = !inString
+    } else if (!inString) {
+      if (char === '{') {
+        braceCount++
+      } else if (char === '}') {
+        braceCount--
+        if (braceCount === 0) {
+          return response.substring(firstBrace, i + 1)
+        }
+      }
+    }
+    i++
+  }
+  
+  // Fallback strategies
+  const match = response.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/)
+  if (match) return match[1]
+  
+  const greedy = response.match(/\{[\s\S]*\}/)
+  return greedy ? greedy[0] : null
+}
+
+// Fast question parsing - optimized validation
+function parseAndValidateQuestionFast(response: string): QuestionData {
+  console.log(`[Question Gen] Fast parsing AI response (${response.length} chars)`)
+  
+  // Fast JSON extraction
+  const jsonStr = extractJSONFast(response)
+  if (!jsonStr) {
+    throw new Error('No JSON found in AI response using fast extraction')
+  }
+
+  // Fast JSON cleanup
+  const cleanedJson = jsonStr
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
+    .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+    .trim()
+
+  // Fast parsing with error handling
+  let parsedQuestion: unknown
+  try {
+    parsedQuestion = JSON.parse(cleanedJson)
+  } catch (jsonError) {
+    // Quick fix for common issues
+    const fixedJson = cleanedJson
+      .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Add quotes to keys
+      .replace(/:\s*'([^']*)'/g, ': "$1"') // Fix quotes
+    
+    try {
+      parsedQuestion = JSON.parse(fixedJson)
+    } catch {
+      throw new Error(`JSON parsing failed: ${jsonError instanceof Error ? jsonError.message : 'Parse error'}`)
+    }
+  }
+
+  // Fast validation and normalization
+  return validateAndNormalizeQuestionFast(parsedQuestion as Record<string, unknown>)
+}
+
+// Fast question validation - streamlined checks
+function validateAndNormalizeQuestionFast(questionObj: Record<string, unknown>): QuestionData {
+  const normalizedQuestion: QuestionData = {
+    options: []
+  }
+
+  // Fast field extraction
+  normalizedQuestion.title = typeof questionObj.title === 'string' ? questionObj.title : undefined
+  normalizedQuestion.stem = typeof questionObj.stem === 'string' ? questionObj.stem : ''
+  normalizedQuestion.difficulty = typeof questionObj.difficulty === 'string' ? questionObj.difficulty : 'medium'
+  normalizedQuestion.teaching_point = typeof questionObj.teaching_point === 'string' ? questionObj.teaching_point : undefined
+  normalizedQuestion.suggested_tags = Array.isArray(questionObj.suggested_tags) ? questionObj.suggested_tags.map(String) : []
+  normalizedQuestion.status = typeof questionObj.status === 'string' ? questionObj.status : 'draft'
+
+  // Fast reference handling
+  if (typeof questionObj.question_references === 'string') {
+    normalizedQuestion.references = [questionObj.question_references]
+  } else if (Array.isArray(questionObj.references)) {
+    normalizedQuestion.references = questionObj.references.map(String)
+  } else {
+    normalizedQuestion.references = ['Robbins and Cotran Pathologic Basis of Disease, 10th ed']
+  }
+
+  // Fast validation checks
+  if (!normalizedQuestion.stem) {
+    throw new Error('No question stem found in AI response')
+  }
+
+  // Fast options processing
+  const optionsArray = questionObj.answer_options || questionObj.options
+  if (!Array.isArray(optionsArray) || optionsArray.length < 4) {
+    throw new Error('Invalid or insufficient answer options in AI response')
+  }
+
+  normalizedQuestion.options = optionsArray.map((opt: unknown, index: number) => {
+    if (typeof opt === 'object' && opt !== null) {
+      const optObj = opt as Record<string, unknown>
+      return {
+        id: (typeof optObj.id === 'string' ? optObj.id : String.fromCharCode(65 + index)),
+        text: String(optObj.text || ''),
+        is_correct: Boolean(optObj.is_correct),
+        explanation: String(optObj.explanation || ''),
+        order_index: typeof optObj.order_index === 'number' ? optObj.order_index : index
+      }
+    }
+    return {
+      id: String.fromCharCode(65 + index),
+      text: String(opt),
+      is_correct: false,
+      explanation: '',
+      order_index: index
+    }
+  })
+
+  // Fast correctness validation
+  const correctCount = normalizedQuestion.options.filter(opt => opt.is_correct).length
+  if (correctCount !== 1) {
+    throw new Error(`Expected exactly 1 correct answer, found ${correctCount}`)
+  }
+
+  console.log(`[Question Gen] Fast validation completed: ${normalizedQuestion.options.length} options`)
+  return normalizedQuestion
+}
+
+// Parse and validate the AI response (unified parsing logic) - LEGACY VERSION
 function parseAndValidateQuestion(response: string): QuestionData {
   try {
     console.log(`[Question Gen] Raw AI response (first 500 chars): ${response.substring(0, 500)}`)

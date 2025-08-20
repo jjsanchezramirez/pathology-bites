@@ -40,13 +40,15 @@ interface UseWSIQuestionGeneratorReturn {
 }
 
 /**
- * Client-side WSI question generator - eliminates server-side API calls
- * Uses direct R2 access for all data and moves question generation to browser
+ * WSI Question Generator Hook
+ * Uses single optimized endpoint for question generation with Meta LLAMA support
  */
 export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { wsiData, isLoading: isLoadingWSI, error: wsiError, selectRandomWSI, getWSIByCategory } = useClientWSIData()
+  
+  console.log('[WSI Hook] Loaded - SINGLE ENDPOINT VERSION - no prepare/parse routes')
 
   const clearError = useCallback(() => {
     setError(null)
@@ -58,7 +60,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
     setError(null)
 
     try {
-      console.log('[WSI Generator] Starting client-side generation process')
+      console.log('[WSI Generator] Starting question generation')
 
       // Ensure WSI data is available - use direct access to cached promise
       let finalWSIData = wsiData
@@ -109,41 +111,16 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
       console.log(`[WSI Generator] Selected WSI - ${selectedWSI.diagnosis}`)
 
-      // Step 2: Generate question using new multi-step approach
-      console.log('[WSI Generator] Step 2 - Using new multi-step generation approach...')
+      // Step 2: Generate question using main generate route
+      console.log('[WSI Generator] Step 2 - Using main generate route...')
 
       const baseUrl = typeof window !== 'undefined'
         ? window.location.origin
         : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
-      // Step 2a: Prepare WSI and build prompt (fast, <5s)
-      console.log('[WSI Generator] Step 2a - Preparing WSI and building prompt...')
-      const prepareResponse = await fetch(`${baseUrl}/api/tools/wsi-question-generator/prepare`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          wsi: selectedWSI,
-          context: null
-        })
-      })
-
-      if (!prepareResponse.ok) {
-        const errorText = await prepareResponse.text()
-        throw new Error(`WSI preparation failed: ${prepareResponse.status} ${errorText}`)
-      }
-
-      const prepareData = await prepareResponse.json()
-      if (!prepareData.success) {
-        throw new Error(prepareData.error || 'WSI preparation failed')
-      }
-
-      console.log('[WSI Generator] ✅ WSI preparation completed')
-
-      // Step 2b: Generate AI content with fallback (fast, <15s per attempt)
-      console.log('[WSI Generator] Step 2b - Generating AI content...')
-      const questionData = await generateQuestionWithNewFallback(prepareData.prompt, prepareData.wsi, prepareData.metadata)
+      // Generate question with fallback support
+      console.log('[WSI Generator] Generating question with AI fallback...')
+      const questionData = await generateQuestionWithFallback(selectedWSI, 0)
 
       if (!questionData.success || !questionData.question) {
         throw new Error('Failed to generate question')
@@ -195,83 +172,17 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
     }
   }, [])
 
-  // New multi-step fallback function
-  const generateQuestionWithNewFallback = useCallback(async (prompt: string, wsi: any, prepareMetadata: any, modelIndex: number = 0): Promise<any> => {
-    console.log(`[WSI Generator] Attempting AI generation with model index: ${modelIndex}`)
+
+  // Main generation function with model fallback
+  const generateQuestionWithFallback = useCallback(async (wsi: any, modelIndex: number): Promise<any> => {
+    console.log(`[WSI Generator] Attempting generation with model index: ${modelIndex}`)
 
     const baseUrl = typeof window !== 'undefined'
       ? window.location.origin
       : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
-    // Step 2b: Generate AI content (fast, <15s)
-    const aiResponse = await fetch(`${baseUrl}/api/tools/wsi-question-generator/ai-generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt: prompt,
-        modelIndex: modelIndex
-      })
-    })
-
-    if (!aiResponse.ok) {
-      try {
-        const errorData = await aiResponse.json()
-        if (errorData.nextModelIndex !== null) {
-          // Try the next model
-          console.log(`[WSI Generator] Trying next AI model: ${errorData.nextModel}`)
-          return generateQuestionWithNewFallback(prompt, wsi, prepareMetadata, errorData.nextModelIndex)
-        } else {
-          // No more models available
-          throw new Error(errorData.error || 'All AI models exhausted')
-        }
-      } catch (parseError) {
-        throw new Error(`AI generation failed: ${aiResponse.status} ${aiResponse.statusText}`)
-      }
-    }
-
-    const aiData = await aiResponse.json()
-    if (!aiData.success || !aiData.content) {
-      throw new Error('AI generation failed')
-    }
-
-    console.log('[WSI Generator] ✅ AI content generated')
-
-    // Step 2c: Parse AI response (fast, <5s)
-    console.log('[WSI Generator] Step 2c - Parsing AI response...')
-    const parseResponse = await fetch(`${baseUrl}/api/tools/wsi-question-generator/parse`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        content: aiData.content,
-        wsi: wsi,
-        metadata: { ...prepareMetadata, ...aiData.metadata }
-      })
-    })
-
-    if (!parseResponse.ok) {
-      const errorText = await parseResponse.text()
-      throw new Error(`Response parsing failed: ${parseResponse.status} ${errorText}`)
-    }
-
-    const parseData = await parseResponse.json()
-    if (!parseData.success) {
-      throw new Error(parseData.error || 'Response parsing failed')
-    }
-
-    console.log('[WSI Generator] ✅ Response parsing completed')
-
-    return parseData
-  }, [])
-
-  // Legacy helper function to handle model fallback
-  const generateQuestionWithFallback = useCallback(async (wsi: any, modelIndex: number): Promise<any> => {
-    console.log(`[WSI Generator] Attempting fallback with model index: ${modelIndex}`)
-
-    const fallbackResponse = await fetch('/api/tools/wsi-question-generator/generate', {
+    console.log('[WSI Generator] Using SINGLE /generate endpoint (no multi-step)')
+    const response = await fetch(`${baseUrl}/api/tools/wsi-question-generator/generate?cb=${Date.now()}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -282,25 +193,25 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
       })
     })
 
-    if (!fallbackResponse.ok) {
+    if (!response.ok) {
       // Try to get detailed error information for further fallback
       try {
-        const errorData = await fallbackResponse.json()
+        const errorData = await response.json()
         if (errorData.nextModelIndex !== null) {
           // Recursive fallback to next model
           console.log(`[WSI Generator] Continuing fallback to model: ${errorData.nextModel}`)
           return generateQuestionWithFallback(wsi, errorData.nextModelIndex)
         } else {
           // No more models available
-          const errorMsg = errorData.error || `All models exhausted: ${fallbackResponse.status} ${fallbackResponse.statusText}`
+          const errorMsg = errorData.error || `All models exhausted: ${response.status} ${response.statusText}`
           throw new Error(errorMsg)
         }
       } catch (parseError) {
-        throw new Error(`Fallback failed: ${fallbackResponse.status} ${fallbackResponse.statusText}`)
+        throw new Error(`Fallback failed: ${response.status} ${response.statusText}`)
       }
     }
 
-    const questionData = await fallbackResponse.json()
+    const questionData = await response.json()
     if (!questionData.success || !questionData.question) {
       throw new Error('Fallback question generation failed')
     }

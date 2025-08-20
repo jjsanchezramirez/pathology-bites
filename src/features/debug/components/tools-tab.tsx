@@ -206,7 +206,6 @@ export function ToolsTab() {
         // Make cache-busting requests to key endpoints
         const endpoints = [
           '/api/public/stats',
-          '/api/tools/wsi-question-generator/stats',
           '/api/public-data/virtual-slides'
         ]
         
