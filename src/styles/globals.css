@@ -37,6 +37,170 @@
     background-size: 24px 24px;
   }
 
+  /* Performance-based animations */
+  .animate-wobble {
+    animation: wobble 0.6s ease-in-out 3;
+  }
+
+  .animate-letter-drop {
+    animation: letterDrop 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    opacity: 0;
+    transform: translateY(-30px) rotate(-5deg);
+  }
+
+  .animate-letter-fade {
+    animation: letterFade 0.7s ease-out forwards;
+    opacity: 0;
+    filter: blur(2px);
+  }
+
+  .animate-shine {
+    animation: shine 2s infinite;
+  }
+
+  .animate-wave {
+    animation: wave 1s ease-in-out infinite;
+  }
+
+  .animate-letter-jittery {
+    animation: letterJittery 0.6s ease-out forwards, jitterContinuous 0.15s infinite alternate;
+    animation-delay: var(--letter-delay, 0ms), calc(var(--letter-delay, 0ms) + 600ms);
+    opacity: 0;
+    transform: translateY(0);
+  }
+
+  .text-celebration {
+    background: linear-gradient(45deg, 
+      hsl(var(--primary)), 
+      hsl(var(--chart-2)), 
+      hsl(var(--chart-3))
+    );
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientShift 3s ease-in-out infinite;
+  }
+
+  .performance-message:hover {
+    transform: translateY(-2px);
+    text-shadow: 0 4px 12px hsl(var(--primary) / 0.3);
+    transition: all 0.3s ease;
+  }
+
+
+  @keyframes wobble {
+    0%, 100% { transform: rotate(0deg); }
+    15% { transform: rotate(-2deg); }
+    30% { transform: rotate(2deg); }
+    45% { transform: rotate(-1deg); }
+    60% { transform: rotate(1deg); }
+    75% { transform: rotate(-0.5deg); }
+  }
+
+  @keyframes letterDrop {
+    0% {
+      opacity: 0;
+      transform: translateY(-30px) scale(0.3) rotate(-5deg);
+    }
+    60% {
+      opacity: 0.9;
+      transform: translateY(8px) scale(1.15) rotate(2deg);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1) rotate(0deg);
+    }
+  }
+
+  @keyframes letterFade {
+    0% {
+      opacity: 0;
+      transform: translateY(10px) scale(1.1);
+      filter: blur(2px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0px);
+    }
+  }
+
+  @keyframes shine {
+    0% { 
+      background-position: -200% center;
+    }
+    100% { 
+      background-position: 200% center;
+    }
+  }
+
+  @keyframes wave {
+    0%, 100% { 
+      transform: translateY(0) scale(1);
+    }
+    25% { 
+      transform: translateY(-3px) scale(1.02);
+    }
+    50% { 
+      transform: translateY(-6px) scale(1.05);
+    }
+    75% { 
+      transform: translateY(-3px) scale(1.02);
+    }
+  }
+
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  @keyframes letterJittery {
+    0% {
+      opacity: 0;
+      transform: translateY(-8px) scale(1.2);
+    }
+    100% {
+      opacity: 0.8;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes jitterContinuous {
+    0% {
+      transform: translateY(0) translateX(0) scale(1) rotate(0deg);
+    }
+    10% {
+      transform: translateY(-0.5px) translateX(0.3px) scale(1.01) rotate(0.5deg);
+    }
+    20% {
+      transform: translateY(0.3px) translateX(-0.4px) scale(0.99) rotate(-0.3deg);
+    }
+    30% {
+      transform: translateY(-0.2px) translateX(0.5px) scale(1.02) rotate(0.4deg);
+    }
+    40% {
+      transform: translateY(0.4px) translateX(-0.3px) scale(0.98) rotate(-0.5deg);
+    }
+    50% {
+      transform: translateY(-0.3px) translateX(0.2px) scale(1.01) rotate(0.2deg);
+    }
+    60% {
+      transform: translateY(0.2px) translateX(-0.5px) scale(0.99) rotate(-0.4deg);
+    }
+    70% {
+      transform: translateY(-0.4px) translateX(0.4px) scale(1.02) rotate(0.3deg);
+    }
+    80% {
+      transform: translateY(0.3px) translateX(-0.2px) scale(0.98) rotate(-0.2deg);
+    }
+    90% {
+      transform: translateY(-0.1px) translateX(0.3px) scale(1.01) rotate(0.4deg);
+    }
+    100% {
+      transform: translateY(0.2px) translateX(-0.4px) scale(0.99) rotate(-0.3deg);
+    }
+  }
+
   /* Define CSS variables in base layer */
 }
 @layer base {

@@ -6,6 +6,7 @@ import Image from "next/image"
 import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache'
 import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useMobile } from "@/shared/hooks/use-mobile"
+import { SilentErrorBoundary } from "@/shared/components/error-boundaries/silent-error-boundary"
 
 interface ImageProps {
   url: string
@@ -18,7 +19,8 @@ interface ImageCarouselProps {
   className?: string
 }
 
-export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
+// Internal component that can throw errors
+function ImageCarouselInternal({ images, className = '' }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const isMobile = useMobile()
@@ -87,7 +89,7 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
           style={{ aspectRatio: '16/10' }}
           onClick={openModal}
         >
-          {currentImage.url ? (
+          {currentImage?.url ? (
             <Image
               src={currentImage.url}
               alt={currentImage.alt}
@@ -179,7 +181,7 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
         >
           {/* Image container - let image determine size within viewport limits */}
           <div className="relative bg-white/5 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
-            {currentImage.url ? (
+            {currentImage?.url ? (
               <div className="relative max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
                 <Image
                   src={currentImage.url}
@@ -236,5 +238,22 @@ export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
         document.body
       )}
     </>
+  )
+}
+
+// Exported component with error boundary
+export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
+  return (
+    <SilentErrorBoundary
+      maxRetries={2}
+      retryDelay={1000}
+      fallbackMessage="Image gallery temporarily unavailable"
+      showErrorDetails={process.env.NODE_ENV === 'development'}
+      onError={(error, retryCount) => {
+        console.warn(`ImageCarousel error (attempt ${retryCount + 1}):`, error.message)
+      }}
+    >
+      <ImageCarouselInternal images={images} className={className} />
+    </SilentErrorBoundary>
   )
 }

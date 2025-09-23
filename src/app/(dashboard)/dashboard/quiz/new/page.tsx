@@ -172,6 +172,11 @@ export default function NewQuizPage() {
 
   // Generate sequential quiz title based on previous quizzes
   const generateQuizTitle = (): string => {
+    // Guard clause to ensure all required data is available
+    if (!formData || !previousQuizTitles) {
+      return 'New Quiz'
+    }
+
     let baseTitle: string
     let pattern: RegExp
 
@@ -288,7 +293,7 @@ export default function NewQuizPage() {
     setCreating(true)
     try {
       // Generate title if not provided
-      const title = formData.title?.trim() || generateQuizTitle()
+      const title = formData.title?.trim() || (formData && previousQuizTitles ? generateQuizTitle() : 'New Quiz')
 
       // Use the effective question count (already constrained)
       const finalQuestionCount = Math.min(effectiveFormData.questionCount, availableQuestions)
@@ -485,14 +490,14 @@ export default function NewQuizPage() {
           <div className="space-y-2">
             <Label className="text-sm font-medium">Quiz Name</Label>
             <Input
-              placeholder={loadingTitles ? "Loading..." : generateQuizTitle()}
+              placeholder={loadingTitles ? "Loading..." : (formData && previousQuizTitles ? generateQuizTitle() : "New Quiz")}
               value={formData.title || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
             />
             <p className="text-xs text-muted-foreground">
               {loadingTitles
                 ? "Loading previous quiz names..."
-                : `Leave blank to auto-generate: "${generateQuizTitle()}"`
+                : `Leave blank to auto-generate: "${formData && previousQuizTitles ? generateQuizTitle() : "New Quiz"}"`
               }
             </p>
           </div>

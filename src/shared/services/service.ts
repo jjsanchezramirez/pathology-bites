@@ -48,7 +48,9 @@ interface UserReminder {
 }
 
 export class NotificationsService {
-  private supabase = createClient()
+  private getSupabase() {
+    return createClient()
+  }
 
   async getNotifications(
     userId: string,
@@ -61,7 +63,7 @@ export class NotificationsService {
       const offset = (page - 1) * limit
 
       // Get total count first
-      const { count: totalCount, error: countError } = await this.supabase
+      const { count: totalCount, error: countError } = await this.getSupabase()
         .from('notification_states')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
@@ -71,7 +73,7 @@ export class NotificationsService {
       }
 
       // Build the query for notification_states with pagination
-      const { data: notificationStates, error } = await this.supabase
+      const { data: notificationStates, error } = await this.getSupabase()
         .from('notification_states')
         .select('*')
         .eq('user_id', userId)
@@ -230,7 +232,7 @@ export class NotificationsService {
   private async getInquiries(ids: string[]): Promise<Inquiry[]> {
     if (ids.length === 0) return []
 
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('inquiries')
       .select('*')
       .in('id', ids)
@@ -245,7 +247,7 @@ export class NotificationsService {
   private async getReports(ids: string[]): Promise<QuestionReport[]> {
     if (ids.length === 0) return []
 
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('question_reports')
       .select('*')
       .in('id', ids)
@@ -260,7 +262,7 @@ export class NotificationsService {
   private async getSystemUpdates(ids: string[]): Promise<SystemUpdate[]> {
     if (ids.length === 0) return []
 
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('system_updates')
       .select('*')
       .in('id', ids)
@@ -275,7 +277,7 @@ export class NotificationsService {
   private async getMilestones(ids: string[]): Promise<UserMilestone[]> {
     if (ids.length === 0) return []
 
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('user_milestones')
       .select('*')
       .in('id', ids)
@@ -290,7 +292,7 @@ export class NotificationsService {
   private async getReminders(ids: string[]): Promise<UserReminder[]> {
     if (ids.length === 0) return []
 
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('user_reminders')
       .select('*')
       .in('id', ids)
@@ -303,7 +305,7 @@ export class NotificationsService {
   }
 
   async markAsRead(notificationId: string): Promise<void> {
-    const { error } = await this.supabase
+    const { error } = await this.getSupabase()
       .from('notification_states')
       .update({ read: true, updated_at: new Date().toISOString() })
       .eq('id', notificationId)
@@ -314,7 +316,7 @@ export class NotificationsService {
   }
 
   async markAllAsRead(userId: string): Promise<void> {
-    const { error } = await this.supabase
+    const { error } = await this.getSupabase()
       .from('notification_states')
       .update({ read: true, updated_at: new Date().toISOString() })
       .eq('user_id', userId)
@@ -326,7 +328,7 @@ export class NotificationsService {
   }
 
   async getUnreadCount(userId: string): Promise<number> {
-    const { count, error } = await this.supabase
+    const { count, error } = await this.getSupabase()
       .from('notification_states')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
@@ -351,7 +353,7 @@ export class NotificationsService {
       read: false
     }))
 
-    const { error } = await this.supabase
+    const { error } = await this.getSupabase()
       .from('notification_states')
       .insert(notifications)
 
@@ -366,7 +368,7 @@ export class NotificationsService {
     title?: string,
     message?: string
   ): Promise<void> {
-    const { error } = await this.supabase
+    const { error } = await this.getSupabase()
       .from('notification_states')
       .insert({
         user_id: userId,
@@ -388,7 +390,7 @@ export class NotificationsService {
     title?: string,
     message?: string
   ): Promise<void> {
-    const { error } = await this.supabase
+    const { error } = await this.getSupabase()
       .from('notification_states')
       .insert({
         user_id: userId,
@@ -413,7 +415,7 @@ export class NotificationsService {
     }
   ): Promise<void> {
     // For achievements, we create a direct notification without a separate source table
-    const { error } = await this.supabase
+    const { error } = await this.getSupabase()
       .from('notification_states')
       .insert({
         user_id: userId,

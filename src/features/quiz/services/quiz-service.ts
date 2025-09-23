@@ -12,7 +12,9 @@ import {
 import { QuestionWithDetails } from '@/features/questions/types/questions'
 
 export class QuizService {
-  private supabase = createClient()
+  private getSupabase() {
+    return createClient()
+  }
 
   /**
    * Create a new quiz session
@@ -20,7 +22,7 @@ export class QuizService {
   async createQuizSession(userId: string, formData: QuizCreationForm, authenticatedSupabase?: any): Promise<QuizSession> {
     try {
       // Use authenticated client if provided, otherwise fall back to default
-      const supabaseClient = authenticatedSupabase || this.supabase
+      const supabaseClient = authenticatedSupabase || this.getSupabase()
 
       // First, get questions based on the criteria
       const questions = await this.getQuestionsForQuiz(formData)
@@ -107,7 +109,7 @@ export class QuizService {
     console.log('Getting questions for quiz with criteria:', formData)
 
     // Query with proper joins to load images and options
-    const query = this.supabase
+    const query = this.getSupabase()
       .from('questions')
       .select(`
         id,
@@ -150,11 +152,11 @@ export class QuizService {
     // Filter by category selection
     if (formData.categorySelection === 'ap_only') {
       // Get AP subcategory IDs
-      const { data: apCategories } = await this.supabase
+      const { data: apCategories } = await this.getSupabase()
         .from('categories')
         .select('id')
         .eq('parent_id', (
-          await this.supabase
+          await this.getSupabase()
             .from('categories')
             .select('id')
             .eq('name', 'Anatomic Pathology')
@@ -170,11 +172,11 @@ export class QuizService {
       }
     } else if (formData.categorySelection === 'cp_only') {
       // Get CP subcategory IDs
-      const { data: cpCategories } = await this.supabase
+      const { data: cpCategories } = await this.getSupabase()
         .from('categories')
         .select('id')
         .eq('parent_id', (
-          await this.supabase
+          await this.getSupabase()
             .from('categories')
             .select('id')
             .eq('name', 'Clinical Pathology')
@@ -228,7 +230,7 @@ export class QuizService {
   async getQuizSession(sessionId: string, authenticatedSupabase?: any): Promise<QuizSession | null> {
     try {
       // Use authenticated client if provided, otherwise fall back to default
-      const supabaseClient = authenticatedSupabase || this.supabase
+      const supabaseClient = authenticatedSupabase || this.getSupabase()
 
       console.log('Getting quiz session:', sessionId)
 
@@ -275,7 +277,7 @@ export class QuizService {
    * Get questions for a session
    */
   private async getQuestionsForSession(questionIds: string[], authenticatedSupabase?: any): Promise<QuestionWithDetails[]> {
-    const supabaseClient = authenticatedSupabase || this.supabase
+    const supabaseClient = authenticatedSupabase || this.getSupabase()
     const { data: questions, error } = await supabaseClient
       .from('questions')
       .select(`
@@ -315,7 +317,7 @@ export class QuizService {
   ): Promise<QuizAttempt> {
     try {
       // Use authenticated client if provided, otherwise fall back to default
-      const supabaseClient = authenticatedSupabase || this.supabase
+      const supabaseClient = authenticatedSupabase || this.getSupabase()
 
       // Validate required parameters
       if (!selectedAnswerId) {
@@ -373,7 +375,7 @@ export class QuizService {
   async updateQuizSession(sessionId: string, updates: Partial<QuizSession>, authenticatedSupabase?: any): Promise<void> {
     try {
       // Use authenticated client if provided, otherwise fall back to default
-      const supabaseClient = authenticatedSupabase || this.supabase
+      const supabaseClient = authenticatedSupabase || this.getSupabase()
 
       const { error } = await supabaseClient
         .from('quiz_sessions')
@@ -468,7 +470,7 @@ export class QuizService {
   async getUserQuizStats(userId: string): Promise<QuizStats> {
     try {
       // Get quiz session statistics
-      const { data: sessions, error: sessionsError } = await this.supabase
+      const { data: sessions, error: sessionsError } = await this.getSupabase()
         .from('quiz_sessions')
         .select('*')
         .eq('user_id', userId)
@@ -569,7 +571,7 @@ export class QuizService {
       }
 
       // Get all attempts for this session
-      const supabaseClient = authenticatedSupabase || this.supabase
+      const supabaseClient = authenticatedSupabase || this.getSupabase()
       const { data: attempts, error: attemptsError } = await supabaseClient
         .from('quiz_attempts')
         .select('*')
@@ -581,8 +583,10 @@ export class QuizService {
       const correctAnswers = attempts?.filter((a: any) => a.is_correct).length || 0
       const totalQuestions = session.totalQuestions
       const score = Math.round((correctAnswers / totalQuestions) * 100)
-      const totalTimeSpent = session.totalTimeSpent || 0
-      const averageTimePerQuestion = Math.round(totalTimeSpent / totalQuestions)
+
+      // Calculate total time spent from individual attempts (more accurate than session.totalTimeSpent)
+      const totalTimeSpent = attempts?.reduce((sum: number, a: any) => sum + (a.time_spent || 0), 0) || 0
+      const averageTimePerQuestion = totalQuestions > 0 ? Math.round(totalTimeSpent / totalQuestions) : 0
 
       // Calculate difficulty breakdown
       const difficultyBreakdown = {
@@ -706,7 +710,7 @@ export class QuizService {
   async completeQuiz(sessionId: string, authenticatedSupabase?: any): Promise<QuizResult> {
     try {
       // Use authenticated client if provided, otherwise fall back to default
-      const supabaseClient = authenticatedSupabase || this.supabase
+      const supabaseClient = authenticatedSupabase || this.getSupabase()
 
       // Get all attempts for this session
       const { data: attempts, error: attemptsError } = await supabaseClient

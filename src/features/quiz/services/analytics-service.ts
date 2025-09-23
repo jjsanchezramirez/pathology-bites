@@ -7,7 +7,11 @@ export class QuizAnalyticsService {
   private supabase
 
   constructor(authenticatedSupabase?: any) {
-    this.supabase = authenticatedSupabase || createClient()
+    this.supabase = authenticatedSupabase
+  }
+
+  private getSupabase() {
+    return this.supabase || createClient()
   }
 
   /**
@@ -19,7 +23,7 @@ export class QuizAnalyticsService {
       console.log('[Analytics] Starting batch analytics update for session:', sessionId)
 
       // Get all questions from this quiz session
-      const { data: attempts, error: attemptsError } = await this.supabase
+      const { data: attempts, error: attemptsError } = await this.getSupabase()
         .from('quiz_attempts')
         .select('question_id')
         .eq('quiz_session_id', sessionId)
@@ -58,7 +62,7 @@ export class QuizAnalyticsService {
   private async updateQuestionAnalytics(questionId: string): Promise<void> {
     try {
       // Calculate stats from quiz_attempts
-      const { data: stats, error: statsError } = await this.supabase
+      const { data: stats, error: statsError } = await this.getSupabase()
         .from('quiz_attempts')
         .select('is_correct')
         .eq('question_id', questionId)
@@ -78,7 +82,7 @@ export class QuizAnalyticsService {
       const difficultyScore = 1.0 - successRate
 
       // Update or insert analytics record
-      const { error: upsertError } = await this.supabase
+      const { error: upsertError } = await this.getSupabase()
         .from('question_analytics')
         .upsert({
           question_id: questionId,
@@ -138,7 +142,7 @@ export class QuizAnalyticsService {
       console.log('[Analytics] Starting full analytics recalculation')
 
       // Get all questions that have attempts
-      const { data: questions, error: questionsError } = await this.supabase
+      const { data: questions, error: questionsError } = await this.getSupabase()
         .from('quiz_attempts')
         .select('question_id')
 
@@ -185,7 +189,7 @@ export class QuizAnalyticsService {
     averageTimePerQuestion: number
   } | null> {
     try {
-      const { data: attempts, error } = await this.supabase
+      const { data: attempts, error } = await this.getSupabase()
         .from('quiz_attempts')
         .select('is_correct, time_spent')
         .eq('quiz_session_id', sessionId)

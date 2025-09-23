@@ -142,6 +142,8 @@ function UnifiedDebugInterface() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Cache Clear Button - only shows in development */}
     </div>
   )
 }

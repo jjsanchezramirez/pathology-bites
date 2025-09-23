@@ -83,33 +83,39 @@ export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, E
       const isFeatureLevel = level === 'feature'
 
       return (
-        <Card className={`border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950 ${isPageLevel ? 'min-h-[400px]' : ''}`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-900 dark:text-red-100">
+        <Card className={`border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950 ${isPageLevel ? 'min-h-[400px]' : ''}`}>
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-amber-900 dark:text-amber-100 text-lg">
               <AlertTriangle className="h-5 w-5" />
-              {isPageLevel ? 'Page Error' : isFeatureLevel ? 'Feature Error' : 'Component Error'}
-              {context && ` - ${context}`}
+              {isPageLevel ? 'Oops! Something went wrong' : isFeatureLevel ? 'Feature temporarily unavailable' : 'Component error'}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="text-sm text-red-700 dark:text-red-300">
-              <p className="font-medium mb-2">
-                {isPageLevel 
-                  ? 'This page encountered an error and cannot be displayed.'
+            <div className="text-sm text-amber-700 dark:text-amber-300">
+              <p className="mb-3">
+                {isPageLevel
+                  ? 'We encountered an unexpected error while loading this page. This is usually temporary.'
                   : isFeatureLevel
-                  ? 'This feature encountered an error and cannot be loaded.'
-                  : 'This component encountered an error.'
+                  ? 'This feature is temporarily unavailable. You can continue using other parts of the application.'
+                  : 'This component couldn\'t load properly, but the rest of the page should work fine.'
                 }
               </p>
-              <div className="bg-red-100 dark:bg-red-900 p-3 rounded text-xs">
-                <strong>Error:</strong> {this.state.error?.message || 'Unknown error occurred'}
-              </div>
-              {process.env.NODE_ENV === 'development' && this.state.error?.stack && (
-                <details className="mt-2">
-                  <summary className="cursor-pointer font-medium">Stack Trace (Development)</summary>
-                  <pre className="bg-red-100 dark:bg-red-900 p-3 rounded text-xs overflow-auto mt-2 max-h-40">
-                    {this.state.error.stack}
-                  </pre>
+
+              {process.env.NODE_ENV === 'development' && (
+                <details className="mt-3">
+                  <summary className="cursor-pointer font-medium text-amber-800 dark:text-amber-200 hover:text-amber-900 dark:hover:text-amber-100">
+                    Technical details (Development)
+                  </summary>
+                  <div className="mt-2 p-3 bg-amber-100 dark:bg-amber-900 rounded text-xs">
+                    <div className="font-medium mb-1">Error:</div>
+                    <div className="mb-2">{this.state.error?.message || 'Unknown error occurred'}</div>
+                    {this.state.error?.stack && (
+                      <>
+                        <div className="font-medium mb-1">Stack Trace:</div>
+                        <pre className="overflow-auto max-h-32 text-xs">{this.state.error.stack}</pre>
+                      </>
+                    )}
+                  </div>
                 </details>
               )}
             </div>
@@ -118,7 +124,7 @@ export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, E
                 onClick={this.retry}
                 variant="outline"
                 size="sm"
-                className="text-red-700 border-red-300 hover:bg-red-100 dark:text-red-300 dark:border-red-700 dark:hover:bg-red-900"
+                className="text-amber-700 border-amber-300 hover:bg-amber-100 dark:text-amber-300 dark:border-amber-700 dark:hover:bg-amber-900"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Try Again
@@ -128,7 +134,7 @@ export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, E
                   onClick={this.goBack}
                   variant="outline"
                   size="sm"
-                  className="text-red-700 border-red-300 hover:bg-red-100 dark:text-red-300 dark:border-red-700 dark:hover:bg-red-900"
+                  className="text-amber-700 border-amber-300 hover:bg-amber-100 dark:text-amber-300 dark:border-amber-700 dark:hover:bg-amber-900"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Go Back
@@ -139,7 +145,7 @@ export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, E
                   onClick={this.goHome}
                   variant="outline"
                   size="sm"
-                  className="text-red-700 border-red-300 hover:bg-red-100 dark:text-red-300 dark:border-red-700 dark:hover:bg-red-900"
+                  className="text-amber-700 border-amber-300 hover:bg-amber-100 dark:text-amber-300 dark:border-amber-700 dark:hover:bg-amber-900"
                 >
                   <Home className="mr-2 h-4 w-4" />
                   Go to Dashboard

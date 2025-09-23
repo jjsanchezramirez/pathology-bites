@@ -36,7 +36,7 @@ export function QuizSidebar({
     if (!question) return 'unanswered'
 
     const attempt = attempts.find(a => a.questionId === question.id)
-    if (!attempt) return 'unanswered'
+    if (!attempt || !attempt.selectedAnswerId) return 'unanswered'
 
     return attempt.isCorrect ? 'correct' : 'incorrect'
   }
