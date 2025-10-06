@@ -224,7 +224,7 @@ export function GeneralInquiriesTable({ type }: GeneralInquiriesTableProps) {
                       <div className="flex items-center gap-2">
                         <span>{inquiry.first_name} {inquiry.last_name}</span>
                         {isOldInquiry(inquiry.created_at) && (
-                          <AlertCircle className="h-4 w-4 text-orange-500" title="Old inquiry (>7 days)" />
+                          <AlertCircle className="h-4 w-4 text-orange-500" />
                         )}
                       </div>
                       <div className="text-sm text-muted-foreground">{inquiry.email}</div>

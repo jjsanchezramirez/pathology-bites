@@ -18,7 +18,8 @@ import {
   Bot,
   Palette,
   HardDrive,
-  BookOpen
+  BookOpen,
+  Brain
 } from 'lucide-react'
 
 // Import tab components from debug feature
@@ -32,6 +33,7 @@ import {
   R2StorageTab,
   AnkiViewerTab
 } from '@/features/debug'
+import { AdminAiTest } from '@/features/debug/components/admin-ai-test'
 
 function UnifiedDebugInterface() {
   const [activeTab, setActiveTab] = useState('api-tests')
@@ -74,7 +76,7 @@ function UnifiedDebugInterface() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="api-tests" className="flex items-center space-x-2">
               <TestTube className="h-4 w-4" />
               <span className="hidden sm:inline">API Tests</span>
@@ -90,6 +92,10 @@ function UnifiedDebugInterface() {
             <TabsTrigger value="ai-models" className="flex items-center space-x-2">
               <Bot className="h-4 w-4" />
               <span className="hidden sm:inline">AI Models</span>
+            </TabsTrigger>
+            <TabsTrigger value="admin-ai-test" className="flex items-center space-x-2">
+              <Brain className="h-4 w-4" />
+              <span className="hidden sm:inline">Admin AI Test</span>
             </TabsTrigger>
             <TabsTrigger value="ui-components" className="flex items-center space-x-2">
               <Palette className="h-4 w-4" />
@@ -123,6 +129,10 @@ function UnifiedDebugInterface() {
 
           <TabsContent value="ai-models">
             <AiModelsTab />
+          </TabsContent>
+
+          <TabsContent value="admin-ai-test">
+            <AdminAiTest />
           </TabsContent>
 
           <TabsContent value="ui-components">

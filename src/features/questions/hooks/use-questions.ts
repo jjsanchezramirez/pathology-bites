@@ -4,6 +4,7 @@ import { createClient } from '@/shared/services/client';
 import { toast } from 'sonner';
 import { QuestionData, QuestionInsert, QuestionUpdate, QuestionWithDetails } from '@/features/questions/types/questions';
 import { QuestionSetData } from '@/features/questions/types/question-sets';
+import { TABLE_NAMES } from '@/shared/constants/database-types';
 
 export interface UseQuestionsParams {
   page?: number;
@@ -60,7 +61,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
     try {
       // Build the base query
       let query = supabase
-        .from('questions')
+        .from(TABLE_NAMES.QUESTIONS)
         .select(`
           *,
           question_set:sets(
@@ -128,7 +129,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
 
       if (categoryIds.length > 0) {
         const { data: categoriesResult } = await supabase
-          .from('categories')
+          .from(TABLE_NAMES.CATEGORIES)
           .select(`
             id,
             name,
@@ -174,7 +175,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
   const deleteQuestion = useCallback(async (questionId: string) => {
     try {
       const { error } = await supabase
-        .from('questions')
+        .from(TABLE_NAMES.QUESTIONS)
         .delete()
         .eq('id', questionId);
 
@@ -243,7 +244,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
   const createQuestion = useCallback(async (data: QuestionInsert): Promise<QuestionData> => {
     try {
       const { data: newQuestion, error } = await supabase
-        .from('questions')
+        .from(TABLE_NAMES.QUESTIONS)
         .insert(data)
         .select()
         .single();

@@ -3,13 +3,14 @@ import { createClient } from '@/shared/services/server'
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('Deleting inquiry with ID:', params.id)
+    const resolvedParams = await params
+    console.log('Deleting inquiry with ID:', resolvedParams.id)
     
     const supabase = await createClient()
-    const inquiryId = params.id
+    const inquiryId = resolvedParams.id
 
     // Auth is handled by middleware - user should be admin
     const { data: { user }, error: authError } = await supabase.auth.getUser()

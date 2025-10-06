@@ -80,8 +80,8 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
         throw new Error(msg)
       }
       // In development, fallback to local proxy to ease testing when R2 CORS is not configured.
-      console.warn('[VirtualSlides] R2 fetch failed in dev, falling back to /api/public-data/virtual-slides')
-      return await fetchWithTimeout('/api/public-data/virtual-slides', { cache: 'force-cache', timeoutMs: 8000 })
+      console.warn('[VirtualSlides] R2 fetch failed in dev, falling back to /api/public/data/virtual-slides')
+      return await fetchWithTimeout('/api/public/data/virtual-slides', { cache: 'force-cache', timeoutMs: 8000 })
     }
   }
 

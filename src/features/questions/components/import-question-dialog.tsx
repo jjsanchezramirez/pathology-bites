@@ -49,7 +49,7 @@ const importQuestionSchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']),
   teaching_point: z.string().min(10, 'Teaching point must be at least 10 characters').max(1000, 'Teaching point too long'),
   question_references: z.string().max(500, 'References too long').optional(),
-  status: z.enum(['draft', 'published']).default('draft'),
+  status: z.enum(['draft', 'approved']).default('draft'),
   question_set_id: z.string().uuid('Invalid question set ID').optional().nullable(),
   answer_options: z.array(answerOptionSchema).min(2, 'At least 2 answer options required').max(10, 'Maximum 10 answer options allowed'),
   question_images: z.array(questionImageSchema).optional().default([]),
@@ -463,7 +463,7 @@ export function ImportQuestionDialog({ open, onOpenChange, onSave }: ImportQuest
                   <p className="font-semibold text-foreground mb-1">Optional Fields:</p>
                   <ul className="list-disc list-inside space-y-1 ml-2">
                     <li><strong>question_references:</strong> Citation text (max 500 characters)</li>
-                    <li><strong>status:</strong> "draft" or "published" (defaults to "draft")</li>
+                    <li><strong>status:</strong> "draft" or "approved" (defaults to "draft")</li>
                     <li><strong>question_set_id:</strong> UUID of existing question set</li>
                     <li><strong>question_images:</strong> Array of image associations</li>
                     <li><strong>tag_ids:</strong> Array of existing tag UUIDs</li>

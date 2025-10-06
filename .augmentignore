@@ -8,11 +8,10 @@
 # ENVIRONMENT & SECRETS (Security)
 # ==============================================================================
 # Keep .env.example for reference, exclude actual secrets
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# .env
+# .env.example
+# .env.local
+# .env.development.local
 secrets/
 *.pem
 *.key

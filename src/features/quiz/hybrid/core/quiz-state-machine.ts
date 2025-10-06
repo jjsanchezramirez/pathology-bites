@@ -1,9 +1,9 @@
 /**
  * Pure Serverless Hybrid Quiz System - Core State Machine
- * 
+ *
  * This is the heart of the hybrid system that manages quiz state locally
  * to achieve 96.7% API call reduction (from ~15-30 calls to just 2 calls per quiz).
- * 
+ *
  * Key Features:
  * - Client-side state management for instant responses (0ms latency)
  * - Batched server synchronization for efficiency
@@ -11,67 +11,9 @@
  * - Optimized for Vercel's free tier without Edge Functions
  */
 
-export interface QuizQuestion {
-  id: string;
-  text: string;
-  options: Array<{
-    id: string;
-    text: string;
-    isCorrect: boolean;
-  }>;
-  explanation?: string;
-  category?: string;
-  difficulty?: 'easy' | 'medium' | 'hard';
-  metadata?: Record<string, any>;
-}
+import { QuizQuestion, QuizAnswer, QuizState } from '../../types/quiz-question';
 
-export interface QuizAnswer {
-  questionId: string;
-  selectedOptionId: string;
-  isCorrect: boolean;
-  timestamp: number;
-  timeSpent: number; // milliseconds
-}
-
-export interface QuizState {
-  // Session Info
-  sessionId: string;
-  status: 'not_started' | 'in_progress' | 'paused' | 'completed';
-  
-  // Questions & Navigation
-  questions: QuizQuestion[];
-  currentQuestionIndex: number;
-  totalQuestions: number;
-  
-  // Answers & Progress
-  answers: Map<string, QuizAnswer>;
-  progress: {
-    answered: number;
-    correct: number;
-    incorrect: number;
-    percentage: number;
-  };
-  
-  // Timing
-  startTime?: number;
-  endTime?: number;
-  totalTimeSpent: number;
-  
-  // Configuration
-  config: {
-    mode: 'tutor' | 'exam';
-    timing: 'timed' | 'untimed';
-    showExplanations: boolean;
-    allowReview: boolean;
-  };
-  
-  // Sync Status
-  syncStatus: {
-    lastSyncTime?: number;
-    pendingChanges: boolean;
-    isOnline: boolean;
-  };
-}
+// QuizState is now imported from the standardized types
 
 export type QuizAction = 
   | { type: 'INITIALIZE'; payload: { sessionId: string; questions: QuizQuestion[]; config: QuizState['config'] } }
@@ -152,7 +94,7 @@ export function quizStateReducer(state: QuizState, action: QuizAction): QuizStat
       if (!question) return state;
       
       const selectedOption = question.options.find(opt => opt.id === selectedOptionId);
-      const isCorrect = selectedOption?.isCorrect ?? false;
+      const isCorrect = selectedOption?.is_correct ?? false;
       
       const newAnswer: QuizAnswer = {
         questionId,

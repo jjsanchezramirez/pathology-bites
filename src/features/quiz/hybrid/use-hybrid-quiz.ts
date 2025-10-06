@@ -16,7 +16,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useQuizStateMachine } from './hooks/use-quiz-state-machine';
 import { DatabaseSyncManager, SyncResult } from './core/database-sync-manager';
-import { QuizQuestion, QuizAnswer, QuizState } from './core/quiz-state-machine';
+import { QuizQuestion, QuizAnswer, QuizState, QuizQuestionTransformer } from '../types/quiz-question';
 
 export interface UseHybridQuizOptions {
   sessionId: string;
@@ -392,39 +392,15 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       const question = stateActions.getCurrentQuestion();
       if (!question) return null;
 
-      // Transform hybrid format to UI component format
-      return {
-        id: question.id,
-        title: '', // Not used by UI component
-        stem: question.text,
-        teaching_point: question.explanation,
-        question_references: '',
-        question_options: question.options.map(opt => ({
-          id: opt.id,
-          text: opt.text,
-          is_correct: opt.isCorrect,
-          explanation: undefined
-        })),
-        question_images: question.metadata?.images || []
-      };
+      // Transform hybrid format to UI component format using standardized transformer
+      return QuizQuestionTransformer.hybridToUI(question);
     }, [stateActions]),
 
     getQuestions: useCallback(() => {
-      // Transform hybrid format to UI component format
-      return quizState.questions.map(question => ({
-        id: question.id,
-        title: '',
-        stem: question.text,
-        teaching_point: question.explanation,
-        question_references: '',
-        question_options: question.options.map(opt => ({
-          id: opt.id,
-          text: opt.text,
-          is_correct: opt.isCorrect,
-          explanation: undefined
-        })),
-        question_images: question.metadata?.images || []
-      }));
+      // Transform hybrid format to UI component format using standardized transformer
+      return quizState.questions.map(question =>
+        QuizQuestionTransformer.hybridToUI(question)
+      );
     }, [quizState.questions]),
 
     getAnswerForQuestion: useCallback((questionId: string) => {

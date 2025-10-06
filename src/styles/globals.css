@@ -38,14 +38,24 @@
   }
 
   /* Performance-based animations */
-  .animate-wobble {
-    animation: wobble 0.6s ease-in-out 3;
+  .animate-tremble {
+    animation: tremble 0.6s ease-in-out infinite;
+    transform-origin: center center;
+    display: inline-block;
   }
 
   .animate-letter-drop {
-    animation: letterDrop 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    animation: letterDrop 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
     opacity: 0;
-    transform: translateY(-30px) rotate(-5deg);
+    transform: translateY(-40px) scale(0.3);
+    display: inline-block;
+  }
+
+  .animate-letter-drop-mild {
+    animation: letterDropMild 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    opacity: 0;
+    transform: translateY(-15px) scale(0.8);
+    display: inline-block;
   }
 
   .animate-letter-fade {
@@ -88,27 +98,52 @@
   }
 
 
-  @keyframes wobble {
-    0%, 100% { transform: rotate(0deg); }
-    15% { transform: rotate(-2deg); }
-    30% { transform: rotate(2deg); }
-    45% { transform: rotate(-1deg); }
-    60% { transform: rotate(1deg); }
-    75% { transform: rotate(-0.5deg); }
+  @keyframes tremble {
+    0%, 100% { transform: translate(0, 0) rotate(0); }
+    10% { transform: translate(-2px, -2px) rotate(-2deg); }
+    20% { transform: translate(2px, 2px) rotate(2deg); }
+    30% { transform: translate(-2px, 2px) rotate(-2deg); }
+    40% { transform: translate(2px, -2px) rotate(2deg); }
+    50% { transform: translate(-2px, -2px) rotate(-2deg); }
+    60% { transform: translate(2px, 2px) rotate(2deg); }
+    70% { transform: translate(-2px, 2px) rotate(-2deg); }
+    80% { transform: translate(2px, -2px) rotate(2deg); }
   }
 
   @keyframes letterDrop {
     0% {
       opacity: 0;
-      transform: translateY(-30px) scale(0.3) rotate(-5deg);
+      transform: translateY(-40px) scale(0.3);
     }
-    60% {
-      opacity: 0.9;
-      transform: translateY(8px) scale(1.15) rotate(2deg);
+    50% {
+      opacity: 0.8;
+      transform: translateY(5px) scale(1.1);
+    }
+    70% {
+      opacity: 1;
+      transform: translateY(-2px) scale(0.95);
+    }
+    85% {
+      transform: translateY(1px) scale(1.02);
     }
     100% {
       opacity: 1;
-      transform: translateY(0) scale(1) rotate(0deg);
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes letterDropMild {
+    0% {
+      opacity: 0;
+      transform: translateY(-15px) scale(0.8);
+    }
+    60% {
+      opacity: 1;
+      transform: translateY(2px) scale(1.02);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
   }
 

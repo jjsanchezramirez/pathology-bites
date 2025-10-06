@@ -22,6 +22,7 @@ import {
   User,
   Brain,
   FolderOpen,
+  Clock,
   type LucideIcon
 } from "lucide-react"
 import { cn } from "@/shared/utils"
@@ -49,6 +50,7 @@ const iconMap: Record<string, LucideIcon> = {
   Brain,
   Microscope,
   FolderOpen,
+  Clock,
 }
 
 interface UnifiedSidebarProps {
@@ -62,7 +64,7 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
   const pathname = usePathname()
   const { canAccess, isAdmin, isLoading } = useUserRole()
 
-  // Filter navigation items or sections based on user permissions
+  // Always show navigation immediately, but filter based on loading state
   const filteredNavigation = navigationItems ? filterNavigationItems(
     navigationItems,
     canAccess,
@@ -76,6 +78,35 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
     isAdmin,
     isLoading
   ) : []
+
+  // Loading skeleton component for navigation items
+  const LoadingSkeleton = () => (
+    <div className="space-y-6">
+      {/* Skeleton for multiple sections */}
+      {[...Array(3)].map((_, sectionIndex) => (
+        <div key={sectionIndex} className={sectionIndex > 0 ? "pt-2" : ""}>
+          {/* Section header skeleton */}
+          {!isCollapsed && (
+            <div className="px-3 mb-2">
+              <div className="h-3 bg-sidebar-foreground/20 rounded animate-pulse w-20" />
+            </div>
+          )}
+          
+          {/* Section items skeleton */}
+          <div className="space-y-1">
+            {[...Array(sectionIndex === 0 ? 1 : sectionIndex === 1 ? 4 : 3)].map((_, itemIndex) => (
+              <div key={itemIndex} className="flex items-center px-3 h-10">
+                <div className="h-5 w-5 bg-sidebar-foreground/20 rounded animate-pulse" />
+                {!isCollapsed && (
+                  <div className="ml-3 h-4 bg-sidebar-foreground/20 rounded animate-pulse flex-1" />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 
   return (
     <aside
@@ -100,8 +131,13 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto">
         <div className="p-3">
-          {/* Render sections if available */}
-          {filteredSections.length > 0 ? (
+          {/* Show loading skeleton when no navigation items are provided */}
+          {(!navigationSections?.length && !navigationItems?.length) || isLoading ? (
+            <LoadingSkeleton />
+          ) : (
+            <>
+              {/* Render sections if available */}
+              {filteredSections.length > 0 ? (
             <div className="space-y-6">
               {filteredSections.map((section, sectionIndex) => (
                 <div key={section.title} className={sectionIndex > 0 ? "pt-2" : ""}>
@@ -124,7 +160,8 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
                           href={item.href}
                           className={cn(
                             "flex items-center px-3 h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
-                            isActive && "bg-sidebar-foreground/20 text-sidebar-foreground"
+                            isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
+                            isLoading && "pointer-events-none opacity-60"
                           )}
                           title={isCollapsed ? item.name : undefined}
                         >
@@ -155,7 +192,8 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
                     href={item.href}
                     className={cn(
                       "flex items-center px-3 h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
-                      isActive && "bg-sidebar-foreground/20 text-sidebar-foreground"
+                      isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
+                      isLoading && "pointer-events-none opacity-60"
                     )}
                     title={isCollapsed ? item.name : undefined}
                   >
@@ -170,6 +208,8 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
                 )
               })}
             </div>
+              )}
+            </>
           )}
         </div>
       </nav>

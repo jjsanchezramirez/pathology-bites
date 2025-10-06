@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     // For other files, return as blob
-    return new NextResponse(fileContent, {
+    return new NextResponse(fileContent as BodyInit, {
       headers: {
         'Content-Type': 'application/octet-stream',
         'Content-Disposition': `attachment; filename="${key}"`

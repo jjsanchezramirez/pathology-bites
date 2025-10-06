@@ -70,7 +70,7 @@ export class QuizService {
         time_remaining: totalTimeLimit
       }
 
-      console.log('Creating quiz session with data:', sessionData)
+
 
       const { data: session, error } = await supabaseClient
         .from('quiz_sessions')
@@ -106,7 +106,7 @@ export class QuizService {
    * Get questions for quiz based on criteria
    */
   private async getQuestionsForQuiz(formData: QuizCreationForm): Promise<QuestionWithDetails[]> {
-    console.log('Getting questions for quiz with criteria:', formData)
+
 
     // Query with proper joins to load images and options
     const query = this.getSupabase()
@@ -146,7 +146,7 @@ export class QuizService {
       throw error
     }
 
-    console.log(`Found ${questions?.length || 0} approved questions`)
+
     let filteredQuestions = questions || []
 
     // Filter by category selection
@@ -196,7 +196,7 @@ export class QuizService {
       )
     }
 
-    console.log(`After filtering by category selection (${formData.categorySelection}): ${filteredQuestions.length} questions`)
+
 
     // TODO: Filter by question type (unused, incorrect, marked, correct)
     // This would require user-specific data about question attempts and flags
@@ -232,7 +232,7 @@ export class QuizService {
       // Use authenticated client if provided, otherwise fall back to default
       const supabaseClient = authenticatedSupabase || this.getSupabase()
 
-      console.log('Getting quiz session:', sessionId)
+
 
       const { data: session, error } = await supabaseClient
         .from('quiz_sessions')
@@ -324,7 +324,7 @@ export class QuizService {
         throw new Error('No answer selected')
       }
 
-      console.log('Submitting answer:', { sessionId, questionId, selectedAnswerId, firstAnswerId, timeSpent })
+
 
       // Create quiz attempt - let database triggers handle is_correct calculation
       // This eliminates race conditions and constraint violations
@@ -347,11 +347,7 @@ export class QuizService {
         throw error
       }
 
-      console.log('Quiz attempt created successfully:', {
-        attemptId: attempt.id,
-        isCorrect: attempt.is_correct,
-        selectedAnswerId: attempt.selected_answer_id
-      })
+
 
       return {
         ...attempt,
@@ -585,7 +581,15 @@ export class QuizService {
       const score = Math.round((correctAnswers / totalQuestions) * 100)
 
       // Calculate total time spent from individual attempts (more accurate than session.totalTimeSpent)
-      const totalTimeSpent = attempts?.reduce((sum: number, a: any) => sum + (a.time_spent || 0), 0) || 0
+      // Handle legacy data that might be in milliseconds or zero values
+      const totalTimeSpent = attempts?.reduce((sum: number, a: any) => {
+        let timeSpent = a.time_spent || 0
+        // If the value is unreasonably large (> 3600 seconds = 1 hour), assume it's in milliseconds
+        if (timeSpent > 3600) {
+          timeSpent = Math.round(timeSpent / 1000)
+        }
+        return sum + timeSpent
+      }, 0) || 0
       const averageTimePerQuestion = totalQuestions > 0 ? Math.round(totalTimeSpent / totalQuestions) : 0
 
       // Calculate difficulty breakdown
@@ -728,7 +732,15 @@ export class QuizService {
       const correctAnswers = attempts?.filter((a: any) => a.is_correct).length || 0
       const totalQuestions = session.totalQuestions
       const score = Math.round((correctAnswers / totalQuestions) * 100)
-      const totalTimeSpent = attempts?.reduce((sum: number, a: any) => sum + (a.time_spent || 0), 0) || 0
+      // Calculate total time spent with legacy data handling
+      const totalTimeSpent = attempts?.reduce((sum: number, a: any) => {
+        let timeSpent = a.time_spent || 0
+        // If the value is unreasonably large (> 3600 seconds = 1 hour), assume it's in milliseconds
+        if (timeSpent > 3600) {
+          timeSpent = Math.round(timeSpent / 1000)
+        }
+        return sum + timeSpent
+      }, 0) || 0
       const averageTimePerQuestion = Math.round(totalTimeSpent / totalQuestions)
 
       // Calculate difficulty breakdown

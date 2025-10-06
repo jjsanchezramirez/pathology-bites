@@ -15,6 +15,9 @@ import {
   Target
 } from "lucide-react"
 import { QuizResult } from "@/features/quiz/types/quiz"
+import { QuizQuestionDisplay } from "@/features/quiz/components/quiz-question-display"
+import { UIQuizQuestion } from "@/features/quiz/types/quiz-question"
+import { createClient } from "@/shared/services/client"
 import { toast } from "sonner"
 import Link from "next/link"
 import Image from "next/image"
@@ -23,21 +26,51 @@ export default function QuizReviewPage() {
   const params = useParams()
   const router = useRouter()
   const [result, setResult] = useState<QuizResult | null>(null)
+  const [fullQuestions, setFullQuestions] = useState<UIQuizQuestion[]>([])
   const [loading, setLoading] = useState(true)
 
   const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id
 
-  // Fetch quiz results on component mount
+  // Fetch quiz results and full question data on component mount
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        // Fetch from API
+        // Fetch quiz results from API
         const response = await fetch(`/api/quiz/sessions/${params?.id}/results`)
         if (!response.ok) {
           throw new Error('Failed to fetch quiz results')
         }
         const data = await response.json()
         setResult(data.data)
+
+        // Fetch full question data with options, images, etc.
+        if (data.data?.questionDetails) {
+          const supabase = createClient()
+          const questionIds = data.data.questionDetails.map((q: any) => q.id)
+
+          const { data: questions, error } = await supabase
+            .from('questions')
+            .select(`
+              id,
+              title,
+              stem,
+              teaching_point,
+              question_references,
+              question_options(*),
+              question_images(*, image:images(*))
+            `)
+            .in('id', questionIds)
+
+          if (error) {
+            console.error('Error fetching full question data:', error)
+            toast.error('Failed to load question details')
+          } else {
+            // Order questions to match the quiz order
+            const questionMap = new Map(questions?.map((q: any) => [q.id, q]) || [])
+            const orderedQuestions = questionIds.map(id => questionMap.get(id)).filter(Boolean) as UIQuizQuestion[]
+            setFullQuestions(orderedQuestions)
+          }
+        }
       } catch (error) {
         toast.error('Failed to load quiz results')
         setResult(null)
@@ -51,7 +84,14 @@ export default function QuizReviewPage() {
     }
   }, [params?.id, sessionId])
 
-  const formatTime = (seconds: number) => {
+  const formatTime = (timeValue: number) => {
+    // Handle legacy data that might be in milliseconds
+    // If the value is unreasonably large (> 3600 seconds = 1 hour), assume it's in milliseconds
+    let seconds = timeValue
+    if (timeValue > 3600) {
+      seconds = Math.round(timeValue / 1000)
+    }
+
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
     const secs = seconds % 60
@@ -142,133 +182,76 @@ export default function QuizReviewPage() {
 
       {/* Questions Review */}
       <div className="space-y-6">
-        {result.questionDetails?.map((question, index) => (
-          <Card key={question.id} id={`question-${index + 1}`} className="scroll-mt-6">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-3">
-                  {question.isCorrect ? (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <XCircle className="h-5 w-5 text-red-500" />
-                  )}
-                  Question {index + 1}: {question.title}
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    {question.category}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {question.difficulty}
-                  </Badge>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Time spent: {formatTime(question.timeSpent)}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Target className="h-3 w-3" />
-                  {question.totalAttempts && question.totalAttempts >= 30
-                    ? `${question.successRate}% success rate`
-                    : 'Insufficient data'
-                  }
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {/* Question Content */}
-              <div className="space-y-4">
-                {/* Question Text */}
-                <div className="prose prose-sm max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: question.questionText || '' }} />
-                </div>
+        {result.questionDetails?.map((question, index) => {
+          const fullQuestion = fullQuestions.find(fq => fq.id === question.id)
 
-                {/* Question Images */}
-                {question.images && question.images.length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {question.images.map((image, imgIndex) => (
-                      <div key={imgIndex} className="relative">
-                        <Image
-                          src={image.url}
-                          alt={image.alt || `Question image ${imgIndex + 1}`}
-                          width={300}
-                          height={200}
-                          className="rounded-lg object-cover w-full h-48"
-                          unoptimized={true}
-                        />
-                        {image.caption && (
-                          <p className="text-xs text-muted-foreground mt-1">{image.caption}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Answer Options */}
-                <div className="space-y-2">
-                  <h4 className="font-medium">Answer Options:</h4>
+          // If we don't have the full question data yet, show a skeleton
+          if (!fullQuestion) {
+            return (
+              <Card key={question.id} id={`question-${index + 1}`} className="scroll-mt-6">
+                <CardContent className="p-6">
+                  <Skeleton className="h-4 w-3/4 mb-4" />
+                  <Skeleton className="h-20 w-full mb-4" />
                   <div className="space-y-2">
-                    {question.options?.map((option, optionIndex) => {
-                      const isCorrect = option.isCorrect
-                      const isUserSelected = question.userSelectedOptionId === option.id
-                      
-                      let optionClass = "p-3 border rounded-lg "
-                      if (isCorrect) {
-                        optionClass += "border-green-500 bg-green-50 dark:bg-green-950/20"
-                      } else if (isUserSelected && !isCorrect) {
-                        optionClass += "border-red-500 bg-red-50 dark:bg-red-950/20"
-                      } else {
-                        optionClass += "border-gray-200 bg-gray-50 dark:bg-gray-950/20"
-                      }
-
-                      return (
-                        <div key={option.id} className={optionClass}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <span className="font-medium text-sm">
-                                {String.fromCharCode(65 + optionIndex)}.
-                              </span>
-                              <div dangerouslySetInnerHTML={{ __html: option.text }} />
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {isCorrect && (
-                                <Badge variant="outline" className="text-xs bg-green-100 text-green-800 border-green-300">
-                                  Correct Answer
-                                </Badge>
-                              )}
-                              {isUserSelected && !isCorrect && (
-                                <Badge variant="outline" className="text-xs bg-red-100 text-red-800 border-red-300">
-                                  Your Answer
-                                </Badge>
-                              )}
-                              {isUserSelected && isCorrect && (
-                                <Badge variant="outline" className="text-xs bg-green-100 text-green-800 border-green-300">
-                                  Your Answer ✓
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+            )
+          }
 
-                {/* Explanation */}
-                {question.explanation && (
-                  <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Explanation:</h4>
-                    <div className="prose prose-sm max-w-none text-blue-800 dark:text-blue-200">
-                      <div dangerouslySetInnerHTML={{ __html: question.explanation }} />
+          return (
+            <div key={question.id} id={`question-${index + 1}`} className="scroll-mt-6 space-y-4">
+              {/* Question Header with Stats */}
+              <Card>
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-3">
+                      {question.isCorrect ? (
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-red-500" />
+                      )}
+                      Question {index + 1}: {question.title}
+                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        {question.category}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {question.difficulty}
+                      </Badge>
                     </div>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      Time spent: {formatTime(question.timeSpent)}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Target className="h-3 w-3" />
+                      {question.totalAttempts && question.totalAttempts >= 30
+                        ? `${question.successRate}% success rate`
+                        : 'Insufficient data'
+                      }
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+
+              {/* Quiz Question Display Component */}
+              <QuizQuestionDisplay
+                question={fullQuestion}
+                selectedAnswerId={question.selectedAnswerId}
+                showExplanation={true}
+                onAnswerSelect={() => {}} // No-op since this is review mode
+              />
+            </div>
+          )
+        })}
       </div>
 
       {/* Back to Results Button */}

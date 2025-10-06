@@ -77,6 +77,13 @@ export const adminNavigationItems: NavigationItem[] = [
     adminOnly: true
   },
   {
+    name: "Waitlist",
+    href: "/admin/waitlist",
+    icon: "Clock",
+    requiredPermission: "users.manage",
+    adminOnly: true
+  },
+  {
     name: "Invite Users",
     href: "/admin/invite-users",
     icon: "UserPlus",
@@ -182,6 +189,13 @@ export const adminNavigationSections: NavigationSection[] = [
         name: "Users",
         href: "/admin/users",
         icon: "Users",
+        requiredPermission: "users.manage",
+        adminOnly: true
+      },
+      {
+        name: "Waitlist",
+        href: "/admin/waitlist",
+        icon: "Clock",
         requiredPermission: "users.manage",
         adminOnly: true
       },
@@ -386,7 +400,10 @@ export function filterNavigationItems(
   isLoading: boolean
 ): NavigationItem[] {
   return items.filter(item => {
-    if (isLoading) return true // Show all items while loading
+    // During loading, show all items to prevent layout shift
+    if (isLoading) return true
+    
+    // Once loaded, apply proper filtering
     if (item.adminOnly && !isAdmin) return false
     if (item.requiredPermission && !canAccess(item.requiredPermission)) return false
     return true

@@ -153,9 +153,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
           model: questionData.metadata?.model || 'unknown',
           generation_time_ms: generationTime,
           image_verification: null, // Image verification happens client-side if needed
-          token_usage: questionData.metadata?.token_usage || null,
-          successful_model: questionData.metadata?.model,
-          fallback_attempts: questionData.metadata?.modelIndex ? questionData.metadata.modelIndex + 1 : 1
+          token_usage: questionData.metadata?.token_usage || null
         },
         debug: questionData.debug
       }

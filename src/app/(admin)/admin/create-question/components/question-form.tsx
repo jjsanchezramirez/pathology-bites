@@ -12,11 +12,30 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area'
 import { Loader2, Brain, Upload, FileText, X } from 'lucide-react'
 import { toast } from 'sonner'
 import {
-  ACTIVE_AI_MODELS,
-  DISABLED_AI_MODELS,
-  getModelProvider,
-  DEFAULT_MODEL
+  getModelProvider
 } from '@/shared/config/ai-models'
+
+// Admin AI models (matches the admin API exactly) - optimized for speed and quality
+const ADMIN_AI_MODELS = [
+  // Tier 1: FASTEST - Prioritize speed for better UX
+  'Llama-3.3-8B-Instruct',                  // 394ms - FASTEST, excellent quality
+  'ministral-8b-2410',                      // 596ms - Fast Mistral model
+  'gemini-1.5-flash',                       // 763ms - Fast Google model
+  'mistral-small-2501',                     // 790ms - Latest small Mistral
+  'gemini-2.0-flash',                       // 829ms - Good balance
+
+  // Tier 2: BALANCED - Good speed + capability
+  'Llama-4-Scout-17B-16E-Instruct-FP8',     // 1063ms - Latest multimodal + medical reasoning
+  'mistral-medium-2505',                    // 1311ms - Best balance of capability/volume
+
+  // Tier 3: POWERFUL - Slower but high quality
+  'Llama-3.3-70B-Instruct',                 // 1788ms - Proven large model performance
+  'Llama-4-Maverick-17B-128E-Instruct-FP8', // 1917ms - Complex reasoning powerhouse
+
+  // Tier 4: PREMIUM - Highest quality but slowest
+  'gemini-2.5-flash',                       // 3765ms - Best quality (but slow)
+  'gemini-2.5-pro'                          // Premium reasoning (slowest)
+]
 
 interface EducationalContent {
   category: string
@@ -116,7 +135,7 @@ Return the response in this exact JSON format:
 export function QuestionForm({ selectedContent, onQuestionGenerated, onFilesUploaded, isEditMode = false }: QuestionFormProps) {
   const [instructions, setInstructions] = useState(DEFAULT_INSTRUCTIONS)
   const [additionalContext, setAdditionalContext] = useState('')
-  const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL)
+  const [selectedModelIndex, setSelectedModelIndex] = useState(0) // Default to Llama-3.3-8B-Instruct (most reliable)
   const [assumeHistologicImages, setAssumeHistologicImages] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
@@ -203,93 +222,153 @@ export function QuestionForm({ selectedContent, onQuestionGenerated, onFilesUplo
 
     try {
       const contextContent = JSON.stringify(selectedContent.content, null, 2)
-      const prompt = `
-Based on the following pathology content, create a multiple-choice question:
+      const selectedModel = ADMIN_AI_MODELS[selectedModelIndex]
+      console.log('🔍 Model:', selectedModel, 'Using debug AI test API (restored functionality)')
 
-CONTENT SOURCE:
+      // Build comprehensive prompt for question generation
+      const prompt = `Create a high-quality medical/pathology multiple-choice question based on the following educational content:
+
+**Educational Context:**
 Category: ${selectedContent.category}
 Subject: ${selectedContent.subject}
 Lesson: ${selectedContent.lesson}
 Topic: ${selectedContent.topic}
 
-CONTENT:
+**Content:**
 ${contextContent}
 
-ADDITIONAL CONTEXT:
-${additionalContext}
+**Instructions:**
+${instructions}
 
-Please generate a question following the instructions provided.
-`
+${additionalContext ? `**Additional Context:**
+${additionalContext}` : ''}
 
-      console.log('🔍 Model:', selectedModel, 'Using WSI question generator API')
+Please generate a question following this exact JSON format:
+{
+  "title": "Brief descriptive title for the question",
+  "stem": "The question text with clinical scenario",
+  "difficulty": "easy|medium|hard",
+  "teaching_point": "Key learning objective or clinical pearl",
+  "question_references": "Relevant medical references if applicable",
+  "answer_options": [
+    {
+      "text": "Option A text",
+      "is_correct": true,
+      "explanation": "Detailed explanation for this option"
+    },
+    {
+      "text": "Option B text",
+      "is_correct": false,
+      "explanation": "Detailed explanation for this option"
+    },
+    {
+      "text": "Option C text",
+      "is_correct": false,
+      "explanation": "Detailed explanation for this option"
+    },
+    {
+      "text": "Option D text",
+      "is_correct": false,
+      "explanation": "Detailed explanation for this option"
+    }
+  ]
+}`
 
-      const response = await fetchWithRetry('/api/tools/wsi-question-generator/generate', {
+      const response = await fetchWithRetry('/api/debug/ai-test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          wsi: {
-            diagnosis: 'Admin Generated Question',
-            category: 'Admin',
-            subcategory: 'Manual Creation',
-            stain_type: 'H&E'
-          },
-          context: null,
-          modelId: selectedModel
+          model: selectedModel,
+          prompt: prompt
         })
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        // WSI question generator API returns structured response
-        if (!data.success) {
-          throw new Error(data.error || 'Question generation failed')
+        // Debug AI test API returns { content, model, provider, responseTime, tokenCount }
+        const generatedText = data.content
+        if (!generatedText) {
+          throw new Error('No content received from AI service')
         }
 
-        // Extract the generated question data
-        const generatedQuestion = data.question
-        if (!generatedQuestion) {
-          throw new Error('No question data received from API')
-        }
+        console.log('🔍 AI Response received, parsing JSON...')
 
-        // Process the structured question data from WSI generator
+        // Parse JSON from the debug AI test API response
         try {
-          // Add required fields that might be missing
-          const completeQuestion: GeneratedQuestion = {
-            ...generatedQuestion,
-            status: 'draft',
-            question_set_id: '', // Will be set during finalization
-            category_id: '', // Will be set during finalization
-            answer_options: generatedQuestion.answer_options || [], // Ensure answer_options is always an array
-            question_images: generatedQuestion.question_images || [],
-            tag_ids: generatedQuestion.tag_ids || [],
-            metadata: {
-              exported_at: new Date().toISOString(),
-              exported_by: '', // Will be set during finalization
-              source_content: {
-                category: selectedContent.category,
-                subject: selectedContent.subject,
-                lesson: selectedContent.lesson,
-                topic: selectedContent.topic
-              },
-              generated_by: {
-                provider: 'wsi-generator',
-                model: selectedModel
+          let questionData = null
+
+          // The debug AI test API returns the extracted content in data.content
+          // This content should be the question JSON (either direct or wrapped in markdown)
+
+          // Strategy 1: Try direct JSON parsing (for models that return clean JSON)
+          try {
+            questionData = JSON.parse(generatedText)
+          } catch (directError) {
+            // Strategy 2: Extract JSON from markdown code blocks
+            const markdownMatch = generatedText.match(/```json\n([\s\S]*?)\n```/)
+            if (markdownMatch) {
+              questionData = JSON.parse(markdownMatch[1])
+            } else {
+              // Strategy 3: Extract any JSON object from the text
+              const jsonMatch = generatedText.match(/\{[\s\S]*\}/)
+              if (jsonMatch) {
+                questionData = JSON.parse(jsonMatch[0])
+              } else {
+                throw new Error('No valid JSON found in response')
               }
+            }
+          }
+
+          if (questionData) {
+
+            // Add required fields that might be missing
+            const completeQuestion: GeneratedQuestion = {
+              ...questionData,
+              status: 'draft',
+              question_set_id: '', // Will be set during finalization
+              category_id: '', // Will be set during finalization
+              answer_options: (questionData.answer_options || []).map((option: any, index: number) => ({
+                ...option,
+                order_index: index // Add missing order_index field
+              })),
+              question_images: questionData.question_images || [],
+              tag_ids: questionData.tag_ids || [],
+              metadata: {
+                exported_at: new Date().toISOString(),
+                exported_by: '', // Will be set during finalization
+                source_content: {
+                  category: selectedContent.category,
+                  subject: selectedContent.subject,
+                  lesson: selectedContent.lesson,
+                  topic: selectedContent.topic
+                },
+                generated_by: {
+                  provider: data.provider || 'debug-ai',
+                  model: data.model || selectedModel
+                }
               }
             }
 
-          onQuestionGenerated(completeQuestion)
-          toast.success(`Question generated successfully using ${selectedModel}!`)
+            console.log('🎯 Generated question data:', completeQuestion)
+            console.log('📋 Question title:', completeQuestion.title)
+            console.log('📝 Answer options count:', completeQuestion.answer_options?.length)
+
+            onQuestionGenerated(completeQuestion)
+            toast.success(`Question generated successfully using ${selectedModel}!`)
+          } else {
+            throw new Error('No valid question data found in response')
+          }
         } catch (parseError) {
           console.error('JSON parsing error:', parseError)
+          console.error('Raw AI response:', generatedText.substring(0, 500))
           toast.error('Failed to parse generated question. Please try again.')
         }
       } else {
         // Handle different types of API errors
-        const errorMessage = data.error?.message || data.error || 'Failed to generate question'
+        const errorMessage = data.error || 'Failed to generate question'
         throw new Error(errorMessage)
       }
     } catch (error) {
@@ -301,6 +380,8 @@ Please generate a question following the instructions provided.
           toast.error('Request timed out. Please check your connection and try again.')
         } else if (error.message.includes('Failed to fetch')) {
           toast.error('Network error. Please check your internet connection and try again.')
+        } else if (error.message.includes('Unsupported model')) {
+          toast.error(`Model ${ADMIN_AI_MODELS[selectedModelIndex]} is not supported. Please try a different model.`)
         } else if (error.message.includes('rate limit')) {
           toast.error('API rate limit exceeded. Please wait a moment and try again.')
         } else if (error.message.includes('Server error: 5')) {
@@ -348,26 +429,24 @@ Please generate a question following the instructions provided.
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>AI Model</Label>
-              <Select value={selectedModel} onValueChange={setSelectedModel}>
+              <Select value={selectedModelIndex.toString()} onValueChange={(value) => setSelectedModelIndex(parseInt(value))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ACTIVE_AI_MODELS.map(model => (
-                    <SelectItem key={model.id} value={model.id}>
-                      {model.name}
-                    </SelectItem>
-                  ))}
-                  {DISABLED_AI_MODELS.map(model => (
-                    <SelectItem key={model.id} value={model.id} disabled>
-                      {model.name} (Unavailable)
+                  {ADMIN_AI_MODELS.map((model, index) => (
+                    <SelectItem key={index} value={index.toString()}>
+                      {model}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <div className="flex items-center gap-2 mt-2">
                 <Badge variant="outline" className="text-xs">
-                  Provider: {getModelProvider(selectedModel).toUpperCase()}
+                  Provider: {getModelProvider(ADMIN_AI_MODELS[selectedModelIndex]).toUpperCase()}
+                </Badge>
+                <Badge variant="secondary" className="text-xs">
+                  Priority: #{selectedModelIndex + 1} in fallback chain
                 </Badge>
               </div>
             </div>

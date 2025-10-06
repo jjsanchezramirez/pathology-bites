@@ -39,7 +39,7 @@ export interface Database {
           description: string | null
           content: string | null
           learning_objectives: string[] | null
-          difficulty_level: string
+          difficulty_level: Database["public"]["Enums"]["difficulty_level"]
           estimated_duration_minutes: number
           sort_order: number
           content_type: string
@@ -66,7 +66,7 @@ export interface Database {
           description?: string | null
           content?: string | null
           learning_objectives?: string[] | null
-          difficulty_level?: string
+          difficulty_level?: Database["public"]["Enums"]["difficulty_level"]
           estimated_duration_minutes?: number
           sort_order?: number
           content_type?: string
@@ -93,7 +93,7 @@ export interface Database {
           description?: string | null
           content?: string | null
           learning_objectives?: string[] | null
-          difficulty_level?: string
+          difficulty_level?: Database["public"]["Enums"]["difficulty_level"]
           estimated_duration_minutes?: number
           sort_order?: number
           content_type?: string
@@ -140,7 +140,7 @@ export interface Database {
       }
       learning_paths: {
         Row: {
-          id: number
+          id: string
           title: string
           slug: string
           description: string | null
@@ -155,8 +155,7 @@ export interface Database {
           status: string
           is_featured: boolean
           published_at: string | null
-          enrollment_count: number
-          completion_count: number
+
           average_rating: number | null
           rating_count: number
           created_by: string | null
@@ -179,8 +178,7 @@ export interface Database {
           status?: string
           is_featured?: boolean
           published_at?: string | null
-          enrollment_count?: number
-          completion_count?: number
+
           average_rating?: number | null
           rating_count?: number
           created_by?: string | null
@@ -203,8 +201,7 @@ export interface Database {
           status?: string
           is_featured?: boolean
           published_at?: string | null
-          enrollment_count?: number
-          completion_count?: number
+
           average_rating?: number | null
           rating_count?: number
           created_by?: string | null
@@ -235,7 +232,7 @@ export interface Database {
       learning_path_modules: {
         Row: {
           id: string
-          learning_path_id: number
+          learning_path_id: string
           module_id: string
           sort_order: number
           is_required: boolean
@@ -246,7 +243,7 @@ export interface Database {
         }
         Insert: {
           id?: string
-          learning_path_id: number
+          learning_path_id: string
           module_id: string
           sort_order: number
           is_required?: boolean
@@ -257,7 +254,7 @@ export interface Database {
         }
         Update: {
           id?: string
-          learning_path_id?: number
+          learning_path_id?: string
           module_id?: string
           sort_order?: number
           is_required?: boolean
@@ -281,11 +278,11 @@ export interface Database {
           }
         ]
       }
-      user_learning_path_enrollments: {
+      user_learning: {
         Row: {
           id: string
           user_id: string
-          learning_path_id: number
+          learning_path_id: string
           status: string
           enrolled_at: string
           started_at: string | null
@@ -303,7 +300,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
-          learning_path_id: number
+          learning_path_id: string
           status?: string
           enrolled_at?: string
           started_at?: string | null
@@ -321,7 +318,7 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
-          learning_path_id?: number
+          learning_path_id?: string
           status?: string
           enrolled_at?: string
           started_at?: string | null
@@ -405,7 +402,7 @@ export interface Database {
           parent_id: string | null
           level: number
           color: string | null
-          status: string
+          short_form: string | null
           created_at: string
           updated_at: string
         }
@@ -416,7 +413,7 @@ export interface Database {
           parent_id?: string | null
           level?: number
           color?: string | null
-          status?: string
+          short_form?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -427,7 +424,7 @@ export interface Database {
           parent_id?: string | null
           level?: number
           color?: string | null
-          status?: string
+          short_form?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -446,27 +443,21 @@ export interface Database {
           name: string
           description: string | null
           color: string | null
-          status: string
           created_at: string
-          updated_at: string
         }
         Insert: {
           id?: string
           name: string
           description?: string | null
           color?: string | null
-          status?: string
           created_at?: string
-          updated_at?: string
         }
         Update: {
           id?: string
           name?: string
           description?: string | null
           color?: string | null
-          status?: string
           created_at?: string
-          updated_at?: string
         }
         Relationships: []
       }
@@ -540,7 +531,7 @@ export interface Database {
           storage_path: string | null
           description: string | null
           alt_text: string | null
-          category: string
+          category: Database["public"]["Enums"]["image_category"]
           file_type: string | null
           source_ref: string | null
           created_by: string | null
@@ -556,7 +547,7 @@ export interface Database {
           storage_path?: string | null
           description?: string | null
           alt_text?: string | null
-          category: string
+          category: Database["public"]["Enums"]["image_category"]
           file_type?: string | null
           source_ref?: string | null
           created_by?: string | null
@@ -572,7 +563,7 @@ export interface Database {
           storage_path?: string | null
           description?: string | null
           alt_text?: string | null
-          category?: string
+          category?: Database["public"]["Enums"]["image_category"]
           file_type?: string | null
           source_ref?: string | null
           created_by?: string | null
@@ -584,6 +575,7 @@ export interface Database {
         }
         Relationships: []
       }
+
       inquiries: {
         Row: {
           id: string
@@ -628,13 +620,13 @@ export interface Database {
           id: string
           title: string
           stem: string
-          difficulty: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
           teaching_point: string
           question_references: string | null
-          status: string
+          status: Database["public"]["Enums"]["question_status"]
           created_by: string
           updated_by: string
-          version: number
+          version: string
           question_set_id: string | null
           category_id: string | null
           created_at: string
@@ -644,13 +636,13 @@ export interface Database {
           id?: string
           title: string
           stem: string
-          difficulty: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
           teaching_point: string
           question_references?: string | null
-          status?: string
+          status?: Database["public"]["Enums"]["question_status"]
           created_by: string
           updated_by: string
-          version?: number
+          version?: string
           question_set_id?: string | null
           category_id?: string | null
           created_at?: string
@@ -660,13 +652,13 @@ export interface Database {
           id?: string
           title?: string
           stem?: string
-          difficulty?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
           teaching_point?: string
           question_references?: string | null
-          status?: string
+          status?: Database["public"]["Enums"]["question_status"]
           created_by?: string
           updated_by?: string
-          version?: number
+          version?: string
           question_set_id?: string | null
           category_id?: string | null
           created_at?: string
@@ -688,7 +680,7 @@ export interface Database {
           {
             foreignKeyName: "questions_set_id_fkey"
             columns: ["question_set_id"]
-            referencedRelation: "sets"
+            referencedRelation: "question_sets"
             referencedColumns: ["id"]
           },
           {
@@ -699,7 +691,7 @@ export interface Database {
           }
         ]
       }
-      sets: {
+      question_sets: {
         Row: {
           id: string
           name: string
@@ -750,11 +742,9 @@ export interface Database {
           first_name: string | null
           middle_initial: string | null
           last_name: string | null
-          institution_id: string | null
-          institution: string | null
-          role: string
-          user_type: string
-          status: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_type: Database["public"]["Enums"]["user_type"]
+          status: Database["public"]["Enums"]["user_status"]
           created_at: string
           updated_at: string
         }
@@ -764,11 +754,9 @@ export interface Database {
           first_name?: string | null
           middle_initial?: string | null
           last_name?: string | null
-          institution_id?: string | null
-          institution?: string | null
-          role?: string
-          user_type?: string
-          status?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_type?: Database["public"]["Enums"]["user_type"]
+          status?: Database["public"]["Enums"]["user_status"]
           created_at?: string
           updated_at?: string
         }
@@ -778,22 +766,13 @@ export interface Database {
           first_name?: string | null
           middle_initial?: string | null
           last_name?: string | null
-          institution_id?: string | null
-          institution?: string | null
-          role?: string
-          user_type?: string
-          status?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_type?: Database["public"]["Enums"]["user_type"]
+          status?: Database["public"]["Enums"]["user_status"]
           created_at?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "users_institution_id_fkey"
-            columns: ["institution_id"]
-            referencedRelation: "institutions"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
       waitlist: {
         Row: {
@@ -1069,7 +1048,7 @@ export interface Database {
           id: string
           question_id: string
           reported_by: string
-          report_type: string
+          report_type: Database["public"]["Enums"]["report_type"]
           description: string | null
           status: string
           created_at: string
@@ -1079,7 +1058,7 @@ export interface Database {
           id?: string
           question_id: string
           reported_by: string
-          report_type: string
+          report_type: Database["public"]["Enums"]["report_type"]
           description?: string | null
           status?: string
           created_at?: string
@@ -1089,7 +1068,7 @@ export interface Database {
           id?: string
           question_id?: string
           reported_by?: string
-          report_type?: string
+          report_type?: Database["public"]["Enums"]["report_type"]
           description?: string | null
           status?: string
           created_at?: string
@@ -1150,9 +1129,9 @@ export interface Database {
           user_id: string
           title: string
           config: QuizConfig
-          questions: string[]
+          question_ids: string[]
           current_question_index: number
-          status: string
+          status: Database["public"]["Enums"]["session_status"]
           started_at: string | null
           completed_at: string | null
           total_time_spent: number | null
@@ -1161,7 +1140,7 @@ export interface Database {
           total_questions: number
           total_time_limit: number | null
           time_remaining: number | null
-          quiz_started_at: string | null
+
           created_at: string
           updated_at: string
         }
@@ -1170,9 +1149,9 @@ export interface Database {
           user_id: string
           title: string
           config: QuizConfig
-          questions: string[]
+          question_ids: string[]
           current_question_index?: number
-          status?: string
+          status?: Database["public"]["Enums"]["session_status"]
           started_at?: string | null
           completed_at?: string | null
           total_time_spent?: number | null
@@ -1181,7 +1160,7 @@ export interface Database {
           total_questions: number
           total_time_limit?: number | null
           time_remaining?: number | null
-          quiz_started_at?: string | null
+
           created_at?: string
           updated_at?: string
         }
@@ -1190,9 +1169,9 @@ export interface Database {
           user_id?: string
           title?: string
           config?: QuizConfig
-          questions?: string[]
+          question_ids?: string[]
           current_question_index?: number
-          status?: string
+          status?: Database["public"]["Enums"]["session_status"]
           started_at?: string | null
           completed_at?: string | null
           total_time_spent?: number | null
@@ -1278,6 +1257,416 @@ export interface Database {
           }
         ]
       }
+      module_attempts: {
+        Row: {
+          id: string
+          user_id: string | null
+          module_id: string | null
+          learning_path_id: string | null
+          attempt_number: number
+          started_at: string | null
+          completed_at: string | null
+          time_spent_minutes: number | null
+          completion_status: string
+          assessment_score: number | null
+          quiz_attempt_id: string | null
+          self_rating: number | null
+          confidence_level: number | null
+          feedback: string | null
+          found_helpful: boolean | null
+          prerequisite_check_passed: boolean | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          module_id?: string | null
+          learning_path_id?: string | null
+          attempt_number?: number
+          started_at?: string | null
+          completed_at?: string | null
+          time_spent_minutes?: number | null
+          completion_status?: string
+          assessment_score?: number | null
+          quiz_attempt_id?: string | null
+          self_rating?: number | null
+          confidence_level?: number | null
+          feedback?: string | null
+          found_helpful?: boolean | null
+          prerequisite_check_passed?: boolean | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          module_id?: string | null
+          learning_path_id?: string | null
+          attempt_number?: number
+          started_at?: string | null
+          completed_at?: string | null
+          time_spent_minutes?: number | null
+          completion_status?: string
+          assessment_score?: number | null
+          quiz_attempt_id?: string | null
+          self_rating?: number | null
+          confidence_level?: number | null
+          feedback?: string | null
+          found_helpful?: boolean | null
+          prerequisite_check_passed?: boolean | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_attempts_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_attempts_module_id_fkey"
+            columns: ["module_id"]
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_attempts_learning_path_id_fkey"
+            columns: ["learning_path_id"]
+            referencedRelation: "learning_paths"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      module_images: {
+        Row: {
+          id: string
+          module_id: string | null
+          image_id: string | null
+          usage_type: string
+          sort_order: number | null
+          caption: string | null
+          alt_text: string | null
+          content_section: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          module_id?: string | null
+          image_id?: string | null
+          usage_type: string
+          sort_order?: number | null
+          caption?: string | null
+          alt_text?: string | null
+          content_section?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          module_id?: string | null
+          image_id?: string | null
+          usage_type?: string
+          sort_order?: number | null
+          caption?: string | null
+          alt_text?: string | null
+          content_section?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_images_module_id_fkey"
+            columns: ["module_id"]
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_images_image_id_fkey"
+            columns: ["image_id"]
+            referencedRelation: "images"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      module_prerequisites: {
+        Row: {
+          id: string
+          module_id: string | null
+          prerequisite_module_id: string | null
+          requirement_type: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          module_id?: string | null
+          prerequisite_module_id?: string | null
+          requirement_type?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          module_id?: string | null
+          prerequisite_module_id?: string | null
+          requirement_type?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_prerequisites_module_id_fkey"
+            columns: ["module_id"]
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_prerequisites_prerequisite_module_id_fkey"
+            columns: ["prerequisite_module_id"]
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      module_sessions: {
+        Row: {
+          id: string
+          user_id: string | null
+          module_id: string | null
+          learning_path_id: string | null
+          started_at: string | null
+          ended_at: string | null
+          duration_minutes: number | null
+          sections_viewed: string[] | null
+          completion_percentage: number | null
+          accessed_via: string | null
+
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          module_id?: string | null
+          learning_path_id?: string | null
+          started_at?: string | null
+          ended_at?: string | null
+          duration_minutes?: number | null
+          sections_viewed?: string[] | null
+          completion_percentage?: number | null
+          accessed_via?: string | null
+
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          module_id?: string | null
+          learning_path_id?: string | null
+          started_at?: string | null
+          ended_at?: string | null
+          duration_minutes?: number | null
+          sections_viewed?: string[] | null
+          completion_percentage?: number | null
+          accessed_via?: string | null
+
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_sessions_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_sessions_module_id_fkey"
+            columns: ["module_id"]
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_sessions_learning_path_id_fkey"
+            columns: ["learning_path_id"]
+            referencedRelation: "learning_paths"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      performance_analytics: {
+        Row: {
+          id: string
+          user_id: string
+          category_id: string | null
+          total_questions: number
+          questions_answered: number
+          correct_answers: number
+          average_time: number
+          peer_rank: number | null
+          last_attempt_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          category_id?: string | null
+          total_questions?: number
+          questions_answered?: number
+          correct_answers?: number
+          average_time?: number
+          peer_rank?: number | null
+          last_attempt_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          category_id?: string | null
+          total_questions?: number
+          questions_answered?: number
+          correct_answers?: number
+          average_time?: number
+          peer_rank?: number | null
+          last_attempt_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_analytics_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_analytics_category_id_fkey"
+            columns: ["category_id"]
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_achievements: {
+        Row: {
+          id: string
+          user_id: string
+          type: string
+          title: string
+          description: string | null
+          created_at: string
+          group_key: string
+          quiz_id: string | null
+          subject_id: string | null
+          data: Json | null
+          is_read: boolean | null
+          priority: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          type: string
+          title: string
+          description?: string | null
+          created_at?: string
+          group_key: string
+          quiz_id?: string | null
+          subject_id?: string | null
+          data?: Json | null
+          is_read?: boolean | null
+          priority?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          type?: string
+          title?: string
+          description?: string | null
+          created_at?: string
+          group_key?: string
+          quiz_id?: string | null
+          subject_id?: string | null
+          data?: Json | null
+          is_read?: boolean | null
+          priority?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_favorites: {
+        Row: {
+          id: string
+          user_id: string
+          question_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          question_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          question_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_favorites_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_favorites_question_id_fkey"
+            columns: ["question_id"]
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_settings: {
+        Row: {
+          id: string
+          user_id: string
+          quiz_settings: Json | null
+          notification_settings: Json | null
+          ui_settings: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          quiz_settings?: Json | null
+          notification_settings?: Json | null
+          ui_settings?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          quiz_settings?: Json | null
+          notification_settings?: Json | null
+          ui_settings?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       v_image_usage_stats: {
@@ -1322,7 +1711,7 @@ export interface Database {
           url: string
           alt_text: string | null
           description: string | null
-          category: string
+          category: Database["public"]["Enums"]["image_category"]
           file_size_bytes: number | null
           storage_path: string | null
           created_at: string
@@ -1385,12 +1774,168 @@ export interface Database {
         }
         Relationships: []
       }
+      v_creator_questions: {
+        Row: {
+          creator_id: string
+          creator_name: string
+          total_questions: number
+          published_questions: number
+          draft_questions: number
+          pending_review_questions: number
+          flagged_questions: number
+          average_rating: number | null
+          last_created: string | null
+        }
+        Relationships: []
+      }
+      v_flagged_questions: {
+        Row: {
+          question_id: string
+          question_title: string
+          flag_count: number
+          latest_flag_date: string
+          flag_types: string[]
+          question_status: string
+          created_by: string
+          creator_name: string
+        }
+        Relationships: []
+      }
+      v_learning_modules_detailed: {
+        Row: {
+          id: string
+          title: string
+          slug: string
+          description: string | null
+          difficulty_level: string
+          estimated_duration_minutes: number
+          content_type: string
+          status: string
+          is_featured: boolean
+          view_count: number
+          average_rating: number | null
+          rating_count: number
+          category_name: string | null
+          creator_name: string | null
+          image_count: number
+          prerequisite_count: number
+          created_at: string
+          updated_at: string
+        }
+        Relationships: []
+      }
+      v_learning_paths_detailed: {
+        Row: {
+          id: string
+          title: string
+          slug: string
+          description: string | null
+          difficulty_level: string | null
+          estimated_total_duration_minutes: number | null
+          status: string
+          is_featured: boolean
+
+          average_rating: number | null
+          rating_count: number
+          category_name: string | null
+          creator_name: string | null
+          module_count: number
+          completion_rate: number | null
+          created_at: string
+          updated_at: string
+        }
+        Relationships: []
+      }
+      v_module_analytics: {
+        Row: {
+          module_id: string
+          module_title: string
+          total_attempts: number
+          completed_attempts: number
+          average_completion_time: number | null
+          completion_rate: number | null
+          average_score: number | null
+          average_rating: number | null
+          view_count: number
+          last_accessed: string | null
+        }
+        Relationships: []
+      }
+      v_simplified_review_queue: {
+        Row: {
+          question_id: string
+          title: string
+          status: string
+          created_by: string
+          creator_name: string
+          created_at: string
+          updated_at: string
+          flag_count: number
+          review_count: number
+          priority_score: number
+        }
+        Relationships: []
+      }
+      v_user_progress_summary: {
+        Row: {
+          user_id: string
+          user_name: string
+          total_quiz_sessions: number
+          completed_quiz_sessions: number
+          total_questions_answered: number
+          correct_answers: number
+          accuracy_percentage: number | null
+          average_time_per_question: number | null
+          favorite_categories: string[]
+          last_activity: string | null
+          streak_days: number | null
+        }
+        Relationships: []
+      }
+      mv_user_performance_analytics: {
+        Row: {
+          user_id: string
+          full_name: string
+          status: string
+          role: string
+          total_sessions: number
+          completed_sessions: number
+          avg_score: number | null
+          total_attempts: number
+          correct_attempts: number
+          last_quiz_at: string | null
+          success_rate: number
+          peer_rank: number
+          percentile: number
+          last_calculated_at: string
+        }
+        Relationships: []
+      }
+      mv_user_category_stats: {
+        Row: {
+          user_id: string
+          category_id: string
+          total_attempts: number
+          correct_attempts: number
+          incorrect_attempts: number
+          last_attempt_at: string
+          unique_questions_attempted: number
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      image_category: "microscopic" | "gross" | "figure" | "table" | "external"
+      user_role: "admin" | "creator" | "reviewer" | "user"
+      user_status: "active" | "inactive" | "suspended"
+      user_type: "student" | "resident" | "faculty" | "other"
+      question_status: "draft" | "pending_review" | "approved" | "flagged" | "archived"
+      difficulty_level: "easy" | "medium" | "hard"
+      session_status: "not_started" | "in_progress" | "completed" | "abandoned"
+      report_type: "incorrect_answer" | "unclear_explanation" | "broken_image" | "inappropriate_content" | "other"
     }
     CompositeTypes: {
       [_ in never]: never

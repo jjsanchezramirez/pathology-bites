@@ -98,9 +98,8 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
         try {
           setLoading(true)
 
-          // Use direct R2 access to avoid Vercel API costs
-          const EDUCATIONAL_CONTENT_BASE = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
-          const response = await fetch(`${EDUCATIONAL_CONTENT_BASE}/context/${selectedFile}`, {
+          // Use the proper API endpoint that handles R2 authentication and CORS
+          const response = await fetch(`/api/content/educational/${selectedFile}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',

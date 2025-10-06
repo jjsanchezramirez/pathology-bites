@@ -25,4 +25,6 @@ export const config = {
     '/api/user/:path*',   // Add user API routes for centralized auth
     '/api/quiz/:path*'    // Add quiz API routes for centralized auth
   ],
+  // Use Node.js runtime instead of Edge Runtime to support Supabase
+  runtime: 'nodejs'
 }

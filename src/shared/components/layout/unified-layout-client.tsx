@@ -24,12 +24,17 @@ export function UnifiedLayoutClient({
   userType,
   headerConfig
 }: UnifiedLayoutClientProps) {
-  const { role } = useUserRole()
+  const { role, isLoading } = useUserRole()
 
+  // Don't show navigation until we know the user's role (for admin routes)
+  // This prevents showing user nav first, then switching to admin nav
+  const shouldShowNavigation = userType === 'user' || (userType === 'admin' && !isLoading && role)
+  
   // Get navigation items based on user type and role
-  const navigationConfig = getNavigationConfig(
+  const navigationConfig = shouldShowNavigation ? getNavigationConfig(
     userType === 'admin' ? (role || 'user') : 'user'
-  )
+  ) : { items: [], sections: [] }
+  
   const navigationItems = navigationConfig.items
   const navigationSections = navigationConfig.sections
   const { isInQuizMode } = useQuizMode()

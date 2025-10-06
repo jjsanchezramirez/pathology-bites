@@ -9,7 +9,7 @@
  * API Call #2: Final batch submission of all answers and completion data
  */
 
-import { QuizState, QuizAnswer } from './quiz-state-machine';
+import { QuizState, QuizAnswer, QuizQuestion, QuizQuestionTransformer } from '../../types/quiz-question';
 
 export interface QuizSyncData {
   sessionId: string;
@@ -103,24 +103,12 @@ export class DatabaseSyncManager {
       // Handle API response format: { success: true, data: quizSession }
       const data = response_data.data || response_data;
 
-      // Transform QuestionWithDetails[] to QuizQuestion[] format
-      const transformedQuestions = (data.questions || []).map((q: any) => ({
-        id: q.id,
-        text: q.stem || q.text,
-        options: (q.question_options || q.options || []).map((opt: any) => ({
-          id: opt.id,
-          text: opt.text,
-          isCorrect: opt.is_correct || opt.isCorrect
-        })),
-        explanation: q.explanation,
-        category: q.category?.name || q.category,
-        difficulty: q.difficulty,
-        metadata: {
-          images: q.question_images || q.images || [],
-          tags: q.tags || [],
-          originalData: q
-        }
-      }));
+
+
+      // Transform QuestionWithDetails[] to QuizQuestion[] format using standardized transformer
+      const transformedQuestions = (data.questions || []).map((q: any) =>
+        QuizQuestionTransformer.apiToHybrid(q)
+      );
 
       // Transform config to hybrid system format
       const transformedConfig = {
@@ -184,7 +172,7 @@ export class DatabaseSyncManager {
       selectedOptionId: answer.selectedOptionId,
       isCorrect: answer.isCorrect,
       timestamp: answer.timestamp,
-      timeSpent: Math.round(answer.timeSpent / 1000)
+      timeSpent: answer.timeSpent // Already in seconds from state machine
     }));
 
     return {
@@ -194,7 +182,7 @@ export class DatabaseSyncManager {
       timing: {
         startTime: quizState.startTime,
         endTime: quizState.endTime,
-        totalTimeSpent: Math.round(quizState.totalTimeSpent / 1000)
+        totalTimeSpent: quizState.totalTimeSpent // Already in seconds from state machine
       },
       status: quizState.status,
       metadata: {
@@ -219,7 +207,7 @@ export class DatabaseSyncManager {
           answers: syncData.answers.map(answer => ({
             questionId: answer.questionId,
             selectedAnswerId: answer.selectedOptionId,
-            timeSpent: Math.round(answer.timeSpent / 1000),
+            timeSpent: answer.timeSpent, // Already in seconds from state machine
             timestamp: answer.timestamp
           }))
         };

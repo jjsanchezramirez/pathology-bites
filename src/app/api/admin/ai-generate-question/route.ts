@@ -1,0 +1,428 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getApiKey, getModelProvider } from '@/shared/config/ai-models'
+import { parseAIResponse } from '@/shared/utils/ai-response-parser'
+
+// Available models for admin question generation - optimized for speed and quality
+const ADMIN_AI_MODELS = [
+  // Tier 1: FASTEST - Prioritize speed for better UX
+  'Llama-3.3-8B-Instruct',                  // 394ms - FASTEST, excellent quality
+  'ministral-8b-2410',                      // 596ms - Fast Mistral model
+  'gemini-1.5-flash',                       // 763ms - Fast Google model
+  'mistral-small-2501',                     // 790ms - Latest small Mistral
+  'gemini-2.0-flash',                       // 829ms - Good balance
+
+  // Tier 2: BALANCED - Good speed + capability
+  'Llama-4-Scout-17B-16E-Instruct-FP8',     // 1063ms - Latest multimodal + medical reasoning
+  'mistral-medium-2505',                    // 1311ms - Best balance of capability/volume
+
+  // Tier 3: POWERFUL - Slower but high quality
+  'Llama-3.3-70B-Instruct',                 // 1788ms - Proven large model performance
+  'Llama-4-Maverick-17B-128E-Instruct-FP8', // 1917ms - Complex reasoning powerhouse
+
+  // Tier 4: PREMIUM - Highest quality but slowest
+  'gemini-2.5-flash',                       // 3765ms - Best quality (but slow)
+  'gemini-2.5-pro'                          // Premium reasoning (slowest)
+]
+
+interface QuestionGenerationRequest {
+  content: {
+    category: string
+    subject: string
+    lesson: string
+    topic: string
+    text: string
+  }
+  instructions: string
+  additionalContext?: string
+  model: string
+}
+
+interface QuestionData {
+  title: string
+  stem: string
+  options: Array<{
+    id: string
+    text: string
+    is_correct: boolean
+    explanation: string
+  }>
+  teaching_point: string
+  references?: string[]
+}
+
+// AI API call functions
+async function callAIService(provider: string, prompt: string, modelId: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+  switch (provider) {
+    case 'llama':
+      return await callMetaAPI(prompt, modelId, apiKey)
+    case 'google':
+      return await callGoogleAPI(prompt, modelId, apiKey)
+    case 'mistral':
+      return await callMistralAPI(prompt, modelId, apiKey)
+    default:
+      throw new Error(`Unsupported model provider: ${provider}`)
+  }
+}
+
+async function callMetaAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
+
+  try {
+    const response = await fetch('https://api.llama.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_completion_tokens: 4000,
+        temperature: 0.7
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`Meta LLAMA API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const content = data.choices?.[0]?.message?.content || ''
+    const tokenUsage = data.usage || null
+
+    return { content, tokenUsage }
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+async function callGoogleAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 4000
+        }
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`Google API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+    const tokenUsage = data.usageMetadata || null
+
+    return { content, tokenUsage }
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+async function callMistralAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
+
+  try {
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 4000,
+        temperature: 0.7
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`Mistral API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const content = data.choices?.[0]?.message?.content || ''
+    const tokenUsage = data.usage || null
+
+    return { content, tokenUsage }
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+function buildAdminQuestionPrompt(content: any, instructions: string, additionalContext: string): string {
+  return `Create a high-quality medical/pathology question based on the following educational content:
+
+EDUCATIONAL CONTENT:
+Subject: ${content.subject}
+Lesson: ${content.lesson}  
+Topic: ${content.topic}
+Content: ${content.text}
+
+INSTRUCTIONS:
+${instructions}
+
+ADDITIONAL CONTEXT:
+${additionalContext || 'None provided'}
+
+REQUIREMENTS:
+1. Create a clinically relevant multiple-choice question
+2. Include exactly 4 answer options (A, B, C, D)
+3. Only ONE option should be correct
+4. Provide detailed explanations for each option
+5. Include a meaningful teaching point
+6. Use appropriate medical terminology
+7. Make the question challenging but fair
+8. Base the question on the provided content and follow the given instructions
+
+Return your response in this EXACT JSON format (no markdown, no code blocks, just pure JSON):
+
+{
+  "title": "Brief descriptive title for the question",
+  "stem": "The question text ending with a clear question mark",
+  "options": [
+    {
+      "id": "A",
+      "text": "First answer option",
+      "is_correct": false,
+      "explanation": "Detailed explanation why this is incorrect"
+    },
+    {
+      "id": "B", 
+      "text": "Second answer option",
+      "is_correct": true,
+      "explanation": "Detailed explanation why this is correct"
+    },
+    {
+      "id": "C",
+      "text": "Third answer option", 
+      "is_correct": false,
+      "explanation": "Detailed explanation why this is incorrect"
+    },
+    {
+      "id": "D",
+      "text": "Fourth answer option",
+      "is_correct": false,
+      "explanation": "Detailed explanation why this is incorrect"
+    }
+  ],
+  "teaching_point": "Key learning objective or clinical pearl from this question",
+  "references": ["Relevant medical references if applicable"]
+}`
+}
+
+function extractJSON(text: string): any {
+  console.log(`[Admin AI] Extracting JSON from response (${text.length} chars)`)
+
+  // Handle Mistral thinking format first
+  let cleanedText = text
+  try {
+    // Check if it's a Mistral thinking format (array with thinking objects)
+    if (text.trim().startsWith('[')) {
+      const parsed = JSON.parse(text)
+      if (Array.isArray(parsed)) {
+        // Find the actual text response (not thinking)
+        const textResponse = parsed.find(item =>
+          item.type === 'text' && !item.thinking
+        )
+        if (textResponse?.text) {
+          cleanedText = textResponse.text
+          console.log('[Admin AI] Extracted content from Mistral thinking format')
+        }
+      }
+    }
+  } catch (e) {
+    // Continue with original text if parsing fails
+  }
+
+  // Strategy 1: Smart brace counting (handles extra content after JSON)
+  const firstBrace = cleanedText.indexOf('{')
+  if (firstBrace !== -1) {
+    let braceCount = 0
+    let i = firstBrace
+    let inString = false
+    let escapeNext = false
+
+    while (i < cleanedText.length) {
+      const char = cleanedText[i]
+
+      if (escapeNext) {
+        escapeNext = false
+      } else if (char === '\\' && inString) {
+        escapeNext = true
+      } else if (char === '"' && !escapeNext) {
+        inString = !inString
+      } else if (!inString) {
+        if (char === '{') {
+          braceCount++
+        } else if (char === '}') {
+          braceCount--
+          if (braceCount === 0) {
+            const jsonStr = cleanedText.substring(firstBrace, i + 1)
+            try {
+              return JSON.parse(jsonStr)
+            } catch (e) {
+              // Continue to other strategies
+              break
+            }
+          }
+        }
+      }
+      i++
+    }
+  }
+
+  // Strategy 2: Look for JSON between code blocks
+  const codeBlockMatch = cleanedText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/)
+  if (codeBlockMatch) {
+    try {
+      return JSON.parse(codeBlockMatch[1])
+    } catch (e) {
+      // Continue to next strategy
+    }
+  }
+
+  // Strategy 3: Greedy match (fallback)
+  const greedyMatch = cleanedText.match(/\{[\s\S]*\}/)
+  if (greedyMatch) {
+    try {
+      return JSON.parse(greedyMatch[0])
+    } catch (e) {
+      // Try to fix common JSON issues
+      const fixedJson = greedyMatch[0]
+        .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Add quotes to unquoted keys
+        .replace(/:\s*'([^']*)'/g, ': "$1"') // Replace single quotes with double quotes
+        .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+        .trim()
+
+      try {
+        return JSON.parse(fixedJson)
+      } catch (fixError) {
+        throw new Error(`JSON parsing failed: ${e instanceof Error ? e.message : 'Parse error'}`)
+      }
+    }
+  }
+
+  throw new Error('No JSON found in AI response')
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body: QuestionGenerationRequest = await request.json()
+    const { content, instructions, additionalContext = '', model } = body
+
+    // Validate inputs
+    if (!content || !instructions || !model) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields: content, instructions, model' },
+        { status: 400 }
+      )
+    }
+
+    // Validate model
+    if (!ADMIN_AI_MODELS.includes(model)) {
+      return NextResponse.json(
+        { success: false, error: `Unsupported model: ${model}. Supported: ${ADMIN_AI_MODELS.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
+    // Get API configuration
+    const provider = getModelProvider(model)
+    const apiKey = getApiKey(provider)
+    
+    if (!apiKey) {
+      return NextResponse.json(
+        { success: false, error: `No API key found for provider: ${provider}` },
+        { status: 500 }
+      )
+    }
+
+    console.log(`[Admin AI] Generating question using ${model} (${provider})`)
+
+    // Build the prompt
+    const prompt = buildAdminQuestionPrompt(content, instructions, additionalContext)
+    
+    // Call AI service
+    const startTime = Date.now()
+    const aiResponse = await callAIService(provider, prompt, model, apiKey)
+    const generationTime = Date.now() - startTime
+
+    console.log(`[Admin AI] Generated response in ${generationTime}ms`)
+
+    // Parse the AI response
+    const questionData = extractJSON(aiResponse.content)
+
+    // Validate the response structure
+    if (!questionData.title || !questionData.stem || !questionData.options || !Array.isArray(questionData.options)) {
+      throw new Error('AI response missing required fields')
+    }
+
+    if (questionData.options.length !== 4) {
+      throw new Error('AI response must contain exactly 4 options')
+    }
+
+    const correctCount = questionData.options.filter((opt: any) => opt.is_correct).length
+    if (correctCount !== 1) {
+      throw new Error(`AI response must have exactly 1 correct answer, found ${correctCount}`)
+    }
+
+    return NextResponse.json({
+      success: true,
+      question: questionData,
+      metadata: {
+        generated_at: new Date().toISOString(),
+        generation_time_ms: generationTime,
+        model: model,
+        provider: provider,
+        token_usage: aiResponse.tokenUsage
+      }
+    })
+
+  } catch (error) {
+    console.error('[Admin AI] Error:', error)
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      },
+      { status: 500 }
+    )
+  }
+}

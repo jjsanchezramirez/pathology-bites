@@ -65,8 +65,9 @@ async function loadContentFile(filename: string): Promise<any> {
   
   try {
     // Use direct R2 access to avoid Vercel API costs
-    const EDUCATIONAL_CONTENT_BASE = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
-    
+    // Hard-coded R2 data URL - this is a public, static URL that doesn't change
+    const EDUCATIONAL_CONTENT_BASE = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
+
     const response = await fetch(`${EDUCATIONAL_CONTENT_BASE}/context/${filename}`, {
       cache: 'force-cache', // Aggressive browser caching
       headers: {

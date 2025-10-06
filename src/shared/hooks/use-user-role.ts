@@ -4,8 +4,9 @@
 import { useState, useEffect } from 'react'
 import { useSharedAuth } from '@/shared/hooks/use-shared-auth'
 import { createClient } from '@/shared/services/client'
+import { TABLE_NAMES, USER_ROLES, UserRole as DatabaseUserRole } from '@/shared/constants/database-types'
 
-export type UserRole = 'admin' | 'creator' | 'reviewer' | 'user' | null
+export type UserRole = DatabaseUserRole | null
 
 interface UserRoleData {
   role: UserRole
@@ -82,7 +83,7 @@ export function useUserRole(): UserRoleData {
         // Fallback to database query
         const supabase = createClient()
         const { data, error: dbError } = await supabase
-          .from('users')
+          .from(TABLE_NAMES.USERS)
           .select('role')
           .eq('id', user.id)
           .maybeSingle() // Use maybeSingle instead of single to handle no results gracefully

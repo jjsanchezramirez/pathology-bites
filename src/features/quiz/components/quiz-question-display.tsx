@@ -5,38 +5,10 @@
 import { Card, CardContent } from "@/shared/components/ui/card"
 import { ImageCarousel } from "@/features/images/components/image-carousel"
 import { Check, X } from "lucide-react"
-
-interface QuizQuestion {
-  id: string
-  title: string
-  stem: string
-  teaching_point?: string
-  question_references?: string
-  question_options?: Array<{
-    id: string
-    text: string
-    is_correct: boolean
-    explanation?: string
-  }>
-  answer_options?: Array<{
-    id: string
-    text: string
-    is_correct: boolean
-    explanation?: string
-  }>
-  question_images?: Array<{
-    question_section: string
-    image?: {
-      id: string
-      url: string
-      alt_text?: string
-      description?: string
-    }
-  }>
-}
+import { UIQuizQuestion } from "@/features/quiz/types/quiz-question"
 
 interface QuizQuestionDisplayProps {
-  question: QuizQuestion
+  question: UIQuizQuestion
   selectedAnswerId: string | null
   showExplanation: boolean
   onAnswerSelect: (answerId: string) => void
@@ -50,8 +22,8 @@ export function QuizQuestionDisplay({
 }: QuizQuestionDisplayProps) {
 
 
-  // Get answer options with fallback for backward compatibility
-  const answerOptions = question.question_options || question.answer_options || []
+  // Use question_options (the correct field for quiz display)
+  const answerOptions = question.question_options || []
 
   // Helper to get a letter label for an option ID
   const getOptionLabel = (optionId: string, index: number): string => {

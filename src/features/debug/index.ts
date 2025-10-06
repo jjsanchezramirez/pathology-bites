@@ -1,6 +1,7 @@
 // Barrel export for debug feature
 export * from './components/anki-viewer-tab'
 export * from './components/ai-models-tab'
+export * from './components/ai-api-batch-test'
 export * from './components/api-tests-tab'
 export * from './components/database-tab'
 export * from './components/r2-storage-tab'

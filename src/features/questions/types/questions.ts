@@ -136,10 +136,10 @@ export interface QuestionImageFormData {
 export interface QuestionFormData {
   title: string;
   stem: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: Database['public']['Enums']['difficulty_level'];
   teaching_point: string;
   question_references?: string;
-  status: 'draft' | 'under_review' | 'published' | 'rejected' | 'pending_major_edits' | 'pending_minor_edits' | 'archived';
+  status: Database['public']['Enums']['question_status'];
   question_set_id?: string;
   category_id?: string; // Single category ID since each question has only one category
   question_options: QuestionOptionFormData[];
@@ -189,9 +189,9 @@ export const DIFFICULTY_CONFIG = {
   }
 } as const;
 
-// Review and workflow types - SIMPLIFIED TO 4 STATUSES
+// Review and workflow types - ALIGNED WITH DATABASE
 export type ReviewAction = 'approve' | 'request_changes' | 'reject';
-export type QuestionStatus = 'draft' | 'pending' | 'approved' | 'flagged';
+export type QuestionStatus = Database['public']['Enums']['question_status'];
 export type FlagType = 'incorrect_answer' | 'unclear_question' | 'outdated_content' | 'incorrect_explanations' | 'other';
 export type FlagStatus = 'open' | 'closed';
 export type FlagResolutionType = 'fixed' | 'dismissed';

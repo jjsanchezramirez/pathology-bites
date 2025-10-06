@@ -163,6 +163,14 @@ export default function QuizSessionPage() {
     fetchReviewData()
   }, [fetchReviewData])
 
+  // Auto-start quiz in tutor mode when initialized
+  useEffect(() => {
+    if (!isReviewMode && hybridState.isInitialized && hybridState.status === 'not_started') {
+      console.log('Auto-starting quiz in tutor mode');
+      hybridActions.startQuiz();
+    }
+  }, [isReviewMode, hybridState.isInitialized, hybridState.status, hybridActions])
+
   // Helper function for time formatting
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -568,13 +576,15 @@ export default function QuizSessionPage() {
             </Card>
           )}
 
+
+
           {/* Question Display */}
           {hybridState.status !== 'paused' && hybridState.status !== 'not_started' && (
             <FeatureErrorBoundary featureName="Quiz Question Display">
               <QuizQuestionDisplay
               question={currentQuestion as any}
               selectedAnswerId={hybridActions.getAnswerForQuestion(currentQuestion.id)?.selectedOptionId || (isReviewMode ? legacySelectedAnswerId : null)}
-              showExplanation={hybridActions.getAnswerForQuestion(currentQuestion.id) ? true : (isReviewMode ? legacyShowExplanation : false)}
+              showExplanation={hybridActions.getAnswerForQuestion(currentQuestion.id) ? true : false} // Only show explanations after answer is submitted
               onAnswerSelect={!isReviewMode ? (answerId: string) => {
                 hybridActions.submitAnswer(currentQuestion.id, answerId);
               } : () => {}}

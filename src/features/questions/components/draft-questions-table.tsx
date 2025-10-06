@@ -32,8 +32,8 @@ interface DraftQuestion {
   id: string
   title: string
   stem: string
-  difficulty: string
-  status: string
+  difficulty: "easy" | "medium" | "hard"
+  status: "draft" | "pending_review" | "approved" | "flagged" | "archived"
   created_at: string
   updated_at: string
   created_by: string
@@ -42,7 +42,7 @@ interface DraftQuestion {
   category_id: string | null
   teaching_point: string
   question_references: string | null
-  version: number
+  version: string
   version_major: number
   version_minor: number
   version_patch: number

@@ -7,18 +7,11 @@
 import { useState, useCallback } from 'react'
 import { useCachedData } from './use-cached-data'
 
-interface QuizQuestion {
-  id: string
-  title: string
-  stem: string
-  difficulty: string
-  options: Array<{
-    id: string
-    text: string
-    is_correct: boolean
-    explanation?: string
-  }>
-}
+// Import standardized interface instead of defining a duplicate
+import { UIQuizQuestion } from '@/features/quiz/types/quiz-question'
+
+// Use the standardized interface
+type QuizQuestion = UIQuizQuestion
 
 interface QuizOptions {
   categories: Array<{

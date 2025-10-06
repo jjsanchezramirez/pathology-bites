@@ -31,7 +31,7 @@ export function useCSRFToken(): CSRFTokenHook {
     setError(null)
 
     try {
-      const response = await fetch('/api/csrf-token', {
+      const response = await fetch('/api/public/csrf-token', {
         method: 'GET',
         credentials: 'same-origin',
         headers: {

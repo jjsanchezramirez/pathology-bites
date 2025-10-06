@@ -16,7 +16,7 @@ const editQuestionSchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']),
   teaching_point: z.string().min(10, 'Teaching point must be at least 10 characters').max(1000, 'Teaching point too long'),
   question_references: z.string().max(500, 'References too long').optional(),
-  status: z.enum(['draft', 'pending', 'approved', 'flagged']),
+  status: z.enum(['draft', 'pending_review', 'approved', 'flagged']),
   question_set_id: z.string(),
   category_id: z.string().nullable().optional(),
 });
@@ -78,7 +78,7 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
         difficulty: question.difficulty as 'easy' | 'medium' | 'hard' || 'medium',
         teaching_point: question.teaching_point || '',
         question_references: question.question_references || '',
-        status: (question.status as 'draft' | 'pending' | 'approved' | 'flagged') || 'draft',
+        status: (question.status as 'draft' | 'pending_review' | 'approved' | 'flagged') || 'draft',
         question_set_id: question.question_set_id || 'none',
         category_id: question.category_id || null,
       });

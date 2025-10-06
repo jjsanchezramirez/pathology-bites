@@ -33,7 +33,8 @@ interface EducationalContent {
 const WSI_DATA_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json'
 
 // Direct R2 access for educational content - avoid Vercel API costs
-const EDUCATIONAL_CONTENT_BASE = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
+// Hard-coded R2 data URL - this is a public, static URL that doesn't change
+const EDUCATIONAL_CONTENT_BASE = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
 const EDUCATIONAL_CONTENT_API = `${EDUCATIONAL_CONTENT_BASE}/context`
 
 // Available educational content files (~40MB total)

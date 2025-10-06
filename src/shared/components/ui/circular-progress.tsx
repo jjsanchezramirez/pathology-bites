@@ -38,13 +38,13 @@ export function CircularProgress({
   const circumference = radius * 2 * Math.PI
   const strokeDashoffset = circumference - (animatedValue / 100) * circumference
 
-  // Simple two-color logic
+  // 2-tier color system - Fixed colors based on final score, not animated value
   const getStrokeColor = (score: number): string => {
-    if (score >= 80) return "hsl(186 66% 40%)" // --primary teal for good scores
-    return "hsl(0 84.2% 60.2%)" // --destructive red for all other scores
+    if (score < 60) return "hsl(0 84.2% 45%)" // Red for low performance
+    return "hsl(var(--primary))" // Theme accent color for good performance
   }
 
-  const strokeColor = getStrokeColor(animatedValue)
+  const strokeColor = getStrokeColor(value) // Use final value, not animated value
 
   return (
     <div 

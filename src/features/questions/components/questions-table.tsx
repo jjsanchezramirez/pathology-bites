@@ -219,7 +219,7 @@ function RowActions({
   const { isAdmin } = useUserRole();
 
   // Check if user can edit this question
-  const canEdit = question.status !== 'published' || isAdmin;
+  const canEdit = question.status !== 'approved' || isAdmin;
 
   return (
     <DropdownMenu>
@@ -243,7 +243,7 @@ function RowActions({
             Edit (Admin Only)
           </DropdownMenuItem>
         )}
-        {question.status === 'published' && onFlag && (
+        {question.status === 'approved' && onFlag && (
           <DropdownMenuItem onClick={() => onFlag(question)}>
             <Flag className="h-4 w-4 mr-2" />
             Flag for Review
@@ -255,7 +255,7 @@ function RowActions({
             Version History
           </DropdownMenuItem>
         )}
-        {canEdit && question.status === 'published' && onCreateVersion && (
+        {canEdit && question.status === 'approved' && onCreateVersion && (
           <DropdownMenuItem onClick={() => onCreateVersion(question)}>
             <GitBranch className="h-4 w-4 mr-2" />
             Create Version

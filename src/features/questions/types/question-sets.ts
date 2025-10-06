@@ -2,9 +2,9 @@
 import { Database } from '@/shared/types/supabase';
 
 // New types using the renamed 'sets' table
-export type SetData = Database['public']['Tables']['sets']['Row'];
-export type SetInsert = Database['public']['Tables']['sets']['Insert'];
-export type SetUpdate = Database['public']['Tables']['sets']['Update'];
+export type SetData = Database['public']['Tables']['question_sets']['Row'];
+export type SetInsert = Database['public']['Tables']['question_sets']['Insert'];
+export type SetUpdate = Database['public']['Tables']['question_sets']['Update'];
 
 // Legacy type aliases for backward compatibility (to be removed after full migration)
 export type QuestionSetData = SetData;

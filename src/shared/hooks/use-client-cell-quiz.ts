@@ -41,11 +41,11 @@ async function loadCellQuizImages(): Promise<any> {
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       return res
     } catch (e: any) {
-      console.warn('[CellQuiz Images] R2 fetch failed in dev, falling back to /api/public-data/cell-quiz-images', e)
+      console.warn('[CellQuiz Images] R2 fetch failed in dev, falling back to /api/public/data/cell-quiz-images', e)
 
       // Fallback to server-side API (same as virtual slides)
       try {
-        const fallbackRes = await fetchWithTimeout('/api/public-data/cell-quiz-images', {
+        const fallbackRes = await fetchWithTimeout('/api/public/data/cell-quiz-images', {
           cache: 'force-cache',
           headers: {
             'Accept': 'application/json'
@@ -102,11 +102,11 @@ async function loadCellQuizReferences(): Promise<any> {
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       return res
     } catch (e: any) {
-      console.warn('[CellQuiz References] R2 fetch failed in dev, falling back to /api/public-data/cell-quiz-references', e)
+      console.warn('[CellQuiz References] R2 fetch failed in dev, falling back to /api/public/data/cell-quiz-references', e)
 
       // Fallback to server-side API (same as virtual slides)
       try {
-        const fallbackRes = await fetchWithTimeout('/api/public-data/cell-quiz-references', {
+        const fallbackRes = await fetchWithTimeout('/api/public/data/cell-quiz-references', {
           cache: 'force-cache',
           headers: {
             'Accept': 'application/json'

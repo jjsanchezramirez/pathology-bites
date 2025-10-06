@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 export interface Option {
   id: string;
   text: string;
-  correct: boolean;
+  correct: boolean; // Note: Demo questions use 'correct' instead of 'is_correct' for simplicity
   explanation?: string;
 }
 

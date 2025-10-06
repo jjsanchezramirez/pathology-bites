@@ -177,7 +177,7 @@ export function ReviewQueueTable() {
 
   const getPriorityLevel = (question: QuestionWithReviewDetails) => {
     if (question.status === 'flagged') return 'high'
-    if (question.status === 'under_review') return 'medium'
+    if (question.status === 'pending_review') return 'medium'
     return 'low'
   }
 
@@ -303,7 +303,7 @@ export function ReviewQueueTable() {
                         >
                           <CheckCircle className="h-4 w-4" />
                         </Button>
-                        {question.status === 'published' && (
+                        {question.status === 'approved' && (
                           <Button
                             variant="ghost"
                             size="sm"

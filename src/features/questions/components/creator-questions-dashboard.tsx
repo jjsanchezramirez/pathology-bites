@@ -38,6 +38,7 @@ import {
 } from 'lucide-react'
 import { QuestionPreviewDialog } from './question-preview-dialog'
 import { EditQuestionDialog } from './edit-question-dialog'
+import { QUESTION_STATUSES, getQuestionStatusLabel } from '@/shared/constants/database-types'
 import { toast } from 'sonner'
 import { STATUS_CONFIG, QuestionWithDetails } from '@/features/questions/types/questions'
 
@@ -188,7 +189,7 @@ export function CreatorQuestionsDashboard() {
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       const submittableQuestions = filteredQuestions
-        .filter(q => q.status === 'draft')
+        .filter(q => q.status === QUESTION_STATUSES[0]) // 'draft'
         .map(q => q.id)
       setSelectedQuestions(new Set(submittableQuestions))
     } else {
@@ -243,10 +244,10 @@ export function CreatorQuestionsDashboard() {
   }
 
   const getTabCounts = () => {
-    const drafts = questions.filter(q => q.status === 'draft').length
-    const pending = questions.filter(q => q.status === 'pending').length
-    const approved = questions.filter(q => q.status === 'approved').length
-    const flagged = questions.filter(q => q.status === 'flagged').length
+    const drafts = questions.filter(q => q.status === QUESTION_STATUSES[0]).length // 'draft'
+    const pending = questions.filter(q => q.status === QUESTION_STATUSES[1]).length // 'pending_review'
+    const approved = questions.filter(q => q.status === QUESTION_STATUSES[2]).length // 'approved'
+    const flagged = questions.filter(q => q.status === QUESTION_STATUSES[3]).length // 'flagged'
 
     return { drafts, pending, approved, flagged, total: questions.length }
   }
@@ -264,7 +265,7 @@ export function CreatorQuestionsDashboard() {
     )
   }
 
-  const submittableQuestions = filteredQuestions.filter(q => q.status === 'draft')
+  const submittableQuestions = filteredQuestions.filter(q => q.status === QUESTION_STATUSES[0]) // 'draft'
   const selectedSubmittableCount = Array.from(selectedQuestions).filter(id =>
     submittableQuestions.some(q => q.id === id)
   ).length
@@ -445,7 +446,7 @@ export function CreatorQuestionsDashboard() {
                       <div className="text-sm text-muted-foreground line-clamp-2">
                         {question.stem}
                       </div>
-                      {question.status === 'rejected' && question.latest_feedback && (
+                      {question.status === QUESTION_STATUSES[4] && question.latest_feedback && ( // 'archived'
                         <div className="text-xs text-red-600 bg-red-50 p-2 rounded mt-2">
                           <strong>Feedback:</strong> {question.latest_feedback}
                         </div>
@@ -494,13 +495,13 @@ export function CreatorQuestionsDashboard() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          {question.status === 'draft' && (
+                          {question.status === QUESTION_STATUSES[0] && ( // 'draft'
                             <DropdownMenuItem onClick={() => handleEdit(question)}>
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
                           )}
-                          {question.status === 'draft' && (
+                          {question.status === QUESTION_STATUSES[0] && ( // 'draft'
                             <DropdownMenuItem onClick={() => handleSubmitForReview(question.id)}>
                               <Send className="h-4 w-4 mr-2" />
                               Send for Review

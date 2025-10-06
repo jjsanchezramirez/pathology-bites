@@ -444,36 +444,7 @@ export default function NewQuizPage() {
     <>
       <div className="space-y-6">
 
-      {/* Network Status Debug Info (only in development) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="bg-gray-50 dark:bg-gray-900/20 border rounded-lg p-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {isOnline ? (
-              <>
-                <Wifi className="h-3 w-3 text-green-600" />
-                <span>Online</span>
-              </>
-            ) : (
-              <>
-                <WifiOff className="h-3 w-3 text-red-600" />
-                <span>Offline</span>
-              </>
-            )}
-            <span>({connectionType}, {effectiveType})</span>
-            <span className="text-xs">
-              Browser: {browserOnline ? 'online' : 'offline'}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={forceCheck}
-              className="h-5 px-2 ml-auto"
-            >
-              <RefreshCw className="h-3 w-3" />
-            </Button>
-          </div>
-        </div>
-      )}
+
 
       {/* Header */}
       <div>

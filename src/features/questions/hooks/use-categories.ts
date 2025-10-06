@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/shared/services/client';
 import { CategoryData } from '@/features/questions/types/questions';
 import { toast } from 'sonner';
+import { TABLE_NAMES } from '@/shared/constants/database-types';
 
 export interface UseCategoriesReturn {
   categories: CategoryData[];
@@ -25,7 +26,7 @@ export function useCategories(): UseCategoriesReturn {
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('categories')
+        .from(TABLE_NAMES.CATEGORIES)
         .select('*')
         .order('level, name');
 
@@ -52,7 +53,7 @@ export function useCategories(): UseCategoriesReturn {
       let level = 1;
       if (parentId) {
         const { data: parentData } = await supabase
-          .from('categories')
+          .from(TABLE_NAMES.CATEGORIES)
           .select('level')
           .eq('id', parentId)
           .single();
@@ -63,8 +64,8 @@ export function useCategories(): UseCategoriesReturn {
       }
 
       const { data, error } = await supabase
-        .from('categories')
-        .insert({ 
+        .from(TABLE_NAMES.CATEGORIES)
+        .insert({
           name, 
           description: description || null,
           parent_id: parentId || null,

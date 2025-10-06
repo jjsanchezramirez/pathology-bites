@@ -2,29 +2,27 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getApiKey, getModelProvider } from '@/shared/config/ai-models'
 import { VirtualSlide } from '@/shared/types/virtual-slides'
 
-// Unified WSI Question Generator - optimized for free token usage (Updated August 2025)
-// Ordered by rate limits and free token availability
+// Unified WSI Question Generator - optimized for speed and quality (Updated January 2025)
+// Ordered by performance: speed first, then capability
 const WSI_FALLBACK_MODELS = [
-  // Tier 1: BEST Free Limits - Meta LLAMA Models (3,000 RPM + 1M TPM)
-  'Llama-4-Scout-17B-16E-Instruct-FP8',     // 3,000 RPM, 1M TPM - BEST: Latest multimodal + medical reasoning
-  'Llama-4-Maverick-17B-128E-Instruct-FP8', // 3,000 RPM, 1M TPM - Complex reasoning powerhouse
-  'Llama-3.3-70B-Instruct',                 // 3,000 RPM, 1M TPM - Proven large model performance
-  'Llama-3.3-8B-Instruct',                  // 3,000 RPM, 1M TPM - Fast + efficient
-  
-  // Tier 2: High Volume - Mistral Models (500K TPM + 1B monthly tokens)
-  'mistral-medium-2505',                    // 500K TPM, 1B/month - Best balance of capability/volume
-  'mistral-small-2501',                     // 500K TPM, 1B/month - Latest small model
-  'ministral-8b-2410',                      // 500K TPM, 1B/month - Efficient processing
-  'mistral-large-latest',                   // 500K TPM, 1B/month - Most capable Mistral
-  
-  // Tier 3: Google High-Throughput Models (1M TPM but limited daily)
-  'gemini-2.0-flash',                       // 15 RPM, 1M TPM, 200 RPD - Good balance
-  'gemini-2.0-flash-lite',                  // 30 RPM, 1M TPM, 200 RPD - Higher RPM
-  
-  // Tier 4: Google Quality Models (Lower TPM but good for complex tasks)
-  'gemini-2.5-flash-lite',                  // 15 RPM, 250K TPM, 1,000 RPD - Highest daily limit
-  'gemini-2.5-flash',                       // 10 RPM, 250K TPM, 250 RPD - Best quality
-  'gemini-2.5-pro'                          // 5 RPM, 250K TPM, 100 RPD - Premium reasoning
+  // Tier 1: FASTEST - Prioritize speed for better UX
+  'Llama-3.3-8B-Instruct',                  // 394ms - FASTEST, excellent quality
+  'ministral-8b-2410',                      // 596ms - Fast Mistral model
+  'gemini-1.5-flash',                       // 763ms - Fast Google model
+  'mistral-small-2501',                     // 790ms - Latest small Mistral
+  'gemini-2.0-flash',                       // 829ms - Good balance
+
+  // Tier 2: BALANCED - Good speed + capability
+  'Llama-4-Scout-17B-16E-Instruct-FP8',     // 1063ms - Latest multimodal + medical reasoning
+  'mistral-medium-2505',                    // 1311ms - Best balance of capability/volume
+
+  // Tier 3: POWERFUL - Slower but high quality
+  'Llama-3.3-70B-Instruct',                 // 1788ms - Proven large model performance
+  'Llama-4-Maverick-17B-128E-Instruct-FP8', // 1917ms - Complex reasoning powerhouse
+
+  // Tier 4: PREMIUM - Highest quality but slowest
+  'gemini-2.5-flash',                       // 3765ms - Best quality (but slow)
+  'gemini-2.5-pro'                          // Premium reasoning (slowest)
 ]
 
 // Retry configuration for transient errors
@@ -134,7 +132,7 @@ async function callMetaAPI(prompt: string, model: string, apiKey: string): Promi
         messages: [
           {
             role: 'system',
-            content: 'You are an expert pathologist creating educational multiple-choice questions for medical students and residents. Focus on clinical correlation, diagnosis, and educational value.'
+            content: 'You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning.'
           },
           {
             role: 'user',
@@ -219,7 +217,7 @@ async function callMetaAPI(prompt: string, model: string, apiKey: string): Promi
   
   // If no token usage found, create estimated usage for testing
   if (!tokenUsage && content) {
-    const systemPrompt = 'You are an expert pathologist creating educational multiple-choice questions for medical students and residents. Focus on clinical correlation, diagnosis, and educational value.'
+    const systemPrompt = 'You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning.'
     const totalPromptLength = systemPrompt.length + prompt.length
     const estimatedPromptTokens = Math.ceil(totalPromptLength / 4) // Rough estimate: 4 chars per token
     const estimatedCompletionTokens = Math.ceil(content.length / 4)

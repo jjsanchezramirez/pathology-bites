@@ -130,9 +130,9 @@ export function ToolsTab() {
 
       // 8. Clear Next.js router cache
       try {
-        if (typeof window !== 'undefined' && window.next && window.next.router) {
+        if (typeof window !== 'undefined' && (window as any).next && (window as any).next.router) {
           // Clear Next.js router cache
-          window.next.router.replace(window.location.pathname)
+          (window as any).next.router.replace(window.location.pathname)
           results.success.push('Next.js Router Cache (cleared)')
         }
       } catch (error) {
@@ -206,7 +206,7 @@ export function ToolsTab() {
         // Make cache-busting requests to key endpoints
         const endpoints = [
           '/api/public/stats',
-          '/api/public-data/virtual-slides'
+          '/api/public/data/virtual-slides'
         ]
         
         await Promise.all(endpoints.map(endpoint => 

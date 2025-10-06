@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { ACTIVE_AI_MODELS, DISABLED_AI_MODELS, hasApiKey, getModelProvider, getModelById } from '@/shared/config/ai-models'
+import { AIApiBatchTest } from './ai-api-batch-test'
 
 // Get all models with API key availability check
 const getAvailableModels = () => {
@@ -499,6 +500,9 @@ export function AiModelsTab() {
           </CardContent>
         </Card>
       )}
+
+      {/* AI API Batch Testing */}
+      <AIApiBatchTest />
     </div>
   )
 }

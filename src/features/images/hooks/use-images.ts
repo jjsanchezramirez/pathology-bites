@@ -1,7 +1,7 @@
 // src/hooks/use-images.ts
 import { useState, useCallback } from 'react';
 import { fetchImages, deleteImage, updateImage, uploadImage, getImageById } from '@/features/images/services/images';
-import { ImageData } from '@/features/images/types/images';
+import { ImageData, ImageCategory } from '@/features/images/types/images';
 
 export interface UseImagesParams {
   page?: number;
@@ -17,11 +17,11 @@ export interface UseImagesReturn {
   error: string | null;
   refetch: () => Promise<void>;
   deleteImageById: (imagePath: string, imageId: string) => Promise<void>;
-  updateImageById: (imageId: string, data: { description: string; alt_text: string; category: string; source_ref?: string }) => Promise<void>;
+  updateImageById: (imageId: string, data: { description: string; alt_text: string; category: ImageCategory; source_ref?: string }) => Promise<void>;
   uploadNewImage: (file: File, metadata: {
     description: string;
     alt_text: string;
-    category: string;
+    category: ImageCategory;
     file_type: string;
     created_by: string;
     source_ref?: string;
@@ -88,7 +88,7 @@ export function useImages(params: UseImagesParams = {}): UseImagesReturn {
 
   const updateImageById = useCallback(async (
     imageId: string,
-    data: { description: string; alt_text: string; category: string }
+    data: { description: string; alt_text: string; category: ImageCategory }
   ) => {
     try {
       await updateImage(imageId, data);
@@ -108,7 +108,7 @@ export function useImages(params: UseImagesParams = {}): UseImagesReturn {
   const uploadNewImage = useCallback(async (file: File, metadata: {
     description: string;
     alt_text: string;
-    category: string;
+    category: ImageCategory;
     file_type: string;
     created_by: string;
     source_ref?: string;

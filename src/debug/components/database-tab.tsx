@@ -18,7 +18,7 @@ export function DatabaseTab() {
   const testConnection = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/health')
+      const res = await fetch('/api/public/health')
       if (res.ok) {
         setConnectionStatus('connected')
       } else {

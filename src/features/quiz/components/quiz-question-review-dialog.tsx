@@ -14,6 +14,7 @@ import { Card, CardContent } from '@/shared/components/ui/card'
 import { Check, X, Clock, Users, BookOpen } from 'lucide-react'
 import { createClient } from '@/shared/services/client'
 import { toast } from 'sonner'
+import { UIQuizQuestion } from '@/features/quiz/types/quiz-question'
 
 interface QuestionDetail {
   id: string
@@ -27,19 +28,9 @@ interface QuestionDetail {
   successRate: number
 }
 
-interface QuestionOption {
-  id: string
-  text: string
-  is_correct: boolean
-}
-
-interface QuestionData {
-  id: string
-  title: string
-  stem: string
-  teaching_point: string
+// Use standardized interface instead of defining duplicates
+type QuestionData = UIQuizQuestion & {
   difficulty: string
-  question_options: QuestionOption[]
 }
 
 interface QuizQuestionReviewDialogProps {

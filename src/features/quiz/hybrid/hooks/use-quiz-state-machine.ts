@@ -7,14 +7,12 @@
 
 import { useReducer, useCallback, useEffect, useRef } from 'react';
 import {
-  QuizState,
-  QuizAction,
-  QuizQuestion,
-  QuizAnswer,
   quizStateReducer,
   createInitialQuizState,
-  QuizStateUtils
+  QuizStateUtils,
+  QuizAction
 } from '../core/quiz-state-machine';
+import { QuizState, QuizQuestion, QuizAnswer } from '../../types/quiz-question';
 
 export interface UseQuizStateMachineOptions {
   sessionId: string;
@@ -174,8 +172,9 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
     }, [state, onQuizCompleted]),
 
     submitAnswer: useCallback((questionId: string, selectedOptionId: string): boolean => {
-      const timeSpent = Date.now() - questionStartTime.current;
-      
+      const timeSpentMs = Date.now() - questionStartTime.current;
+      const timeSpent = Math.round(timeSpentMs / 1000); // Convert milliseconds to seconds
+
       dispatch({
         type: 'SUBMIT_ANSWER',
         payload: {
@@ -189,7 +188,7 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
       const question = state.questions.find(q => q.id === questionId);
       if (question) {
         const selectedOption = question.options.find(opt => opt.id === selectedOptionId);
-        const isCorrect = selectedOption?.isCorrect ?? false;
+        const isCorrect = selectedOption?.is_correct ?? false;
         
         const answer: QuizAnswer = {
           questionId,

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { QuizCreationForm } from '@/features/quiz/types/quiz'
 import { quizService } from '@/features/quiz/services/quiz-service'
+import { TABLE_NAMES } from '@/shared/constants/database-types'
 
 export async function POST(request: NextRequest) {
   try {
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest) {
 
     // Build query
     let query = supabase
-      .from('quiz_sessions')
+      .from(TABLE_NAMES.QUIZ_SESSIONS)
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })

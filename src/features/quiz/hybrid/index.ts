@@ -19,12 +19,14 @@ export {
   createInitialQuizState,
   QuizStateUtils
 } from './core/quiz-state-machine';
-export type {
-  QuizState,
-  QuizQuestion,
-  QuizAnswer,
-  QuizAction
-} from './core/quiz-state-machine';
+export type { QuizAction } from './core/quiz-state-machine';
+
+// Re-export types from the main types module
+export type { 
+  QuizState, 
+  QuizQuestion, 
+  QuizAnswer 
+} from '../types/quiz-question';
 
 // State Machine Hook
 export { useQuizStateMachine } from './hooks/use-quiz-state-machine';

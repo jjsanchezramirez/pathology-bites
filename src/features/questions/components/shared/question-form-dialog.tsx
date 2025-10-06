@@ -116,7 +116,7 @@ export function QuestionFormDialog({
         category_id: question.category_id || null,
       });
 
-      // Set answer options
+      // Set answer options (prefer question_options as the primary source)
       const options = question.question_options || question.answer_options || [];
       setAnswerOptions(options.map((opt, index) => ({
         id: opt.id,
@@ -198,7 +198,7 @@ export function QuestionFormDialog({
       return;
     }
 
-    if (mode === 'edit' && question?.status === 'published' && !isAdmin) {
+    if (mode === 'edit' && question?.status === 'approved' && !isAdmin) {
       toast.error('Only admins can edit published questions');
       return;
     }
