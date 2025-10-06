@@ -86,7 +86,9 @@ export class DatabaseSyncManager {
     existingAnswers?: QuizAnswer[];
   }> {
     try {
-      const response = await fetch(`${this.options.apiBaseUrl}/sessions/${sessionId}`, {
+      const url = `${this.options.apiBaseUrl}/sessions/${sessionId}`;
+      console.log(`[DatabaseSyncManager] Fetching quiz data from:`, url);
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -95,6 +97,14 @@ export class DatabaseSyncManager {
       });
 
       if (!response.ok) {
+        // Add debugging information
+        const errorText = await response.text();
+        console.error(`[DatabaseSyncManager] API Error:`, {
+          status: response.status,
+          statusText: response.statusText,
+          url: `${this.options.apiBaseUrl}/sessions/${sessionId}`,
+          errorText
+        });
         throw new Error(`Failed to fetch quiz data: ${response.statusText}`);
       }
 
