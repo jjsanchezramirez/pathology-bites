@@ -44,13 +44,13 @@ A revolutionary quiz system that achieves **96.7% API call reduction** while mai
 
 **API Call #1: Initial Data Fetch**
 ```typescript
-GET /api/quiz/sessions/{sessionId}
+GET /api/content/quiz/sessions/{sessionId}
 // Fetches: questions, config, existing answers
 ```
 
 **API Call #2: Batch Completion Sync**
 ```typescript
-PATCH /api/quiz/sessions/{sessionId}/sync
+PATCH /api/content/quiz/sessions/{sessionId}/sync
 // Syncs: all answers, progress, timing, completion data
 ```
 

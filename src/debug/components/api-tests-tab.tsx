@@ -26,7 +26,7 @@ import { toast } from 'sonner'
 const API_ENDPOINTS = [
   { id: 'health', name: 'Health Check', path: '/api/public/health', method: 'GET' },
   { id: 'stats', name: 'Public Stats', path: '/api/public/stats', method: 'GET' },
-  { id: 'quiz-options', name: 'Quiz Options', path: '/api/quiz/options', method: 'GET' },
+  { id: 'quiz-options', name: 'Quiz Options', path: '/api/content/quiz/options', method: 'GET' },
   { id: 'demo-questions', name: 'Demo Questions', path: '/api/content/demo-questions', method: 'GET' },
   { id: 'virtual-slides', name: 'Virtual Slides', path: '/api/public/data/virtual-slides', method: 'GET' },
 ]
