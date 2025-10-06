@@ -234,8 +234,6 @@ export class QuizService {
       // Use authenticated client if provided, otherwise fall back to default
       const supabaseClient = authenticatedSupabase || this.getSupabase()
 
-      console.log(`[QuizService] Fetching quiz session: ${sessionId}`)
-
       const { data: session, error } = await supabaseClient
         .from('quiz_sessions')
         .select('*')
@@ -243,15 +241,10 @@ export class QuizService {
         .single()
 
       if (error) {
-        console.error('Error getting quiz session from database:', error)
+        console.error('Error getting quiz session:', error)
         throw error
       }
-      if (!session) {
-        console.log(`[QuizService] No session found for ID: ${sessionId}`)
-        return null
-      }
-
-      console.log(`[QuizService] Session found, fetching ${session.question_ids?.length || 0} questions`)
+      if (!session) return null
 
       // Get questions for this session
       const questions = await this.getQuestionsForSession(session.question_ids, supabaseClient)
@@ -277,12 +270,7 @@ export class QuizService {
         updatedAt: session.updated_at
       }
     } catch (error) {
-      console.error('[QuizService] Error getting quiz session:', error)
-      console.error('[QuizService] Error details:', {
-        sessionId,
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
-        errorStack: error instanceof Error ? error.stack : undefined
-      })
+      console.error('Error getting quiz session:', error)
       throw error
     }
   }
@@ -291,10 +279,7 @@ export class QuizService {
    * Get questions for a session
    */
   private async getQuestionsForSession(questionIds: string[], authenticatedSupabase?: any): Promise<QuestionWithDetails[]> {
-    console.log(`[QuizService] Fetching questions for session, IDs:`, questionIds)
-
     if (!questionIds || questionIds.length === 0) {
-      console.log(`[QuizService] No question IDs provided`)
       return []
     }
 
@@ -305,14 +290,11 @@ export class QuizService {
         *,
         question_options(*),
         question_images(*, image:images(*)),
-        question_set:sets(*)
+        question_set:question_sets(*)
       `)
       .in('id', questionIds)
 
-    if (error) {
-      console.error('[QuizService] Error fetching questions for session:', error)
-      throw error
-    }
+    if (error) throw error
 
     // Maintain the order from questionIds and map to expected format
     const questionMap = new Map(questions?.map((q: any) => [q.id, q]) || [])
