@@ -1,10 +1,11 @@
 /**
  * API endpoint for generating signed URLs for private R2 files
  * Provides temporary access to files in private buckets
- * Debug endpoint - no authentication required
+ * Debug endpoint - requires admin authentication
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/shared/services/server'
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
@@ -41,6 +42,31 @@ function createR2Client() {
 
 export async function POST(request: NextRequest) {
   try {
+    // Require admin authentication for debug endpoints
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    // Check if user has admin role
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (userError || !userData || !['admin', 'creator'].includes(userData.role)) {
+      return NextResponse.json(
+        { error: 'Admin access required' },
+        { status: 403 }
+      )
+    }
+
     const { key, bucket, expiresIn = 3600 } = await request.json()
 
     if (!key || !bucket) {

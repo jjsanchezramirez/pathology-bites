@@ -98,12 +98,14 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
         try {
           setLoading(true)
 
-          // Use the proper API endpoint that handles R2 authentication and CORS
-          const response = await fetch(`/api/content/educational/${selectedFile}`, {
+          // Use direct R2 access for better performance and to avoid Vercel API costs
+          // This matches the pattern used in client-data-manager.ts and other components
+          const response = await fetch(`https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/context/${selectedFile}`, {
             method: 'GET',
             headers: {
-              'Content-Type': 'application/json',
+              'Accept': 'application/json',
             },
+            cache: 'force-cache', // Aggressive browser caching for static educational content
           })
 
           if (!response.ok) {

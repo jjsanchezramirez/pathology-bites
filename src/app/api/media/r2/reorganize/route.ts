@@ -1,10 +1,11 @@
 /**
  * API endpoint for R2 file reorganization
  * Performs the requested folder restructuring operations
- * Debug endpoint - no authentication required
+ * Debug endpoint - requires admin authentication
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/shared/services/server'
 import { moveR2Folder, listR2Files } from '@/shared/services/r2-storage'
 
 interface ReorganizationOperation {
@@ -37,6 +38,31 @@ const REORGANIZATION_OPERATIONS: ReorganizationOperation[] = [
 
 export async function POST(request: NextRequest) {
   try {
+    // Require admin authentication for debug endpoints
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    // Check if user has admin role
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (userError || !userData || !['admin', 'creator'].includes(userData.role)) {
+      return NextResponse.json(
+        { error: 'Admin access required' },
+        { status: 403 }
+      )
+    }
+
     const { operation, dryRun = true } = await request.json()
 
     // If no specific operation, return available operations

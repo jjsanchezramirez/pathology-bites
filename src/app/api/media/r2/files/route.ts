@@ -2,10 +2,11 @@
 /**
  * API endpoint for listing files in Cloudflare R2 storage
  * Provides file browsing capabilities with pagination, filtering, and search
- * Debug endpoint - no authentication required
+ * Debug endpoint - requires admin authentication
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/shared/services/server'
 import { listR2Files, getR2FileInfo, type R2FileListItem } from '@/shared/services/r2-storage'
 
 interface PaginationParams {
@@ -40,6 +41,30 @@ interface FileListResponse {
 
 export async function GET(request: NextRequest) {
   try {
+    // Require admin authentication for debug endpoints
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    // Check if user has admin role
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (userError || !userData || !['admin', 'creator'].includes(userData.role)) {
+      return NextResponse.json(
+        { error: 'Admin access required' },
+        { status: 403 }
+      )
+    }
 
     const { searchParams } = new URL(request.url)
     
