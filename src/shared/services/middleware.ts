@@ -136,9 +136,9 @@ export async function updateSession(request: NextRequest) {
     return handleAdminApiAuth(request)
   }
   
-  // Handle user and quiz API routes with authentication  
-  if (request.nextUrl.pathname.startsWith('/api/user/') || 
-      request.nextUrl.pathname.startsWith('/api/quiz/')) {
+  // Handle user and quiz API routes with authentication
+  if (request.nextUrl.pathname.startsWith('/api/user/') ||
+      request.nextUrl.pathname.startsWith('/api/content/quiz/')) {
     return handleUserApiAuth(request)
   }
   

@@ -21,9 +21,9 @@ export const config = {
      */
     '/dashboard/:path*',
     '/admin/:path*',
-    '/api/admin/:path*',  // Add admin API routes for centralized auth
-    '/api/user/:path*',   // Add user API routes for centralized auth
-    '/api/quiz/:path*'    // Add quiz API routes for centralized auth
+    '/api/admin/:path*',        // Add admin API routes for centralized auth
+    '/api/user/:path*',         // Add user API routes for centralized auth
+    '/api/content/quiz/:path*'  // Fix: Add correct quiz API routes for centralized auth
   ],
   // Use Node.js runtime instead of Edge Runtime to support Supabase
   runtime: 'nodejs'
