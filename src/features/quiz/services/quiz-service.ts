@@ -7,9 +7,11 @@ import {
   QuizResult,
   QuizStats,
   QuizCreationForm,
+  QuizSessionData,
   QUIZ_TIMING_CONFIG
 } from '@/features/quiz/types/quiz'
 import { QuestionWithDetails } from '@/features/questions/types/questions'
+import { Database } from '@/shared/types/supabase'
 
 export class QuizService {
   private getSupabase() {
@@ -62,7 +64,7 @@ export class QuizService {
           timePerQuestion: formData.timing === 'timed' ? 60 : undefined, // kept for backward compatibility
           totalTimeLimit
         },
-        questions: limitedQuestions.map(q => q.id),
+        question_ids: limitedQuestions.map(q => q.id),
         current_question_index: 0,
         status: 'not_started',
         total_questions: limitedQuestions.length,
@@ -249,26 +251,28 @@ export class QuizService {
         return null
       }
 
-      console.log(`[QuizService] Session found, fetching ${session.questions?.length || 0} questions`)
+      console.log(`[QuizService] Session found, fetching ${session.question_ids?.length || 0} questions`)
 
       // Get questions for this session
-      const questions = await this.getQuestionsForSession(session.questions, supabaseClient)
+      const questions = await this.getQuestionsForSession(session.question_ids, supabaseClient)
 
       return {
-        ...session,
-        questions,
+        id: session.id,
         userId: session.user_id,
+        title: session.title,
         config: session.config as QuizConfig,
+        questions,
         currentQuestionIndex: session.current_question_index,
-        totalQuestions: session.total_questions,
-        totalTimeLimit: session.total_time_limit,
-        timeRemaining: session.time_remaining,
-        quizStartedAt: session.quiz_started_at,
+        status: session.status,
         startedAt: session.started_at,
         completedAt: session.completed_at,
         totalTimeSpent: session.total_time_spent,
         score: session.score,
         correctAnswers: session.correct_answers,
+        totalQuestions: session.total_questions,
+        totalTimeLimit: session.total_time_limit,
+        timeRemaining: session.time_remaining,
+        quizStartedAt: session.started_at, // Map started_at to quizStartedAt for compatibility
         createdAt: session.created_at,
         updatedAt: session.updated_at
       }
