@@ -117,7 +117,7 @@ export function useSmartGeneLookup(): UseSmartGeneLookupResult {
       // Cache miss - fetch from API
       console.log(`🔄 Gene cache miss: ${normalizedSymbol}`)
       
-      const response = await fetch(`/api/tools/gene-lookup?symbol=${encodeURIComponent(symbol.trim())}`)
+      const response = await fetch(`/api/public/tools/gene-lookup?symbol=${encodeURIComponent(symbol.trim())}`)
       const result = await response.json()
 
       if (!response.ok) {

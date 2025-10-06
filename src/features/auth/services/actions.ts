@@ -57,7 +57,7 @@ export async function signup(formData: FormData) {
   const { email, password, firstName, lastName, userType } = validation.data
 
   // Use environment variable for redirect URL
-  const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/confirm`
+  const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/confirm`
   
   console.log('Signup redirect URL:', redirectTo) // Debug log
 
@@ -188,7 +188,7 @@ export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`,
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/callback`,
     },
   })
 
@@ -205,7 +205,7 @@ export async function forgotPassword(formData: FormData) {
   const email = formData.get('email') as string
   
   // Use environment variable for redirect URL
-  const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/confirm?type=recovery&next=/reset-password`
+  const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/confirm?type=recovery&next=/reset-password`
   
   console.log('Password reset redirect URL:', redirectTo) // Debug log
 
@@ -241,7 +241,7 @@ export async function resendVerification(email: string) {
   const supabase = await createClient()
 
   // Use environment variable for redirect URL
-  const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/confirm`
+  const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/confirm`
   
   console.log('Resend verification redirect URL:', redirectTo) // Debug log
 

@@ -75,7 +75,7 @@ export async function extractWebsiteMetadata(url: string): Promise<CitationData>
     // Validate URL format
     new URL(url)
 
-    const response = await fetch(`/api/tools/citation-generator/extract-url-metadata?url=${encodeURIComponent(url)}`, {
+    const response = await fetch(`/api/public/tools/citation-generator/extract-url-metadata?url=${encodeURIComponent(url)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -128,7 +128,7 @@ export async function extractBookMetadata(isbn: string): Promise<CitationData> {
       throw new Error('Invalid ISBN format')
     }
 
-    const response = await fetch(`/api/tools/citation-generator/extract-book-metadata?isbn=${encodeURIComponent(cleanIsbn)}`, {
+    const response = await fetch(`/api/public/tools/citation-generator/extract-book-metadata?isbn=${encodeURIComponent(cleanIsbn)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -179,7 +179,7 @@ export async function extractJournalMetadata(doi: string): Promise<CitationData>
       throw new Error('Invalid DOI format')
     }
 
-    const response = await fetch(`/api/tools/citation-generator/extract-journal-metadata?doi=${encodeURIComponent(cleanDoi)}`, {
+    const response = await fetch(`/api/public/tools/citation-generator/extract-journal-metadata?doi=${encodeURIComponent(cleanDoi)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

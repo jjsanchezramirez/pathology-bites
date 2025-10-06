@@ -54,7 +54,7 @@ export function useLearningPaths(options: UseLearningPathsOptions = {}): UseLear
         params.set('include_enrollment', 'true')
       }
 
-      const response = await fetch(`/api/learning-paths?${params}`)
+      const response = await fetch(`/api/content/learning/modules-paths?${params}`)
       
       if (!response.ok) {
         throw new Error('Failed to fetch learning paths')
@@ -105,7 +105,7 @@ export function useLearningPath(pathId: string | number, includeEnrollment = fal
         params.set('include_enrollment', 'true')
       }
 
-      const response = await fetch(`/api/learning-paths/${pathId}?${params}`)
+      const response = await fetch(`/api/content/learning/modules-paths/${pathId}?${params}`)
       
       if (!response.ok) {
         if (response.status === 404) {
@@ -148,7 +148,7 @@ export function useLearningPathEnrollment(pathId: string | number) {
       setLoading(true)
       setError(null)
 
-      const response = await fetch(`/api/learning-paths/${pathId}/enroll`, {
+      const response = await fetch(`/api/content/learning/modules-paths/${pathId}/enroll`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -177,7 +177,7 @@ export function useLearningPathEnrollment(pathId: string | number) {
       setLoading(true)
       setError(null)
 
-      const response = await fetch(`/api/learning-paths/${pathId}/enroll`, {
+      const response = await fetch(`/api/content/learning/modules-paths/${pathId}/enroll`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -204,7 +204,7 @@ export function useLearningPathEnrollment(pathId: string | number) {
       setLoading(true)
       setError(null)
 
-      const response = await fetch(`/api/learning-paths/${pathId}/enroll`)
+      const response = await fetch(`/api/content/learning/modules-paths/${pathId}/enroll`)
       
       if (!response.ok) {
         if (response.status === 404) {

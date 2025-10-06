@@ -115,7 +115,7 @@ export default function EditLearningModulePage({ params }: EditLearningModulePag
         ...(status && { status })
       }
 
-      const response = await fetch(`/api/learning-modules/${moduleId}`, {
+      const response = await fetch(`/api/content/learning/modules-modules/${moduleId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -146,7 +146,7 @@ export default function EditLearningModulePage({ params }: EditLearningModulePag
     try {
       setLoading(true)
 
-      const response = await fetch(`/api/learning-modules/${moduleId}`, {
+      const response = await fetch(`/api/content/learning/modules-modules/${moduleId}`, {
         method: 'DELETE'
       })
 

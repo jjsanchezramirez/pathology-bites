@@ -108,7 +108,7 @@ export function useImageUpload({
 
           updateFileProgress(file.name, { progress: 60 });
 
-          const response = await fetch('/api/images/upload', {
+          const response = await fetch('/api/media/images/upload', {
             method: 'POST',
             body: formData
           });

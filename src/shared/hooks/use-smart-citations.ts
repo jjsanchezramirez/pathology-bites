@@ -122,7 +122,7 @@ export function useSmartCitations(): UseSmartCitationsResult {
       
       switch (type) {
         case 'url':
-          const urlResponse = await fetch(`/api/tools/citation-generator/extract-url-metadata?url=${encodeURIComponent(input.trim())}`)
+          const urlResponse = await fetch(`/api/public/tools/citation-generator/extract-url-metadata?url=${encodeURIComponent(input.trim())}`)
           if (!urlResponse.ok) {
             const errorData = await urlResponse.json().catch(() => ({ error: 'Unknown error' }))
             throw new Error(errorData.error || `HTTP ${urlResponse.status}: Failed to fetch website metadata`)
@@ -143,7 +143,7 @@ export function useSmartCitations(): UseSmartCitationsResult {
           
         case 'isbn':
           const cleanIsbn = input.replace(/[-\s]/g, '')
-          const isbnResponse = await fetch(`/api/tools/citation-generator/extract-book-metadata?isbn=${encodeURIComponent(cleanIsbn)}`)
+          const isbnResponse = await fetch(`/api/public/tools/citation-generator/extract-book-metadata?isbn=${encodeURIComponent(cleanIsbn)}`)
           if (!isbnResponse.ok) {
             const errorData = await isbnResponse.json().catch(() => ({ error: 'Unknown error' }))
             throw new Error(errorData.error || `HTTP ${isbnResponse.status}: Failed to fetch book metadata`)
@@ -162,7 +162,7 @@ export function useSmartCitations(): UseSmartCitationsResult {
           
         case 'doi':
           const cleanDoi = input.replace(/^doi:/, '').replace(/^https?:\/\/(dx\.)?doi\.org\//, '')
-          const doiResponse = await fetch(`/api/tools/citation-generator/extract-journal-metadata?doi=${encodeURIComponent(cleanDoi)}`)
+          const doiResponse = await fetch(`/api/public/tools/citation-generator/extract-journal-metadata?doi=${encodeURIComponent(cleanDoi)}`)
           if (!doiResponse.ok) {
             const errorData = await doiResponse.json().catch(() => ({ error: 'Unknown error' }))
             throw new Error(errorData.error || `HTTP ${doiResponse.status}: Failed to fetch journal metadata`)

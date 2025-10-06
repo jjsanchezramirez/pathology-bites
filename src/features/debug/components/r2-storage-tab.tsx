@@ -18,7 +18,7 @@ export function R2StorageTab() {
   const testStorage = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/r2/files')
+      const res = await fetch('/api/media/r2/files')
       if (res.ok) {
         setStorageStatus('connected')
       } else {

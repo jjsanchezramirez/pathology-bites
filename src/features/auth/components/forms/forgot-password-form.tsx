@@ -68,7 +68,7 @@ export function ForgotPasswordForm({
         const { error } = await supabase.auth.signInWithOtp({
           email: values.email,
           options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/confirm?type=magiclink&next=/dashboard`
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/confirm?type=magiclink&next=/dashboard`
           }
         })
 
@@ -80,7 +80,7 @@ export function ForgotPasswordForm({
         toast.success('Magic link sent! Check your email to log in instantly.')
       } else {
         // Send password reset link
-        const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/confirm?type=recovery&next=/reset-password`
+        const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/confirm?type=recovery&next=/reset-password`
 
         const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
           redirectTo: redirectTo,

@@ -27,7 +27,7 @@ export function useMaintenanceNotifications(options: MaintenanceNotificationOpti
     try {
       setIsSubmitting(true)
       
-      const response = await fetch('/api/maintenance-notifications', {
+      const response = await fetch('/api/public/maintenance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

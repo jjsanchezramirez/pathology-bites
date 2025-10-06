@@ -54,7 +54,7 @@ export function useLearningModules(options: UseLearningModulesOptions = {}): Use
         params.set('include_progress', 'true')
       }
 
-      const response = await fetch(`/api/learning-modules?${params}`)
+      const response = await fetch(`/api/content/learning/modules-modules?${params}`)
       
       if (!response.ok) {
         throw new Error('Failed to fetch learning modules')
@@ -105,7 +105,7 @@ export function useLearningModule(moduleId: string, includeProgress = false) {
         params.set('include_progress', 'true')
       }
 
-      const response = await fetch(`/api/learning-modules/${moduleId}?${params}`)
+      const response = await fetch(`/api/content/learning/modules-modules/${moduleId}?${params}`)
       
       if (!response.ok) {
         if (response.status === 404) {
@@ -148,7 +148,7 @@ export function useModuleProgress(moduleId: string) {
       setLoading(true)
       setError(null)
 
-      const response = await fetch(`/api/learning-modules/${moduleId}/progress`, {
+      const response = await fetch(`/api/content/learning/modules-modules/${moduleId}/progress`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -179,7 +179,7 @@ export function useModuleProgress(moduleId: string) {
     try {
       setError(null)
 
-      const response = await fetch(`/api/learning-modules/${moduleId}/progress`, {
+      const response = await fetch(`/api/content/learning/modules-modules/${moduleId}/progress`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -213,7 +213,7 @@ export function useModuleProgress(moduleId: string) {
       setLoading(true)
       setError(null)
 
-      const response = await fetch(`/api/learning-modules/${moduleId}/progress`, {
+      const response = await fetch(`/api/content/learning/modules-modules/${moduleId}/progress`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -242,7 +242,7 @@ export function useModuleProgress(moduleId: string) {
       setLoading(true)
       setError(null)
 
-      const response = await fetch(`/api/learning-modules/${moduleId}/progress`)
+      const response = await fetch(`/api/content/learning/modules-modules/${moduleId}/progress`)
       
       if (!response.ok) {
         throw new Error('Failed to fetch progress')

@@ -93,10 +93,10 @@ export default function QuizSessionPage() {
       const timeoutId = setTimeout(() => abortController.abort(), 30000) // 30 second timeout
       
       const [sessionResponse, resultsResponse] = await Promise.all([
-        fetch(`/api/quiz/sessions/${sessionId}`, {
+        fetch(`/api/content/quiz/sessions/${sessionId}`, {
           signal: abortController.signal
         }),
-        fetch(`/api/quiz/sessions/${sessionId}/results`, {
+        fetch(`/api/content/quiz/sessions/${sessionId}/results`, {
           signal: abortController.signal
         })
       ])

@@ -27,7 +27,7 @@ export function useEmailSubscription(options: EmailSubscriptionOptions = {}) {
     try {
       setIsSubmitting(true)
       
-      const response = await fetch('/api/subscribe', {
+      const response = await fetch('/api/public/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

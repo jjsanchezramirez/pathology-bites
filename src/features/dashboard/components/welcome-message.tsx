@@ -48,7 +48,7 @@ export function WelcomeMessage({ onDismiss }: WelcomeMessageProps) {
         showExplanations: true
       }
 
-      const response = await fetch('/api/quiz/sessions', {
+      const response = await fetch('/api/content/quiz/sessions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

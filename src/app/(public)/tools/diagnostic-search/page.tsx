@@ -150,7 +150,7 @@ export default function DiagnosticSearchPage() {
     setMetadata(null)
 
     try {
-      const response = await fetch('/api/tools/diagnostic-search', {
+      const response = await fetch('/api/public/tools/diagnostic-search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

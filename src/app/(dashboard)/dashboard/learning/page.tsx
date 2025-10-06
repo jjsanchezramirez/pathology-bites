@@ -37,7 +37,7 @@ export default function LearningPage() {
     const fetchLearningData = async () => {
       try {
         setLoading(true)
-        const response = await fetch('/api/learning')
+        const response = await fetch('/api/content/learning/modules')
         
         if (!response.ok) {
           throw new Error('Failed to fetch learning data')

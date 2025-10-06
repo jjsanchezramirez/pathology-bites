@@ -7,7 +7,7 @@ export async function deleteImage(imagePath: string | null, imageId: string) {
   try {
     console.log('🗑️ Deleting image:', { imageId, imagePath });
 
-    const url = '/api/images/delete';
+    const url = '/api/media/images/delete';
     console.log('📡 Making DELETE request to:', url);
 
     const response = await fetch(url, {
@@ -230,7 +230,7 @@ export async function uploadImage(
     formData.append('description', metadata.description);
     if (metadata.source_ref) formData.append('sourceRef', metadata.source_ref);
 
-    const response = await fetch('/api/images/upload', {
+    const response = await fetch('/api/media/images/upload', {
       method: 'POST',
       body: formData
     });
@@ -343,7 +343,7 @@ export async function bulkDeleteImages(imageIds: string[]): Promise<{ success: b
       return { success: true, deleted: 0, errors: [] };
     }
 
-    const response = await fetch('/api/images/bulk-delete', {
+    const response = await fetch('/api/media/images/bulk-delete', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

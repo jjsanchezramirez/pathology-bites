@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group"
 import { PublicHero } from "@/shared/components/common/public-hero"
 import { toast } from 'sonner'
 import { Icons } from "@/shared/components/common/icons"
-import { submitContactForm } from '@/app/api/contact/contact'
+import { submitContactForm } from '@/app/api/public/contact/contact'
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section"
 
 type FormData = {

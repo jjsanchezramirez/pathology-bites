@@ -180,7 +180,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
       : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
     console.log('[WSI Generator] Using SINGLE /generate endpoint (no multi-step)')
-    const response = await fetch(`${baseUrl}/api/tools/wsi-question-generator/generate?cb=${Date.now()}`, {
+    const response = await fetch(`${baseUrl}/api/public/tools/wsi-question-generator/generate?cb=${Date.now()}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

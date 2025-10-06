@@ -39,7 +39,7 @@ export function VerifyEmailForm({ email, initialError, initialMessage }: VerifyE
       setLoading(true)
 
       // Use environment variable for redirect URL
-      const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/confirm`
+      const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/confirm`
 
       const { error } = await supabase.auth.resend({
         type: 'signup',

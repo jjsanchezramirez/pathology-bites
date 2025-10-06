@@ -354,7 +354,7 @@ class SessionSecurity {
     // Example: send to your API endpoint
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
       try {
-        fetch('/api/security/events', {
+        fetch('/api/public/security/events', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

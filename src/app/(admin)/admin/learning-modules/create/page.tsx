@@ -46,7 +46,7 @@ export default function CreateLearningModulePage() {
     const loadData = async () => {
       try {
         // Load existing modules for parent selection
-        const modulesResponse = await fetch('/api/learning-modules?status=published&limit=100')
+        const modulesResponse = await fetch('/api/content/learning/modules-modules?status=published&limit=100')
         if (modulesResponse.ok) {
           const modulesData = await modulesResponse.json()
           setParentModules(modulesData.data || [])

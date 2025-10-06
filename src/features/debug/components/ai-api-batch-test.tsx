@@ -59,7 +59,7 @@ const AI_ENDPOINTS: AIEndpoint[] = [
   {
     id: 'wsi-question-generator',
     name: 'WSI Question Generator',
-    path: '/api/tools/wsi-question-generator/generate',
+    path: '/api/public/tools/wsi-question-generator/generate',
     method: 'POST',
     category: 'generation',
     description: 'Generate pathology questions from virtual slide images',

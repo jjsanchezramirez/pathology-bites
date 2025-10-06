@@ -67,9 +67,9 @@ export async function POST(request: NextRequest) {
     let redirectTo: string
 
     if (type === 'magic_link') {
-      redirectTo = `${baseUrl}/api/auth/confirm?type=magiclink&next=/dashboard`
+      redirectTo = `${baseUrl}/api/public/auth/confirm?type=magiclink&next=/dashboard`
     } else {
-      redirectTo = `${baseUrl}/api/auth/confirm?type=recovery&next=/reset-password`
+      redirectTo = `${baseUrl}/api/public/auth/confirm?type=recovery&next=/reset-password`
     }
 
     // Send password reset email

@@ -206,7 +206,7 @@ export const clientSignedUrls = {
     if (cached) return cached
 
     // Request new signed URL from your API
-    const response = await fetch('/api/r2/signed-url', {
+    const response = await fetch('/api/media/r2/signed-url', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ key, options })
@@ -244,7 +244,7 @@ export const clientSignedUrls = {
 
     // Request uncached URLs
     if (uncached.length > 0) {
-      const response = await fetch('/api/r2/signed-urls/batch', {
+      const response = await fetch('/api/media/r2/signed-urls/batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ keys: uncached, options })
