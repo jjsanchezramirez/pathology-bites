@@ -10,6 +10,7 @@ import { QuestionPreview } from './components/question-preview'
 import { QuestionFinalization } from './components/question-finalization'
 import { ErrorBoundary } from './components/error-boundary'
 import { AutoSaveIndicator } from './components/auto-save-indicator'
+import { ReloadPrevention } from './components/reload-prevention'
 import { useAutoSave } from '@/shared/hooks/use-auto-save'
 import { toast } from 'sonner'
 
@@ -266,6 +267,9 @@ export function CreateQuestionClient() {
 
   return (
     <div className="space-y-6" data-unsaved-changes={hasUnsavedChanges ? "true" : "false"}>
+      {/* Prevent automatic reloads when user has unsaved changes */}
+      <ReloadPrevention hasUnsavedChanges={hasUnsavedChanges} enabled={true} />
+
       {/* Session status monitoring for silent refresh notifications */}
       <SessionStatusIndicator showNotifications={true} position="top-right" />
 
