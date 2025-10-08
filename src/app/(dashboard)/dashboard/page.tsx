@@ -187,7 +187,12 @@ export default function DashboardPage() {
     <PageErrorBoundary pageName="Dashboard" showHomeButton={false} showBackButton={false}>
       <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+          Dashboard
+          <span className="text-sm font-medium px-2 py-1 bg-secondary/50 text-secondary-foreground rounded-md">
+            Student
+          </span>
+        </h1>
         <p className="text-muted-foreground">
           {isFirstTimeUser
             ? "Nice to meet you! Let's get you started with a quick quiz."

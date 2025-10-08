@@ -2,6 +2,7 @@
 import { Metadata } from "next"
 import { UnifiedLayoutClient } from "@/shared/components/layout/unified-layout-client"
 import { DashboardThemeProvider } from "@/shared/contexts/dashboard-theme-context"
+import { CacheDebug } from "@/shared/components/dev/cache-debug"
 
 export const metadata: Metadata = {
   title: "Admin Dashboard - Pathology Bites",
@@ -24,6 +25,7 @@ export default function AdminLayout({
       >
         {children}
       </UnifiedLayoutClient>
+      <CacheDebug />
     </DashboardThemeProvider>
   )
 }

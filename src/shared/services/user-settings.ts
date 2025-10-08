@@ -20,6 +20,9 @@ export interface UISettings {
   font_size: 'small' | 'medium' | 'large'
   text_zoom: number
   dashboard_theme: string
+  // Mode-specific dashboard themes
+  dashboard_theme_admin?: string
+  dashboard_theme_user?: string
   sidebar_collapsed: boolean
   welcome_message_seen: boolean
 }

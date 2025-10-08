@@ -16,7 +16,7 @@ import { useDashboardTheme } from '@/shared/contexts/dashboard-theme-context'
 import { cn } from '@/shared/utils'
 
 export function ThemeSelector() {
-  const { currentTheme, setTheme, availableThemes, isLoading } = useDashboardTheme()
+  const { currentTheme, setTheme, availableThemes, isLoading, adminMode } = useDashboardTheme()
   const [isOpen, setIsOpen] = useState(false)
 
   if (isLoading) {
@@ -40,7 +40,12 @@ export function ThemeSelector() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-96">
-        <DropdownMenuLabel>Dashboard Themes</DropdownMenuLabel>
+        <DropdownMenuLabel>
+          Dashboard Themes 
+          <span className="text-xs text-muted-foreground font-normal ml-2">
+            ({adminMode === 'admin' ? 'Admin Mode' : 'User Mode'})
+          </span>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         
         <div className="grid gap-1 p-1">
@@ -82,7 +87,10 @@ export function ThemeSelector() {
         <DropdownMenuSeparator />
         <div className="p-2">
           <p className="text-xs text-muted-foreground text-center">
-            Themes apply only to dashboard pages
+            {adminMode === 'admin' 
+              ? 'Admin mode: Professional themes only' 
+              : 'User mode: Creative learning themes'
+            }
           </p>
         </div>
       </DropdownMenuContent>

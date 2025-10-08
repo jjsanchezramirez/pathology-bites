@@ -1,28 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getApiKey, getModelProvider } from '@/shared/config/ai-models'
+import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from '@/shared/config/ai-models'
 import { parseAIResponse } from '@/shared/utils/ai-response-parser'
 
-// Available models for admin question generation - optimized for speed and quality
-const ADMIN_AI_MODELS = [
-  // Tier 1: FASTEST - Prioritize speed for better UX
-  'Llama-3.3-8B-Instruct',                  // 394ms - FASTEST, excellent quality
-  'ministral-8b-2410',                      // 596ms - Fast Mistral model
-  'gemini-1.5-flash',                       // 763ms - Fast Google model
-  'mistral-small-2501',                     // 790ms - Latest small Mistral
-  'gemini-2.0-flash',                       // 829ms - Good balance
-
-  // Tier 2: BALANCED - Good speed + capability
-  'Llama-4-Scout-17B-16E-Instruct-FP8',     // 1063ms - Latest multimodal + medical reasoning
-  'mistral-medium-2505',                    // 1311ms - Best balance of capability/volume
-
-  // Tier 3: POWERFUL - Slower but high quality
-  'Llama-3.3-70B-Instruct',                 // 1788ms - Proven large model performance
-  'Llama-4-Maverick-17B-128E-Instruct-FP8', // 1917ms - Complex reasoning powerhouse
-
-  // Tier 4: PREMIUM - Highest quality but slowest
-  'gemini-2.5-flash',                       // 3765ms - Best quality (but slow)
-  'gemini-2.5-pro'                          // Premium reasoning (slowest)
-]
+// Accept all available models for admin question generation
+const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter(model => model.available).map(model => model.id)
 
 interface QuestionGenerationRequest {
   content: {
@@ -66,10 +47,11 @@ async function callAIService(provider: string, prompt: string, modelId: string, 
 
 async function callMetaAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 30000)
+  const timeoutId = setTimeout(() => controller.abort(), 20000) // 20 second timeout
 
+  let response: Response
   try {
-    const response = await fetch('https://api.llama.com/v1/chat/completions', {
+    response = await fetch('https://api.llama.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -92,97 +74,130 @@ async function callMetaAPI(prompt: string, model: string, apiKey: string): Promi
         temperature: 0.7
       })
     })
-
-    if (!response.ok) {
-      throw new Error(`Meta LLAMA API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-    const content = data.choices?.[0]?.message?.content || ''
-    const tokenUsage = data.usage || null
-
-    return { content, tokenUsage }
-  } finally {
     clearTimeout(timeoutId)
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Meta LLAMA API timeout after 20 seconds')
+    }
+    throw error
   }
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    let errorMessage = `Meta LLAMA API error: ${response.status} ${response.statusText}`
+    
+    try {
+      const errorData = JSON.parse(errorText)
+      if (errorData.error?.message) {
+        errorMessage = errorData.error.message
+      }
+    } catch {
+      // Use default error message if JSON parsing fails
+    }
+    
+    throw new Error(errorMessage)
+  }
+
+  const data = await response.json()
+  
+  // Handle Meta LLAMA API response format (match WSI implementation)
+  let content = ''
+  if (data.completion_message?.content?.text) {
+    content = data.completion_message.content.text
+  } else if (data.choices?.[0]?.message?.content) {
+    content = data.choices[0].message.content
+  }
+  
+  // Check for token usage in various possible locations
+  let tokenUsage = undefined
+  if (data.usage) {
+    tokenUsage = {
+      prompt_tokens: data.usage.prompt_tokens || 0,
+      completion_tokens: data.usage.completion_tokens || 0,
+      total_tokens: data.usage.total_tokens || 0
+    }
+  } else if (data.token_usage) {
+    tokenUsage = {
+      prompt_tokens: data.token_usage.prompt_tokens || 0,
+      completion_tokens: data.token_usage.completion_tokens || 0,
+      total_tokens: data.token_usage.total_tokens || 0
+    }
+  } else if (data.completion_message?.usage) {
+    tokenUsage = {
+      prompt_tokens: data.completion_message.usage.prompt_tokens || 0,
+      completion_tokens: data.completion_message.usage.completion_tokens || 0,
+      total_tokens: data.completion_message.usage.total_tokens || 0
+    }
+  }
+
+  return { content: content || '', tokenUsage }
 }
 
 async function callGoogleAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 30000)
-
-  try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 4000
-        }
-      })
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 4000
+      }
     })
+  })
 
-    if (!response.ok) {
-      throw new Error(`Google API error: ${response.status}`)
-    }
+  if (!response.ok) {
+    throw new Error(`Google API error: ${response.status} ${response.statusText}`)
+  }
 
-    const data = await response.json()
-    const content = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
-    const tokenUsage = data.usageMetadata || null
-
-    return { content, tokenUsage }
-  } finally {
-    clearTimeout(timeoutId)
+  const data = await response.json()
+  return {
+    content: data.candidates?.[0]?.content?.parts?.[0]?.text || '',
+    tokenUsage: data.usageMetadata ? {
+      prompt_tokens: data.usageMetadata.promptTokenCount || 0,
+      completion_tokens: data.usageMetadata.candidatesTokenCount || 0,
+      total_tokens: data.usageMetadata.totalTokenCount || 0
+    } : undefined
   }
 }
 
 async function callMistralAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 30000)
-
-  try {
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: model,
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 4000,
-        temperature: 0.7
-      })
+  const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      max_tokens: 4000,
+      temperature: 0.7
     })
+  })
 
-    if (!response.ok) {
-      throw new Error(`Mistral API error: ${response.status}`)
-    }
+  if (!response.ok) {
+    throw new Error(`Mistral API error: ${response.status} ${response.statusText}`)
+  }
 
-    const data = await response.json()
-    const content = data.choices?.[0]?.message?.content || ''
-    const tokenUsage = data.usage || null
-
-    return { content, tokenUsage }
-  } finally {
-    clearTimeout(timeoutId)
+  const data = await response.json()
+  return {
+    content: data.choices[0]?.message?.content || '',
+    tokenUsage: data.usage ? {
+      prompt_tokens: data.usage.prompt_tokens,
+      completion_tokens: data.usage.completion_tokens,
+      total_tokens: data.usage.total_tokens
+    } : undefined
   }
 }
 

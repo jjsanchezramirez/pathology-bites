@@ -9,7 +9,8 @@ const processingRequests = new Set<string>()
 
 // Admin API endpoints that don't require authentication (health checks, etc.)
 const PUBLIC_ADMIN_ENDPOINTS = [
-  '/api/admin/system-status'
+  '/api/admin/system-status',
+  '/api/admin/ai-generate-question'
 ]
 
 // Admin API endpoints that require admin-only access (not creator/reviewer)
@@ -214,19 +215,31 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Redirect admin/creator/reviewer users from /dashboard to /admin/dashboard
+    // BUT respect the admin-mode cookie if set to 'user'
+    // Note: Admin users can still access admin routes directly even in user mode
     if (request.nextUrl.pathname === '/dashboard' && user) {
       try {
-        // First try user metadata for speed
-        const metadataRole = user.user_metadata?.role || user.app_metadata?.role
+        // Check admin mode preference cookie
+        const adminModeCookie = request.cookies.get('admin-mode')?.value
+        
+        // If admin explicitly chose user mode, allow access to user dashboard
+        if (adminModeCookie === 'user') {
+          // Allow admin to access user dashboard when in user mode
+        } else {
+          // Default behavior: redirect admin/creator/reviewer to admin dashboard
+          
+          // First try user metadata for speed
+          const metadataRole = user.user_metadata?.role || user.app_metadata?.role
 
-        if (metadataRole === 'admin' || metadataRole === 'creator' || metadataRole === 'reviewer') {
-          return redirect('/admin/dashboard')
-        }
+          if (metadataRole === 'admin' || metadataRole === 'creator' || metadataRole === 'reviewer') {
+            return redirect('/admin/dashboard')
+          }
 
-        // Check database role
-        const userRole = await getUserRoleWithCache(user.id, user, supabase)
-        if (userRole === 'admin' || userRole === 'creator' || userRole === 'reviewer') {
-          return redirect('/admin/dashboard')
+          // Check database role
+          const userRole = await getUserRoleWithCache(user.id, user, supabase)
+          if (userRole === 'admin' || userRole === 'creator' || userRole === 'reviewer') {
+            return redirect('/admin/dashboard')
+          }
         }
       } catch (error) {
         // Silent error handling

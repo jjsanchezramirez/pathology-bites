@@ -152,30 +152,32 @@ ${JSON.stringify(question, null, 2)}
 Return the modified question in the same JSON format.
 `
 
-      // Use the same model that generated the original question, or default to Gemini
-      const originalModel = question?.metadata?.generated_by?.model || 'gemini-2.0-flash-exp'
+      // Use the same model that generated the original question, or default to a supported model
+      const originalModel = question?.metadata?.generated_by?.model || 'Llama-3.3-70B-Instruct'
 
-      const response = await fetchWithRetry('/api/public/tools/wsi-question-generator/generate', {
+      const response = await fetchWithRetry('/api/admin/ai-generate-question', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          wsi: {
-            diagnosis: 'Question Refinement',
-            category: 'Admin',
-            subcategory: 'Refinement',
-            stain_type: 'H&E'
+          content: {
+            category: question.category || 'Pathology',
+            subject: question.subject || 'Medical Education',
+            lesson: question.lesson || 'Question Refinement',
+            topic: question.topic || 'Clinical Pathology',
+            text: JSON.stringify(question, null, 2)
           },
-          context: null,
-          modelId: originalModel
+          instructions: `Please refine the following question based on this request: "${chatMessage}"\n\nCurrent Question:\n${JSON.stringify(question, null, 2)}\n\nReturn the modified question in the same JSON format.`,
+          additionalContext: 'This is a question refinement request. Please maintain the overall structure while implementing the requested changes.',
+          model: originalModel
         })
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        // WSI question generator API returns structured response
+        // Admin AI Generate Question API returns structured response
         if (!data.success) {
           throw new Error(data.error || 'Question refinement failed')
         }
@@ -194,7 +196,7 @@ Return the modified question in the same JSON format.
               refined_at: new Date().toISOString(),
               refinement_request: chatMessage,
               refined_by: {
-                provider: 'wsi-generator',
+                provider: 'admin-ai',
                 model: originalModel
               }
             }

@@ -11,6 +11,7 @@ export interface AIModel {
   contextLength?: string
   temperature?: number
   maxTokens?: number
+  tpmLimit?: number // Tokens Per Minute limit
 }
 
 // Helper function to determine provider from model ID
@@ -29,30 +30,42 @@ export function getModelProvider(model: string): string {
 
 // Active models (available for selection) - Prioritized for WSI Question Generator
 export const ACTIVE_AI_MODELS: AIModel[] = [
-  // Gemini models (prioritized for WSI generation)
+  // High rate limit models (1M TPM)
   {
-    id: 'gemini-2.5-pro',
-    name: 'Gemini 2.5 Pro',
-    provider: 'gemini',
+    id: 'Llama-3.3-70B-Instruct',
+    name: 'Llama 3.3 70B',
+    provider: 'llama',
     available: true,
-    description: 'Latest Gemini 2.5 Pro model - most capable',
-    contextLength: '2M tokens'
+    description: 'Large Llama model - proven performance',
+    contextLength: '128K tokens',
+    tpmLimit: 1000000
   },
   {
-    id: 'gemini-2.5-flash',
-    name: 'Gemini 2.5 Flash',
-    provider: 'gemini',
+    id: 'Llama-4-Maverick-17B-128E-Instruct-FP8',
+    name: 'Llama 4 Maverick 17B',
+    provider: 'llama',
     available: true,
-    description: 'Latest Gemini 2.5 Flash model - fast and efficient',
-    contextLength: '1M tokens'
+    description: 'Complex reasoning powerhouse',
+    contextLength: '128K tokens',
+    tpmLimit: 1000000
   },
   {
-    id: 'gemini-2.5-flash-lite',
-    name: 'Gemini 2.5 Flash Lite',
-    provider: 'gemini',
+    id: 'Llama-4-Scout-17B-16E-Instruct-FP8',
+    name: 'Llama 4 Scout 17B',
+    provider: 'llama',
     available: true,
-    description: 'Lightweight Gemini 2.5 Flash model - ultra fast',
-    contextLength: '1M tokens'
+    description: 'Latest multimodal + medical reasoning',
+    contextLength: '16K tokens',
+    tpmLimit: 1000000
+  },
+  {
+    id: 'Llama-3.3-8B-Instruct',
+    name: 'Llama 3.3 8B',
+    provider: 'llama',
+    available: true,
+    description: 'Fast, excellent quality',
+    contextLength: '128K tokens',
+    tpmLimit: 1000000
   },
   {
     id: 'gemini-2.0-flash',
@@ -60,7 +73,8 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     provider: 'gemini',
     available: true,
     description: 'Gemini 2.0 Flash model',
-    contextLength: '1M tokens'
+    contextLength: '1M tokens',
+    tpmLimit: 1000000
   },
   {
     id: 'gemini-2.0-flash-lite',
@@ -68,65 +82,19 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     provider: 'gemini',
     available: true,
     description: 'Lightweight Gemini 2.0 Flash model',
-    contextLength: '1M tokens'
-  },
-  {
-    id: 'gemini-1.5-flash',
-    name: 'Gemini 1.5 Flash',
-    provider: 'gemini',
-    available: true,
-    description: 'Fast and efficient Gemini 1.5 model - preferred for WSI questions',
-    contextLength: '1M tokens'
-  },
-  {
-    id: 'gemini-1.5-flash-8b',
-    name: 'Gemini 1.5 Flash 8B',
-    provider: 'gemini',
-    available: true,
-    description: 'Efficient 8B parameter Gemini 1.5 Flash model',
-    contextLength: '1M tokens'
-  },
-  {
-    id: 'gemini-1.5-pro',
-    name: 'Gemini 1.5 Pro',
-    provider: 'gemini',
-    available: true,
-    description: 'Most capable Gemini 1.5 model',
-    contextLength: '2M tokens'
+    contextLength: '1M tokens',
+    tpmLimit: 1000000
   },
 
-  // Mistral models (second choice)
-  {
-    id: 'mistral-medium-2505',
-    name: 'Mistral Medium 3',
-    provider: 'mistral',
-    available: true,
-    description: 'Latest Mistral Medium 3 model - enhanced capabilities',
-    contextLength: '128K tokens'
-  },
-  {
-    id: 'magistral-medium-2507',
-    name: 'Magistral Medium 1.1',
-    provider: 'mistral',
-    available: true,
-    description: 'Magistral Medium 1.1 model - optimized performance',
-    contextLength: '128K tokens'
-  },
-  {
-    id: 'magistral-medium-2506',
-    name: 'Magistral Medium 1',
-    provider: 'mistral',
-    available: true,
-    description: 'Magistral Medium 1 model - reliable performance',
-    contextLength: '128K tokens'
-  },
+  // Medium rate limit models (500K TPM)
   {
     id: 'mistral-large-2411',
     name: 'Mistral Large 2.1',
     provider: 'mistral',
     available: true,
     description: 'Latest Mistral Large 2.1 model - most capable',
-    contextLength: '128K tokens'
+    contextLength: '128K tokens',
+    tpmLimit: 500000
   },
   {
     id: 'mistral-large-latest',
@@ -134,16 +102,35 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     provider: 'mistral',
     available: true,
     description: 'Mistral\'s largest and most capable model',
-    contextLength: '128K tokens'
+    contextLength: '128K tokens',
+    tpmLimit: 500000
   },
-
   {
-    id: 'magistral-small-2507',
-    name: 'Magistral Small 1.1',
+    id: 'mistral-medium-2505',
+    name: 'Mistral Medium 3',
     provider: 'mistral',
     available: true,
-    description: 'Magistral Small 1.1 model - optimized efficiency',
-    contextLength: '32K tokens'
+    description: 'Latest Mistral Medium 3 model - enhanced capabilities',
+    contextLength: '128K tokens',
+    tpmLimit: 500000
+  },
+  {
+    id: 'magistral-medium-2507',
+    name: 'Magistral Medium 1.1',
+    provider: 'mistral',
+    available: true,
+    description: 'Magistral Medium 1.1 model - optimized performance',
+    contextLength: '128K tokens',
+    tpmLimit: 500000
+  },
+  {
+    id: 'magistral-medium-2506',
+    name: 'Magistral Medium 1',
+    provider: 'mistral',
+    available: true,
+    description: 'Magistral Medium 1 model - reliable performance',
+    contextLength: '128K tokens',
+    tpmLimit: 500000
   },
   {
     id: 'mistral-small-2506',
@@ -151,7 +138,17 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     provider: 'mistral',
     available: true,
     description: 'Mistral Small 3.2 model - balanced performance',
-    contextLength: '32K tokens'
+    contextLength: '32K tokens',
+    tpmLimit: 500000
+  },
+  {
+    id: 'magistral-small-2507',
+    name: 'Magistral Small 1.1',
+    provider: 'mistral',
+    available: true,
+    description: 'Magistral Small 1.1 model - optimized efficiency',
+    contextLength: '32K tokens',
+    tpmLimit: 500000
   },
   {
     id: 'magistral-small-2506',
@@ -159,7 +156,8 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     provider: 'mistral',
     available: true,
     description: 'Magistral Small 1 model - reliable efficiency',
-    contextLength: '32K tokens'
+    contextLength: '32K tokens',
+    tpmLimit: 500000
   },
   {
     id: 'mistral-small-2503',
@@ -167,7 +165,8 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     provider: 'mistral',
     available: true,
     description: 'Mistral Small 3.1 model - enhanced efficiency',
-    contextLength: '32K tokens'
+    contextLength: '32K tokens',
+    tpmLimit: 500000
   },
   {
     id: 'mistral-small-2501',
@@ -175,7 +174,8 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     provider: 'mistral',
     available: true,
     description: 'Mistral Small 3 model - fast inference',
-    contextLength: '32K tokens'
+    contextLength: '32K tokens',
+    tpmLimit: 500000
   },
   {
     id: 'ministral-3b-2410',
@@ -183,7 +183,8 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     provider: 'mistral',
     available: true,
     description: 'Ministral 3B model - ultra-efficient lightweight model',
-    contextLength: '32K tokens'
+    contextLength: '32K tokens',
+    tpmLimit: 500000
   },
   {
     id: 'ministral-8b-2410',
@@ -191,43 +192,52 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     provider: 'mistral',
     available: true,
     description: 'Ministral 8B model - efficient mid-size model',
-    contextLength: '32K tokens'
+    contextLength: '32K tokens',
+    tpmLimit: 500000
   },
 
-  // LLAMA models (fallback)
+  // Low rate limit models (250K TPM)
   {
-    id: 'Llama-3.3-70B-Instruct',
-    name: 'LLAMA 3.3 70B Instruct',
-    provider: 'llama',
+    id: 'gemini-2.5-flash',
+    name: 'Gemini 2.5 Flash',
+    provider: 'gemini',
     available: true,
-    description: 'LLAMA 3.3 model with 70B parameters - fallback option',
-    contextLength: '128K tokens'
+    description: 'Best price-performance balance',
+    contextLength: '1M tokens',
+    tpmLimit: 250000
   },
   {
-    id: 'Llama-3.3-8B-Instruct',
-    name: 'LLAMA 3.3 8B Instruct',
-    provider: 'llama',
+    id: 'gemini-2.5-flash-lite',
+    name: 'Gemini 2.5 Flash Lite',
+    provider: 'gemini',
     available: true,
-    description: 'LLAMA 3.3 model with 8B parameters - efficient option',
-    contextLength: '128K tokens'
-  },
-  {
-    id: 'Llama-4-Maverick-17B-128E-Instruct-FP8',
-    name: 'LLAMA 4 Maverick 17B',
-    provider: 'llama',
-    available: true,
-    description: 'Latest LLAMA 4 model with enhanced capabilities',
-    contextLength: '128K tokens'
-  },
-  {
-    id: 'Llama-4-Scout-17B-16E-Instruct-FP8',
-    name: 'LLAMA 4 Scout 17B',
-    provider: 'llama',
-    available: true,
-    description: 'LLAMA 4 Scout model optimized for fast inference',
-    contextLength: '128K tokens'
+    description: 'Most cost-effective, high throughput',
+    contextLength: '1M tokens',
+    tpmLimit: 250000
   },
 
+  // Very low rate limit models (125K TPM)
+  {
+    id: 'gemini-2.5-pro',
+    name: 'Gemini 2.5 Pro',
+    provider: 'gemini',
+    available: true,
+    description: 'Most powerful thinking model',
+    contextLength: '2M tokens',
+    tpmLimit: 125000
+  }
+]
+
+// Simple TPM-based fallback lists
+export const HIGH_TPM_MODELS = ACTIVE_AI_MODELS.filter(model => (model.tpmLimit || 0) >= 1000000).map(model => model.id)
+export const MEDIUM_TPM_MODELS = ACTIVE_AI_MODELS.filter(model => (model.tpmLimit || 0) >= 500000 && (model.tpmLimit || 0) < 1000000).map(model => model.id)
+export const LOW_TPM_MODELS = ACTIVE_AI_MODELS.filter(model => (model.tpmLimit || 0) < 500000).map(model => model.id)
+
+// Combined fallback list ordered by TPM (high to low)
+export const TPM_ORDERED_FALLBACK = [
+  ...HIGH_TPM_MODELS,
+  ...MEDIUM_TPM_MODELS,
+  ...LOW_TPM_MODELS
 ]
 
 // Disabled models (show in UI but not selectable)
@@ -337,7 +347,7 @@ export function isModelAvailable(modelId: string): boolean {
 }
 
 // Default model selection - prioritize Gemini 1.5 for WSI question generation
-export const DEFAULT_MODEL = 'gemini-1.5-flash'
+export const DEFAULT_MODEL = 'gemini-2.5-flash'
 
 // API key configuration - All keys must be provided via environment variables
 export const API_KEYS = {

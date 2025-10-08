@@ -5,6 +5,7 @@ import { Button } from "@/shared/components/ui/button"
 import { Menu } from "lucide-react"
 import { FontSizeControl } from "@/shared/components/common/font-size-control"
 import { ThemeModeToggle } from "@/shared/components/common/theme-mode-toggle"
+import { AdminModeToggle } from "@/shared/components/common/admin-mode-toggle"
 import { NotificationsHandler } from "@/shared/components/layout/notifications-handler"
 import { ProfileDropdown } from "@/features/dashboard/components/profile-dropdown"
 
@@ -38,10 +39,14 @@ export function UnifiedHeader({ onToggleSidebar, config = defaultConfig }: Unifi
         <Menu className="h-5 w-5" />
       </Button>
 
-
+      {/* Admin Mode Toggle - Only show for admin users */}
+      <AdminModeToggle />
+      
+      {/* Spacer */}
+      <div className="flex-1" />
       
       {/* Right side controls */}
-      <div className="ml-auto flex items-center gap-2">
+      <div className="flex items-center gap-2">
         {/* Font Size Control - Only show if enabled */}
         {finalConfig.showFontSize && <FontSizeControl />}
         

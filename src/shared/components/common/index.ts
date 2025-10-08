@@ -1,4 +1,5 @@
 // Barrel export for common components
+export * from './admin-mode-toggle'
 export * from './conditional-theme-provider'
 export * from './connection-status'
 export * from './countdown-timer'

@@ -12,30 +12,12 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area'
 import { Loader2, Brain, Upload, FileText, X } from 'lucide-react'
 import { toast } from 'sonner'
 import {
-  getModelProvider
+  getModelProvider,
+  ACTIVE_AI_MODELS
 } from '@/shared/config/ai-models'
 
-// Admin AI models (matches the admin API exactly) - optimized for speed and quality
-const ADMIN_AI_MODELS = [
-  // Tier 1: FASTEST - Prioritize speed for better UX
-  'Llama-3.3-8B-Instruct',                  // 394ms - FASTEST, excellent quality
-  'ministral-8b-2410',                      // 596ms - Fast Mistral model
-  'gemini-1.5-flash',                       // 763ms - Fast Google model
-  'mistral-small-2501',                     // 790ms - Latest small Mistral
-  'gemini-2.0-flash',                       // 829ms - Good balance
-
-  // Tier 2: BALANCED - Good speed + capability
-  'Llama-4-Scout-17B-16E-Instruct-FP8',     // 1063ms - Latest multimodal + medical reasoning
-  'mistral-medium-2505',                    // 1311ms - Best balance of capability/volume
-
-  // Tier 3: POWERFUL - Slower but high quality
-  'Llama-3.3-70B-Instruct',                 // 1788ms - Proven large model performance
-  'Llama-4-Maverick-17B-128E-Instruct-FP8', // 1917ms - Complex reasoning powerhouse
-
-  // Tier 4: PREMIUM - Highest quality but slowest
-  'gemini-2.5-flash',                       // 3765ms - Best quality (but slow)
-  'gemini-2.5-pro'                          // Premium reasoning (slowest)
-]
+// Use the full list of active models for admin UI (user choice)
+const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter(model => model.available).map(model => model.id)
 
 interface EducationalContent {
   category: string
@@ -223,148 +205,82 @@ export function QuestionForm({ selectedContent, onQuestionGenerated, onFilesUplo
     try {
       const contextContent = JSON.stringify(selectedContent.content, null, 2)
       const selectedModel = ADMIN_AI_MODELS[selectedModelIndex]
-      console.log('🔍 Model:', selectedModel, 'Using debug AI test API (restored functionality)')
+      console.log('🔍 Model:', selectedModel, 'Using admin AI generate question API')
 
-      // Build comprehensive prompt for question generation
-      const prompt = `Create a high-quality medical/pathology multiple-choice question based on the following educational content:
-
-**Educational Context:**
-Category: ${selectedContent.category}
-Subject: ${selectedContent.subject}
-Lesson: ${selectedContent.lesson}
-Topic: ${selectedContent.topic}
-
-**Content:**
-${contextContent}
-
-**Instructions:**
-${instructions}
-
-${additionalContext ? `**Additional Context:**
-${additionalContext}` : ''}
-
-Please generate a question following this exact JSON format:
-{
-  "title": "Brief descriptive title for the question",
-  "stem": "The question text with clinical scenario",
-  "difficulty": "easy|medium|hard",
-  "teaching_point": "Key learning objective or clinical pearl",
-  "question_references": "Relevant medical references if applicable",
-  "answer_options": [
-    {
-      "text": "Option A text",
-      "is_correct": true,
-      "explanation": "Detailed explanation for this option"
-    },
-    {
-      "text": "Option B text",
-      "is_correct": false,
-      "explanation": "Detailed explanation for this option"
-    },
-    {
-      "text": "Option C text",
-      "is_correct": false,
-      "explanation": "Detailed explanation for this option"
-    },
-    {
-      "text": "Option D text",
-      "is_correct": false,
-      "explanation": "Detailed explanation for this option"
-    }
-  ]
-}`
-
-      const response = await fetchWithRetry('/api/debug/ai-test', {
+      const response = await fetchWithRetry('/api/admin/ai-generate-question', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: selectedModel,
-          prompt: prompt
+          content: {
+            category: selectedContent.category,
+            subject: selectedContent.subject,
+            lesson: selectedContent.lesson,
+            topic: selectedContent.topic,
+            text: contextContent
+          },
+          instructions: instructions,
+          additionalContext: additionalContext,
+          model: selectedModel
         })
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        // Debug AI test API returns { content, model, provider, responseTime, tokenCount }
-        const generatedText = data.content
-        if (!generatedText) {
-          throw new Error('No content received from AI service')
+        // Admin AI generate question API returns { success: true, question: {...}, metadata: {...} }
+        if (!data.success) {
+          throw new Error(data.error || 'AI service returned unsuccessful response')
         }
 
-        console.log('🔍 AI Response received, parsing JSON...')
+        const questionData = data.question
+        if (!questionData) {
+          throw new Error('No question data received from AI service')
+        }
 
-        // Parse JSON from the debug AI test API response
+        console.log('🔍 AI Response received, question generated successfully')
+
         try {
-          let questionData = null
-
-          // The debug AI test API returns the extracted content in data.content
-          // This content should be the question JSON (either direct or wrapped in markdown)
-
-          // Strategy 1: Try direct JSON parsing (for models that return clean JSON)
-          try {
-            questionData = JSON.parse(generatedText)
-          } catch (directError) {
-            // Strategy 2: Extract JSON from markdown code blocks
-            const markdownMatch = generatedText.match(/```json\n([\s\S]*?)\n```/)
-            if (markdownMatch) {
-              questionData = JSON.parse(markdownMatch[1])
-            } else {
-              // Strategy 3: Extract any JSON object from the text
-              const jsonMatch = generatedText.match(/\{[\s\S]*\}/)
-              if (jsonMatch) {
-                questionData = JSON.parse(jsonMatch[0])
-              } else {
-                throw new Error('No valid JSON found in response')
+          // Convert admin API response format to the expected format
+          const completeQuestion: GeneratedQuestion = {
+            ...questionData,
+            status: 'draft',
+            question_set_id: '', // Will be set during finalization
+            category_id: '', // Will be set during finalization
+            answer_options: (questionData.options || []).map((option: any, index: number) => ({
+              text: option.text,
+              is_correct: option.is_correct,
+              explanation: option.explanation,
+              order_index: index
+            })),
+            question_images: questionData.question_images || [],
+            tag_ids: questionData.tag_ids || [],
+            metadata: {
+              exported_at: new Date().toISOString(),
+              exported_by: '', // Will be set during finalization
+              source_content: {
+                category: selectedContent.category,
+                subject: selectedContent.subject,
+                lesson: selectedContent.lesson,
+                topic: selectedContent.topic
+              },
+              generated_by: {
+                provider: data.metadata?.provider || 'unknown',
+                model: data.metadata?.model || selectedModel
               }
             }
           }
 
-          if (questionData) {
+          console.log('🎯 Generated question data:', completeQuestion)
+          console.log('📋 Question title:', completeQuestion.title)
+          console.log('📝 Answer options count:', completeQuestion.answer_options?.length)
 
-            // Add required fields that might be missing
-            const completeQuestion: GeneratedQuestion = {
-              ...questionData,
-              status: 'draft',
-              question_set_id: '', // Will be set during finalization
-              category_id: '', // Will be set during finalization
-              answer_options: (questionData.answer_options || []).map((option: any, index: number) => ({
-                ...option,
-                order_index: index // Add missing order_index field
-              })),
-              question_images: questionData.question_images || [],
-              tag_ids: questionData.tag_ids || [],
-              metadata: {
-                exported_at: new Date().toISOString(),
-                exported_by: '', // Will be set during finalization
-                source_content: {
-                  category: selectedContent.category,
-                  subject: selectedContent.subject,
-                  lesson: selectedContent.lesson,
-                  topic: selectedContent.topic
-                },
-                generated_by: {
-                  provider: data.provider || 'debug-ai',
-                  model: data.model || selectedModel
-                }
-              }
-            }
-
-            console.log('🎯 Generated question data:', completeQuestion)
-            console.log('📋 Question title:', completeQuestion.title)
-            console.log('📝 Answer options count:', completeQuestion.answer_options?.length)
-
-            onQuestionGenerated(completeQuestion)
-            toast.success(`Question generated successfully using ${selectedModel}!`)
-          } else {
-            throw new Error('No valid question data found in response')
-          }
+          onQuestionGenerated(completeQuestion)
+          toast.success(`Question generated successfully using ${selectedModel}!`)
         } catch (parseError) {
-          console.error('JSON parsing error:', parseError)
-          console.error('Raw AI response:', generatedText.substring(0, 500))
-          toast.error('Failed to parse generated question. Please try again.')
+          console.error('Question processing error:', parseError)
+          toast.error('Failed to process generated question. Please try again.')
         }
       } else {
         // Handle different types of API errors

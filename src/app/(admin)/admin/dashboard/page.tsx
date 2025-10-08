@@ -62,9 +62,14 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+          Dashboard
+          <span className="text-sm font-medium px-2 py-1 bg-primary/10 text-primary rounded-md">
+            Admin
+          </span>
+        </h1>
         <p className="text-muted-foreground">
-          Welcome to your admin dashboard overview.
+          Administrative overview and system management.
         </p>
       </div>
 

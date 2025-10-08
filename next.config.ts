@@ -91,9 +91,98 @@ const nextConfig = {
       enabled: true
     }
   },
+  // Development optimizations
+  ...(process.env.NODE_ENV === 'development' && {
+    onDemandEntries: {
+      // Extend keep alive time to avoid frequent recompilation
+      maxInactiveAge: 60 * 1000, // 1 minute
+      pagesBufferLength: 5,
+    },
+    // Disable caching in development
+    generateEtags: false,
+    // Disable compression to avoid cache confusion
+    compress: false,
+    // Force fresh builds
+    distDir: '.next',
+  }),
   async headers() {
-    const cacheHeaders = [
-      // Aggressive caching for images and static assets
+    // Development: Disable all caching for easier testing
+    // Production: Aggressive caching for performance
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    
+    const cacheHeaders = isDevelopment ? [
+      // Development: AGGRESSIVE no-cache for ALL routes
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate, proxy-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+          {
+            key: 'Surrogate-Control',
+            value: 'no-store',
+          },
+          {
+            key: 'X-Development-Cache-Disabled',
+            value: 'true',
+          },
+          {
+            key: 'Vary',
+            value: '*',
+          },
+        ],
+      },
+      // Even more aggressive for API routes
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate, proxy-revalidate, private',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+          {
+            key: 'Last-Modified',
+            value: new Date().toUTCString(),
+          },
+          {
+            key: 'ETag',
+            value: `"dev-${Date.now()}"`,
+          },
+        ],
+      },
+      // Disable caching for pages
+      {
+        source: '/((?!_next/static).*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate, proxy-revalidate, private',
+          },
+          {
+            key: 'X-Development-No-Cache',
+            value: Date.now().toString(),
+          },
+        ],
+      },
+    ] : [
+      // Production: Aggressive caching for images and static assets
       {
         source: '/images/:path*',
         headers: [

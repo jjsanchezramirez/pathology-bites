@@ -12,11 +12,11 @@ import {
 } from '@/shared/utils/unified-medical-search'
 import { getApiKey, getModelProvider } from '@/shared/config/ai-models'
 
-// Diagnostic Search AI fallback model sequence - similar to WSI Question Generator
+// Diagnostic Search AI fallback model sequence
 const DIAGNOSTIC_AI_FALLBACK_MODELS = [
-  'gemini-1.5-flash',                       // Gemini 1.5 Flash (preferred for organization)
+  'gemini-2.5-flash',                       // Gemini 2.5 Flash (best working model)
   'mistral-small-2506',                     // Mistral Small 3.2
-  'gemini-1.5-flash-8b',                    // Gemini 1.5 Flash 8B
+  'gemini-2.0-flash',                       // Gemini 2.0 Flash
   'mistral-small-2503',                     // Mistral Small 3.1
   'ministral-8b-2410',                      // Ministral 8B
   'Llama-3.3-8B-Instruct',                  // LLAMA 3.3 8B

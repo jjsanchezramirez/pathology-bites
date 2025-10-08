@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getApiKey, getModelProvider } from '@/shared/config/ai-models'
 import { VirtualSlide } from '@/shared/types/virtual-slides'
 
-// Unified WSI Question Generator - optimized for speed and quality (Updated January 2025)
-// Ordered by performance: speed first, then capability
+// WSI Question Generator fallback models - optimized for speed and quality
 const WSI_FALLBACK_MODELS = [
   // Tier 1: FASTEST - Prioritize speed for better UX
   'Llama-3.3-8B-Instruct',                  // 394ms - FASTEST, excellent quality
   'ministral-8b-2410',                      // 596ms - Fast Mistral model
-  'gemini-1.5-flash',                       // 763ms - Fast Google model
   'mistral-small-2501',                     // 790ms - Latest small Mistral
   'gemini-2.0-flash',                       // 829ms - Good balance
 
