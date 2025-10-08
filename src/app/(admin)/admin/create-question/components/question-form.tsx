@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Textarea } from '@/shared/components/ui/textarea'
@@ -53,11 +53,21 @@ interface GeneratedQuestion {
   metadata: any
 }
 
+interface QuestionFormState {
+  instructions: string
+  additionalContext: string
+  selectedModelIndex: number
+  assumeHistologicImages: boolean
+}
+
 interface QuestionFormProps {
   selectedContent: EducationalContent | null
   onQuestionGenerated: (question: GeneratedQuestion) => void
   onFilesUploaded: (files: File[]) => void
   isEditMode?: boolean
+  // State persistence props
+  formState?: QuestionFormState
+  onFormStateChange?: (state: QuestionFormState) => void
 }
 
 const DEFAULT_INSTRUCTIONS = `You are an expert pathology educator creating multiple-choice questions for medical students and residents. Generate a high-quality pathology question based on the provided content.
@@ -114,13 +124,41 @@ Return the response in this exact JSON format:
   ]
 }`
 
-export function QuestionForm({ selectedContent, onQuestionGenerated, onFilesUploaded, isEditMode = false }: QuestionFormProps) {
-  const [instructions, setInstructions] = useState(DEFAULT_INSTRUCTIONS)
-  const [additionalContext, setAdditionalContext] = useState('')
-  const [selectedModelIndex, setSelectedModelIndex] = useState(0) // Default to Llama-3.3-8B-Instruct (most reliable)
-  const [assumeHistologicImages, setAssumeHistologicImages] = useState(false)
+export function QuestionForm({
+  selectedContent,
+  onQuestionGenerated,
+  onFilesUploaded,
+  isEditMode = false,
+  formState,
+  onFormStateChange
+}: QuestionFormProps) {
+  const [instructions, setInstructions] = useState(formState?.instructions || DEFAULT_INSTRUCTIONS)
+  const [additionalContext, setAdditionalContext] = useState(formState?.additionalContext || '')
+  const [selectedModelIndex, setSelectedModelIndex] = useState(formState?.selectedModelIndex || 0)
+  const [assumeHistologicImages, setAssumeHistologicImages] = useState(formState?.assumeHistologicImages || false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
+
+  // Update form state when any field changes
+  useEffect(() => {
+    const currentState: QuestionFormState = {
+      instructions,
+      additionalContext,
+      selectedModelIndex,
+      assumeHistologicImages
+    }
+    onFormStateChange?.(currentState)
+  }, [instructions, additionalContext, selectedModelIndex, assumeHistologicImages, onFormStateChange])
+
+  // Restore form state when formState prop changes
+  useEffect(() => {
+    if (formState) {
+      setInstructions(formState.instructions)
+      setAdditionalContext(formState.additionalContext)
+      setSelectedModelIndex(formState.selectedModelIndex)
+      setAssumeHistologicImages(formState.assumeHistologicImages)
+    }
+  }, [formState])
 
 
 
