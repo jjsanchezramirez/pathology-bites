@@ -81,13 +81,16 @@ export async function GET(request: NextRequest) {
 
           if (profileError && profileError.code === 'PGRST116') {
             // User doesn't exist in database, create profile
+            // Check if user was invited with a specific role (from invitation metadata)
+            const invitedRole = user.user_metadata.role || 'user'
+
             const insertResult = await supabase.from('users').insert({
               id: user.id,
               email: user.email,
               first_name: user.user_metadata.first_name || '',
               last_name: user.user_metadata.last_name || '',
               user_type: user.user_metadata.user_type || 'other',
-              role: 'user',
+              role: invitedRole, // Use role from invitation metadata if available
               status: 'active'
             })
 

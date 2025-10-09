@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from '@/shared/config/ai-models'
-import { parseAIResponse } from '@/shared/utils/ai-response-parser'
 
 // Accept all available models for admin question generation
 const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter(model => model.available).map(model => model.id)
@@ -16,19 +15,6 @@ interface QuestionGenerationRequest {
   instructions: string
   additionalContext?: string
   model: string
-}
-
-interface QuestionData {
-  title: string
-  stem: string
-  options: Array<{
-    id: string
-    text: string
-    is_correct: boolean
-    explanation: string
-  }>
-  teaching_point: string
-  references?: string[]
 }
 
 // AI API call functions
@@ -218,7 +204,7 @@ ${additionalContext || 'None provided'}
 
 REQUIREMENTS:
 1. Create a clinically relevant multiple-choice question
-2. Include exactly 4 answer options (A, B, C, D)
+2. Include exactly 5 answer options (A, B, C, D, E)
 3. Only ONE option should be correct
 4. Provide detailed explanations for each option
 5. Include a meaningful teaching point
@@ -231,7 +217,7 @@ Return your response in this EXACT JSON format (no markdown, no code blocks, jus
 {
   "title": "Brief descriptive title for the question",
   "stem": "The question text ending with a clear question mark",
-  "options": [
+  "question_options": [
     {
       "id": "A",
       "text": "First answer option",
@@ -239,14 +225,14 @@ Return your response in this EXACT JSON format (no markdown, no code blocks, jus
       "explanation": "Detailed explanation why this is incorrect"
     },
     {
-      "id": "B", 
+      "id": "B",
       "text": "Second answer option",
       "is_correct": true,
       "explanation": "Detailed explanation why this is correct"
     },
     {
       "id": "C",
-      "text": "Third answer option", 
+      "text": "Third answer option",
       "is_correct": false,
       "explanation": "Detailed explanation why this is incorrect"
     },
@@ -255,11 +241,24 @@ Return your response in this EXACT JSON format (no markdown, no code blocks, jus
       "text": "Fourth answer option",
       "is_correct": false,
       "explanation": "Detailed explanation why this is incorrect"
+    },
+    {
+      "id": "E",
+      "text": "Fifth answer option",
+      "is_correct": false,
+      "explanation": "Detailed explanation why this is incorrect"
     }
   ],
   "teaching_point": "Key learning objective or clinical pearl from this question",
-  "references": ["Relevant medical references if applicable"]
-}`
+  "references": ["Relevant medical references if applicable"],
+  "suggested_tags": ["Tag1", "Tag2", "Tag3"]
+}
+
+IMPORTANT: For suggested_tags, provide 3-5 relevant medical/pathology tags that describe the key concepts, diseases, or techniques in this question. Tags should be:
+- Specific medical terms (e.g., "Cervical Neoplasia", "HPV", "Adenocarcinoma In Situ")
+- Relevant to the question content
+- Useful for categorizing and searching questions
+- Concise (1-3 words each)`;
 }
 
 function extractJSON(text: string): any {
@@ -354,6 +353,7 @@ function extractJSON(text: string): any {
     }
   }
 
+  console.error('[Admin AI] Failed to extract JSON. Response preview:', text.substring(0, 1000))
   throw new Error('No JSON found in AI response')
 }
 
@@ -404,16 +404,35 @@ export async function POST(request: NextRequest) {
     // Parse the AI response
     const questionData = extractJSON(aiResponse.content)
 
+    // Normalize options field - AI models sometimes use different field names despite our prompt
+    // Accept question_options (preferred), answer_options, or options, then normalize to question_options
+    if (!questionData.question_options && (questionData.answer_options || questionData.options)) {
+      console.log('[Admin AI] Normalizing options field from:', questionData.answer_options ? 'answer_options' : 'options')
+      questionData.question_options = questionData.answer_options || questionData.options
+      // Clean up the old field
+      delete questionData.answer_options
+      delete questionData.options
+    }
+
     // Validate the response structure
-    if (!questionData.title || !questionData.stem || !questionData.options || !Array.isArray(questionData.options)) {
+    if (!questionData.title || !questionData.stem || !questionData.question_options || !Array.isArray(questionData.question_options)) {
+      console.error('[Admin AI] Validation failed. Response structure:', {
+        hasTitle: !!questionData.title,
+        hasStem: !!questionData.stem,
+        hasQuestionOptions: !!questionData.question_options,
+        hasAnswerOptions: !!questionData.answer_options,
+        hasOptions: !!questionData.options,
+        isQuestionOptionsArray: Array.isArray(questionData.question_options),
+        actualKeys: Object.keys(questionData)
+      })
       throw new Error('AI response missing required fields')
     }
 
-    if (questionData.options.length !== 4) {
-      throw new Error('AI response must contain exactly 4 options')
+    if (questionData.question_options.length !== 5) {
+      throw new Error('AI response must contain exactly 5 options')
     }
 
-    const correctCount = questionData.options.filter((opt: any) => opt.is_correct).length
+    const correctCount = questionData.question_options.filter((opt: any) => opt.is_correct).length
     if (correctCount !== 1) {
       throw new Error(`AI response must have exactly 1 correct answer, found ${correctCount}`)
     }

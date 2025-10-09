@@ -757,29 +757,7 @@ export function clearContextCache(): void {
   console.log('[Client Context] Educational content cache cleared')
 }
 
-/**
- * Get cache status for debugging
- */
-export function getContextCacheStatus() {
-  const now = Date.now()
-  const cacheInfo = Array.from(contentCache.keys()).map(key => {
-    const cacheTime = cacheTimestamps.get(key) || 0
-    const ageMinutes = Math.round((now - cacheTime) / 60000)
-    const isValid = (now - cacheTime) < CACHE_TTL
-    
-    return {
-      file: key,
-      ageMinutes,
-      isValid,
-      sizeKB: Math.round(JSON.stringify(contentCache.get(key)).length / 1024)
-    }
-  })
-  
-  return {
-    cachedFiles: cacheInfo.length,
-    files: cacheInfo
-  }
-}
+
 
 /**
  * Warm up the educational content cache by pre-loading most common files

@@ -94,7 +94,10 @@ export interface QuestionWithDetails extends QuestionData {
   question_set?: SetData; // Legacy field name for backward compatibility
   question_options?: QuestionOptionData[];
   answer_options?: QuestionOptionData[]; // Legacy field name for backward compatibility
-  question_images?: (QuestionImageData & { image?: ImageData })[];
+  question_images?: (QuestionImageData & {
+    image?: ImageData;  // Legacy singular form
+    images?: ImageData; // Actual Supabase response format
+  })[];
   tags?: TagData[];
   categories?: CategoryData[];
   analytics?: QuestionAnalyticsData;

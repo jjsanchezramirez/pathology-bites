@@ -17,7 +17,7 @@ export interface QuizQuestionOption {
 export interface QuizQuestion {
   id: string;
   text: string; // Question stem
-  options: QuizQuestionOption[];
+  question_options: QuizQuestionOption[];
   explanation?: string; // Teaching point
   category?: string;
   difficulty?: 'easy' | 'medium' | 'hard';
@@ -111,7 +111,7 @@ export class QuizQuestionTransformer {
     return {
       id: apiQuestion.id,
       text: apiQuestion.stem || apiQuestion.text,
-      options: (apiQuestion.question_options || []).map((opt: any) => ({
+      question_options: (apiQuestion.question_options || []).map((opt: any) => ({
         id: opt.id,
         text: opt.text,
         is_correct: opt.is_correct || opt.isCorrect,
@@ -142,7 +142,7 @@ export class QuizQuestionTransformer {
       stem: hybridQuestion.text,
       teaching_point: hybridQuestion.explanation,
       question_references: hybridQuestion.metadata?.originalData?.question_references || '',
-      question_options: hybridQuestion.options.map(opt => ({
+      question_options: hybridQuestion.question_options.map(opt => ({
         id: opt.id,
         text: opt.text,
         is_correct: opt.is_correct,

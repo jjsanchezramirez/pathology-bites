@@ -629,6 +629,12 @@ export interface Database {
           version: string
           question_set_id: string | null
           category_id: string | null
+          reviewer_id: string | null
+          reviewer_feedback: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          published_at: string | null
+          resubmission_notes: string | null
           created_at: string
           updated_at: string
         }
@@ -645,6 +651,12 @@ export interface Database {
           version?: string
           question_set_id?: string | null
           category_id?: string | null
+          reviewer_id?: string | null
+          reviewer_feedback?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          published_at?: string | null
+          resubmission_notes?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -661,6 +673,12 @@ export interface Database {
           version?: string
           question_set_id?: string | null
           category_id?: string | null
+          reviewer_id?: string | null
+          reviewer_feedback?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          published_at?: string | null
+          resubmission_notes?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -702,6 +720,7 @@ export interface Database {
           created_by: string | null
           created_at: string
           updated_at: string
+          short_form: string | null
         }
         Insert: {
           id?: string
@@ -713,6 +732,7 @@ export interface Database {
           created_by?: string | null
           created_at?: string
           updated_at?: string
+          short_form?: string | null
         }
         Update: {
           id?: string
@@ -724,6 +744,7 @@ export interface Database {
           created_by?: string | null
           created_at?: string
           updated_at?: string
+          short_form?: string | null
         }
         Relationships: [
           {
@@ -1932,7 +1953,7 @@ export interface Database {
       user_role: "admin" | "creator" | "reviewer" | "user"
       user_status: "active" | "inactive" | "suspended"
       user_type: "student" | "resident" | "faculty" | "other"
-      question_status: "draft" | "pending_review" | "approved" | "flagged" | "archived"
+      question_status: "draft" | "pending_review" | "rejected" | "published" | "approved" | "flagged" | "archived"
       difficulty_level: "easy" | "medium" | "hard"
       session_status: "not_started" | "in_progress" | "completed" | "abandoned"
       report_type: "incorrect_answer" | "unclear_explanation" | "broken_image" | "inappropriate_content" | "other"

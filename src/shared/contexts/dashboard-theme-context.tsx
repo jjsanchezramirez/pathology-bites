@@ -51,46 +51,66 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
     }
   }
 
-  // Load theme and admin mode from localStorage/cookie on mount
+  // Load theme and admin mode from localStorage on mount (no API calls!)
   useEffect(() => {
-    const loadSettings = () => {
-      try {
-        // Load admin mode from cookie (to match middleware)
-        const adminModeCookie = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('admin-mode='))
-          ?.split('=')[1] as AdminMode || 'admin'
-        
-        setAdminModeState(adminModeCookie)
+    try {
+      console.log('[DashboardTheme] Loading theme from localStorage...')
 
-        // Load theme based on admin mode
-        const availableThemes = getAvailableThemes(adminModeCookie)
-        const savedThemeId = localStorage.getItem(`${STORAGE_KEY}-${adminModeCookie}`)
-        
-        let themeToSet: DashboardTheme
-        
-        if (savedThemeId) {
-          const theme = getThemeById(savedThemeId)
-          // Check if saved theme is available for current mode
-          if (theme && availableThemes.some(t => t.id === theme.id)) {
-            themeToSet = theme
+      // Load admin mode from cookie (to match middleware)
+      const adminModeCookie = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('admin-mode='))
+        ?.split('=')[1] as AdminMode || 'admin'
+
+      setAdminModeState(adminModeCookie)
+
+      // Load theme based on admin mode from localStorage
+      const availableThemes = getAvailableThemes(adminModeCookie)
+      let themeToSet: DashboardTheme
+
+      // Load from localStorage (synced by SettingsSyncProvider)
+      const uiSettingsStr = localStorage.getItem('pathology-bites-ui-settings')
+      console.log('[DashboardTheme] localStorage value:', uiSettingsStr)
+
+      if (uiSettingsStr) {
+        try {
+          const uiSettings = JSON.parse(uiSettingsStr)
+          const themeId = adminModeCookie === 'admin'
+            ? uiSettings.dashboard_theme_admin
+            : uiSettings.dashboard_theme_user
+
+          console.log(`[DashboardTheme] Mode: ${adminModeCookie}, Theme:`, themeId)
+
+          if (themeId) {
+            const theme = getThemeById(themeId)
+            if (theme && availableThemes.some(t => t.id === theme.id)) {
+              themeToSet = theme
+              console.log('[DashboardTheme] Loaded from localStorage:', themeToSet.id)
+            } else {
+              themeToSet = getDefaultThemeForMode(adminModeCookie)
+              console.log('[DashboardTheme] Theme not available, using default:', themeToSet.id)
+            }
           } else {
             themeToSet = getDefaultThemeForMode(adminModeCookie)
+            console.log('[DashboardTheme] No theme preference, using default:', themeToSet.id)
           }
-        } else {
+        } catch (parseError) {
+          console.warn('[DashboardTheme] Failed to parse ui_settings:', parseError)
           themeToSet = getDefaultThemeForMode(adminModeCookie)
         }
-        
-        setCurrentTheme(themeToSet)
-      } catch (error) {
-        console.warn('Failed to load dashboard settings:', error)
-        setCurrentTheme(getDefaultTheme())
-      } finally {
-        setIsLoading(false)
+      } else {
+        themeToSet = getDefaultThemeForMode(adminModeCookie)
+        console.log('[DashboardTheme] No ui_settings in localStorage, using default:', themeToSet.id)
       }
-    }
 
-    loadSettings()
+      console.log('[DashboardTheme] Applying theme:', themeToSet.id)
+      setCurrentTheme(themeToSet)
+    } catch (error) {
+      console.warn('[DashboardTheme] Failed to load dashboard settings:', error)
+      setCurrentTheme(getDefaultTheme())
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
   // Watch for admin mode changes via cookie
@@ -171,41 +191,36 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
   const setTheme = (themeId: string) => {
     const theme = getThemeById(themeId)
     const availableThemes = getAvailableThemes(adminMode)
-    
+
     // Check if theme is available for current mode
     if (theme && availableThemes.some(t => t.id === theme.id)) {
       setCurrentTheme(theme)
       try {
-        // Store theme preference per mode in localStorage (immediate)
-        localStorage.setItem(`${STORAGE_KEY}-${adminMode}`, themeId)
-        
-        // Also sync to database for persistence across devices
-        syncThemeToDatabase(adminMode, themeId)
-      } catch (error) {
-        console.warn('Failed to save dashboard theme:', error)
-      }
-    }
-  }
+        // Update localStorage immediately (no API call!)
+        const uiSettingsStr = localStorage.getItem('pathology-bites-ui-settings')
+        const uiSettings = uiSettingsStr ? JSON.parse(uiSettingsStr) : {}
 
-  // Sync theme preference to database
-  const syncThemeToDatabase = async (mode: AdminMode, themeId: string) => {
-    try {
-      const response = await fetch('/api/user/settings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          section: 'ui_settings',
-          settings: {
-            [`dashboard_theme_${mode}`]: themeId
-          }
-        })
-      })
-      
-      if (!response.ok) {
-        console.warn('Failed to sync theme to database:', response.statusText)
+        // Store theme preference per mode
+        if (adminMode === 'admin') {
+          uiSettings.dashboard_theme_admin = themeId
+        } else {
+          uiSettings.dashboard_theme_user = themeId
+        }
+
+        localStorage.setItem('pathology-bites-ui-settings', JSON.stringify(uiSettings))
+
+        // Mark as dirty for next sync
+        const dirtySections = localStorage.getItem('pathology-bites-dirty-sections')
+        const dirty = dirtySections ? JSON.parse(dirtySections) : []
+        if (!dirty.includes('ui_settings')) {
+          dirty.push('ui_settings')
+          localStorage.setItem('pathology-bites-dirty-sections', JSON.stringify(dirty))
+        }
+
+        console.log(`[DashboardTheme] Saved ${adminMode} theme:`, themeId)
+      } catch (error) {
+        console.warn('[DashboardTheme] Failed to save theme:', error)
       }
-    } catch (error) {
-      console.warn('Failed to sync theme to database:', error)
     }
   }
 

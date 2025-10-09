@@ -14,14 +14,12 @@ import {
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
 import { Input } from "@/shared/components/ui/input"
-import { Checkbox } from "@/shared/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import {
   Eye,
@@ -38,14 +36,19 @@ import {
 } from 'lucide-react'
 import { QuestionPreviewDialog } from './question-preview-dialog'
 import { EditQuestionDialog } from './edit-question-dialog'
+import { SubmitForReviewDialog } from './submit-for-review-dialog'
+import { ReassignReviewerDialog } from './reassign-reviewer-dialog'
 import { QUESTION_STATUSES, getQuestionStatusLabel } from '@/shared/constants/database-types'
 import { toast } from 'sonner'
 import { STATUS_CONFIG, QuestionWithDetails } from '@/features/questions/types/questions'
 
 interface CreatorQuestion extends QuestionWithDetails {
   question_set_name?: string
-  latest_feedback?: string
-  rejected_at?: string
+  reviewer_id?: string | null
+  reviewer_feedback?: string | null
+  rejected_at?: string | null
+  rejected_by?: string | null
+  published_at?: string | null
   review_count: number
 }
 
@@ -57,9 +60,9 @@ export function CreatorQuestionsDashboard() {
   const [selectedQuestion, setSelectedQuestion] = useState<CreatorQuestion | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
+  const [submitForReviewOpen, setSubmitForReviewOpen] = useState(false)
+  const [reassignOpen, setReassignOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('all')
-  const [selectedQuestions, setSelectedQuestions] = useState<Set<string>>(new Set())
-  const [isSubmittingBatch, setIsSubmittingBatch] = useState(false)
 
   const { user } = useAuthStatus()
   const supabase = createClient()
@@ -69,23 +72,32 @@ export function CreatorQuestionsDashboard() {
 
     try {
       setLoading(true)
-      
-      // Use the creator dashboard view
+
+      // Query questions table directly with related data
       const { data, error } = await supabase
-        .from('v_creator_questions')
-        .select('*')
+        .from('questions')
+        .select(`
+          *,
+          question_sets(id, name),
+          question_options(id, text, is_correct, explanation, order_index),
+          question_images(
+            question_section,
+            order_index,
+            images(id, url, alt_text, description)
+          )
+        `)
         .eq('created_by', user.id)
         .order('created_at', { ascending: false })
 
       if (error) {
-        console.error('Error fetching questions:', error)
-        toast.error('Failed to load questions')
+        console.error('Supabase error fetching questions:', error)
+        toast.error(`Failed to load questions: ${error.message}`)
         return
       }
 
       setQuestions(data || [])
     } catch (error) {
-      console.error('Error fetching questions:', error)
+      console.error('Unexpected error fetching questions:', error)
       toast.error('Failed to load questions')
     } finally {
       setLoading(false)
@@ -157,84 +169,35 @@ export function CreatorQuestionsDashboard() {
     }
   }
 
-  const handleSubmitForReview = async (questionId: string) => {
-    try {
-      const response = await fetch(`/api/questions/${questionId}/submit-for-review`, {
-        method: 'POST',
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to submit for review')
-      }
-
-      toast.success('Question submitted for review')
-      fetchMyQuestions()
-    } catch (error) {
-      console.error('Error submitting for review:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to submit for review')
-    }
+  const handleSubmitForReview = (question: CreatorQuestion) => {
+    setSelectedQuestion(question)
+    setSubmitForReviewOpen(true)
   }
 
-  const handleSelectQuestion = (questionId: string, checked: boolean) => {
-    const newSelected = new Set(selectedQuestions)
-    if (checked) {
-      newSelected.add(questionId)
-    } else {
-      newSelected.delete(questionId)
-    }
-    setSelectedQuestions(newSelected)
+  const handleReassign = (question: CreatorQuestion) => {
+    setSelectedQuestion(question)
+    setReassignOpen(true)
   }
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      const submittableQuestions = filteredQuestions
-        .filter(q => q.status === QUESTION_STATUSES[0]) // 'draft'
-        .map(q => q.id)
-      setSelectedQuestions(new Set(submittableQuestions))
-    } else {
-      setSelectedQuestions(new Set())
-    }
+  const handleSubmitSuccess = () => {
+    fetchMyQuestions()
   }
 
-  const handleBatchSubmitForReview = async () => {
-    if (selectedQuestions.size === 0) return
-
-    setIsSubmittingBatch(true)
-    try {
-      const promises = Array.from(selectedQuestions).map(questionId =>
-        fetch(`/api/questions/${questionId}/submit-for-review`, {
-          method: 'POST',
-        })
-      )
-
-      const results = await Promise.allSettled(promises)
-      const failed = results.filter(r => r.status === 'rejected').length
-      const succeeded = results.filter(r => r.status === 'fulfilled').length
-
-      if (failed > 0) {
-        toast.error(`${failed} questions failed to submit, ${succeeded} succeeded`)
-      } else {
-        toast.success(`${succeeded} questions submitted for review`)
-      }
-
-      setSelectedQuestions(new Set())
-      fetchMyQuestions()
-    } catch (error) {
-      console.error('Error submitting batch for review:', error)
-      toast.error('Failed to submit questions for review')
-    } finally {
-      setIsSubmittingBatch(false)
-    }
+  const handleReassignSuccess = () => {
+    fetchMyQuestions()
   }
+
+
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'draft':
         return <Edit className="h-4 w-4 text-gray-500" />
-      case 'pending':
+      case 'pending_review':
         return <Clock className="h-4 w-4 text-blue-500" />
-      case 'approved':
+      case 'rejected':
+        return <XCircle className="h-4 w-4 text-red-500" />
+      case 'published':
         return <CheckCircle className="h-4 w-4 text-green-500" />
       case 'flagged':
         return <XCircle className="h-4 w-4 text-orange-500" />
@@ -244,12 +207,12 @@ export function CreatorQuestionsDashboard() {
   }
 
   const getTabCounts = () => {
-    const drafts = questions.filter(q => q.status === QUESTION_STATUSES[0]).length // 'draft'
-    const pending = questions.filter(q => q.status === QUESTION_STATUSES[1]).length // 'pending_review'
-    const approved = questions.filter(q => q.status === QUESTION_STATUSES[2]).length // 'approved'
-    const flagged = questions.filter(q => q.status === QUESTION_STATUSES[3]).length // 'flagged'
+    const drafts = questions.filter(q => q.status === 'draft').length
+    const pending = questions.filter(q => q.status === 'pending_review').length
+    const rejected = questions.filter(q => q.status === 'rejected').length
+    const published = questions.filter(q => q.status === 'published').length
 
-    return { drafts, pending, approved, flagged, total: questions.length }
+    return { drafts, pending, rejected, published, total: questions.length }
   }
 
   const counts = getTabCounts()
@@ -265,11 +228,6 @@ export function CreatorQuestionsDashboard() {
     )
   }
 
-  const submittableQuestions = filteredQuestions.filter(q => q.status === QUESTION_STATUSES[0]) // 'draft'
-  const selectedSubmittableCount = Array.from(selectedQuestions).filter(id =>
-    submittableQuestions.some(q => q.id === id)
-  ).length
-
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -281,44 +239,29 @@ export function CreatorQuestionsDashboard() {
       </div>
 
       {/* Header with search and refresh button */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative w-64">
-            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search questions..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchMyQuestions}
-            disabled={loading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+      <div className="flex items-center gap-4">
+        <div className="relative w-64">
+          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search questions..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8"
+          />
         </div>
-        {selectedQuestions.size > 0 && (
-          <Button
-            onClick={handleBatchSubmitForReview}
-            disabled={isSubmittingBatch}
-          >
-            {isSubmittingBatch ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4 mr-2" />
-            )}
-            Submit {selectedQuestions.size} for Review
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchMyQuestions}
+          disabled={loading}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       {/* Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card
           className={`cursor-pointer hover:bg-muted/50 transition-colors ${
             activeTab === 'all' ? 'ring-2 ring-primary bg-primary/5' : ''
@@ -331,7 +274,7 @@ export function CreatorQuestionsDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{counts.total}</div>
             <p className="text-xs text-muted-foreground">
-              Total questions created
+              Total questions
             </p>
           </CardContent>
         </Card>
@@ -348,41 +291,58 @@ export function CreatorQuestionsDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{counts.drafts}</div>
             <p className="text-xs text-muted-foreground">
-              Questions in draft
+              Not submitted
             </p>
           </CardContent>
         </Card>
 
         <Card
           className={`cursor-pointer hover:bg-muted/50 transition-colors ${
-            activeTab === 'pending' ? 'ring-2 ring-primary bg-primary/5' : ''
+            activeTab === 'pending_review' ? 'ring-2 ring-primary bg-primary/5' : ''
           }`}
-          onClick={() => setActiveTab('pending')}
+          onClick={() => setActiveTab('pending_review')}
         >
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
+            <CardTitle className="text-sm font-medium">Pending</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{counts.pending}</div>
             <p className="text-xs text-muted-foreground">
-              Awaiting review
+              In review
             </p>
           </CardContent>
         </Card>
 
         <Card
           className={`cursor-pointer hover:bg-muted/50 transition-colors ${
-            activeTab === 'approved' ? 'ring-2 ring-primary bg-primary/5' : ''
+            activeTab === 'rejected' ? 'ring-2 ring-primary bg-primary/5' : ''
           }`}
-          onClick={() => setActiveTab('approved')}
+          onClick={() => setActiveTab('rejected')}
         >
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Approved</CardTitle>
+            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{counts.approved}</div>
+            <div className="text-2xl font-bold">{counts.rejected}</div>
             <p className="text-xs text-muted-foreground">
-              Live questions
+              Needs revision
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={`cursor-pointer hover:bg-muted/50 transition-colors ${
+            activeTab === 'published' ? 'ring-2 ring-primary bg-primary/5' : ''
+          }`}
+          onClick={() => setActiveTab('published')}
+        >
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Published</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{counts.published}</div>
+            <p className="text-xs text-muted-foreground">
+              Live
             </p>
           </CardContent>
         </Card>
@@ -402,30 +362,23 @@ export function CreatorQuestionsDashboard() {
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead className="w-[50px]">
-                <Checkbox
-                  checked={selectedSubmittableCount > 0 && selectedSubmittableCount === submittableQuestions.length}
-                  onCheckedChange={handleSelectAll}
-                  aria-label="Select all draft questions"
-                />
-              </TableHead>
               <TableHead>Question</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Difficulty</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : filteredQuestions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                   {searchTerm ? 'No questions found matching your search' : 'No questions found'}
                 </TableCell>
               </TableRow>
@@ -433,22 +386,14 @@ export function CreatorQuestionsDashboard() {
               filteredQuestions.map((question) => (
                 <TableRow key={question.id}>
                   <TableCell>
-                    <Checkbox
-                      checked={selectedQuestions.has(question.id)}
-                      onCheckedChange={(checked) => handleSelectQuestion(question.id, checked as boolean)}
-                      disabled={question.status !== 'draft'}
-                      aria-label={`Select ${question.title}`}
-                    />
-                  </TableCell>
-                  <TableCell>
                     <div className="space-y-1">
                       <div className="font-medium">{question.title}</div>
                       <div className="text-sm text-muted-foreground line-clamp-2">
                         {question.stem}
                       </div>
-                      {question.status === QUESTION_STATUSES[4] && question.latest_feedback && ( // 'archived'
-                        <div className="text-xs text-red-600 bg-red-50 p-2 rounded mt-2">
-                          <strong>Feedback:</strong> {question.latest_feedback}
+                      {question.status === 'rejected' && question.reviewer_feedback && (
+                        <div className="text-xs text-red-600 bg-red-50 dark:bg-red-950 p-2 rounded mt-2 border border-red-200 dark:border-red-800">
+                          <strong>Reviewer Feedback:</strong> {question.reviewer_feedback}
                         </div>
                       )}
                     </div>
@@ -495,16 +440,22 @@ export function CreatorQuestionsDashboard() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          {question.status === QUESTION_STATUSES[0] && ( // 'draft'
+                          {(question.status === 'draft' || question.status === 'rejected') && (
                             <DropdownMenuItem onClick={() => handleEdit(question)}>
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
                           )}
-                          {question.status === QUESTION_STATUSES[0] && ( // 'draft'
-                            <DropdownMenuItem onClick={() => handleSubmitForReview(question.id)}>
+                          {(question.status === 'draft' || question.status === 'rejected') && (
+                            <DropdownMenuItem onClick={() => handleSubmitForReview(question)}>
                               <Send className="h-4 w-4 mr-2" />
-                              Send for Review
+                              {question.status === 'rejected' ? 'Resubmit for Review' : 'Submit for Review'}
+                            </DropdownMenuItem>
+                          )}
+                          {question.status === 'pending_review' && question.reviewer_id && (
+                            <DropdownMenuItem onClick={() => handleReassign(question)}>
+                              <RefreshCw className="h-4 w-4 mr-2" />
+                              Reassign Reviewer
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>
@@ -531,6 +482,28 @@ export function CreatorQuestionsDashboard() {
         onOpenChange={setEditOpen}
         onSave={fetchMyQuestions}
       />
+
+      {selectedQuestion && (
+        <SubmitForReviewDialog
+          open={submitForReviewOpen}
+          onOpenChange={setSubmitForReviewOpen}
+          questionId={selectedQuestion.id}
+          questionTitle={selectedQuestion.title}
+          questionStatus={selectedQuestion.status}
+          onSuccess={handleSubmitSuccess}
+        />
+      )}
+
+      {selectedQuestion && selectedQuestion.reviewer_id && (
+        <ReassignReviewerDialog
+          open={reassignOpen}
+          onOpenChange={setReassignOpen}
+          questionId={selectedQuestion.id}
+          questionTitle={selectedQuestion.title}
+          currentReviewerId={selectedQuestion.reviewer_id}
+          onSuccess={handleReassignSuccess}
+        />
+      )}
     </div>
   )
 }

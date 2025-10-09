@@ -352,32 +352,7 @@ class ClientDataManager {
     return filtered
   }
 
-  /**
-   * Get cache status for debugging
-   */
-  getCacheStatus() {
-    return {
-      wsiMetadata: {
-        loaded: !!this.wsiMetadata,
-        count: this.wsiMetadata?.length || 0,
-        sizeMB: this.wsiMetadata ? (JSON.stringify(this.wsiMetadata).length / (1024 * 1024)).toFixed(1) : '0'
-      },
-      contentFiles: {
-        loaded: this.educationalContent.size,
-        total: CONTENT_FILES.length,
-        files: Array.from(this.educationalContent.keys()),
-        totalSizeMB: parseFloat((Array.from(this.educationalContent.values()).reduce((total, content) => {
-          return total + JSON.stringify(content).length
-        }, 0) / (1024 * 1024)).toFixed(1))
-      },
-      totalMemoryUsage: {
-        estimatedMB: ((this.wsiMetadata ? JSON.stringify(this.wsiMetadata).length : 0) + 
-                     Array.from(this.educationalContent.values()).reduce((total, content) => {
-                       return total + JSON.stringify(content).length
-                     }, 0)) / (1024 * 1024)
-      }
-    }
-  }
+
 
   /**
    * Clear all cached data (for memory management)

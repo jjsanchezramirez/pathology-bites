@@ -1,11 +1,11 @@
 import { Metadata } from 'next'
-import { CreateQuestionClient } from './create-question-client'
+import { UnifiedCreateQuestionClient } from './unified-create-question-client'
 import { RequirePermission } from '@/shared/components/auth/role-guard'
 import { PageErrorBoundary } from '@/shared/components/common'
 
 export const metadata: Metadata = {
   title: 'Create Question | Pathology Bites Admin',
-  description: 'Generate questions using AI with pathology content',
+  description: 'Create questions using manual forms, AI assistance, or JSON import',
 }
 
 export default function CreateQuestionPage() {
@@ -16,11 +16,11 @@ export default function CreateQuestionPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Create Question</h1>
           <p className="text-muted-foreground">
-            Generate multiple-choice questions using AI with pathology educational content
+            Create multiple-choice questions using manual forms, AI assistance, or JSON import
           </p>
         </div>
-        
-        <CreateQuestionClient />
+
+        <UnifiedCreateQuestionClient />
         </div>
       </PageErrorBoundary>
     </RequirePermission>

@@ -56,7 +56,7 @@ export async function GET(
             name
           )
         ),
-        question_set:sets(
+        question_set:question_sets(
           id,
           name,
           source_type,

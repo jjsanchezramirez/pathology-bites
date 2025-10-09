@@ -19,11 +19,17 @@ export const getCategoryDescription = (category: ImageCategory): string => {
 
 // Format file size for display
 export const formatSize = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes';
+  if (!bytes || bytes === 0) return '0 Bytes';
+  if (typeof bytes !== 'number' || isNaN(bytes)) return 'Unknown';
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB'];
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+
+  // Ensure we don't go beyond our sizes array
+  const sizeIndex = Math.min(i, sizes.length - 1);
+
+  return `${parseFloat((bytes / Math.pow(k, sizeIndex)).toFixed(2))} ${sizes[sizeIndex]}`;
 };
 
 // Format image name for display and database

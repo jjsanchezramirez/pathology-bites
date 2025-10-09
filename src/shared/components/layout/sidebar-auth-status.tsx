@@ -102,6 +102,9 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
 
   const handleSignOut = async () => {
     try {
+      // Clear settings session flag so next login fetches fresh settings
+      sessionStorage.removeItem('pathology-bites-settings-loaded')
+
       const { error } = await supabase.auth.signOut()
 
       if (error) {

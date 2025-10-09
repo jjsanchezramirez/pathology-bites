@@ -64,11 +64,11 @@ export function ReviewQueueTable() {
         .select(`
           *,
           created_by_user:users!questions_created_by_fkey(first_name, last_name),
-          question_set:sets(name),
+          question_set:question_sets(name),
           question_options(*),
           question_images(*, image:images(*))
         `)
-        .in('status', ['pending', 'flagged'])
+        .in('status', ['pending_review', 'flagged'])
         .order('created_at', { ascending: false })
 
       if (error) {

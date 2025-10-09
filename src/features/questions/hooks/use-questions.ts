@@ -64,7 +64,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         .from(TABLE_NAMES.QUESTIONS)
         .select(`
           *,
-          question_set:sets(
+          question_set:question_sets(
             id,
             name,
             source_type,
@@ -174,16 +174,21 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
 
   const deleteQuestion = useCallback(async (questionId: string) => {
     try {
-      const { error } = await supabase
-        .from(TABLE_NAMES.QUESTIONS)
-        .delete()
-        .eq('id', questionId);
+      const response = await fetch(`/api/admin/questions/${questionId}/delete`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
 
-      if (error) {
-        throw new Error(error.message);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete question');
       }
 
-      toast.success('Question deleted successfully');
+      toast.success(data.message || 'Question deleted successfully');
 
       // Refetch questions
       await fetchQuestions();
@@ -192,7 +197,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
       toast.error(message);
       throw err;
     }
-  }, [supabase, fetchQuestions]);
+  }, [fetchQuestions]);
 
   const updateQuestion = useCallback(async (
     questionId: string,

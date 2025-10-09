@@ -83,13 +83,7 @@ export const adminNavigationItems: NavigationItem[] = [
     requiredPermission: "users.manage",
     adminOnly: true
   },
-  {
-    name: "Invite Users",
-    href: "/admin/invite-users",
-    icon: "UserPlus",
-    requiredPermission: "users.manage",
-    adminOnly: true
-  },
+
   {
     name: "Manage Inquiries",
     href: "/admin/inquiries",
@@ -199,13 +193,7 @@ export const adminNavigationSections: NavigationSection[] = [
         requiredPermission: "users.manage",
         adminOnly: true
       },
-      {
-        name: "Invite Users",
-        href: "/admin/invite-users",
-        icon: "User",
-        requiredPermission: "users.manage",
-        adminOnly: true
-      },
+
       {
         name: "Manage Inquiries",
         href: "/admin/inquiries",

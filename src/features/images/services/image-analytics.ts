@@ -44,7 +44,10 @@ export async function getImageUsageStats(): Promise<ImageUsageStats[]> {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error fetching v_image_usage_stats:', error);
+      throw error;
+    }
 
     // Process the data to add formatted fields
     const usageStats: ImageUsageStats[] = (data || []).map(image => ({
@@ -93,7 +96,10 @@ export async function getStorageStats(): Promise<StorageStats> {
       .select('*')
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error fetching v_storage_stats:', error);
+      throw error;
+    }
 
     // Format the category stats
     const categoryStats = [

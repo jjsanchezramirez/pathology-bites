@@ -51,7 +51,7 @@ const importQuestionSchema = z.object({
   question_references: z.string().max(500, 'References too long').optional(),
   status: z.enum(['draft', 'approved']).default('draft'),
   question_set_id: z.string().uuid('Invalid question set ID').optional().nullable(),
-  answer_options: z.array(answerOptionSchema).min(2, 'At least 2 answer options required').max(10, 'Maximum 10 answer options allowed'),
+  question_options: z.array(answerOptionSchema).min(2, 'At least 2 question options required').max(10, 'Maximum 10 question options allowed'),
   question_images: z.array(questionImageSchema).optional().default([]),
   tag_ids: z.array(z.string().uuid('Invalid tag ID')).optional().default([]),
   category_ids: z.array(z.string().uuid('Invalid category ID')).optional().default([]),
@@ -75,7 +75,7 @@ const SIMPLE_JSON = `{
   "stem": "This is the question stem. What is the correct answer?",
   "difficulty": "medium",
   "teaching_point": "This is the teaching point that explains the concept.",
-  "answer_options": [
+  "question_options": [
     {
       "text": "Option A - Incorrect answer",
       "is_correct": false,
@@ -99,7 +99,7 @@ const FULL_JSON = `{
   "question_references": "Reference: Medical Textbook, Chapter 5",
   "status": "draft",
   "question_set_id": "12345678-1234-1234-1234-123456789abc",
-  "answer_options": [
+  "question_options": [
     {
       "text": "Option A - Incorrect answer",
       "is_correct": false,
@@ -189,17 +189,17 @@ export function ImportQuestionDialog({ open, onOpenChange, onSave }: ImportQuest
     // Additional validation
     const validationErrors = [];
 
-    // Check if at least one answer option is correct
-    const hasCorrectAnswer = parsedData.answer_options.some(option => option.is_correct);
+    // Check if at least one question option is correct
+    const hasCorrectAnswer = parsedData.question_options.some(option => option.is_correct);
     if (!hasCorrectAnswer) {
-      validationErrors.push('At least one answer option must be marked as correct (is_correct: true)');
+      validationErrors.push('At least one question option must be marked as correct (is_correct: true)');
     }
 
-    // Check for duplicate order indices in answer options
-    const orderIndices = parsedData.answer_options.map(option => option.order_index);
+    // Check for duplicate order indices in question options
+    const orderIndices = parsedData.question_options.map(option => option.order_index);
     const uniqueIndices = new Set(orderIndices);
     if (orderIndices.length !== uniqueIndices.size) {
-      validationErrors.push('Answer options must have unique order_index values');
+      validationErrors.push('Question options must have unique order_index values');
     }
 
     // Check for duplicate order indices in question images
@@ -237,9 +237,9 @@ export function ImportQuestionDialog({ open, onOpenChange, onSave }: ImportQuest
       const promises = [];
       const promiseLabels = [];
 
-      // 1. Create answer options
-      if (parsedData.answer_options.length > 0) {
-        const answerOptionsData = parsedData.answer_options.map(option => ({
+      // 1. Create question options
+      if (parsedData.question_options.length > 0) {
+        const answerOptionsData = parsedData.question_options.map(option => ({
           question_id: newQuestion.id,
           text: option.text,
           is_correct: option.is_correct,
@@ -445,7 +445,7 @@ export function ImportQuestionDialog({ open, onOpenChange, onSave }: ImportQuest
                     <li><strong>stem:</strong> Main question text (10-2000 characters)</li>
                     <li><strong>difficulty:</strong> "easy", "medium", or "hard"</li>
                     <li><strong>teaching_point:</strong> Educational explanation (10-1000 characters)</li>
-                    <li><strong>answer_options:</strong> Array of 2-10 answer options</li>
+                    <li><strong>question_options:</strong> Array of 2-10 question options</li>
                   </ul>
                 </div>
 
@@ -494,7 +494,7 @@ export function ImportQuestionDialog({ open, onOpenChange, onSave }: ImportQuest
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
                   <p className="font-semibold text-blue-800 dark:text-blue-200 mb-1">💡 Testing Tip:</p>
                   <p className="text-blue-700 dark:text-blue-300">
-                    Start with a simple question using only required fields (title, stem, difficulty, teaching_point, answer_options).
+                    Start with a simple question using only required fields (title, stem, difficulty, teaching_point, question_options).
                     Once that works, add optional fields like question_set_id, tags, and categories.
                   </p>
                 </div>
@@ -538,7 +538,7 @@ export function ImportQuestionDialog({ open, onOpenChange, onSave }: ImportQuest
               <Alert>
                 <FileText className="h-4 w-4" />
                 <AlertDescription>
-                  JSON is valid! Question "{parsedData.title}" with {parsedData.answer_options.length} answer options ready to import.
+                  JSON is valid! Question "{parsedData.title}" with {parsedData.question_options.length} question options ready to import.
                 </AlertDescription>
               </Alert>
             )}

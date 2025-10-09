@@ -33,7 +33,7 @@ export async function POST(
     // Check if question exists and is published (only published questions can be versioned)
     const { data: question, error: questionError } = await adminClient
       .from('questions')
-      .select('id, status, version_major, version_minor, version_patch')
+      .select('id, status, version')
       .eq('id', questionId)
       .single()
 
@@ -70,7 +70,7 @@ export async function POST(
     // Get updated question data
     const { data: updatedQuestion, error: fetchError } = await adminClient
       .from('questions')
-      .select('id, version_string, version_major, version_minor, version_patch, updated_at')
+      .select('id, version, updated_at')
       .eq('id', questionId)
       .single()
 
@@ -86,7 +86,7 @@ export async function POST(
       success: true,
       versionId,
       question: updatedQuestion,
-      message: `Question updated to version ${updatedQuestion.version_string}`
+      message: `Question updated to version ${updatedQuestion.version}`
     })
 
   } catch (error) {

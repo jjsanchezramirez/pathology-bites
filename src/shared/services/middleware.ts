@@ -16,7 +16,6 @@ const PUBLIC_ADMIN_ENDPOINTS = [
 // Admin API endpoints that require admin-only access (not creator/reviewer)
 const ADMIN_ONLY_ENDPOINTS = [
   '/api/admin/users',
-  '/api/admin/invite-users', 
   '/api/admin/notifications',
   '/api/admin/rate-limit-status',
   '/api/admin/refresh-stats'

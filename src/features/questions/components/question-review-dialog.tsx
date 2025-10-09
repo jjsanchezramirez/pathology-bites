@@ -256,11 +256,11 @@ export function QuestionReviewDialog({
               )}
 
               {/* Question Options */}
-              {(question.question_options || question.answer_options) && (question.question_options || question.answer_options)!.length > 0 && (
+              {question.question_options && question.question_options.length > 0 && (
                 <div>
                   <Label className="text-sm font-medium">Question Options</Label>
                   <div className="mt-1 space-y-2">
-                    {(question.question_options || question.answer_options)!.map((option, index) => (
+                    {question.question_options.map((option, index) => (
                       <div
                         key={option.id}
                         className={`p-3 rounded-md border ${

@@ -145,15 +145,15 @@ usage.forEach(img => {
 The system handles two distinct types of images:
 
 #### Uploaded Images
-- Stored in Supabase storage bucket
-- Count toward 1GB storage limit
+- Stored in Cloudflare R2 storage bucket (pathology-bites-images/library/)
+- Part of overall R2 account usage (10GB total limit shared with data files)
 - Included in all analytics and statistics
 - Can be managed (edit, delete, cleanup)
 - Categories: microscopic, gross, figure, table
 
 #### External Images
 - URL references only (PathOutlines images)
-- Do not use Supabase storage
+- Do not use R2 storage
 - **Excluded from all analytics and statistics**
 - Read-only (cannot be managed)
 - Category: always 'external'
@@ -251,7 +251,7 @@ npm run test:e2e images
 - **CDN integration**: Faster global delivery
 
 ### Scalability Considerations
-- **Storage tiers**: Migration to paid Supabase plans
+- **Storage tiers**: Migration to paid Cloudflare R2 plans
 - **Background processing**: Async image optimization
 - **Microservices**: Separate image processing service
 - **Caching layers**: Redis for frequently accessed data

@@ -147,12 +147,6 @@ export function useCachedData<T>(
     if (!refetchOnWindowFocus || !enabled) return
 
     const handleFocus = () => {
-      // Check for global unsaved changes flag
-      if ((window as any).__PATHOLOGY_BITES_UNSAVED_CHANGES__) {
-        console.log('🛡️ Skipped focus refetch due to unsaved changes')
-        return
-      }
-
       // Only refetch if data is stale
       if (lastFetch && Date.now() - lastFetch > staleTime) {
         fetchDataRef.current()

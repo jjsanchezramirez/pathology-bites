@@ -1,16 +1,18 @@
 import { Metadata } from 'next'
-import { UnifiedReviewQueue } from '@/features/questions/components/unified-review-queue'
+import { ReviewQueue } from '@/features/questions/components/review-queue'
 import { RequirePermission } from '@/shared/components/auth/role-guard'
 
 export const metadata: Metadata = {
-  title: 'Review Queue | Pathology Bites Admin',
-  description: 'Review new question submissions and flagged questions',
+  title: 'My Review Queue | Pathology Bites Admin',
+  description: 'Review questions assigned to you',
 }
 
 export default function ReviewQueuePage() {
   return (
     <RequirePermission permission="questions.review">
-      <UnifiedReviewQueue />
+      <div className="container mx-auto py-8 px-4">
+        <ReviewQueue />
+      </div>
     </RequirePermission>
   )
 }

@@ -92,7 +92,7 @@ export function FlaggedQuestionsTable() {
         .select(`
           *,
           creator:users!questions_created_by_fkey(first_name, last_name, email),
-          question_set:sets(name, short_form)
+          question_set:question_sets(name, short_form)
         `)
         .order('latest_flag_date', { ascending: false })
 

@@ -7,22 +7,49 @@ import { Loader2, HardDrive, Images, ImageOff, Trash2, Database } from 'lucide-r
 import { Button } from "@/shared/components/ui/button";
 import { toast } from 'sonner';
 import { getStorageStats, StorageStats } from '@/features/images/services/image-analytics';
+import { formatSize } from '@/features/images/services/image-upload';
 import { CleanupDialog } from './cleanup-dialog';
 
 export interface StorageStatsRef {
   refresh: () => void;
 }
 
+interface R2StorageStats {
+  totalR2LimitBytes: number;
+  totalUsedBytes: number;
+  availableBytes: number;
+  formattedTotalUsed: string;
+  formattedAvailable: string;
+}
+
 export const StorageStatsCards = forwardRef<StorageStatsRef>((props, ref) => {
   const [stats, setStats] = useState<StorageStats | null>(null);
+  const [r2Stats, setR2Stats] = useState<R2StorageStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCleanupDialog, setShowCleanupDialog] = useState(false);
 
   const loadStats = async () => {
     try {
       setLoading(true);
-      const data = await getStorageStats();
-      setStats(data);
+
+      // Load both image stats and R2 storage stats in parallel
+      const [imageStatsData, r2StatsResponse] = await Promise.all([
+        getStorageStats(),
+        fetch('/api/admin/r2-storage-stats')
+      ]);
+
+      setStats(imageStatsData);
+
+      if (r2StatsResponse.ok) {
+        const r2Data = await r2StatsResponse.json();
+        if (r2Data.success) {
+          setR2Stats(r2Data.data);
+        } else {
+          console.warn('R2 stats API returned error:', r2Data.error);
+        }
+      } else {
+        console.warn('Failed to fetch R2 stats:', r2StatsResponse.status);
+      }
     } catch (error) {
       console.error('Failed to load storage stats:', error);
       toast.error('Failed to load storage statistics');
@@ -50,10 +77,12 @@ export const StorageStatsCards = forwardRef<StorageStatsRef>((props, ref) => {
     refresh: loadStats
   }));
 
-  // Calculate storage usage percentage (1GB = 1,073,741,824 bytes)
-  const maxStorageBytes = 1073741824; // 1GB in bytes
-  const usagePercentage = stats ? Math.round((stats.total_size_bytes / maxStorageBytes) * 100) : 0;
-  const formattedMaxStorage = "1.00 GB";
+  // Use dynamic R2 stats if available, otherwise fallback to static values
+  const fallbackAvailableBytes = 9847926784; // ~9.15GB fallback
+  const availableBytes = r2Stats?.availableBytes ?? fallbackAvailableBytes;
+
+  const formattedAvailable = r2Stats?.formattedAvailable ?? "9.17 GB";
+  const usagePercentage = stats && availableBytes > 0 ? Math.round((stats.total_size_bytes / availableBytes) * 100) : 0;
 
   if (loading) {
     return (
@@ -112,8 +141,14 @@ export const StorageStatsCards = forwardRef<StorageStatsRef>((props, ref) => {
           <CardContent>
             <div className="text-2xl font-bold">{stats.formatted_total_size}</div>
             <p className="text-xs text-muted-foreground">
-              of {formattedMaxStorage} ({usagePercentage}%)
+              of {formattedAvailable || 'Unknown'} available ({usagePercentage}%)
+              {!r2Stats && <span className="text-orange-500 ml-1">*</span>}
             </p>
+            {!r2Stats && (
+              <p className="text-xs text-orange-500 mt-1">
+                *Using cached values
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -148,10 +183,13 @@ export const StorageStatsCards = forwardRef<StorageStatsRef>((props, ref) => {
               {stats.orphaned_count > 0 ? (
                 <>
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Delete {stats.orphaned_count} Unused Images
+                  Clean Up ({stats.orphaned_count})
                 </>
               ) : (
-                "No Cleanup Needed"
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  All Clean
+                </>
               )}
             </Button>
           </CardContent>

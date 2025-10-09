@@ -1,6 +1,9 @@
 // src/app/(admin)/admin/inquiries/page.tsx
-import { Metadata } from 'next'
+'use client'
+
+import { useState } from 'react'
 import { InquiriesTable } from '@/features/inquiries/components/inquiries-table'
+import { InquiryStatistics } from '@/features/inquiries/components/inquiry-statistics'
 import {
   Card,
   CardContent,
@@ -9,12 +12,13 @@ import {
   CardTitle
 } from "@/shared/components/ui/card"
 
-export const metadata: Metadata = {
-  title: 'Inquiries - Admin Dashboard',
-  description: 'Manage user inquiries and support requests',
-}
-
 export default function InquiriesPage() {
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+
+  const handleInquiriesChange = () => {
+    setRefreshTrigger(prev => prev + 1)
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -25,6 +29,9 @@ export default function InquiriesPage() {
         </p>
       </div>
 
+      {/* Statistics */}
+      <InquiryStatistics refreshTrigger={refreshTrigger} />
+
       <Card>
         <CardHeader>
           <CardTitle>Inquiry Management</CardTitle>
@@ -33,7 +40,7 @@ export default function InquiriesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <InquiriesTable />
+          <InquiriesTable onInquiriesChange={handleInquiriesChange} />
         </CardContent>
       </Card>
     </div>

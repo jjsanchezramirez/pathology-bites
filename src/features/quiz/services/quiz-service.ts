@@ -127,17 +127,12 @@ export class QuizService {
         updated_by,
         version,
         version_major,
-        version_minor,
-        version_patch,
-        version_string,
-        is_flagged,
-        flag_count,
+        version,
         created_at,
         updated_at,
-        search_vector,
         question_options(*),
         question_images(*, image:images(*)),
-        question_set:sets(*)
+        question_set:question_sets(*)
       `)
       .eq('status', 'approved')
 

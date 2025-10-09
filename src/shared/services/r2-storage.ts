@@ -507,6 +507,45 @@ export async function moveR2Folder(sourcePrefix: string, destinationPrefix: stri
   }
 }
 
+/**
+ * Get the total size of a bucket by listing all objects and summing their sizes
+ */
+export async function getBucketSize(bucketName?: string): Promise<{ totalSize: number; objectCount: number }> {
+  try {
+    const config = getR2Config()
+    const r2Client = createR2Client()
+    const targetBucket = bucketName || config.CLOUDFLARE_R2_BUCKET_NAME
+
+    let totalSize = 0
+    let objectCount = 0
+    let continuationToken: string | undefined
+
+    do {
+      const command = new ListObjectsV2Command({
+        Bucket: targetBucket,
+        MaxKeys: 1000,
+        ContinuationToken: continuationToken
+      })
+
+      const response = await r2Client.send(command)
+
+      if (response.Contents) {
+        for (const object of response.Contents) {
+          totalSize += object.Size || 0
+          objectCount++
+        }
+      }
+
+      continuationToken = response.NextContinuationToken
+    } while (continuationToken)
+
+    return { totalSize, objectCount }
+  } catch (error) {
+    console.error(`Failed to get bucket size for ${bucketName}:`, error)
+    throw new Error(`Failed to get bucket size: ${error}`)
+  }
+}
+
 export default {
   upload: uploadToR2,
   delete: deleteFromR2,
@@ -520,5 +559,6 @@ export default {
   generateDataPath: generateDataStoragePath,
   copyObject: copyR2Object,
   moveObject: moveR2Object,
-  moveFolder: moveR2Folder
+  moveFolder: moveR2Folder,
+  getBucketSize: getBucketSize
 }

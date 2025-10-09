@@ -58,7 +58,7 @@ export async function GET(
       .from('questions')
       .select(`
         *,
-        question_set:sets(
+        question_set:question_sets(
           id,
           name,
           source_type,
@@ -150,6 +150,10 @@ export async function PATCH(
 ) {
   try {
     const { id: questionId } = await params
+    console.log('PATCH /api/admin/questions/[id] - Question ID:', questionId)
+    console.log('PATCH /api/admin/questions/[id] - Params type:', typeof params)
+    console.log('PATCH /api/admin/questions/[id] - Params:', params)
+
     const body = await request.json()
     const {
       questionData,
@@ -160,12 +164,30 @@ export async function PATCH(
       categoryId
     } = body
 
+    console.log('PATCH /api/admin/questions/[id] - Body received:', {
+      hasQuestionData: !!questionData,
+      hasAnswerOptions: !!answerOptions,
+      hasQuestionImages: !!questionImages,
+      hasTagIds: !!tagIds,
+      hasCategoryId: !!categoryId
+    })
+
 
 
     // Auth is now handled by middleware
     const userClient = await createClient()
-    const { data: { user } } = await userClient.auth.getUser() // Still need user ID for permission checks
-    
+    const { data: { user }, error: authError } = await userClient.auth.getUser() // Still need user ID for permission checks
+
+    if (authError || !user) {
+      console.error('PATCH - Auth error:', authError)
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    console.log('PATCH - User authenticated:', user.id)
+
     // Still need to get user profile for business logic permission checks
     const { data: profile, error: profileError } = await userClient
       .from('users')
@@ -174,40 +196,64 @@ export async function PATCH(
       .single()
 
     if (profileError) {
+      console.error('PATCH - Profile error:', profileError)
       return NextResponse.json(
         { error: 'Failed to verify user permissions' },
         { status: 500 }
       )
     }
 
+    console.log('PATCH - User role:', profile.role)
+
     // Use admin client for the actual operations
     const adminClient = await createAdminClient()
+    console.log('PATCH - Admin client created')
 
     // Get current question to check status and permissions
+    console.log('PATCH - Fetching question with ID:', questionId)
     const { data: currentQuestion, error: questionError } = await adminClient
       .from('questions')
-      .select('id, status, created_by, version_major, version_minor, version_patch')
+      .select('id, status, created_by, version')
       .eq('id', questionId)
       .single()
 
+    console.log('PATCH - Question fetch result:', {
+      found: !!currentQuestion,
+      error: questionError?.message,
+      status: currentQuestion?.status
+    })
+
     if (questionError || !currentQuestion) {
+      console.error('PATCH - Question fetch error:', {
+        questionId,
+        error: questionError,
+        message: questionError?.message,
+        details: questionError?.details,
+        hint: questionError?.hint,
+        code: questionError?.code
+      })
       return NextResponse.json(
-        { error: 'Question not found' },
+        {
+          error: 'Question not found',
+          details: questionError?.message,
+          questionId
+        },
         { status: 404 }
       )
     }
 
     // Check permissions based on question status
-    if (currentQuestion.status === 'approved') {
-      // Only admins can edit approved questions
+    // Support both 'approved' and 'published' for backwards compatibility
+    if (currentQuestion.status === 'published' || currentQuestion.status === 'approved') {
+      // Only admins can edit published/approved questions
       if (profile?.role !== 'admin') {
         return NextResponse.json(
-          { error: 'Only admins can edit approved questions' },
+          { error: 'Only admins can edit published questions' },
           { status: 403 }
         )
       }
 
-      // For approved questions, we'll automatically create a version
+      // For published/approved questions, we'll automatically create a version
       // No need to require updateType - simplified versioning
     } else {
       // For non-published questions, check if user is creator or admin
@@ -450,9 +496,9 @@ export async function PATCH(
         }
       }
 
-      // Handle versioning for approved questions (simplified)
+      // Handle versioning for published/approved questions (simplified)
       let versionId = null
-      if (currentQuestion.status === 'approved') {
+      if (currentQuestion.status === 'published' || currentQuestion.status === 'approved') {
         // Use simplified versioning function
         const { data: newVersionId, error: versionError } = await adminClient
           .rpc('create_question_version_simplified', {
@@ -472,7 +518,7 @@ export async function PATCH(
       // Get updated question data
       const { data: updatedQuestion, error: fetchError } = await adminClient
         .from('questions')
-        .select('id, version_string, version_major, version_minor, version_patch, updated_at, status')
+        .select('id, version, updated_at, status')
         .eq('id', questionId)
         .single()
 
@@ -489,7 +535,7 @@ export async function PATCH(
         question: updatedQuestion,
         versionId,
         message: versionId
-          ? `Question updated to version ${updatedQuestion.version_string}`
+          ? `Question updated to version ${updatedQuestion.version}`
           : 'Question updated successfully'
       })
 

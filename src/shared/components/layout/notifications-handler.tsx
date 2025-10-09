@@ -72,6 +72,12 @@ export function NotificationsHandler() {
         return notification.status === 'resolved' ?
           <CheckCircle className="h-4 w-4 text-green-500" /> :
           <Flag className="h-4 w-4 text-red-500" />
+      case 'admin_alert':
+        return <AlertCircle className="h-4 w-4 text-red-500" />
+      case 'question_review':
+        return <FileText className="h-4 w-4 text-orange-500" />
+      case 'question_status':
+        return <CheckCircle className="h-4 w-4 text-green-500" />
       case 'system_update':
         const severity = notification.metadata?.severity
         return severity === 'critical' ?

@@ -15,6 +15,9 @@ export interface BaseNotification {
 export type NotificationSourceType =
   | 'inquiry'
   | 'report'
+  | 'admin_alert'
+  | 'question_review'
+  | 'question_status'
   | 'system_update'
   | 'milestone'
   | 'reminder'

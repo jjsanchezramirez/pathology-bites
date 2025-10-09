@@ -67,12 +67,6 @@ class NetworkService {
   };
 
   private handleWindowFocus = (): void => {
-    // Check for global unsaved changes flag
-    if ((window as any).__PATHOLOGY_BITES_UNSAVED_CHANGES__) {
-      console.log('🛡️ Skipped network checks due to unsaved changes')
-      return
-    }
-
     // Check connectivity and auth when window gets focus
     this.checkConnectivity();
     this.checkAuthStatus();

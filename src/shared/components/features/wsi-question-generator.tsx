@@ -651,7 +651,7 @@ export function WSIQuestionGenerator({
 
           {/* Answer Options */}
           <div className="grid gap-2" role="listbox" aria-label="Answer options">
-            {currentQuestion.question.options.map((option, index) => {
+            {currentQuestion.question.question_options.map((option, index) => {
               const isSelected = selectedOption === option.id
               const showCorrect = isAnswered && option.is_correct
               const showIncorrect = isAnswered && isSelected && !option.is_correct
@@ -702,19 +702,19 @@ export function WSIQuestionGenerator({
                 <div>
                   <h4 className="font-medium text-xs uppercase mb-1">Teaching Point</h4>
                   <div className="text-muted-foreground">
-                    {currentQuestion.question.options.find(option => option.is_correct)?.explanation || 'No explanation available.'}
+                    {currentQuestion.question.question_options.find(option => option.is_correct)?.explanation || 'No explanation available.'}
                   </div>
                 </div>
 
                 {/* Option Explanations */}
-                {currentQuestion.question.options.some(opt => opt.explanation) && (
+                {currentQuestion.question.question_options.some(opt => opt.explanation) && (
                   <div>
                     <h4 className="font-medium text-xs uppercase mb-1">Answer Explanations</h4>
                     <div className="space-y-2 text-muted-foreground">
-                      {currentQuestion.question.options
+                      {currentQuestion.question.question_options
                         .filter(option => option.explanation && !option.is_correct)
                         .map((option) => {
-                          const optionIndex = currentQuestion.question.options.findIndex(opt => opt.id === option.id)
+                          const optionIndex = currentQuestion.question.question_options.findIndex(opt => opt.id === option.id)
                           const optionLabel = getOptionLabel(option.id, optionIndex)
 
                           return (

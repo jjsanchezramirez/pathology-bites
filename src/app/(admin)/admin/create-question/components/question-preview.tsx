@@ -23,7 +23,7 @@ interface GeneratedQuestion {
   status: string
   question_set_id: string
   category_id: string
-  answer_options: Array<{
+  question_options: Array<{
     text: string
     is_correct: boolean
     explanation: string
@@ -64,8 +64,8 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
   const startEditing = () => {
     setEditedQuestion({
       ...question,
-      // Ensure answer_options is always an array
-      answer_options: question.answer_options || []
+      // Ensure question_options is always an array
+      question_options: question.question_options || []
     })
     setIsEditing(true)
   }
@@ -189,8 +189,16 @@ Return the modified question in the same JSON format.
         }
 
         try {
-          onQuestionUpdated({
+          // Convert admin API response format to the expected format (same as in question-form.tsx)
+          const convertedQuestion = {
             ...refinedQuestion,
+            // Convert to question_options format if needed
+            question_options: refinedQuestion.question_options || (refinedQuestion.options || []).map((option: any, index: number) => ({
+              text: option.text,
+              is_correct: option.is_correct,
+              explanation: option.explanation,
+              order_index: index
+            })),
             metadata: {
               ...question.metadata,
               refined_at: new Date().toISOString(),
@@ -200,7 +208,14 @@ Return the modified question in the same JSON format.
                 model: originalModel
               }
             }
-          })
+          }
+
+          // Remove the original options field if it exists to avoid confusion
+          if (convertedQuestion.options) {
+            delete convertedQuestion.options
+          }
+
+          onQuestionUpdated(convertedQuestion)
 
           setChatMessage('')
           toast.success(`Question refined successfully using ${originalModel}!`)
@@ -238,7 +253,7 @@ Return the modified question in the same JSON format.
   }
 
   const currentQuestion = isEditing ? editedQuestion! : question
-  const correctAnswer = currentQuestion?.answer_options?.find(opt => opt.is_correct)
+  const correctAnswer = currentQuestion?.question_options?.find(opt => opt.is_correct)
 
   return (
     <div className="space-y-6">
@@ -312,20 +327,20 @@ Return the modified question in the same JSON format.
             <Label>Answer Options</Label>
             <div className="space-y-3">
               {isEditing ? (
-                editedQuestion?.answer_options?.length ? (
-                  editedQuestion.answer_options.map((option, index) => (
+                editedQuestion?.question_options?.length ? (
+                  editedQuestion.question_options.map((option, index) => (
                   <div key={index} className="space-y-2 p-4 border rounded-lg">
                     <div className="flex items-center gap-2">
                       <input
                         type="radio"
                         checked={option.is_correct}
                         onChange={() => {
-                          if (editedQuestion?.answer_options) {
-                            const newOptions = editedQuestion.answer_options.map((opt, i) => ({
+                          if (editedQuestion?.question_options) {
+                            const newOptions = editedQuestion.question_options.map((opt, i) => ({
                               ...opt,
                               is_correct: i === index
                             }))
-                            setEditedQuestion({...editedQuestion, answer_options: newOptions})
+                            setEditedQuestion({...editedQuestion, question_options: newOptions})
                           }
                         }}
                       />
@@ -334,10 +349,10 @@ Return the modified question in the same JSON format.
                     <Textarea
                       value={option.text}
                       onChange={(e) => {
-                        if (editedQuestion?.answer_options) {
-                          const newOptions = [...editedQuestion.answer_options]
+                        if (editedQuestion?.question_options) {
+                          const newOptions = [...editedQuestion.question_options]
                           newOptions[index] = {...option, text: e.target.value}
-                          setEditedQuestion({...editedQuestion, answer_options: newOptions})
+                          setEditedQuestion({...editedQuestion, question_options: newOptions})
                         }
                       }}
                       className="min-h-[60px]"
@@ -345,10 +360,10 @@ Return the modified question in the same JSON format.
                     <Textarea
                       value={option.explanation}
                       onChange={(e) => {
-                        if (editedQuestion?.answer_options) {
-                          const newOptions = [...editedQuestion.answer_options]
+                        if (editedQuestion?.question_options) {
+                          const newOptions = [...editedQuestion.question_options]
                           newOptions[index] = {...option, explanation: e.target.value}
-                          setEditedQuestion({...editedQuestion, answer_options: newOptions})
+                          setEditedQuestion({...editedQuestion, question_options: newOptions})
                         }
                       }}
                       placeholder="Explanation for this option..."
@@ -358,13 +373,13 @@ Return the modified question in the same JSON format.
                   ))
                 ) : (
                   <div className="p-4 border rounded-lg border-dashed">
-                    <p className="text-muted-foreground text-center">No answer options available for editing</p>
+                    <p className="text-muted-foreground text-center">No question options available for editing</p>
                   </div>
                 )
               ) : (
                 <RadioGroup value={correctAnswer?.text} className="space-y-3">
-                  {currentQuestion?.answer_options?.length ? (
-                    currentQuestion.answer_options.map((option, index) => (
+                  {currentQuestion?.question_options?.length ? (
+                    currentQuestion.question_options.map((option, index) => (
                       <div key={index} className={`p-4 border rounded-lg ${option.is_correct ? 'border-green-500 bg-green-50 dark:bg-green-950' : ''}`}>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value={option.text} id={`option-${index}`} />
@@ -381,7 +396,7 @@ Return the modified question in the same JSON format.
                     ))
                   ) : (
                     <div className="p-4 border rounded-lg border-dashed">
-                      <p className="text-muted-foreground text-center">No answer options available</p>
+                      <p className="text-muted-foreground text-center">No question options available</p>
                     </div>
                   )}
                 </RadioGroup>

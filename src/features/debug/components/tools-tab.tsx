@@ -265,27 +265,7 @@ export function ToolsTab() {
     window.location.reload()
   }
 
-  const clearBuildCache = async () => {
-    try {
-      const response = await fetch('/api/debug/clear-build-cache', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      
-      const result = await response.json()
-      
-      if (result.success) {
-        toast.success('Build cache cleared successfully!')
-      } else {
-        toast.error('Failed to clear build cache')
-      }
-    } catch (error) {
-      toast.error('Error clearing build cache')
-      console.error('Build cache clear error:', error)
-    }
-  }
+
 
   return (
     <div className="space-y-6">
@@ -316,15 +296,7 @@ export function ToolsTab() {
               {isClearing ? 'Clearing...' : 'Clear All Caches'}
             </Button>
             
-            <Button
-              onClick={clearBuildCache}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Clear Build Cache
-            </Button>
-            
+
             <Button
               onClick={reloadPage}
               variant="outline"

@@ -68,7 +68,7 @@ const importQuestionSchema = z.object({
   question_references: z.string().max(500, 'References too long').optional(),
   status: z.enum(['draft', 'approved']).default('draft'),
   question_set_id: z.string().uuid('Invalid question set ID').optional().nullable(),
-  answer_options: z.array(answerOptionSchema).min(2, 'At least 2 answer options required').max(10, 'Maximum 10 answer options allowed'),
+  question_options: z.array(answerOptionSchema).min(2, 'At least 2 question options required').max(10, 'Maximum 10 question options allowed'),
   question_images: z.array(questionImageSchema).optional().default([]),
   tag_ids: z.array(z.string().uuid('Invalid tag ID')).optional().default([]),
   category_ids: z.array(z.string().uuid('Invalid category ID')).optional().default([]),
@@ -317,9 +317,9 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
           const promises: Promise<Response>[] = [];
           const promiseLabels: string[] = [];
 
-          // 1. Create answer options
-          if (questionData.answer_options.length > 0) {
-            const answerOptionsData = questionData.answer_options.map(option => ({
+          // 1. Create question options
+          if (questionData.question_options.length > 0) {
+            const answerOptionsData = questionData.question_options.map(option => ({
               question_id: newQuestion.id,
               text: option.text,
               is_correct: option.is_correct,
@@ -334,7 +334,7 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
                 body: JSON.stringify({ answerOptions: answerOptionsData }),
               })
             );
-            promiseLabels.push('Answer Options');
+            promiseLabels.push('Question Options');
           }
 
           // 2. Create question categories (JSON category takes precedence over selected category)

@@ -71,18 +71,18 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
 
-    // Initialize Supabase client
+    // Initialize Supabase client with service role for demo questions (public access)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !supabaseAnonKey) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json(
         { error: 'Server configuration error' },
         { status: 500 }
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // If ID is provided, fetch a specific demo question
     if (id) {
@@ -121,7 +121,7 @@ export async function GET(request: Request) {
             difficulty
           `)
           .eq('id', demoData.question_id)
-          .eq('status', 'approved')
+          .eq('status', 'published')
           .single(),
 
         // Get answer options
@@ -156,6 +156,16 @@ export async function GET(request: Request) {
           { status: 404 }
         );
       }
+
+      if (optionsError) {
+        console.error('Error fetching question options:', optionsError);
+        return NextResponse.json(
+          { error: 'Question options not found' },
+          { status: 404 }
+        );
+      }
+
+
 
       try {
         // Process the question data to match expected format
@@ -250,7 +260,7 @@ export async function GET(request: Request) {
           .from('questions')
           .select('id, title, stem, teaching_point, question_references, status, difficulty')
           .eq('id', selectedDemo.question_id)
-          .eq('status', 'approved')
+          .eq('status', 'published')
           .single(),
 
         // Get answer options
@@ -282,6 +292,14 @@ export async function GET(request: Request) {
         console.error('Error fetching question data:', questionError);
         return NextResponse.json(
           { error: 'Question data not found' },
+          { status: 404 }
+        );
+      }
+
+      if (optionsError) {
+        console.error('Error fetching question options:', optionsError);
+        return NextResponse.json(
+          { error: 'Question options not found' },
           { status: 404 }
         );
       }

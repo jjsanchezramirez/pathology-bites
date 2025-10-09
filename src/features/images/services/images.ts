@@ -147,14 +147,16 @@ export async function fetchImages(params: {
           dataQuery = dataQuery.textSearch('search_vector', prefixQuery);
         } catch (error) {
           // Fallback to ILIKE if prefix search fails
-          countQuery = countQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category.ilike.${searchPattern}`);
-          dataQuery = dataQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category.ilike.${searchPattern}`);
+          // Cast category to text to avoid ENUM operator error
+          countQuery = countQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category::text.ilike.${searchPattern}`);
+          dataQuery = dataQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category::text.ilike.${searchPattern}`);
         }
       } else {
         // Multi-word or short search: use ILIKE for maximum flexibility
         // This handles "castleman d" -> "castleman disease" and short terms
-        countQuery = countQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category.ilike.${searchPattern}`);
-        dataQuery = dataQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category.ilike.${searchPattern}`);
+        // Cast category to text to avoid ENUM operator error
+        countQuery = countQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category::text.ilike.${searchPattern}`);
+        dataQuery = dataQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category::text.ilike.${searchPattern}`);
       }
     }
 
@@ -177,22 +179,36 @@ export async function fetchImages(params: {
     ]);
 
     if (countResult.error) {
-      console.error('Count query error:', countResult.error);
+      console.error('Count query error:', {
+        error: countResult.error,
+        message: countResult.error.message,
+        details: countResult.error.details,
+        hint: countResult.error.hint,
+        code: countResult.error.code,
+        params: { page, pageSize, searchTerm, category, showUnusedOnly, includeOnlyMicroscopicAndGross }
+      });
       // Return default values instead of throwing to prevent UI crashes
       return {
         data: [],
         total: 0,
-        error: `Failed to count images: ${countResult.error.message}`
+        error: `Failed to count images: ${countResult.error.message || 'Unknown error'}`
       };
     }
 
     if (dataResult.error) {
-      console.error('Data query error:', dataResult.error);
+      console.error('Data query error:', {
+        error: dataResult.error,
+        message: dataResult.error.message,
+        details: dataResult.error.details,
+        hint: dataResult.error.hint,
+        code: dataResult.error.code,
+        params: { page, pageSize, searchTerm, category, showUnusedOnly, includeOnlyMicroscopicAndGross }
+      });
       // Return default values instead of throwing to prevent UI crashes
       return {
         data: [],
         total: 0,
-        error: `Failed to fetch images: ${dataResult.error.message}`
+        error: `Failed to fetch images: ${dataResult.error.message || 'Unknown error'}`
       };
     }
 

@@ -7,7 +7,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { toast } from 'sonner';
-import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, FileText, Flag, ChevronRight, History, GitBranch, Eye, Download, Copy } from 'lucide-react';
+import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, FileText, Flag, ChevronRight, History, GitBranch, Eye, Download, Copy, Check, X, Send } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -23,13 +23,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
+import { Checkbox } from "@/shared/components/ui/checkbox";
 
 import { useQuestions } from '@/features/questions/hooks/use-questions';
 import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status';
-import { ComponentErrorBoundary } from '@/shared/components/common';
 import { useUserRole } from '@/shared/hooks/use-user-role';
+import { shouldShowDeleteButton } from '@/features/questions/utils/deletion-helpers';
+import { ComponentErrorBoundary } from '@/shared/components/common';
 import { CreateQuestionDialog } from './create-question-dialog';
 import { EditQuestionDialog } from './edit-question-dialog';
 import { EnhancedImportDialog } from './enhanced-import-dialog';
@@ -67,6 +69,8 @@ function TableControls({
   statusFilter,
   questionSetFilter,
   questionSets,
+  selectedQuestions,
+  onBulkOperation,
 }: {
   onSearch: (term: string) => void;
   onDifficultyChange: (difficulty: string) => void;
@@ -79,6 +83,8 @@ function TableControls({
   statusFilter: string;
   questionSetFilter: string;
   questionSets: any[];
+  selectedQuestions: string[];
+  onBulkOperation: (action: string) => void;
 }) {
   return (
     <div className="flex gap-4 items-center justify-between">
@@ -128,6 +134,60 @@ function TableControls({
           </SelectContent>
         </Select>
       </div>
+
+      {/* Bulk Actions */}
+      {selectedQuestions.length > 0 && (
+        <div className="flex gap-2 items-center">
+          <span className="text-sm text-muted-foreground">
+            {selectedQuestions.length} selected
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onBulkOperation('submit_for_review')}
+            className="text-blue-600 border-blue-600 hover:bg-blue-50"
+          >
+            <Send className="h-4 w-4 mr-2" />
+            Submit for Review
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onBulkOperation('approve')}
+            className="text-green-600 border-green-600 hover:bg-green-50"
+          >
+            <Check className="h-4 w-4 mr-2" />
+            Approve
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onBulkOperation('reject')}
+            className="text-orange-600 border-orange-600 hover:bg-orange-50"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Reject
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onBulkOperation('delete')}
+            className="text-red-600 border-red-600 hover:bg-red-50"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onBulkOperation('export')}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export Selected
+          </Button>
+        </div>
+      )}
+
       <div className="flex gap-2">
         <Button variant="outline" onClick={onExportAll}>
           <Download className="h-4 w-4 mr-2" />
@@ -205,7 +265,8 @@ function RowActions({
   onViewHistory,
   onCreateVersion,
   onExport,
-  onCopyJson
+  onCopyJson,
+  onCopy
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
@@ -215,11 +276,16 @@ function RowActions({
   onCreateVersion?: (question: QuestionWithDetails) => void;
   onExport?: (question: QuestionWithDetails) => void;
   onCopyJson?: (question: QuestionWithDetails) => void;
+  onCopy?: (question: QuestionWithDetails) => void;
 }) {
-  const { isAdmin } = useUserRole();
+  const { isAdmin, role } = useUserRole();
+  const { user } = useAuthStatus();
 
   // Check if user can edit this question
   const canEdit = question.status !== 'approved' || isAdmin;
+
+  // Check if user can delete this question
+  const canDelete = shouldShowDeleteButton(question, role, user?.id || null);
 
   return (
     <DropdownMenu>
@@ -262,6 +328,12 @@ function RowActions({
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
+        {onCopy && (
+          <DropdownMenuItem onClick={() => onCopy(question)}>
+            <Copy className="h-4 w-4 mr-2" />
+            Copy Question
+          </DropdownMenuItem>
+        )}
         {onExport && (
           <DropdownMenuItem onClick={() => onExport(question)}>
             <Download className="h-4 w-4 mr-2" />
@@ -274,13 +346,20 @@ function RowActions({
             Copy JSON
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem
-          className="text-red-600"
-          onClick={() => onDelete(question)}
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete
-        </DropdownMenuItem>
+        {canDelete ? (
+          <DropdownMenuItem
+            className="text-red-600"
+            onClick={() => onDelete(question)}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem disabled className="text-muted-foreground">
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete (Draft Only)
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -296,7 +375,10 @@ function QuestionRow({
   onCreateVersion,
   onPreview,
   onExport,
-  onCopyJson
+  onCopyJson,
+  onCopy,
+  isSelected,
+  onSelect
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
@@ -307,10 +389,19 @@ function QuestionRow({
   onPreview?: (question: QuestionWithDetails) => void;
   onExport?: (question: QuestionWithDetails) => void;
   onCopyJson?: (question: QuestionWithDetails) => void;
+  onCopy?: (question: QuestionWithDetails) => void;
+  isSelected: boolean;
+  onSelect: (questionId: string, checked: boolean) => void;
 }) {
 
   return (
     <TableRow key={question.id}>
+      <TableCell className="text-center">
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={(checked) => onSelect(question.id, checked as boolean)}
+        />
+      </TableCell>
       <TableCell className="text-center">
         {(question.flag_count || 0) > 0 && (
           <Flag className="h-4 w-4 text-red-500" />
@@ -383,6 +474,7 @@ function QuestionRow({
             onCreateVersion={onCreateVersion}
             onExport={onExport}
             onCopyJson={onCopyJson}
+            onCopy={onCopy}
           />
         </TableCell>
       </TableRow>
@@ -395,6 +487,7 @@ export function QuestionsTable() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [questionSetFilter, setQuestionSetFilter] = useState('all');
   const [page, setPage] = useState(0);
+  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
 
   const supabase = createClient();
   const [selectedQuestion, setSelectedQuestion] = useState<QuestionWithDetails | null>(null);
@@ -596,6 +689,99 @@ export function QuestionsTable() {
     }
   }, []);
 
+  // Bulk selection handlers
+  const handleSelectQuestion = useCallback((questionId: string, checked: boolean) => {
+    setSelectedQuestions(prev =>
+      checked
+        ? [...prev, questionId]
+        : prev.filter(id => id !== questionId)
+    )
+  }, []);
+
+  const handleSelectAll = useCallback((checked: boolean) => {
+    if (checked) {
+      const allQuestionIds = questions?.map(q => q.id) || []
+      setSelectedQuestions(allQuestionIds)
+    } else {
+      setSelectedQuestions([])
+    }
+  }, [questions]);
+
+  // Bulk operations
+  const handleBulkOperation = useCallback(async (action: string) => {
+    if (selectedQuestions.length === 0) {
+      toast.error('Please select questions first')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/questions/bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          action,
+          questionIds: selectedQuestions
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || `Failed to ${action} questions`);
+      }
+
+      // Handle export differently
+      if (action === 'export') {
+        const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `pathology-bites-questions-bulk-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast.success(`Successfully exported ${data.count} question(s)`);
+      } else {
+        toast.success(data.message || `Successfully ${action.replace('_', ' ')}ed ${data.affectedCount} question(s)`);
+        refetch();
+      }
+
+      setSelectedQuestions([]);
+    } catch (error) {
+      console.error(`Error performing bulk ${action}:`, error);
+      toast.error(error instanceof Error ? error.message : `Failed to ${action} questions`);
+    }
+  }, [selectedQuestions, refetch]);
+
+  const handleCopyQuestion = useCallback(async (question: QuestionWithDetails) => {
+    try {
+      const response = await fetch(`/api/admin/questions/${question.id}/copy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to copy question');
+      }
+
+      toast.success(data.message || 'Question copied successfully');
+      refetch();
+    } catch (error) {
+      console.error('Error copying question:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to copy question');
+    }
+  }, [refetch]);
+
   const handleCreateSave = useCallback(() => {
     setShowCreateDialog(false);
     refetch();
@@ -655,12 +841,20 @@ export function QuestionsTable() {
         statusFilter={statusFilter}
         questionSetFilter={questionSetFilter}
         questionSets={questionSets}
+        selectedQuestions={selectedQuestions}
+        onBulkOperation={handleBulkOperation}
       />
 
       <div className="rounded-md border bg-card">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={selectedQuestions.length === questions?.length && questions.length > 0}
+                  onCheckedChange={handleSelectAll}
+                />
+              </TableHead>
               <TableHead className="w-[50px]"></TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Status</TableHead>
@@ -675,13 +869,13 @@ export function QuestionsTable() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center">
+                <TableCell colSpan={10} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : questions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
                   {searchTerm || difficultyFilter !== 'all' || statusFilter !== 'all' || questionSetFilter !== 'all'
                     ? 'No questions found matching your filters'
                     : 'No questions created yet'
@@ -701,6 +895,9 @@ export function QuestionsTable() {
                   onPreview={handlePreview}
                   onExport={handleExportQuestion}
                   onCopyJson={handleCopyJsonQuestion}
+                  onCopy={handleCopyQuestion}
+                  isSelected={selectedQuestions.includes(question.id)}
+                  onSelect={handleSelectQuestion}
                 />
               ))
             )}

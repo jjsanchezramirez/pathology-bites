@@ -128,7 +128,7 @@ export async function GET(
           )
         `)
         .eq('id', id)
-        .eq('status', 'approved')
+        .eq('status', 'published')
         .single();
       
       if (directError || !directData) {

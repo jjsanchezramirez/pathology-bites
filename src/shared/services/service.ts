@@ -105,54 +105,47 @@ export class NotificationsService {
       }, {} as Record<string, string[]>)
 
 
-      // Fetch source data for all types in parallel
-      const [inquiries, reports, systemUpdates, milestones, reminders] = await Promise.all([
+      // Fetch source data for existing tables only
+      const [inquiries, reports] = await Promise.all([
         sourceIdsByType.inquiry?.length > 0 ? this.getInquiries(sourceIdsByType.inquiry) : [],
-        sourceIdsByType.report?.length > 0 ? this.getReports(sourceIdsByType.report) : [],
-        sourceIdsByType.system_update?.length > 0 ? this.getSystemUpdates(sourceIdsByType.system_update) : [],
-        sourceIdsByType.milestone?.length > 0 ? this.getMilestones(sourceIdsByType.milestone) : [],
-        sourceIdsByType.reminder?.length > 0 ? this.getReminders(sourceIdsByType.reminder) : []
+        sourceIdsByType.report?.length > 0 ? this.getReports(sourceIdsByType.report) : []
       ])
 
-      // Create lookup maps for all source types
+      // Create lookup maps for existing source types
       const inquiryMap = new Map(inquiries.map(i => [i.id, i] as const))
       const reportMap = new Map(reports.map(r => [r.id, r] as const))
-      const systemUpdateMap = new Map(systemUpdates.map(u => [u.id, u] as const))
-      const milestoneMap = new Map(milestones.map(m => [m.id, m] as const))
-      const reminderMap = new Map(reminders.map(r => [r.id, r] as const))
 
       // Combine notification states with source data
       const notifications: NotificationWithSource[] = notificationStates
         .map(state => {
-          // Handle legacy admin notifications
           if (state.source_type === 'inquiry') {
             const inquiry = inquiryMap.get(state.source_id)
             if (!inquiry) return null
 
             return {
               ...state,
-              title: state.title || `${inquiry.request_type === 'general' ? 'General' : 'Technical'} Inquiry`,
-              description: state.message || `${inquiry.first_name} ${inquiry.last_name} submitted an inquiry`,
+              title: `${inquiry.request_type === 'general' ? 'General' : 'Technical'} Inquiry`,
+              description: `${inquiry.first_name} ${inquiry.last_name} submitted an inquiry`,
               status: 'pending',
               metadata: {
-                ...state.metadata,
                 email: inquiry.email,
                 organization: inquiry.organization,
                 request_type: inquiry.request_type,
                 inquiry_text: inquiry.inquiry
               }
             }
-          } else if (state.source_type === 'report') {
+          }
+
+          else if (state.source_type === 'report') {
             const report = reportMap.get(state.source_id)
             if (!report) return null
 
             return {
               ...state,
-              title: state.title || 'Question Report',
-              description: state.message || `Question reported for ${report.report_type}`,
+              title: 'Question Report',
+              description: `Question reported for ${report.report_type}`,
               status: report.status,
               metadata: {
-                ...state.metadata,
                 question_id: report.question_id,
                 report_type: report.report_type,
                 description: report.description,
@@ -161,53 +154,34 @@ export class NotificationsService {
             }
           }
 
-          // Handle new user notification types
-          else if (state.source_type === 'system_update') {
-            const update = systemUpdateMap.get(state.source_id)
-            if (!update) return null
-
+          // Handle direct notification types (no separate source table needed)
+          else if (state.source_type === 'admin_alert') {
             return {
               ...state,
-              title: state.title || update.title,
-              description: state.message || update.message,
-              status: 'published',
-              metadata: {
-                ...state.metadata,
-                update_type: update.update_type,
-                severity: update.severity,
-                target_audience: update.target_audience
-              }
+              title: 'Admin Alert',
+              description: 'New admin activity requires attention',
+              status: 'pending',
+              metadata: {}
             }
-          } else if (state.source_type === 'milestone') {
-            const milestone = milestoneMap.get(state.source_id)
-            if (!milestone) return null
+          }
 
+          else if (state.source_type === 'question_review') {
             return {
               ...state,
-              title: state.title || milestone.title,
-              description: state.message || milestone.description,
-              status: 'achieved',
-              metadata: {
-                ...state.metadata,
-                milestone_type: milestone.milestone_type,
-                milestone_data: milestone.milestone_data,
-                achieved_at: milestone.achieved_at
-              }
+              title: 'Question Review Required',
+              description: 'A question needs your review',
+              status: 'pending',
+              metadata: {}
             }
-          } else if (state.source_type === 'reminder') {
-            const reminder = reminderMap.get(state.source_id)
-            if (!reminder) return null
+          }
 
+          else if (state.source_type === 'question_status') {
             return {
               ...state,
-              title: state.title || reminder.title,
-              description: state.message || reminder.message,
-              status: 'active',
-              metadata: {
-                ...state.metadata,
-                reminder_type: reminder.reminder_type,
-                frequency: reminder.frequency
-              }
+              title: 'Question Status Update',
+              description: 'Your question status has changed',
+              status: 'updated',
+              metadata: {}
             }
           }
 
@@ -259,49 +233,71 @@ export class NotificationsService {
     return data || []
   }
 
-  private async getSystemUpdates(ids: string[]): Promise<SystemUpdate[]> {
-    if (ids.length === 0) return []
-
-    const { data, error } = await this.getSupabase()
-      .from('system_updates')
-      .select('*')
-      .in('id', ids)
+  // Simple notification creation for admin dashboard events
+  async createAdminNotification(
+    userId: string,
+    sourceType: 'admin_alert' | 'question_review' | 'question_status',
+    sourceId: string
+  ): Promise<void> {
+    const { error } = await this.getSupabase()
+      .from('notification_states')
+      .insert({
+        user_id: userId,
+        source_type: sourceType,
+        source_id: sourceId,
+        read: false
+      })
 
     if (error) {
       throw error
     }
-
-    return data || []
   }
 
-  private async getMilestones(ids: string[]): Promise<UserMilestone[]> {
-    if (ids.length === 0) return []
+  // Create notifications for role-appropriate events
+  async createRoleBasedNotifications(
+    userRole: string,
+    eventType: 'question_submitted' | 'question_approved' | 'question_rejected' | 'new_user_registered',
+    sourceId: string,
+    targetUserId?: string
+  ): Promise<void> {
+    try {
+      // Get users based on role who should receive this notification
+      let targetUsers: string[] = []
 
-    const { data, error } = await this.getSupabase()
-      .from('user_milestones')
-      .select('*')
-      .in('id', ids)
+      if (targetUserId) {
+        targetUsers = [targetUserId]
+      } else {
+        // Get users by role
+        const { data: users } = await this.getSupabase()
+          .from('user_profiles')
+          .select('user_id')
+          .eq('role', userRole)
+          .eq('status', 'active')
 
-    if (error) {
-      throw error
+        targetUsers = users?.map(u => u.user_id) || []
+      }
+
+      // Create notifications for each target user
+      const notifications = targetUsers.map(userId => ({
+        user_id: userId,
+        source_type: eventType === 'question_submitted' ? 'question_review' :
+                    eventType === 'new_user_registered' ? 'admin_alert' : 'question_status',
+        source_id: sourceId,
+        read: false
+      }))
+
+      if (notifications.length > 0) {
+        const { error } = await this.getSupabase()
+          .from('notification_states')
+          .insert(notifications)
+
+        if (error) {
+          throw error
+        }
+      }
+    } catch (error) {
+      console.error('Error creating role-based notifications:', error)
     }
-
-    return data || []
-  }
-
-  private async getReminders(ids: string[]): Promise<UserReminder[]> {
-    if (ids.length === 0) return []
-
-    const { data, error } = await this.getSupabase()
-      .from('user_reminders')
-      .select('*')
-      .in('id', ids)
-
-    if (error) {
-      throw error
-    }
-
-    return data || []
   }
 
   async markAsRead(notificationId: string): Promise<void> {
@@ -341,94 +337,79 @@ export class NotificationsService {
     return count || 0
   }
 
-  // Notification creation methods
-  async createSystemUpdateNotification(
-    systemUpdateId: string,
-    targetUserIds: string[]
-  ): Promise<void> {
-    const notifications = targetUserIds.map(userId => ({
-      user_id: userId,
-      source_type: 'system_update',
-      source_id: systemUpdateId,
-      read: false
-    }))
+  // Test method to create sample notifications for different roles
+  async createTestNotifications(): Promise<void> {
+    try {
+      // Get admin users
+      const { data: adminUsers } = await this.getSupabase()
+        .from('user_profiles')
+        .select('user_id')
+        .eq('role', 'admin')
+        .limit(5)
 
-    const { error } = await this.getSupabase()
-      .from('notification_states')
-      .insert(notifications)
+      // Get creator users
+      const { data: creatorUsers } = await this.getSupabase()
+        .from('user_profiles')
+        .select('user_id')
+        .eq('role', 'creator')
+        .limit(5)
 
-    if (error) {
-      throw error
-    }
-  }
+      // Get reviewer users
+      const { data: reviewerUsers } = await this.getSupabase()
+        .from('user_profiles')
+        .select('user_id')
+        .eq('role', 'reviewer')
+        .limit(5)
 
-  async createMilestoneNotification(
-    userId: string,
-    milestoneId: string,
-    title?: string,
-    message?: string
-  ): Promise<void> {
-    const { error } = await this.getSupabase()
-      .from('notification_states')
-      .insert({
-        user_id: userId,
-        source_type: 'milestone',
-        source_id: milestoneId,
-        title,
-        message,
-        read: false
-      })
+      const notifications = []
 
-    if (error) {
-      throw error
-    }
-  }
+      // Create admin notifications
+      if (adminUsers?.length) {
+        for (const user of adminUsers) {
+          notifications.push({
+            user_id: user.user_id,
+            source_type: 'admin_alert',
+            source_id: `admin_${Date.now()}_${Math.random()}`,
+            read: false
+          })
+        }
+      }
 
-  async createReminderNotification(
-    userId: string,
-    reminderId: string,
-    title?: string,
-    message?: string
-  ): Promise<void> {
-    const { error } = await this.getSupabase()
-      .from('notification_states')
-      .insert({
-        user_id: userId,
-        source_type: 'reminder',
-        source_id: reminderId,
-        title,
-        message,
-        read: false
-      })
+      // Create creator notifications
+      if (creatorUsers?.length) {
+        for (const user of creatorUsers) {
+          notifications.push({
+            user_id: user.user_id,
+            source_type: 'question_status',
+            source_id: `creator_${Date.now()}_${Math.random()}`,
+            read: false
+          })
+        }
+      }
 
-    if (error) {
-      throw error
-    }
-  }
+      // Create reviewer notifications
+      if (reviewerUsers?.length) {
+        for (const user of reviewerUsers) {
+          notifications.push({
+            user_id: user.user_id,
+            source_type: 'question_review',
+            source_id: `reviewer_${Date.now()}_${Math.random()}`,
+            read: false
+          })
+        }
+      }
 
-  async createAchievementNotification(
-    userId: string,
-    achievementData: {
-      title: string
-      message: string
-      metadata?: Record<string, any>
-    }
-  ): Promise<void> {
-    // For achievements, we create a direct notification without a separate source table
-    const { error } = await this.getSupabase()
-      .from('notification_states')
-      .insert({
-        user_id: userId,
-        source_type: 'achievement',
-        source_id: `achievement_${Date.now()}`, // Generate unique ID
-        title: achievementData.title,
-        message: achievementData.message,
-        metadata: achievementData.metadata || {},
-        read: false
-      })
+      if (notifications.length > 0) {
+        const { error } = await this.getSupabase()
+          .from('notification_states')
+          .insert(notifications)
 
-    if (error) {
-      throw error
+        if (error) {
+          throw error
+        }
+      }
+    } catch (error) {
+      console.error('Error creating test notifications:', error)
     }
   }
 }

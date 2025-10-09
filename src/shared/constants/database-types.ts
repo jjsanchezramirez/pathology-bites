@@ -51,8 +51,9 @@ export const TABLE_NAMES = {
 
 export const QUESTION_STATUSES: Database['public']['Enums']['question_status'][] = [
   'draft',
-  'pending_review', 
-  'approved',
+  'pending_review',
+  'rejected',
+  'published',
   'flagged',
   'archived'
 ] as const
@@ -153,7 +154,8 @@ export const getQuestionStatusLabel = (status: Database['public']['Enums']['ques
   const labels: Record<Database['public']['Enums']['question_status'], string> = {
     draft: 'Draft',
     pending_review: 'Pending Review',
-    approved: 'Approved',
+    rejected: 'Rejected',
+    published: 'Published',
     flagged: 'Flagged',
     archived: 'Archived'
   }

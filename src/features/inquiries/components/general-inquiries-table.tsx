@@ -21,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select"
-import { Search, Filter, MessageSquare, AlertCircle } from 'lucide-react'
+import { Search, Filter, MessageSquare, AlertCircle, Trash2 } from 'lucide-react'
+import { Checkbox } from '@/shared/components/ui/checkbox'
 import { InquiryDetailsDialog } from './inquiry-details-dialog'
 import { InquiryActionsDropdown } from './inquiry-actions-dropdown'
 import { InquiryStatusBadge } from './inquiry-status-badge'
@@ -41,35 +42,50 @@ interface Inquiry {
 }
 
 interface GeneralInquiriesTableProps {
-  type: 'general' | 'tech'
+  type: 'general' | 'tech' | 'all'
+  statusFilter?: 'pending' | 'solved' | 'all'
+  onInquiriesChange?: () => void
 }
 
-export function GeneralInquiriesTable({ type }: GeneralInquiriesTableProps) {
+export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesChange }: GeneralInquiriesTableProps) {
   const [inquiries, setInquiries] = useState<Inquiry[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
+  const [selectedInquiries, setSelectedInquiries] = useState<string[]>([])
+  const [bulkDeleting, setBulkDeleting] = useState(false)
 
   const supabase = createClient()
 
   useEffect(() => {
     fetchInquiries()
-  }, [type])
+  }, [type, statusFilter])
 
   const fetchInquiries = async () => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
+      let query = supabase
         .from('inquiries')
         .select('*')
-        .eq('request_type', type)
-        .order('created_at', { ascending: false })
+
+      // Apply type filter
+      if (type !== 'all') {
+        query = query.eq('request_type', type)
+      }
+
+      // Apply status filter
+      if (statusFilter === 'pending') {
+        query = query.eq('status', 'pending')
+      } else if (statusFilter === 'solved') {
+        query = query.in('status', ['resolved', 'closed'])
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false })
 
       if (error) {
         console.error('Error fetching inquiries:', error)
-        toast.error(`Failed to load ${type} inquiries: ${error.message || 'Unknown error'}`)
+        toast.error(`Failed to load inquiries: ${error.message || 'Unknown error'}`)
         return
       }
 
@@ -77,11 +93,11 @@ export function GeneralInquiriesTable({ type }: GeneralInquiriesTableProps) {
       setInquiries(inquiries)
 
       if (inquiries.length === 0) {
-        console.log(`No ${type} inquiries found`)
+        console.log(`No inquiries found for type: ${type}, status: ${statusFilter}`)
       }
     } catch (error) {
       console.error('Unexpected error fetching inquiries:', error)
-      toast.error(`An unexpected error occurred while loading ${type} inquiries`)
+      toast.error(`An unexpected error occurred while loading inquiries`)
     } finally {
       setLoading(false)
     }
@@ -119,6 +135,56 @@ export function GeneralInquiriesTable({ type }: GeneralInquiriesTableProps) {
 
   const handleDelete = (inquiryId: string) => {
     setInquiries(prev => prev.filter(inquiry => inquiry.id !== inquiryId))
+    setSelectedInquiries(prev => prev.filter(id => id !== inquiryId))
+    onInquiriesChange?.()
+  }
+
+  const handleSelectInquiry = (inquiryId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedInquiries(prev => [...prev, inquiryId])
+    } else {
+      setSelectedInquiries(prev => prev.filter(id => id !== inquiryId))
+    }
+  }
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedInquiries(filteredInquiries.map(inquiry => inquiry.id))
+    } else {
+      setSelectedInquiries([])
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedInquiries.length === 0) return
+
+    setBulkDeleting(true)
+    try {
+      const response = await fetch('/api/admin/inquiries/bulk-delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ inquiryIds: selectedInquiries }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete inquiries')
+      }
+
+      toast.success(`${selectedInquiries.length} inquiries deleted successfully`)
+
+      // Remove deleted inquiries from local state
+      setInquiries(prev => prev.filter(inquiry => !selectedInquiries.includes(inquiry.id)))
+      setSelectedInquiries([])
+      onInquiriesChange?.()
+    } catch (error) {
+      console.error('Error deleting inquiries:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to delete inquiries')
+    } finally {
+      setBulkDeleting(false)
+    }
   }
 
   const getStatusBadge = (inquiry: Inquiry) => {
@@ -135,6 +201,24 @@ export function GeneralInquiriesTable({ type }: GeneralInquiriesTableProps) {
   const truncateText = (text: string, maxLength: number = 100) => {
     if (text.length <= maxLength) return text
     return text.substring(0, maxLength) + '...'
+  }
+
+  const getEmptyStateMessage = () => {
+    if (statusFilter === 'pending') {
+      return type === 'all' ? 'No pending inquiries' : `No pending ${type} inquiries`
+    } else if (statusFilter === 'solved') {
+      return 'No solved inquiries'
+    }
+    return `No ${type} inquiries available`
+  }
+
+  const getEmptyStateSubMessage = () => {
+    if (statusFilter === 'pending') {
+      return type === 'all' ? 'Pending inquiries will appear here.' : `Pending ${type} inquiries will appear here.`
+    } else if (statusFilter === 'solved') {
+      return 'Solved inquiries will appear here.'
+    }
+    return `${type === 'general' ? 'General' : type === 'tech' ? 'Technical support' : ''} inquiries will appear here when submitted.`
   }
 
   if (loading) {
@@ -156,29 +240,39 @@ export function GeneralInquiriesTable({ type }: GeneralInquiriesTableProps) {
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search inquiries..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
-          />
+      {/* Filters and Bulk Actions */}
+      <div className="space-y-4">
+        <div className="flex gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search inquiries..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-32">
-            <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="new">New</SelectItem>
-            <SelectItem value="recent">Recent</SelectItem>
-            <SelectItem value="older">Older</SelectItem>
-          </SelectContent>
-        </Select>
+
+        {/* Bulk Actions Bar */}
+        {selectedInquiries.length > 0 && (
+          <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <span className="text-sm text-blue-800">
+              {selectedInquiries.length} inquiry{selectedInquiries.length !== 1 ? 'ies' : ''} selected
+            </span>
+            <div className="flex gap-2 ml-auto">
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={handleBulkDelete}
+                disabled={bulkDeleting}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {bulkDeleting ? 'Deleting...' : 'Delete Selected'}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Table */}
@@ -186,6 +280,13 @@ export function GeneralInquiriesTable({ type }: GeneralInquiriesTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={filteredInquiries.length > 0 && selectedInquiries.length === filteredInquiries.length}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all inquiries"
+                />
+              </TableHead>
               <TableHead className="w-[200px]">Contact</TableHead>
               <TableHead>Inquiry</TableHead>
               <TableHead>Status</TableHead>
@@ -196,20 +297,20 @@ export function GeneralInquiriesTable({ type }: GeneralInquiriesTableProps) {
           <TableBody>
             {filteredInquiries.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-12">
+                <TableCell colSpan={6} className="text-center py-12">
                   <div className="flex flex-col items-center gap-3">
                     <MessageSquare className="h-12 w-12 text-muted-foreground/50" />
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-muted-foreground">
                         {inquiries.length === 0
-                          ? `No ${type} inquiries available`
-                          : `No ${type} inquiries match your search`
+                          ? getEmptyStateMessage()
+                          : 'No inquiries match your search'
                         }
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {inquiries.length === 0
-                          ? `${type === 'general' ? 'General' : 'Technical support'} inquiries will appear here when submitted.`
-                          : 'Try adjusting your search terms or filters.'
+                          ? getEmptyStateSubMessage()
+                          : 'Try adjusting your search terms.'
                         }
                       </p>
                     </div>
@@ -219,6 +320,13 @@ export function GeneralInquiriesTable({ type }: GeneralInquiriesTableProps) {
             ) : (
               filteredInquiries.map((inquiry) => (
                 <TableRow key={inquiry.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedInquiries.includes(inquiry.id)}
+                      onCheckedChange={(checked) => handleSelectInquiry(inquiry.id, checked as boolean)}
+                      aria-label={`Select inquiry from ${inquiry.first_name} ${inquiry.last_name}`}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">

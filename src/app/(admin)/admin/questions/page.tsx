@@ -1,8 +1,7 @@
 // src/app/(admin)/admin/questions/page.tsx
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+
 import { useUserRole } from '@/shared/hooks/use-user-role'
 import { QuestionsTable } from '@/features/questions/components/questions-table'
 import {
@@ -14,15 +13,7 @@ import {
 } from "@/shared/components/ui/card"
 
 export default function QuestionsPage() {
-  const router = useRouter()
   const { role, isLoading } = useUserRole()
-
-  useEffect(() => {
-    // Redirect creators to their personal dashboard
-    if (!isLoading && role === 'creator') {
-      router.push('/admin/my-questions')
-    }
-  }, [role, isLoading, router])
 
   // Show loading while checking role
   if (isLoading) {
@@ -36,25 +27,31 @@ export default function QuestionsPage() {
     )
   }
 
-  // Only admins see the full questions table
-  if (role !== 'admin') {
-    return null // Will redirect via useEffect
+  // All admin roles can access the question database
+  if (!role || !['admin', 'creator', 'reviewer'].includes(role)) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground">Access denied. Admin privileges required.</p>
+        </div>
+      </div>
+    )
   }
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Questions</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Question Database</h1>
         <p className="text-muted-foreground">
-          Manage and organize your question bank with support for multiple question sets and image associations.
+          Browse, search, and manage all questions in the system. Export, edit, and organize questions with advanced filtering and bulk operations.
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Question Management</CardTitle>
+          <CardTitle>All Questions</CardTitle>
           <CardDescription>
-            Create, edit, and organize questions. Associate questions with question sets and add relevant images.
+            Comprehensive view of all questions with advanced search, filtering, and bulk operations. Role-based permissions apply to editing and deletion.
           </CardDescription>
         </CardHeader>
         <CardContent>

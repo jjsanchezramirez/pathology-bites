@@ -19,15 +19,42 @@ export interface UserStatsRef {
   refresh: () => void;
 }
 
+const CACHE_KEY = 'user-stats-cache';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
 export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
   const [stats, setStats] = useState<UserStatsFormatted | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadStats = async () => {
+  const loadStats = async (forceRefresh = false) => {
     try {
       setLoading(true);
+
+      // Check localStorage cache first (unless forcing refresh)
+      if (!forceRefresh) {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          const isStale = Date.now() - timestamp > CACHE_DURATION;
+
+          if (!isStale) {
+            setStats(data);
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
+      // Fetch fresh data using optimized database function
       const data = await getFormattedUserStats();
       setStats(data);
+
+      // Cache the result in localStorage
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        data,
+        timestamp: Date.now()
+      }));
+
     } catch (error) {
       console.error('Failed to load user stats:', error);
       toast.error('Failed to load user statistics');
@@ -42,7 +69,7 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
 
   // Expose refresh function via ref
   useImperativeHandle(ref, () => ({
-    refresh: loadStats
+    refresh: () => loadStats(true)
   }));
 
   if (loading) {

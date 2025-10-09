@@ -274,21 +274,7 @@ export function clearWSICache(): void {
   console.log('[Client WSI] Cache cleared')
 }
 
-/**
- * Get cache status for debugging
- */
-export function getWSICacheStatus() {
-  const now = Date.now()
-  const isValid = cachedWSIData && (now - cacheTimestamp) < CACHE_TTL
-  const ageMinutes = cachedWSIData ? Math.round((now - cacheTimestamp) / 60000) : 0
-  
-  return {
-    hasCache: !!cachedWSIData,
-    isValid,
-    ageMinutes,
-    slideCount: cachedWSIData?.length || 0
-  }
-}
+
 
 /**
  * Warm up the WSI cache by pre-loading data

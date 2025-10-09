@@ -14,20 +14,22 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get('pageSize') || '10')
     const search = searchParams.get('search')
 
-    // Build query
+    // Build query - simplified to avoid join issues
     let query = supabase
-      .from('sets')
-      .select(`
-        *,
-        created_by_user:created_by(first_name, last_name)
-      `, { count: 'exact' })
+      .from('question_sets')
+      .select('*', { count: 'exact' })
 
     if (search) {
       query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`)
     }
 
     // Get total count
-    const { count } = await query
+    const { count, error: countError } = await query
+
+    if (countError) {
+      console.error('Error getting count:', countError)
+      throw countError
+    }
 
     // Get paginated data
     const { data, error: dataError } = await query
@@ -35,6 +37,7 @@ export async function GET(request: NextRequest) {
       .range(page * pageSize, (page + 1) * pageSize - 1)
 
     if (dataError) {
+      console.error('Error getting data:', dataError)
       throw dataError
     }
 
@@ -77,8 +80,12 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error in admin question sets API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error'
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: errorMessage,
+        details: error instanceof Error ? error.stack : String(error)
+      },
       { status: 500 }
     )
   }
@@ -119,7 +126,7 @@ export async function POST(request: NextRequest) {
 
     // Create question set with service role to bypass RLS
     const { data, error } = await supabase
-      .from('sets')
+      .from('question_sets')
       .insert({
         name: name.trim(),
         description: description?.trim() || null,
@@ -180,7 +187,7 @@ export async function PATCH(request: NextRequest) {
 
     // Update question set with service role to bypass RLS
     const { data, error } = await supabase
-      .from('sets')
+      .from('question_sets')
       .update(updates)
       .eq('id', setId)
       .select()
@@ -244,7 +251,7 @@ export async function DELETE(request: NextRequest) {
 
     // Delete the question set
     const { error } = await supabase
-      .from('sets')
+      .from('question_sets')
       .delete()
       .eq('id', setId)
 

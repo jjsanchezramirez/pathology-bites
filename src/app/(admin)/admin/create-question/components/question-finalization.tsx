@@ -6,43 +6,47 @@ import { Button } from '@/shared/components/ui/button'
 import { Label } from '@/shared/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { Badge } from '@/shared/components/ui/badge'
-import { Separator } from '@/shared/components/ui/separator'
-import { Checkbox } from '@/shared/components/ui/checkbox'
-import { Input } from '@/shared/components/ui/input'
 import { Upload, Check, AlertCircle, Loader2 } from 'lucide-react'
 import { createClient } from '@/shared/services/client'
 import { useSharedAuth } from '@/shared/hooks/use-shared-auth'
 import { toast } from 'sonner'
 import { getCategoryIdFromContent } from '../utils/category-mapping'
+import { TagAutocomplete } from './tag-autocomplete'
+
+// Database-aligned interfaces matching src/shared/types/supabase.ts
 
 interface GeneratedQuestion {
+  // Core question fields (matching questions table)
   title: string
   stem: string
-  difficulty: 'easy' | 'medium' | 'hard'
+  difficulty: 'easy' | 'medium' | 'hard' // Database["public"]["Enums"]["difficulty_level"]
   teaching_point: string
-  question_references: string
-  status: string
-  question_set_id: string
-  category_id: string
+  question_references: string | null // Nullable in database
+  status: 'draft' | 'pending_review' | 'approved' | 'flagged' | 'archived' // Database["public"]["Enums"]["question_status"]
+  question_set_id: string | null // Nullable in database
+  category_id: string | null // Nullable in database
+
+  // Additional fields for question creation
   suggested_tags?: string[]
-  answer_options: Array<{
+  question_options: Array<{
     text: string
     is_correct: boolean
-    explanation: string
+    explanation: string | null // Nullable in database
     order_index: number
   }>
-  question_images: Array<{
+  question_images?: Array<{
     question_section: 'stem' | 'explanation'
     order_index: number
     image_url: string
     alt_text: string
     caption: string
   }>
-  tag_ids: string[]
-  metadata: any
+  tag_ids?: string[]
+  metadata?: any
 }
 
 interface ImageAttachment {
+  // Matching question_images table structure
   image_id: string
   question_section: 'stem' | 'explanation'
   order_index: number
@@ -50,40 +54,52 @@ interface ImageAttachment {
 
 interface QuestionFinalizationProps {
   question: GeneratedQuestion | null
-  uploadedFiles: File[]
   attachedImages: ImageAttachment[]
   onQuestionCreated: () => void
 }
 
 interface Category {
+  // Matching categories table
   id: string
   name: string
-  level: number
+  description: string | null
   parent_id: string | null
+  level: number
+  color: string | null
+  short_form: string | null
+  created_at: string
+  updated_at: string
 }
 
 interface Tag {
+  // Matching tags table
   id: string
   name: string
+  description: string | null
+  color: string | null
+  created_at: string
 }
 
 interface QuestionSet {
+  // Matching question_sets table
   id: string
   name: string
+  description: string | null
   source_type: string
+  source_details: any // QuestionSetSourceDetails
+  is_active: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
 }
 
-export function QuestionFinalization({ question, uploadedFiles, attachedImages, onQuestionCreated }: QuestionFinalizationProps) {
-  const { user } = useSharedAuth()
-  const supabase = createClient()
-
+export function QuestionFinalization({ question, attachedImages, onQuestionCreated }: QuestionFinalizationProps) {
   const [categories, setCategories] = useState<Category[]>([])
   const [tags, setTags] = useState<Tag[]>([])
   const [questionSets, setQuestionSets] = useState<QuestionSet[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [selectedQuestionSet, setSelectedQuestionSet] = useState<string>('')
-  const [newTagName, setNewTagName] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -114,23 +130,17 @@ export function QuestionFinalization({ question, uploadedFiles, attachedImages, 
 
     console.log('Available question sets:', availableQuestionSets.map(s => ({ name: s.name, source_type: s.source_type })))
 
-    let setName = 'AI Generated'
     let specificSetNames: string[] = []
 
     if (aiModel?.startsWith('gemini-')) {
-      setName = 'AI Generated - Gemini'
       specificSetNames = ['AI Generated - Gemini', 'Gemini', 'AI - Gemini']
     } else if (aiModel?.startsWith('claude-')) {
-      setName = 'AI Generated - Claude'
       specificSetNames = ['AI Generated - Claude', 'Claude', 'AI - Claude']
     } else if (aiModel?.startsWith('gpt-')) {
-      setName = 'AI Generated - ChatGPT'
       specificSetNames = ['AI Generated - ChatGPT', 'ChatGPT', 'AI - ChatGPT', 'AI Generated - GPT']
     } else if (aiModel?.startsWith('mistral-') || aiModel?.startsWith('open-mistral')) {
-      setName = 'AI Generated - Mistral'
       specificSetNames = ['AI Generated - Mistral', 'Mistral', 'AI - Mistral']
     } else if (aiModel?.startsWith('deepseek-')) {
-      setName = 'AI Generated - DeepSeek'
       specificSetNames = ['AI Generated - DeepSeek', 'DeepSeek', 'AI - DeepSeek']
     }
 
@@ -200,12 +210,12 @@ export function QuestionFinalization({ question, uploadedFiles, attachedImages, 
           toast.error(`Failed to load categories: ${errorData.error || 'Unknown error'}`)
         }
 
-        // Load tags with better error handling - limit to 10 most recently used
-        console.log('Loading recent tags...')
-        const tagsResponse = await fetch('/api/admin/tags?page=0&pageSize=10&sortBy=recent')
+        // Load all tags for autocomplete functionality
+        console.log('Loading all tags...')
+        const tagsResponse = await fetch('/api/admin/tags?page=0&pageSize=1000')
         if (tagsResponse.ok) {
           const tagsData = await tagsResponse.json()
-          console.log('Recent tags loaded:', tagsData.tags?.length || 0)
+          console.log('All tags loaded:', tagsData.tags?.length || 0)
           loadedTags = tagsData.tags || []
           setTags(loadedTags)
         } else {
@@ -346,59 +356,6 @@ export function QuestionFinalization({ question, uploadedFiles, attachedImages, 
     loadData()
   }, [question])
 
-  const addNewTag = () => {
-    if (newTagName.trim()) {
-      const newTag = {
-        id: `new-${Date.now()}`,
-        name: newTagName.trim().toLowerCase()
-      }
-      setTags(prev => [...prev, newTag])
-      setSelectedTags(prev => [...prev, newTag.id])
-      setNewTagName('')
-      toast.success('Tag added successfully')
-    }
-  }
-
-  // Create new tag
-  const createNewTag = async () => {
-    if (!newTagName.trim()) {
-      toast.error('Please enter a tag name')
-      return
-    }
-
-    try {
-      const response = await fetch('/api/admin/tags', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: newTagName.trim() })
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        const newTag = result.tag
-
-        // Add to tags list
-        setTags(prev => [...prev, newTag])
-
-        // Add to selected tags
-        setSelectedTags(prev => [...prev, newTag.id])
-
-        // Clear input
-        setNewTagName('')
-
-        toast.success(`Tag "${newTag.name}" created and added`)
-      } else {
-        const errorData = await response.json()
-        toast.error(errorData.error || 'Failed to create tag')
-      }
-    } catch (error) {
-      console.error('Error creating tag:', error)
-      toast.error('Failed to create tag')
-    }
-  }
-
   // Convert attached images to the format expected by the API
   const prepareImageAttachments = (): { image_id: string; question_section: string; order_index: number }[] => {
     return attachedImages.map(img => ({
@@ -439,7 +396,7 @@ export function QuestionFinalization({ question, uploadedFiles, attachedImages, 
       }
 
       // Submit to the API
-      const response = await fetch('/api/admin/create-question', {
+      const response = await fetch('/api/admin/questions-create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -488,7 +445,7 @@ export function QuestionFinalization({ question, uploadedFiles, attachedImages, 
     )
   }
 
-  const correctAnswer = question.answer_options.find(opt => opt.is_correct)
+  const correctAnswer = question.question_options.find(opt => opt.is_correct)
 
   return (
     <div className="space-y-6">
@@ -509,10 +466,10 @@ export function QuestionFinalization({ question, uploadedFiles, attachedImages, 
               {question.difficulty?.toUpperCase() || 'MEDIUM'}
             </Badge>
             <Badge variant="outline">
-              {question.answer_options.length} options
+              {question.question_options.length} options
             </Badge>
             <Badge variant="outline">
-              Correct: {correctAnswer ? `Option ${question.answer_options.indexOf(correctAnswer) + 1}` : 'None'}
+              Correct: {correctAnswer ? `Option ${question.question_options.indexOf(correctAnswer) + 1}` : 'None'}
             </Badge>
             <Badge variant="outline">
               Images: {attachedImages.length} attached
@@ -585,47 +542,13 @@ export function QuestionFinalization({ question, uploadedFiles, attachedImages, 
         <CardHeader>
           <CardTitle>Tags</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Select Tags</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {tags.map((tag) => (
-                <div key={tag.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={tag.id}
-                    checked={selectedTags.includes(tag.id)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setSelectedTags(prev => [...prev, tag.id])
-                      } else {
-                        setSelectedTags(prev => prev.filter(id => id !== tag.id))
-                      }
-                    }}
-                  />
-                  <Label htmlFor={tag.id} className="text-sm">
-                    {tag.name}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <Separator />
-
-          <div className="space-y-2">
-            <Label>Add New Tag</Label>
-            <div className="flex gap-2">
-              <Input
-                value={newTagName}
-                onChange={(e) => setNewTagName(e.target.value)}
-                placeholder="Enter tag name..."
-                onKeyPress={(e) => e.key === 'Enter' && createNewTag()}
-              />
-              <Button onClick={createNewTag} disabled={!newTagName.trim()}>
-                Add
-              </Button>
-            </div>
-          </div>
+        <CardContent>
+          <TagAutocomplete
+            selectedTags={selectedTags}
+            onTagsChange={setSelectedTags}
+            allTags={tags}
+            onTagCreated={(newTag) => setTags(prev => [...prev, newTag])}
+          />
         </CardContent>
       </Card>
 

@@ -1,7 +1,7 @@
 // src/features/questions/components/question-row.tsx
 'use client'
 
-import { useState, memo, useCallback } from 'react'
+import React, { useState, memo, useCallback } from 'react'
 import Image from 'next/image'
 import { ImageIcon, PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon, Loader2 } from 'lucide-react'
 import { Badge } from '@/shared/components/ui/badge'
@@ -22,6 +22,9 @@ import {
 import { getCategoryDisplayName } from '@/features/questions/utils/display-helpers'
 import { EditQuestionDialog } from './edit-question-dialog'
 import { createClient } from '@/shared/services/client'
+import { useUserRole } from '@/shared/hooks/use-user-role'
+import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { shouldShowDeleteButton } from '@/features/questions/utils/deletion-helpers'
 
 interface QuestionRowProps {
   question: Question
@@ -55,6 +58,11 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
   const [isLoadingQuestion, setIsLoadingQuestion] = useState(false)
 
   const supabase = createClient()
+  const { role } = useUserRole()
+  const { user } = useAuthStatus()
+
+  // Check if user can delete this question
+  const canDelete = shouldShowDeleteButton(question, role, user?.id || null)
 
   const handleEdit = useCallback(async () => {
     setIsLoadingQuestion(true)
@@ -253,15 +261,17 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
                 <PencilIcon className="h-3 w-3" />
               )}
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              <TrashIcon className="h-3 w-3" />
-            </Button>
+            {canDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                <TrashIcon className="h-3 w-3" />
+              </Button>
+            )}
           </div>
         </td>
       </tr>

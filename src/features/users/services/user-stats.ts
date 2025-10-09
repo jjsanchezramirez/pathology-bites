@@ -83,36 +83,37 @@ export async function getUserStats(): Promise<UserStats> {
   const supabase = createClient();
 
   try {
-    // Use the standardized view with v_ prefix
+    // Use optimized database function for minimal data transfer
     const { data, error } = await supabase
-      .from('v_user_stats')
-      .select('*')
-      .single();
+      .rpc('get_user_statistics');
 
     if (error) throw error;
+    if (!data || data.length === 0) throw new Error('No user statistics found');
+
+    const stats = data[0];
 
     return {
-      total_users: data.total_users,
-      active_users: data.active_users,
-      inactive_users: data.inactive_users,
-      suspended_users: data.suspended_users,
-      recent_users: data.recent_users,
-      internal_users: data.internal_users,
-      end_users: data.end_users,
-      active_internal_users: data.active_internal_users,
-      active_end_users: data.active_end_users,
-      total_admins: data.total_admins,
-      total_creators: data.total_creators,
-      total_reviewers: data.total_reviewers,
-      active_admins: data.active_admins,
-      active_creators: data.active_creators,
-      active_reviewers: data.active_reviewers,
-      active_percentage: data.active_percentage,
-      inactive_percentage: data.inactive_percentage,
-      suspended_percentage: data.suspended_percentage,
-      internal_percentage: data.internal_percentage,
-      end_users_percentage: data.end_users_percentage,
-      last_updated: data.last_updated
+      total_users: stats.total_users,
+      active_users: stats.active_users,
+      inactive_users: stats.inactive_users,
+      suspended_users: stats.suspended_users,
+      recent_users: stats.recent_users,
+      internal_users: stats.internal_users,
+      end_users: stats.end_users,
+      active_internal_users: stats.active_internal_users,
+      active_end_users: stats.active_end_users,
+      total_admins: stats.total_admins,
+      total_creators: stats.total_creators,
+      total_reviewers: stats.total_reviewers,
+      active_admins: stats.active_admins,
+      active_creators: stats.active_creators,
+      active_reviewers: stats.active_reviewers,
+      active_percentage: stats.active_percentage,
+      inactive_percentage: stats.inactive_percentage,
+      suspended_percentage: stats.suspended_percentage,
+      internal_percentage: stats.internal_percentage,
+      end_users_percentage: stats.end_users_percentage,
+      last_updated: stats.last_updated
     };
   } catch (error) {
     console.error('Get user stats error:', error);

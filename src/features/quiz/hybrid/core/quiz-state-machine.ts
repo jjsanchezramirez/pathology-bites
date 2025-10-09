@@ -90,10 +90,10 @@ export function quizStateReducer(state: QuizState, action: QuizAction): QuizStat
     case 'SUBMIT_ANSWER': {
       const { questionId, selectedOptionId, timeSpent } = action.payload;
       const question = state.questions.find(q => q.id === questionId);
-      
+
       if (!question) return state;
-      
-      const selectedOption = question.options.find(opt => opt.id === selectedOptionId);
+
+      const selectedOption = question.question_options.find(opt => opt.id === selectedOptionId);
       const isCorrect = selectedOption?.is_correct ?? false;
       
       const newAnswer: QuizAnswer = {

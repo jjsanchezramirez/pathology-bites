@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
             name
           )
         ),
-        question_set:sets(
+        question_set:question_sets(
           id,
           name,
           source_type,

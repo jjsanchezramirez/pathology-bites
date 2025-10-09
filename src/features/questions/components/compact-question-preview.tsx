@@ -52,19 +52,19 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
             <div>
               {stemImages.length === 1 ? (
                 <ImprovedImageDialog
-                  src={stemImages[0].image?.url || ''}
-                  alt={stemImages[0].image?.alt_text || ''}
-                  caption={stemImages[0].image?.description || ''}
+                  src={stemImages[0].images?.url || ''}
+                  alt={stemImages[0].images?.alt_text || ''}
+                  caption={stemImages[0].images?.description || ''}
                   className="border rounded-lg"
                   aspectRatio="16/10"
                 />
               ) : (
                 <ImageCarousel
                   images={stemImages.map(si => ({
-                    id: si.image?.id || '',
-                    url: si.image?.url || '',
-                    alt: si.image?.alt_text || '',
-                    caption: si.image?.description || ''
+                    id: si.images?.id || '',
+                    url: si.images?.url || '',
+                    alt: si.images?.alt_text || '',
+                    caption: si.images?.description || ''
                   }))}
                   className="border rounded-lg"
                 />
@@ -148,19 +148,19 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                   <h4 className="font-medium text-xs uppercase mb-1">Reference Images</h4>
                   {explanationImages.length === 1 ? (
                     <ImprovedImageDialog
-                      src={explanationImages[0].image?.url || ''}
-                      alt={explanationImages[0].image?.alt_text || ''}
-                      caption={explanationImages[0].image?.description || ''}
+                      src={explanationImages[0].images?.url || ''}
+                      alt={explanationImages[0].images?.alt_text || ''}
+                      caption={explanationImages[0].images?.description || ''}
                       className="border rounded-lg"
                       aspectRatio="16/10"
                     />
                   ) : (
                     <ImageCarousel
                       images={explanationImages.map(ei => ({
-                        id: ei.image?.id || '',
-                        url: ei.image?.url || '',
-                        alt: ei.image?.alt_text || '',
-                        caption: ei.image?.description || ''
+                        id: ei.images?.id || '',
+                        url: ei.images?.url || '',
+                        alt: ei.images?.alt_text || '',
+                        caption: ei.images?.description || ''
                       }))}
                       className="border rounded-lg"
                     />

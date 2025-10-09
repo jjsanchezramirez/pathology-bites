@@ -123,6 +123,11 @@ export default function DashboardPage() {
 
   // Fetch dashboard stats and check welcome message status on component mount
   useEffect(() => {
+    // Don't fetch until user is loaded
+    if (!user) {
+      return
+    }
+
     const fetchData = async () => {
       try {
         // Fetch dashboard stats
@@ -181,17 +186,14 @@ export default function DashboardPage() {
     }
 
     fetchData()
-  }, [])
+  }, [user])
 
   return (
     <PageErrorBoundary pageName="Dashboard" showHomeButton={false} showBackButton={false}>
       <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+        <h1 className="text-3xl font-bold tracking-tight">
           Dashboard
-          <span className="text-sm font-medium px-2 py-1 bg-secondary/50 text-secondary-foreground rounded-md">
-            Student
-          </span>
         </h1>
         <p className="text-muted-foreground">
           {isFirstTimeUser
@@ -208,10 +210,47 @@ export default function DashboardPage() {
         <WelcomeMessage onDismiss={() => setShowWelcomeMessage(false)} />
       )}
 
-      {/* Stats Cards */}
-      {loading ? (
-        <StatsLoading />
-      ) : stats ? (
+      {/* Show loading state for everything until data is ready */}
+      {loading || !stats ? (
+        <>
+          <StatsLoading />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <ActivityLoading />
+            <Card className="md:col-span-3">
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+          <div className="space-y-6">
+            {/* Performance Overview Skeleton */}
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-64" />
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="text-center space-y-2">
+                      <Skeleton className="h-8 w-16 mx-auto" />
+                      <Skeleton className="h-4 w-24 mx-auto" />
+                      <Skeleton className="h-3 w-20 mx-auto" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      ) : (
+        <>
+        {/* Stats Cards */}
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -265,15 +304,6 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-      ) : (
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">No data available</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
 
 
@@ -282,10 +312,7 @@ export default function DashboardPage() {
       {/* Recent Activity Section */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         {/* Recent Activity */}
-        {loading ? (
-          <ActivityLoading />
-        ) : (
-          <Card className="md:col-span-4">
+        <Card className="md:col-span-4">
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
@@ -359,22 +386,9 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
-        )}
 
         {/* Quick Actions */}
-        {loading ? (
-          <Card className="md:col-span-3">
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="md:col-span-3">
+        <Card className="md:col-span-3">
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
@@ -421,80 +435,13 @@ export default function DashboardPage() {
               </Button>
             </CardContent>
           </Card>
-        )}
       </div>
 
       {/* Performance Analytics */}
-      {loading ? (
-        <div className="space-y-6">
-          {/* Performance Overview Skeleton */}
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-64" />
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="text-center space-y-2">
-                    <Skeleton className="h-8 w-16 mx-auto" />
-                    <Skeleton className="h-4 w-24 mx-auto" />
-                    <Skeleton className="h-3 w-20 mx-auto" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Performance Details Skeleton */}
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-40" />
-                <Skeleton className="h-4 w-56" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <Skeleton className="h-4 w-32" />
-                      <div className="flex items-center gap-2">
-                        <Skeleton className="h-2 w-24" />
-                        <Skeleton className="h-4 w-8" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-36" />
-                <Skeleton className="h-4 w-48" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <Skeleton className="h-4 w-28" />
-                      <div className="flex items-center gap-2">
-                        <Skeleton className="h-2 w-20" />
-                        <Skeleton className="h-4 w-8" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      ) : (
-        stats?.performance && (
-          <FeatureErrorBoundary featureName="Performance Analytics">
-            <PerformanceAnalytics data={stats.performance} />
-          </FeatureErrorBoundary>
-        )
+      {stats?.performance && (
+        <FeatureErrorBoundary featureName="Performance Analytics">
+          <PerformanceAnalytics data={stats.performance} />
+        </FeatureErrorBoundary>
       )}
 
       {/* Goals and Learning Modules Section - In Development */}
@@ -572,7 +519,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-
+      </>
+      )}
 
       </div>
     </PageErrorBoundary>

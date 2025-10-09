@@ -90,7 +90,7 @@ interface QuestionData {
   title?: string
   stem?: string
   question?: string
-  options: QuestionOption[]
+  question_options: QuestionOption[]
   references?: string[]
   teaching_point?: string
   explanation?: string
@@ -391,7 +391,7 @@ CRITICAL INSTRUCTIONS:
 
 Requirements:
 1. Create a clinically relevant scenario-based question
-2. Include 5 answer choices with one clearly correct answer
+2. Include exactly 5 answer choices with one clearly correct answer
 3. Provide detailed explanations for each choice that include BOTH clinical correlation AND histological features
 4. Ensure the question tests understanding, not just memorization
 5. Use appropriate medical terminology
@@ -408,7 +408,7 @@ Return the response in this exact JSON format:
   "suggested_tags": ["Tag1", "Tag2", "Tag3"],
   "question_references": "Relevant citations",
   "status": "draft",
-  "answer_options": [
+  "question_options": [
     {
       "text": "Answer choice A text",
       "is_correct": false,
@@ -668,7 +668,7 @@ function parseAndValidateQuestionFast(response: string): QuestionData {
 // Fast question validation - streamlined checks
 function validateAndNormalizeQuestionFast(questionObj: Record<string, unknown>): QuestionData {
   const normalizedQuestion: QuestionData = {
-    options: []
+    question_options: []
   }
 
   // Fast field extraction
@@ -693,13 +693,18 @@ function validateAndNormalizeQuestionFast(questionObj: Record<string, unknown>):
     throw new Error('No question stem found in AI response')
   }
 
-  // Fast options processing
-  const optionsArray = questionObj.answer_options || questionObj.options
-  if (!Array.isArray(optionsArray) || optionsArray.length < 4) {
-    throw new Error('Invalid or insufficient answer options in AI response')
+  // Normalize options field - AI models sometimes use different field names despite our prompt
+  // Accept question_options (preferred), answer_options, or options
+  if (!questionObj.question_options && (questionObj.answer_options || questionObj.options)) {
+    questionObj.question_options = questionObj.answer_options || questionObj.options
   }
 
-  normalizedQuestion.options = optionsArray.map((opt: unknown, index: number) => {
+  // Validate and process question options
+  if (!Array.isArray(questionObj.question_options) || questionObj.question_options.length < 4) {
+    throw new Error('Invalid or insufficient question options in AI response')
+  }
+
+  normalizedQuestion.question_options = questionObj.question_options.map((opt: unknown, index: number) => {
     if (typeof opt === 'object' && opt !== null) {
       const optObj = opt as Record<string, unknown>
       return {
@@ -720,12 +725,12 @@ function validateAndNormalizeQuestionFast(questionObj: Record<string, unknown>):
   })
 
   // Fast correctness validation
-  const correctCount = normalizedQuestion.options.filter(opt => opt.is_correct).length
+  const correctCount = normalizedQuestion.question_options.filter(opt => opt.is_correct).length
   if (correctCount !== 1) {
     throw new Error(`Expected exactly 1 correct answer, found ${correctCount}`)
   }
 
-  console.log(`[Question Gen] Fast validation completed: ${normalizedQuestion.options.length} options`)
+  console.log(`[Question Gen] Fast validation completed: ${normalizedQuestion.question_options.length} options`)
   return normalizedQuestion
 }
 
@@ -830,7 +835,7 @@ function parseAndValidateQuestion(response: string): QuestionData {
     if (parsedQuestion && typeof parsedQuestion === 'object') {
       const questionObj = parsedQuestion as Record<string, unknown>
       const normalizedQuestion: QuestionData = {
-        options: []
+        question_options: []
       }
 
       // Extract all the new fields
@@ -855,10 +860,10 @@ function parseAndValidateQuestion(response: string): QuestionData {
         throw new Error('No question stem found in AI response')
       }
 
-      // Handle answer_options array
-      const optionsArray = questionObj.answer_options || questionObj.options
+      // Handle question_options array - support multiple field names for backward compatibility
+      const optionsArray = questionObj.question_options || questionObj.answer_options || questionObj.options
       if (Array.isArray(optionsArray) && optionsArray.length >= 4) {
-        normalizedQuestion.options = optionsArray.map((opt: unknown, index: number) => {
+        normalizedQuestion.question_options = optionsArray.map((opt: unknown, index: number) => {
           if (typeof opt === 'object' && opt !== null) {
             const optObj = opt as Record<string, unknown>
             return {
@@ -882,12 +887,12 @@ function parseAndValidateQuestion(response: string): QuestionData {
       }
 
       // Validate that we have exactly one correct answer
-      const correctAnswers = normalizedQuestion.options.filter(opt => opt.is_correct)
+      const correctAnswers = normalizedQuestion.question_options.filter(opt => opt.is_correct)
       if (correctAnswers.length !== 1) {
         throw new Error(`Expected exactly 1 correct answer, found ${correctAnswers.length}`)
       }
 
-      console.log(`[Question Gen] Successfully parsed question with ${normalizedQuestion.options.length} options`)
+      console.log(`[Question Gen] Successfully parsed question with ${normalizedQuestion.question_options.length} options`)
       return normalizedQuestion
 
     } else {

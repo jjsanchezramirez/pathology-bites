@@ -29,6 +29,7 @@ export default function WaitlistPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 50,
@@ -74,7 +75,7 @@ export default function WaitlistPage() {
     try {
       const response = await fetch('/api/admin/waitlist?export=csv')
       if (!response.ok) throw new Error('Failed to export waitlist')
-      
+
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -86,8 +87,11 @@ export default function WaitlistPage() {
       document.body.removeChild(a)
     } catch (error) {
       console.error('Error exporting waitlist:', error)
+      toast.error('Failed to export waitlist')
     }
   }
+
+
 
   const filteredData = waitlistData.filter(entry =>
     entry.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -103,10 +107,12 @@ export default function WaitlistPage() {
             Manage and review users waiting for platform access
           </p>
         </div>
-        <Button onClick={handleExport} variant="outline">
-          <Download className="w-4 h-4 mr-2" />
-          Export CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleExport} variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}

@@ -28,7 +28,7 @@ import {
   legacyFontSizeToZoom,
   zoomToLegacyFontSize
 } from '@/shared/utils/text-zoom'
-import { useTextZoom } from '@/shared/contexts/font-size-context'
+import { useDashboardSettings } from '@/shared/contexts/dashboard-settings-provider'
 import { useDashboardTheme } from '@/shared/contexts/dashboard-theme-context'
 import {
   Dialog,
@@ -91,7 +91,7 @@ export default function SettingsPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
   // Use shared text zoom context
-  const { textZoom, setTextZoom: setTextZoomContext } = useTextZoom()
+  const { textZoom, setTextZoom: setTextZoomContext } = useDashboardSettings()
   const [isExporting, setIsExporting] = useState(false)
   const [deletePassword, setDeletePassword] = useState('')
 
@@ -193,27 +193,19 @@ export default function SettingsPage() {
 
 
 
-  const handleTextZoomChange = async (newZoom: number) => {
+  const handleTextZoomChange = (newZoom: number) => {
     try {
       setSaving(true)
       const validZoom = getValidZoomLevel(newZoom)
 
-      // Use context to set text zoom (this will sync with header and apply to DOM)
+      // Use context to set text zoom (this will update localStorage and mark as dirty)
       setTextZoomContext(validZoom)
 
-      // Update legacy font size for compatibility
-      const legacySize = zoomToLegacyFontSize(validZoom)
-
-      // Save to database
-      await userSettingsService.updateUISettings({
-        text_zoom: validZoom,
-        font_size: legacySize
-      })
-      // Removed toast notification for text size changes - UI feedback is immediate
+      // UI feedback is immediate - no API call needed!
+      // Settings will sync when user leaves the page or closes the popover
     } catch (error) {
       console.error('Error updating text size:', error)
       toast.error('Failed to update text size')
-      // The context will handle reverting if needed
     } finally {
       setSaving(false)
     }

@@ -1,17 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+
+// Create Supabase client with service role for admin operations
+function createAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey)
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    
-    // Auth is now handled by middleware
-    const { data: { user } } = await supabase.auth.getUser() // Still need user ID for created_by and updated_by
+    // Use regular client for auth
+    const authClient = await createClient()
+    const { data: { user } } = await authClient.auth.getUser()
+
+    // Use service role client for database operations to bypass RLS
+    const supabase = createAdminClient()
 
     const questionData = await request.json()
 
+    // Normalize options field - support both question_options and answer_options for backward compatibility
+    if (!questionData.question_options && questionData.answer_options) {
+      questionData.question_options = questionData.answer_options
+    }
+
     // Validate required fields
-    if (!questionData.title || !questionData.stem || !questionData.answer_options) {
+    if (!questionData.title || !questionData.stem || !questionData.question_options) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -45,14 +60,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create answer options
-    if (questionData.answer_options && questionData.answer_options.length > 0) {
-      const answerOptions = questionData.answer_options.map((option: any, index: number) => ({
+    // Create question options
+    if (questionData.question_options && questionData.question_options.length > 0) {
+      const answerOptions = questionData.question_options.map((option: any, index: number) => ({
         question_id: question.id,
         text: option.text,
-        is_correct: option.is_correct,
-        explanation: option.explanation,
-        order_index: index
+        is_correct: option.is_correct ?? false,
+        explanation: option.explanation || null,
+        order_index: option.order_index ?? index
+        // Note: Don't include 'id' field - let database generate UUID
       }))
 
       const { error: optionsError } = await supabase
@@ -61,10 +77,14 @@ export async function POST(request: NextRequest) {
 
       if (optionsError) {
         console.error('Error creating answer options:', optionsError)
+        console.error('Options data:', answerOptions)
         // Clean up the question if options failed
         await supabase.from('questions').delete().eq('id', question.id)
         return NextResponse.json(
-          { error: 'Failed to create answer options' },
+          {
+            error: 'Failed to create answer options',
+            details: optionsError.message
+          },
           { status: 500 }
         )
       }
@@ -117,8 +137,12 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error in create question API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error'
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: errorMessage,
+        details: error instanceof Error ? error.stack : String(error)
+      },
       { status: 500 }
     )
   }

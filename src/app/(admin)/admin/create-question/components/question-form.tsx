@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/shared/components/ui/checkbox'
 import { Badge } from '@/shared/components/ui/badge'
 import { ScrollArea } from '@/shared/components/ui/scroll-area'
-import { Loader2, Brain, Upload, FileText, X } from 'lucide-react'
+import { Loader2, Brain, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   getModelProvider,
@@ -53,28 +53,19 @@ interface GeneratedQuestion {
   metadata: any
 }
 
-interface QuestionFormState {
-  instructions: string
-  additionalContext: string
-  selectedModelIndex: number
-  assumeHistologicImages: boolean
-}
+
 
 interface QuestionFormProps {
   selectedContent: EducationalContent | null
   onQuestionGenerated: (question: GeneratedQuestion) => void
-  onFilesUploaded: (files: File[]) => void
   isEditMode?: boolean
-  // State persistence props
-  formState?: QuestionFormState
-  onFormStateChange?: (state: QuestionFormState) => void
 }
 
 const DEFAULT_INSTRUCTIONS = `You are an expert pathology educator creating multiple-choice questions for medical students and residents. Generate a high-quality pathology question based on the provided content.
 
 Requirements:
 1. Create a clinically relevant scenario-based question
-2. Include 5 answer choices with one clearly correct answer
+2. Include exactly 5 answer choices with one clearly correct answer
 3. Provide detailed explanations for each choice
 4. Ensure the question tests understanding, not just memorization
 5. Use appropriate medical terminology
@@ -127,52 +118,20 @@ Return the response in this exact JSON format:
 export function QuestionForm({
   selectedContent,
   onQuestionGenerated,
-  onFilesUploaded,
-  isEditMode = false,
-  formState,
-  onFormStateChange
+  isEditMode = false
 }: QuestionFormProps) {
-  const [instructions, setInstructions] = useState(formState?.instructions || DEFAULT_INSTRUCTIONS)
-  const [additionalContext, setAdditionalContext] = useState(formState?.additionalContext || '')
-  const [selectedModelIndex, setSelectedModelIndex] = useState(formState?.selectedModelIndex || 0)
-  const [assumeHistologicImages, setAssumeHistologicImages] = useState(formState?.assumeHistologicImages || false)
+  const [instructions, setInstructions] = useState(DEFAULT_INSTRUCTIONS)
+  const [additionalContext, setAdditionalContext] = useState('')
+  const [selectedModelIndex, setSelectedModelIndex] = useState(0)
+  const [assumeHistologicImages, setAssumeHistologicImages] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
-
-  // Update form state when any field changes
-  useEffect(() => {
-    const currentState: QuestionFormState = {
-      instructions,
-      additionalContext,
-      selectedModelIndex,
-      assumeHistologicImages
-    }
-    onFormStateChange?.(currentState)
-  }, [instructions, additionalContext, selectedModelIndex, assumeHistologicImages, onFormStateChange])
-
-  // Restore form state when formState prop changes
-  useEffect(() => {
-    if (formState) {
-      setInstructions(formState.instructions)
-      setAdditionalContext(formState.additionalContext)
-      setSelectedModelIndex(formState.selectedModelIndex)
-      setAssumeHistologicImages(formState.assumeHistologicImages)
-    }
-  }, [formState])
 
 
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || [])
-    setUploadedFiles(prev => [...prev, ...files])
-    onFilesUploaded([...uploadedFiles, ...files])
-  }
 
-  const removeFile = (index: number) => {
-    const newFiles = uploadedFiles.filter((_, i) => i !== index)
-    setUploadedFiles(newFiles)
-    onFilesUploaded(newFiles)
-  }
+
+
+
 
   // Use centralized provider detection and API key management
 
@@ -286,7 +245,7 @@ export function QuestionForm({
             status: 'draft',
             question_set_id: '', // Will be set during finalization
             category_id: '', // Will be set during finalization
-            answer_options: (questionData.options || []).map((option: any, index: number) => ({
+            answer_options: (questionData.question_options || []).map((option: any, index: number) => ({
               text: option.text,
               is_correct: option.is_correct,
               explanation: option.explanation,
@@ -483,53 +442,7 @@ export function QuestionForm({
         </CardContent>
       </Card>
 
-      {/* File Upload */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            Supporting Files
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-                id="file-upload"
-              />
-              <label htmlFor="file-upload" className="cursor-pointer">
-                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  Click to upload images and supporting files
-                </p>
-              </label>
-            </div>
 
-            {uploadedFiles.length > 0 && (
-              <div className="space-y-2">
-                <Label>Uploaded Files</Label>
-                {uploadedFiles.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 border rounded">
-                    <span className="text-sm">{file.name}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeFile(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Generate Button */}
       <div className="flex justify-end">

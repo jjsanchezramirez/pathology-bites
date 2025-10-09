@@ -172,8 +172,21 @@ class UserSettingsService {
     })
 
     if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Failed to update user settings')
+      let error
+      try {
+        error = await response.json()
+      } catch (e) {
+        error = { error: 'Failed to parse error response' }
+      }
+      console.error('[UserSettings] Update failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: error,
+        section,
+        settings: mappedSettings
+      })
+      console.error('[UserSettings] Full error object:', JSON.stringify(error, null, 2))
+      throw new Error(error.error || error.details || 'Failed to update user settings')
     }
 
     const result = await response.json()

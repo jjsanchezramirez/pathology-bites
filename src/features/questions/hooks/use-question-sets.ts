@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/shared/services/client';
 import { QuestionSetData } from '@/features/questions/types/question-sets';
+import { TABLE_NAMES } from '@/shared/constants/database-types';
 
 export interface UseQuestionSetsReturn {
   questionSets: QuestionSetData[];
@@ -23,7 +24,7 @@ export function useQuestionSets(): UseQuestionSetsReturn {
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('sets')
+        .from(TABLE_NAMES.QUESTION_SETS)
         .select('*')
         .eq('is_active', true)
         .order('name');

@@ -128,7 +128,7 @@ export function DraftQuestionsTable() {
       let questionSetsData: any[] = []
       if (questionSetIds.length > 0) {
         const { data } = await supabase
-          .from('sets')
+          .from('question_sets')
           .select('*')
           .in('id', questionSetIds)
         questionSetsData = data || []

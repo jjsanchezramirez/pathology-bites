@@ -113,6 +113,8 @@ export async function GET(request: NextRequest) {
       updated_at: data.updated_at
     }
 
+    console.log('[UserSettings API] Returning settings for user:', userId, 'text_zoom:', combinedSettings.ui_settings.text_zoom)
+
     return NextResponse.json({
       success: true,
       data: combinedSettings
@@ -128,11 +130,14 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient()
-    
+
     // Auth is handled by middleware
     const userId = request.headers.get('x-user-id')
-    
+
+    console.log('[UserSettings PATCH] userId:', userId)
+
     if (!userId) {
+      console.error('[UserSettings PATCH] No userId in headers')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -140,9 +145,12 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json()
     const { section, settings } = body
 
+    console.log('[UserSettings PATCH] Request:', { section, settings })
+
     // Validate section
     const validSections = ['quiz_settings', 'notification_settings', 'ui_settings']
     if (!section || !validSections.includes(section)) {
+      console.error('[UserSettings PATCH] Invalid section:', section)
       return NextResponse.json(
         { error: 'Invalid section. Must be one of: ' + validSections.join(', ') },
         { status: 400 }
@@ -151,6 +159,7 @@ export async function PATCH(request: NextRequest) {
 
     // Validate settings
     if (!settings || typeof settings !== 'object') {
+      console.error('[UserSettings PATCH] Invalid settings:', settings)
       return NextResponse.json(
         { error: 'Settings must be a valid object' },
         { status: 400 }
@@ -199,8 +208,18 @@ export async function PATCH(request: NextRequest) {
       updated_at: new Date().toISOString()
     }
 
-    // Set the specific section being updated
-    updateData[section] = settings
+    // Merge the new settings with existing settings for the section
+    // This is critical to avoid wiping out other fields in the JSONB object
+    if (currentData && currentData[section]) {
+      // Merge new settings with existing settings
+      updateData[section] = {
+        ...currentData[section],
+        ...settings
+      }
+    } else {
+      // No existing data for this section, use the new settings
+      updateData[section] = settings
+    }
 
     // If no current data exists, we need to provide defaults for other sections
     if (!currentData) {
@@ -233,18 +252,26 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update settings using upsert with correct schema
+    console.log('[UserSettings PATCH] Upserting data:', JSON.stringify(updateData, null, 2))
+
     const { data, error } = await supabase
       .from('user_settings')
-      .upsert(updateData)
+      .upsert(updateData, {
+        onConflict: 'user_id',  // Use user_id for conflict resolution
+        ignoreDuplicates: false  // Update on conflict instead of ignoring
+      })
       .select('quiz_settings, notification_settings, ui_settings, created_at, updated_at')
       .maybeSingle()
 
     if (error) {
+      console.error('[UserSettings PATCH] Database error:', error)
       return NextResponse.json(
-        { error: 'Failed to update user settings' },
+        { error: 'Failed to update user settings', details: error.message },
         { status: 500 }
       )
     }
+
+    console.log('[UserSettings PATCH] Update successful')
 
     // Return the combined settings in the expected format
     const combinedSettings = {

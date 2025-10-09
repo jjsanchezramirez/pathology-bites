@@ -1,6 +1,5 @@
 // src/app/layout.tsx
 import { ConditionalThemeProvider } from '@/shared/components/common/conditional-theme-provider'
-import { TextZoomProvider } from '@/shared/contexts/font-size-context'
 import { Toaster as SonnerToaster } from "@/shared/components/ui/sonner"
 import { ConnectionStatus } from "@/shared/components/common/connection-status"
 
@@ -149,17 +148,15 @@ export default async function RootLayout({
         />
 
         <AnalyticsProvider>
-          <ConditionalThemeProvider attribute="class" defaultTheme="light">
-            <TextZoomProvider>
-              <div className="relative flex min-h-screen flex-col">
-                <AuthProvider>
-                  <div>{children}</div>
-                </AuthProvider>
-              </div>
-              <SonnerToaster />
-              <ConnectionStatus />
-              {/* Cache clear button temporarily removed due to SSR error */}
-            </TextZoomProvider>
+          <ConditionalThemeProvider attribute="class" defaultTheme="system">
+            <div className="relative flex min-h-screen flex-col">
+              <AuthProvider>
+                <div>{children}</div>
+              </AuthProvider>
+            </div>
+            <SonnerToaster />
+            <ConnectionStatus />
+            {/* Cache clear button temporarily removed due to SSR error */}
           </ConditionalThemeProvider>
         </AnalyticsProvider>
       </body>

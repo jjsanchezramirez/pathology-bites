@@ -10,22 +10,14 @@ import {
 } from '@/shared/components/ui/popover'
 import { Separator } from '@/shared/components/ui/separator'
 import { useState } from 'react'
-import { useTextZoom } from '@/shared/contexts/font-size-context'
+import { useDashboardSettings } from '@/shared/contexts/dashboard-settings-provider'
 import { getTextZoomConfig } from '@/shared/utils/text-zoom'
 import { useDashboardTheme } from '@/shared/contexts/dashboard-theme-context'
 import { cn } from '@/shared/utils'
 
 export function FontSizeControl() {
   const [isOpen, setIsOpen] = useState(false)
-  const {
-    textZoom,
-    increaseTextZoom,
-    decreaseTextZoom,
-    resetTextZoom,
-    canIncrease,
-    canDecrease,
-    isLoading: textZoomLoading
-  } = useTextZoom()
+  const { textZoom, setTextZoom, isLoading: settingsLoading } = useDashboardSettings()
   const config = getTextZoomConfig()
 
   // Theme selection functionality
@@ -34,7 +26,26 @@ export function FontSizeControl() {
   const fontSizePercentage = Math.round(textZoom * 100)
   const minPercentage = Math.round(config.min * 100)
   const maxPercentage = Math.round(config.max * 100)
-  const isLoading = textZoomLoading || themeLoading
+  const isLoading = settingsLoading || themeLoading
+
+  const canIncrease = textZoom < config.max
+  const canDecrease = textZoom > config.min
+
+  const increaseTextZoom = () => {
+    if (canIncrease) {
+      setTextZoom(textZoom + config.step)
+    }
+  }
+
+  const decreaseTextZoom = () => {
+    if (canDecrease) {
+      setTextZoom(textZoom - config.step)
+    }
+  }
+
+  const resetTextZoom = () => {
+    setTextZoom(config.default)
+  }
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>

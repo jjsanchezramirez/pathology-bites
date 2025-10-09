@@ -116,8 +116,8 @@ export function QuestionFormDialog({
         category_id: question.category_id || null,
       });
 
-      // Set answer options (prefer question_options as the primary source)
-      const options = question.question_options || question.answer_options || [];
+      // Set answer options
+      const options = question.question_options || [];
       setAnswerOptions(options.map((opt, index) => ({
         id: opt.id,
         text: opt.text,
