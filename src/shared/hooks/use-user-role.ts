@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useSharedAuth } from '@/shared/hooks/use-shared-auth'
+import { useSimpleAuth } from '@/shared/hooks/use-simple-auth'
 import { createClient } from '@/shared/services/client'
 import { TABLE_NAMES, USER_ROLES, UserRole as DatabaseUserRole } from '@/shared/constants/database-types'
 
@@ -55,7 +55,7 @@ const FEATURE_PERMISSIONS: Record<string, UserRole[]> = {
 } as const
 
 export function useUserRole(): UserRoleData {
-  const { user, isLoading: authLoading } = useSharedAuth()
+  const { user, isLoading: authLoading } = useSimpleAuth()
   const [role, setRole] = useState<UserRole>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
