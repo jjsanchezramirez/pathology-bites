@@ -8,7 +8,6 @@ import { BlurredDialog } from '@/shared/components/ui/blurred-dialog'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
-import { Textarea } from '@/shared/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -17,6 +16,7 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select'
 import { Loader2 } from 'lucide-react'
+import { ALL_CATEGORY_COLORS, AP_COLORS, CP_COLORS, type CategoryColor } from '@/shared/constants/category-colors'
 
 interface CreateCategoryDialogProps {
   open: boolean
@@ -29,24 +29,12 @@ interface Category {
   name: string
   level: number
   color?: string
+  short_form?: string
 }
-
-const predefinedColors = [
-  '#ef4444', // red
-  '#f97316', // orange
-  '#eab308', // yellow
-  '#22c55e', // green
-  '#06b6d4', // cyan
-  '#3b82f6', // blue
-  '#8b5cf6', // violet
-  '#ec4899', // pink
-  '#64748b', // slate
-  '#78716c', // stone
-]
 
 export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCategoryDialogProps) {
   const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
+  const [shortForm, setShortForm] = useState('')
   const [parentId, setParentId] = useState<string>('none')
   const [color, setColor] = useState<string>('')
   const [isCreating, setIsCreating] = useState(false)
@@ -91,7 +79,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
         },
         body: JSON.stringify({
           name: name.trim(),
-          description: description.trim() || null,
+          shortForm: shortForm.trim() || null,
           parentId: parentId && parentId !== 'none' ? parentId : null,
           color: color || null
         })
@@ -105,7 +93,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
       toast.success('Category created successfully')
 
       setName('')
-      setDescription('')
+      setShortForm('')
       setParentId('none')
       setColor('')
       // Close dialog first, then refresh data
@@ -126,7 +114,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
       onOpenChange(newOpen)
       if (!newOpen) {
         setName('')
-        setDescription('')
+        setShortForm('')
         setParentId('none')
         setColor('')
       }
@@ -193,15 +181,18 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description">Description (Optional)</Label>
-          <Textarea
-            id="description"
-            placeholder="Enter category description..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+          <Label htmlFor="shortForm">Short Form</Label>
+          <Input
+            id="shortForm"
+            placeholder="e.g., AP, CP, HEME..."
+            value={shortForm}
+            onChange={(e) => setShortForm(e.target.value.toUpperCase())}
             disabled={isCreating}
-            rows={3}
+            maxLength={10}
           />
+          <p className="text-xs text-muted-foreground">
+            Short abbreviation for this category (max 10 characters)
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -224,53 +215,81 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label>Category Color (Optional)</Label>
-          <div className="flex flex-wrap gap-2">
-            {predefinedColors.map((colorOption) => (
-              <button
-                key={colorOption}
-                type="button"
-                className={`w-8 h-8 rounded-full border-2 transition-all ${
-                  color === colorOption
-                    ? 'border-gray-900 scale-110'
-                    : 'border-gray-300 hover:border-gray-500'
-                }`}
-                style={{ backgroundColor: colorOption }}
-                onClick={() => setColor(color === colorOption ? '' : colorOption)}
-                disabled={isCreating}
-                title={`Select color: ${colorOption}`}
-              />
-            ))}
-            {color && !predefinedColors.includes(color) && (
-              <div
-                className="w-8 h-8 rounded-full border-2 border-gray-900"
-                style={{ backgroundColor: color }}
-              />
-            )}
+        <div className="space-y-3">
+          <Label>Category Color</Label>
+
+          {/* AP Colors (Strong - Reddish) */}
+          <div className="space-y-2">
+            <div className="text-xs font-medium text-muted-foreground">
+              AP Colors (Strong - Reddish Hues)
+            </div>
+            <div className="grid grid-cols-10 gap-2">
+              {AP_COLORS.map((colorOption) => (
+                <button
+                  key={colorOption.value}
+                  type="button"
+                  className={`w-8 h-8 rounded-md border-2 transition-all hover:scale-110 ${
+                    color === colorOption.value
+                      ? 'border-foreground ring-2 ring-foreground ring-offset-2 scale-110'
+                      : 'border-border hover:border-foreground/50'
+                  }`}
+                  style={{ backgroundColor: colorOption.value }}
+                  onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
+                  disabled={isCreating}
+                  title={colorOption.name}
+                />
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Input
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              disabled={isCreating}
-              className="w-16 h-8 p-1 border rounded"
-            />
-            <span className="text-sm text-muted-foreground">
-              {color ? `Selected: ${color}` : 'No color selected'}
-            </span>
-            {color && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setColor('')}
-                disabled={isCreating}
-                className="text-xs"
-              >
-                Clear
-              </Button>
+
+          {/* CP Colors (Light - Bluish) */}
+          <div className="space-y-2">
+            <div className="text-xs font-medium text-muted-foreground">
+              CP Colors (Light - Bluish Hues)
+            </div>
+            <div className="grid grid-cols-10 gap-2">
+              {CP_COLORS.map((colorOption) => (
+                <button
+                  key={colorOption.value}
+                  type="button"
+                  className={`w-8 h-8 rounded-md border-2 transition-all hover:scale-110 ${
+                    color === colorOption.value
+                      ? 'border-foreground ring-2 ring-foreground ring-offset-2 scale-110'
+                      : 'border-border hover:border-foreground/50'
+                  }`}
+                  style={{ backgroundColor: colorOption.value }}
+                  onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
+                  disabled={isCreating}
+                  title={colorOption.name}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Selected color info */}
+          <div className="flex items-center gap-2 pt-1">
+            {color ? (
+              <>
+                <div
+                  className="w-6 h-6 rounded border-2 border-border"
+                  style={{ backgroundColor: color }}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {ALL_CATEGORY_COLORS.find(c => c.value === color)?.name || color}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setColor('')}
+                  disabled={isCreating}
+                  className="text-xs ml-auto"
+                >
+                  Clear
+                </Button>
+              </>
+            ) : (
+              <span className="text-sm text-muted-foreground">No color selected</span>
             )}
           </div>
         </div>
