@@ -42,7 +42,6 @@ import {
   XCircle,
   Edit
 } from 'lucide-react'
-import { format } from 'date-fns'
 import { CreateSetDialog } from './create-set-dialog'
 import { EditSetDialog } from './edit-set-dialog'
 import { getQuestionSetDisplayName } from '@/features/questions/utils/display-helpers'
@@ -58,7 +57,7 @@ interface QuestionSet {
   created_by_name?: string
 }
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 30
 
 const sourceTypeConfig = {
   'AI-Generated': { label: 'AI', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300' },
@@ -239,20 +238,19 @@ export function SetsManagement() {
               <TableHead>Source Type</TableHead>
               <TableHead>Questions</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : sets.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                   {searchTerm ? 'No question sets found matching your search' : 'No question sets found'}
                 </TableCell>
               </TableRow>
@@ -271,8 +269,14 @@ export function SetsManagement() {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant="outline"
-                      className={sourceTypeConfig[set.source_type as keyof typeof sourceTypeConfig]?.color || sourceTypeConfig.Other.color}
+                      className="text-white border-none"
+                      style={{
+                        backgroundColor: set.source_type === 'AI-Generated' ? 'hsl(214 100% 60%)' : 
+                                        set.source_type === 'Web Resource' ? 'hsl(142 76% 36%)' :
+                                        set.source_type === 'Textbook' ? 'hsl(262 80% 56%)' :
+                                        set.source_type === 'Expert-Authored' ? 'hsl(32 94% 56%)' :
+                                        'hsl(220 8.9% 46%)'
+                      }}
                     >
                       {sourceTypeConfig[set.source_type as keyof typeof sourceTypeConfig]?.label || set.source_type}
                     </Badge>
@@ -293,9 +297,6 @@ export function SetsManagement() {
                         {set.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(set.created_at), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu modal={false}>

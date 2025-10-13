@@ -15,84 +15,7 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select'
 import { Loader2 } from 'lucide-react'
-
-// Mix two HSL colors by averaging their components
-const mixColors = (color1: { h: number; s: number; l: number }, color2: { h: number; s: number; l: number }) => {
-  // Average hue (handle wraparound for colors on opposite sides of wheel)
-  let h1 = color1.h
-  let h2 = color2.h
-  if (Math.abs(h1 - h2) > 180) {
-    if (h1 < h2) h1 += 360
-    else h2 += 360
-  }
-  const h = ((h1 + h2) / 2) % 360
-
-  // Average saturation and lightness
-  const s = (color1.s + color2.s) / 2
-  const l = (color1.l + color2.l) / 2
-
-  return { h, s, l }
-}
-
-// Generate 30 colors: 15 strong + 15 light versions
-// Row 1: 5 chart colors + 10 mixed colors = 15 distinct colors
-// Row 2: Lighter versions of row 1
-const generateCategoryColors = () => {
-  // Chart colors from globals.css
-  const chartColors = [
-    { h: 186, s: 66, l: 40 },  // chart-1: cyan
-    { h: 214, s: 100, l: 60 }, // chart-2: blue
-    { h: 262, s: 80, l: 56 },  // chart-3: purple
-    { h: 32, s: 94, l: 56 },   // chart-4: orange
-    { h: 354, s: 78, l: 56 },  // chart-5: red
-  ]
-
-  const strongColors: { value: string }[] = []
-
-  // First 5: Pure chart colors
-  chartColors.forEach((color) => {
-    strongColors.push({
-      value: `hsl(${color.h} ${color.s}% ${color.l}%)`
-    })
-  })
-
-  // Next 10: All unique 2-color combinations
-  const mixPairs = [
-    [0, 1], // 1+2: cyan + blue
-    [0, 2], // 1+3: cyan + purple
-    [0, 3], // 1+4: cyan + orange
-    [0, 4], // 1+5: cyan + red
-    [1, 2], // 2+3: blue + purple
-    [1, 3], // 2+4: blue + orange
-    [1, 4], // 2+5: blue + red
-    [2, 3], // 3+4: purple + orange
-    [2, 4], // 3+5: purple + red
-    [3, 4], // 4+5: orange + red
-  ]
-
-  mixPairs.forEach(([i, j]) => {
-    const mixed = mixColors(chartColors[i], chartColors[j])
-    strongColors.push({
-      value: `hsl(${Math.round(mixed.h)} ${Math.round(mixed.s)}% ${Math.round(mixed.l)}%)`
-    })
-  })
-
-  // Create light versions (increase lightness by 25%)
-  const lightColors = strongColors.map((color) => {
-    const match = color.value.match(/hsl\((\d+\.?\d*) (\d+\.?\d*)% (\d+\.?\d*)%\)/)
-    if (match) {
-      const h = parseFloat(match[1])
-      const s = parseFloat(match[2])
-      const l = Math.min(85, parseFloat(match[3]) + 25)
-      return {
-        value: `hsl(${Math.round(h)} ${Math.round(s)}% ${Math.round(l)}%)`
-      }
-    }
-    return color
-  })
-
-  return { strongColors, lightColors }
-}
+import { strongColors, lightColors } from '../utils/category-colors'
 
 interface Category {
   id: string
@@ -122,8 +45,7 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
   const [categories, setCategories] = useState<Category[]>([])
   const [loadingCategories, setLoadingCategories] = useState(false)
 
-  // Generate colors once
-  const { strongColors, lightColors } = useMemo(() => generateCategoryColors(), [])
+  // Use the shared color arrays (no need to generate them again)
 
   const loadCategories = async () => {
     setLoadingCategories(true)
@@ -307,67 +229,75 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
             )}
           </div>
 
-          <div className="space-y-3">
-            <Label>Category Color</Label>
-
-            {/* All 30 colors in 2 rows of 15 */}
-            <div className="space-y-2">
-              {/* Row 1: Strong colors (5 chart + 10 mixed) */}
-              <div className="grid grid-cols-15 gap-2">
-                {strongColors.map((colorOption, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    className={`w-8 h-8 rounded border transition-all hover:scale-105 ${
-                      color === colorOption.value
-                        ? 'border-foreground scale-105'
-                        : 'border-border/50 hover:border-foreground/30'
-                    }`}
-                    style={{ backgroundColor: colorOption.value }}
-                    onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
-                    disabled={isUpdating}
-                  />
-                ))}
-              </div>
-
-              {/* Row 2: Light versions of row 1 */}
-              <div className="grid grid-cols-15 gap-2">
-                {lightColors.map((colorOption, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    className={`w-8 h-8 rounded border transition-all hover:scale-105 ${
-                      color === colorOption.value
-                        ? 'border-foreground scale-105'
-                        : 'border-border/50 hover:border-foreground/30'
-                    }`}
-                    style={{ backgroundColor: colorOption.value }}
-                    onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
-                    disabled={isUpdating}
-                  />
-                ))}
-              </div>
+          <div className="space-y-4">
+            <div>
+              <Label>Category Color (Optional)</Label>
+              <p className="text-xs text-muted-foreground mt-1">Choose a color to override the automatic color assignment</p>
             </div>
 
-            {/* Selected color preview */}
-            {color && (
-              <div className="flex items-center gap-2 pt-1">
-                <div
-                  className="w-6 h-6 rounded border border-border"
-                  style={{ backgroundColor: color }}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setColor('')}
-                  disabled={isUpdating}
-                  className="text-xs ml-auto"
-                >
-                  Clear
-                </Button>
+            {/* Color palette selection */}
+            <div className="space-y-3">
+              <div className="text-sm font-medium text-muted-foreground">Strong Colors</div>
+              <div className="grid grid-cols-10 gap-3">
+                {strongColors.map((colorOption, idx) => (
+                  <button
+                    key={`strong-${idx}`}
+                    type="button"
+                    className={`w-10 h-10 rounded-lg border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                      color === colorOption.value
+                        ? 'border-foreground scale-110 ring-2 ring-primary'
+                        : 'border-border hover:border-foreground/50'
+                    }`}
+                    style={{ backgroundColor: colorOption.value }}
+                    onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
+                    disabled={isUpdating}
+                    title={`Strong color ${idx + 1}`}
+                  />
+                ))}
               </div>
-            )}
+              
+              <div className="text-sm font-medium text-muted-foreground mt-4">Light Colors</div>
+              <div className="grid grid-cols-10 gap-3">
+                {lightColors.map((colorOption, idx) => (
+                  <button
+                    key={`light-${idx}`}
+                    type="button"
+                    className={`w-10 h-10 rounded-lg border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                      color === colorOption.value
+                        ? 'border-foreground scale-110 ring-2 ring-primary'
+                        : 'border-border hover:border-foreground/50'
+                    }`}
+                    style={{ backgroundColor: colorOption.value }}
+                    onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
+                    disabled={isUpdating}
+                    title={`Light color ${idx + 1}`}
+                  />
+                ))}
+              </div>
+              
+              {/* Selected color preview and clear button */}
+              {color && (
+                <div className="flex items-center gap-3 pt-3 border-t">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-8 h-8 rounded-lg border border-border shadow-sm"
+                      style={{ backgroundColor: color }}
+                    />
+                    <span className="text-sm text-muted-foreground">Selected color</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setColor('')}
+                    disabled={isUpdating}
+                    className="ml-auto"
+                  >
+                    Clear Selection
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
 
         </form>

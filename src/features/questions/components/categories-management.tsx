@@ -2,7 +2,6 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { createClient } from '@/shared/services/client'
 import { toast } from 'sonner'
 import {
   Table,
@@ -29,12 +28,10 @@ import {
   Plus,
   Trash2,
   RefreshCw,
-  ChevronRight,
   Edit,
   CheckCircle,
   AlertTriangle
 } from 'lucide-react'
-import { format } from 'date-fns'
 import { CreateCategoryDialog } from './create-category-dialog'
 import { EditCategoryDialog } from './edit-category-dialog'
 
@@ -53,7 +50,9 @@ interface Category {
   short_form?: string
 }
 
-const PAGE_SIZE = 10
+import { getCategoryColor } from '../utils/category-colors'
+
+const PAGE_SIZE = 30
 
 export function CategoriesManagement() {
   const [categories, setCategories] = useState<Category[]>([])
@@ -68,7 +67,6 @@ export function CategoriesManagement() {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const supabase = createClient()
 
   // Function to organize categories hierarchically
   const organizeHierarchically = useCallback((categories: Category[]): Category[] => {
@@ -269,20 +267,19 @@ export function CategoriesManagement() {
               <TableHead>Parent</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Questions</TableHead>
-              <TableHead>Created</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : categories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                   {searchTerm ? 'No categories found matching your search' : 'No categories found'}
                 </TableCell>
               </TableRow>
@@ -295,11 +292,9 @@ export function CategoriesManagement() {
                   <TableCell>
                     {category.short_form ? (
                       <Badge
-                        variant="outline"
+                        className="font-semibold px-3 py-1 text-white border-none"
                         style={{
-                          backgroundColor: category.color || undefined,
-                          borderColor: category.color || undefined,
-                          color: 'hsl(var(--foreground))'
+                          backgroundColor: getCategoryColor(category),
                         }}
                       >
                         {category.short_form}
@@ -311,11 +306,9 @@ export function CategoriesManagement() {
                   <TableCell>
                     {category.parent_short_form ? (
                       <Badge
-                        variant="outline"
+                        className="text-white border-none"
                         style={{
-                          backgroundColor: category.parent_color || undefined,
-                          borderColor: category.parent_color || undefined,
-                          color: 'hsl(var(--foreground))'
+                          backgroundColor: getCategoryColor({ short_form: category.parent_short_form, color: category.parent_color }),
                         }}
                       >
                         {category.parent_short_form}
@@ -343,9 +336,6 @@ export function CategoriesManagement() {
                     <Badge variant="secondary">
                       {category.question_count || 0}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(category.created_at), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu modal={false}>
