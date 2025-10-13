@@ -1,32 +1,32 @@
 // src/app/(admin)/admin/labels/page.tsx
 import { Metadata } from 'next'
-import { TagsManagementGrid } from '@/features/questions/components/tags-management-grid'
+import { QuestionManagementTable } from '@/features/questions/components/question-management-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
 
 export const metadata: Metadata = {
-  title: 'Tag Management - Admin Dashboard',
-  description: 'Manage question tags with an interactive grid interface',
+  title: 'Label Management - Admin Dashboard',
+  description: 'Manage question tags, categories, and sets',
 }
 
 export default function LabelManagementPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Tag Management</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Label Management</h1>
         <p className="text-muted-foreground">
-          Organize your question bank with tags. Create, edit, merge, and delete tags to keep your content well-organized.
+          Manage tags, categories, and question sets to organize your question bank
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Tags</CardTitle>
+          <CardTitle>Organization Tools</CardTitle>
           <CardDescription>
-            Manage tags to categorize and organize questions by topic, theme, or any custom criteria
+            Create and manage tags, categories, and question sets to organize your questions effectively
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <TagsManagementGrid />
+          <QuestionManagementTable />
         </CardContent>
       </Card>
     </div>
