@@ -41,13 +41,7 @@ interface WSIViewerProps {
   className?: string
 }
 
-// Props for embedding debug interface
-interface WSIEmbeddingProps {
-  url: string
-  filename?: string
-  diagnosis?: string
-  className?: string
-}
+
 
 // Configuration for different WSI types and repositories
 interface WSIConfig {
@@ -757,112 +751,6 @@ export function WSIViewer({ slide, showMetadata = true, className = '' }: WSIVie
   )
 }
 
-// Embedding component for debug interface
-export function WSIEmbeddingViewer({ url, filename, diagnosis, className = '' }: WSIEmbeddingProps) {
-  const [embedStatus, setEmbedStatus] = useState<'idle' | 'loading' | 'success' | 'blocked' | 'error'>('idle')
-  const [config, setConfig] = useState<WSIConfig | null>(null)
 
-  useEffect(() => {
-    const wsiConfig = getWSIConfig(url)
-    setConfig(wsiConfig)
-    setEmbedStatus('idle')
-  }, [url])
-
-  const handleLoad = useCallback(() => {
-    setEmbedStatus('success')
-  }, [])
-
-  const handleError = useCallback(() => {
-    setEmbedStatus('error')
-  }, [])
-
-  const retryEmbed = () => {
-    setEmbedStatus('loading')
-    // Force reload by updating config
-    const wsiConfig = getWSIConfig(url)
-    setConfig({ ...wsiConfig })
-  }
-
-  if (!config) {
-    return <div className="flex items-center justify-center p-8">
-      <Loader2 className="h-6 w-6 animate-spin" />
-    </div>
-  }
-
-  return (
-    <div className={`space-y-4 ${className}`}>
-      <div className="aspect-video border rounded-lg overflow-hidden relative bg-gray-50">
-        {config.embeddingStrategy === 'openseadragon' ? (
-          <InternalOpenSeadragonViewer
-            url={url}
-            filename={filename}
-            diagnosis={diagnosis}
-            onLoad={handleLoad}
-            onError={handleError}
-          />
-        ) : config.embeddingStrategy === 'iframe' ? (
-          <IframeViewer
-            url={url}
-            title={diagnosis || 'WSI Viewer'}
-            onLoad={handleLoad}
-            onError={handleError}
-            loaded={embedStatus === 'success'}
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center space-y-3">
-              <AlertCircle className="h-8 w-8 text-amber-500 mx-auto" />
-              <div className="space-y-2">
-                <p className="font-medium">Cannot Embed WSI</p>
-                <p className="text-sm text-muted-foreground">
-                  {config.reason || 'This WSI format requires external viewing'}
-                </p>
-              </div>
-              <Button onClick={() => window.open(url, '_blank')} size="sm">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Open Externally
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Status overlay */}
-        {embedStatus === 'loading' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-10">
-            <div className="text-center space-y-2">
-              <RefreshCw className="h-6 w-6 animate-spin mx-auto text-blue-500" />
-              <p className="text-sm text-muted-foreground">Loading WSI...</p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Badge variant={embedStatus === 'success' ? 'default' : 'secondary'}>
-            {embedStatus === 'success' ? 'Embedded' : 'External'}
-          </Badge>
-          {config.useOpenSeadragon && (
-            <Badge variant="outline">OpenSeadragon</Badge>
-          )}
-          <Badge variant="outline" className="text-xs">
-            {config.reason}
-          </Badge>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={retryEmbed} size="sm" variant="outline">
-            <RefreshCw className="h-3 w-3 mr-1" />
-            Retry
-          </Button>
-          <Button onClick={() => window.open(url, '_blank')} size="sm">
-            <ExternalLink className="h-3 w-3 mr-1" />
-            External
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 

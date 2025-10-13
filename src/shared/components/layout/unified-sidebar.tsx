@@ -23,6 +23,7 @@ import {
   Brain,
   FolderOpen,
   Clock,
+  Layers,
   type LucideIcon
 } from "lucide-react"
 import { cn } from "@/shared/utils"
@@ -51,6 +52,7 @@ const iconMap: Record<string, LucideIcon> = {
   Microscope,
   FolderOpen,
   Clock,
+  Layers,
 }
 
 interface UnifiedSidebarProps {
@@ -169,6 +171,9 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
                           {!isCollapsed && (
                             <span className="truncate ml-3">{item.name}</span>
                           )}
+                          {!isCollapsed && item.comingSoon && (
+                            <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Soon</span>
+                          )}
                           {!isCollapsed && item.adminOnly && !isAdmin && !isLoading && (
                             <span className="ml-auto text-xs text-sidebar-foreground/50">Admin</span>
                           )}
@@ -200,6 +205,9 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
                     <IconComponent className="h-5 w-5 shrink-0" style={{ marginLeft: '-1px' }} />
                     {!isCollapsed && (
                       <span className="truncate ml-3">{item.name}</span>
+                    )}
+                    {!isCollapsed && item.comingSoon && (
+                      <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Soon</span>
                     )}
                     {!isCollapsed && item.adminOnly && !isAdmin && !isLoading && (
                       <span className="ml-auto text-xs text-sidebar-foreground/50">Admin</span>

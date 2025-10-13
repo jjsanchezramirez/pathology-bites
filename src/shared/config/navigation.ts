@@ -254,6 +254,11 @@ export const userNavigationItems: NavigationItem[] = [
     icon: "Microscope",
   },
   {
+    name: "Anki Deck Viewer",
+    href: "/dashboard/anki",
+    icon: "BookOpen",
+  },
+  {
     name: "Performance",
     href: "/dashboard/performance",
     icon: "BarChart2",
@@ -314,6 +319,11 @@ export const userNavigationSections: NavigationSection[] = [
         name: "WSI Questions (Beta)",
         href: "/dashboard/wsi-questions",
         icon: "Microscope",
+      },
+      {
+        name: "Anki Deck Viewer",
+        href: "/dashboard/anki",
+        icon: "BookOpen",
       },
       {
         name: "Learning Modules",

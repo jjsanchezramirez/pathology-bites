@@ -25,7 +25,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen
 } from 'lucide-react'
-import { InteractiveAnkiViewer } from '../../debug/components/interactive-anki-viewer'
+import { InteractiveAnkiViewer } from './interactive-anki-viewer'
 import { AnkomaData, AnkomaSection, AnkomaViewerProps, AnkiCard } from '../types/anki-card'
 import {
   findSectionById,
@@ -36,28 +36,28 @@ import { useClientAnkoma } from '@/shared/hooks/use-client-ankoma'
 import { cn } from '@/shared/utils'
 import { toast } from 'sonner'
 
-// Funny loading messages for Anki deck loading (Debug Interface)
-const DEBUG_ANKI_LOADING_MESSAGES = [
-  "Debugging the digital flashcard matrix...",
-  "Teaching the debug console what 'spaced repetition' means...",
+// Funny loading messages for Anki deck loading
+const ANKI_LOADING_MESSAGES = [
+  "Loading the digital flashcard matrix...",
+  "Teaching the system what 'spaced repetition' means...",
   "Parsing JSON like a pathologist reads slides (but faster)...",
   "Loading cards from the R2 cloud dimension...",
-  "Convincing Anki cards to reveal their debug secrets...",
+  "Convincing Anki cards to reveal their secrets...",
   "Calibrating the memory palace algorithms...",
-  "Converting study anxiety into debug data...",
+  "Converting study anxiety into productive learning...",
   "Assembling the army of forgotten medical facts...",
   "Teaching AI the difference between 'easy' and 'impossible'...",
-  "Channeling the spirit of Hermann Ebbinghaus (debug edition)...",
+  "Channeling the spirit of Hermann Ebbinghaus...",
   "Importing wisdom from the depths of ankoma.json...",
-  "Transforming procrastination into productive debugging...",
-  "Loading cards that will haunt your debug dreams...",
-  "Preparing your daily dose of educational debugging torture...",
-  "Organizing knowledge into bite-sized debug chunks...",
-  "Converting medical terminology into debug-friendly format...",
-  "Assembling your personalized debug knowledge database...",
-  "Preparing cards that make medical school debugging look easy...",
-  "Shuffling through thousands of digital debug flashcards...",
-  "Loading from R2 storage with aggressive debug caching..."
+  "Transforming procrastination into productive studying...",
+  "Loading cards that will enhance your learning...",
+  "Preparing your daily dose of educational excellence...",
+  "Organizing knowledge into bite-sized chunks...",
+  "Converting medical terminology into learner-friendly format...",
+  "Assembling your personalized knowledge database...",
+  "Preparing cards that make medical school more manageable...",
+  "Shuffling through thousands of digital flashcards...",
+  "Loading from R2 storage with optimized caching..."
 ]
 
 interface CategoryData {
@@ -230,15 +230,15 @@ export function DoubleSidebarAnkomaViewer({
   useEffect(() => {
     if (isLoading) {
       // Set initial message
-      const initialIndex = Math.floor(Math.random() * DEBUG_ANKI_LOADING_MESSAGES.length)
+      const initialIndex = Math.floor(Math.random() * ANKI_LOADING_MESSAGES.length)
       setLoadingMessageIndex(initialIndex)
-      setCurrentLoadingMessage(DEBUG_ANKI_LOADING_MESSAGES[initialIndex])
+      setCurrentLoadingMessage(ANKI_LOADING_MESSAGES[initialIndex])
 
       // Cycle through messages every 3 seconds
       loadingIntervalRef.current = setInterval(() => {
         setLoadingMessageIndex(prev => {
-          const nextIndex = (prev + 1) % DEBUG_ANKI_LOADING_MESSAGES.length
-          setCurrentLoadingMessage(DEBUG_ANKI_LOADING_MESSAGES[nextIndex])
+          const nextIndex = (prev + 1) % ANKI_LOADING_MESSAGES.length
+          setCurrentLoadingMessage(ANKI_LOADING_MESSAGES[nextIndex])
           return nextIndex
         })
       }, 3000)

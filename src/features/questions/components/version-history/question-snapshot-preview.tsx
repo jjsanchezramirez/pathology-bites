@@ -1,8 +1,7 @@
 'use client'
 
 import { Check } from 'lucide-react'
-import { ImprovedImageDialog } from "@/shared/components/common/improved-image-dialog"
-import { ImageCarousel } from "@/features/images/components/image-carousel"
+import Image from 'next/image'
 import { Badge } from "@/shared/components/ui/badge"
 
 interface QuestionSnapshotPreviewProps {
@@ -45,28 +44,31 @@ export function QuestionSnapshotPreview({
 
       {/* Stem Images */}
       {stemImages.length > 0 && (
-        <div>
-          {stemImages.length === 1 ? (
-            <ImprovedImageDialog
-              src={stemImages[0].image?.url || ''}
-              alt={stemImages[0].image?.alt_text || ''}
-              caption={stemImages[0].image?.description || ''}
-              className="border rounded-lg"
-              aspectRatio="16/10"
-            />
-          ) : (
-            <ImageCarousel
-              images={stemImages
-                .filter((si: any) => si && si.image)
-                .map((si: any) => ({
-                  id: si.image?.id || '',
-                  url: si.image?.url || '',
-                  alt: si.image?.alt_text || '',
-                  caption: si.image?.description || ''
-                }))}
-              className="border rounded-lg"
-            />
-          )}
+        <div className={`space-y-${isComparison ? '2' : '3'}`}>
+          {stemImages
+            .filter((si: any) => si && si.image)
+            .map((si: any, index: number) => {
+              if (!si.image?.url) return null
+
+              return (
+                <div key={si.image?.id || index} className="border rounded-lg overflow-hidden bg-muted/50">
+                  <div className="relative w-full" style={{ aspectRatio: '16/10' }}>
+                    <Image
+                      src={si.image.url}
+                      alt={si.image.alt_text || 'Question image'}
+                      fill
+                      unoptimized={true}
+                      className="object-contain"
+                    />
+                  </div>
+                  {si.image.description && (
+                    <div className={`p-2 ${isComparison ? 'text-xs' : 'text-sm'} text-muted-foreground bg-background/50`}>
+                      {si.image.description}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
         </div>
       )}
 
@@ -128,12 +130,12 @@ export function QuestionSnapshotPreview({
             <div>
               <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} uppercase mb-2`}>Incorrect Option Explanations</h5>
               <div className="space-y-2">
-                {incorrectOptions.map((option: any) => {
+                {incorrectOptions.map((option: any, index: number) => {
                   const originalIndex = question.question_options?.findIndex((opt: any) => opt.id === option.id) || 0
                   const optionLabel = optionLabels[originalIndex] || (originalIndex + 1).toString()
 
                   return (
-                    <div key={option.id} className={`${isComparison ? 'text-xs' : 'text-sm'}`}>
+                    <div key={option.id || `incorrect-option-${index}`} className={`${isComparison ? 'text-xs' : 'text-sm'}`}>
                       <span className="font-medium">Option {optionLabel}:</span>
                       <span className="text-muted-foreground ml-2">{option.explanation}</span>
                     </div>
@@ -146,28 +148,33 @@ export function QuestionSnapshotPreview({
           {/* Explanation Images */}
           {explanationImages.length > 0 && (
             <div>
-              <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} uppercase mb-1`}>Reference Images</h5>
-              {explanationImages.length === 1 ? (
-                <ImprovedImageDialog
-                  src={explanationImages[0].image?.url || ''}
-                  alt={explanationImages[0].image?.alt_text || ''}
-                  caption={explanationImages[0].image?.description || ''}
-                  className="border rounded-lg"
-                  aspectRatio="16/10"
-                />
-              ) : (
-                <ImageCarousel
-                  images={explanationImages
-                    .filter((ei: any) => ei && ei.image)
-                    .map((ei: any) => ({
-                      id: ei.image?.id || '',
-                      url: ei.image?.url || '',
-                      alt: ei.image?.alt_text || '',
-                      caption: ei.image?.description || ''
-                    }))}
-                  className="border rounded-lg"
-                />
-              )}
+              <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} uppercase mb-${isComparison ? '1' : '2'}`}>Reference Images</h5>
+              <div className={`space-y-${isComparison ? '2' : '3'}`}>
+                {explanationImages
+                  .filter((ei: any) => ei && ei.image)
+                  .map((ei: any, index: number) => {
+                    if (!ei.image?.url) return null
+
+                    return (
+                      <div key={ei.image?.id || index} className="border rounded-lg overflow-hidden bg-muted/50">
+                        <div className="relative w-full" style={{ aspectRatio: '16/10' }}>
+                          <Image
+                            src={ei.image.url}
+                            alt={ei.image.alt_text || 'Reference image'}
+                            fill
+                            unoptimized={true}
+                            className="object-contain"
+                          />
+                        </div>
+                        {ei.image.description && (
+                          <div className={`p-2 ${isComparison ? 'text-xs' : 'text-sm'} text-muted-foreground bg-background/50`}>
+                            {ei.image.description}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+              </div>
             </div>
           )}
 
