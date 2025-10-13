@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select'
 import { Loader2 } from 'lucide-react'
-import { colorPalette } from '../utils/category-colors'
+import { strongColors, lightColors } from '../utils/category-colors'
 
 interface Category {
   id: string
@@ -235,23 +235,45 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
               <p className="text-xs text-muted-foreground mt-1">Choose a color to override the automatic color assignment</p>
             </div>
 
-            {/* Color palette selection */}
-            <div className="grid grid-cols-10 gap-3">
-              {colorPalette.map((colorOption, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className={`w-10 h-10 rounded-lg border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                    color === colorOption.value
-                      ? 'border-foreground scale-110 ring-2 ring-primary'
-                      : 'border-border hover:border-foreground/50'
-                  }`}
-                  style={{ backgroundColor: colorOption.value }}
-                  onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
-                  disabled={isUpdating}
-                  title={`Color ${idx + 1}`}
-                />
-              ))}
+            {/* Color palette selection - two rows */}
+            <div className="space-y-2">
+              {/* Top row - stronger colors */}
+              <div className="grid grid-cols-15 gap-2">
+                {strongColors.map((colorOption, idx) => (
+                  <button
+                    key={`strong-${idx}`}
+                    type="button"
+                    className={`w-8 h-8 rounded border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                      color === colorOption.value
+                        ? 'border-foreground scale-110 ring-2 ring-primary'
+                        : 'border-border hover:border-foreground/50'
+                    }`}
+                    style={{ backgroundColor: colorOption.value }}
+                    onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
+                    disabled={isUpdating}
+                    title={`Color ${idx + 1}`}
+                  />
+                ))}
+              </div>
+              
+              {/* Bottom row - lighter colors */}
+              <div className="grid grid-cols-15 gap-2">
+                {lightColors.map((colorOption, idx) => (
+                  <button
+                    key={`light-${idx}`}
+                    type="button"
+                    className={`w-8 h-8 rounded border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                      color === colorOption.value
+                        ? 'border-foreground scale-110 ring-2 ring-primary'
+                        : 'border-border hover:border-foreground/50'
+                    }`}
+                    style={{ backgroundColor: colorOption.value }}
+                    onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
+                    disabled={isUpdating}
+                    title={`Light color ${idx + 1}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
