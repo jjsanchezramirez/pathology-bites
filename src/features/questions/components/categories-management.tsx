@@ -29,7 +29,6 @@ import {
   Trash2,
   RefreshCw,
   Edit,
-  CheckCircle,
   AlertTriangle
 } from 'lucide-react'
 import { CreateCategoryDialog } from './create-category-dialog'
@@ -50,7 +49,47 @@ interface Category {
   short_form?: string
 }
 
-import { getCategoryColor } from '../utils/category-colors'
+// Category color mapping for better badge appearance
+const getCategoryBadgeClass = (category: { short_form?: string; color?: string; parent_short_form?: string }) => {
+  // Fallback to predefined colors based on short form
+  const shortForm = category.short_form || category.parent_short_form
+
+  // Main categories
+  if (shortForm === 'AP') return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
+  if (shortForm === 'CP') return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800'
+
+  // AP subspecialties - stronger colors
+  if (category.parent_short_form === 'AP') {
+    const colors = [
+      'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800',
+      'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800',
+      'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800',
+      'bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800',
+      'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800',
+      'bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800',
+      'bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-900/20 dark:text-teal-300 dark:border-teal-800',
+      'bg-lime-100 text-lime-800 border-lime-200 dark:bg-lime-900/20 dark:text-lime-300 dark:border-lime-800'
+    ]
+    const hash = shortForm ? shortForm.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : 0
+    return colors[hash % colors.length]
+  }
+
+  // CP subspecialties - lighter colors
+  if (category.parent_short_form === 'CP') {
+    const colors = [
+      'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/20 dark:text-sky-300 dark:border-sky-800',
+      'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/20 dark:text-violet-300 dark:border-violet-800',
+      'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800',
+      'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800',
+      'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800'
+    ]
+    const hash = shortForm ? shortForm.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : 0
+    return colors[hash % colors.length]
+  }
+
+  // Default
+  return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800'
+}
 
 const PAGE_SIZE = 30
 
@@ -265,7 +304,6 @@ export function CategoriesManagement() {
               <TableHead>Name</TableHead>
               <TableHead>Short Form</TableHead>
               <TableHead>Parent</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead>Questions</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
@@ -273,13 +311,13 @@ export function CategoriesManagement() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : categories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                   {searchTerm ? 'No categories found matching your search' : 'No categories found'}
                 </TableCell>
               </TableRow>
@@ -291,28 +329,46 @@ export function CategoriesManagement() {
                   </TableCell>
                   <TableCell>
                     {category.short_form ? (
-                      <Badge
-                        className="font-semibold px-3 py-1 text-white border-none"
-                        style={{
-                          backgroundColor: getCategoryColor(category),
-                        }}
-                      >
-                        {category.short_form}
-                      </Badge>
+                      category.color ? (
+                        <Badge
+                          className="font-semibold px-3 py-1 text-white border-none"
+                          style={{
+                            backgroundColor: category.color,
+                          }}
+                        >
+                          {category.short_form}
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className={getCategoryBadgeClass(category)}
+                        >
+                          {category.short_form}
+                        </Badge>
+                      )
                     ) : (
                       <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
                   <TableCell>
                     {category.parent_short_form ? (
-                      <Badge
-                        className="text-white border-none"
-                        style={{
-                          backgroundColor: getCategoryColor({ short_form: category.parent_short_form, color: category.parent_color }),
-                        }}
-                      >
-                        {category.parent_short_form}
-                      </Badge>
+                      category.parent_color ? (
+                        <Badge
+                          className="text-white border-none"
+                          style={{
+                            backgroundColor: category.parent_color,
+                          }}
+                        >
+                          {category.parent_short_form}
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className={getCategoryBadgeClass({ short_form: category.parent_short_form, parent_short_form: category.parent_short_form })}
+                        >
+                          {category.parent_short_form}
+                        </Badge>
+                      )
                     ) : category.parent_name ? (
                       <Badge variant="outline">{category.parent_name}</Badge>
                     ) : (
@@ -320,21 +376,8 @@ export function CategoriesManagement() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
-                      {(category.question_count || 0) === 0 ? (
-                        <div title="Not used in any questions">
-                          <AlertTriangle className="h-4 w-4 text-orange-500" />
-                        </div>
-                      ) : (
-                        <div title={`Used in ${category.question_count || 0} question(s)`}>
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
                     <Badge variant="secondary">
-                      {category.question_count || 0}
+                      {category.question_count || 0} questions
                     </Badge>
                   </TableCell>
                   <TableCell>
