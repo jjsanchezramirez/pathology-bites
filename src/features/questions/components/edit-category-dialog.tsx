@@ -16,58 +16,86 @@ import {
 } from '@/shared/components/ui/select'
 import { Loader2 } from 'lucide-react'
 
-// Generate 30 colors from chart variables
-// Row 1 (AP - Strong): Mix chart-5 (red), chart-4 (orange), chart-3 (purple) at 100% saturation
-// Row 2 (CP - Light): Mix chart-2 (blue), chart-1 (cyan) at 50% lightness
+// Mix two HSL colors by averaging their components
+const mixColors = (color1: { h: number; s: number; l: number }, color2: { h: number; s: number; l: number }) => {
+  // Average hue (handle wraparound)
+  let h1 = color1.h
+  let h2 = color2.h
+  if (Math.abs(h1 - h2) > 180) {
+    if (h1 < h2) h1 += 360
+    else h2 += 360
+  }
+  const h = ((h1 + h2) / 2) % 360
+
+  // Average saturation and lightness
+  const s = (color1.s + color2.s) / 2
+  const l = (color1.l + color2.l) / 2
+
+  return { h, s, l }
+}
+
+// Generate 30 colors: 15 strong + 15 light versions
+// Row 1: 5 chart colors + 10 mixed colors = 15 distinct colors
+// Row 2: Lighter versions of row 1
 const generateCategoryColors = () => {
-  const colors: { value: string; name: string }[] = []
-
-  // AP Colors (Strong - Reddish) - 15 colors
-  // Base: chart-5 (red), chart-4 (orange), chart-3 (purple)
-  const apBases = [
-    { h: 354, s: 78, l: 56, name: 'chart-5' }, // red
-    { h: 32, s: 94, l: 56, name: 'chart-4' },  // orange
-    { h: 262, s: 80, l: 56, name: 'chart-3' }, // purple
-  ]
-
-  apBases.forEach((base, i) => {
-    // 5 variations per base color
-    for (let j = 0; j < 5; j++) {
-      const hueShift = (j - 2) * 8 // -16, -8, 0, 8, 16
-      const satShift = (j - 2) * -3 // Vary saturation slightly
-      const h = (base.h + hueShift + 360) % 360
-      const s = Math.max(60, Math.min(95, base.s + satShift))
-      const l = 65 // Consistent lightness for strong colors
-      colors.push({
-        value: `hsl(${h} ${s}% ${l}%)`,
-        name: `${base.name}-${j + 1}`
-      })
-    }
-  })
-
-  // CP Colors (Light - Bluish) - 15 colors
-  // Base: chart-2 (blue), chart-1 (cyan)
-  const cpBases = [
-    { h: 214, s: 100, l: 60, name: 'chart-2' }, // blue
+  // Chart colors from globals.css
+  const chartColors = [
     { h: 186, s: 66, l: 40, name: 'chart-1' },  // cyan
+    { h: 214, s: 100, l: 60, name: 'chart-2' }, // blue
+    { h: 262, s: 80, l: 56, name: 'chart-3' },  // purple
+    { h: 32, s: 94, l: 56, name: 'chart-4' },   // orange
+    { h: 354, s: 78, l: 56, name: 'chart-5' },  // red
   ]
 
-  // 7 from blue, 8 from cyan = 15 total
-  cpBases.forEach((base, i) => {
-    const count = i === 0 ? 7 : 8
-    for (let j = 0; j < count; j++) {
-      const hueShift = (j - Math.floor(count / 2)) * 6
-      const h = (base.h + hueShift + 360) % 360
-      const s = Math.max(50, Math.min(90, base.s - 10))
-      const l = 82 // Light colors
-      colors.push({
-        value: `hsl(${h} ${s}% ${l}%)`,
-        name: `${base.name}-${j + 1}`
-      })
-    }
+  const strongColors: { value: string; name: string }[] = []
+
+  // First 5: Pure chart colors
+  chartColors.forEach((color) => {
+    strongColors.push({
+      value: `hsl(${color.h} ${color.s}% ${color.l}%)`,
+      name: color.name
+    })
   })
 
-  return colors
+  // Next 10: Mixed colors (all unique combinations)
+  const mixPairs = [
+    [0, 1], // cyan + blue
+    [0, 2], // cyan + purple
+    [0, 3], // cyan + orange
+    [0, 4], // cyan + red
+    [1, 2], // blue + purple
+    [1, 3], // blue + orange
+    [1, 4], // blue + red
+    [2, 3], // purple + orange
+    [2, 4], // purple + red
+    [3, 4], // orange + red
+  ]
+
+  mixPairs.forEach(([i, j]) => {
+    const mixed = mixColors(chartColors[i], chartColors[j])
+    strongColors.push({
+      value: `hsl(${mixed.h} ${mixed.s}% ${mixed.l}%)`,
+      name: `${chartColors[i].name}+${chartColors[j].name}`
+    })
+  })
+
+  // Create light versions (increase lightness by 25%)
+  const lightColors = strongColors.map((color) => {
+    // Parse HSL from the value string
+    const match = color.value.match(/hsl\((\d+\.?\d*) (\d+\.?\d*)% (\d+\.?\d*)%\)/)
+    if (match) {
+      const h = parseFloat(match[1])
+      const s = parseFloat(match[2])
+      const l = Math.min(85, parseFloat(match[3]) + 25) // Add 25% lightness, cap at 85%
+      return {
+        value: `hsl(${h} ${s}% ${l}%)`,
+        name: `${color.name}-light`
+      }
+    }
+    return color
+  })
+
+  return { strongColors, lightColors }
 }
 
 interface Category {
@@ -99,9 +127,7 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
   const [loadingCategories, setLoadingCategories] = useState(false)
 
   // Generate colors once
-  const allColors = useMemo(() => generateCategoryColors(), [])
-  const apColors = useMemo(() => allColors.slice(0, 15), [allColors])
-  const cpColors = useMemo(() => allColors.slice(15, 30), [allColors])
+  const { strongColors, lightColors } = useMemo(() => generateCategoryColors(), [])
 
   const loadCategories = async () => {
     setLoadingCategories(true)
@@ -290,9 +316,9 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
 
             {/* All 30 colors in 2 rows of 15 */}
             <div className="space-y-2">
-              {/* Row 1: AP Colors (Strong - Reddish) */}
+              {/* Row 1: Strong colors (5 chart + 10 mixed) */}
               <div className="grid grid-cols-15 gap-2">
-                {apColors.map((colorOption, idx) => (
+                {strongColors.map((colorOption, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -309,9 +335,9 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
                 ))}
               </div>
 
-              {/* Row 2: CP Colors (Light - Bluish) */}
+              {/* Row 2: Light versions of row 1 */}
               <div className="grid grid-cols-15 gap-2">
-                {cpColors.map((colorOption, idx) => (
+                {lightColors.map((colorOption, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -338,7 +364,7 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
                     style={{ backgroundColor: color }}
                   />
                   <span className="text-sm text-muted-foreground">
-                    {allColors.find(c => c.value === color)?.name || color}
+                    {[...strongColors, ...lightColors].find(c => c.value === color)?.name || color}
                   </span>
                   <Button
                     type="button"
