@@ -1,7 +1,7 @@
 // src/components/question-management/edit-category-dialog.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
 import { BlurredDialog } from '@/shared/components/ui/blurred-dialog'
 import { Button } from '@/shared/components/ui/button'
@@ -15,7 +15,60 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select'
 import { Loader2 } from 'lucide-react'
-import { ALL_CATEGORY_COLORS, AP_COLORS, CP_COLORS, type CategoryColor } from '@/shared/constants/category-colors'
+
+// Generate 30 colors from chart variables
+// Row 1 (AP - Strong): Mix chart-5 (red), chart-4 (orange), chart-3 (purple) at 100% saturation
+// Row 2 (CP - Light): Mix chart-2 (blue), chart-1 (cyan) at 50% lightness
+const generateCategoryColors = () => {
+  const colors: { value: string; name: string }[] = []
+
+  // AP Colors (Strong - Reddish) - 15 colors
+  // Base: chart-5 (red), chart-4 (orange), chart-3 (purple)
+  const apBases = [
+    { h: 354, s: 78, l: 56, name: 'chart-5' }, // red
+    { h: 32, s: 94, l: 56, name: 'chart-4' },  // orange
+    { h: 262, s: 80, l: 56, name: 'chart-3' }, // purple
+  ]
+
+  apBases.forEach((base, i) => {
+    // 5 variations per base color
+    for (let j = 0; j < 5; j++) {
+      const hueShift = (j - 2) * 8 // -16, -8, 0, 8, 16
+      const satShift = (j - 2) * -3 // Vary saturation slightly
+      const h = (base.h + hueShift + 360) % 360
+      const s = Math.max(60, Math.min(95, base.s + satShift))
+      const l = 65 // Consistent lightness for strong colors
+      colors.push({
+        value: `hsl(${h} ${s}% ${l}%)`,
+        name: `${base.name}-${j + 1}`
+      })
+    }
+  })
+
+  // CP Colors (Light - Bluish) - 15 colors
+  // Base: chart-2 (blue), chart-1 (cyan)
+  const cpBases = [
+    { h: 214, s: 100, l: 60, name: 'chart-2' }, // blue
+    { h: 186, s: 66, l: 40, name: 'chart-1' },  // cyan
+  ]
+
+  // 7 from blue, 8 from cyan = 15 total
+  cpBases.forEach((base, i) => {
+    const count = i === 0 ? 7 : 8
+    for (let j = 0; j < count; j++) {
+      const hueShift = (j - Math.floor(count / 2)) * 6
+      const h = (base.h + hueShift + 360) % 360
+      const s = Math.max(50, Math.min(90, base.s - 10))
+      const l = 82 // Light colors
+      colors.push({
+        value: `hsl(${h} ${s}% ${l}%)`,
+        name: `${base.name}-${j + 1}`
+      })
+    }
+  })
+
+  return colors
+}
 
 interface Category {
   id: string
@@ -44,6 +97,11 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
   const [isUpdating, setIsUpdating] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
   const [loadingCategories, setLoadingCategories] = useState(false)
+
+  // Generate colors once
+  const allColors = useMemo(() => generateCategoryColors(), [])
+  const apColors = useMemo(() => allColors.slice(0, 15), [allColors])
+  const cpColors = useMemo(() => allColors.slice(15, 30), [allColors])
 
   const loadCategories = async () => {
     setLoadingCategories(true)
@@ -234,9 +292,9 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
             <div className="space-y-2">
               {/* Row 1: AP Colors (Strong - Reddish) */}
               <div className="grid grid-cols-15 gap-2">
-                {AP_COLORS.map((colorOption) => (
+                {apColors.map((colorOption, idx) => (
                   <button
-                    key={colorOption.value}
+                    key={idx}
                     type="button"
                     className={`w-8 h-8 rounded-md border-2 transition-all hover:scale-110 ${
                       color === colorOption.value
@@ -253,9 +311,9 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
 
               {/* Row 2: CP Colors (Light - Bluish) */}
               <div className="grid grid-cols-15 gap-2">
-                {CP_COLORS.map((colorOption) => (
+                {cpColors.map((colorOption, idx) => (
                   <button
-                    key={colorOption.value}
+                    key={idx}
                     type="button"
                     className={`w-8 h-8 rounded-md border-2 transition-all hover:scale-110 ${
                       color === colorOption.value
@@ -280,7 +338,7 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
                     style={{ backgroundColor: color }}
                   />
                   <span className="text-sm text-muted-foreground">
-                    {ALL_CATEGORY_COLORS.find(c => c.value === color)?.name || color}
+                    {allColors.find(c => c.value === color)?.name || color}
                   </span>
                   <Button
                     type="button"
