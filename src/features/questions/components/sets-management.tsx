@@ -413,9 +413,6 @@ export function SetsManagement() {
                       variant="outline"
                       className={SOURCE_TYPE_CONFIG[set.source_type as keyof typeof SOURCE_TYPE_CONFIG]?.color || SOURCE_TYPE_CONFIG.other.color}
                     >
-                      <span className="mr-1">
-                        {SOURCE_TYPE_CONFIG[set.source_type as keyof typeof SOURCE_TYPE_CONFIG]?.icon || SOURCE_TYPE_CONFIG.other.icon}
-                      </span>
                       {SOURCE_TYPE_CONFIG[set.source_type as keyof typeof SOURCE_TYPE_CONFIG]?.label || set.source_type}
                     </Badge>
                   </TableCell>

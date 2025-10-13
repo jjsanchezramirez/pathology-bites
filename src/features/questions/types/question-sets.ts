@@ -115,40 +115,65 @@ export const DEFAULT_QUESTION_SETS = [
 
 // Source type configurations for UI
 export const SOURCE_TYPE_CONFIG = {
-  pathology_outlines: {
+  'pathology_outlines': {
     label: 'PathologyOutlines.com',
-    color: 'bg-chart-2/10 text-chart-2 border-chart-2/20',
-    icon: '🌐',
+    color: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800',
     description: 'Questions sourced from PathologyOutlines.com'
   },
-  textbook: {
+  'textbook': {
     label: 'Textbook',
-    color: 'bg-chart-1/10 text-chart-1 border-chart-1/20',
-    icon: '📚',
+    color: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800',
     description: 'Questions from medical textbooks and publications'
   },
-  user_generated: {
+  'user_generated': {
     label: 'User Generated',
-    color: 'bg-chart-3/10 text-chart-3 border-chart-3/20',
-    icon: '👤',
+    color: 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800',
     description: 'Questions created by platform users'
   },
-  ai_generated: {
+  'ai_generated': {
     label: 'AI Generated',
-    color: 'bg-chart-4/10 text-chart-4 border-chart-4/20',
-    icon: '🤖',
+    color: 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800',
     description: 'Questions generated using artificial intelligence'
   },
-  expert_generated: {
+  'expert_generated': {
     label: 'Expert Generated',
-    color: 'bg-chart-5/10 text-chart-5 border-chart-5/20',
-    icon: '⭐',
+    color: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800',
     description: 'Questions created and reviewed by pathology experts'
   },
-  other: {
+  'other': {
     label: 'Other',
-    color: 'bg-muted text-muted-foreground border-border',
-    icon: '📝',
+    color: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800',
+    description: 'Questions from other sources'
+  },
+  // Legacy support for existing data
+  'AI-Generated': {
+    label: 'AI Generated',
+    color: 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800',
+    description: 'Questions generated using artificial intelligence'
+  },
+  'Web Resource': {
+    label: 'Web Resource',
+    color: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800',
+    description: 'Questions sourced from web resources'
+  },
+  'Textbook': {
+    label: 'Textbook',
+    color: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800',
+    description: 'Questions from medical textbooks and publications'
+  },
+  'Expert-Authored': {
+    label: 'Expert Authored',
+    color: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800',
+    description: 'Questions authored by subject matter experts'
+  },
+  'User-Generated': {
+    label: 'User Generated',
+    color: 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800',
+    description: 'Questions created by platform users'
+  },
+  'Other': {
+    label: 'Other',
+    color: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800',
     description: 'Questions from other sources'
   }
 } as const;

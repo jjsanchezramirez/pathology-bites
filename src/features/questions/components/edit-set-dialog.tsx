@@ -45,88 +45,12 @@ const sourceTypes = [
   { value: 'Other', label: 'Other' }
 ]
 
-// Source details options based on source type
-const sourceDetailsOptions = {
-  'AI-Generated': [
-    // Gemini models
-    { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
-    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
-    { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
-    { value: 'gemini-pro', label: 'Gemini Pro' },
 
-    // Mistral models (latest versions)
-    { value: 'mistral-large-2411', label: 'Mistral Large 2.1' },
-    { value: 'mistral-medium-2505', label: 'Mistral Medium 3' },
-    { value: 'magistral-medium-2507', label: 'Magistral Medium 1.1' },
-    { value: 'mistral-small-2407', label: 'Mistral Small 2' },
-    { value: 'ministral-8b-2410', label: 'Ministral 8B' },
-    { value: 'ministral-3b-2410', label: 'Ministral 3B' },
-
-    // DeepSeek models
-    { value: 'deepseek-chat', label: 'DeepSeek Chat' },
-    { value: 'deepseek-coder', label: 'DeepSeek Coder' },
-
-    // Claude models
-    { value: 'claude-4-sonnet', label: 'Claude 4 Sonnet' },
-    { value: 'claude-4-opus', label: 'Claude 4 Opus' },
-    { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet' },
-    { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku' },
-    { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus' },
-    { value: 'claude-3-sonnet-20240229', label: 'Claude 3 Sonnet' },
-    { value: 'claude-3-haiku-20240307', label: 'Claude 3 Haiku' },
-
-    // ChatGPT models
-    { value: 'gpt-4o', label: 'GPT-4o' },
-    { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
-    { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
-    { value: 'gpt-4', label: 'GPT-4' },
-    { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
-
-    // Other options
-    { value: 'multiple-models', label: 'Multiple AI Models' },
-    { value: 'other-ai', label: 'Other AI Model' }
-  ],
-  'Web Resource': [
-    { value: 'pathologyoutlines.com', label: 'PathologyOutlines.com' },
-    { value: 'webpathology.com', label: 'WebPathology.com' },
-    { value: 'pathpedia.com', label: 'Pathpedia.com' },
-    { value: 'cap.org', label: 'CAP.org' },
-    { value: 'ascp.org', label: 'ASCP.org' },
-    { value: 'other-website', label: 'Other Website' }
-  ],
-  'Textbook': [
-    { value: 'robbins-pathology', label: 'Robbins & Cotran Pathologic Basis of Disease' },
-    { value: 'rosai-ackerman', label: 'Rosai and Ackerman\'s Surgical Pathology' },
-    { value: 'sternberg-diagnostic', label: 'Sternberg\'s Diagnostic Surgical Pathology' },
-    { value: 'mills-histology', label: 'Mills\' Histology for Pathologists' },
-    { value: 'other-textbook', label: 'Other Textbook' }
-  ],
-  'Expert-Authored': [
-    { value: 'pathologist-created', label: 'Created by Pathologist' },
-    { value: 'resident-created', label: 'Created by Resident' },
-    { value: 'faculty-reviewed', label: 'Faculty Reviewed' },
-    { value: 'peer-reviewed', label: 'Peer Reviewed' },
-    { value: 'other-expert', label: 'Other Expert Source' }
-  ],
-  'User-Generated': [
-    { value: 'community-contributed', label: 'Community Contributed' },
-    { value: 'student-created', label: 'Student Created' },
-    { value: 'crowdsourced', label: 'Crowdsourced' },
-    { value: 'other-user', label: 'Other User Source' }
-  ],
-  'Other': [
-    { value: 'conference-material', label: 'Conference Material' },
-    { value: 'journal-article', label: 'Journal Article' },
-    { value: 'case-study', label: 'Case Study' },
-    { value: 'other-source', label: 'Other Source' }
-  ]
-}
 
 export function EditSetDialog({ open, onOpenChange, onSuccess, questionSet }: EditSetDialogProps) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [sourceType, setSourceType] = useState('')
-  const [sourceDetails, setSourceDetails] = useState('')
   const [isActive, setIsActive] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
 
@@ -136,7 +60,6 @@ export function EditSetDialog({ open, onOpenChange, onSuccess, questionSet }: Ed
       setName(questionSet.name)
       setDescription(questionSet.description || '')
       setSourceType(questionSet.source_type)
-      setSourceDetails('') // Initialize empty, will be populated from source_details JSON
       setIsActive(questionSet.is_active)
     }
   }, [questionSet, open])
@@ -282,23 +205,7 @@ export function EditSetDialog({ open, onOpenChange, onSuccess, questionSet }: Ed
             </Select>
           </div>
 
-          {sourceType && sourceDetailsOptions[sourceType as keyof typeof sourceDetailsOptions] && (
-            <div className="space-y-2">
-              <Label htmlFor="sourceDetails">Source Details</Label>
-              <Select value={sourceDetails} onValueChange={setSourceDetails} disabled={isUpdating}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select specific source..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {sourceDetailsOptions[sourceType as keyof typeof sourceDetailsOptions].map((detail) => (
-                    <SelectItem key={detail.value} value={detail.value}>
-                      {detail.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+
 
           <div className="flex items-center space-x-2">
             <Switch

@@ -19,7 +19,7 @@ import {
 } from '@/shared/components/ui/select'
 import { Switch } from '@/shared/components/ui/switch'
 import { Loader2 } from 'lucide-react'
-import { ACTIVE_AI_MODELS, DISABLED_AI_MODELS } from '@/shared/config/ai-models'
+
 
 interface CreateSetDialogProps {
   open: boolean
@@ -36,66 +36,12 @@ const sourceTypes = [
   { value: 'Other', label: 'Other' }
 ]
 
-// Source details options based on source type
-const sourceDetailsOptions = {
-  'AI-Generated': [
-    // Active AI models
-    ...ACTIVE_AI_MODELS.map(model => ({
-      value: model.id,
-      label: model.name
-    })),
 
-    // Disabled models (for backward compatibility)
-    ...DISABLED_AI_MODELS.map(model => ({
-      value: model.id,
-      label: `${model.name} (Unavailable)`
-    })),
-
-    // Other options
-    { value: 'multiple-models', label: 'Multiple AI Models' },
-    { value: 'other-ai', label: 'Other AI Model' }
-  ],
-  'Web Resource': [
-    { value: 'pathologyoutlines.com', label: 'PathologyOutlines.com' },
-    { value: 'webpathology.com', label: 'WebPathology.com' },
-    { value: 'pathpedia.com', label: 'Pathpedia.com' },
-    { value: 'cap.org', label: 'CAP.org' },
-    { value: 'ascp.org', label: 'ASCP.org' },
-    { value: 'other-website', label: 'Other Website' }
-  ],
-  'Textbook': [
-    { value: 'robbins-pathology', label: 'Robbins & Cotran Pathologic Basis of Disease' },
-    { value: 'rosai-ackerman', label: 'Rosai and Ackerman\'s Surgical Pathology' },
-    { value: 'sternberg-diagnostic', label: 'Sternberg\'s Diagnostic Surgical Pathology' },
-    { value: 'mills-histology', label: 'Mills\' Histology for Pathologists' },
-    { value: 'other-textbook', label: 'Other Textbook' }
-  ],
-  'Expert-Authored': [
-    { value: 'pathologist-created', label: 'Created by Pathologist' },
-    { value: 'resident-created', label: 'Created by Resident' },
-    { value: 'faculty-reviewed', label: 'Faculty Reviewed' },
-    { value: 'peer-reviewed', label: 'Peer Reviewed' },
-    { value: 'other-expert', label: 'Other Expert Source' }
-  ],
-  'User-Generated': [
-    { value: 'community-contributed', label: 'Community Contributed' },
-    { value: 'student-created', label: 'Student Created' },
-    { value: 'crowdsourced', label: 'Crowdsourced' },
-    { value: 'other-user', label: 'Other User Source' }
-  ],
-  'Other': [
-    { value: 'conference-material', label: 'Conference Material' },
-    { value: 'journal-article', label: 'Journal Article' },
-    { value: 'case-study', label: 'Case Study' },
-    { value: 'other-source', label: 'Other Source' }
-  ]
-}
 
 export function CreateSetDialog({ open, onOpenChange, onSuccess }: CreateSetDialogProps) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [sourceType, setSourceType] = useState('')
-  const [sourceDetails, setSourceDetails] = useState('')
   const [isActive, setIsActive] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
 
@@ -144,7 +90,6 @@ export function CreateSetDialog({ open, onOpenChange, onSuccess }: CreateSetDial
       setName('')
       setDescription('')
       setSourceType('')
-      setSourceDetails('')
       setIsActive(true)
       onSuccess()
     } catch (error) {
@@ -162,7 +107,6 @@ export function CreateSetDialog({ open, onOpenChange, onSuccess }: CreateSetDial
         setName('')
         setDescription('')
         setSourceType('')
-        setSourceDetails('')
         setIsActive(true)
       }
     }
@@ -244,23 +188,7 @@ export function CreateSetDialog({ open, onOpenChange, onSuccess }: CreateSetDial
             </Select>
           </div>
 
-          {sourceType && sourceDetailsOptions[sourceType as keyof typeof sourceDetailsOptions] && (
-            <div className="space-y-2">
-              <Label htmlFor="sourceDetails">Source Details</Label>
-              <Select value={sourceDetails} onValueChange={setSourceDetails} disabled={isCreating}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select specific source..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {sourceDetailsOptions[sourceType as keyof typeof sourceDetailsOptions].map((detail) => (
-                    <SelectItem key={detail.value} value={detail.value}>
-                      {detail.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+
 
           <div className="flex items-center space-x-2">
             <Switch
