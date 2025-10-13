@@ -16,8 +16,26 @@ import {
 } from '@/shared/components/ui/select'
 import { Loader2 } from 'lucide-react'
 
+// Mix two HSL colors by averaging their components
+const mixColors = (color1: { h: number; s: number; l: number }, color2: { h: number; s: number; l: number }) => {
+  // Average hue (handle wraparound for colors on opposite sides of wheel)
+  let h1 = color1.h
+  let h2 = color2.h
+  if (Math.abs(h1 - h2) > 180) {
+    if (h1 < h2) h1 += 360
+    else h2 += 360
+  }
+  const h = ((h1 + h2) / 2) % 360
+
+  // Average saturation and lightness
+  const s = (color1.s + color2.s) / 2
+  const l = (color1.l + color2.l) / 2
+
+  return { h, s, l }
+}
+
 // Generate 30 colors: 15 strong + 15 light versions
-// Row 1: 5 chart colors + 10 carefully selected mixed colors = 15 distinct colors
+// Row 1: 5 chart colors + 10 mixed colors = 15 distinct colors
 // Row 2: Lighter versions of row 1
 const generateCategoryColors = () => {
   // Chart colors from globals.css
@@ -31,32 +49,31 @@ const generateCategoryColors = () => {
 
   const strongColors: { value: string }[] = []
 
-  // Create 15 distinct colors by mixing chart colors strategically
-  // Avoid similar combinations
-  const colorRecipes = [
-    // Pure chart colors (5)
-    { h: 186, s: 66, l: 40 },   // 1. Cyan (chart-1)
-    { h: 214, s: 100, l: 60 },  // 2. Blue (chart-2)
-    { h: 262, s: 80, l: 56 },   // 3. Purple (chart-3)
-    { h: 32, s: 94, l: 56 },    // 4. Orange (chart-4)
-    { h: 354, s: 78, l: 56 },   // 5. Red (chart-5)
-
-    // Mixed colors (10) - carefully selected to be visually distinct
-    { h: 200, s: 83, l: 50 },   // 6. Teal (cyan+blue)
-    { h: 224, s: 90, l: 58 },   // 7. Sky blue (blue shifted)
-    { h: 280, s: 85, l: 58 },   // 8. Violet (purple shifted)
-    { h: 20, s: 90, l: 52 },    // 9. Coral (orange+red)
-    { h: 340, s: 82, l: 54 },   // 10. Pink (red shifted)
-    { h: 170, s: 70, l: 45 },   // 11. Turquoise (cyan shifted)
-    { h: 245, s: 88, l: 58 },   // 12. Periwinkle (blue+purple)
-    { h: 295, s: 75, l: 54 },   // 13. Magenta (purple+red)
-    { h: 45, s: 92, l: 54 },    // 14. Gold (orange shifted)
-    { h: 10, s: 85, l: 52 },    // 15. Vermillion (orange+red shifted)
-  ]
-
-  colorRecipes.forEach((color) => {
+  // First 5: Pure chart colors
+  chartColors.forEach((color) => {
     strongColors.push({
       value: `hsl(${color.h} ${color.s}% ${color.l}%)`
+    })
+  })
+
+  // Next 10: All unique 2-color combinations
+  const mixPairs = [
+    [0, 1], // 1+2: cyan + blue
+    [0, 2], // 1+3: cyan + purple
+    [0, 3], // 1+4: cyan + orange
+    [0, 4], // 1+5: cyan + red
+    [1, 2], // 2+3: blue + purple
+    [1, 3], // 2+4: blue + orange
+    [1, 4], // 2+5: blue + red
+    [2, 3], // 3+4: purple + orange
+    [2, 4], // 3+5: purple + red
+    [3, 4], // 4+5: orange + red
+  ]
+
+  mixPairs.forEach(([i, j]) => {
+    const mixed = mixColors(chartColors[i], chartColors[j])
+    strongColors.push({
+      value: `hsl(${Math.round(mixed.h)} ${Math.round(mixed.s)}% ${Math.round(mixed.l)}%)`
     })
   })
 
@@ -68,7 +85,7 @@ const generateCategoryColors = () => {
       const s = parseFloat(match[2])
       const l = Math.min(85, parseFloat(match[3]) + 25)
       return {
-        value: `hsl(${h} ${s}% ${l}%)`
+        value: `hsl(${Math.round(h)} ${Math.round(s)}% ${Math.round(l)}%)`
       }
     }
     return color
