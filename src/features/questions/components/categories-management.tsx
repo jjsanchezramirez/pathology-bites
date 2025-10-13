@@ -14,12 +14,30 @@ import {
 import { Input } from '@/shared/components/ui/input'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
+import { Checkbox } from '@/shared/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/components/ui/alert-dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select'
 import { BlurredDialog } from '@/shared/components/ui/blurred-dialog'
 import {
   Search,
@@ -29,7 +47,8 @@ import {
   Trash2,
   RefreshCw,
   Edit,
-  AlertTriangle
+  AlertTriangle,
+  Users
 } from 'lucide-react'
 import { CreateCategoryDialog } from './create-category-dialog'
 import { EditCategoryDialog } from './edit-category-dialog'
@@ -102,7 +121,7 @@ const getCustomColorStyle = (color: string) => {
   // Extract HSL values and create a light background with darker text
   const hslMatch = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/)
   if (hslMatch) {
-    const [, h, s, l] = hslMatch
+    const [, h, s] = hslMatch
     return {
       backgroundColor: `hsl(${h} ${Math.min(parseInt(s), 50)}% 90%)`, // Light background
       color: `hsl(${h} ${s}% 20%)`, // Dark text
@@ -133,6 +152,36 @@ export function CategoriesManagement() {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
+  // Selection and bulk operations state
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<string>>(new Set())
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
+  const [showBulkParentDialog, setShowBulkParentDialog] = useState(false)
+  const [bulkParentId, setBulkParentId] = useState<string>('')
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+  const [isBulkAssigning, setIsBulkAssigning] = useState(false)
+
+  // Selection helper functions
+  const handleSelectCategory = (categoryId: string) => {
+    const newSelected = new Set(selectedCategoryIds)
+    if (newSelected.has(categoryId)) {
+      newSelected.delete(categoryId)
+    } else {
+      newSelected.add(categoryId)
+    }
+    setSelectedCategoryIds(newSelected)
+  }
+
+  const handleSelectAll = () => {
+    if (selectedCategoryIds.size === categories.length) {
+      setSelectedCategoryIds(new Set())
+    } else {
+      setSelectedCategoryIds(new Set(categories.map(category => category.id)))
+    }
+  }
+
+  const clearSelection = () => {
+    setSelectedCategoryIds(new Set())
+  }
 
   // Function to organize categories hierarchically
   const organizeHierarchically = useCallback((categories: Category[]): Category[] => {
@@ -270,6 +319,80 @@ export function CategoriesManagement() {
     loadCategories()
   }
 
+  const handleBulkDelete = async () => {
+    if (selectedCategoryIds.size === 0) return
+
+    setIsBulkDeleting(true)
+    try {
+      const categoryIds = Array.from(selectedCategoryIds)
+
+      const response = await fetch('/api/admin/categories/bulk-delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ categoryIds })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete categories')
+      }
+
+      const result = await response.json()
+      toast.success(`Successfully deleted ${result.deletedCount} categories`)
+
+      setShowBulkDeleteDialog(false)
+      clearSelection()
+      loadCategories()
+    } catch (error) {
+      console.error('Error bulk deleting categories:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to delete categories')
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }
+
+  const handleBulkParentAssignment = async () => {
+    if (selectedCategoryIds.size === 0) return
+
+    setIsBulkAssigning(true)
+    try {
+      const categoryIds = Array.from(selectedCategoryIds)
+
+      const response = await fetch('/api/admin/categories/bulk-assign-parent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          categoryIds,
+          parentId: bulkParentId || null
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to assign parent categories')
+      }
+
+      const result = await response.json()
+      toast.success(`Successfully updated ${result.updatedCount} categories`)
+
+      setShowBulkParentDialog(false)
+      setBulkParentId('')
+      clearSelection()
+      loadCategories()
+    } catch (error) {
+      console.error('Error bulk assigning parent:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to assign parent categories')
+    } finally {
+      setIsBulkAssigning(false)
+    }
+  }
+
   const renderCategoryName = (category: Category) => {
     return (
       <div className="flex items-center">
@@ -309,10 +432,34 @@ export function CategoriesManagement() {
             Refresh
           </Button>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Category
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedCategoryIds.size > 0 && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowBulkDeleteDialog(true)}
+                disabled={loading}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete ({selectedCategoryIds.size})
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowBulkParentDialog(true)}
+                disabled={loading}
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Assign Parent ({selectedCategoryIds.size})
+              </Button>
+            </>
+          )}
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Category
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -328,6 +475,13 @@ export function CategoriesManagement() {
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={selectedCategoryIds.size === categories.length && categories.length > 0}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all categories"
+                />
+              </TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Short Form</TableHead>
               <TableHead>Parent</TableHead>
@@ -338,19 +492,26 @@ export function CategoriesManagement() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : categories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                   {searchTerm ? 'No categories found matching your search' : 'No categories found'}
                 </TableCell>
               </TableRow>
             ) : (
               categories.map((category) => (
-                <TableRow key={category.id}>
+                <TableRow key={category.id} className={selectedCategoryIds.has(category.id) ? 'bg-muted/50' : ''}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedCategoryIds.has(category.id)}
+                      onCheckedChange={() => handleSelectCategory(category.id)}
+                      aria-label={`Select ${category.name}`}
+                    />
+                  </TableCell>
                   <TableCell>
                     {renderCategoryName(category)}
                   </TableCell>
@@ -506,6 +667,82 @@ export function CategoriesManagement() {
           )}
         </div>
       </BlurredDialog>
+
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Categories</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedCategoryIds.size} selected categories?
+              This action cannot be undone and will remove them from all associated questions.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isBulkDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={isBulkDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isBulkDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                `Delete ${selectedCategoryIds.size} Categories`
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Parent Assignment Dialog */}
+      <AlertDialog open={showBulkParentDialog} onOpenChange={setShowBulkParentDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Assign Parent Category</AlertDialogTitle>
+            <AlertDialogDescription>
+              Select a parent category for the {selectedCategoryIds.size} selected categories.
+              Leave empty to make them top-level categories.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Select value={bulkParentId} onValueChange={setBulkParentId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select parent category (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No parent (top-level)</SelectItem>
+                {categories
+                  .filter(cat => !selectedCategoryIds.has(cat.id)) // Exclude selected categories
+                  .map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {'  '.repeat(category.level - 1)}{category.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isBulkAssigning}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkParentAssignment}
+              disabled={isBulkAssigning}
+            >
+              {isBulkAssigning ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Assigning...
+                </>
+              ) : (
+                `Update ${selectedCategoryIds.size} Categories`
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Create Dialog */}
       <CreateCategoryDialog
