@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select'
 import { Loader2 } from 'lucide-react'
-import { strongColors, lightColors } from '../utils/category-colors'
+import { colorPalette } from '../utils/category-colors'
 
 interface CreateCategoryDialogProps {
   open: boolean
@@ -224,67 +224,22 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
           </div>
 
           {/* Color palette selection */}
-          <div className="space-y-3">
-            <div className="text-sm font-medium text-muted-foreground">Strong Colors</div>
-            <div className="grid grid-cols-10 gap-3">
-              {strongColors.map((colorOption, idx) => (
-                <button
-                  key={`strong-${idx}`}
-                  type="button"
-                  className={`w-10 h-10 rounded-lg border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                    color === colorOption.value
-                      ? 'border-foreground scale-110 ring-2 ring-primary'
-                      : 'border-border hover:border-foreground/50'
-                  }`}
-                  style={{ backgroundColor: colorOption.value }}
-                  onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
-                  disabled={isCreating}
-                  title={`Strong color ${idx + 1}`}
-                />
-              ))}
-            </div>
-            
-            <div className="text-sm font-medium text-muted-foreground mt-4">Light Colors</div>
-            <div className="grid grid-cols-10 gap-3">
-              {lightColors.map((colorOption, idx) => (
-                <button
-                  key={`light-${idx}`}
-                  type="button"
-                  className={`w-10 h-10 rounded-lg border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                    color === colorOption.value
-                      ? 'border-foreground scale-110 ring-2 ring-primary'
-                      : 'border-border hover:border-foreground/50'
-                    }`}
-                  style={{ backgroundColor: colorOption.value }}
-                  onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
-                  disabled={isCreating}
-                  title={`Light color ${idx + 1}`}
-                />
-              ))}
-            </div>
-            
-            {/* Selected color preview and clear button */}
-            {color && (
-              <div className="flex items-center gap-3 pt-3 border-t">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-8 h-8 rounded-lg border border-border shadow-sm"
-                    style={{ backgroundColor: color }}
-                  />
-                  <span className="text-sm text-muted-foreground">Selected color</span>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setColor('')}
-                  disabled={isCreating}
-                  className="ml-auto"
-                >
-                  Clear Selection
-                </Button>
-              </div>
-            )}
+          <div className="grid grid-cols-10 gap-3">
+            {colorPalette.map((colorOption, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className={`w-10 h-10 rounded-lg border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                  color === colorOption.value
+                    ? 'border-foreground scale-110 ring-2 ring-primary'
+                    : 'border-border hover:border-foreground/50'
+                }`}
+                style={{ backgroundColor: colorOption.value }}
+                onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
+                disabled={isCreating}
+                title={`Color ${idx + 1}`}
+              />
+            ))}
           </div>
         </div>
       </form>
