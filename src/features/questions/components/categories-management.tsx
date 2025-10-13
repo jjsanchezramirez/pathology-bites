@@ -51,6 +51,11 @@ interface Category {
 
 // Category color mapping for better badge appearance
 const getCategoryBadgeClass = (category: { short_form?: string; color?: string; parent_short_form?: string }) => {
+  // If custom color is set, return empty string to use inline styles
+  if (category.color) {
+    return ''
+  }
+
   // Fallback to predefined colors based on short form
   const shortForm = category.short_form || category.parent_short_form
 
@@ -89,6 +94,28 @@ const getCategoryBadgeClass = (category: { short_form?: string; color?: string; 
 
   // Default
   return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800'
+}
+
+// Helper function to create standardized custom color styles
+const getCustomColorStyle = (color: string) => {
+  // Convert HSL to a lighter background version for consistency
+  // Extract HSL values and create a light background with darker text
+  const hslMatch = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/)
+  if (hslMatch) {
+    const [, h, s, l] = hslMatch
+    return {
+      backgroundColor: `hsl(${h} ${Math.min(parseInt(s), 50)}% 90%)`, // Light background
+      color: `hsl(${h} ${s}% 20%)`, // Dark text
+      borderColor: `hsl(${h} ${Math.min(parseInt(s), 60)}% 70%)` // Medium border
+    }
+  }
+
+  // Fallback for non-HSL colors
+  return {
+    backgroundColor: color + '20', // Add transparency
+    color: color,
+    borderColor: color + '40'
+  }
 }
 
 const PAGE_SIZE = 30
@@ -332,6 +359,7 @@ export function CategoriesManagement() {
                       <Badge
                         variant="outline"
                         className={getCategoryBadgeClass(category)}
+                        style={category.color ? getCustomColorStyle(category.color) : undefined}
                       >
                         {category.short_form}
                       </Badge>
@@ -343,7 +371,8 @@ export function CategoriesManagement() {
                     {category.parent_short_form ? (
                       <Badge
                         variant="outline"
-                        className={getCategoryBadgeClass({ short_form: category.parent_short_form, parent_short_form: category.parent_short_form })}
+                        className={getCategoryBadgeClass({ short_form: category.parent_short_form, color: category.parent_color, parent_short_form: category.parent_short_form })}
+                        style={category.parent_color ? getCustomColorStyle(category.parent_color) : undefined}
                       >
                         {category.parent_short_form}
                       </Badge>
