@@ -417,7 +417,7 @@ export function SetsManagement() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary">
+                    <Badge variant="outline" className="bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-900/20 dark:text-slate-300 dark:border-slate-800">
                       {set.question_count || 0} questions
                     </Badge>
                   </TableCell>

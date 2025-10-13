@@ -329,54 +329,34 @@ export function CategoriesManagement() {
                   </TableCell>
                   <TableCell>
                     {category.short_form ? (
-                      category.color ? (
-                        <Badge
-                          className="font-semibold px-3 py-1 text-white border-none"
-                          style={{
-                            backgroundColor: category.color,
-                          }}
-                        >
-                          {category.short_form}
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="outline"
-                          className={getCategoryBadgeClass(category)}
-                        >
-                          {category.short_form}
-                        </Badge>
-                      )
+                      <Badge
+                        variant="outline"
+                        className={getCategoryBadgeClass(category)}
+                      >
+                        {category.short_form}
+                      </Badge>
                     ) : (
                       <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
                   <TableCell>
                     {category.parent_short_form ? (
-                      category.parent_color ? (
-                        <Badge
-                          className="text-white border-none"
-                          style={{
-                            backgroundColor: category.parent_color,
-                          }}
-                        >
-                          {category.parent_short_form}
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="outline"
-                          className={getCategoryBadgeClass({ short_form: category.parent_short_form, parent_short_form: category.parent_short_form })}
-                        >
-                          {category.parent_short_form}
-                        </Badge>
-                      )
+                      <Badge
+                        variant="outline"
+                        className={getCategoryBadgeClass({ short_form: category.parent_short_form, parent_short_form: category.parent_short_form })}
+                      >
+                        {category.parent_short_form}
+                      </Badge>
                     ) : category.parent_name ? (
-                      <Badge variant="outline">{category.parent_name}</Badge>
+                      <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800">
+                        {category.parent_name}
+                      </Badge>
                     ) : (
                       <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary">
+                    <Badge variant="outline" className="bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-900/20 dark:text-slate-300 dark:border-slate-800">
                       {category.question_count || 0} questions
                     </Badge>
                   </TableCell>

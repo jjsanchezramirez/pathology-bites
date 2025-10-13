@@ -68,7 +68,7 @@ const TagRow = memo(function TagRow({
         <div className="font-medium">{tag.name}</div>
       </TableCell>
       <TableCell>
-        <Badge variant="secondary">
+        <Badge variant="outline" className="bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-900/20 dark:text-slate-300 dark:border-slate-800">
           {tag.question_count || 0} questions
         </Badge>
       </TableCell>
