@@ -22,14 +22,18 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Don't fetch until role is loaded
-    if (roleLoading || role === undefined) {
+    console.log('[AdminDashboard] Effect triggered - role:', role, 'user?.id:', user?.id, 'roleLoading:', roleLoading)
+
+    // Don't fetch until we have a user and role is not loading
+    if (!user || roleLoading || role === undefined) {
+      console.log('[AdminDashboard] Skipping fetch - waiting for user/role')
       return
     }
 
     async function fetchDashboardData() {
       try {
         setError(null)
+        console.log('[AdminDashboard] 🔄 FETCHING dashboard data for role:', role, 'user:', user?.id)
 
         // Fetch dashboard stats and activities in parallel
         const [dashboardStats, recentActivities] = await Promise.all([
@@ -39,6 +43,7 @@ export default function AdminDashboardPage() {
 
         setStats(dashboardStats)
         setActivities(recentActivities)
+        console.log('[AdminDashboard] ✅ Dashboard data loaded successfully')
       } catch (err) {
         console.error('Error fetching dashboard data:', err)
         setError(err instanceof Error ? err.message : 'Failed to load dashboard data')
@@ -46,12 +51,13 @@ export default function AdminDashboardPage() {
     }
 
     fetchDashboardData()
-  }, [role, roleLoading, user?.id])
+  }, [role, user?.id]) // Removed roleLoading dependency to prevent refetch on tab changes
 
   const quickActions = stats ? clientDashboardService.getQuickActions(stats, role || undefined) : []
 
   // Single loading state - show skeleton until ALL data is ready
-  const isLoading = roleLoading || !stats || !activities
+  // Only show loading if we don't have user yet, or if role is still loading, or if we don't have data yet
+  const isLoading = !user || roleLoading || !stats || !activities
 
   return (
     <div className="space-y-6">
