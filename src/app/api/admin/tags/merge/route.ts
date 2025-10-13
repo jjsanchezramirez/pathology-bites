@@ -84,21 +84,8 @@ export async function POST(request: NextRequest) {
     const existingQuestionIds = new Set(existingTargetTags?.map(qt => qt.question_id) || [])
     console.log('Questions that already have target tag:', existingQuestionIds.size, Array.from(existingQuestionIds))
 
-    // 3. Delete all source question_tags first
-    const { error: deleteSourceError } = await supabase
-      .from('question_tags')
-      .delete()
-      .in('tag_id', sourceTagIds)
-
-    if (deleteSourceError) {
-      console.error('Error deleting source question_tags:', deleteSourceError)
-      return NextResponse.json(
-        { error: 'Failed to delete source question tags' },
-        { status: 500 }
-      )
-    }
-
-    // 4. Insert target tag for ALL questions that had source tags (but don't already have target tag)
+    // 3. Insert target tag for questions that don't already have it (BEFORE deleting source tags)
+    // This ensures data integrity - if insert fails, source tags remain intact
     const newQuestionTags = questionIdsToTag
       .filter(questionId => !existingQuestionIds.has(questionId))
       .map(questionId => ({
@@ -121,7 +108,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 5. Delete the source tags
+    // 4. Delete all source question_tags (AFTER successfully inserting target tags)
+    // This prevents data loss if the insert operation fails
+    const { error: deleteSourceError } = await supabase
+      .from('question_tags')
+      .delete()
+      .in('tag_id', sourceTagIds)
+
+    if (deleteSourceError) {
+      console.error('Error deleting source question_tags:', deleteSourceError)
+      return NextResponse.json(
+        { error: 'Failed to delete source question tags' },
+        { status: 500 }
+      )
+    }
+
+    // 5. Delete the source tags from the tags table
     const { error: deleteTagsError } = await supabase
       .from('tags')
       .delete()
