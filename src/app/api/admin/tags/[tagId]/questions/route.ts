@@ -3,7 +3,7 @@ import { createClient } from '@/shared/services/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { tagId: string } }
+  { params }: { params: Promise<{ tagId: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -25,7 +25,8 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden - Admin, Creator, or Reviewer access required' }, { status: 403 })
     }
 
-    const { tagId } = params
+    // Await params in Next.js 15
+    const { tagId } = await params
 
     if (!tagId) {
       return NextResponse.json({ error: 'Tag ID is required' }, { status: 400 })
