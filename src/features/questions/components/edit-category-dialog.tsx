@@ -224,9 +224,6 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
                 ))}
               </SelectContent>
             </Select>
-            {loadingCategories && (
-              <div className="text-sm text-muted-foreground">Loading categories...</div>
-            )}
           </div>
 
           <div className="space-y-4">

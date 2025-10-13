@@ -212,9 +212,6 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
               ))}
             </SelectContent>
           </Select>
-          {loadingCategories && (
-            <div className="text-sm text-muted-foreground">Loading categories...</div>
-          )}
         </div>
 
         <div className="space-y-4">
