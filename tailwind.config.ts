@@ -81,6 +81,9 @@ module.exports = {
         "fade-in": "fade-in 0.6s ease-in-out forwards",
         "gradient": "gradient 8s ease infinite",
       },
+      gridTemplateColumns: {
+        '15': 'repeat(15, minmax(0, 1fr))',
+      },
       // Container queries feature is built into Tailwind 3.4+ now
       // No need for the plugin anymore
     },

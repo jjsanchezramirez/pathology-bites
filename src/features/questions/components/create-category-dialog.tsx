@@ -138,7 +138,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
       onOpenChange={handleOpenChange}
       title="Create New Category"
       description="Add a new category to organize your questions. Categories can be hierarchical with parent-child relationships."
-      maxWidth="lg"
+      maxWidth="2xl"
       footer={
         <>
           <Button
@@ -218,12 +218,10 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
         <div className="space-y-3">
           <Label>Category Color</Label>
 
-          {/* AP Colors (Strong - Reddish) */}
+          {/* All 30 colors in 2 rows of 15 */}
           <div className="space-y-2">
-            <div className="text-xs font-medium text-muted-foreground">
-              AP Colors (Strong - Reddish Hues)
-            </div>
-            <div className="grid grid-cols-10 gap-2">
+            {/* Row 1: AP Colors (Strong - Reddish) */}
+            <div className="grid grid-cols-15 gap-2">
               {AP_COLORS.map((colorOption) => (
                 <button
                   key={colorOption.value}
@@ -240,14 +238,9 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
                 />
               ))}
             </div>
-          </div>
 
-          {/* CP Colors (Light - Bluish) */}
-          <div className="space-y-2">
-            <div className="text-xs font-medium text-muted-foreground">
-              CP Colors (Light - Bluish Hues)
-            </div>
-            <div className="grid grid-cols-10 gap-2">
+            {/* Row 2: CP Colors (Light - Bluish) */}
+            <div className="grid grid-cols-15 gap-2">
               {CP_COLORS.map((colorOption) => (
                 <button
                   key={colorOption.value}
