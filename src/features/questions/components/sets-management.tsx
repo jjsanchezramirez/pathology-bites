@@ -15,6 +15,7 @@ import {
 import { Input } from '@/shared/components/ui/input'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
+import { Checkbox } from '@/shared/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,11 +41,14 @@ import {
   RefreshCw,
   CheckCircle,
   XCircle,
-  Edit
+  Edit,
+  Merge,
+  AlertTriangle
 } from 'lucide-react'
 import { CreateSetDialog } from './create-set-dialog'
 import { EditSetDialog } from './edit-set-dialog'
 import { getQuestionSetDisplayName } from '@/features/questions/utils/display-helpers'
+import { SOURCE_TYPE_CONFIG } from '@/features/questions/types/question-sets'
 
 interface QuestionSet {
   id: string
@@ -59,14 +63,6 @@ interface QuestionSet {
 
 const PAGE_SIZE = 30
 
-const sourceTypeConfig = {
-  'AI-Generated': { label: 'AI', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300' },
-  'Web Resource': { label: 'Web', color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' },
-  'Textbook': { label: 'Book', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300' },
-  'Expert-Authored': { label: 'Expert', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300' },
-  'Other': { label: 'Other', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300' }
-}
-
 export function SetsManagement() {
   const [sets, setSets] = useState<QuestionSet[]>([])
   const [loading, setLoading] = useState(true)
@@ -80,7 +76,38 @@ export function SetsManagement() {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
+  // Selection and bulk operations state
+  const [selectedSetIds, setSelectedSetIds] = useState<Set<string>>(new Set())
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
+  const [showMergeDialog, setShowMergeDialog] = useState(false)
+  const [mergeTargetSet, setMergeTargetSet] = useState<QuestionSet | null>(null)
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+  const [isMerging, setIsMerging] = useState(false)
+
   const supabase = createClient()
+
+  // Selection helper functions
+  const handleSelectSet = (setId: string) => {
+    const newSelected = new Set(selectedSetIds)
+    if (newSelected.has(setId)) {
+      newSelected.delete(setId)
+    } else {
+      newSelected.add(setId)
+    }
+    setSelectedSetIds(newSelected)
+  }
+
+  const handleSelectAll = () => {
+    if (selectedSetIds.size === sets.length) {
+      setSelectedSetIds(new Set())
+    } else {
+      setSelectedSetIds(new Set(sets.map(set => set.id)))
+    }
+  }
+
+  const clearSelection = () => {
+    setSelectedSetIds(new Set())
+  }
 
   const loadSets = useCallback(async () => {
     setLoading(true)
@@ -143,6 +170,80 @@ export function SetsManagement() {
       toast.error(error instanceof Error ? error.message : 'Failed to delete question set')
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedSetIds.size === 0) return
+
+    setIsBulkDeleting(true)
+    try {
+      const setIds = Array.from(selectedSetIds)
+
+      const response = await fetch('/api/admin/question-sets/bulk-delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ setIds })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete question sets')
+      }
+
+      const result = await response.json()
+      toast.success(`Successfully deleted ${result.deletedCount} question sets`)
+
+      setShowBulkDeleteDialog(false)
+      clearSelection()
+      loadSets()
+    } catch (error) {
+      console.error('Error bulk deleting question sets:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to delete question sets')
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }
+
+  const handleMergeSets = async () => {
+    if (selectedSetIds.size < 2 || !mergeTargetSet) return
+
+    setIsMerging(true)
+    try {
+      const sourceSetIds = Array.from(selectedSetIds).filter(id => id !== mergeTargetSet.id)
+
+      const response = await fetch('/api/admin/question-sets/merge', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          sourceSetIds,
+          targetSetId: mergeTargetSet.id
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to merge question sets')
+      }
+
+      const result = await response.json()
+      toast.success(`Successfully merged ${result.mergedCount} question sets into "${mergeTargetSet.name}"`)
+
+      setShowMergeDialog(false)
+      setMergeTargetSet(null)
+      clearSelection()
+      loadSets()
+    } catch (error) {
+      console.error('Error merging question sets:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to merge question sets')
+    } finally {
+      setIsMerging(false)
     }
   }
 
@@ -215,10 +316,36 @@ export function SetsManagement() {
             Refresh
           </Button>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Question Set
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedSetIds.size > 0 && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowBulkDeleteDialog(true)}
+                disabled={loading}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete ({selectedSetIds.size})
+              </Button>
+              {selectedSetIds.size >= 2 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMergeDialog(true)}
+                  disabled={loading}
+                >
+                  <Merge className="h-4 w-4 mr-2" />
+                  Merge ({selectedSetIds.size})
+                </Button>
+              )}
+            </>
+          )}
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Question Set
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -234,6 +361,13 @@ export function SetsManagement() {
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={selectedSetIds.size === sets.length && sets.length > 0}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all question sets"
+                />
+              </TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Source Type</TableHead>
               <TableHead>Questions</TableHead>
@@ -244,19 +378,26 @@ export function SetsManagement() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : sets.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                   {searchTerm ? 'No question sets found matching your search' : 'No question sets found'}
                 </TableCell>
               </TableRow>
             ) : (
               sets.map((set) => (
-                <TableRow key={set.id}>
+                <TableRow key={set.id} className={selectedSetIds.has(set.id) ? 'bg-muted/50' : ''}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedSetIds.has(set.id)}
+                      onCheckedChange={() => handleSelectSet(set.id)}
+                      aria-label={`Select ${set.name}`}
+                    />
+                  </TableCell>
                   <TableCell>
                     <div>
                       <div className="font-medium">{set.name}</div>
@@ -269,16 +410,13 @@ export function SetsManagement() {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      className="text-white border-none"
-                      style={{
-                        backgroundColor: set.source_type === 'AI-Generated' ? 'hsl(214 100% 60%)' : 
-                                        set.source_type === 'Web Resource' ? 'hsl(142 76% 36%)' :
-                                        set.source_type === 'Textbook' ? 'hsl(262 80% 56%)' :
-                                        set.source_type === 'Expert-Authored' ? 'hsl(32 94% 56%)' :
-                                        'hsl(220 8.9% 46%)'
-                      }}
+                      variant="outline"
+                      className={SOURCE_TYPE_CONFIG[set.source_type as keyof typeof SOURCE_TYPE_CONFIG]?.color || SOURCE_TYPE_CONFIG.other.color}
                     >
-                      {sourceTypeConfig[set.source_type as keyof typeof sourceTypeConfig]?.label || set.source_type}
+                      <span className="mr-1">
+                        {SOURCE_TYPE_CONFIG[set.source_type as keyof typeof SOURCE_TYPE_CONFIG]?.icon || SOURCE_TYPE_CONFIG.other.icon}
+                      </span>
+                      {SOURCE_TYPE_CONFIG[set.source_type as keyof typeof SOURCE_TYPE_CONFIG]?.label || set.source_type}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -401,6 +539,90 @@ export function SetsManagement() {
                 </>
               ) : (
                 'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Question Sets</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedSetIds.size} question sets?
+              This action cannot be undone and will affect all questions in these sets.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={isBulkDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isBulkDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                `Delete ${selectedSetIds.size} Sets`
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Merge Dialog */}
+      <AlertDialog open={showMergeDialog} onOpenChange={setShowMergeDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Merge Question Sets</AlertDialogTitle>
+            <AlertDialogDescription>
+              Select a target question set to merge {selectedSetIds.size} selected sets into.
+              All questions will be moved to the target set and the source sets will be deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Target Question Set:</label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start">
+                    {mergeTargetSet ? mergeTargetSet.name : "Select target set..."}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-full">
+                  {sets
+                    .filter(set => selectedSetIds.has(set.id))
+                    .map(set => (
+                      <DropdownMenuItem
+                        key={set.id}
+                        onClick={() => setMergeTargetSet(set)}
+                      >
+                        {set.name} ({set.question_count || 0} questions)
+                      </DropdownMenuItem>
+                    ))
+                  }
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setMergeTargetSet(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleMergeSets}
+              disabled={!mergeTargetSet || isMerging}
+            >
+              {isMerging ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Merging...
+                </>
+              ) : (
+                'Merge Sets'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

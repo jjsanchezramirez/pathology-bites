@@ -117,37 +117,37 @@ export const DEFAULT_QUESTION_SETS = [
 export const SOURCE_TYPE_CONFIG = {
   pathology_outlines: {
     label: 'PathologyOutlines.com',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
+    color: 'bg-chart-2/10 text-chart-2 border-chart-2/20',
     icon: '🌐',
     description: 'Questions sourced from PathologyOutlines.com'
   },
   textbook: {
     label: 'Textbook',
-    color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+    color: 'bg-chart-1/10 text-chart-1 border-chart-1/20',
     icon: '📚',
     description: 'Questions from medical textbooks and publications'
   },
   user_generated: {
     label: 'User Generated',
-    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300',
+    color: 'bg-chart-3/10 text-chart-3 border-chart-3/20',
     icon: '👤',
     description: 'Questions created by platform users'
   },
   ai_generated: {
     label: 'AI Generated',
-    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300',
+    color: 'bg-chart-4/10 text-chart-4 border-chart-4/20',
     icon: '🤖',
     description: 'Questions generated using artificial intelligence'
   },
   expert_generated: {
     label: 'Expert Generated',
-    color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300',
+    color: 'bg-chart-5/10 text-chart-5 border-chart-5/20',
     icon: '⭐',
     description: 'Questions created and reviewed by pathology experts'
   },
   other: {
     label: 'Other',
-    color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300',
+    color: 'bg-muted text-muted-foreground border-border',
     icon: '📝',
     description: 'Questions from other sources'
   }
