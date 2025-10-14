@@ -65,13 +65,14 @@ export function CreatorWorkflowDashboard() {
   const [expandedFeedback, setExpandedFeedback] = useState<Set<string>>(new Set())
 
   const { user } = useAuthStatus()
-  const supabase = createClient()
 
   const fetchWorkflowQuestions = useCallback(async () => {
     if (!user) return
 
     try {
       setLoading(true)
+
+      const supabase = createClient()
 
       // Fetch only actionable questions (draft, pending_review, rejected)
       const { data, error } = await supabase
@@ -125,7 +126,7 @@ export function CreatorWorkflowDashboard() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [user, supabase])
+  }, [user])
 
   useEffect(() => {
     fetchWorkflowQuestions()
@@ -417,6 +418,54 @@ export function CreatorWorkflowDashboard() {
           </AlertDescription>
         </Alert>
       )}
+
+      {/* Workflow Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className={stats.needsRevision > 0 ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950' : ''}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+              Needs Revision
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{stats.needsRevision}</div>
+            <p className="text-xs text-muted-foreground">
+              Highest priority
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className={stats.drafts > 0 ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950' : ''}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Edit3 className="h-4 w-4 text-blue-600" />
+              Drafts
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{stats.drafts}</div>
+            <p className="text-xs text-muted-foreground">
+              Ready to submit
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Clock className="h-4 w-4 text-amber-600" />
+              Under Review
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-amber-600">{stats.underReview}</div>
+            <p className="text-xs text-muted-foreground">
+              Waiting for reviewer
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Workflow Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
