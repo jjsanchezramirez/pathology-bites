@@ -110,13 +110,16 @@ export function CreatorWorkflowDashboard() {
       }
       setStats(newStats)
 
-      // Set default active tab based on priority
+      // Set default active tab based on priority: Needs Revision → Drafts → Under Review
       if (newStats.needsRevision > 0) {
         setActiveTab('needs-revision')
       } else if (newStats.drafts > 0) {
         setActiveTab('drafts')
-      } else {
+      } else if (newStats.underReview > 0) {
         setActiveTab('under-review')
+      } else {
+        // All tabs are empty, default to needs-revision
+        setActiveTab('needs-revision')
       }
 
     } catch (error) {
@@ -421,45 +424,45 @@ export function CreatorWorkflowDashboard() {
 
       {/* Workflow Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className={stats.needsRevision > 0 ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950' : ''}>
+        <Card className="bg-white dark:bg-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
+            <CardTitle className="text-sm font-medium flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-4 w-4" />
               Needs Revision
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.needsRevision}</div>
+            <div className="text-2xl font-bold text-destructive">{stats.needsRevision}</div>
             <p className="text-xs text-muted-foreground">
               Highest priority
             </p>
           </CardContent>
         </Card>
 
-        <Card className={stats.drafts > 0 ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950' : ''}>
+        <Card className="bg-white dark:bg-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Edit3 className="h-4 w-4 text-blue-600" />
+            <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
+              <Edit3 className="h-4 w-4" />
               Drafts
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.drafts}</div>
+            <div className="text-2xl font-bold text-foreground">{stats.drafts}</div>
             <p className="text-xs text-muted-foreground">
               Ready to submit
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white dark:bg-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Clock className="h-4 w-4 text-amber-600" />
+            <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
+              <Clock className="h-4 w-4" />
               Under Review
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{stats.underReview}</div>
+            <div className="text-2xl font-bold text-foreground">{stats.underReview}</div>
             <p className="text-xs text-muted-foreground">
               Waiting for reviewer
             </p>
@@ -521,19 +524,25 @@ export function CreatorWorkflowDashboard() {
         </TabsContent>
       </Tabs>
 
-      {/* No Action Required State */}
-      {!hasActionableItems && stats.underReview === 0 && (
-        <Card>
+      {/* All Jobs Done State - Show when all tabs are empty */}
+      {stats.needsRevision === 0 && stats.drafts === 0 && stats.underReview === 0 && (
+        <Card className="bg-white dark:bg-card">
           <CardContent className="pt-6">
-            <div className="text-center py-8">
-              <CheckCircle2 className="h-12 w-12 text-green-600 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">All caught up!</h3>
-              <p className="text-muted-foreground mb-4">
+            <div className="text-center py-12">
+              <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-6" />
+              <h3 className="text-xl font-semibold mb-3 text-foreground">Excellent work! All jobs done! 🎉</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                 You don't have any questions that need your attention right now.
+                Time to create some new content or take a well-deserved break!
               </p>
-              <Button asChild>
-                <a href="/admin/create-question">Create New Question</a>
-              </Button>
+              <div className="flex gap-3 justify-center">
+                <Button asChild>
+                  <a href="/admin/create-question">Create New Question</a>
+                </Button>
+                <Button variant="outline" asChild>
+                  <a href="/admin/questions">Browse All Questions</a>
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
