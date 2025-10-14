@@ -84,6 +84,15 @@ export function EditQuestionDialog({
     setShowConfirmDialog(false);
   };
 
+  // Get AI model from question set
+  const getAIModelFromQuestionSet = () => {
+    if (question?.set?.source_type === 'ai_generated' && question?.set?.source_details) {
+      const sourceDetails = question.set.source_details as any;
+      return sourceDetails.primary_model || 'Llama-3.3-8B-Instruct';
+    }
+    return 'Llama-3.3-8B-Instruct'; // Default fast model for refinements
+  };
+
   // Handle AI refinement
   const handleAIRefinement = async () => {
     if (!chatMessage.trim()) {
@@ -94,6 +103,7 @@ export function EditQuestionDialog({
     setIsRefining(true);
     try {
       const currentFormData = form.getValues();
+      const aiModel = getAIModelFromQuestionSet();
 
       const requestBody = {
         mode: 'refinement',
@@ -105,7 +115,7 @@ export function EditQuestionDialog({
           teaching_point: currentFormData.teaching_point,
           question_references: currentFormData.question_references
         },
-        model: 'Llama-3.3-8B-Instruct' // Use fast model for refinements
+        model: aiModel
       };
 
       const response = await fetch('/api/admin/ai-generate-question', {
@@ -203,6 +213,16 @@ export function EditQuestionDialog({
                         <MessageSquare className="h-4 w-4" />
                         AI Assistant
                       </h3>
+                      {question?.set?.source_type === 'ai_generated' && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Using {getAIModelFromQuestionSet()} from question set
+                        </p>
+                      )}
+                      {(!question?.set || question?.set?.source_type !== 'ai_generated') && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Using {getAIModelFromQuestionSet()} (default)
+                        </p>
+                      )}
                     </div>
                     <div className="flex-1 p-4 space-y-4">
                       <div className="space-y-2">
