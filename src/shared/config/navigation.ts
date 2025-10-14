@@ -6,6 +6,7 @@ export interface NavigationItem {
   icon: string // Use string identifier instead of component
   requiredPermission?: string
   adminOnly?: boolean
+  showToRoles?: string[] // Array of roles that can see this item
 }
 
 export interface NavigationSection {
@@ -29,28 +30,32 @@ export const adminNavigationItems: NavigationItem[] = [
   },
   // Question Management Section
   {
-    name: "Question Base",
+    name: "Question Database",
     href: "/admin/questions",
     icon: "FileQuestion",
-    requiredPermission: "questions.view"
+    requiredPermission: "questions.view",
+    showToRoles: ["admin", "creator", "reviewer"]
   },
   {
     name: "My Questions",
     href: "/admin/my-questions",
     icon: "FileQuestion",
-    requiredPermission: "questions.create"
+    requiredPermission: "questions.create",
+    showToRoles: ["admin", "creator"]
   },
   {
     name: "My Review Queue",
     href: "/admin/review-queue",
     icon: "ClipboardList",
-    requiredPermission: "questions.review"
+    requiredPermission: "questions.review",
+    showToRoles: ["admin", "reviewer"]
   },
   {
     name: "Create Question",
     href: "/admin/create-question",
     icon: "Brain",
-    requiredPermission: "questions.create"
+    requiredPermission: "questions.create",
+    showToRoles: ["admin", "creator"]
   },
   
   // Content Management Section
@@ -66,7 +71,7 @@ export const adminNavigationItems: NavigationItem[] = [
     href: "/admin/images",
     icon: "Image",
     requiredPermission: "images.manage",
-    adminOnly: true
+    showToRoles: ["admin", "creator", "reviewer"]
   },
   // User Management Section
   {
@@ -111,7 +116,7 @@ export const adminNavigationItems: NavigationItem[] = [
     href: "/admin/settings",
     icon: "Settings",
     requiredPermission: "settings.manage",
-    adminOnly: true
+    showToRoles: ["admin", "creator", "reviewer"]
   }
 ]
 
@@ -132,28 +137,32 @@ export const adminNavigationSections: NavigationSection[] = [
     title: "Question Management",
     items: [
       {
-        name: "Question Base",
+        name: "Question Database",
         href: "/admin/questions",
         icon: "FileQuestion",
-        requiredPermission: "questions.view"
+        requiredPermission: "questions.view",
+        showToRoles: ["admin", "creator", "reviewer"]
       },
       {
         name: "My Questions",
         href: "/admin/my-questions",
         icon: "FileQuestion",
-        requiredPermission: "questions.create"
+        requiredPermission: "questions.create",
+        showToRoles: ["admin", "creator"]
       },
       {
         name: "My Review Queue",
         href: "/admin/review-queue",
         icon: "ClipboardList",
-        requiredPermission: "questions.review"
+        requiredPermission: "questions.review",
+        showToRoles: ["admin", "reviewer"]
       },
       {
         name: "Create Question",
         href: "/admin/create-question",
         icon: "Brain",
-        requiredPermission: "questions.create"
+        requiredPermission: "questions.create",
+        showToRoles: ["admin", "creator"]
       },
       {
         name: "Question Labels",
@@ -172,7 +181,7 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/images",
         icon: "Image",
         requiredPermission: "images.manage",
-        adminOnly: true
+        showToRoles: ["admin", "creator", "reviewer"]
       }
     ]
   },
@@ -225,7 +234,7 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/settings",
         icon: "Settings",
         requiredPermission: "settings.manage",
-        adminOnly: true
+        showToRoles: ["admin", "creator", "reviewer"]
       }
     ]
   }
@@ -390,35 +399,44 @@ export function getNavigationConfig(userRole: 'admin' | 'creator' | 'reviewer' |
   }
 }
 
-// Helper function to filter navigation items based on permissions
+// Helper function to filter navigation items based on permissions and admin mode
 export function filterNavigationItems(
   items: NavigationItem[],
   canAccess: (permission: string) => boolean,
   isAdmin: boolean,
-  isLoading: boolean
+  isLoading: boolean,
+  adminMode?: string
 ): NavigationItem[] {
   return items.filter(item => {
     // During loading, show all items to prevent layout shift
     if (isLoading) return true
-    
+
     // Once loaded, apply proper filtering
     if (item.adminOnly && !isAdmin) return false
     if (item.requiredPermission && !canAccess(item.requiredPermission)) return false
+
+    // Filter based on adminMode if showToRoles is specified
+    if (item.showToRoles && adminMode) {
+      const currentViewRole = adminMode === 'user' ? 'user' : adminMode
+      if (!item.showToRoles.includes(currentViewRole)) return false
+    }
+
     return true
   })
 }
 
-// Helper function to filter navigation sections based on permissions
+// Helper function to filter navigation sections based on permissions and admin mode
 export function filterNavigationSections(
   sections: NavigationSection[],
   canAccess: (permission: string) => boolean,
   isAdmin: boolean,
-  isLoading: boolean
+  isLoading: boolean,
+  adminMode?: string
 ): NavigationSection[] {
   return sections
     .map(section => ({
       ...section,
-      items: filterNavigationItems(section.items, canAccess, isAdmin, isLoading)
+      items: filterNavigationItems(section.items, canAccess, isAdmin, isLoading, adminMode)
     }))
     .filter(section => section.items.length > 0) // Only show sections that have visible items
 }

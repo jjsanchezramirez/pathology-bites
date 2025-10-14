@@ -30,6 +30,7 @@ import { cn } from "@/shared/utils"
 import { SidebarAuthStatus } from "@/shared/components/layout/sidebar-auth-status"
 import { NavigationItem, NavigationSection, filterNavigationItems, filterNavigationSections } from "@/shared/config/navigation"
 import { useUserRole } from "@/shared/hooks/use-user-role"
+import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context"
 
 // Icon mapping for string identifiers to actual components
 const iconMap: Record<string, LucideIcon> = {
@@ -65,20 +66,23 @@ interface UnifiedSidebarProps {
 export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSections, isMobileMode = false }: UnifiedSidebarProps) {
   const pathname = usePathname()
   const { canAccess, isAdmin, isLoading } = useUserRole()
+  const { adminMode } = useDashboardTheme()
 
-  // Always show navigation immediately, but filter based on loading state
+  // Always show navigation immediately, but filter based on loading state and admin mode
   const filteredNavigation = navigationItems ? filterNavigationItems(
     navigationItems,
     canAccess,
     isAdmin,
-    isLoading
+    isLoading,
+    adminMode
   ) : []
 
   const filteredSections = navigationSections ? filterNavigationSections(
     navigationSections,
     canAccess,
     isAdmin,
-    isLoading
+    isLoading,
+    adminMode
   ) : []
 
   // Loading skeleton component for navigation items
