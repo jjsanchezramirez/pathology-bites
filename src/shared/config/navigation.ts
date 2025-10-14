@@ -34,7 +34,7 @@ export const adminNavigationItems: NavigationItem[] = [
     href: "/admin/questions",
     icon: "FileQuestion",
     requiredPermission: "questions.view",
-    showToRoles: ["admin", "creator", "reviewer"]
+    adminOnly: true
   },
   {
     name: "My Questions",
@@ -141,7 +141,7 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/questions",
         icon: "FileQuestion",
         requiredPermission: "questions.view",
-        showToRoles: ["admin", "creator", "reviewer"]
+        adminOnly: true
       },
       {
         name: "My Questions",
