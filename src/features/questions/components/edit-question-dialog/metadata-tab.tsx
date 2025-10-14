@@ -17,10 +17,10 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+
 import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
-import { X, Brain, Loader2 } from 'lucide-react';
+import { X } from 'lucide-react';
 import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
 import { createClient } from '@/shared/services/client';
@@ -55,7 +55,6 @@ export function MetadataTab({
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
   const [tagSearch, setTagSearch] = useState('');
-  const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false);
   
   const { questionSets } = useQuestionSets();
 
@@ -102,65 +101,7 @@ export function MetadataTab({
     }
   }, [question?.tags]);
 
-  // Handle AI metadata suggestion
-  const handleAIMetadataSuggestion = async () => {
-    const currentFormData = form.getValues();
-    
-    if (!currentFormData.title || !currentFormData.stem) {
-      toast.error('Please fill in the title and question stem first');
-      return;
-    }
 
-    setIsGeneratingMetadata(true);
-    try {
-      const response = await fetch('/api/admin/ai-generate-question', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          mode: 'metadata_suggestion',
-          question: {
-            title: currentFormData.title,
-            stem: currentFormData.stem,
-            teaching_point: currentFormData.teaching_point
-          },
-          availableCategories: availableCategories.map(c => ({ id: c.id, name: c.name })),
-          availableQuestionSets: questionSets.map(qs => ({ id: qs.id, name: qs.name })),
-          availableTags: availableTags.map(t => ({ id: t.id, name: t.name })),
-          model: 'Llama-3.3-8B-Instruct'
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate metadata suggestions');
-      }
-
-      const data = await response.json();
-      
-      // Apply suggestions
-      if (data.difficulty) {
-        form.setValue('difficulty', data.difficulty);
-      }
-      if (data.category_id) {
-        form.setValue('category_id', data.category_id);
-      }
-      if (data.question_set_id) {
-        form.setValue('question_set_id', data.question_set_id);
-      }
-      if (data.suggested_tags && Array.isArray(data.suggested_tags)) {
-        onTagsChange(data.suggested_tags);
-      }
-
-      onUnsavedChanges();
-      toast.success('AI metadata suggestions applied!');
-    } catch (error) {
-      console.error('AI metadata suggestion error:', error);
-      toast.error('Failed to generate metadata suggestions');
-    } finally {
-      setIsGeneratingMetadata(false);
-    }
-  };
 
   const handleAddTag = (tagId: string) => {
     if (!selectedTagIds.includes(tagId)) {
@@ -191,39 +132,7 @@ export function MetadataTab({
         </p>
       </div>
 
-      {/* AI Metadata Suggestion */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            AI Metadata Suggestions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Let AI analyze your question content and suggest appropriate category, question set, difficulty, and tags.
-            </p>
-            <Button
-              onClick={handleAIMetadataSuggestion}
-              disabled={isGeneratingMetadata}
-              variant="outline"
-            >
-              {isGeneratingMetadata ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Brain className="h-4 w-4 mr-2" />
-                  Suggest Metadata
-                </>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+
 
       {/* Difficulty */}
       <FormField
