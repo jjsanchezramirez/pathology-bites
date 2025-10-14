@@ -5,7 +5,16 @@ import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Alert, AlertDescription } from '@/shared/components/ui/alert'
-import { Separator } from '@/shared/components/ui/separator'
+import { Checkbox } from '@/shared/components/ui/checkbox'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/components/ui/table'
 import { toast } from 'sonner'
 import { createClient } from '@/shared/services/client'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
@@ -18,7 +27,10 @@ import {
   CheckCircle2,
   RefreshCw,
   FileText,
-  MessageSquare
+  MessageSquare,
+  Eye,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -47,6 +59,9 @@ export function CreatorWorkflowDashboard() {
   const [refreshing, setRefreshing] = useState(false)
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false)
   const [selectedQuestionForSubmit, setSelectedQuestionForSubmit] = useState<WorkflowQuestion | null>(null)
+  const [selectedQuestions, setSelectedQuestions] = useState<Set<string>>(new Set())
+  const [activeTab, setActiveTab] = useState<string>('needs-revision')
+  const [expandedFeedback, setExpandedFeedback] = useState<Set<string>>(new Set())
 
   const { user } = useAuthStatus()
   const supabase = createClient()
@@ -93,6 +108,15 @@ export function CreatorWorkflowDashboard() {
       }
       setStats(newStats)
 
+      // Set default active tab based on priority
+      if (newStats.needsRevision > 0) {
+        setActiveTab('needs-revision')
+      } else if (newStats.drafts > 0) {
+        setActiveTab('ready-to-submit')
+      } else {
+        setActiveTab('under-review')
+      }
+
     } catch (error) {
       console.error('Unexpected error fetching questions:', error)
       toast.error('Failed to load questions')
@@ -129,10 +153,219 @@ export function CreatorWorkflowDashboard() {
     setSelectedQuestionForSubmit(null)
   }
 
+  const handleSelectQuestion = (questionId: string, checked: boolean) => {
+    const newSelected = new Set(selectedQuestions)
+    if (checked) {
+      newSelected.add(questionId)
+    } else {
+      newSelected.delete(questionId)
+    }
+    setSelectedQuestions(newSelected)
+  }
+
+  const handleSelectAll = (questions: WorkflowQuestion[], checked: boolean) => {
+    const newSelected = new Set(selectedQuestions)
+    questions.forEach(q => {
+      if (checked) {
+        newSelected.add(q.id)
+      } else {
+        newSelected.delete(q.id)
+      }
+    })
+    setSelectedQuestions(newSelected)
+  }
+
+  const toggleFeedbackExpansion = (questionId: string) => {
+    const newExpanded = new Set(expandedFeedback)
+    if (newExpanded.has(questionId)) {
+      newExpanded.delete(questionId)
+    } else {
+      newExpanded.add(questionId)
+    }
+    setExpandedFeedback(newExpanded)
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'rejected':
+        return <Badge className="bg-destructive text-destructive-foreground">Needs Revision</Badge>
+      case 'draft':
+        return <Badge className="bg-primary text-primary-foreground">Ready to Submit</Badge>
+      case 'pending_review':
+        return <Badge className="bg-secondary text-secondary-foreground">Under Review</Badge>
+      default:
+        return <Badge variant="outline">{status}</Badge>
+    }
+  }
+
   // Group questions by status
   const rejectedQuestions = questions.filter(q => q.status === 'rejected')
   const draftQuestions = questions.filter(q => q.status === 'draft')
   const underReviewQuestions = questions.filter(q => q.status === 'pending_review')
+
+  const renderQuestionTable = (questions: WorkflowQuestion[], showSelection = true) => {
+    if (questions.length === 0) {
+      return (
+        <div className="text-center py-8 text-muted-foreground">
+          <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <p>No questions in this category</p>
+        </div>
+      )
+    }
+
+    const selectedInTab = questions.filter(q => selectedQuestions.has(q.id))
+    const allSelected = selectedInTab.length === questions.length && questions.length > 0
+
+    return (
+      <div className="space-y-4">
+        {/* Bulk Actions */}
+        {showSelection && selectedInTab.length > 0 && (
+          <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
+            <span className="text-sm font-medium">
+              {selectedInTab.length} question{selectedInTab.length !== 1 ? 's' : ''} selected
+            </span>
+            <div className="flex gap-2">
+              {activeTab === 'ready-to-submit' && (
+                <Button size="sm" onClick={() => toast.info('Bulk submit coming soon')}>
+                  <Send className="h-4 w-4 mr-2" />
+                  Submit Selected for Review
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={() => toast.info('Bulk edit coming soon')}>
+                <Edit3 className="h-4 w-4 mr-2" />
+                Bulk Edit
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Table */}
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {showSelection && (
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={(checked) => handleSelectAll(questions, !!checked)}
+                    />
+                  </TableHead>
+                )}
+                <TableHead>Question</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Feedback</TableHead>
+                <TableHead>Actions</TableHead>
+                <TableHead>Updated</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {questions.map((question) => (
+                <TableRow key={question.id}>
+                  {showSelection && (
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedQuestions.has(question.id)}
+                        onCheckedChange={(checked) => handleSelectQuestion(question.id, !!checked)}
+                      />
+                    </TableCell>
+                  )}
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="font-medium">{question.title}</div>
+                      <div className="text-sm text-muted-foreground line-clamp-2">
+                        {question.stem}
+                      </div>
+                      {question.question_set && (
+                        <Badge variant="outline" className="text-xs">
+                          {question.question_set.name}
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {getStatusBadge(question.status)}
+                  </TableCell>
+                  <TableCell>
+                    {question.reviewer_feedback ? (
+                      <div className="space-y-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleFeedbackExpansion(question.id)}
+                          className="h-auto p-1 text-xs"
+                        >
+                          {expandedFeedback.has(question.id) ? (
+                            <ChevronDown className="h-3 w-3 mr-1" />
+                          ) : (
+                            <ChevronRight className="h-3 w-3 mr-1" />
+                          )}
+                          View Feedback
+                        </Button>
+                        {expandedFeedback.has(question.id) && (
+                          <div className="text-sm p-2 bg-destructive/10 border border-destructive/20 rounded">
+                            {question.reviewer_feedback}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      {question.status === 'rejected' && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleEditAndResubmit(question.id)}
+                          className="bg-destructive hover:bg-destructive/90"
+                        >
+                          <Edit3 className="h-4 w-4 mr-1" />
+                          Edit & Resubmit
+                        </Button>
+                      )}
+                      {question.status === 'draft' && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditAndResubmit(question.id)}
+                          >
+                            <Edit3 className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleSubmitForReview(question.id)}
+                          >
+                            <Send className="h-4 w-4 mr-1" />
+                            Submit
+                          </Button>
+                        </>
+                      )}
+                      {question.status === 'pending_review' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => toast.info('Question is under review')}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {formatDistanceToNow(new Date(question.updated_at))} ago
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
@@ -141,13 +374,7 @@ export function CreatorWorkflowDashboard() {
           <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
           <div className="h-4 bg-muted rounded w-2/3"></div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="animate-pulse">
-              <div className="h-24 bg-muted rounded"></div>
-            </div>
-          ))}
-        </div>
+        <div className="h-64 bg-muted rounded"></div>
       </div>
     )
   }
@@ -178,9 +405,9 @@ export function CreatorWorkflowDashboard() {
 
       {/* Action Summary */}
       {hasActionableItems && (
-        <Alert className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
-          <AlertTriangle className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-orange-800 dark:text-orange-200">
+        <Alert className="border-destructive/50 bg-destructive/10">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
             <strong>Action Required:</strong> You have {totalActionable} question{totalActionable !== 1 ? 's' : ''} that need{totalActionable === 1 ? 's' : ''} your attention.
             {stats.needsRevision > 0 && (
               <span className="ml-2 font-medium">
@@ -191,207 +418,59 @@ export function CreatorWorkflowDashboard() {
         </Alert>
       )}
 
-      {/* Workflow Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className={stats.needsRevision > 0 ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950' : ''}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              Needs Revision
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.needsRevision}</div>
-            <p className="text-xs text-muted-foreground">
-              Highest priority
-            </p>
-          </CardContent>
-        </Card>
+      {/* Workflow Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="needs-revision" className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Needs Revision ({stats.needsRevision})
+          </TabsTrigger>
+          <TabsTrigger value="ready-to-submit" className="flex items-center gap-2">
+            <Edit3 className="h-4 w-4" />
+            Ready to Submit ({stats.drafts})
+          </TabsTrigger>
+          <TabsTrigger value="under-review" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Under Review ({stats.underReview})
+          </TabsTrigger>
+        </TabsList>
 
-        <Card className={stats.drafts > 0 ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950' : ''}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Edit3 className="h-4 w-4 text-blue-600" />
-              Ready to Submit
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.drafts}</div>
-            <p className="text-xs text-muted-foreground">
-              Complete and submit
-            </p>
-          </CardContent>
-        </Card>
+        <TabsContent value="needs-revision" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium">Questions Needing Revision</h3>
+              <p className="text-sm text-muted-foreground">
+                These questions were rejected and need your immediate attention. Review the feedback and make necessary changes.
+              </p>
+            </div>
+          </div>
+          {renderQuestionTable(rejectedQuestions)}
+        </TabsContent>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Clock className="h-4 w-4 text-amber-600" />
-              Under Review
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{stats.underReview}</div>
-            <p className="text-xs text-muted-foreground">
-              Waiting for reviewer
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="ready-to-submit" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium">Draft Questions Ready to Submit</h3>
+              <p className="text-sm text-muted-foreground">
+                These questions are complete and ready for review. Submit them when you're satisfied with the content.
+              </p>
+            </div>
+          </div>
+          {renderQuestionTable(draftQuestions)}
+        </TabsContent>
 
-      {/* Section 1: Rejected Questions - HIGHEST PRIORITY */}
-      {rejectedQuestions.length > 0 && (
-        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-300">
-              <AlertTriangle className="h-5 w-5" />
-              Questions Needing Revision ({rejectedQuestions.length})
-            </CardTitle>
-            <CardDescription className="text-red-600 dark:text-red-400">
-              These questions were rejected and need your immediate attention. Review the feedback and make necessary changes.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {rejectedQuestions.map((question) => (
-              <div key={question.id} className="bg-white dark:bg-gray-900 rounded-lg border border-red-200 dark:border-red-800 p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
-                      {question.title}
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
-                      {question.stem}
-                    </p>
-                    {question.question_set && (
-                      <Badge variant="outline" className="text-xs mb-2">
-                        {question.question_set.name}
-                      </Badge>
-                    )}
-                    {question.reviewer_feedback && (
-                      <div className="bg-red-100 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded p-3 mt-2">
-                        <div className="flex items-start gap-2">
-                          <MessageSquare className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="text-sm font-medium text-red-800 dark:text-red-200 mb-1">
-                              Reviewer Feedback:
-                            </p>
-                            <p className="text-sm text-red-700 dark:text-red-300">
-                              {question.reviewer_feedback}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    <p className="text-xs text-gray-500 mt-2">
-                      Rejected {formatDistanceToNow(new Date(question.rejected_at || question.updated_at))} ago
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => handleEditAndResubmit(question.id)}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    <Edit3 className="h-4 w-4 mr-2" />
-                    Edit & Resubmit
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Section 2: Draft Questions - Ready to Submit */}
-      {draftQuestions.length > 0 && (
-        <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-              <Edit3 className="h-5 w-5" />
-              Draft Questions Ready to Submit ({draftQuestions.length})
-            </CardTitle>
-            <CardDescription className="text-blue-600 dark:text-blue-400">
-              These questions are complete and ready for review. Submit them when you're satisfied with the content.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {draftQuestions.map((question) => (
-              <div key={question.id} className="bg-white dark:bg-gray-900 rounded-lg border border-blue-200 dark:border-blue-800 p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
-                      {question.title}
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
-                      {question.stem}
-                    </p>
-                    {question.question_set && (
-                      <Badge variant="outline" className="text-xs mb-2">
-                        {question.question_set.name}
-                      </Badge>
-                    )}
-                    <p className="text-xs text-gray-500">
-                      Created {formatDistanceToNow(new Date(question.created_at))} ago
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(`/admin/questions/${question.id}/edit`, '_blank')}
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
-                    <Button
-                      onClick={() => handleSubmitForReview(question.id)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      Submit for Review
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Section 3: Under Review - Informational */}
-      {underReviewQuestions.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
-              <Clock className="h-5 w-5" />
-              Questions Under Review ({underReviewQuestions.length})
-            </CardTitle>
-            <CardDescription>
-              These questions are currently being reviewed. No action needed from you at this time.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {underReviewQuestions.map((question) => (
-              <div key={question.id} className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-950/50 rounded-lg border border-amber-200 dark:border-amber-800">
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
-                    {question.title}
-                  </h4>
-                  {question.question_set && (
-                    <Badge variant="outline" className="text-xs">
-                      {question.question_set.name}
-                    </Badge>
-                  )}
-                  <p className="text-xs text-gray-500 mt-1">
-                    Submitted {formatDistanceToNow(new Date(question.updated_at))} ago
-                  </p>
-                </div>
-                <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                  Under Review
-                </Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+        <TabsContent value="under-review" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium">Questions Under Review</h3>
+              <p className="text-sm text-muted-foreground">
+                These questions are currently being reviewed. No action needed from you at this time.
+              </p>
+            </div>
+          </div>
+          {renderQuestionTable(underReviewQuestions, false)}
+        </TabsContent>
+      </Tabs>
 
       {/* No Action Required State */}
       {!hasActionableItems && stats.underReview === 0 && (
