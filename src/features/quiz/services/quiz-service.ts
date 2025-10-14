@@ -126,15 +126,13 @@ export class QuizService {
         created_by,
         updated_by,
         version,
-        version_major,
-        version,
         created_at,
         updated_at,
         question_options(*),
         question_images(*, image:images(*)),
         question_set:question_sets(*)
       `)
-      .eq('status', 'approved')
+      .eq('status', 'published')
 
     const { data: questions, error } = await query
 

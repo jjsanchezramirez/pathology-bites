@@ -280,11 +280,6 @@ export const STATUS_CONFIG = {
     color: 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100',
     description: 'Question is submitted and awaiting review'
   },
-  approved: {
-    label: 'Approved',
-    color: 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
-    description: 'Question is approved and live for users'
-  },
   published: {
     label: 'Published',
     color: 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
@@ -314,7 +309,7 @@ export const REVIEW_ACTION_CONFIG = {
     description: 'Approve and publish the question',
     color: 'bg-green-600 hover:bg-green-700',
     icon: '✓',
-    resultStatus: 'approved' as QuestionStatus
+    resultStatus: 'published' as QuestionStatus
   },
   request_changes: {
     label: 'Request Changes',

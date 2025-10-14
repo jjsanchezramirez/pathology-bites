@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/shared/services/server';
 
+// Hard-coded flag threshold - questions are removed from circulation after this many flags
+const FLAG_THRESHOLD = 1;
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -95,10 +98,9 @@ export async function POST(request: NextRequest) {
     }
 
     const flagCount = openFlags?.length || 1;
-    const flagThreshold = parseInt(process.env.QUESTION_FLAG_THRESHOLD || '1');
 
     // If flag count meets or exceeds threshold, remove question from circulation
-    if (flagCount >= flagThreshold) {
+    if (flagCount >= FLAG_THRESHOLD) {
       // Get current question to check its status
       const { data: currentQuestion } = await supabase
         .from('questions')
@@ -106,9 +108,9 @@ export async function POST(request: NextRequest) {
         .eq('id', question_id)
         .single();
 
-      // Only change status if question is currently published/approved
+      // Only change status if question is currently published
       // Don't change if it's already draft, pending_review, or rejected
-      if (currentQuestion && ['approved', 'published'].includes(currentQuestion.status)) {
+      if (currentQuestion && currentQuestion.status === 'published') {
         // Change question status to 'draft' (back to creator's queue)
         const { error: statusError } = await supabase
           .from('questions')
@@ -144,11 +146,11 @@ export async function POST(request: NextRequest) {
       success: true,
       flag,
       flagCount,
-      threshold: flagThreshold,
-      removedFromCirculation: flagCount >= flagThreshold,
-      message: flagCount >= flagThreshold
-        ? `Question flagged and removed from circulation (${flagCount}/${flagThreshold} flags)`
-        : `Question flagged successfully (${flagCount}/${flagThreshold} flags)`
+      threshold: FLAG_THRESHOLD,
+      removedFromCirculation: flagCount >= FLAG_THRESHOLD,
+      message: flagCount >= FLAG_THRESHOLD
+        ? `Question flagged and removed from circulation (${flagCount}/${FLAG_THRESHOLD} flags)`
+        : `Question flagged successfully (${flagCount}/${FLAG_THRESHOLD} flags)`
     });
 
   } catch (error) {

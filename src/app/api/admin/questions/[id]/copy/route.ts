@@ -57,9 +57,9 @@ export async function POST(
     }
 
     // Check if user has permission to copy this question
-    // Users can copy their own questions or any approved/published questions
-    const canCopy = originalQuestion.created_by === user.id || 
-                   ['approved', 'published'].includes(originalQuestion.status)
+    // Users can copy their own questions or any published questions
+    const canCopy = originalQuestion.created_by === user.id ||
+                   originalQuestion.status === 'published'
 
     if (!canCopy) {
       return NextResponse.json(

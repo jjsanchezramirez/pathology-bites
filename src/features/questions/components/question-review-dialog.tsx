@@ -138,11 +138,11 @@ export function QuestionReviewDialog({
         return
       }
 
-      // Determine new question status based on action - SIMPLIFIED TO 4 STATUSES
+      // Determine new question status based on action
       let newStatus = question.status
       switch (selectedAction) {
         case 'approve':
-          newStatus = 'approved'
+          newStatus = 'published'
           break
         case 'request_changes':
           newStatus = 'draft'

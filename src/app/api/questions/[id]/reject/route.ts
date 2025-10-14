@@ -85,8 +85,6 @@ export async function POST(
       .update({
         status: 'rejected',
         reviewer_feedback: feedback.trim(),
-        rejected_at: new Date().toISOString(),
-        rejected_by: user.id,
         updated_at: new Date().toISOString(),
         updated_by: user.id,
       })

@@ -100,14 +100,12 @@ export function CreatorWorkflowDashboard() {
           created_at,
           updated_at,
           reviewer_feedback,
-          rejected_at,
           question_sets(name),
           question_flags(id, flag_type, description, status, created_at)
         `)
         .eq('created_by', user.id)
         .in('status', ['draft', 'pending_review', 'rejected'])
-        .order('rejected_at', { ascending: false, nullsFirst: false })
-        .order('created_at', { ascending: false })
+        .order('updated_at', { ascending: false })
 
       if (error) {
         console.error('Error fetching workflow questions:', error)

@@ -280,8 +280,8 @@ export async function PATCH(
     const isQuestionCreator = currentQuestion.created_by === user.id
     const isAssignedReviewer = currentQuestion.reviewer_id === user.id
 
-    // Check if question is approved/published
-    if (currentQuestion.status === 'published' || currentQuestion.status === 'approved') {
+    // Check if question is published
+    if (currentQuestion.status === 'published') {
       if (!isAdmin) {
         return NextResponse.json(
           {
@@ -340,9 +340,6 @@ export async function PATCH(
         )
       }
     }
-
-    // Track if this is a reviewer patch edit
-    const isReviewerPatchEdit = isReviewer && isAssignedReviewer && currentQuestion.status === 'pending_review'
 
     // Start transaction-like operations
     try {
@@ -575,9 +572,9 @@ export async function PATCH(
         }
       }
 
-      // Handle versioning for published/approved questions (simplified)
+      // Handle versioning for published questions (simplified)
       let versionId = null
-      if (currentQuestion.status === 'published' || currentQuestion.status === 'approved') {
+      if (currentQuestion.status === 'published') {
         // Use simplified versioning function
         const { data: newVersionId, error: versionError } = await adminClient
           .rpc('create_question_version_simplified', {
@@ -613,12 +610,9 @@ export async function PATCH(
         success: true,
         question: updatedQuestion,
         versionId,
-        isReviewerPatchEdit,
         message: versionId
           ? `Question updated to version ${updatedQuestion.version}`
-          : isReviewerPatchEdit
-            ? 'Patch edit applied by reviewer (typos, rewording, etc.)'
-            : 'Question updated successfully'
+          : 'Question updated successfully'
       })
 
     } catch (error) {

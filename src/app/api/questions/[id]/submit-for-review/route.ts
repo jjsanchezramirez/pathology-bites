@@ -109,8 +109,6 @@ export async function POST(
         status: 'pending_review',
         reviewer_id: reviewer_id,
         reviewer_feedback: null, // Clear old feedback
-        rejected_at: null,
-        rejected_by: null,
         updated_at: new Date().toISOString(),
         updated_by: user.id,
       })

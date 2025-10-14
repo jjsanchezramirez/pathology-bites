@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
           )
         }
 
-        const pendingQuestions = questions?.filter(q => 
+        const pendingQuestions = questions?.filter(q =>
           q.status === 'pending_review'
         ) || []
 
@@ -134,10 +134,10 @@ export async function POST(request: NextRequest) {
 
         result = await supabase
           .from('questions')
-          .update({ 
-            status: 'approved',
-            approved_at: new Date().toISOString(),
-            approved_by: user.id
+          .update({
+            status: 'published',
+            published_at: new Date().toISOString(),
+            updated_by: user.id
           })
           .in('id', pendingQuestions.map(q => q.id))
 
@@ -153,8 +153,8 @@ export async function POST(request: NextRequest) {
           )
         }
 
-        const rejectableQuestions = questions?.filter(q => 
-          ['pending_review', 'approved'].includes(q.status)
+        const rejectableQuestions = questions?.filter(q =>
+          ['pending_review', 'published'].includes(q.status)
         ) || []
 
         if (rejectableQuestions.length === 0) {
@@ -166,10 +166,10 @@ export async function POST(request: NextRequest) {
 
         result = await supabase
           .from('questions')
-          .update({ 
+          .update({
             status: 'rejected',
-            rejected_at: new Date().toISOString(),
-            rejected_by: user.id
+            updated_at: new Date().toISOString(),
+            updated_by: user.id
           })
           .in('id', rejectableQuestions.map(q => q.id))
 
