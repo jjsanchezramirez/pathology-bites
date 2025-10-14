@@ -39,29 +39,43 @@ export function StepContentEdit({ formState, updateFormState }: StepContentEditP
 
     setIsRefining(true)
     try {
+      const requestBody = {
+        mode: 'refinement',
+        instructions: chatMessage,
+        currentQuestion: {
+          title: formState.title,
+          stem: formState.stem,
+          answer_options: formState.answerOptions,
+          teaching_point: formState.teaching_point,
+          question_references: formState.question_references
+        },
+        model: 'Llama-3.3-8B-Instruct' // Use fast model for refinements
+      }
+
+      console.log('Sending refinement request:', requestBody)
+
       const response = await fetch('/api/admin/ai-generate-question', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          instructions: chatMessage,
-          currentQuestion: {
-            title: formState.title,
-            stem: formState.stem,
-            answer_options: formState.answerOptions,
-            teaching_point: formState.teaching_point,
-            question_references: formState.question_references
-          }
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       if (!response.ok) {
-        throw new Error('Failed to refine question')
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        console.error('API Error:', response.status, errorData)
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to refine question`)
       }
 
       const data = await response.json()
-      
+      console.log('Refinement response:', data)
+
+      // Check if we got valid data back
+      if (!data || (!data.stem && !data.title)) {
+        throw new Error('Invalid response from AI service')
+      }
+
       // Update form state with refined content
       updateFormState({
         title: data.title || formState.title,
@@ -73,9 +87,10 @@ export function StepContentEdit({ formState, updateFormState }: StepContentEditP
 
       toast.success('Question refined successfully!')
       setChatMessage('')
+      setShowRefinementDialog(false)
     } catch (error) {
       console.error('AI refinement error:', error)
-      toast.error('Failed to refine question')
+      toast.error(`Failed to refine question: ${error.message}`)
     } finally {
       setIsRefining(false)
     }
@@ -98,46 +113,7 @@ export function StepContentEdit({ formState, updateFormState }: StepContentEditP
 
   return (
     <div className="space-y-6">
-      {/* AI Refinement Chat */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            AI Refinement Assistant
-          </CardTitle>
-          <CardDescription>
-            Ask AI to refine or improve any part of the question
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Textarea
-              placeholder="e.g., 'Make the stem more concise' or 'Add more detail to the teaching point'"
-              value={chatMessage}
-              onChange={(e) => setChatMessage(e.target.value)}
-              rows={2}
-              className="flex-1"
-            />
-            <Button
-              onClick={handleAIRefinement}
-              disabled={isRefining || !chatMessage.trim()}
-              size="lg"
-            >
-              {isRefining ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Refining...
-                </>
-              ) : (
-                <>
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Refine
-                </>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+
 
       {/* Question Title */}
       <div className="space-y-2">
@@ -163,42 +139,48 @@ export function StepContentEdit({ formState, updateFormState }: StepContentEditP
       </div>
 
       {/* Answer Options */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <Label>Answer Options</Label>
         {formState.answerOptions.map((option, index) => (
-          <Card key={index} className={option.is_correct ? 'border-green-500' : ''}>
-            <CardContent className="pt-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">
-                  Option {String.fromCharCode(65 + index)}
-                  {option.is_correct && (
-                    <Badge variant="default" className="ml-2">Correct</Badge>
-                  )}
-                </Label>
-                <Button
-                  variant={option.is_correct ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => updateAnswerOption(index, 'is_correct', !option.is_correct)}
-                >
-                  {option.is_correct ? 'Correct' : 'Mark as Correct'}
-                </Button>
-              </div>
-              
-              <Textarea
+          <div key={index} className={`border rounded-lg p-3 space-y-2 ${option.is_correct ? 'border-green-500 bg-green-50' : 'border-border'}`}>
+            {/* Option Row */}
+            <div className="flex items-center gap-3">
+              <input
+                type="radio"
+                name="correct-answer"
+                checked={option.is_correct}
+                onChange={() => updateAnswerOption(index, 'is_correct', !option.is_correct)}
+                className="h-4 w-4 text-green-600 focus:ring-green-500"
+              />
+              <Label className="text-sm font-medium min-w-[60px]">
+                Option {String.fromCharCode(65 + index)}:
+              </Label>
+              <Input
                 value={option.text}
                 onChange={(e) => updateAnswerOption(index, 'text', e.target.value)}
                 placeholder="Answer option text..."
-                rows={2}
+                className="flex-1"
               />
-              
+              {option.is_correct && (
+                <Badge variant="default" className="ml-2">Correct</Badge>
+              )}
+            </div>
+
+            {/* Explanation Row */}
+            <div className="flex items-start gap-3">
+              <div className="w-4"></div> {/* Spacer to align with radio button */}
+              <Label className="text-xs text-muted-foreground min-w-[60px] pt-1">
+                Explanation:
+              </Label>
               <Textarea
                 value={option.explanation}
                 onChange={(e) => updateAnswerOption(index, 'explanation', e.target.value)}
                 placeholder="Explanation for this option..."
-                rows={2}
+                rows={1}
+                className="flex-1 text-sm"
               />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 
@@ -224,6 +206,38 @@ export function StepContentEdit({ formState, updateFormState }: StepContentEditP
           placeholder="Citations, sources, or references..."
           rows={3}
         />
+      </div>
+
+      {/* AI Refinement */}
+      <div className="space-y-2 pt-4 border-t">
+        <Label htmlFor="ai_refinement">Refine Question with AI</Label>
+        <div className="flex gap-2">
+          <Textarea
+            id="ai_refinement"
+            value={chatMessage}
+            onChange={(e) => setChatMessage(e.target.value)}
+            placeholder="e.g., 'Make the stem more concise' or 'Add more clinical context'"
+            rows={2}
+            className="flex-1"
+          />
+          <Button
+            onClick={handleAIRefinement}
+            disabled={isRefining || !chatMessage.trim()}
+            className="self-end"
+          >
+            {isRefining ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Refining...
+              </>
+            ) : (
+              <>
+                <Brain className="h-4 w-4 mr-2" />
+                Refine
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   )

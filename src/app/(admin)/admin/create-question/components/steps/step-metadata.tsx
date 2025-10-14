@@ -4,9 +4,12 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Label } from '@/shared/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
+import { Button } from '@/shared/components/ui/button'
+import { Brain, Loader2 } from 'lucide-react'
 import { FormState } from '../multi-step-question-form'
 import { TagAutocomplete } from '../tag-autocomplete'
 import { createClient } from '@/shared/services/client'
+import { toast } from 'sonner'
 
 interface StepMetadataProps {
   formState: FormState
@@ -38,6 +41,7 @@ export function StepMetadata({ formState, updateFormState }: StepMetadataProps) 
   const [loadingCategories, setLoadingCategories] = useState(true)
   const [loadingQuestionSets, setLoadingQuestionSets] = useState(true)
   const [loadingTags, setLoadingTags] = useState(true)
+  const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false)
 
   // Fetch categories
   useEffect(() => {
@@ -93,8 +97,95 @@ export function StepMetadata({ formState, updateFormState }: StepMetadataProps) 
     fetchTags()
   }, [])
 
+  // Auto-suggest metadata based on question content
+  const handleAIMetadataSuggestion = async () => {
+    if (!formState.title || !formState.stem) {
+      toast.error('Please fill in the question title and stem first')
+      return
+    }
+
+    setIsGeneratingMetadata(true)
+    try {
+      const response = await fetch('/api/admin/ai-generate-question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode: 'metadata_suggestion',
+          content: {
+            title: formState.title,
+            stem: formState.stem,
+            teaching_point: formState.teaching_point,
+            available_categories: categories.map(c => ({ id: c.id, name: c.name })),
+            available_question_sets: questionSets.map(qs => ({ id: qs.id, name: qs.name })),
+            available_tags: tags.map(t => ({ id: t.id, name: t.name }))
+          }
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to generate metadata suggestions')
+      }
+
+      const result = await response.json()
+
+      // Apply AI suggestions
+      if (result.category_id) {
+        updateFormState({ category_id: result.category_id })
+      }
+      if (result.question_set_id) {
+        updateFormState({ question_set_id: result.question_set_id })
+      }
+      if (result.difficulty) {
+        updateFormState({ difficulty: result.difficulty })
+      }
+      if (result.suggested_tag_ids && result.suggested_tag_ids.length > 0) {
+        updateFormState({ tag_ids: result.suggested_tag_ids })
+      }
+
+      toast.success('AI metadata suggestions applied!')
+    } catch (error) {
+      console.error('Error generating metadata suggestions:', error)
+      toast.error('Failed to generate metadata suggestions')
+    } finally {
+      setIsGeneratingMetadata(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
+      {/* AI Metadata Suggestion */}
+      <Card>
+        <CardHeader>
+          <CardTitle>AI Metadata Suggestions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Let AI analyze your question content and suggest appropriate category, question set, difficulty, and tags.
+            </p>
+            <Button
+              onClick={handleAIMetadataSuggestion}
+              disabled={isGeneratingMetadata || !formState.title || !formState.stem}
+              variant="outline"
+            >
+              {isGeneratingMetadata ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Brain className="h-4 w-4 mr-2" />
+                  Suggest Metadata
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Category Selection */}
       <Card>
         <CardHeader>
@@ -189,30 +280,7 @@ export function StepMetadata({ formState, updateFormState }: StepMetadataProps) 
         </CardContent>
       </Card>
 
-      {/* Status Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Status</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="status">Question Status</Label>
-            <Select
-              value={formState.status}
-              onValueChange={(value) => updateFormState({ status: value })}
-            >
-              <SelectTrigger id="status">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="pending_review">Pending Review</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   )
 }

@@ -53,6 +53,7 @@ export interface FormState {
   tag_ids: string[]
   difficulty: 'easy' | 'medium' | 'hard'
   status: string
+  version: string
 }
 
 // Step configuration
@@ -89,7 +90,8 @@ export function MultiStepQuestionForm({ onSubmit, onCancel }: MultiStepQuestionF
     question_set_id: '',
     tag_ids: [],
     difficulty: 'medium',
-    status: 'draft'
+    status: 'draft',
+    version: '1.0.0'
   })
 
   // Update form state helper
@@ -149,6 +151,7 @@ export function MultiStepQuestionForm({ onSubmit, onCancel }: MultiStepQuestionF
           <StepSourceConfig
             formState={formState}
             updateFormState={updateFormState}
+            onNext={goToNextStep}
           />
         )
       case 2:
@@ -181,8 +184,9 @@ export function MultiStepQuestionForm({ onSubmit, onCancel }: MultiStepQuestionF
   const canProceedToNextStep = () => {
     switch (currentStep) {
       case 1:
-        // Step 1: Must have either JSON data or AI-generated content
-        return formState.jsonData.trim() !== '' || formState.selectedContent !== null
+        // Step 1: Must have either JSON data or (AI model + selected content)
+        return formState.jsonData.trim() !== '' ||
+               (formState.selectedAIModel !== null && formState.selectedContent !== null)
       case 2:
         // Step 2: Must have title, stem, and at least one correct answer
         return (

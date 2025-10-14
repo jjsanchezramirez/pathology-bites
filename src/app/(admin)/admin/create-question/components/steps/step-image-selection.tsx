@@ -42,22 +42,8 @@ export function StepImageSelection({ formState, updateFormState }: StepImageSele
         </CardHeader>
         <CardContent>
           <ImageAttachmentsTab
-            attachedImages={formState.questionImages.map(img => ({
-              image_id: img.image_id,
-              question_section: img.question_section,
-              order_index: img.order_index,
-              // These fields will be populated by the ImageAttachmentsTab component
-              image_url: '',
-              alt_text: '',
-              caption: ''
-            }))}
-            onImagesAttached={(images) => {
-              handleImagesChange(images.map((img, index) => ({
-                image_id: img.image_id,
-                question_section: img.question_section,
-                order_index: index
-              })))
-            }}
+            attachedImages={formState.questionImages}
+            onAttachedImagesChange={handleImagesChange}
           />
         </CardContent>
       </Card>

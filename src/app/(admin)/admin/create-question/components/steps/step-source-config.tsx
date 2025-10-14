@@ -5,15 +5,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Textarea } from '@/shared/components/ui/textarea'
 import { Button } from '@/shared/components/ui/button'
 import { Alert, AlertDescription } from '@/shared/components/ui/alert'
-import { Upload, FileJson, Brain, AlertCircle } from 'lucide-react'
+import { Upload, FileJson, Brain, AlertCircle, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { FormState } from '../multi-step-question-form'
 import { ContentSelector } from '../content-selector'
 import { ACTIVE_AI_MODELS } from '@/shared/config/ai-models'
 import { createClient } from '@/shared/services/client'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
+import { Label } from '@/shared/components/ui/label'
 
 interface StepSourceConfigProps {
   formState: FormState
   updateFormState: (updates: Partial<FormState>) => void
+  onNext?: () => void
 }
 
 // Helper function to match or create tags from suggested tag names
@@ -107,7 +111,7 @@ async function findQuestionSetIdByName(name: string): Promise<string | null> {
   return null
 }
 
-export function StepSourceConfig({ formState, updateFormState }: StepSourceConfigProps) {
+export function StepSourceConfig({ formState, updateFormState, onNext }: StepSourceConfigProps) {
   const [jsonError, setJsonError] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -126,17 +130,40 @@ export function StepSourceConfig({ formState, updateFormState }: StepSourceConfi
   // Handle JSON paste/input
   const handleJSONInput = useCallback(async (jsonString: string) => {
     updateFormState({ jsonData: jsonString })
-    
+
     const parsed = parseJSON(jsonString)
     if (!parsed) return
 
-    // Extract question data from JSON
+    // Extract and normalize answer options from various possible field names
+    let answerOptions = []
+    const rawOptions = parsed.answer_options || parsed.answerOptions || parsed.question_options || parsed.options || []
+
+    if (Array.isArray(rawOptions)) {
+      answerOptions = rawOptions.map((option, index) => ({
+        text: option.text || option.answer || option.choice || '',
+        is_correct: option.is_correct || option.isCorrect || option.correct || false,
+        explanation: option.explanation || option.rationale || option.feedback || '',
+        order_index: option.order_index !== undefined ? option.order_index : index
+      }))
+    }
+
+    // Ensure we have exactly 5 answer options (A, B, C, D, E)
+    while (answerOptions.length < 5) {
+      answerOptions.push({
+        text: '',
+        is_correct: false,
+        explanation: '',
+        order_index: answerOptions.length
+      })
+    }
+
+    // Extract question data from JSON with comprehensive field mapping
     const questionData = {
       title: parsed.title || '',
-      stem: parsed.stem || '',
-      answerOptions: parsed.answer_options || parsed.answerOptions || [],
-      teaching_point: parsed.teaching_point || parsed.teachingPoint || '',
-      question_references: parsed.question_references || parsed.questionReferences || '',
+      stem: parsed.stem || parsed.question || parsed.body || '',
+      answerOptions: answerOptions,
+      teaching_point: parsed.teaching_point || parsed.teachingPoint || parsed.learning_objective || parsed.key_point || '',
+      question_references: parsed.question_references || parsed.questionReferences || parsed.references || parsed.citations || '',
       questionImages: parsed.question_images || parsed.questionImages || [],
       difficulty: parsed.difficulty || 'medium',
       status: parsed.status || 'draft'
@@ -190,22 +217,107 @@ export function StepSourceConfig({ formState, updateFormState }: StepSourceConfi
     updateFormState({ selectedContent: content })
   }
 
+  // Handle AI question generation from educational content
+  const handleGenerateFromContent = async () => {
+    if (!formState.selectedAIModel) {
+      toast.error('Please select an AI model first')
+      return
+    }
+
+    if (!formState.selectedContent) {
+      toast.error('Please select educational content first')
+      return
+    }
+
+    setIsGenerating(true)
+    try {
+      console.log('🤖 Generating question from educational content:', formState.selectedContent)
+
+      const response = await fetch('/api/admin/ai-generate-question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode: 'educational_content',
+          content: formState.selectedContent,
+          instructions: 'Generate a comprehensive pathology question with 5 answer options (A, B, C, D, E) based on the provided educational content. Include detailed explanations for all answer options.',
+          model: formState.selectedAIModel
+        }),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('AI generation failed:', response.status, errorText)
+
+        try {
+          const errorData = JSON.parse(errorText)
+          throw new Error(errorData.error || `HTTP ${response.status}: Failed to generate question`)
+        } catch (parseError) {
+          throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to generate question'}`)
+        }
+      }
+
+      const data = await response.json()
+      console.log('🎯 AI generation response:', data)
+
+      // Extract and normalize the generated question data
+      const generatedData = {
+        title: data.title || '',
+        stem: data.stem || data.question || '',
+        answerOptions: data.answer_options || data.question_options || [],
+        teaching_point: data.teaching_point || '',
+        question_references: data.question_references || data.references || '',
+        difficulty: data.difficulty || 'medium',
+        status: data.status || 'draft'
+      }
+
+      // Ensure answer options are properly formatted
+      if (generatedData.answerOptions.length > 0) {
+        generatedData.answerOptions = generatedData.answerOptions.map((option, index) => ({
+          text: option.text || '',
+          is_correct: option.is_correct || false,
+          explanation: option.explanation || '',
+          order_index: index
+        }))
+      }
+
+      updateFormState(generatedData)
+      toast.success('Question generated successfully! Advancing to edit step...')
+
+      // Auto-advance to Step 2 (Content Edit) after successful generation
+      setTimeout(() => {
+        if (onNext) {
+          onNext()
+        }
+      }, 1500) // Small delay to show success message
+
+    } catch (error) {
+      console.error('AI generation error:', error)
+      toast.error(`Failed to generate question: ${error.message}`)
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const [isGenerating, setIsGenerating] = useState(false)
+
   return (
     <div className="space-y-6">
       {/* JSON Import Section */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileJson className="h-5 w-5" />
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FileJson className="h-4 w-4" />
             Import from JSON
           </CardTitle>
-          <CardDescription>
-            Paste JSON data or drag and drop a JSON file to import question data
+          <CardDescription className="text-sm">
+            Paste JSON from WSI Question Generator or drag & drop file
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           <div
-            className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
+            className={`border-2 border-dashed rounded-lg p-4 transition-colors ${
               isDragging ? 'border-primary bg-primary/5' : 'border-muted'
             }`}
             onDragOver={(e) => {
@@ -215,11 +327,10 @@ export function StepSourceConfig({ formState, updateFormState }: StepSourceConfi
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
           >
-            <div className="flex flex-col items-center justify-center gap-4">
-              <Upload className="h-12 w-12 text-muted-foreground" />
+            <div className="flex items-center justify-center gap-3">
+              <Upload className="h-6 w-6 text-muted-foreground" />
               <div className="text-center">
-                <p className="text-sm font-medium">Drop JSON file here</p>
-                <p className="text-xs text-muted-foreground">or paste JSON below</p>
+                <p className="text-xs font-medium">Drop JSON file or paste below</p>
               </div>
             </div>
           </div>
@@ -228,15 +339,15 @@ export function StepSourceConfig({ formState, updateFormState }: StepSourceConfi
             placeholder='{"title": "Question Title", "stem": "Question text...", ...}'
             value={formState.jsonData}
             onChange={(e) => handleJSONInput(e.target.value)}
-            rows={8}
-            className="font-mono text-sm"
+            rows={4}
+            className="font-mono text-xs"
           />
 
           {jsonError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{jsonError}</AlertDescription>
-            </Alert>
+            <div className="flex items-center gap-2 text-xs text-red-600">
+              <AlertCircle className="h-3 w-3" />
+              <span>{jsonError}</span>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -251,22 +362,86 @@ export function StepSourceConfig({ formState, updateFormState }: StepSourceConfi
         </div>
       </div>
 
-      {/* AI Content Selection */}
+      {/* AI Generation from Educational Content */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Brain className="h-5 w-5" />
-            Generate with AI
+            AI Generation from Educational Content
           </CardTitle>
           <CardDescription>
-            Select educational content to generate a question using AI
+            Select AI model and educational content to generate a question
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <ContentSelector
-            selectedContent={formState.selectedContent}
-            onContentSelected={handleContentSelected}
-          />
+        <CardContent className="space-y-4">
+          {/* AI Model Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="ai-model">AI Model</Label>
+            <Select
+              value={formState.selectedAIModel || ''}
+              onValueChange={(value) => updateFormState({ selectedAIModel: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select an AI model..." />
+              </SelectTrigger>
+              <SelectContent>
+                {ACTIVE_AI_MODELS.filter(model => model.available).map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    <div className="flex items-center justify-between w-full">
+                      <span>{model.name}</span>
+                      <span className="text-xs text-muted-foreground ml-2">
+                        {model.provider}
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {formState.selectedAIModel && (
+              <p className="text-xs text-muted-foreground">
+                Selected: {ACTIVE_AI_MODELS.find(m => m.id === formState.selectedAIModel)?.name}
+              </p>
+            )}
+          </div>
+
+          {/* Content Selection - Only show if model is selected */}
+          {formState.selectedAIModel && (
+            <>
+              <div className="border-t pt-4">
+                <Label className="text-sm font-medium mb-3 block">Educational Content</Label>
+                <ContentSelector
+                  selectedContent={formState.selectedContent}
+                  onContentSelect={handleContentSelected}
+                />
+              </div>
+
+              {formState.selectedContent && (
+                <div className="pt-4 border-t">
+                  <Button
+                    onClick={handleGenerateFromContent}
+                    disabled={isGenerating}
+                    className="w-full"
+                    size="lg"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating Question...
+                      </>
+                    ) : (
+                      <>
+                        <Brain className="h-4 w-4 mr-2" />
+                        Generate Question with AI
+                      </>
+                    )}
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    Using {ACTIVE_AI_MODELS.find(m => m.id === formState.selectedAIModel)?.name} to create a complete question with 5 answer options and explanations
+                  </p>
+                </div>
+              )}
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
