@@ -203,7 +203,45 @@ export function CreatorWorkflowDashboard() {
     window.open(`/admin/create-question?edit=${questionId}`, '_blank')
   }
 
-  const handleSubmitSuccess = () => {
+  const handleSubmitSuccess = async (reviewerId?: string) => {
+    // Check if this was a bulk submission (multiple questions selected)
+    const selectedInTab = questions.filter(q => selectedQuestions.has(q.id) && q.status === 'draft')
+
+    if (selectedInTab.length > 1 && reviewerId) {
+      // This is a bulk submission - submit all remaining selected questions to the same reviewer
+      const remainingQuestions = selectedInTab.filter(q => q.id !== selectedQuestionForSubmit?.id)
+
+      if (remainingQuestions.length > 0) {
+        try {
+          // Submit all remaining questions in parallel
+          const submissions = remainingQuestions.map(question =>
+            fetch(`/api/questions/${question.id}/submit-for-review`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ reviewer_id: reviewerId }),
+            })
+          )
+
+          const results = await Promise.allSettled(submissions)
+
+          // Check for any failures
+          const failures = results.filter(result => result.status === 'rejected')
+          if (failures.length > 0) {
+            toast.error(`Failed to submit ${failures.length} question(s). Please try again.`)
+          } else {
+            toast.success(`Successfully submitted ${selectedInTab.length} questions for review`)
+          }
+        } catch (error) {
+          console.error('Error in bulk submission:', error)
+          toast.error('Some questions failed to submit. Please try again.')
+        }
+      }
+
+      // Clear all selections after bulk submission
+      setSelectedQuestions(new Set())
+    }
+
+    // Refresh the questions list and close dialog
     fetchWorkflowQuestions()
     setSelectedQuestionForSubmit(null)
   }
@@ -278,6 +316,36 @@ export function CreatorWorkflowDashboard() {
     setSelectedQuestions(newSelected)
   }
 
+  const handleBulkSubmitForReview = async () => {
+    const selectedInTab = questions.filter(q => selectedQuestions.has(q.id) && q.status === 'draft')
+
+    if (selectedInTab.length === 0) {
+      toast.error('No draft questions selected')
+      return
+    }
+
+    if (selectedInTab.length === 1) {
+      // If only one question selected, use the regular submit dialog
+      handleSubmitForReview(selectedInTab[0].id)
+      return
+    }
+
+    // For multiple questions, show confirmation and then submit all to the same reviewer
+    const confirmed = confirm(
+      `Submit ${selectedInTab.length} questions for review?\n\n` +
+      `All selected questions will be submitted to the same reviewer. ` +
+      `You'll choose the reviewer in the next step.`
+    )
+
+    if (!confirmed) return
+
+    // Use the first question to open the submit dialog, but modify the success handler
+    // to submit all selected questions to the same reviewer
+    const firstQuestion = selectedInTab[0]
+    setSelectedQuestionForSubmit(firstQuestion)
+    setSubmitDialogOpen(true)
+  }
+
   const toggleFeedbackExpansion = (questionId: string) => {
     const newExpanded = new Set(expandedFeedback)
     if (newExpanded.has(questionId)) {
@@ -327,7 +395,7 @@ export function CreatorWorkflowDashboard() {
               {selectedInTab.length} question{selectedInTab.length !== 1 ? 's' : ''} selected
             </span>
             {activeTab === 'drafts' && (
-              <Button size="sm" onClick={() => toast.info('Bulk submit coming soon')}>
+              <Button size="sm" onClick={handleBulkSubmitForReview}>
                 <Send className="h-4 w-4 mr-2" />
                 Submit Selected for Review
               </Button>
@@ -528,20 +596,7 @@ export function CreatorWorkflowDashboard() {
         </Button>
       </div>
 
-      {/* Action Summary */}
-      {hasActionableItems && (
-        <Alert className="border-destructive/50 bg-destructive/10">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Action Required:</strong> You have {totalActionable} question{totalActionable !== 1 ? 's' : ''} that need{totalActionable === 1 ? 's' : ''} your attention.
-            {stats.needsRevision > 0 && (
-              <span className="ml-2 font-medium">
-                {stats.needsRevision} question{stats.needsRevision !== 1 ? 's' : ''} need{stats.needsRevision === 1 ? 's' : ''} revision.
-              </span>
-            )}
-          </AlertDescription>
-        </Alert>
-      )}
+
 
       {/* Workflow Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

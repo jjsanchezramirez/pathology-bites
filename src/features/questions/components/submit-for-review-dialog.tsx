@@ -36,7 +36,7 @@ interface SubmitForReviewDialogProps {
   questionId: string
   questionTitle: string
   questionStatus?: string  // To determine if this is a resubmission
-  onSuccess: () => void
+  onSuccess: (reviewerId?: string) => void
 }
 
 export function SubmitForReviewDialog({
@@ -107,7 +107,7 @@ export function SubmitForReviewDialog({
       }
 
       toast.success(isResubmission ? 'Question resubmitted for review' : 'Question submitted for review')
-      onSuccess()
+      onSuccess(selectedReviewerId)
       onOpenChange(false)
       setSelectedReviewerId('')
       setResubmissionNotes('')
