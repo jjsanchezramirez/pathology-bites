@@ -44,7 +44,6 @@ import { STATUS_CONFIG, QuestionWithDetails } from '@/features/questions/types/q
 
 interface CreatorQuestion extends QuestionWithDetails {
   question_set_name?: string
-  reviewer_id?: string | null
   reviewer_feedback?: string | null
   rejected_at?: string | null
   rejected_by?: string | null
@@ -471,16 +470,16 @@ export function CreatorQuestionsDashboard() {
 
       {/* Dialogs */}
       <QuestionPreviewDialog
-        question={selectedQuestion}
+        question={selectedQuestion as QuestionWithDetails}
         open={previewOpen}
         onOpenChange={setPreviewOpen}
       />
 
       <EditQuestionDialog
-        question={selectedQuestion}
+        question={selectedQuestion as QuestionWithDetails}
         open={editOpen}
         onOpenChange={setEditOpen}
-        onSave={fetchMyQuestions}
+        onSuccess={fetchMyQuestions}
       />
 
       {selectedQuestion && (

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import {
   FormControl,
@@ -13,9 +13,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Brain, Loader2, MessageSquare } from 'lucide-react';
-import { toast } from 'sonner';
+
 import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { EditQuestionFormData } from '@/features/questions/hooks/use-edit-question-form';
 
@@ -41,92 +39,6 @@ export function ContentTab({
   answerOptions,
   onAnswerOptionsChange
 }: ContentTabProps) {
-  const [chatMessage, setChatMessage] = useState('');
-  const [isRefining, setIsRefining] = useState(false);
-
-  // Handle AI refinement
-  const handleAIRefinement = async () => {
-    if (!chatMessage.trim()) {
-      toast.error('Please enter a refinement request');
-      return;
-    }
-
-    setIsRefining(true);
-    try {
-      const currentFormData = form.getValues();
-      
-      const requestBody = {
-        mode: 'refinement',
-        instructions: chatMessage,
-        currentQuestion: {
-          title: currentFormData.title,
-          stem: currentFormData.stem,
-          answer_options: answerOptions,
-          teaching_point: currentFormData.teaching_point,
-          question_references: currentFormData.question_references
-        },
-        model: 'Llama-3.3-8B-Instruct' // Use fast model for refinements
-      };
-
-      console.log('Sending refinement request:', requestBody);
-
-      const response = await fetch('/api/admin/ai-generate-question', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        console.error('API Error:', response.status, errorData);
-        throw new Error(errorData.error || `HTTP ${response.status}: Failed to refine question`);
-      }
-
-      const data = await response.json();
-      console.log('Refinement response:', data);
-
-      // Check if we got valid data back
-      if (!data || (!data.stem && !data.title)) {
-        throw new Error('Invalid response from AI service');
-      }
-
-      // Update form with refined content
-      if (data.title) {
-        form.setValue('title', data.title);
-      }
-      if (data.stem) {
-        form.setValue('stem', data.stem);
-      }
-      if (data.teaching_point) {
-        form.setValue('teaching_point', data.teaching_point);
-      }
-      if (data.question_references) {
-        form.setValue('question_references', data.question_references);
-      }
-      
-      // Update answer options if provided
-      if (data.answer_options && Array.isArray(data.answer_options)) {
-        const updatedOptions = data.answer_options.map((option: any, index: number) => ({
-          text: option.text || '',
-          is_correct: option.is_correct || false,
-          explanation: option.explanation || '',
-          order_index: index
-        }));
-        onAnswerOptionsChange(updatedOptions);
-      }
-
-      onUnsavedChanges();
-      toast.success('Question refined successfully!');
-      setChatMessage('');
-    } catch (error) {
-      console.error('AI refinement error:', error);
-      toast.error(`Failed to refine question: ${error.message}`);
-    } finally {
-      setIsRefining(false);
-    }
-  };
 
   // Handle answer option changes
   const updateAnswerOption = (index: number, field: string, value: any) => {
@@ -277,43 +189,7 @@ export function ContentTab({
         )}
       />
 
-      {/* AI Refinement */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            Refine Question with AI
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Request Changes</Label>
-            <Textarea
-              value={chatMessage}
-              onChange={(e) => setChatMessage(e.target.value)}
-              placeholder="Ask AI to modify specific parts of the question (e.g., 'Make the question more challenging', 'Add more clinical context', 'Improve the distractors')"
-              rows={3}
-            />
-          </div>
-          <Button 
-            onClick={handleAIRefinement}
-            disabled={!chatMessage.trim() || isRefining}
-            className="w-full"
-          >
-            {isRefining ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Refining...
-              </>
-            ) : (
-              <>
-                <Brain className="mr-2 h-4 w-4" />
-                Refine Question
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
+
     </div>
   );
 }
