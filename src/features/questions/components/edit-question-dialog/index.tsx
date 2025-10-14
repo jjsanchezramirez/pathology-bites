@@ -16,10 +16,9 @@ import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useEditQuestionForm, EditQuestionFormData } from '@/features/questions/hooks/use-edit-question-form';
 
 // Components
-import { GeneralTab } from './general-tab';
-import { OptionsTab } from './options-tab';
-import { ReferencesTab } from './references-tab';
-import { MediaTab } from './media-tab';
+import { ContentTab } from './content-tab';
+import { ImagesTab } from './images-tab';
+import { MetadataTab } from './metadata-tab';
 import { TabNavigation } from './tab-navigation';
 import { UnsavedChangesDialog } from './unsaved-changes-dialog';
 import { QuestionMetadata } from './question-metadata';
@@ -38,7 +37,7 @@ export function EditQuestionDialog({
   onSave
 }: EditQuestionDialogProps) {
   // State
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState('content');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Use the custom hook for form management
@@ -101,34 +100,30 @@ export function EditQuestionDialog({
                   </div>
 
                   <div className="flex-1 overflow-y-auto px-6 py-4">
-                    {activeTab === 'general' && (
-                      <GeneralTab
+                    {activeTab === 'content' && (
+                      <ContentTab
                         form={form}
-                        question={question}
-                        onUnsavedChanges={handleUnsavedChanges}
-                        onTagsChange={setSelectedTagIds}
-                      />
-                    )}
-                    {activeTab === 'options' && (
-                      <OptionsTab
                         question={question}
                         onUnsavedChanges={handleUnsavedChanges}
                         answerOptions={answerOptions}
                         onAnswerOptionsChange={setAnswerOptions}
                       />
                     )}
-                    {activeTab === 'references' && (
-                      <ReferencesTab
-                        form={form}
-                        onUnsavedChanges={handleUnsavedChanges}
-                      />
-                    )}
-                    {activeTab === 'media' && (
-                      <MediaTab
+                    {activeTab === 'images' && (
+                      <ImagesTab
                         question={question}
                         onUnsavedChanges={handleUnsavedChanges}
                         questionImages={questionImages}
                         onQuestionImagesChange={setQuestionImages}
+                      />
+                    )}
+                    {activeTab === 'metadata' && (
+                      <MetadataTab
+                        form={form}
+                        question={question}
+                        onUnsavedChanges={handleUnsavedChanges}
+                        selectedTagIds={selectedTagIds}
+                        onTagsChange={setSelectedTagIds}
                       />
                     )}
                   </div>
