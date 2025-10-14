@@ -228,18 +228,12 @@ export function CreatorWorkflowDashboard() {
             <span className="text-sm font-medium">
               {selectedInTab.length} question{selectedInTab.length !== 1 ? 's' : ''} selected
             </span>
-            <div className="flex gap-2">
-              {activeTab === 'drafts' && (
-                <Button size="sm" onClick={() => toast.info('Bulk submit coming soon')}>
-                  <Send className="h-4 w-4 mr-2" />
-                  Submit Selected for Review
-                </Button>
-              )}
-              <Button variant="outline" size="sm" onClick={() => toast.info('Bulk edit coming soon')}>
-                <Edit3 className="h-4 w-4 mr-2" />
-                Bulk Edit
+            {activeTab === 'drafts' && (
+              <Button size="sm" onClick={() => toast.info('Bulk submit coming soon')}>
+                <Send className="h-4 w-4 mr-2" />
+                Submit Selected for Review
               </Button>
-            </div>
+            )}
           </div>
         )}
 
