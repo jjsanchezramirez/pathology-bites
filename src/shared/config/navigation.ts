@@ -412,8 +412,12 @@ export function filterNavigationItems(
     if (isLoading) return true
 
     // Once loaded, apply proper filtering
+    // Check actual admin permissions for security
     if (item.adminOnly && !isAdmin) return false
     if (item.requiredPermission && !canAccess(item.requiredPermission)) return false
+
+    // Filter adminOnly items based on selected adminMode for role simulation
+    if (item.adminOnly && adminMode && adminMode !== 'admin') return false
 
     // Filter based on adminMode if showToRoles is specified
     if (item.showToRoles && adminMode) {
