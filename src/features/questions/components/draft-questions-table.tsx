@@ -209,7 +209,7 @@ export function DraftQuestionsTable() {
     setPreviewOpen(true)
   }
 
-  const updateQuestionStatus = async (questionIds: string[], newStatus: 'published' | 'rejected' | 'under_review') => {
+  const updateQuestionStatus = async (questionIds: string[], newStatus: 'published' | 'rejected' | 'pending_review') => {
     try {
       const { error } = await supabase
         .from('questions')

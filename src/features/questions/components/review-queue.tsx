@@ -53,11 +53,24 @@ export function ReviewQueue() {
     try {
       setLoading(true)
 
-      // Fetch questions assigned to current user with pending_review status
+      // Fetch questions assigned to current user with pending_review status - SELECT only needed fields
       const { data, error } = await supabase
         .from('questions')
         .select(`
-          *,
+          id,
+          title,
+          stem,
+          difficulty,
+          teaching_point,
+          question_references,
+          status,
+          question_set_id,
+          category_id,
+          created_by,
+          reviewer_id,
+          reviewer_feedback,
+          created_at,
+          updated_at,
           question_sets(id, name),
           question_options(id, text, is_correct, explanation, order_index),
           question_images(

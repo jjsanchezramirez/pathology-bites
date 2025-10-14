@@ -110,7 +110,7 @@ export class QuizService {
   private async getQuestionsForQuiz(formData: QuizCreationForm): Promise<QuestionWithDetails[]> {
 
 
-    // Query with proper joins to load images and options
+    // Query with proper joins to load images and options - SELECT only needed fields
     const query = this.getSupabase()
       .from('questions')
       .select(`
@@ -128,9 +128,14 @@ export class QuizService {
         version,
         created_at,
         updated_at,
-        question_options(*),
-        question_images(*, image:images(*)),
-        question_set:question_sets(*)
+        question_options(id, text, is_correct, explanation, order_index),
+        question_images(
+          id,
+          question_section,
+          order_index,
+          image:images(id, url, alt_text, description)
+        ),
+        question_set:question_sets(id, name, source_type, short_form)
       `)
       .eq('status', 'published')
 
@@ -229,7 +234,7 @@ export class QuizService {
 
       const { data: session, error } = await supabaseClient
         .from('quiz_sessions')
-        .select('*')
+        .select('id, user_id, question_ids, status, score, total_questions, correct_answers, incorrect_answers, skipped_answers, time_spent, created_at, updated_at, completed_at')
         .eq('id', sessionId)
         .single()
 
@@ -280,10 +285,28 @@ export class QuizService {
     const { data: questions, error } = await supabaseClient
       .from('questions')
       .select(`
-        *,
-        question_options(*),
-        question_images(*, image:images(*)),
-        question_set:question_sets(*)
+        id,
+        title,
+        stem,
+        teaching_point,
+        question_references,
+        difficulty,
+        category_id,
+        question_set_id,
+        status,
+        created_by,
+        updated_by,
+        version,
+        created_at,
+        updated_at,
+        question_options(id, text, is_correct, explanation, order_index),
+        question_images(
+          id,
+          question_section,
+          order_index,
+          image:images(id, url, alt_text, description)
+        ),
+        question_set:question_sets(id, name, source_type, short_form)
       `)
       .in('id', questionIds)
 

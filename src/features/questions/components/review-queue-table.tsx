@@ -58,15 +58,24 @@ export function ReviewQueueTable() {
     try {
       setLoading(true)
       
-      // Fetch questions that need review
+      // Fetch questions that need review - SELECT only needed fields
       const { data, error } = await supabase
         .from('questions')
         .select(`
-          *,
+          id,
+          title,
+          stem,
+          difficulty,
+          status,
+          question_set_id,
+          created_by,
+          reviewer_id,
+          created_at,
+          updated_at,
           created_by_user:users!questions_created_by_fkey(first_name, last_name),
           question_set:question_sets(name),
-          question_options(*),
-          question_images(*, image:images(*))
+          question_options(id, text, is_correct, order_index),
+          question_images(id, question_section, order_index, image:images(id, url))
         `)
         .in('status', ['pending_review', 'flagged'])
         .order('created_at', { ascending: false })
@@ -136,14 +145,23 @@ export function ReviewQueueTable() {
 
   const handlePreviewQuestion = async (question: QuestionWithReviewDetails) => {
     try {
-      // Fetch complete question data with options and images for preview
+      // Fetch complete question data with options and images for preview - SELECT only needed fields
       const { data: fullQuestion, error } = await supabase
         .from('questions')
         .select(`
-          *,
-          question_options(*),
-          question_images(*, image:images(*)),
-          categories(*)
+          id,
+          title,
+          stem,
+          difficulty,
+          teaching_point,
+          question_references,
+          status,
+          question_set_id,
+          category_id,
+          created_at,
+          question_options(id, text, is_correct, explanation, order_index),
+          question_images(id, question_section, order_index, image:images(id, url, alt_text, description)),
+          categories(id, name, description)
         `)
         .eq('id', question.id)
         .single()

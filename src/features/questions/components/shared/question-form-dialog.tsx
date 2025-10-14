@@ -36,7 +36,7 @@ const questionFormSchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']),
   teaching_point: z.string().min(10, 'Teaching point must be at least 10 characters').max(1000, 'Teaching point too long'),
   question_references: z.string().max(500, 'References too long').optional(),
-  status: z.enum(['draft', 'pending', 'approved', 'flagged']),
+  status: z.enum(['draft', 'pending_review', 'rejected', 'published', 'flagged', 'archived']),
   question_set_id: z.string(),
   category_id: z.string().nullable().optional(),
 });

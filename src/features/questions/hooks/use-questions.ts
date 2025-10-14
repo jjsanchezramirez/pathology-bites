@@ -59,11 +59,25 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
     setError(null);
 
     try {
-      // Build the base query
+      // Build the base query - SELECT only needed fields
       let query = supabase
         .from(TABLE_NAMES.QUESTIONS)
         .select(`
-          *,
+          id,
+          title,
+          stem,
+          difficulty,
+          teaching_point,
+          question_references,
+          status,
+          question_set_id,
+          category_id,
+          created_by,
+          updated_by,
+          created_at,
+          updated_at,
+          published_at,
+          version,
           question_set:question_sets!questions_set_id_fkey(
             id,
             name,

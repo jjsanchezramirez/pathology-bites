@@ -263,7 +263,7 @@ export interface FlagFormData {
   description: string;
 }
 
-// Status configuration for UI - SIMPLIFIED TO 4 STATUSES
+// Status configuration for UI
 export const STATUS_CONFIG = {
   draft: {
     label: 'Draft',
@@ -271,11 +271,6 @@ export const STATUS_CONFIG = {
     description: 'Question is being created or edited'
   },
   pending_review: {
-    label: 'Pending review',
-    color: 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100',
-    description: 'Question is submitted and awaiting review'
-  },
-  pending: {
     label: 'Pending review',
     color: 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100',
     description: 'Question is submitted and awaiting review'
@@ -293,7 +288,7 @@ export const STATUS_CONFIG = {
   flagged: {
     label: 'Flagged',
     color: 'border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100',
-    description: 'Approved question with user-reported issues'
+    description: 'Published question with user-reported issues'
   },
   archived: {
     label: 'Archived',
