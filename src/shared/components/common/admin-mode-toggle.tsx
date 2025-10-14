@@ -22,17 +22,25 @@ export function AdminModeToggle() {
 
     setIsLoading(true)
 
-    // Update admin mode (this will also handle theme switching)
-    setAdminMode(newMode)
+    try {
+      // Update admin mode (this will also handle theme switching)
+      setAdminMode(newMode)
 
-    // Small delay to allow theme to apply
-    await new Promise(resolve => setTimeout(resolve, 100))
+      // Small delay to allow theme to apply
+      await new Promise(resolve => setTimeout(resolve, 100))
 
-    // Navigate to appropriate dashboard
-    if (newMode === 'admin' || newMode === 'creator' || newMode === 'reviewer') {
-      router.push('/admin/dashboard')
-    } else {
-      router.push('/dashboard')
+      // Navigate to appropriate dashboard
+      if (newMode === 'admin' || newMode === 'creator' || newMode === 'reviewer') {
+        router.push('/admin/dashboard')
+      } else {
+        router.push('/dashboard')
+      }
+
+      // Clear loading state after navigation
+      setTimeout(() => setIsLoading(false), 500)
+    } catch (error) {
+      console.error('Error switching mode:', error)
+      setIsLoading(false)
     }
   }
 

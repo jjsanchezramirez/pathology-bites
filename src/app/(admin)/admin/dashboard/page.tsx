@@ -12,10 +12,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { useUserRole } from "@/shared/hooks/use-user-role"
 import { useAuthStatus } from "@/features/auth/hooks/use-auth-status"
+import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context"
 
 export default function AdminDashboardPage() {
   const { role, isLoading: roleLoading } = useUserRole()
   const { user } = useAuthStatus()
+  const { adminMode } = useDashboardTheme()
 
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [activities, setActivities] = useState<RecentActivity[] | null>(null)
@@ -35,10 +37,13 @@ export default function AdminDashboardPage() {
         setError(null)
         console.log('[AdminDashboard] 🔄 FETCHING dashboard data for role:', role, 'user:', user?.id)
 
+        // Use adminMode for determining what data to fetch and show
+        const effectiveRole = adminMode === 'user' ? 'user' : adminMode
+
         // Fetch dashboard stats and activities in parallel
         const [dashboardStats, recentActivities] = await Promise.all([
           clientDashboardService.getDashboardStats(),
-          clientDashboardService.getRecentActivity(role || undefined, user?.id)
+          clientDashboardService.getRecentActivity(effectiveRole as any, user?.id)
         ])
 
         setStats(dashboardStats)
@@ -51,9 +56,11 @@ export default function AdminDashboardPage() {
     }
 
     fetchDashboardData()
-  }, [role, user?.id]) // Removed roleLoading dependency to prevent refetch on tab changes
+  }, [adminMode, user?.id, roleLoading]) // Use adminMode instead of role
 
-  const quickActions = stats ? clientDashboardService.getQuickActions(stats, role || undefined) : []
+  // Use adminMode for determining quick actions
+  const effectiveRole = adminMode === 'user' ? 'user' : adminMode
+  const quickActions = stats ? clientDashboardService.getQuickActions(stats, effectiveRole as any) : []
 
   // Single loading state - show skeleton until ALL data is ready
   // Only show loading if we don't have user yet, or if role is still loading, or if we don't have data yet
@@ -63,10 +70,15 @@ export default function AdminDashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
-          Dashboard
+          {adminMode === 'creator' ? 'Creator Dashboard' :
+           adminMode === 'reviewer' ? 'Reviewer Dashboard' :
+           adminMode === 'user' ? 'Student Dashboard' : 'Admin Dashboard'}
         </h1>
         <p className="text-muted-foreground">
-          Administrative overview and system management.
+          {adminMode === 'creator' ? 'Question creation and content management.' :
+           adminMode === 'reviewer' ? 'Review queue and question approval.' :
+           adminMode === 'user' ? 'Learning progress and quiz performance.' :
+           'Administrative overview and system management.'}
         </p>
       </div>
 
@@ -163,8 +175,8 @@ export default function AdminDashboardPage() {
             <QuickActionsCard actions={quickActions} />
           </div>
 
-          {/* System Status - Expanded */}
-          <SystemStatus />
+          {/* System Status - Only show for admin mode */}
+          {adminMode === 'admin' && <SystemStatus />}
         </>
       )}
     </div>

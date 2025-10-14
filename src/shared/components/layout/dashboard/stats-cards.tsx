@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 import { DashboardStats } from "@/features/dashboard/services/service"
 import { useUserRole } from "@/shared/hooks/use-user-role"
+import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context"
 
 interface StatsCardsProps {
   stats: DashboardStats
@@ -20,6 +21,7 @@ interface StatsCardsProps {
 
 export function StatsCards({ stats }: StatsCardsProps) {
   const { isAdmin, isCreator, isReviewer, canAccess } = useUserRole()
+  const { adminMode } = useDashboardTheme()
 
   const allCards = [
     // Row 1: Platform overview
@@ -97,15 +99,24 @@ export function StatsCards({ stats }: StatsCardsProps) {
     }
   ]
 
-  // Filter cards based on user permissions and roles
+  // Filter cards based on selected admin mode and user permissions
   const cards = allCards.filter(card => {
-    if (card.adminOnly && !isAdmin) return false
+    // Use adminMode to determine what to show, but still check actual permissions
+    const viewingAsAdmin = adminMode === 'admin'
+    const viewingAsCreator = adminMode === 'creator'
+    const viewingAsReviewer = adminMode === 'reviewer'
+    const viewingAsUser = adminMode === 'user'
+
+    // Admin-only cards should only show when viewing as admin AND user has admin permissions
+    if (card.adminOnly && (!viewingAsAdmin || !isAdmin)) return false
+
+    // Still check actual permissions for security
     if (card.permission && !canAccess(card.permission)) return false
 
-    // Check role-specific visibility
+    // Check role-specific visibility based on adminMode
     if (card.showToRoles) {
-      const userRole = isAdmin ? 'admin' : isReviewer ? 'reviewer' : isCreator ? 'creator' : 'user'
-      if (!card.showToRoles.includes(userRole)) return false
+      const currentViewRole = adminMode === 'user' ? 'user' : adminMode
+      if (!card.showToRoles.includes(currentViewRole)) return false
     }
 
     return true
