@@ -21,6 +21,7 @@ import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import { SubmitForReviewDialog } from './submit-for-review-dialog'
 import { QuestionPreviewDialog } from './question-preview-dialog'
 import { BulkSubmitDialog } from './bulk-submit-dialog'
+import { EditQuestionDialog } from './edit-question-dialog'
 import { STATUS_CONFIG, QuestionWithDetails } from '@/features/questions/types/questions'
 import {
   AlertTriangle,
@@ -70,6 +71,8 @@ export function CreatorWorkflowDashboard() {
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false)
   const [selectedQuestionForPreview, setSelectedQuestionForPreview] = useState<QuestionWithDetails | null>(null)
   const [bulkSubmitDialogOpen, setBulkSubmitDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [selectedQuestionForEdit, setSelectedQuestionForEdit] = useState<QuestionWithDetails | null>(null)
 
   const { user } = useAuthStatus()
 
@@ -200,15 +203,35 @@ export function CreatorWorkflowDashboard() {
     }
   }
 
-  const handleEditAndResubmit = (questionId: string) => {
-    // Navigate to edit page
-    window.open(`/admin/create-question?edit=${questionId}`, '_blank')
+  const handleEditAndResubmit = async (questionId: string) => {
+    // Fetch full question details and open edit dialog
+    try {
+      const response = await fetch(`/api/admin/questions/${questionId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setSelectedQuestionForEdit(data.question)
+        setEditDialogOpen(true)
+      } else {
+        toast.error('Failed to load question details')
+      }
+    } catch (error) {
+      console.error('Error loading question:', error)
+      toast.error('Failed to load question details')
+    }
   }
 
   const handleSubmitSuccess = async (reviewerId?: string) => {
     // Refresh the questions list and close dialog
     fetchWorkflowQuestions()
     setSelectedQuestionForSubmit(null)
+  }
+
+  const handleEditSuccess = () => {
+    // Refresh the questions list and close dialog
+    fetchWorkflowQuestions()
+    setSelectedQuestionForEdit(null)
+    setEditDialogOpen(false)
+    toast.success('Question updated successfully')
   }
 
   const handlePreview = async (questionId: string) => {
@@ -737,6 +760,16 @@ export function CreatorWorkflowDashboard() {
         open={previewDialogOpen}
         onOpenChange={setPreviewDialogOpen}
       />
+
+      {/* Edit Question Dialog */}
+      {selectedQuestionForEdit && (
+        <EditQuestionDialog
+          question={selectedQuestionForEdit}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSuccess={handleEditSuccess}
+        />
+      )}
     </div>
   )
 }
