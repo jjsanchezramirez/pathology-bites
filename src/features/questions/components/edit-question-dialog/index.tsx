@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,8 +16,9 @@ import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Loader2, Brain, MessageSquare, Send } from 'lucide-react';
 import { toast } from 'sonner';
-import { QuestionWithDetails } from '@/features/questions/types/questions';
+import { QuestionWithDetails, TagData } from '@/features/questions/types/questions';
 import { useEditQuestionForm, EditQuestionFormData } from '@/features/questions/hooks/use-edit-question-form';
+import { createClient } from '@/shared/services/client';
 
 // Components
 import { ContentTab } from './content-tab';
@@ -45,6 +46,7 @@ export function EditQuestionDialog({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
   const [isRefining, setIsRefining] = useState(false);
+  const [availableTags, setAvailableTags] = useState<TagData[]>([]);
 
   // Use the custom hook for form management
   const {
@@ -84,6 +86,30 @@ export function EditQuestionDialog({
     setShowConfirmDialog(false);
   };
 
+  // Load available tags for AI tag matching
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const supabase = createClient();
+        const { data: tagsData } = await supabase
+          .from('tags')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(100); // Load more tags for better matching
+
+        if (tagsData) {
+          setAvailableTags(tagsData);
+        }
+      } catch (error) {
+        console.error('Error loading tags:', error);
+      }
+    };
+
+    if (open) {
+      loadTags();
+    }
+  }, [open]);
+
   // Get AI model from question set
   const getAIModelFromQuestionSet = () => {
     if (question?.set?.source_type === 'ai_generated' && question?.set?.source_details) {
@@ -91,6 +117,62 @@ export function EditQuestionDialog({
       return sourceDetails.primary_model || 'Llama-3.3-8B-Instruct';
     }
     return 'Llama-3.3-8B-Instruct'; // Default fast model for refinements
+  };
+
+  // Handle AI suggested tags - match existing or create new ones
+  const handleAISuggestedTags = async (suggestedTagNames: string[]) => {
+    try {
+      const supabase = createClient();
+      const newTagIds: string[] = [];
+      const addedTagNames: string[] = [];
+
+      for (const tagName of suggestedTagNames) {
+        const normalizedTagName = tagName.trim().toLowerCase();
+
+        // Try to find existing tag (case-insensitive)
+        const existingTag = availableTags.find(tag =>
+          tag.name.toLowerCase() === normalizedTagName
+        );
+
+        if (existingTag) {
+          // Use existing tag if not already selected
+          if (!selectedTagIds.includes(existingTag.id)) {
+            newTagIds.push(existingTag.id);
+            addedTagNames.push(existingTag.name);
+          }
+        } else {
+          // Create new tag
+          const { data: newTag, error } = await supabase
+            .from('tags')
+            .insert([{ name: tagName.trim() }])
+            .select()
+            .single();
+
+          if (error) {
+            console.error('Error creating tag:', error);
+            continue;
+          }
+
+          if (newTag) {
+            // Add to available tags for future matching
+            setAvailableTags(prev => [...prev, newTag]);
+            newTagIds.push(newTag.id);
+            addedTagNames.push(newTag.name);
+          }
+        }
+      }
+
+      // Add new tags to selected tags
+      if (newTagIds.length > 0) {
+        setSelectedTagIds(prev => [...prev, ...newTagIds]);
+        toast.success(`Added AI suggested tags: ${addedTagNames.join(', ')}`);
+      } else {
+        toast.info('All suggested tags were already selected');
+      }
+    } catch (error) {
+      console.error('Error handling AI suggested tags:', error);
+      toast.error('Failed to add some AI suggested tags');
+    }
   };
 
   // Handle AI refinement
@@ -163,6 +245,11 @@ export function EditQuestionDialog({
         setAnswerOptions(updatedOptions);
       }
 
+      // Update tags if provided by AI
+      if (data.suggested_tags && Array.isArray(data.suggested_tags)) {
+        await handleAISuggestedTags(data.suggested_tags);
+      }
+
       handleUnsavedChanges();
       toast.success('Question refined successfully!');
       setChatMessage('');
@@ -204,7 +291,13 @@ export function EditQuestionDialog({
             </DialogHeader>
 
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full min-h-0">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  form.handleSubmit(handleSubmit)(e);
+                }}
+                className="flex flex-col h-full min-h-0"
+              >
                 <div className="flex-1 flex min-h-0 overflow-hidden">
                   {/* AI Refinement Sidebar */}
                   <div className="w-80 flex-shrink-0 border-r bg-muted/30 flex flex-col">
