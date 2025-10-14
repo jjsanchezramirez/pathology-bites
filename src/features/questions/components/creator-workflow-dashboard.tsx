@@ -56,11 +56,12 @@ interface WorkflowStats {
   drafts: number
   underReview: number
   needsRevision: number
+  flagged: number
 }
 
 export function CreatorWorkflowDashboard() {
   const [questions, setQuestions] = useState<WorkflowQuestion[]>([])
-  const [stats, setStats] = useState<WorkflowStats>({ drafts: 0, underReview: 0, needsRevision: 0 })
+  const [stats, setStats] = useState<WorkflowStats>({ drafts: 0, underReview: 0, needsRevision: 0, flagged: 0 })
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false)
@@ -100,7 +101,8 @@ export function CreatorWorkflowDashboard() {
           updated_at,
           reviewer_feedback,
           rejected_at,
-          question_sets(name)
+          question_sets(name),
+          question_flags(id, flag_type, description, status, created_at)
         `)
         .eq('created_by', user.id)
         .in('status', ['draft', 'pending_review', 'rejected'])
@@ -162,10 +164,15 @@ export function CreatorWorkflowDashboard() {
       setQuestions(questionsWithResubmissionNotes)
 
       // Calculate stats
+      const flaggedCount = workflowQuestions.filter(q =>
+        q.question_flags && q.question_flags.some((f: any) => f.status === 'open')
+      ).length
+
       const newStats = {
         drafts: workflowQuestions.filter(q => q.status === 'draft').length,
         underReview: workflowQuestions.filter(q => q.status === 'pending_review').length,
-        needsRevision: workflowQuestions.filter(q => q.status === 'rejected').length
+        needsRevision: workflowQuestions.filter(q => q.status === 'rejected').length,
+        flagged: flaggedCount
       }
       setStats(newStats)
 
@@ -478,6 +485,26 @@ export function CreatorWorkflowDashboard() {
                           )}
                         </div>
                       )}
+                      {question.question_flags && question.question_flags.filter((f: any) => f.status === 'open').length > 0 && (
+                        <div className="mt-2 p-2 bg-destructive/10 border border-destructive/30 rounded-md">
+                          <div className="flex items-center gap-1 mb-1">
+                            <AlertTriangle className="h-3 w-3 text-destructive" />
+                            <span className="text-xs font-medium text-destructive">
+                              {question.question_flags.filter((f: any) => f.status === 'open').length} Flag{question.question_flags.filter((f: any) => f.status === 'open').length !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          {question.question_flags.filter((f: any) => f.status === 'open').slice(0, 2).map((flag: any, idx: number) => (
+                            <p key={idx} className="text-xs text-destructive/80 line-clamp-1">
+                              • {flag.flag_type.replace(/_/g, ' ')}: {flag.description || 'No description'}
+                            </p>
+                          ))}
+                          {question.question_flags.filter((f: any) => f.status === 'open').length > 2 && (
+                            <p className="text-xs text-destructive/60 mt-1">
+                              +{question.question_flags.filter((f: any) => f.status === 'open').length - 2} more
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -612,6 +639,23 @@ export function CreatorWorkflowDashboard() {
       </div>
 
 
+
+      {/* Flagged Questions Alert */}
+      {stats.flagged > 0 && (
+        <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+            <div>
+              <h3 className="font-semibold text-destructive">
+                {stats.flagged} Question{stats.flagged !== 1 ? 's' : ''} Flagged by Users
+              </h3>
+              <p className="text-sm text-destructive/80">
+                These questions have been removed from circulation and need your attention. Review the flags and make necessary changes before resubmitting.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Workflow Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

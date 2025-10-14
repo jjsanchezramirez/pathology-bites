@@ -193,7 +193,7 @@ export const DIFFICULTY_CONFIG = {
 } as const;
 
 // Review and workflow types - ALIGNED WITH DATABASE
-export type ReviewAction = 'approve' | 'request_changes' | 'reject';
+export type ReviewAction = 'approve' | 'request_changes' | 'reject' | 'flagged';
 export type QuestionStatus = Database['public']['Enums']['question_status'];
 export type FlagType = 'incorrect_answer' | 'unclear_question' | 'outdated_content' | 'incorrect_explanations' | 'other';
 export type FlagStatus = 'open' | 'closed';
