@@ -15,6 +15,7 @@ import {
   Facebook,
   Github,
   Linkedin,
+  ListTodo,
 } from "lucide-react"
 
 export type IconKeys =
@@ -31,6 +32,7 @@ export type IconKeys =
   | "linkedin"
   | "google"
   | "discord"
+  | "listTodo"
 
 export const Icons = {
   spinner: Loader2,
@@ -45,6 +47,7 @@ export const Icons = {
   facebook: Facebook,
   github: Github,
   linkedin: Linkedin,
+  listTodo: ListTodo,
   google: memo((props: LucideProps) => (
     <svg
       aria-hidden="true"

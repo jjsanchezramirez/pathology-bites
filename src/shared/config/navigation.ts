@@ -37,9 +37,9 @@ export const adminNavigationItems: NavigationItem[] = [
     showToRoles: ["admin", "creator", "reviewer"] // Visible to all, but bulk operations only for admin
   },
   {
-    name: "My Questions",
+    name: "My Workflow",
     href: "/admin/my-questions",
-    icon: "FileQuestion",
+    icon: "ListTodo",
     requiredPermission: "questions.create",
     showToRoles: ["admin", "creator"]
   },
@@ -144,9 +144,9 @@ export const adminNavigationSections: NavigationSection[] = [
         showToRoles: ["admin", "creator", "reviewer"] // Visible to all, but bulk operations only for admin
       },
       {
-        name: "My Questions",
+        name: "My Workflow",
         href: "/admin/my-questions",
-        icon: "FileQuestion",
+        icon: "ListTodo",
         requiredPermission: "questions.create",
         showToRoles: ["admin", "creator"]
       },
