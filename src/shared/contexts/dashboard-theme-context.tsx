@@ -5,7 +5,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { dashboardThemes, getThemeById, getDefaultTheme, type DashboardTheme } from '@/shared/config/dashboard-themes'
 import { useUserRole } from '@/shared/hooks/use-user-role'
 
-type AdminMode = 'admin' | 'user'
+type AdminMode = 'admin' | 'creator' | 'reviewer' | 'user'
 
 interface DashboardThemeContextType {
   currentTheme: DashboardTheme
@@ -33,8 +33,8 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
 
   // Get available themes based on admin mode
   const getAvailableThemes = (mode: AdminMode): DashboardTheme[] => {
-    if (mode === 'admin') {
-      // Admin mode: only default theme for now
+    if (mode === 'admin' || mode === 'creator' || mode === 'reviewer') {
+      // Admin/Creator/Reviewer modes: only default theme for now
       return dashboardThemes.filter(theme => theme.id === 'default')
     } else {
       // User mode: notebook and tangerine themes
@@ -44,7 +44,7 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
 
   // Get default theme for mode
   const getDefaultThemeForMode = (mode: AdminMode): DashboardTheme => {
-    if (mode === 'admin') {
+    if (mode === 'admin' || mode === 'creator' || mode === 'reviewer') {
       return getThemeById('default') || getDefaultTheme()
     } else {
       return getThemeById('tangerine') || getDefaultTheme()

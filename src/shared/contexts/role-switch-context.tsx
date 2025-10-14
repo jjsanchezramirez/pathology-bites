@@ -6,7 +6,7 @@ import { useRouter, usePathname } from 'next/navigation'
 
 interface RoleSwitchContextType {
   isSwitching: boolean
-  switchRole: (newMode: 'admin' | 'user', setAdminMode: (mode: 'admin' | 'user') => void) => void
+  switchRole: (newMode: 'admin' | 'creator' | 'reviewer' | 'user', setAdminMode: (mode: 'admin' | 'creator' | 'reviewer' | 'user') => void) => void
 }
 
 const RoleSwitchContext = createContext<RoleSwitchContextType | undefined>(undefined)
@@ -35,7 +35,7 @@ export function RoleSwitchProvider({ children }: RoleSwitchProviderProps) {
     }
   }, [pathname])
 
-  const switchRole = useCallback(async (newMode: 'admin' | 'user', setAdminMode: (mode: 'admin' | 'user') => void) => {
+  const switchRole = useCallback(async (newMode: 'admin' | 'creator' | 'reviewer' | 'user', setAdminMode: (mode: 'admin' | 'creator' | 'reviewer' | 'user') => void) => {
     // 1. Show loading state immediately
     setIsSwitching(true)
 
@@ -46,7 +46,7 @@ export function RoleSwitchProvider({ children }: RoleSwitchProviderProps) {
     await new Promise(resolve => setTimeout(resolve, 100))
 
     // 4. Navigate to new page
-    const targetPath = newMode === 'admin' ? '/admin/dashboard' : '/dashboard'
+    const targetPath = (newMode === 'admin' || newMode === 'creator' || newMode === 'reviewer') ? '/admin/dashboard' : '/dashboard'
     router.push(targetPath)
 
     // isSwitching will be cleared by the useEffect when pathname changes
