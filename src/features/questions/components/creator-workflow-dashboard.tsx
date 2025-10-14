@@ -73,14 +73,18 @@ export function CreatorWorkflowDashboard() {
   const [bulkSubmitDialogOpen, setBulkSubmitDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedQuestionForEdit, setSelectedQuestionForEdit] = useState<QuestionWithDetails | null>(null)
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false)
 
   const { user } = useAuthStatus()
 
-  const fetchWorkflowQuestions = useCallback(async () => {
+  const fetchWorkflowQuestions = useCallback(async (isRefresh = false) => {
     if (!user) return
 
     try {
-      setLoading(true)
+      // Only show loading skeleton on initial load, not on refreshes
+      if (!hasInitiallyLoaded && !isRefresh) {
+        setLoading(true)
+      }
 
       const supabase = createClient()
 
@@ -183,8 +187,9 @@ export function CreatorWorkflowDashboard() {
     } finally {
       setLoading(false)
       setRefreshing(false)
+      setHasInitiallyLoaded(true)
     }
-  }, [user])
+  }, [user, hasInitiallyLoaded])
 
   useEffect(() => {
     fetchWorkflowQuestions()
@@ -192,7 +197,7 @@ export function CreatorWorkflowDashboard() {
 
   const handleRefresh = async () => {
     setRefreshing(true)
-    await fetchWorkflowQuestions()
+    await fetchWorkflowQuestions(true)
   }
 
   const handleSubmitForReview = (questionId: string) => {
@@ -222,13 +227,13 @@ export function CreatorWorkflowDashboard() {
 
   const handleSubmitSuccess = async (reviewerId?: string) => {
     // Refresh the questions list and close dialog
-    fetchWorkflowQuestions()
+    fetchWorkflowQuestions(true)
     setSelectedQuestionForSubmit(null)
   }
 
   const handleEditSuccess = () => {
     // Refresh the questions list and close dialog
-    fetchWorkflowQuestions()
+    fetchWorkflowQuestions(true)
     setSelectedQuestionForEdit(null)
     setEditDialogOpen(false)
     toast.success('Question updated successfully')
@@ -349,7 +354,7 @@ export function CreatorWorkflowDashboard() {
       setSelectedQuestions(new Set())
 
       // Refresh the questions list
-      fetchWorkflowQuestions()
+      fetchWorkflowQuestions(true)
     } catch (error) {
       console.error('Error in bulk submission:', error)
       toast.error('Some questions failed to submit. Please try again.')
