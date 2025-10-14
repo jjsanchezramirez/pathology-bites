@@ -310,13 +310,6 @@ export function EditQuestionDialog({
                       type="submit"
                       variant="outline"
                       disabled={isSubmitting || !hasUnsavedChanges}
-                      onClick={() => {
-                        console.log('Save button clicked');
-                        console.log('Form state:', form.getValues());
-                        console.log('Form errors:', form.formState.errors);
-                        console.log('Has unsaved changes:', hasUnsavedChanges);
-                        console.log('Is submitting:', isSubmitting);
-                      }}
                     >
                       {isSubmitting ? (
                         <>
