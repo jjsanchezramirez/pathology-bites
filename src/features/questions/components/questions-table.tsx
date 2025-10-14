@@ -928,13 +928,13 @@ export function QuestionsTable({ adminMode = 'admin' }: QuestionsTableProps) {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 11 : 10} className="h-24 text-center">
+                <TableCell colSpan={showAdminFeatures ? 11 : 10} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : questions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 11 : 10} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={showAdminFeatures ? 11 : 10} className="h-24 text-center text-muted-foreground">
                   {searchTerm || difficultyFilter !== 'all' || statusFilter !== 'all' || questionSetFilter !== 'all'
                     ? 'No questions found matching your filters'
                     : 'No questions created yet'
