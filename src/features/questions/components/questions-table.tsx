@@ -489,7 +489,11 @@ function QuestionRow({
   );
 }
 
-export function QuestionsTable() {
+interface QuestionsTableProps {
+  adminMode?: string
+}
+
+export function QuestionsTable({ adminMode = 'admin' }: QuestionsTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -502,7 +506,10 @@ export function QuestionsTable() {
 
   // Get user role to determine admin access
   const { role } = useUserRole();
-  const isAdmin = role === 'admin';
+  const isActualAdmin = role === 'admin';
+
+  // Use adminMode to determine what features to show (but still check actual permissions for security)
+  const showAdminFeatures = adminMode === 'admin' && isActualAdmin;
 
   const supabase = createClient();
   const [selectedQuestion, setSelectedQuestion] = useState<QuestionWithDetails | null>(null);
@@ -891,14 +898,14 @@ export function QuestionsTable() {
         questionSets={questionSets}
         selectedQuestions={selectedQuestions}
         onBulkOperation={handleBulkOperation}
-        isAdmin={isAdmin}
+        isAdmin={showAdminFeatures}
       />
 
       <div className="rounded-md border bg-card">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              {isAdmin && (
+              {showAdminFeatures && (
                 <TableHead className="w-[50px]">
                   <Checkbox
                     checked={selectedQuestions.length === questions?.length && questions.length > 0}
@@ -949,7 +956,7 @@ export function QuestionsTable() {
                   onCopyJson={handleCopyJsonQuestion}
                   isSelected={selectedQuestions.includes(question.id)}
                   onSelect={handleSelectQuestion}
-                  isAdmin={isAdmin}
+                  isAdmin={showAdminFeatures}
                 />
               ))
             )}
