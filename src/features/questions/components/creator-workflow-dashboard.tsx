@@ -19,7 +19,8 @@ import { toast } from 'sonner'
 import { createClient } from '@/shared/services/client'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import { SubmitForReviewDialog } from './submit-for-review-dialog'
-import { STATUS_CONFIG } from '@/features/questions/types/questions'
+import { QuestionPreviewDialog } from './question-preview-dialog'
+import { STATUS_CONFIG, QuestionWithDetails } from '@/features/questions/types/questions'
 import {
   AlertTriangle,
   Clock,
@@ -63,6 +64,8 @@ export function CreatorWorkflowDashboard() {
   const [selectedQuestions, setSelectedQuestions] = useState<Set<string>>(new Set())
   const [activeTab, setActiveTab] = useState<string>('needs-revision')
   const [expandedFeedback, setExpandedFeedback] = useState<Set<string>>(new Set())
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false)
+  const [selectedQuestionForPreview, setSelectedQuestionForPreview] = useState<QuestionWithDetails | null>(null)
 
   const { user } = useAuthStatus()
 
@@ -156,6 +159,54 @@ export function CreatorWorkflowDashboard() {
   const handleSubmitSuccess = () => {
     fetchWorkflowQuestions()
     setSelectedQuestionForSubmit(null)
+  }
+
+  const handlePreview = async (questionId: string) => {
+    try {
+      const supabase = createClient()
+
+      // Fetch complete question data with options and images for preview
+      const { data: fullQuestion, error } = await supabase
+        .from('questions')
+        .select(`
+          *,
+          question_options(*),
+          question_images(*, image:images(*)),
+          categories(*),
+          question_sets(
+            id,
+            name,
+            source_type,
+            short_form
+          ),
+          created_by_user:users!questions_created_by_fkey(
+            first_name,
+            last_name
+          ),
+          updated_by_user:users!questions_updated_by_fkey(
+            first_name,
+            last_name
+          ),
+          reviewer_user:users!questions_reviewer_id_fkey(
+            first_name,
+            last_name
+          )
+        `)
+        .eq('id', questionId)
+        .single()
+
+      if (error) {
+        console.error('Error fetching full question data:', error)
+        toast.error('Failed to load question details')
+        return
+      }
+
+      setSelectedQuestionForPreview(fullQuestion)
+      setPreviewDialogOpen(true)
+    } catch (error) {
+      console.error('Error fetching question for preview:', error)
+      toast.error('Failed to load question preview')
+    }
   }
 
   const handleSelectQuestion = (questionId: string, checked: boolean) => {
@@ -312,6 +363,16 @@ export function CreatorWorkflowDashboard() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
+                      {/* Preview button for all statuses */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handlePreview(question.id)}
+                        title="Preview question"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+
                       {question.status === 'rejected' && (
                         <Button
                           size="sm"
@@ -345,10 +406,11 @@ export function CreatorWorkflowDashboard() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => toast.info('Question is under review')}
+                          disabled
+                          title="Question is under review"
                         >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
+                          <Clock className="h-4 w-4 mr-1" />
+                          Under Review
                         </Button>
                       )}
                     </div>
@@ -553,6 +615,13 @@ export function CreatorWorkflowDashboard() {
           onSuccess={handleSubmitSuccess}
         />
       )}
+
+      {/* Preview Dialog */}
+      <QuestionPreviewDialog
+        question={selectedQuestionForPreview}
+        open={previewDialogOpen}
+        onOpenChange={setPreviewDialogOpen}
+      />
     </div>
   )
 }
