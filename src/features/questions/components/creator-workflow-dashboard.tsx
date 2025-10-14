@@ -19,6 +19,7 @@ import { toast } from 'sonner'
 import { createClient } from '@/shared/services/client'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import { SubmitForReviewDialog } from './submit-for-review-dialog'
+import { STATUS_CONFIG } from '@/features/questions/types/questions'
 import {
   AlertTriangle,
   Clock,
@@ -112,7 +113,7 @@ export function CreatorWorkflowDashboard() {
       if (newStats.needsRevision > 0) {
         setActiveTab('needs-revision')
       } else if (newStats.drafts > 0) {
-        setActiveTab('ready-to-submit')
+        setActiveTab('drafts')
       } else {
         setActiveTab('under-review')
       }
@@ -186,16 +187,15 @@ export function CreatorWorkflowDashboard() {
   }
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'rejected':
-        return <Badge className="bg-destructive text-destructive-foreground">Needs Revision</Badge>
-      case 'draft':
-        return <Badge className="bg-primary text-primary-foreground">Ready to Submit</Badge>
-      case 'pending_review':
-        return <Badge className="bg-secondary text-secondary-foreground">Under Review</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
+    const statusConfig = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]
+    return (
+      <Badge
+        variant="outline"
+        className={`${statusConfig?.color || 'border-gray-300 bg-gray-50 text-gray-700'} text-xs`}
+      >
+        {statusConfig?.label || status}
+      </Badge>
+    )
   }
 
   // Group questions by status
@@ -225,7 +225,7 @@ export function CreatorWorkflowDashboard() {
               {selectedInTab.length} question{selectedInTab.length !== 1 ? 's' : ''} selected
             </span>
             <div className="flex gap-2">
-              {activeTab === 'ready-to-submit' && (
+              {activeTab === 'drafts' && (
                 <Button size="sm" onClick={() => toast.info('Bulk submit coming soon')}>
                   <Send className="h-4 w-4 mr-2" />
                   Submit Selected for Review
@@ -425,9 +425,9 @@ export function CreatorWorkflowDashboard() {
             <AlertTriangle className="h-4 w-4" />
             Needs Revision ({stats.needsRevision})
           </TabsTrigger>
-          <TabsTrigger value="ready-to-submit" className="flex items-center gap-2">
+          <TabsTrigger value="drafts" className="flex items-center gap-2">
             <Edit3 className="h-4 w-4" />
-            Ready to Submit ({stats.drafts})
+            Drafts ({stats.drafts})
           </TabsTrigger>
           <TabsTrigger value="under-review" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
@@ -447,12 +447,12 @@ export function CreatorWorkflowDashboard() {
           {renderQuestionTable(rejectedQuestions)}
         </TabsContent>
 
-        <TabsContent value="ready-to-submit" className="space-y-4">
+        <TabsContent value="drafts" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-medium">Draft Questions Ready to Submit</h3>
+              <h3 className="text-lg font-medium">Draft Questions</h3>
               <p className="text-sm text-muted-foreground">
-                These questions are complete and ready for review. Submit them when you're satisfied with the content.
+                These questions are in draft status. Edit and submit them for review when ready.
               </p>
             </div>
           </div>
