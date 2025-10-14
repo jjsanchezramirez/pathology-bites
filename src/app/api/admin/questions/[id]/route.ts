@@ -124,10 +124,16 @@ export async function GET(
       )
     }
 
-    // Flatten the tags structure for easier consumption
+    // Flatten the tags structure and add user names for easier consumption
     const questionWithFlattenedTags = {
       ...question,
-      tags: question.question_tags?.map((qt: { tag: any }) => qt.tag).filter(Boolean) || []
+      tags: question.question_tags?.map((qt: { tag: any }) => qt.tag).filter(Boolean) || [],
+      created_by_name: question.created_by_user
+        ? `${question.created_by_user.first_name || ''} ${question.created_by_user.last_name || ''}`.trim() || 'Unknown'
+        : 'Unknown',
+      updated_by_name: question.updated_by_user
+        ? `${question.updated_by_user.first_name || ''} ${question.updated_by_user.last_name || ''}`.trim() || 'Unknown'
+        : 'Unknown'
     }
 
     return NextResponse.json({
