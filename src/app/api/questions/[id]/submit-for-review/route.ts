@@ -103,7 +103,6 @@ export async function POST(
 
     // Update question to pending_review
     // Clear reviewer_feedback when resubmitting (feedback has been addressed)
-    // Store resubmission_notes if provided (for rejected → pending_review transitions)
     const { data: updatedQuestion, error: updateError } = await supabase
       .from('questions')
       .update({
@@ -112,7 +111,6 @@ export async function POST(
         reviewer_feedback: null, // Clear old feedback
         rejected_at: null,
         rejected_by: null,
-        resubmission_notes: resubmission_notes || null, // Store creator's change notes
         updated_at: new Date().toISOString(),
         updated_by: user.id,
       })
