@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "clean": "rm -rf .next",
+    "clean-build": "rm -rf .next && npm run build",
     "lint:fix": "eslint --fix .",
     "cleanup": "npm dedupe && npm prune && eslint --fix .",
     "dev:turbo": "next dev --turbo",
