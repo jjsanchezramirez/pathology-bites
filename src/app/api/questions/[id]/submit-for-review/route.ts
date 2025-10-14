@@ -126,6 +126,34 @@ export async function POST(
       )
     }
 
+    // Create review record if resubmission notes are provided (for rejected → pending_review transitions)
+    if (resubmission_notes && question.status === 'rejected') {
+      try {
+        const { error: reviewError } = await supabase
+          .from('question_reviews')
+          .insert({
+            question_id: questionId,
+            reviewer_id: user.id, // Creator is the "reviewer" of their own changes
+            action: 'resubmitted',
+            feedback: null,
+            changes_made: {
+              resubmission_notes: resubmission_notes.trim(),
+              timestamp: new Date().toISOString(),
+              previous_status: 'rejected',
+              new_status: 'pending_review'
+            }
+          })
+
+        if (reviewError) {
+          console.error('Error creating resubmission review record:', reviewError)
+          // Don't fail the request if review record creation fails
+        }
+      } catch (error) {
+        console.error('Unexpected error creating resubmission review record:', error)
+        // Don't fail the request if review record creation fails
+      }
+    }
+
     // Send notification to reviewer
     try {
       const notificationTriggers = new NotificationTriggers()

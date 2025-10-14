@@ -49,6 +49,7 @@ export function SubmitForReviewDialog({
 }: SubmitForReviewDialogProps) {
   const [reviewers, setReviewers] = useState<Reviewer[]>([])
   const [selectedReviewerId, setSelectedReviewerId] = useState<string>('')
+  const [resubmissionNotes, setResubmissionNotes] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -84,13 +85,19 @@ export function SubmitForReviewDialog({
       return
     }
 
+    if (isResubmission && !resubmissionNotes.trim()) {
+      toast.error('Please describe what changes you made')
+      return
+    }
+
     setSubmitting(true)
     try {
       const response = await fetch(`/api/questions/${questionId}/submit-for-review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          reviewer_id: selectedReviewerId
+          reviewer_id: selectedReviewerId,
+          resubmission_notes: isResubmission ? resubmissionNotes.trim() : null
         }),
       })
 
@@ -103,6 +110,7 @@ export function SubmitForReviewDialog({
       onSuccess()
       onOpenChange(false)
       setSelectedReviewerId('')
+      setResubmissionNotes('')
     } catch (error) {
       console.error('Error submitting question:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to submit question')
@@ -118,7 +126,7 @@ export function SubmitForReviewDialog({
           <DialogTitle>{isResubmission ? 'Resubmit Question for Review' : 'Submit Question for Review'}</DialogTitle>
           <DialogDescription>
             {isResubmission
-              ? 'Select a reviewer to re-evaluate this question after addressing their feedback.'
+              ? 'Describe the changes you made and select a reviewer to re-evaluate this question.'
               : 'Select a reviewer to evaluate this question. They will be able to approve or reject it with feedback.'
             }
           </DialogDescription>
@@ -131,7 +139,25 @@ export function SubmitForReviewDialog({
             <p className="text-sm text-muted-foreground line-clamp-2">{questionTitle}</p>
           </div>
 
-
+          {/* Resubmission Notes - Only for rejected questions */}
+          {isResubmission && (
+            <div className="space-y-2">
+              <Label htmlFor="resubmission-notes">
+                What changes did you make? <span className="text-destructive">*</span>
+              </Label>
+              <Textarea
+                id="resubmission-notes"
+                placeholder="Describe what you changed to address the reviewer's feedback..."
+                value={resubmissionNotes}
+                onChange={(e) => setResubmissionNotes(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                Help the reviewer understand what you changed since their last review.
+              </p>
+            </div>
+          )}
 
           {/* Reviewer Selection */}
           <div className="space-y-2">

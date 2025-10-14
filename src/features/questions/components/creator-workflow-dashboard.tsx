@@ -46,6 +46,8 @@ interface WorkflowQuestion {
   reviewer_feedback?: string
   rejected_at?: string
   question_set?: { name: string }
+  resubmission_notes?: string | null
+  resubmission_date?: string | null
 }
 
 interface WorkflowStats {
@@ -103,7 +105,52 @@ export function CreatorWorkflowDashboard() {
       }
 
       const workflowQuestions = data || []
-      setQuestions(workflowQuestions)
+
+      // Fetch resubmission notes for rejected questions
+      const rejectedQuestionIds = workflowQuestions
+        .filter(q => q.status === 'rejected')
+        .map(q => q.id)
+
+      let questionsWithResubmissionNotes = workflowQuestions
+
+      if (rejectedQuestionIds.length > 0) {
+        try {
+          const { data: resubmissionData, error: resubmissionError } = await supabase
+            .from('question_reviews')
+            .select('question_id, changes_made, created_at')
+            .in('question_id', rejectedQuestionIds)
+            .eq('action', 'resubmitted')
+            .order('created_at', { ascending: false })
+
+          if (!resubmissionError && resubmissionData) {
+            // Create a map of question_id to latest resubmission notes
+            const resubmissionMap = new Map()
+            resubmissionData.forEach(review => {
+              if (!resubmissionMap.has(review.question_id) && review.changes_made?.resubmission_notes) {
+                resubmissionMap.set(review.question_id, {
+                  notes: review.changes_made.resubmission_notes,
+                  date: review.created_at
+                })
+              }
+            })
+
+            // Add resubmission notes to questions
+            questionsWithResubmissionNotes = workflowQuestions.map(question => {
+              const resubmissionInfo = resubmissionMap.get(question.id)
+              return {
+                ...question,
+                resubmission_notes: resubmissionInfo?.notes || null,
+                resubmission_date: resubmissionInfo?.date || null
+              }
+            })
+          }
+        } catch (error) {
+          console.error('Error fetching resubmission notes:', error)
+          // Continue without resubmission notes if there's an error
+        }
+      }
+
+      setQuestions(questionsWithResubmissionNotes)
 
       // Calculate stats
       const newStats = {
@@ -329,6 +376,24 @@ export function CreatorWorkflowDashboard() {
                         <Badge variant="outline" className="text-xs">
                           {question.question_set.name}
                         </Badge>
+                      )}
+                      {question.resubmission_notes && (
+                        <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md">
+                          <div className="flex items-center gap-1 mb-1">
+                            <MessageSquare className="h-3 w-3 text-blue-600" />
+                            <span className="text-xs font-medium text-blue-900 dark:text-blue-100">
+                              Changes Made
+                            </span>
+                          </div>
+                          <p className="text-xs text-blue-800 dark:text-blue-300 line-clamp-2">
+                            {question.resubmission_notes}
+                          </p>
+                          {question.resubmission_date && (
+                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                              {formatDistanceToNow(new Date(question.resubmission_date))} ago
+                            </p>
+                          )}
+                        </div>
                       )}
                     </div>
                   </TableCell>

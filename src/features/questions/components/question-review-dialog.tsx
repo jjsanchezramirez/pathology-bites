@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/shared/components/ui/button'
 import {
   Dialog,
@@ -32,7 +32,8 @@ import {
   STATUS_CONFIG
 } from '@/features/questions/types/questions'
 import { createClient } from '@/shared/services/client'
-import { Eye, Clock, User, FileText } from 'lucide-react'
+import { Eye, Clock, User, FileText, MessageSquare } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 
 interface QuestionReviewDialogProps {
   question: QuestionWithReviewDetails | null
@@ -50,7 +51,46 @@ export function QuestionReviewDialog({
   const [selectedAction, setSelectedAction] = useState<ReviewAction | ''>('')
   const [feedback, setFeedback] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [resubmissionNotes, setResubmissionNotes] = useState<string | null>(null)
+  const [loadingResubmissionNotes, setLoadingResubmissionNotes] = useState(false)
   const supabase = createClient()
+
+  // Fetch resubmission notes when dialog opens
+  useEffect(() => {
+    const fetchResubmissionNotes = async () => {
+      if (!question || !open) {
+        setResubmissionNotes(null)
+        return
+      }
+
+      setLoadingResubmissionNotes(true)
+      try {
+        const { data: resubmissionInfo, error } = await supabase
+          .from('question_reviews')
+          .select('changes_made, created_at')
+          .eq('question_id', question.id)
+          .eq('action', 'resubmitted')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+          console.error('Error fetching resubmission notes:', error)
+        } else if (resubmissionInfo?.changes_made?.resubmission_notes) {
+          setResubmissionNotes(resubmissionInfo.changes_made.resubmission_notes)
+        } else {
+          setResubmissionNotes(null)
+        }
+      } catch (error) {
+        console.error('Unexpected error fetching resubmission notes:', error)
+        setResubmissionNotes(null)
+      } finally {
+        setLoadingResubmissionNotes(false)
+      }
+    }
+
+    fetchResubmissionNotes()
+  }, [question, open, supabase])
 
   const handleSubmit = async () => {
     // CACHE BUSTER: Force browser to reload this code - v2.0
@@ -229,6 +269,37 @@ export function QuestionReviewDialog({
             </div>
 
             <Separator />
+
+            {/* Resubmission Notes - Show if creator provided change notes */}
+            {resubmissionNotes && (
+              <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-blue-900 dark:text-blue-100 flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    Creator's Changes Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-blue-800 dark:text-blue-300 whitespace-pre-wrap">
+                    {resubmissionNotes}
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                    The creator provided this summary of changes made since the last review.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {loadingResubmissionNotes && (
+              <Card className="border-gray-200 bg-gray-50">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                    Loading change notes...
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Question Content */}
             <div className="space-y-4">
