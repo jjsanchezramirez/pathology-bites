@@ -211,16 +211,22 @@ export class NotificationGenerators {
     description: string,
     achievementData: Record<string, any> = {}
   ): Promise<void> {
-    await notificationsService.createAchievementNotification(userId, {
-      title,
-      message: description,
-      metadata: {
-        achievement_type: achievementType,
-        achievement_data: achievementData
-      }
-    })
+    try {
+      // Use the existing admin notification system for achievement notifications
+      // Generate a unique source ID for this achievement
+      const sourceId = `achievement_${achievementType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-    console.log(`🏆 Achievement notification created for user ${userId}: ${title}`)
+      await notificationsService.createAdminNotification(
+        userId,
+        'admin_alert', // Use admin_alert as the source type for achievements
+        sourceId
+      )
+
+      console.log(`🏆 Achievement notification created for user ${userId}: ${title}`)
+    } catch (error) {
+      console.error('Error creating achievement notification:', error)
+      // Don't throw - this is a non-critical feature
+    }
   }
 
   // Reminder Notifications
