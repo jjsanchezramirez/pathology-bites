@@ -1,5 +1,6 @@
 import { createClient } from '@/shared/services/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { NotificationTriggers } from '@/shared/services/notification-triggers'
 
 /**
  * POST /api/questions/:id/submit-for-review
@@ -125,6 +126,20 @@ export async function POST(
         { error: `Failed to submit question: ${updateError.message}` },
         { status: 500 }
       )
+    }
+
+    // Send notification to reviewer
+    try {
+      const notificationTriggers = new NotificationTriggers()
+      await notificationTriggers.onQuestionSubmittedForReview(
+        reviewer_id,
+        questionId,
+        updatedQuestion.title,
+        user.id
+      )
+    } catch (error) {
+      console.error('Error sending submission notification:', error)
+      // Don't fail the request if notification fails
     }
 
     return NextResponse.json({

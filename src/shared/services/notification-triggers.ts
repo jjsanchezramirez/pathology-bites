@@ -145,6 +145,78 @@ export class NotificationTriggers {
     }
   }
 
+  // Question review triggers
+  async onQuestionApproved(
+    creatorId: string,
+    questionId: string,
+    questionTitle: string,
+    reviewerId: string
+  ): Promise<void> {
+    try {
+      await notificationGenerators.createAchievementNotification(
+        creatorId,
+        'question_approved',
+        '✅ Question Approved!',
+        `Great news! Your question "${questionTitle}" has been approved and is now live for all users.`,
+        {
+          question_id: questionId,
+          reviewer_id: reviewerId,
+          action: 'approved'
+        }
+      )
+    } catch (error) {
+      console.error('Error creating question approval notification:', error)
+    }
+  }
+
+  async onQuestionRejected(
+    creatorId: string,
+    questionId: string,
+    questionTitle: string,
+    reviewerId: string,
+    feedback: string
+  ): Promise<void> {
+    try {
+      await notificationGenerators.createAchievementNotification(
+        creatorId,
+        'question_rejected',
+        '📝 Question Needs Revision',
+        `Your question "${questionTitle}" requires some changes. Please review the feedback and resubmit when ready.`,
+        {
+          question_id: questionId,
+          reviewer_id: reviewerId,
+          feedback: feedback,
+          action: 'rejected'
+        }
+      )
+    } catch (error) {
+      console.error('Error creating question rejection notification:', error)
+    }
+  }
+
+  async onQuestionSubmittedForReview(
+    reviewerId: string,
+    questionId: string,
+    questionTitle: string,
+    creatorId: string
+  ): Promise<void> {
+    try {
+      await notificationGenerators.createAchievementNotification(
+        reviewerId,
+        'question_submitted_for_review',
+        '👀 New Question to Review',
+        `A new question "${questionTitle}" has been submitted for your review.`,
+        {
+          question_id: questionId,
+          creator_id: creatorId,
+          action: 'submitted_for_review'
+        }
+      )
+    } catch (error) {
+      console.error('Error creating question submission notification:', error)
+    }
+  }
+
   // Learning path progress trigger
   async onLearningPathProgress(
     userId: string,
