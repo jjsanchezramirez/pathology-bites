@@ -390,9 +390,130 @@ export function DoubleSidebarAnkomaViewer({
 
   return (
     <div className={cn("w-full h-full min-h-0 flex gap-4 p-4", className)}>
-      {/* Left Sidebar - Decks */}
+      {/* Mobile: Backdrop overlay */}
+      {!leftSidebarCollapsed && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setLeftSidebarCollapsed(true)}
+        />
+      )}
+
+      {/* Mobile: Combined Sidebar (Decks + Categories stacked) */}
       <div className={cn(
-        "transition-all duration-300 overflow-hidden flex-shrink-0",
+        "md:hidden fixed inset-y-0 left-0 z-50 bg-background border-r transition-transform duration-300 w-64 overflow-y-auto",
+        leftSidebarCollapsed ? "-translate-x-full" : "translate-x-0"
+      )}>
+        <div className="p-4 space-y-4">
+          {/* Close button */}
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-base font-semibold">Ankoma Deck Viewer</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLeftSidebarCollapsed(true)}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* Decks Section */}
+          <Card className="border">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <BookOpen className="h-4 w-4" />
+                Decks
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 px-3 pb-3">
+              <ScrollArea className="h-auto max-h-[30vh]">
+                <div className="space-y-1.5">
+                  {decks.map((deck) => (
+                    <div
+                      key={deck.id}
+                      className={cn(
+                        "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
+                        "hover:bg-muted/50",
+                        selectedDeckId === deck.id && "bg-primary/10 border border-primary/20"
+                      )}
+                      onClick={() => handleDeckSelect(deck.id)}
+                    >
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="font-medium truncate">{deck.name}</span>
+                        <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                          {deck.totalCards}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+
+          {/* Categories Section */}
+          {selectedDeck && (
+            <Card className="border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">
+                  {selectedDeck.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0 px-3 pb-3">
+                <ScrollArea className="h-auto max-h-[50vh]">
+                  <div className="space-y-0.5">
+                    {selectedDeck.categories.map((category) => (
+                      <div key={category.id}>
+                        <div
+                          className={cn(
+                            "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
+                            "hover:bg-muted/50",
+                            selectedCategoryId === category.id && "bg-primary/10 border border-primary/20"
+                          )}
+                          onClick={() => handleCategorySelect(category.id)}
+                        >
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-medium truncate">{category.name}</span>
+                            <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                              {category.cardCount}
+                            </Badge>
+                          </div>
+                        </div>
+                        {category.subcategories && category.subcategories.length > 0 && (
+                          <div className="ml-3 mt-0.5 space-y-0.5">
+                            {category.subcategories.map((sub) => (
+                              <div
+                                key={sub.name}
+                                className={cn(
+                                  "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
+                                  "hover:bg-muted/50",
+                                  selectedSubcategory === sub.name && "bg-primary/10 border border-primary/20"
+                                )}
+                                onClick={() => handleSubcategorySelect(category.id, sub.name)}
+                              >
+                                <div className="flex items-center justify-between gap-1">
+                                  <span className="truncate">{sub.name}</span>
+                                  <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                                    {sub.cardCount}
+                                  </Badge>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop: Left Sidebar - Decks */}
+      <div className={cn(
+        "hidden md:block transition-all duration-300 overflow-hidden flex-shrink-0",
         leftSidebarCollapsed ? "w-0" : "w-52"
       )}>
         {!leftSidebarCollapsed && (
@@ -439,9 +560,9 @@ export function DoubleSidebarAnkomaViewer({
         )}
       </div>
 
-      {/* Middle Sidebar - Categories */}
+      {/* Desktop: Right Sidebar - Categories */}
       <div className={cn(
-        "transition-all duration-300 overflow-hidden flex-shrink-0",
+        "hidden md:block transition-all duration-300 overflow-hidden flex-shrink-0",
         rightSidebarCollapsed ? "w-0" : "w-60"
       )}>
         {!rightSidebarCollapsed && (
@@ -534,8 +655,19 @@ export function DoubleSidebarAnkomaViewer({
         {/* Header */}
         <div className="border-b bg-background p-4">
           <div className="flex items-center justify-between gap-2">
-            {/* Left: Sidebar toggles */}
+            {/* Left: Sidebar toggle */}
             <div className="flex items-center gap-2">
+              {/* Mobile: Hamburger menu */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
+                title="Toggle menu"
+                className="md:hidden h-9 w-9 p-0"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+
               {/* Desktop: Single toggle for both */}
               <Button
                 variant="ghost"
@@ -553,30 +685,6 @@ export function DoubleSidebarAnkomaViewer({
                   {leftSidebarCollapsed && rightSidebarCollapsed ? 'Show' : 'Hide'} Sidebar
                 </span>
               </Button>
-
-              {/* Mobile: Individual toggles */}
-              <div className="md:hidden flex items-center gap-1">
-                <Button
-                  variant={leftSidebarCollapsed ? "outline" : "default"}
-                  size="sm"
-                  onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
-                  title="Toggle decks"
-                  className="h-8"
-                >
-                  <BookOpen className="h-4 w-4 mr-1" />
-                  <span className="text-xs">Decks</span>
-                </Button>
-                <Button
-                  variant={rightSidebarCollapsed ? "outline" : "default"}
-                  size="sm"
-                  onClick={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
-                  title="Toggle categories"
-                  className="h-8"
-                >
-                  <Folder className="h-4 w-4 mr-1" />
-                  <span className="text-xs">Cats</span>
-                </Button>
-              </div>
             </div>
 
             <div className="text-center flex-1 min-w-0">
