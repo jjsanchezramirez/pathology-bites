@@ -300,9 +300,12 @@ export function InteractiveAnkiViewer({
       <style jsx>{`
         .inline-image {
           max-width: 100%;
+          max-height: 600px;
+          width: auto;
           height: auto;
           display: block;
           margin: 0.5rem auto;
+          object-fit: contain;
         }
         .inline-image-small {
           max-width: 2rem;

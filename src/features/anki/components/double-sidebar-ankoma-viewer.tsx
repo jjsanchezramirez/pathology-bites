@@ -23,7 +23,9 @@ import {
   FolderOpen,
   FileText,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  X,
+  Menu
 } from 'lucide-react'
 import { InteractiveAnkiViewer } from './interactive-anki-viewer'
 import { AnkomaData, AnkomaSection, AnkomaViewerProps, AnkiCard } from '../types/anki-card'
@@ -387,18 +389,40 @@ export function DoubleSidebarAnkomaViewer({
   const selectedCategory = selectedDeck?.categories.find(c => c.id === selectedCategoryId)
 
   return (
-    <div className={cn("w-full h-full min-h-0 flex gap-4 p-4", className)}>
+    <div className={cn("w-full h-full min-h-0 flex gap-4 p-2 md:p-4 relative", className)}>
+      {/* Mobile Overlay */}
+      {(!leftSidebarCollapsed || !rightSidebarCollapsed) && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => {
+            setLeftSidebarCollapsed(true)
+            setRightSidebarCollapsed(true)
+          }}
+        />
+      )}
+
       {/* Left Sidebar - Decks */}
       <div className={cn(
         "transition-all duration-300 overflow-hidden flex-shrink-0",
-        leftSidebarCollapsed ? "w-0" : "w-52"
+        "md:relative fixed left-0 top-0 h-full z-50 md:z-auto",
+        leftSidebarCollapsed ? "w-0 md:w-0" : "w-64 md:w-52"
       )}>
         {!leftSidebarCollapsed && (
-        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border">
+        <Card className="h-fit md:max-h-[calc(100vh-120px)] max-h-[100vh] flex flex-col rounded-lg md:rounded-lg rounded-none border md:border-l-0">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <BookOpen className="h-4 w-4" />
-              Decks
+            <CardTitle className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                Decks
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="md:hidden h-8 w-8 p-0"
+                onClick={() => setLeftSidebarCollapsed(true)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0 flex-1 min-h-0 px-3 pb-3">
@@ -440,13 +464,22 @@ export function DoubleSidebarAnkomaViewer({
       {/* Middle Sidebar - Categories */}
       <div className={cn(
         "transition-all duration-300 overflow-hidden flex-shrink-0",
-        rightSidebarCollapsed ? "w-0" : "w-60"
+        "md:relative fixed right-0 top-0 h-full z-50 md:z-auto",
+        rightSidebarCollapsed ? "w-0 md:w-0" : "w-64 md:w-60"
       )}>
         {!rightSidebarCollapsed && (
-        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border">
+        <Card className="h-fit md:max-h-[calc(100vh-120px)] max-h-[100vh] flex flex-col rounded-lg md:rounded-lg rounded-none border md:border-r-0">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">
-              {selectedDeck ? `${selectedDeck.name}` : 'Categories'}
+            <CardTitle className="flex items-center justify-between text-sm">
+              <span>{selectedDeck ? `${selectedDeck.name}` : 'Categories'}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="md:hidden h-8 w-8 p-0"
+                onClick={() => setRightSidebarCollapsed(true)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0 flex-1 min-h-0 px-3 pb-3">
@@ -528,9 +561,31 @@ export function DoubleSidebarAnkomaViewer({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0 relative">
+        {/* Mobile Floating Action Buttons */}
+        <div className="md:hidden fixed bottom-4 left-4 right-4 z-30 flex justify-between gap-2 pointer-events-none">
+          <Button
+            variant="default"
+            size="lg"
+            onClick={() => setLeftSidebarCollapsed(false)}
+            className="pointer-events-auto shadow-lg"
+          >
+            <BookOpen className="h-5 w-5 mr-2" />
+            Decks
+          </Button>
+          <Button
+            variant="default"
+            size="lg"
+            onClick={() => setRightSidebarCollapsed(false)}
+            className="pointer-events-auto shadow-lg"
+          >
+            <Folder className="h-5 w-5 mr-2" />
+            Categories
+          </Button>
+        </div>
+
         {/* Header */}
-        <div className="border-b bg-background p-4">
+        <div className="border-b bg-background p-2 md:p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button
@@ -538,7 +593,7 @@ export function DoubleSidebarAnkomaViewer({
                 size="sm"
                 onClick={handleToggleBothSidebars}
                 title="Toggle sidebars"
-                className="flex items-center gap-2"
+                className="hidden md:flex items-center gap-2"
               >
                 {leftSidebarCollapsed && rightSidebarCollapsed ? (
                   <PanelLeftOpen className="h-4 w-4" />
@@ -550,28 +605,28 @@ export function DoubleSidebarAnkomaViewer({
                 </span>
               </Button>
             </div>
-            
-            <div className="text-center">
-              <h1 className="text-xl font-semibold">
+
+            <div className="text-center flex-1 min-w-0">
+              <h1 className="text-base md:text-xl font-semibold truncate">
                 {selectedDeck?.name || 'Ankoma Deck'}
               </h1>
               {selectedCategory && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs md:text-sm text-muted-foreground truncate">
                   {selectedCategory.name}
                   {selectedSubcategory && ` → ${selectedSubcategory}`}
                 </p>
               )}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               {/* Card Navigation Info */}
               {currentCards.length > 0 && (
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="font-medium">
-                    Card {currentCardIndex + 1} of {currentCards.length}
+                <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm">
+                  <span className="font-medium whitespace-nowrap">
+                    {currentCardIndex + 1}/{currentCards.length}
                   </span>
                   {isShuffled && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs hidden md:inline-flex">
                       Shuffled
                     </Badge>
                   )}
@@ -579,22 +634,24 @@ export function DoubleSidebarAnkomaViewer({
               )}
 
               {/* Controls */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleShuffle}
                   disabled={currentCards.length <= 1}
+                  className="h-8 w-8 md:h-9 md:w-9 p-0"
                 >
-                  <Shuffle className="h-4 w-4" />
+                  <Shuffle className="h-3 w-3 md:h-4 md:w-4" />
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleReset}
                   disabled={currentCards.length === 0}
+                  className="h-8 w-8 md:h-9 md:w-9 p-0"
                 >
-                  <RotateCcw className="h-4 w-4" />
+                  <RotateCcw className="h-3 w-3 md:h-4 md:w-4" />
                 </Button>
               </div>
             </div>
@@ -602,7 +659,7 @@ export function DoubleSidebarAnkomaViewer({
         </div>
 
         {/* Card Content */}
-        <div className="flex-1 overflow-auto p-4 sm:p-6 min-h-0 pb-16">
+        <div className="flex-1 overflow-auto p-2 sm:p-4 md:p-6 min-h-0 pb-20 md:pb-16">
           {currentCard ? (
             <InteractiveAnkiViewer
               card={currentCard}
