@@ -12,7 +12,7 @@ export default function CheckEmailPage() {
         description="We've sent you a password reset link"
         content="Please check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder."
         footer={
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="w-full">
             <Link href="/login">Back to login</Link>
           </Button>
         }

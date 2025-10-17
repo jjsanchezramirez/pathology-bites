@@ -68,7 +68,8 @@ export const USER_ROLES: Database['public']['Enums']['user_role'][] = [
 export const USER_STATUSES: Database['public']['Enums']['user_status'][] = [
   'active',
   'inactive',
-  'suspended'
+  'suspended',
+  'deleted'
 ] as const
 
 export const USER_TYPES: Database['public']['Enums']['user_type'][] = [

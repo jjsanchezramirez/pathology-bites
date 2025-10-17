@@ -36,11 +36,13 @@ export async function GET(request: NextRequest) {
     let countQuery = supabase
       .from('users')
       .select('*', { count: 'exact', head: true })
+      .is('deleted_at', null) // Exclude soft-deleted users
 
     // Build query for data
     let dataQuery = supabase
       .from('users')
       .select('*')
+      .is('deleted_at', null) // Exclude soft-deleted users
 
     // Apply search filter
     if (search) {
@@ -180,7 +182,7 @@ export async function DELETE(request: NextRequest) {
     // Check if the user to be deleted exists
     const { data: targetUser, error: targetUserError } = await supabase
       .from('users')
-      .select('id, email, role')
+      .select('id, email, role, user_type')
       .eq('id', userId)
       .single()
 
@@ -188,6 +190,10 @@ export async function DELETE(request: NextRequest) {
       console.error('Target user not found:', targetUserError)
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
+
+    // Determine deletion type based on role
+    const isContentCreator = ['admin', 'creator', 'reviewer'].includes(targetUser.role)
+    const deletionType = isContentCreator ? 'soft_delete' : 'hard_delete'
 
     // Create admin client for auth operations
     let adminClient
@@ -200,8 +206,8 @@ export async function DELETE(request: NextRequest) {
       }, { status: 500 })
     }
 
-    // Delete user from auth - this will automatically trigger deletion from public.users
-    // and cleanup of related data via the handle_deleted_user() trigger function
+    // Delete user from auth system
+    // Trigger will handle soft delete (admin/creator/reviewer) or hard delete (students)
     try {
       const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(userId)
 
@@ -224,8 +230,12 @@ export async function DELETE(request: NextRequest) {
         }
       }
 
-      console.log('Successfully deleted user:', { userId, email: targetUser.email })
-      return NextResponse.json({ success: true, message: 'User deleted successfully' })
+      console.log('Successfully deleted user:', { userId, email: targetUser.email, deletionType })
+      return NextResponse.json({
+        success: true,
+        message: `User ${isContentCreator ? 'soft' : 'hard'} deleted successfully`,
+        deletionType
+      })
 
     } catch (authDeleteError) {
       console.error('Exception during user deletion:', {

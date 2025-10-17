@@ -1,25 +1,81 @@
 'use client'
 
-import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Input } from '@/shared/components/ui/input'
 import { Textarea } from '@/shared/components/ui/textarea'
 import { Button } from '@/shared/components/ui/button'
 import { Label } from '@/shared/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { Badge } from '@/shared/components/ui/badge'
-import { Brain, MessageSquare, Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
 import { FormState } from '../multi-step-question-form'
+import { getModelById } from '@/shared/config/ai-models'
+import { createClient } from '@/shared/services/client'
 
 interface StepContentEditProps {
   formState: FormState
   updateFormState: (updates: Partial<FormState>) => void
+  questionSetAIModel?: string | null // AI model from the question set
 }
 
-export function StepContentEdit({ formState, updateFormState }: StepContentEditProps) {
-  const [chatMessage, setChatMessage] = useState('')
-  const [isRefining, setIsRefining] = useState(false)
+interface Category {
+  id: string
+  name: string
+}
+
+interface QuestionSet {
+  id: string
+  name: string
+}
+
+interface Tag {
+  id: string
+  name: string
+}
+
+export function StepContentEdit({ formState, updateFormState, questionSetAIModel }: StepContentEditProps) {
+  const [categories, setCategories] = useState<Category[]>([])
+  const [questionSets, setQuestionSets] = useState<QuestionSet[]>([])
+  const [tags, setTags] = useState<Tag[]>([])
+
+  // Determine which AI model to use for refinement
+  // Priority: 1. Question set's AI model, 2. Selected AI model from Step 1, 3. Default fast model
+  const refinementModel = questionSetAIModel || formState.selectedAIModel || 'Llama-3.3-8B-Instruct'
+
+  // Get friendly model name for display
+  const modelInfo = getModelById(refinementModel)
+  const modelDisplayName = modelInfo?.name || refinementModel
+
+  // Fetch metadata for AI quick actions
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      const supabase = createClient()
+
+      // Fetch categories
+      const { data: categoriesData } = await supabase
+        .from('categories')
+        .select('id, name')
+        .order('name')
+
+      // Fetch question sets
+      const { data: questionSetsData } = await supabase
+        .from('question_sets')
+        .select('id, name')
+        .order('name')
+
+      // Fetch tags
+      const { data: tagsData } = await supabase
+        .from('tags')
+        .select('id, name')
+        .order('name')
+
+      if (categoriesData) setCategories(categoriesData)
+      if (questionSetsData) setQuestionSets(questionSetsData)
+      if (tagsData) setTags(tagsData)
+    }
+
+    fetchMetadata()
+  }, [])
 
   // Debug: Log formState when component mounts or updates
   console.log('📝 StepContentEdit - Current formState:', {
@@ -27,74 +83,10 @@ export function StepContentEdit({ formState, updateFormState }: StepContentEditP
     stem: formState.stem?.substring(0, 50) + '...',
     answerOptionsCount: formState.answerOptions?.length,
     answerOptions: formState.answerOptions,
-    teaching_point: formState.teaching_point?.substring(0, 50) + '...'
+    teaching_point: formState.teaching_point?.substring(0, 50) + '...',
+    refinementModel,
+    modelDisplayName
   })
-
-  // Handle AI refinement
-  const handleAIRefinement = async () => {
-    if (!chatMessage.trim()) {
-      toast.error('Please enter a refinement request')
-      return
-    }
-
-    setIsRefining(true)
-    try {
-      const requestBody = {
-        mode: 'refinement',
-        instructions: chatMessage,
-        currentQuestion: {
-          title: formState.title,
-          stem: formState.stem,
-          answer_options: formState.answerOptions,
-          teaching_point: formState.teaching_point,
-          question_references: formState.question_references
-        },
-        model: 'Llama-3.3-8B-Instruct' // Use fast model for refinements
-      }
-
-      console.log('Sending refinement request:', requestBody)
-
-      const response = await fetch('/api/admin/ai-generate-question', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
-        console.error('API Error:', response.status, errorData)
-        throw new Error(errorData.error || `HTTP ${response.status}: Failed to refine question`)
-      }
-
-      const data = await response.json()
-      console.log('Refinement response:', data)
-
-      // Check if we got valid data back
-      if (!data || (!data.stem && !data.title)) {
-        throw new Error('Invalid response from AI service')
-      }
-
-      // Update form state with refined content
-      updateFormState({
-        title: data.title || formState.title,
-        stem: data.stem || formState.stem,
-        answerOptions: data.answer_options || formState.answerOptions,
-        teaching_point: data.teaching_point || formState.teaching_point,
-        question_references: data.question_references || formState.question_references
-      })
-
-      toast.success('Question refined successfully!')
-      setChatMessage('')
-      setShowRefinementDialog(false)
-    } catch (error) {
-      console.error('AI refinement error:', error)
-      toast.error(`Failed to refine question: ${error.message}`)
-    } finally {
-      setIsRefining(false)
-    }
-  }
 
   // Handle answer option changes
   const updateAnswerOption = (index: number, field: string, value: any) => {
@@ -112,133 +104,116 @@ export function StepContentEdit({ formState, updateFormState }: StepContentEditP
   }
 
   return (
-    <div className="space-y-6">
-
-
+    <div className="space-y-8">
       {/* Question Title */}
-      <div className="space-y-2">
-        <Label htmlFor="title">Question Title</Label>
+      <div className="space-y-2.5">
+        <Label htmlFor="title" className="text-base font-semibold">Question Title</Label>
         <Input
           id="title"
           value={formState.title}
           onChange={(e) => updateFormState({ title: e.target.value })}
           placeholder="Brief descriptive title for the question"
+          className="text-base"
         />
       </div>
 
       {/* Question Stem */}
-      <div className="space-y-2">
-        <Label htmlFor="stem">Question Stem</Label>
+      <div className="space-y-2.5">
+        <Label htmlFor="stem" className="text-base font-semibold">Question Stem</Label>
         <Textarea
           id="stem"
           value={formState.stem}
           onChange={(e) => updateFormState({ stem: e.target.value })}
           placeholder="The main question text..."
           rows={6}
+          className="text-base resize-none"
         />
       </div>
 
-      {/* Answer Options */}
-      <div className="space-y-3">
-        <Label>Answer Options</Label>
-        {formState.answerOptions.map((option, index) => (
-          <div key={index} className={`border rounded-lg p-3 space-y-2 ${option.is_correct ? 'border-green-500 bg-green-50' : 'border-border'}`}>
-            {/* Option Row */}
-            <div className="flex items-center gap-3">
-              <input
-                type="radio"
-                name="correct-answer"
-                checked={option.is_correct}
-                onChange={() => updateAnswerOption(index, 'is_correct', !option.is_correct)}
-                className="h-4 w-4 text-green-600 focus:ring-green-500"
-              />
-              <Label className="text-sm font-medium min-w-[60px]">
-                Option {String.fromCharCode(65 + index)}:
-              </Label>
-              <Input
-                value={option.text}
-                onChange={(e) => updateAnswerOption(index, 'text', e.target.value)}
-                placeholder="Answer option text..."
-                className="flex-1"
-              />
-              {option.is_correct && (
-                <Badge variant="default" className="ml-2">Correct</Badge>
-              )}
-            </div>
+        {/* Answer Options */}
+        <div className="space-y-3">
+          <Label className="text-base font-semibold">Answer Options</Label>
+          <div className="space-y-3">
+            {formState.answerOptions.map((option, index) => (
+              <Card
+                key={index}
+                className={`transition-all ${
+                  option.is_correct
+                    ? 'border-primary bg-primary/5 shadow-sm'
+                    : 'border-border hover:border-muted-foreground/30'
+                }`}
+              >
+                <CardContent className="p-4 space-y-3">
+                  {/* Option Row */}
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="correct-answer"
+                      checked={option.is_correct}
+                      onChange={() => updateAnswerOption(index, 'is_correct', !option.is_correct)}
+                      className="h-5 w-5 text-primary focus:ring-primary cursor-pointer"
+                    />
+                    <Label className="text-sm font-semibold min-w-[70px] cursor-pointer" onClick={() => updateAnswerOption(index, 'is_correct', true)}>
+                      Option {String.fromCharCode(65 + index)}
+                    </Label>
+                    <Input
+                      value={option.text}
+                      onChange={(e) => updateAnswerOption(index, 'text', e.target.value)}
+                      placeholder="Answer option text..."
+                      className="flex-1"
+                    />
+                    {option.is_correct && (
+                      <Badge variant="default" className="ml-2 bg-primary">Correct</Badge>
+                    )}
+                  </div>
 
-            {/* Explanation Row */}
-            <div className="flex items-start gap-3">
-              <div className="w-4"></div> {/* Spacer to align with radio button */}
-              <Label className="text-xs text-muted-foreground min-w-[60px] pt-1">
-                Explanation:
-              </Label>
-              <Textarea
-                value={option.explanation}
-                onChange={(e) => updateAnswerOption(index, 'explanation', e.target.value)}
-                placeholder="Explanation for this option..."
-                rows={1}
-                className="flex-1 text-sm"
-              />
-            </div>
+                  {/* Explanation Row */}
+                  <div className="flex items-start gap-3 pl-8">
+                    <Label className="text-xs text-muted-foreground min-w-[70px] pt-2">
+                      Explanation
+                    </Label>
+                    <Textarea
+                      value={option.explanation}
+                      onChange={(e) => updateAnswerOption(index, 'explanation', e.target.value)}
+                      placeholder="Explanation for this option..."
+                      rows={2}
+                      className="flex-1 text-sm resize-none"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        ))}
-      </div>
-
-      {/* Teaching Point */}
-      <div className="space-y-2">
-        <Label htmlFor="teaching_point">Teaching Point</Label>
-        <Textarea
-          id="teaching_point"
-          value={formState.teaching_point}
-          onChange={(e) => updateFormState({ teaching_point: e.target.value })}
-          placeholder="Key learning point or takeaway..."
-          rows={4}
-        />
-      </div>
-
-      {/* References */}
-      <div className="space-y-2">
-        <Label htmlFor="question_references">References (Optional)</Label>
-        <Textarea
-          id="question_references"
-          value={formState.question_references}
-          onChange={(e) => updateFormState({ question_references: e.target.value })}
-          placeholder="Citations, sources, or references..."
-          rows={3}
-        />
-      </div>
-
-      {/* AI Refinement */}
-      <div className="space-y-2 pt-4 border-t">
-        <Label htmlFor="ai_refinement">Refine Question with AI</Label>
-        <div className="flex gap-2">
-          <Textarea
-            id="ai_refinement"
-            value={chatMessage}
-            onChange={(e) => setChatMessage(e.target.value)}
-            placeholder="e.g., 'Make the stem more concise' or 'Add more clinical context'"
-            rows={2}
-            className="flex-1"
-          />
-          <Button
-            onClick={handleAIRefinement}
-            disabled={isRefining || !chatMessage.trim()}
-            className="self-end"
-          >
-            {isRefining ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Refining...
-              </>
-            ) : (
-              <>
-                <Brain className="h-4 w-4 mr-2" />
-                Refine
-              </>
-            )}
-          </Button>
         </div>
-      </div>
+
+        {/* Teaching Point */}
+        <div className="space-y-2.5">
+          <Label htmlFor="teaching_point" className="text-base font-semibold">Teaching Point</Label>
+          <Textarea
+            id="teaching_point"
+            value={formState.teaching_point}
+            onChange={(e) => updateFormState({ teaching_point: e.target.value })}
+            placeholder="Key learning point or takeaway..."
+            rows={4}
+            className="resize-none"
+          />
+        </div>
+
+        {/* References */}
+        <div className="space-y-2.5">
+          <Label htmlFor="question_references" className="text-base font-semibold">
+            References <span className="text-muted-foreground font-normal">(Optional)</span>
+          </Label>
+          <Textarea
+            id="question_references"
+            value={formState.question_references}
+            onChange={(e) => updateFormState({ question_references: e.target.value })}
+            placeholder="Citations, sources, or references..."
+            rows={3}
+            className="resize-none"
+          />
+        </div>
+
     </div>
   )
 }

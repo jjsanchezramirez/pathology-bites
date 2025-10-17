@@ -34,7 +34,7 @@ export function StatusCard({
         </CardContent>
       )}
       {footer && (
-        <CardFooter className="flex justify-center">
+        <CardFooter className="flex flex-col justify-center">
           {footer}
         </CardFooter>
       )}

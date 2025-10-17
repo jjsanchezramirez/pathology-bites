@@ -12,9 +12,6 @@ import { AuthCard } from "@/features/auth/components/ui/auth-card"
 import { FormField } from "@/features/auth/components/ui/form-field"
 import { FormButton } from "@/features/auth/components/ui/form-button"
 import { createClient } from '@/shared/services/client'
-import { Button } from '@/shared/components/ui/button'
-import { Separator } from '@/shared/components/ui/separator'
-import { Key, Mail } from 'lucide-react'
 
 // Form schema definition
 const formSchema = z.object({
@@ -35,7 +32,6 @@ export function ForgotPasswordForm({
   ...props
 }: ForgotPasswordFormProps) {
   const [loading, setLoading] = useState(false)
-  const [resetType, setResetType] = useState<'reset' | 'magic_link'>('reset')
   const router = useRouter()
   const supabase = createClient()
 
@@ -63,36 +59,19 @@ export function ForgotPasswordForm({
     try {
       setLoading(true)
 
-      if (resetType === 'magic_link') {
-        // Send magic link for instant login
-        const { error } = await supabase.auth.signInWithOtp({
-          email: values.email,
-          options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/confirm?type=magiclink&next=/dashboard`
-          }
-        })
+      // Send password reset link
+      const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/confirm?type=recovery&next=/reset-password`
 
-        if (error) {
-          toast.error(error.message)
-          return
-        }
+      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
+        redirectTo: redirectTo,
+      })
 
-        toast.success('Magic link sent! Check your email to log in instantly.')
-      } else {
-        // Send password reset link
-        const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/confirm?type=recovery&next=/reset-password`
-
-        const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-          redirectTo: redirectTo,
-        })
-
-        if (error) {
-          toast.error(error.message)
-          return
-        }
-
-        toast.success('Password reset link sent! Check your email.')
+      if (error) {
+        toast.error(error.message)
+        return
       }
+
+      toast.success('Password reset link sent! Check your email.')
 
       // Success - redirect to check email page
       router.push('/check-email')
@@ -106,12 +85,8 @@ export function ForgotPasswordForm({
 
   return (
     <AuthCard
-      title={resetType === 'magic_link' ? 'Get a magic link' : 'Reset your password'}
-      description={
-        resetType === 'magic_link'
-          ? 'Enter your email and we\'ll send you a magic link to log in instantly'
-          : 'Enter your email and we\'ll send you a link to reset your password'
-      }
+      title="Reset your password"
+      description="Enter your email and we'll send you a link to reset your password"
       className={className}
       footer={
         <Link href="/login" className="text-sm text-muted-foreground hover:text-primary">
@@ -120,68 +95,26 @@ export function ForgotPasswordForm({
       }
       {...props}
     >
-      <div className="space-y-6">
-        {/* Reset Type Selection */}
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant={resetType === 'reset' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setResetType('reset')}
-              className="flex-1"
-              disabled={loading}
-            >
-              <Key className="h-4 w-4 mr-2" />
-              Reset Password
-            </Button>
-            <Button
-              type="button"
-              variant={resetType === 'magic_link' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setResetType('magic_link')}
-              className="flex-1"
-              disabled={loading}
-            >
-              <Mail className="h-4 w-4 mr-2" />
-              Magic Link
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {resetType === 'reset'
-              ? 'Create a new password for your account'
-              : 'Log in instantly without entering a password'
-            }
-          </p>
-        </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          id="email"
+          label="Email"
+          type="email"
+          placeholder="name@example.com"
+          autoComplete="email"
+          error={isSubmitted ? errors.email?.message : undefined}
+          disabled={loading}
+          {...register("email")}
+        />
 
-        <Separator />
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            id="email"
-            label="Email"
-            type="email"
-            placeholder="name@example.com"
-            autoComplete="email"
-            error={isSubmitted ? errors.email?.message : undefined}
-            disabled={loading}
-            {...register("email")}
-          />
-
-          <FormButton
-            type="submit"
-            fullWidth
-            disabled={loading}
-          >
-            {loading ? (
-              resetType === 'magic_link' ? 'Sending magic link...' : 'Sending reset link...'
-            ) : (
-              resetType === 'magic_link' ? 'Send magic link' : 'Send reset link'
-            )}
-          </FormButton>
-        </form>
-      </div>
+        <FormButton
+          type="submit"
+          fullWidth
+          disabled={loading}
+        >
+          {loading ? 'Sending reset link...' : 'Send reset link'}
+        </FormButton>
+      </form>
     </AuthCard>
   )
 }

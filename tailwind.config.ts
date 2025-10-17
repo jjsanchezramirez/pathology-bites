@@ -78,6 +78,7 @@ module.exports = {
         "float": "float 6s ease-in-out infinite",
         "float-slow": "float 8s ease-in-out infinite",
         "float-fast": "float 4s ease-in-out infinite",
+        "float-delayed": "float 6s ease-in-out infinite 1s",
         "fade-in": "fade-in 0.6s ease-in-out forwards",
         "gradient": "gradient 8s ease infinite",
       },

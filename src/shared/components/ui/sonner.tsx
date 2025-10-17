@@ -6,9 +6,13 @@ import { Toaster as Sonner, ToasterProps } from "sonner"
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
 
+  // Force light theme for toasts to ensure consistent appearance
+  // The theme prop controls the toast styling, not the page theme
+  const toastTheme = "light" as const
+
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={toastTheme}
       className="toaster group"
       position="bottom-right"
       richColors

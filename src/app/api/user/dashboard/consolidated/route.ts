@@ -156,22 +156,13 @@ export async function GET(request: NextRequest) {
 // Optimized stats calculation
 async function getDashboardStats(supabase: any, userId: string) {
   try {
-    // Try to use the existing optimized RPC function
-    const { data: rpcResult, error: rpcError } = await supabase.rpc('get_user_dashboard_stats', {
-      target_user_id: userId
-    })
-
-    if (!rpcError && rpcResult) {
-      return rpcResult[0] || getDefaultStats()
-    }
-
-    // Fallback to optimized manual calculation
+    // Fetch quiz sessions and attempts for stats calculation
     const [sessionsResult, attemptsResult] = await Promise.all([
       supabase
         .from('quiz_sessions')
         .select('id, score, total_questions, correct_answers, created_at, status')
         .eq('user_id', userId),
-      
+
       supabase
         .from('quiz_attempts')
         .select('question_id, is_correct, attempted_at')
@@ -187,7 +178,7 @@ async function getDashboardStats(supabase: any, userId: string) {
 
     const completedSessions = sessions.filter(s => s.status === 'completed')
     const totalQuizzes = completedSessions.length
-    const averageScore = totalQuizzes > 0 
+    const averageScore = totalQuizzes > 0
       ? Math.round(completedSessions.reduce((sum, s) => sum + (s.score || 0), 0) / totalQuizzes)
       : 0
 

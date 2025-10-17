@@ -303,22 +303,24 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
   const [isGenerating, setIsGenerating] = useState(false)
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto space-y-8">
       {/* JSON Import Section */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <FileJson className="h-4 w-4" />
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <div className="p-2 rounded-lg bg-blue-100">
+              <FileJson className="h-5 w-5 text-blue-600" />
+            </div>
             Import from JSON
           </CardTitle>
-          <CardDescription className="text-sm">
+          <CardDescription>
             Paste JSON from WSI Question Generator or drag & drop file
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           <div
-            className={`border-2 border-dashed rounded-lg p-4 transition-colors ${
-              isDragging ? 'border-primary bg-primary/5' : 'border-muted'
+            className={`border-2 border-dashed rounded-lg p-8 transition-all ${
+              isDragging ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-muted hover:border-muted-foreground/30'
             }`}
             onDragOver={(e) => {
               e.preventDefault()
@@ -327,10 +329,11 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
           >
-            <div className="flex items-center justify-center gap-3">
-              <Upload className="h-6 w-6 text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center gap-3">
+              <Upload className="h-8 w-8 text-muted-foreground" />
               <div className="text-center">
-                <p className="text-xs font-medium">Drop JSON file or paste below</p>
+                <p className="text-sm font-medium">Drop JSON file here</p>
+                <p className="text-xs text-muted-foreground mt-1">or paste in the text area below</p>
               </div>
             </div>
           </div>
@@ -339,57 +342,59 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
             placeholder='{"title": "Question Title", "stem": "Question text...", ...}'
             value={formState.jsonData}
             onChange={(e) => handleJSONInput(e.target.value)}
-            rows={4}
-            className="font-mono text-xs"
+            rows={5}
+            className="font-mono text-xs resize-none"
           />
 
           {jsonError && (
-            <div className="flex items-center gap-2 text-xs text-red-600">
-              <AlertCircle className="h-3 w-3" />
-              <span>{jsonError}</span>
-            </div>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{jsonError}</AlertDescription>
+            </Alert>
           )}
         </CardContent>
       </Card>
 
       {/* OR Divider */}
-      <div className="relative">
+      <div className="relative py-4">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
+          <span className="w-full border-t border-muted" />
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or</span>
+        <div className="relative flex justify-center text-sm uppercase">
+          <span className="bg-background px-4 text-muted-foreground font-medium">Or</span>
         </div>
       </div>
 
       {/* AI Generation from Educational Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Brain className="h-5 w-5 text-primary" />
+            </div>
             AI Generation from Educational Content
           </CardTitle>
           <CardDescription>
             Select AI model and educational content to generate a question
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           {/* AI Model Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="ai-model">AI Model</Label>
+          <div className="space-y-3">
+            <Label htmlFor="ai-model" className="text-base font-semibold">AI Model</Label>
             <Select
               value={formState.selectedAIModel || ''}
               onValueChange={(value) => updateFormState({ selectedAIModel: value })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-11">
                 <SelectValue placeholder="Select an AI model..." />
               </SelectTrigger>
               <SelectContent>
                 {ACTIVE_AI_MODELS.filter(model => model.available).map((model) => (
                   <SelectItem key={model.id} value={model.id}>
                     <div className="flex items-center justify-between w-full">
-                      <span>{model.name}</span>
-                      <span className="text-xs text-muted-foreground ml-2">
+                      <span className="font-medium">{model.name}</span>
+                      <span className="text-xs text-muted-foreground ml-3">
                         {model.provider}
                       </span>
                     </div>
@@ -398,7 +403,8 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
               </SelectContent>
             </Select>
             {formState.selectedAIModel && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <Brain className="h-4 w-4" />
                 Selected: {ACTIVE_AI_MODELS.find(m => m.id === formState.selectedAIModel)?.name}
               </p>
             )}
@@ -407,8 +413,8 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
           {/* Content Selection - Only show if model is selected */}
           {formState.selectedAIModel && (
             <>
-              <div className="border-t pt-4">
-                <Label className="text-sm font-medium mb-3 block">Educational Content</Label>
+              <div className="border-t pt-6 space-y-3">
+                <Label className="text-base font-semibold">Educational Content</Label>
                 <ContentSelector
                   selectedContent={formState.selectedContent}
                   onContentSelect={handleContentSelected}
@@ -416,7 +422,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
               </div>
 
               {formState.selectedContent && (
-                <div className="pt-4 border-t">
+                <div className="pt-6 border-t space-y-3">
                   <Button
                     onClick={handleGenerateFromContent}
                     disabled={isGenerating}
@@ -425,18 +431,18 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
                   >
                     {isGenerating ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                         Generating Question...
                       </>
                     ) : (
                       <>
-                        <Brain className="h-4 w-4 mr-2" />
+                        <Brain className="h-5 w-5 mr-2" />
                         Generate Question with AI
                       </>
                     )}
                   </Button>
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
-                    Using {ACTIVE_AI_MODELS.find(m => m.id === formState.selectedAIModel)?.name} to create a complete question with 5 answer options and explanations
+                  <p className="text-sm text-muted-foreground text-center">
+                    Using <span className="font-medium">{ACTIVE_AI_MODELS.find(m => m.id === formState.selectedAIModel)?.name}</span> to create a complete question with 5 answer options and explanations
                   </p>
                 </div>
               )}

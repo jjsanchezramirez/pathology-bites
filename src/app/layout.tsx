@@ -2,6 +2,7 @@
 import { ConditionalThemeProvider } from '@/shared/components/common/conditional-theme-provider'
 import { Toaster as SonnerToaster } from "@/shared/components/ui/sonner"
 import { ConnectionStatus } from "@/shared/components/common/connection-status"
+import { CookieConsentBanner } from "@/shared/components/common/cookie-consent-banner"
 
 import { cn } from '@/shared/utils'
 import "@/styles/globals.css"
@@ -156,6 +157,7 @@ export default async function RootLayout({
             </div>
             <SonnerToaster />
             <ConnectionStatus />
+            <CookieConsentBanner />
             {/* Cache clear button temporarily removed due to SSR error */}
           </ConditionalThemeProvider>
         </AnalyticsProvider>

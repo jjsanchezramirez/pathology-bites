@@ -40,7 +40,7 @@ export async function DELETE(request: NextRequest) {
     // Get user data before deletion for audit purposes
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('id, email, first_name, last_name, role')
+      .select('id, email, first_name, last_name, role, user_type')
       .eq('id', user.id)
       .single()
 
@@ -48,6 +48,10 @@ export async function DELETE(request: NextRequest) {
       console.error('Error fetching user data:', userError)
       return NextResponse.json({ error: 'Failed to fetch user data' }, { status: 500 })
     }
+
+    // Determine deletion type based on role
+    const isContentCreator = ['admin', 'creator', 'reviewer'].includes(userData.role)
+    const deletionType = isContentCreator ? 'soft_delete' : 'hard_delete'
 
     // Create audit log before deletion
     await supabase
@@ -61,12 +65,13 @@ export async function DELETE(request: NextRequest) {
         new_values: null,
         metadata: {
           self_deletion: true,
+          deletion_type: deletionType,
           timestamp: new Date().toISOString()
         }
       })
 
-    // Delete user from auth system - this will automatically trigger deletion from public.users
-    // and cleanup of related data via the handle_deleted_user() trigger function
+    // Delete user from auth system
+    // Trigger will handle soft delete (admin/creator/reviewer) or hard delete (students)
     try {
       const adminClient = createAdminClient()
       const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(user.id)

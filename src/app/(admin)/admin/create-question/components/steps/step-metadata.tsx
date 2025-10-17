@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Label } from '@/shared/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { Button } from '@/shared/components/ui/button'
-import { Brain, Loader2 } from 'lucide-react'
+import { Brain, Loader2, Sparkles } from 'lucide-react'
 import { FormState } from '../multi-step-question-form'
 import { TagAutocomplete } from '../tag-autocomplete'
 import { createClient } from '@/shared/services/client'
@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 interface StepMetadataProps {
   formState: FormState
   updateFormState: (updates: Partial<FormState>) => void
+  initialQuestionSetId?: string
 }
 
 interface Category {
@@ -34,7 +35,7 @@ interface Tag {
   created_at: string
 }
 
-export function StepMetadata({ formState, updateFormState }: StepMetadataProps) {
+export function StepMetadata({ formState, updateFormState, initialQuestionSetId }: StepMetadataProps) {
   const [categories, setCategories] = useState<Category[]>([])
   const [questionSets, setQuestionSets] = useState<QuestionSet[]>([])
   const [tags, setTags] = useState<Tag[]>([])
@@ -42,6 +43,7 @@ export function StepMetadata({ formState, updateFormState }: StepMetadataProps) 
   const [loadingQuestionSets, setLoadingQuestionSets] = useState(true)
   const [loadingTags, setLoadingTags] = useState(true)
   const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false)
+  const [hasAutoAssignedQuestionSet, setHasAutoAssignedQuestionSet] = useState(false)
 
   // Fetch categories
   useEffect(() => {
@@ -96,6 +98,31 @@ export function StepMetadata({ formState, updateFormState }: StepMetadataProps) 
 
     fetchTags()
   }, [])
+
+  // Auto-assign question set if provided and not already set
+  useEffect(() => {
+    if (
+      !formState.question_set_id &&
+      !hasAutoAssignedQuestionSet &&
+      !loadingQuestionSets &&
+      questionSets.length > 0
+    ) {
+      // If there's an initial question set ID, use that
+      if (initialQuestionSetId) {
+        updateFormState({ question_set_id: initialQuestionSetId })
+        setHasAutoAssignedQuestionSet(true)
+        console.log('Auto-assigned question set from initial data:', initialQuestionSetId)
+      } else {
+        // Otherwise, auto-assign PathOutlines as the default
+        const pathOutlinesSet = questionSets.find(set => set.name === 'PathOutlines')
+        if (pathOutlinesSet) {
+          updateFormState({ question_set_id: pathOutlinesSet.id })
+          setHasAutoAssignedQuestionSet(true)
+          console.log('Auto-assigned default question set: PathOutlines')
+        }
+      }
+    }
+  }, [initialQuestionSetId, formState.question_set_id, hasAutoAssignedQuestionSet, loadingQuestionSets, questionSets, updateFormState])
 
   // Auto-suggest metadata based on question content
   const handleAIMetadataSuggestion = async () => {
@@ -154,133 +181,133 @@ export function StepMetadata({ formState, updateFormState }: StepMetadataProps) 
   }
 
   return (
-    <div className="space-y-6">
-      {/* AI Metadata Suggestion */}
-      <Card>
-        <CardHeader>
-          <CardTitle>AI Metadata Suggestions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Let AI analyze your question content and suggest appropriate category, question set, difficulty, and tags.
-            </p>
-            <Button
-              onClick={handleAIMetadataSuggestion}
-              disabled={isGeneratingMetadata || !formState.title || !formState.stem}
-              variant="outline"
-            >
-              {isGeneratingMetadata ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Brain className="h-4 w-4 mr-2" />
-                  Suggest Metadata
-                </>
-              )}
-            </Button>
+    <div className="max-w-4xl mx-auto space-y-8">
+      {/* AI Metadata Suggestion Banner */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-lg bg-primary/10">
+              <Brain className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1 space-y-3">
+              <div>
+                <h3 className="font-semibold text-base mb-1">AI Metadata Suggestions</h3>
+                <p className="text-sm text-muted-foreground">
+                  Let AI analyze your question content and suggest appropriate category, question set, difficulty, and tags.
+                </p>
+              </div>
+              <Button
+                onClick={handleAIMetadataSuggestion}
+                disabled={isGeneratingMetadata || !formState.title || !formState.stem}
+                variant="default"
+                size="default"
+              >
+                {isGeneratingMetadata ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Suggest All Metadata
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Category Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Category</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="category">Select Category *</Label>
-            <Select
-              value={formState.category_id}
-              onValueChange={(value) => updateFormState({ category_id: value })}
-            >
-              <SelectTrigger id="category">
-                <SelectValue placeholder={loadingCategories ? "Loading..." : "Select a category"} />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-3">
+        <Label htmlFor="category" className="text-base font-semibold">
+          Category <span className="text-destructive">*</span>
+        </Label>
+        <Select
+          value={formState.category_id}
+          onValueChange={(value) => updateFormState({ category_id: value })}
+        >
+          <SelectTrigger id="category" className="h-11">
+            <SelectValue placeholder={loadingCategories ? "Loading..." : "Select a category"} />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Question Set Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Question Set</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="question_set">Select Question Set *</Label>
-            <Select
-              value={formState.question_set_id}
-              onValueChange={(value) => updateFormState({ question_set_id: value })}
-            >
-              <SelectTrigger id="question_set">
-                <SelectValue placeholder={loadingQuestionSets ? "Loading..." : "Select a question set"} />
-              </SelectTrigger>
-              <SelectContent>
-                {questionSets.map((set) => (
-                  <SelectItem key={set.id} value={set.id}>
-                    {set.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-3">
+        <Label htmlFor="question_set" className="text-base font-semibold">
+          Question Set <span className="text-destructive">*</span>
+        </Label>
+        <Select
+          value={formState.question_set_id}
+          onValueChange={(value) => updateFormState({ question_set_id: value })}
+        >
+          <SelectTrigger id="question_set" className="h-11">
+            <SelectValue placeholder={loadingQuestionSets ? "Loading..." : "Select a question set"} />
+          </SelectTrigger>
+          <SelectContent>
+            {questionSets.map((set) => (
+              <SelectItem key={set.id} value={set.id}>
+                {set.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Difficulty Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Difficulty</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="difficulty">Select Difficulty</Label>
-            <Select
-              value={formState.difficulty}
-              onValueChange={(value: 'easy' | 'medium' | 'hard') => updateFormState({ difficulty: value })}
-            >
-              <SelectTrigger id="difficulty">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="easy">Easy</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="hard">Hard</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-3">
+        <Label htmlFor="difficulty" className="text-base font-semibold">Difficulty</Label>
+        <Select
+          value={formState.difficulty}
+          onValueChange={(value: 'easy' | 'medium' | 'hard') => updateFormState({ difficulty: value })}
+        >
+          <SelectTrigger id="difficulty" className="h-11">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="easy">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-500" />
+                Easy
+              </div>
+            </SelectItem>
+            <SelectItem value="medium">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                Medium
+              </div>
+            </SelectItem>
+            <SelectItem value="hard">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-red-500" />
+                Hard
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Tags */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Tags</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TagAutocomplete
-            selectedTags={formState.tag_ids}
-            onTagsChange={(tagIds) => updateFormState({ tag_ids: tagIds })}
-            allTags={tags}
-            onTagCreated={(newTag) => setTags(prev => [...prev, newTag])}
-          />
-        </CardContent>
-      </Card>
-
-
+      <div className="space-y-3">
+        <Label className="text-base font-semibold">
+          Tags <span className="text-muted-foreground font-normal">(Optional)</span>
+        </Label>
+        <TagAutocomplete
+          selectedTags={formState.tag_ids}
+          onTagsChange={(tagIds) => updateFormState({ tag_ids: tagIds })}
+          allTags={tags}
+          onTagCreated={(newTag) => setTags(prev => [...prev, newTag])}
+        />
+      </div>
     </div>
   )
 }

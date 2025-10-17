@@ -37,6 +37,7 @@ const FEATURE_PERMISSIONS: Record<string, UserRole[]> = {
   // Creator permissions - can create and manage content
   'questions.create': ['admin', 'creator'],
   'questions.edit.own': ['admin', 'creator'], // Can edit own draft questions
+  'questions.update': ['admin', 'creator', 'reviewer'], // Can update questions (with API-level permission checks)
   'questions.submit': ['admin', 'creator'], // Can submit for review
 
   // Reviewer permissions - can review and approve

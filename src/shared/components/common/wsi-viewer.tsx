@@ -546,6 +546,8 @@ interface FallbackViewerProps {
 }
 
 function FallbackViewer({ slide, onOpenExternal }: FallbackViewerProps) {
+  const handleImageLoad = useImageCacheHandler(slide.preview_image_url)
+
   const getEmbeddingBlockedReason = (url: string): string => {
     try {
       const urlObj = new URL(url)
@@ -593,7 +595,7 @@ function FallbackViewer({ slide, onOpenExternal }: FallbackViewerProps) {
               fill
               unoptimized
               className="object-cover rounded-lg border"
-              onLoad={useImageCacheHandler(slide.preview_image_url)}
+              onLoad={handleImageLoad}
               onError={(e) => {
                 const target = e.target as HTMLImageElement
                 target.style.display = 'none'

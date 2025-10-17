@@ -211,11 +211,11 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                       </Button>
                     </div>
 
-                    {/* Image Grid */}
-                    <div className="grid grid-cols-5 gap-4 max-h-96 overflow-y-auto">
+                    {/* Image Grid - Fixed height for 2 rows */}
+                    <div className="grid grid-cols-5 gap-4 overflow-y-auto" style={{ height: '320px' }}>
                       {availableImages.length === 0 && !loading ? (
-                        <div className="col-span-5 text-center py-8 text-muted-foreground">
-                          <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <div className="col-span-5 flex flex-col items-center justify-center h-full text-muted-foreground">
+                          <ImageIcon className="h-12 w-12 mb-2 opacity-50" />
                           <p>No images found</p>
                           {searchTerm && <p className="text-sm">Try a different search term</p>}
                         </div>
@@ -228,7 +228,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                           return (
                             <div
                               key={image.id}
-                              className={`relative cursor-pointer rounded-lg border-2 transition-all ${
+                              className={`relative cursor-pointer rounded-lg border-2 transition-all h-fit ${
                                 isAlreadyAdded
                                   ? 'border-muted bg-muted/50 opacity-50 cursor-not-allowed'
                                   : isSelected

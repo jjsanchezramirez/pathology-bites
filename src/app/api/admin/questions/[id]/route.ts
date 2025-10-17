@@ -62,6 +62,7 @@ export async function GET(
           id,
           name,
           source_type,
+          source_details,
           short_form
         ),
         created_by_user:users!questions_created_by_fkey(

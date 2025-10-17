@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
@@ -21,7 +22,6 @@ import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import { SubmitForReviewDialog } from './submit-for-review-dialog'
 import { QuestionPreviewDialog } from './question-preview-dialog'
 import { BulkSubmitDialog } from './bulk-submit-dialog'
-import { EditQuestionDialog } from './edit-question-dialog'
 import { STATUS_CONFIG, QuestionWithDetails } from '@/features/questions/types/questions'
 import {
   AlertTriangle,
@@ -60,6 +60,8 @@ interface WorkflowStats {
 }
 
 export function CreatorWorkflowDashboard() {
+  const router = useRouter()
+  const supabase = createClient()
   const [questions, setQuestions] = useState<WorkflowQuestion[]>([])
   const [stats, setStats] = useState<WorkflowStats>({ drafts: 0, underReview: 0, needsRevision: 0, flagged: 0 })
   const [loading, setLoading] = useState(true)
@@ -72,8 +74,6 @@ export function CreatorWorkflowDashboard() {
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false)
   const [selectedQuestionForPreview, setSelectedQuestionForPreview] = useState<QuestionWithDetails | null>(null)
   const [bulkSubmitDialogOpen, setBulkSubmitDialogOpen] = useState(false)
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [selectedQuestionForEdit, setSelectedQuestionForEdit] = useState<QuestionWithDetails | null>(null)
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false)
 
   const { user } = useAuthStatus()
@@ -213,21 +213,9 @@ export function CreatorWorkflowDashboard() {
     }
   }
 
-  const handleEditAndResubmit = async (questionId: string) => {
-    // Fetch full question details and open edit dialog
-    try {
-      const response = await fetch(`/api/admin/questions/${questionId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setSelectedQuestionForEdit(data.question)
-        setEditDialogOpen(true)
-      } else {
-        toast.error('Failed to load question details')
-      }
-    } catch (error) {
-      console.error('Error loading question:', error)
-      toast.error('Failed to load question details')
-    }
+  const handleEditAndResubmit = (questionId: string) => {
+    // Navigate to edit page
+    router.push(`/admin/questions/${questionId}/edit`)
   }
 
   const handleSubmitSuccess = async (reviewerId?: string) => {
@@ -236,13 +224,7 @@ export function CreatorWorkflowDashboard() {
     setSelectedQuestionForSubmit(null)
   }
 
-  const handleEditSuccess = () => {
-    // Refresh the questions list and close dialog
-    fetchWorkflowQuestions(true)
-    setSelectedQuestionForEdit(null)
-    setEditDialogOpen(false)
-    toast.success('Question updated successfully')
-  }
+
 
   const handlePreview = async (questionId: string) => {
     try {
@@ -393,12 +375,38 @@ export function CreatorWorkflowDashboard() {
   const draftQuestions = questions.filter(q => q.status === 'draft')
   const underReviewQuestions = questions.filter(q => q.status === 'pending_review')
 
-  const renderQuestionTable = (questions: WorkflowQuestion[], showSelection = true) => {
+  const renderQuestionTable = (questions: WorkflowQuestion[], showSelection = true, tabType?: string) => {
     if (questions.length === 0) {
+      // Empty state messages based on tab
+      const emptyStateConfig = {
+        'needs-revision': {
+          icon: CheckCircle2,
+          title: 'All caught up! 🎉',
+          description: 'You have no questions needing revision. Great work!',
+          iconColor: 'text-green-500'
+        },
+        'drafts': {
+          icon: FileText,
+          title: 'No drafts yet',
+          description: 'Create a new question to get started.',
+          iconColor: 'text-muted-foreground'
+        },
+        'under-review': {
+          icon: Clock,
+          title: 'No questions under review',
+          description: 'Submit your draft questions for review.',
+          iconColor: 'text-muted-foreground'
+        }
+      }
+
+      const config = emptyStateConfig[tabType as keyof typeof emptyStateConfig] || emptyStateConfig['drafts']
+      const Icon = config.icon
+
       return (
-        <div className="text-center py-8 text-muted-foreground">
-          <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>No questions in this category</p>
+        <div className="text-center py-12">
+          <Icon className={`h-12 w-12 mx-auto mb-4 ${config.iconColor}`} />
+          <h3 className="text-lg font-medium mb-2">{config.title}</h3>
+          <p className="text-muted-foreground">{config.description}</p>
         </div>
       )
     }
@@ -438,14 +446,18 @@ export function CreatorWorkflowDashboard() {
                 )}
                 <TableHead>Question</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Feedback</TableHead>
                 <TableHead>Actions</TableHead>
                 <TableHead>Updated</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {questions.map((question) => (
-                <TableRow key={question.id}>
+              {questions.map((question) => {
+                const isExpanded = expandedFeedback.has(question.id)
+                const columnCount = showSelection ? 5 : 4 // Adjust based on whether selection column is shown
+
+                return (
+                  <React.Fragment key={question.id}>
+                    <TableRow>
                   {showSelection && (
                     <TableCell>
                       <Checkbox
@@ -456,15 +468,45 @@ export function CreatorWorkflowDashboard() {
                   )}
                   <TableCell>
                     <div className="space-y-1">
-                      <div className="font-medium">{question.title}</div>
+                      <div className="flex items-center gap-2">
+                        {question.status === 'rejected' && question.reviewer_feedback && (
+                          <span
+                            className="h-2 w-2 bg-amber-500 rounded-full flex-shrink-0"
+                            title="Needs attention"
+                          />
+                        )}
+                        <div className="font-medium">{question.title}</div>
+                      </div>
                       <div className="text-sm text-muted-foreground line-clamp-2">
                         {question.stem}
                       </div>
-                      {question.question_set && (
-                        <Badge variant="outline" className="text-xs">
-                          {question.question_set.name}
-                        </Badge>
-                      )}
+                      <div className="flex flex-wrap gap-2 items-center">
+                        {question.question_set && (
+                          <Badge variant="outline" className="text-xs">
+                            {question.question_set.name}
+                          </Badge>
+                        )}
+                        {/* Reviewer Feedback Indicator Badge */}
+                        {question.reviewer_feedback && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs bg-amber-100 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-400 cursor-pointer hover:bg-amber-200 dark:hover:bg-amber-950/50 transition-colors max-w-xs"
+                            onClick={() => toggleFeedbackExpansion(question.id)}
+                          >
+                            <MessageSquare className="h-3 w-3 mr-1 flex-shrink-0" />
+                            <span className="truncate">
+                              {question.reviewer_feedback.length > 50
+                                ? `${question.reviewer_feedback.substring(0, 50)}...`
+                                : question.reviewer_feedback}
+                            </span>
+                            {expandedFeedback.has(question.id) ? (
+                              <ChevronDown className="h-3 w-3 ml-1 flex-shrink-0" />
+                            ) : (
+                              <ChevronRight className="h-3 w-3 ml-1 flex-shrink-0" />
+                            )}
+                          </Badge>
+                        )}
+                      </div>
                       {question.resubmission_notes && (
                         <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md">
                           <div className="flex items-center gap-1 mb-1">
@@ -509,32 +551,6 @@ export function CreatorWorkflowDashboard() {
                     {getStatusBadge(question.status)}
                   </TableCell>
                   <TableCell>
-                    {question.reviewer_feedback ? (
-                      <div className="space-y-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleFeedbackExpansion(question.id)}
-                          className="h-auto p-1 text-xs"
-                        >
-                          {expandedFeedback.has(question.id) ? (
-                            <ChevronDown className="h-3 w-3 mr-1" />
-                          ) : (
-                            <ChevronRight className="h-3 w-3 mr-1" />
-                          )}
-                          View Feedback
-                        </Button>
-                        {expandedFeedback.has(question.id) && (
-                          <div className="text-sm p-2 bg-destructive/10 border border-destructive/20 rounded">
-                            {question.reviewer_feedback}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
                     <div className="flex gap-2">
                       {/* Preview button for all statuses */}
                       <Button
@@ -550,7 +566,6 @@ export function CreatorWorkflowDashboard() {
                         <Button
                           size="sm"
                           onClick={() => handleEditAndResubmit(question.id)}
-                          className="bg-destructive hover:bg-destructive/90"
                         >
                           <Edit3 className="h-4 w-4 mr-1" />
                           Edit & Resubmit
@@ -592,7 +607,62 @@ export function CreatorWorkflowDashboard() {
                     {formatDistanceToNow(new Date(question.updated_at))} ago
                   </TableCell>
                 </TableRow>
-              ))}
+
+                {/* Expandable Feedback Row */}
+                {question.reviewer_feedback && isExpanded && (
+                  <TableRow key={`${question.id}-feedback`} className="bg-amber-50/50 dark:bg-amber-950/20 border-l-4 border-amber-500 dark:border-amber-600">
+                    <TableCell colSpan={columnCount} className="p-0">
+                      <div className="p-4 space-y-3">
+                        {/* Header */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <MessageSquare className="h-4 w-4 text-amber-600 dark:text-amber-500" />
+                            <span className="font-medium text-amber-900 dark:text-amber-200">
+                              Reviewer Feedback
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => toggleFeedbackExpansion(question.id)}
+                            className="text-xs text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-200 flex items-center gap-1"
+                          >
+                            <ChevronDown className="h-3 w-3" />
+                            Collapse
+                          </button>
+                        </div>
+
+                        {/* Feedback Content */}
+                        <div className="pl-6">
+                          <p className={`text-sm text-amber-900 dark:text-amber-200 leading-relaxed ${
+                            question.reviewer_feedback.length > 300 && !expandedFeedback.has(`${question.id}-full`)
+                              ? 'line-clamp-6'
+                              : ''
+                          }`}>
+                            {question.reviewer_feedback}
+                          </p>
+                          {question.reviewer_feedback.length > 300 && (
+                            <button
+                              onClick={() => {
+                                const newExpanded = new Set(expandedFeedback)
+                                if (newExpanded.has(`${question.id}-full`)) {
+                                  newExpanded.delete(`${question.id}-full`)
+                                } else {
+                                  newExpanded.add(`${question.id}-full`)
+                                }
+                                setExpandedFeedback(newExpanded)
+                              }}
+                              className="text-xs text-amber-700 dark:text-amber-400 hover:underline mt-2"
+                            >
+                              {expandedFeedback.has(`${question.id}-full`) ? 'Show less' : 'Show more'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+                  </React.Fragment>
+                )
+              })}
             </TableBody>
           </Table>
         </div>
@@ -635,8 +705,6 @@ export function CreatorWorkflowDashboard() {
           Refresh
         </Button>
       </div>
-
-
 
       {/* Flagged Questions Alert */}
       {stats.flagged > 0 && (
@@ -729,7 +797,7 @@ export function CreatorWorkflowDashboard() {
               </p>
             </div>
           </div>
-          {renderQuestionTable(rejectedQuestions)}
+          {renderQuestionTable(rejectedQuestions, true, 'needs-revision')}
         </TabsContent>
 
         <TabsContent value="drafts" className="space-y-4">
@@ -741,7 +809,7 @@ export function CreatorWorkflowDashboard() {
               </p>
             </div>
           </div>
-          {renderQuestionTable(draftQuestions)}
+          {renderQuestionTable(draftQuestions, true, 'drafts')}
         </TabsContent>
 
         <TabsContent value="under-review" className="space-y-4">
@@ -753,7 +821,7 @@ export function CreatorWorkflowDashboard() {
               </p>
             </div>
           </div>
-          {renderQuestionTable(underReviewQuestions, false)}
+          {renderQuestionTable(underReviewQuestions, false, 'under-review')}
         </TabsContent>
       </Tabs>
 
@@ -808,15 +876,6 @@ export function CreatorWorkflowDashboard() {
         onOpenChange={setPreviewDialogOpen}
       />
 
-      {/* Edit Question Dialog */}
-      {selectedQuestionForEdit && (
-        <EditQuestionDialog
-          question={selectedQuestionForEdit}
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
-          onSuccess={handleEditSuccess}
-        />
-      )}
     </div>
   )
 }

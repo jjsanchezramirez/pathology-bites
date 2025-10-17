@@ -23,45 +23,100 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Use a single RPC call for attempt submission with all validations
-    const { data: result, error } = await supabase.rpc('submit_quiz_attempt_optimized', {
-      p_user_id: userId,
-      p_session_id: sessionId,
-      p_question_id: questionId,
-      p_selected_answer_id: selectedAnswerId,
-      p_time_spent: timeSpent || 0
-    })
+    // Verify session exists and belongs to user
+    const { data: session, error: sessionError } = await supabase
+      .from('quiz_sessions')
+      .select('id, total_questions, correct_answers, score')
+      .eq('id', sessionId)
+      .eq('user_id', userId)
+      .single()
 
-    if (error) {
-      // Handle specific error types from the RPC function
-      if (error.message?.includes('session_not_found')) {
+    if (sessionError || !session) {
+      if (sessionError?.code === 'PGRST116') {
         return NextResponse.json({ error: 'Quiz session not found' }, { status: 404 })
-      } else if (error.message?.includes('session_not_owned')) {
-        return NextResponse.json({ error: 'Session does not belong to user' }, { status: 403 })
-      } else if (error.message?.includes('already_answered')) {
-        return NextResponse.json({ error: 'Question already answered' }, { status: 409 })
       }
-      
-      throw error
+      return NextResponse.json({ error: 'Session does not belong to user' }, { status: 403 })
     }
 
-    const attemptResult = result?.[0]
-    if (!attemptResult) {
-      throw new Error('No result from attempt submission')
+    // Check if question already answered
+    const { data: existingAttempt } = await supabase
+      .from('quiz_attempts')
+      .select('id')
+      .eq('quiz_session_id', sessionId)
+      .eq('question_id', questionId)
+      .single()
+
+    if (existingAttempt) {
+      return NextResponse.json({ error: 'Question already answered' }, { status: 409 })
     }
+
+    // Get question and answer details
+    const { data: question, error: questionError } = await supabase
+      .from('questions')
+      .select('id, explanation, answer_options')
+      .eq('id', questionId)
+      .single()
+
+    if (questionError || !question) {
+      throw new Error('Question not found')
+    }
+
+    // Find correct answer
+    const correctAnswer = question.answer_options?.find((opt: any) => opt.is_correct)
+    const isCorrect = selectedAnswerId === correctAnswer?.id
+
+    // Create the attempt record
+    const { data: attempt, error: attemptError } = await supabase
+      .from('quiz_attempts')
+      .insert({
+        quiz_session_id: sessionId,
+        question_id: questionId,
+        selected_answer_id: selectedAnswerId,
+        is_correct: isCorrect,
+        time_spent: timeSpent || 0
+      })
+      .select('id')
+      .single()
+
+    if (attemptError) {
+      throw attemptError
+    }
+
+    // Update session stats
+    const newCorrectAnswers = isCorrect ? (session.correct_answers || 0) + 1 : (session.correct_answers || 0)
+    const newScore = Math.round((newCorrectAnswers / session.total_questions) * 100)
+
+    await supabase
+      .from('quiz_sessions')
+      .update({
+        correct_answers: newCorrectAnswers,
+        score: newScore
+      })
+      .eq('id', sessionId)
+
+    // Get next question
+    const { data: nextQuestion } = await supabase
+      .from('questions')
+      .select('id')
+      .eq('question_set_id', (await supabase.from('quiz_sessions').select('question_set_id').eq('id', sessionId).single()).data?.question_set_id)
+      .not('id', 'in', `(${(await supabase.from('quiz_attempts').select('question_id').eq('quiz_session_id', sessionId)).data?.map((a: any) => a.question_id).join(',')})`)
+      .limit(1)
+      .single()
+
+    const isSessionComplete = (newCorrectAnswers + 1) >= session.total_questions
 
     return NextResponse.json({
       success: true,
       data: {
-        id: attemptResult.attempt_id,
-        isCorrect: attemptResult.is_correct,
-        correctAnswerId: attemptResult.correct_answer_id,
-        explanation: attemptResult.explanation,
-        nextQuestionId: attemptResult.next_question_id,
-        isSessionComplete: attemptResult.is_session_complete,
-        sessionScore: attemptResult.session_score,
-        questionNumber: attemptResult.question_number,
-        totalQuestions: attemptResult.total_questions
+        id: attempt.id,
+        isCorrect,
+        correctAnswerId: correctAnswer?.id,
+        explanation: question.explanation,
+        nextQuestionId: nextQuestion?.id || null,
+        isSessionComplete,
+        sessionScore: newScore,
+        questionNumber: (newCorrectAnswers + 1),
+        totalQuestions: session.total_questions
       }
     })
 
