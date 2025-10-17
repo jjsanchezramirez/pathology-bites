@@ -134,7 +134,7 @@ export default async function RootLayout({
         {/* Viewport meta tag for responsive design */}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body className={cn('min-h-screen bg-background font-sans antialiased')}>
+      <body className={cn('min-h-screen bg-background font-sans antialiased overflow-x-hidden')}>
         {/* Structured Data */}
         <OrganizationSchema />
         <WebsiteSchema

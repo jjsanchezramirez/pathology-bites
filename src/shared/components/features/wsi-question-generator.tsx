@@ -526,76 +526,82 @@ export function WSIQuestionGenerator({
           </div>
 
           {/* Mobile: Stacked layout */}
-          <div className="md:hidden space-y-4">
-            {/* Controls row */}
-            <div className="flex items-center gap-4 flex-wrap">
-              {/* Category Filter */}
-              {showCategoryFilter && availableCategories.length > 0 && (
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <label className="text-sm font-medium whitespace-nowrap">Category:</label>
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-44">
-                      <SelectValue placeholder="All categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All categories</SelectItem>
-                      {availableCategories.map(category => (
-                        <SelectItem key={category} value={category}>{category}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+          <div className="md:hidden space-y-3">
+            {/* Category Filter - Full width on mobile */}
+            {showCategoryFilter && availableCategories.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-medium">Category:</label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All categories</SelectItem>
+                    {availableCategories.map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
-              {/* View Original Link */}
+            {/* Action buttons row */}
+            <div className="flex gap-2">
+              {/* New Question Button - Mobile */}
+              <Button
+                onClick={generateNewQuestion}
+                disabled={isGenerating}
+                className="flex-1"
+                size="sm"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <span className="whitespace-nowrap">Generating...</span>
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    <span className="whitespace-nowrap">New</span>
+                  </>
+                )}
+              </Button>
+
+              {/* View Original Link - Mobile */}
               {currentQuestion && (
-                <a
-                  href={currentQuestion.wsi.slide_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:text-primary/80 transition-colors flex items-center gap-1 text-sm font-medium flex-shrink-0"
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
                 >
-                  <ExternalLink className="h-4 w-4" />
-                  <span className="whitespace-nowrap">View Original</span>
-                </a>
+                  <a
+                    href={currentQuestion.wsi.slide_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-1" />
+                    <span className="whitespace-nowrap">View</span>
+                  </a>
+                </Button>
               )}
             </div>
-
-            {/* New Question Button - Mobile */}
-            <Button
-              onClick={generateNewQuestion}
-              disabled={isGenerating}
-              className="w-full"
-              size="default"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  <span className="whitespace-nowrap">Generating...</span>
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  <span className="whitespace-nowrap">New Question</span>
-                </>
-              )}
-            </Button>
           </div>
         </div>
 
         {/* Warning Disclaimer */}
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <div className="flex items-center gap-2 text-sm text-red-700">
-            <Info className="h-4 w-4 flex-shrink-0" />
+        <div className="bg-red-50 border border-red-200 rounded-lg p-2 sm:p-3">
+          <div className="flex items-start gap-2 text-xs sm:text-sm text-red-700">
+            <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
             <span>AI-generated content without human oversight. May contain incorrect information.</span>
           </div>
         </div>
       </div>
 
       <Card className="h-full">
-        <CardContent className="space-y-4 pt-6">
+        <CardContent className="space-y-3 sm:space-y-4 pt-4 sm:pt-6 px-3 sm:px-6">
           {/* Question Text */}
-          <div className="text-sm text-foreground/90">
+          <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed">
             {currentQuestion.question.stem}
           </div>
 
@@ -662,11 +668,11 @@ export function WSIQuestionGenerator({
                   key={option.id}
                   onClick={() => handleOptionClick(option.id)}
                   className={`
-                    p-2 rounded-md text-left border text-sm transition-colors duration-200
-                    ${!isAnswered ? 'hover:border-primary/50 hover:bg-primary/5' : ''}
-                    ${isSelected ? 'border-primary' : 'border'}
-                    ${showCorrect ? 'bg-green-50 border-green-500 dark:bg-green-950/30' : ''}
-                    ${showIncorrect ? 'bg-red-50 border-red-500 dark:bg-red-950/30' : ''}
+                    p-2 sm:p-3 rounded-md text-left border text-xs sm:text-sm transition-colors duration-200
+                    ${!isAnswered ? 'hover:border-muted-foreground/50 hover:bg-muted/30' : ''}
+                    ${isSelected && !showCorrect && !showIncorrect ? 'border-muted-foreground/70' : 'border-muted-foreground/30'}
+                    ${showCorrect ? 'bg-green-50 border-green-600 dark:bg-green-950/30' : ''}
+                    ${showIncorrect ? 'bg-red-50 border-red-600 dark:bg-red-950/30' : ''}
                   `}
                   disabled={isAnswered}
                   role="option"
@@ -675,15 +681,15 @@ export function WSIQuestionGenerator({
                   <div className="flex items-center gap-2">
                     <span className={`
                       flex items-center justify-center w-5 h-5 rounded-full border text-xs
-                      ${isSelected ? 'border-primary' : 'border-muted-foreground/30'}
-                      ${showCorrect ? 'border-green-500' : ''}
-                      ${showIncorrect ? 'border-red-500' : ''}
+                      ${isSelected && !showCorrect && !showIncorrect ? 'border-muted-foreground/70' : 'border-muted-foreground/30'}
+                      ${showCorrect ? 'border-green-600' : ''}
+                      ${showIncorrect ? 'border-red-600' : ''}
                     `}>
                       {optionLabel}
                     </span>
                     <span className="flex-1">{option.text}</span>
-                    {showCorrect && <Check className="w-4 h-4 text-green-500" />}
-                    {showIncorrect && <X className="w-4 h-4 text-red-500" />}
+                    {showCorrect && <Check className="w-4 h-4 text-green-600" />}
+                    {showIncorrect && <X className="w-4 h-4 text-red-600" />}
                   </div>
                 </button>
               )
@@ -697,11 +703,11 @@ export function WSIQuestionGenerator({
             <div className={`transform transition-all duration-500 ${
               showExplanation ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}>
-              <div className="p-3 rounded-lg bg-muted/50 text-sm space-y-4">
+              <div className="p-2 sm:p-3 rounded-lg bg-muted/50 text-xs sm:text-sm space-y-3 sm:space-y-4">
                 {/* Teaching Point */}
                 <div>
                   <h4 className="font-medium text-xs uppercase mb-1">Teaching Point</h4>
-                  <div className="text-muted-foreground">
+                  <div className="text-muted-foreground leading-relaxed">
                     {currentQuestion.question.question_options.find(option => option.is_correct)?.explanation || 'No explanation available.'}
                   </div>
                 </div>
@@ -718,7 +724,7 @@ export function WSIQuestionGenerator({
                           const optionLabel = getOptionLabel(option.id, optionIndex)
 
                           return (
-                            <div key={option.id}>
+                            <div key={option.id} className="leading-relaxed">
                               <span className="font-medium">{optionLabel}.</span> {option.explanation}
                             </div>
                           )
@@ -737,31 +743,34 @@ export function WSIQuestionGenerator({
 
                 {/* Generation Metadata - Single Line */}
                 <div className="pt-2 border-t">
-                  <div className="text-xs text-muted-foreground text-center mb-3">
-                    {currentQuestion.metadata.successful_model || currentQuestion.metadata.model} • {
-                      (() => {
-                        const tokenUsage = currentQuestion.metadata.token_usage
-                        if (tokenUsage) {
-                          
-                          if (tokenUsage.total_tokens && typeof tokenUsage.total_tokens === 'number') {
-                            return `${tokenUsage.total_tokens.toLocaleString()} tokens`
+                  <div className="text-xs text-muted-foreground text-center mb-3 leading-relaxed">
+                    <div className="break-words">
+                      {currentQuestion.metadata.successful_model || currentQuestion.metadata.model} • {
+                        (() => {
+                          const tokenUsage = currentQuestion.metadata.token_usage
+                          if (tokenUsage) {
+
+                            if (tokenUsage.total_tokens && typeof tokenUsage.total_tokens === 'number') {
+                              return `${tokenUsage.total_tokens.toLocaleString()} tokens`
+                            }
                           }
-                        }
-                        return 'Tokens: N/A'
-                      })()
-                    } • {currentQuestion.metadata.generation_time_ms}ms
-                    {(currentQuestion.metadata.fallback_attempts || 0) > 1 && (
-                      <span className="text-amber-600"> • Backup system used</span>
-                    )}
+                          return 'Tokens: N/A'
+                        })()
+                      } • {currentQuestion.metadata.generation_time_ms}ms
+                      {(currentQuestion.metadata.fallback_attempts || 0) > 1 && (
+                        <span className="text-amber-600"> • Backup system used</span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Try Another Button */}
-                  <div className="flex justify-end">
+                  <div className="flex justify-center sm:justify-end">
                     <Button
                       onClick={generateNewQuestion}
                       disabled={isGenerating}
                       variant="outline"
                       size="sm"
+                      className="w-full sm:w-auto"
                     >
                       <RefreshCw className="h-4 w-4 mr-2" />
                       Try Another

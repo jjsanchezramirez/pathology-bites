@@ -28,8 +28,16 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
       try {
         console.log('[DashboardSettings] Loading settings from database...')
         const settings = await userSettingsService.getUserSettings()
-        
+
         console.log('[DashboardSettings] Received:', settings.ui_settings)
+
+        // Sync UI settings to localStorage for DashboardThemeContext
+        try {
+          localStorage.setItem('pathology-bites-ui-settings', JSON.stringify(settings.ui_settings))
+          console.log('[DashboardSettings] Synced ui_settings to localStorage')
+        } catch (storageError) {
+          console.warn('[DashboardSettings] Failed to sync to localStorage:', storageError)
+        }
 
         // Apply text zoom
         const zoom = settings.ui_settings?.text_zoom ?? config.default
@@ -42,11 +50,11 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
           .split('; ')
           .find(row => row.startsWith('admin-mode='))
           ?.split('=')[1] || 'admin'
-        
-        const themeKey = adminModeCookie === 'admin' 
-          ? 'dashboard_theme_admin' 
+
+        const themeKey = adminModeCookie === 'admin'
+          ? 'dashboard_theme_admin'
           : 'dashboard_theme_user'
-        
+
         const theme = settings.ui_settings?.[themeKey] ?? 'default'
         setDashboardThemeState(theme)
 

@@ -23,3 +23,20 @@ export function useQuizMode() {
     pathname
   }
 }
+
+/**
+ * Hook to detect if the user is currently in Anki mode
+ * Returns true when on /dashboard/anki
+ */
+export function useAnkiMode() {
+  const pathname = usePathname()
+
+  const isInAnkiMode = useMemo(() => {
+    return pathname ? pathname.startsWith('/dashboard/anki') : false
+  }, [pathname])
+
+  return {
+    isInAnkiMode,
+    pathname
+  }
+}

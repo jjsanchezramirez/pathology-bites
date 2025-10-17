@@ -7,6 +7,7 @@ export interface NavigationItem {
   requiredPermission?: string
   adminOnly?: boolean
   showToRoles?: string[] // Array of roles that can see this item
+  comingSoon?: boolean // Badge to indicate feature is coming soon
 }
 
 export interface NavigationSection {
@@ -258,7 +259,7 @@ export const userNavigationItems: NavigationItem[] = [
     icon: "ClipboardList",
   },
   {
-    name: "WSI Questions (Beta)",
+    name: "Digital Slides",
     href: "/dashboard/wsi-questions",
     icon: "Microscope",
   },
@@ -276,11 +277,6 @@ export const userNavigationItems: NavigationItem[] = [
     name: "Learning Modules",
     href: "/dashboard/learning",
     icon: "BookOpen",
-  },
-  {
-    name: "Goals",
-    href: "/dashboard/goals",
-    icon: "Target",
   },
   {
     name: "Progress",
@@ -318,14 +314,16 @@ export const userNavigationSections: NavigationSection[] = [
         name: "New Quiz",
         href: "/dashboard/quiz/new",
         icon: "Plus",
+        comingSoon: true
       },
       {
         name: "My Quizzes",
         href: "/dashboard/quizzes",
         icon: "ClipboardList",
+        comingSoon: true
       },
       {
-        name: "WSI Questions (Beta)",
+        name: "Digital Slides",
         href: "/dashboard/wsi-questions",
         icon: "Microscope",
       },
@@ -338,6 +336,7 @@ export const userNavigationSections: NavigationSection[] = [
         name: "Learning Modules",
         href: "/dashboard/learning",
         icon: "BookOpen",
+        comingSoon: true
       }
     ]
   },
@@ -348,16 +347,13 @@ export const userNavigationSections: NavigationSection[] = [
         name: "Performance",
         href: "/dashboard/performance",
         icon: "BarChart2",
-      },
-      {
-        name: "Goals",
-        href: "/dashboard/goals",
-        icon: "Target",
+        comingSoon: true
       },
       {
         name: "Progress",
         href: "/dashboard/progress",
         icon: "TrendingUp",
+        comingSoon: true
       }
     ]
   },

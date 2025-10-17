@@ -288,6 +288,47 @@ export class NotificationGenerators {
 
     return data?.map(user => user.user_id) || []
   }
+
+  // Inquiry Notifications
+  async createInquiryNotification(inquiryId: string): Promise<void> {
+    try {
+      // Get all admin users
+      const { data: adminUsers, error: adminError } = await this.supabase
+        .from('users')
+        .select('id')
+        .eq('role', 'admin')
+        .eq('status', 'active')
+
+      if (adminError) {
+        console.error('Error fetching admin users:', adminError)
+        throw adminError
+      }
+
+      // Create notifications for all admin users
+      if (adminUsers && adminUsers.length > 0) {
+        const notifications = adminUsers.map(user => ({
+          user_id: user.id,
+          source_type: 'inquiry',
+          source_id: inquiryId,
+          read: false
+        }))
+
+        const { error: notificationError } = await this.supabase
+          .from('notification_states')
+          .insert(notifications)
+
+        if (notificationError) {
+          console.error('Error creating inquiry notifications:', notificationError)
+          throw notificationError
+        }
+
+        console.log(`📬 Inquiry notification created for ${adminUsers.length} admin users`)
+      }
+    } catch (error) {
+      console.error('Error creating inquiry notification:', error)
+      throw error
+    }
+  }
 }
 
 export const notificationGenerators = new NotificationGenerators()

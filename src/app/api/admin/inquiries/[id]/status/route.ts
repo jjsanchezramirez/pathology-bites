@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 
 const statusUpdateSchema = z.object({
   status: z.enum(['pending', 'resolved', 'closed'])
 })
+
+// Create Supabase client with service role for admin operations (bypasses RLS)
+function createAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey)
+}
 
 export async function PATCH(
   request: NextRequest,
@@ -13,12 +21,15 @@ export async function PATCH(
   try {
     const resolvedParams = await params
     console.log('Updating inquiry status for ID:', resolvedParams.id)
-    
-    const supabase = await createClient()
+
+    // Use regular client for auth verification
+    const authClient = await createClient()
+    // Use admin client for database operations (bypasses RLS)
+    const supabase = createAdminClient()
     const inquiryId = resolvedParams.id
 
     // Auth is handled by middleware - user should be admin
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await authClient.auth.getUser()
     if (authError || !user) {
       console.error('Authentication failed:', authError)
       return NextResponse.json(

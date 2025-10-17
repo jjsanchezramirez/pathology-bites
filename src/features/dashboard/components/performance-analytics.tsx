@@ -198,18 +198,19 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-green-500" />
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
             Overall Score
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col items-center space-y-2">
-          <CircleProgress 
-            percentage={data.overallScore} 
-            color="#10b981"
-          />
-          <p className="text-xs text-muted-foreground text-center">
-            Average across all attempts
-          </p>
+        <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-muted-foreground mb-2">
+              Coming Soon
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Overall score tracking will be available as you take more quizzes
+            </p>
+          </div>
         </CardContent>
       </Card>
 

@@ -5,8 +5,7 @@ import { createClient } from '@/shared/services/server'
 // Simple activity types - keeping it focused
 const ACTIVITY_TYPES = {
   quiz_completed: 'Quiz Completed',
-  quiz_started: 'Quiz Started', 
-  goal_achieved: 'Goal Achieved',
+  quiz_started: 'Quiz Started',
   subject_mastered: 'Subject Mastered',
   study_streak: 'Study Streak',
   performance_milestone: 'Performance Milestone',
@@ -125,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { type, title, description, quiz_id, goal_id, subject_id, data = {}, priority = 'medium' } = body
+    const { type, title, description, quiz_id, subject_id, data = {}, priority = 'medium' } = body
 
     // Validate required fields
     if (!type || !title) {
@@ -148,7 +147,6 @@ export async function POST(request: NextRequest) {
         title,
         description,
         quiz_id,
-        goal_id,
         subject_id,
         data,
         priority,

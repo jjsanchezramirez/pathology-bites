@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { Resend } from 'resend'
 import { createAdminResponseEmail } from '@/shared/utils/email-templates'
@@ -11,6 +12,13 @@ const responseSchema = z.object({
   response: z.string().min(1, 'Response is required'),
 })
 
+// Create Supabase client with service role for admin operations (bypasses RLS)
+function createAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey)
+}
+
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -19,11 +27,14 @@ export async function POST(
     const params = await context.params
     console.log('Inquiry response API called for ID:', params.id)
 
-    const supabase = await createClient()
+    // Use regular client for auth verification
+    const authClient = await createClient()
+    // Use admin client for database operations (bypasses RLS)
+    const supabase = createAdminClient()
     const inquiryId = params.id
 
     // Auth is handled by middleware - user should be admin
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await authClient.auth.getUser()
     if (authError || !user) {
       console.error('Authentication failed:', authError)
       return NextResponse.json(

@@ -95,10 +95,6 @@ export function EnhancedRecentActivity({ userId }: EnhancedRecentActivityProps) 
       case 'quiz_started':
         router.push(`/dashboard/quiz/${activity.quiz_id}`)
         break
-      case 'goal_achieved':
-        toast.success('🎉 Congratulations on achieving your goal!')
-        router.push('/dashboard/goals')
-        break
       case 'subject_mastered':
         toast.success('🏆 Amazing work mastering this subject!')
         if (activity.subject_id) {

@@ -21,7 +21,6 @@ import { toast } from "sonner"
 import Link from "next/link"
 import { WelcomeMessage, PerformanceAnalytics } from "@/features/dashboard/components"
 // import { EnhancedRecentActivity } from "@/features/dashboard/components/enhanced-recent-activity"
-import { SimpleGoalsWidget } from "@/features/dashboard/components/simple-goals-widget"
 import { useAuthStatus } from "@/features/auth/hooks/use-auth-status"
 import { userSettingsService } from "@/shared/services/user-settings"
 import { RecentActivity } from "@/features/dashboard/services/service"
@@ -393,36 +392,48 @@ export default function DashboardPage() {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Link href="/dashboard/quiz/new" className="block">
-                <Button className="w-full justify-between">
-                  Start New Quiz
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </Link>
-
-              <Link href="/dashboard/performance" className="block">
-                <Button variant="outline" className="w-full justify-between">
-                  View Performance
-                  <BarChart3 className="h-4 w-4" />
-                </Button>
-              </Link>
-
-              <Link href="/dashboard/quizzes" className="block">
-                <Button variant="outline" className="w-full justify-between">
-                  My Quizzes
-                  <Clock className="h-4 w-4" />
-                </Button>
-              </Link>
+              <Button
+                className="w-full justify-between opacity-50 cursor-not-allowed"
+                disabled
+                onClick={() => toast.info('Start New Quiz coming soon!')}
+              >
+                Start New Quiz
+                <Plus className="h-4 w-4" />
+              </Button>
 
               <Button
                 variant="outline"
                 className="w-full justify-between opacity-50 cursor-not-allowed"
                 disabled
-                onClick={() => toast.info('Goals feature coming soon!')}
+                onClick={() => toast.info('View Performance coming soon!')}
               >
-                Goals
-                <Target className="h-4 w-4" />
+                View Performance
+                <BarChart3 className="h-4 w-4" />
               </Button>
+
+              <Button
+                variant="outline"
+                className="w-full justify-between opacity-50 cursor-not-allowed"
+                disabled
+                onClick={() => toast.info('My Quizzes coming soon!')}
+              >
+                My Quizzes
+                <Clock className="h-4 w-4" />
+              </Button>
+
+              <Link href="/dashboard/wsi-questions" className="block">
+                <Button variant="outline" className="w-full justify-between">
+                  Digital Slides
+                  <BookOpen className="h-4 w-4" />
+                </Button>
+              </Link>
+
+              <Link href="/dashboard/anki" className="block">
+                <Button variant="outline" className="w-full justify-between">
+                  Anki Deck Viewer
+                  <BookOpen className="h-4 w-4" />
+                </Button>
+              </Link>
 
               <Button
                 variant="outline"
@@ -432,6 +443,16 @@ export default function DashboardPage() {
               >
                 Learning Modules
                 <BookOpen className="h-4 w-4" />
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full justify-between opacity-50 cursor-not-allowed"
+                disabled
+                onClick={() => toast.info('Progress feature coming soon!')}
+              >
+                Progress
+                <TrendingUp className="h-4 w-4" />
               </Button>
             </CardContent>
           </Card>
@@ -443,82 +464,6 @@ export default function DashboardPage() {
           <PerformanceAnalytics data={stats.performance} />
         </FeatureErrorBoundary>
       )}
-
-      {/* Goals and Learning Modules Section - In Development */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {/* Goals Section - 1/3 width */}
-        <Card className="md:col-span-1">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Goals
-                </CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Set and track objectives
-                </p>
-              </div>
-              <div className="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded-full">
-                In Dev
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-6 text-muted-foreground">
-              <Target className="h-10 w-10 mx-auto mb-3 opacity-50" />
-              <p className="mb-2 text-sm">Goals coming soon!</p>
-              <p className="text-xs mb-4">Track your progress and stay motivated.</p>
-              <Button
-                className="w-full"
-                variant="outline"
-                size="sm"
-                disabled
-                onClick={() => toast.info('Goals feature is currently in development!')}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Goal
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Learning Modules Section - 2/3 width */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  Learning Modules
-                </CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Structured learning paths for comprehensive education
-                </p>
-              </div>
-              <div className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded-full">
-                In Development
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="mb-2">Learning Modules coming soon!</p>
-              <p className="text-sm mb-6">Follow guided learning paths with interactive content, assessments, and progress tracking.</p>
-              <Button
-                className="w-full"
-                variant="outline"
-                disabled
-                onClick={() => toast.info('Learning Modules feature is currently in development!')}
-              >
-                <BookOpen className="h-4 w-4 mr-2" />
-                Browse Modules
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
       </>
       )}
 

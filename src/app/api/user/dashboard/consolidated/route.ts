@@ -36,22 +36,12 @@ export async function GET(request: NextRequest) {
     // Get all dashboard data in parallel to minimize latency
     const [
       statsResult,
-      goalsResult,
       activitiesResult,
       settingsResult,
       recentQuizzesResult
     ] = await Promise.all([
       // Simplified stats query - using RPC if available
       getDashboardStats(supabase, userId),
-      
-      // Active goals
-      supabase
-        .from('user_goals')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(5),
 
       // Recent activities (from quiz sessions)
       supabase
@@ -96,23 +86,13 @@ export async function GET(request: NextRequest) {
         ...stats
         // Weekly calculations moved to client-side for better performance
       },
-      goals: goals.map(goal => ({
-        id: goal.id,
-        title: goal.title,
-        description: goal.description,
-        targetValue: goal.target_value,
-        currentValue: goal.current_value,
-        deadline: goal.deadline,
-        progress: Math.min(100, Math.round((goal.current_value / goal.target_value) * 100))
-      })),
       recentActivity: activities,
       settings,
       recentQuizzes,
       summary: {
         totalQuizzesCompleted: stats.totalQuizzes || 0,
         currentStreak: stats.studyStreak || 0,
-        averageScore: stats.averageScore || 0,
-        activeGoals: goals.length
+        averageScore: stats.averageScore || 0
       },
       lastUpdated: new Date().toISOString()
     }

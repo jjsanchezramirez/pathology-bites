@@ -27,7 +27,7 @@ export interface QuestionReportWithDetails extends QuestionReportData {
 // Enums and constants
 export const INQUIRY_TYPES = {
   GENERAL: 'general',
-  TECH: 'tech'
+  TECH: 'technical'
 } as const
 
 export const INQUIRY_STATUSES = {

@@ -485,7 +485,7 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
 
       {/* Iframe viewer with mobile touch isolation */}
       <div
-        className="relative w-full h-[600px] overflow-hidden"
+        className={`relative w-full overflow-hidden ${isMobile ? 'h-[350px]' : 'h-[600px]'}`}
         onTouchStart={(e) => {
           // On mobile, prevent page scrolling when touching the WSI viewer
           if (isMobile && loaded) {

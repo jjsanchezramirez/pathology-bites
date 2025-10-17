@@ -387,46 +387,46 @@ export function DoubleSidebarAnkomaViewer({
   const selectedCategory = selectedDeck?.categories.find(c => c.id === selectedCategoryId)
 
   return (
-    <div className={cn("w-full h-full min-h-0 flex", className)}>
+    <div className={cn("w-full h-full min-h-0 flex gap-4 p-4", className)}>
       {/* Left Sidebar - Decks */}
       <div className={cn(
-        "border-r bg-background transition-all duration-300",
-        leftSidebarCollapsed ? "w-0" : "w-60"
+        "transition-all duration-300 overflow-hidden flex-shrink-0",
+        leftSidebarCollapsed ? "w-0" : "w-52"
       )}>
         {!leftSidebarCollapsed && (
-        <Card className="h-full border-0 rounded-none flex flex-col min-h-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <BookOpen className="h-5 w-5" />
+        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <BookOpen className="h-4 w-4" />
               Decks
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0 flex-1 min-h-0">
-            <ScrollArea className="h-full">
-              <div className="space-y-2">
+          <CardContent className="pt-0 flex-1 min-h-0 px-3 pb-3">
+            <ScrollArea className="h-auto max-h-[calc(100vh-200px)]">
+              <div className="space-y-1.5">
                 {organizedDecks.map((deck) => (
                   <div
                     key={deck.id}
                     className={cn(
-                      "p-3 rounded-md cursor-pointer transition-colors",
+                      "p-2 rounded-md cursor-pointer transition-colors text-xs",
                       "hover:bg-muted/50",
                       selectedDeckId === deck.id && "bg-primary/10 border border-primary/20"
                     )}
                     onClick={() => handleDeckSelect(deck.id)}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-1">
                       <span className={cn(
-                        "font-medium",
+                        "font-medium truncate",
                         selectedDeckId === deck.id && "text-primary"
                       )}>
                         {deck.name}
                       </span>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0">
                         {deck.totalCards}
                       </Badge>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {deck.categories.length} categories
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {deck.categories.length} cats
                     </div>
                   </div>
                 ))}
@@ -439,38 +439,38 @@ export function DoubleSidebarAnkomaViewer({
 
       {/* Middle Sidebar - Categories */}
       <div className={cn(
-        "border-r bg-background transition-all duration-300",
-        rightSidebarCollapsed ? "w-0" : "w-80"
+        "transition-all duration-300 overflow-hidden flex-shrink-0",
+        rightSidebarCollapsed ? "w-0" : "w-60"
       )}>
         {!rightSidebarCollapsed && (
-        <Card className="h-full border-0 rounded-none flex flex-col min-h-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">
-              {selectedDeck ? `${selectedDeck.name} Categories` : 'Categories'}
+        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">
+              {selectedDeck ? `${selectedDeck.name}` : 'Categories'}
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0 flex-1 min-h-0">
+          <CardContent className="pt-0 flex-1 min-h-0 px-3 pb-3">
             {selectedDeck ? (
-              <ScrollArea className="h-full">
-                <div className="space-y-1">
+              <ScrollArea className="h-auto max-h-[calc(100vh-200px)]">
+                <div className="space-y-0.5">
                   {selectedDeck.categories.map((category) => (
                     <div key={category.id}>
                       <div
                         className={cn(
-                          "p-2 rounded-md cursor-pointer transition-colors",
+                          "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
                           "hover:bg-muted/50",
                           selectedCategoryId === category.id && "bg-primary/10 border border-primary/20"
                         )}
                         onClick={() => handleCategorySelect(category.id)}
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-1">
                           <span className={cn(
-                            "font-medium",
+                            "font-medium truncate",
                             selectedCategoryId === category.id && "text-primary"
                           )}>
                             {category.name}
                           </span>
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0">
                             {category.cards.length}
                           </Badge>
                         </div>
@@ -602,7 +602,7 @@ export function DoubleSidebarAnkomaViewer({
         </div>
 
         {/* Card Content */}
-        <div className="flex-1 overflow-auto p-6 min-h-0 pb-16">
+        <div className="flex-1 overflow-auto p-4 sm:p-6 min-h-0 pb-16">
           {currentCard ? (
             <InteractiveAnkiViewer
               card={currentCard}

@@ -25,8 +25,22 @@ import {
 } from "lucide-react"
 import { LEARNING_MODULES, getAllSubModules } from "@/features/learning-path/data/learning-categories"
 import { LearningCategory } from "@/features/learning-path/types/learning-path"
+import { FeaturePlaceholder } from "@/features/dashboard/components"
+import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags"
 
 export default function LearningPage() {
+  const featuresEnabled = isQuizFeaturesEnabled()
+
+  // Show placeholder if features are disabled
+  if (!featuresEnabled) {
+    return (
+      <FeaturePlaceholder
+        title="Learning Modules"
+        description="Structured learning paths are being built to guide your pathology education journey. Soon you'll be able to complete curated modules, track your progress through different topics, and unlock advanced content as you master the fundamentals."
+        status="coming-very-soon"
+      />
+    )
+  }
   const [learningData, setLearningData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

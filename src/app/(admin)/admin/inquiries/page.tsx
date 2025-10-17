@@ -15,8 +15,9 @@ import {
 export default function InquiriesPage() {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  const handleInquiriesChange = () => {
-    setRefreshTrigger(prev => prev + 1)
+  const handleInquiriesChange = (newTrigger: number) => {
+    // Update refresh trigger from table to update statistics
+    setRefreshTrigger(newTrigger)
   }
 
   return (

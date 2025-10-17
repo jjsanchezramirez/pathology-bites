@@ -59,6 +59,16 @@ export async function submitContactForm(formData: ContactFormData) {
       }
     }
 
+    // Create notification for admins about new inquiry
+    try {
+      // Import here to avoid circular dependencies
+      const { notificationGenerators } = await import('@/shared/services/notification-generators')
+      await notificationGenerators.createInquiryNotification(dbData.id)
+    } catch (error) {
+      console.error('Error creating inquiry notification:', error)
+      // Don't fail the request if notification fails
+    }
+
     // Send email
     console.log('Sending email notification...')
     const emailContent = createContactNotificationEmail({

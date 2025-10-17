@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from 'react'
 
 import { useMobile } from '@/shared/hooks/use-mobile'
-import { useQuizMode } from '@/shared/hooks/use-quiz-mode'
+import { useQuizMode, useAnkiMode } from '@/shared/hooks/use-quiz-mode'
 import { UnifiedSidebar } from './unified-sidebar'
 import { UnifiedHeader, HeaderConfig } from './unified-header'
 import { getNavigationConfig } from '@/shared/config/navigation'
@@ -38,12 +38,13 @@ export function UnifiedLayoutClient({
   const navigationItems = navigationConfig.items
   const navigationSections = navigationConfig.sections
   const { isInQuizMode } = useQuizMode()
+  const { isInAnkiMode } = useAnkiMode()
   const isMobile = useMobile()
 
   // Simplified state management - separate desktop and mobile states
   const [desktopCollapsed, setDesktopCollapsed] = useState(false) // Desktop: false = expanded, true = collapsed
   const [mobileVisible, setMobileVisible] = useState(false) // Mobile: false = hidden, true = visible
-  const [preQuizDesktopState, setPreQuizDesktopState] = useState(false) // Store desktop state before quiz mode
+  const [preQuizDesktopState, setPreQuizDesktopState] = useState(false) // Store desktop state before quiz/anki mode
   const [isHydrated, setIsHydrated] = useState(false)
   const sidebarRef = useRef<HTMLDivElement>(null)
 
@@ -52,19 +53,19 @@ export function UnifiedLayoutClient({
     setIsHydrated(true)
   }, [])
 
-  // Handle quiz mode changes on desktop only
+  // Handle quiz/anki mode changes on desktop only
   useEffect(() => {
     if (!isMobile && isHydrated) {
-      if (isInQuizMode) {
-        // Entering quiz mode: save current state and collapse
+      if (isInQuizMode || isInAnkiMode) {
+        // Entering quiz/anki mode: save current state and collapse
         setPreQuizDesktopState(desktopCollapsed)
         setDesktopCollapsed(true)
       } else {
-        // Exiting quiz mode: restore previous state
+        // Exiting quiz/anki mode: restore previous state
         setDesktopCollapsed(preQuizDesktopState)
       }
     }
-  }, [isInQuizMode, isMobile, isHydrated])
+  }, [isInQuizMode, isInAnkiMode, isMobile, isHydrated])
 
   // Handle click outside to close mobile sidebar
   useEffect(() => {
@@ -108,8 +109,8 @@ export function UnifiedLayoutClient({
       // On mobile: toggle visibility
       setMobileVisible(!mobileVisible)
     } else {
-      // On desktop: toggle between collapsed and expanded (only if not in quiz mode)
-      if (!isInQuizMode) {
+      // On desktop: toggle between collapsed and expanded (only if not in quiz/anki mode)
+      if (!isInQuizMode && !isInAnkiMode) {
         setDesktopCollapsed(!desktopCollapsed)
       }
     }

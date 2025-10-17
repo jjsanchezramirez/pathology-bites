@@ -131,6 +131,8 @@ export async function GET() {
       responseTime,
       dbConnections: 0,
       storageUsage: 0,
+      r2StorageUsage: 0,
+      r2StorageFormatted: '0 MB',
       errorRate: 100,
       lastUpdated: new Date().toISOString()
     }
