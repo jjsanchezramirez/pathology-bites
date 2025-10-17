@@ -428,7 +428,7 @@ export function DoubleSidebarAnkomaViewer({
             <CardContent className="pt-0 px-3 pb-3">
               <ScrollArea className="h-auto max-h-[30vh]">
                 <div className="space-y-1.5">
-                  {decks.map((deck) => (
+                  {organizedDecks.map((deck) => (
                     <div
                       key={deck.id}
                       className={cn(
@@ -475,30 +475,39 @@ export function DoubleSidebarAnkomaViewer({
                           <div className="flex items-center justify-between gap-1">
                             <span className="font-medium truncate">{category.name}</span>
                             <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                              {category.cardCount}
+                              {category.cards.length}
                             </Badge>
                           </div>
                         </div>
                         {category.subcategories && category.subcategories.length > 0 && (
                           <div className="ml-3 mt-0.5 space-y-0.5">
-                            {category.subcategories.map((sub) => (
-                              <div
-                                key={sub.name}
-                                className={cn(
-                                  "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
-                                  "hover:bg-muted/50",
-                                  selectedSubcategory === sub.name && "bg-primary/10 border border-primary/20"
-                                )}
-                                onClick={() => handleSubcategorySelect(category.id, sub.name)}
-                              >
-                                <div className="flex items-center justify-between gap-1">
-                                  <span className="truncate">{sub.name}</span>
-                                  <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                                    {sub.cardCount}
-                                  </Badge>
+                            {category.subcategories.map((subcategory) => {
+                              const subcategoryCards = category.cards.filter(card => {
+                                const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
+                                if (!ankomaTag) return false
+                                const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
+                                return formatTagName(tagParts[2] || '') === subcategory
+                              })
+
+                              return (
+                                <div
+                                  key={subcategory}
+                                  className={cn(
+                                    "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
+                                    "hover:bg-muted/50",
+                                    selectedSubcategory === subcategory && "bg-primary/10 border border-primary/20"
+                                  )}
+                                  onClick={() => handleSubcategorySelect(subcategory)}
+                                >
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className="truncate">{subcategory}</span>
+                                    <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                                      {subcategoryCards.length}
+                                    </Badge>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              )
+                            })}
                           </div>
                         )}
                       </div>
