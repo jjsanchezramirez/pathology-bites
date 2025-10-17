@@ -389,40 +389,18 @@ export function DoubleSidebarAnkomaViewer({
   const selectedCategory = selectedDeck?.categories.find(c => c.id === selectedCategoryId)
 
   return (
-    <div className={cn("w-full h-full min-h-0 flex gap-4 p-2 md:p-4 relative", className)}>
-      {/* Mobile Overlay */}
-      {(!leftSidebarCollapsed || !rightSidebarCollapsed) && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => {
-            setLeftSidebarCollapsed(true)
-            setRightSidebarCollapsed(true)
-          }}
-        />
-      )}
-
+    <div className={cn("w-full h-full min-h-0 flex gap-4 p-4", className)}>
       {/* Left Sidebar - Decks */}
       <div className={cn(
         "transition-all duration-300 overflow-hidden flex-shrink-0",
-        "md:relative fixed left-0 top-0 h-full z-50 md:z-auto",
-        leftSidebarCollapsed ? "w-0 md:w-0" : "w-64 md:w-52"
+        leftSidebarCollapsed ? "w-0" : "w-52"
       )}>
         {!leftSidebarCollapsed && (
-        <Card className="h-fit md:max-h-[calc(100vh-120px)] max-h-[100vh] flex flex-col rounded-lg md:rounded-lg rounded-none border md:border-l-0">
+        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                Decks
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="md:hidden h-8 w-8 p-0"
-                onClick={() => setLeftSidebarCollapsed(true)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <BookOpen className="h-4 w-4" />
+              Decks
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0 flex-1 min-h-0 px-3 pb-3">
@@ -464,22 +442,13 @@ export function DoubleSidebarAnkomaViewer({
       {/* Middle Sidebar - Categories */}
       <div className={cn(
         "transition-all duration-300 overflow-hidden flex-shrink-0",
-        "md:relative fixed right-0 top-0 h-full z-50 md:z-auto",
-        rightSidebarCollapsed ? "w-0 md:w-0" : "w-64 md:w-60"
+        rightSidebarCollapsed ? "w-0" : "w-60"
       )}>
         {!rightSidebarCollapsed && (
-        <Card className="h-fit md:max-h-[calc(100vh-120px)] max-h-[100vh] flex flex-col rounded-lg md:rounded-lg rounded-none border md:border-r-0">
+        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center justify-between text-sm">
-              <span>{selectedDeck ? `${selectedDeck.name}` : 'Categories'}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="md:hidden h-8 w-8 p-0"
-                onClick={() => setRightSidebarCollapsed(true)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+            <CardTitle className="text-sm">
+              {selectedDeck ? `${selectedDeck.name}` : 'Categories'}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0 flex-1 min-h-0 px-3 pb-3">
@@ -561,33 +530,13 @@ export function DoubleSidebarAnkomaViewer({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0 relative">
-        {/* Mobile Floating Action Buttons */}
-        <div className="md:hidden fixed bottom-4 left-4 right-4 z-30 flex justify-between gap-2 pointer-events-none">
-          <Button
-            variant="default"
-            size="lg"
-            onClick={() => setLeftSidebarCollapsed(false)}
-            className="pointer-events-auto shadow-lg"
-          >
-            <BookOpen className="h-5 w-5 mr-2" />
-            Decks
-          </Button>
-          <Button
-            variant="default"
-            size="lg"
-            onClick={() => setRightSidebarCollapsed(false)}
-            className="pointer-events-auto shadow-lg"
-          >
-            <Folder className="h-5 w-5 mr-2" />
-            Categories
-          </Button>
-        </div>
-
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         {/* Header */}
-        <div className="border-b bg-background p-2 md:p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+        <div className="border-b bg-background p-4">
+          <div className="flex items-center justify-between gap-2">
+            {/* Left: Sidebar toggles */}
+            <div className="flex items-center gap-2">
+              {/* Desktop: Single toggle for both */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -604,6 +553,30 @@ export function DoubleSidebarAnkomaViewer({
                   {leftSidebarCollapsed && rightSidebarCollapsed ? 'Show' : 'Hide'} Sidebar
                 </span>
               </Button>
+
+              {/* Mobile: Individual toggles */}
+              <div className="md:hidden flex items-center gap-1">
+                <Button
+                  variant={leftSidebarCollapsed ? "outline" : "default"}
+                  size="sm"
+                  onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
+                  title="Toggle decks"
+                  className="h-8"
+                >
+                  <BookOpen className="h-4 w-4 mr-1" />
+                  <span className="text-xs">Decks</span>
+                </Button>
+                <Button
+                  variant={rightSidebarCollapsed ? "outline" : "default"}
+                  size="sm"
+                  onClick={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
+                  title="Toggle categories"
+                  className="h-8"
+                >
+                  <Folder className="h-4 w-4 mr-1" />
+                  <span className="text-xs">Cats</span>
+                </Button>
+              </div>
             </div>
 
             <div className="text-center flex-1 min-w-0">
@@ -659,7 +632,7 @@ export function DoubleSidebarAnkomaViewer({
         </div>
 
         {/* Card Content */}
-        <div className="flex-1 overflow-auto p-2 sm:p-4 md:p-6 min-h-0 pb-20 md:pb-16">
+        <div className="flex-1 overflow-auto p-4 sm:p-6 min-h-0">
           {currentCard ? (
             <InteractiveAnkiViewer
               card={currentCard}
