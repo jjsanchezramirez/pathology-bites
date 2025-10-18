@@ -82,9 +82,9 @@ export function InteractiveLearningTools({
             <p className="text-muted-foreground mb-6 leading-relaxed">
               Practice with AI-generated questions based on real virtual slide images and educational content.
             </p>
-            <Link href="/tools/wsi-question-generator">
+            <Link href="/login">
               <Button className="w-full">
-                Generate Questions
+                Sign In to Access
               </Button>
             </Link>
           </div>

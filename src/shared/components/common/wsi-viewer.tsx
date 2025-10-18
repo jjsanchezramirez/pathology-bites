@@ -512,21 +512,35 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
           touchAction: isMobile ? 'none' : 'auto'
         }}
       >
-        <iframe
-          ref={iframeRef}
-          src={url}
-          className="w-full h-full border-0"
-          title={title}
-          onLoad={handleIframeLoad}
-          onError={handleIframeError}
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-          allow="fullscreen"
+        {/* Scaled iframe wrapper - 50% scale */}
+        <div
           style={{
-            pointerEvents: loaded ? 'auto' : 'none',
-            // On mobile, let the iframe handle all touch events
-            touchAction: isMobile ? 'manipulation' : 'auto'
+            width: '200%',
+            height: '200%',
+            transformOrigin: '0 0',
+            WebkitTransform: 'scale(0.5)',
+            MozTransform: 'scale(0.5)',
+            OTransform: 'scale(0.5)',
+            transform: 'scale(0.5)',
+            msZoom: 0.5
           }}
-        />
+        >
+          <iframe
+            ref={iframeRef}
+            src={url}
+            className="w-full h-full border-0"
+            title={title}
+            onLoad={handleIframeLoad}
+            onError={handleIframeError}
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            allow="fullscreen"
+            style={{
+              pointerEvents: loaded ? 'auto' : 'none',
+              // On mobile, let the iframe handle all touch events
+              touchAction: isMobile ? 'manipulation' : 'auto'
+            }}
+          />
+        </div>
       </div>
 
       {/* Scroll hint overlay for loaded iframes */}

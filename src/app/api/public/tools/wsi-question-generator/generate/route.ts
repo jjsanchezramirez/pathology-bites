@@ -75,6 +75,16 @@ function getRetryDelay(attempt: number): number {
   return Math.min(delay, RETRY_CONFIG.maxDelay)
 }
 
+// Shuffle answer options to randomize correct answer position
+function shuffleOptions(options: QuestionOption[]): QuestionOption[] {
+  const shuffled = [...options]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
 // Types
 
 interface QuestionOption {
@@ -410,33 +420,33 @@ Return the response in this exact JSON format:
   "status": "draft",
   "question_options": [
     {
-      "text": "Answer choice A text",
+      "text": "Answer choice 1 text",
       "is_correct": false,
-      "explanation": "Clinical and histological explanation for A - describe why this diagnosis is incorrect based on clinical presentation and microscopic features seen in the slide",
+      "explanation": "Clinical and histological explanation - describe why this diagnosis is incorrect based on clinical presentation and microscopic features seen in the slide",
       "order_index": 0
     },
     {
-      "text": "Answer choice B text",
-      "is_correct": true,
-      "explanation": "Clinical and histological explanation for B (correct answer) - explain why this is the correct diagnosis based on the clinical scenario AND the specific histologic features visible in the WSI slide",
+      "text": "Answer choice 2 text",
+      "is_correct": false,
+      "explanation": "Clinical and histological explanation - describe why this diagnosis is incorrect, mentioning both clinical factors and the histological features that rule it out",
       "order_index": 1
     },
     {
-      "text": "Answer choice C text",
-      "is_correct": false,
-      "explanation": "Clinical and histological explanation for C - describe why this diagnosis is incorrect, mentioning both clinical factors and the histological features that rule it out",
+      "text": "Answer choice 3 text (correct answer)",
+      "is_correct": true,
+      "explanation": "Clinical and histological explanation (correct answer) - explain why this is the correct diagnosis based on the clinical scenario AND the specific histologic features visible in the WSI slide",
       "order_index": 2
     },
     {
-      "text": "Answer choice D text",
+      "text": "Answer choice 4 text",
       "is_correct": false,
-      "explanation": "Clinical and histological explanation for D - explain the clinical and microscopic differences that distinguish this from the correct diagnosis",
+      "explanation": "Clinical and histological explanation - explain the clinical and microscopic differences that distinguish this from the correct diagnosis",
       "order_index": 3
     },
     {
-      "text": "Answer choice E text",
+      "text": "Answer choice 5 text",
       "is_correct": false,
-      "explanation": "Clinical and histological explanation for E - describe the clinical presentation and histologic appearance that would be expected for this diagnosis and how it differs from what is shown",
+      "explanation": "Clinical and histological explanation - describe the clinical presentation and histologic appearance that would be expected for this diagnosis and how it differs from what is shown",
       "order_index": 4
     }
   ]
@@ -949,9 +959,15 @@ export async function POST(request: NextRequest) {
       const generationTime = Date.now() - startTime
       console.log(`[Question Gen] Question generation completed in ${generationTime}ms`)
 
+      // Shuffle answer options to randomize correct answer position
+      const shuffledOptions = shuffleOptions(questionResult.questionData.question_options)
+
       const result = {
         success: true,
-        question: questionResult.questionData,
+        question: {
+          ...questionResult.questionData,
+          question_options: shuffledOptions
+        },
         metadata: {
           generated_at: new Date().toISOString(),
           generation_time_ms: generationTime,
@@ -963,7 +979,7 @@ export async function POST(request: NextRequest) {
         },
         debug: questionResult.debug
       }
-      
+
       console.log('[Question Gen] Final API response token_usage:', result.metadata.token_usage)
 
       return NextResponse.json(result, {
