@@ -348,20 +348,8 @@ export function InteractiveAnkiViewer({
               Card ID #{card.id}
             </div>
             {currentCardIndex !== undefined && totalCards !== undefined && (
-              <div className="flex items-center gap-2">
-                {/* Mobile: Previous button + Card counter */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onPrevious}
-                  disabled={!onPrevious}
-                  className="md:hidden h-7 w-7 p-0"
-                >
-                  <ChevronsLeft className="h-4 w-4" />
-                </Button>
-                <div className="text-xs md:text-sm font-semibold text-foreground">
-                  Card {currentCardIndex + 1}/{totalCards}
-                </div>
+              <div className="text-xs md:text-sm font-semibold text-foreground">
+                Card {currentCardIndex + 1}/{totalCards}
               </div>
             )}
           </div>

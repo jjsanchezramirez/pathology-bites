@@ -17,6 +17,7 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronLeft,
+  ChevronsLeft,
   RotateCcw,
   Play,
   Shuffle,
@@ -748,22 +749,38 @@ export function DoubleSidebarAnkomaViewer({
 
             {/* Right: Card info and controls */}
             <div className="flex items-center gap-1 sm:gap-2 md:gap-3 shrink-0">
-              {/* Card Navigation Info - Hidden on mobile since it's in card header */}
+              {/* Card Navigation Info - Desktop only shows counter, mobile shows "Card X/Y" */}
               {currentCards.length > 0 && (
-                <div className="hidden md:flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                  <span className="font-medium whitespace-nowrap">
-                    {currentCardIndex + 1}/{currentCards.length}
-                  </span>
-                  {isShuffled && (
-                    <Badge variant="secondary" className="text-xs hidden lg:inline-flex">
-                      Shuffled
-                    </Badge>
-                  )}
-                </div>
+                <>
+                  <div className="hidden md:flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                    <span className="font-medium whitespace-nowrap">
+                      {currentCardIndex + 1}/{currentCards.length}
+                    </span>
+                    {isShuffled && (
+                      <Badge variant="secondary" className="text-xs hidden lg:inline-flex">
+                        Shuffled
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="md:hidden text-xs font-semibold">
+                    Card {currentCardIndex + 1}/{currentCards.length}
+                  </div>
+                </>
               )}
 
               {/* Controls */}
               <div className="flex items-center gap-1">
+                {/* Mobile: Previous button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePreviousCard}
+                  disabled={currentCardIndex === 0}
+                  title="Previous card"
+                  className="md:hidden h-7 w-7 p-0"
+                >
+                  <ChevronsLeft className="h-3 w-3" />
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
