@@ -16,6 +16,7 @@ import {
   Search,
   ChevronRight,
   ChevronDown,
+  ChevronLeft,
   RotateCcw,
   Play,
   Shuffle,
