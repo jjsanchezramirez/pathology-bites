@@ -398,7 +398,7 @@ export function DoubleSidebarAnkomaViewer({
   const selectedCategory = selectedDeck?.categories.find(c => c.id === selectedCategoryId)
 
   return (
-    <div className={cn("w-full h-full min-h-0 flex gap-4 p-4", className)}>
+    <div className={cn("w-full h-full min-h-0 flex gap-4 p-0 md:p-4", className)}>
       {/* Mobile: Backdrop overlay */}
       {!leftSidebarCollapsed && (
         <div
