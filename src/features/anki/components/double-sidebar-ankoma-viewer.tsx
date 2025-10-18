@@ -704,11 +704,12 @@ export function DoubleSidebarAnkomaViewer({
             <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               {/* Mobile: Select Deck button */}
               <Button
-                variant="outline"
+                variant="default"
                 size="sm"
                 onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
-                className="md:hidden h-8 px-3"
+                className="md:hidden h-8 px-3 gap-1.5"
               >
+                <ChevronLeft className="h-4 w-4" />
                 <span className="text-sm font-medium">Select Deck</span>
               </Button>
 

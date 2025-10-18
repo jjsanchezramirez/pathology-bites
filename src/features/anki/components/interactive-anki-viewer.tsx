@@ -396,24 +396,54 @@ export function InteractiveAnkiViewer({
           )}
 
           {/* Navigation Controls - Mobile only */}
-          <div className="flex items-center justify-between pt-3 md:hidden">
-            <Button
-              variant="outline"
-              onClick={onPrevious}
-              disabled={!onPrevious}
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Previous
-            </Button>
+          <div className="md:hidden space-y-2 pt-3">
+            {/* Previous/Next row */}
+            <div className="flex items-center justify-between gap-2">
+              <Button
+                variant="outline"
+                onClick={onPrevious}
+                disabled={!onPrevious}
+                className="flex-1"
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Previous
+              </Button>
 
-            <Button
-              variant="outline"
-              onClick={onNext}
-              disabled={!onNext}
-            >
-              Next
-              <ChevronRight className="h-4 w-4 ml-2" />
-            </Button>
+              <Button
+                variant="outline"
+                onClick={onNext}
+                disabled={!onNext}
+                className="flex-1"
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+
+            {/* Reveal Next button */}
+            {(!isImageOcclusion && hasAnyClozes && !allClozesRevealed) ||
+             ((isImageOcclusion || isBasicCard) && !showAnswer && card.answer && card.answer.trim() &&
+              (isBasicCard ? basicHasNonCitationAnswer : true)) ? (
+              <Button
+                variant="default"
+                onClick={() => {
+                  if (!isImageOcclusion && hasAnyClozes && !allClozesRevealed) {
+                    const nextClozeIndex = questionClozes.concat(answerClozes)
+                      .map(c => c.index)
+                      .find(idx => !revealedClozes.has(idx))
+                    if (nextClozeIndex !== undefined) {
+                      handleClozeClick(nextClozeIndex)
+                    }
+                  } else if ((isImageOcclusion || isBasicCard) && !showAnswer) {
+                    toggleAnswer()
+                  }
+                }}
+                className="w-full"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Reveal Next
+              </Button>
+            ) : null}
           </div>
 
           {/* Instructions - Desktop only */}
