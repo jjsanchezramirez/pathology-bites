@@ -765,17 +765,6 @@ export function DoubleSidebarAnkomaViewer({
 
               {/* Controls */}
               <div className="flex items-center gap-1">
-                {/* Mobile: Previous button */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePreviousCard}
-                  disabled={currentCardIndex === 0}
-                  title="Previous card"
-                  className="md:hidden h-7 w-7 p-0"
-                >
-                  <ChevronsLeft className="h-3 w-3" />
-                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -795,6 +784,18 @@ export function DoubleSidebarAnkomaViewer({
                   className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 p-0"
                 >
                   <RotateCcw className="h-3 w-3 md:h-4 md:w-4" />
+                </Button>
+                {/* Mobile: Previous button with text */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePreviousCard}
+                  disabled={currentCardIndex === 0}
+                  title="Previous card"
+                  className="md:hidden h-7 px-2 gap-1"
+                >
+                  <ChevronsLeft className="h-3 w-3" />
+                  <span className="text-xs font-medium">Previous</span>
                 </Button>
               </div>
             </div>
