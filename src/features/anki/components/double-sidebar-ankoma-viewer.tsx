@@ -556,7 +556,7 @@ export function DoubleSidebarAnkomaViewer({
         leftSidebarCollapsed ? "w-0" : "w-52"
       )}>
         {!leftSidebarCollapsed && (
-        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border">
+        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border mt-[72px]">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
               <BookOpen className="h-4 w-4" />
@@ -605,7 +605,7 @@ export function DoubleSidebarAnkomaViewer({
         rightSidebarCollapsed ? "w-0" : "w-60"
       )}>
         {!rightSidebarCollapsed && (
-        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border">
+        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border mt-[72px]">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">
               {selectedDeck ? `${selectedDeck.name}` : 'Categories'}
