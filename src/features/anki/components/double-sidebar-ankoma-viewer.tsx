@@ -93,6 +93,7 @@ export function DoubleSidebarAnkomaViewer({
   const [isShuffled, setIsShuffled] = useState(false)
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false)
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
 
   // Loading message cycling state
   const [currentLoadingMessage, setCurrentLoadingMessage] = useState('')
@@ -276,6 +277,18 @@ export function DoubleSidebarAnkomaViewer({
     setIsShuffled(false)
   }
 
+  const handleCategoryToggle = (categoryId: string) => {
+    setExpandedCategories(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(categoryId)) {
+        newSet.delete(categoryId)
+      } else {
+        newSet.add(categoryId)
+      }
+      return newSet
+    })
+  }
+
   const handleSubcategorySelect = (subcategory: string | null) => {
     setSelectedSubcategory(subcategory)
     setCurrentCardIndex(0)
@@ -400,7 +413,7 @@ export function DoubleSidebarAnkomaViewer({
 
       {/* Mobile: Combined Sidebar (Decks + Categories stacked) */}
       <div className={cn(
-        "md:hidden fixed inset-y-0 left-0 z-50 bg-background border-r transition-transform duration-300 w-64 overflow-y-auto",
+        "md:hidden fixed inset-y-0 left-0 z-50 bg-background border-r transition-transform duration-300 w-80 overflow-y-auto",
         leftSidebarCollapsed ? "-translate-x-full" : "translate-x-0"
       )}>
         <div className="p-4 space-y-4">
@@ -462,56 +475,78 @@ export function DoubleSidebarAnkomaViewer({
               <CardContent className="pt-0 px-3 pb-3">
                 <ScrollArea className="h-auto max-h-[50vh]">
                   <div className="space-y-0.5">
-                    {selectedDeck.categories.map((category) => (
-                      <div key={category.id}>
-                        <div
-                          className={cn(
-                            "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
-                            "hover:bg-muted/50",
-                            selectedCategoryId === category.id && "bg-primary/10 border border-primary/20"
-                          )}
-                          onClick={() => handleCategorySelect(category.id)}
-                        >
-                          <div className="flex items-center justify-between gap-1">
-                            <span className="font-medium truncate">{category.name}</span>
-                            <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                              {category.cards.length}
-                            </Badge>
-                          </div>
-                        </div>
-                        {category.subcategories && category.subcategories.length > 0 && (
-                          <div className="ml-3 mt-0.5 space-y-0.5">
-                            {category.subcategories.map((subcategory) => {
-                              const subcategoryCards = category.cards.filter(card => {
-                                const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
-                                if (!ankomaTag) return false
-                                const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
-                                return formatTagName(tagParts[2] || '') === subcategory
-                              })
+                    {selectedDeck.categories.map((category) => {
+                      const isExpanded = expandedCategories.has(category.id)
+                      const hasSubcategories = category.subcategories && category.subcategories.length > 0
 
-                              return (
-                                <div
-                                  key={subcategory}
-                                  className={cn(
-                                    "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
-                                    "hover:bg-muted/50",
-                                    selectedSubcategory === subcategory && "bg-primary/10 border border-primary/20"
-                                  )}
-                                  onClick={() => handleSubcategorySelect(subcategory)}
-                                >
-                                  <div className="flex items-center justify-between gap-1">
-                                    <span className="truncate">{subcategory}</span>
-                                    <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                                      {subcategoryCards.length}
-                                    </Badge>
-                                  </div>
-                                </div>
-                              )
-                            })}
+                      return (
+                        <div key={category.id}>
+                          <div
+                            className={cn(
+                              "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
+                              "hover:bg-muted/50",
+                              selectedCategoryId === category.id && "bg-primary/10 border border-primary/20"
+                            )}
+                            onClick={() => {
+                              handleCategorySelect(category.id)
+                              if (hasSubcategories) {
+                                handleCategoryToggle(category.id)
+                              }
+                            }}
+                          >
+                            <div className="flex items-center justify-between gap-1">
+                              <div className="flex items-center gap-1 flex-1 min-w-0">
+                                {hasSubcategories && (
+                                  isExpanded ? (
+                                    <ChevronDown className="h-3 w-3 flex-shrink-0" />
+                                  ) : (
+                                    <ChevronRight className="h-3 w-3 flex-shrink-0" />
+                                  )
+                                )}
+                                <span className="font-medium truncate">{category.name}</span>
+                              </div>
+                              <Badge variant="secondary" className="text-xs px-1.5 py-0 flex-shrink-0">
+                                {category.cards.length}
+                              </Badge>
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    ))}
+                          {hasSubcategories && isExpanded && (
+                            <div className="ml-5 mt-0.5 space-y-0.5">
+                              {category.subcategories.map((subcategory) => {
+                                const subcategoryCards = category.cards.filter(card => {
+                                  const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
+                                  if (!ankomaTag) return false
+                                  const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
+                                  return formatTagName(tagParts[2] || '') === subcategory
+                                })
+
+                                return (
+                                  <div
+                                    key={subcategory}
+                                    className={cn(
+                                      "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
+                                      "hover:bg-muted/50",
+                                      selectedSubcategory === subcategory && "bg-primary/10 border border-primary/20"
+                                    )}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleSubcategorySelect(subcategory)
+                                    }}
+                                  >
+                                    <div className="flex items-center justify-between gap-1">
+                                      <span className="truncate">{subcategory}</span>
+                                      <Badge variant="secondary" className="text-xs px-1.5 py-0 flex-shrink-0">
+                                        {subcategoryCards.length}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
                 </ScrollArea>
               </CardContent>
@@ -585,68 +620,85 @@ export function DoubleSidebarAnkomaViewer({
             {selectedDeck ? (
               <ScrollArea className="h-auto max-h-[calc(100vh-200px)]">
                 <div className="space-y-0.5">
-                  {selectedDeck.categories.map((category) => (
-                    <div key={category.id}>
-                      <div
-                        className={cn(
-                          "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
-                          "hover:bg-muted/50",
-                          selectedCategoryId === category.id && "bg-primary/10 border border-primary/20"
-                        )}
-                        onClick={() => handleCategorySelect(category.id)}
-                      >
-                        <div className="flex items-center justify-between gap-1">
-                          <span className={cn(
-                            "font-medium truncate",
-                            selectedCategoryId === category.id && "text-primary"
-                          )}>
-                            {category.name}
-                          </span>
-                          <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0">
-                            {category.cards.length}
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      {/* Subcategories */}
-                      {selectedCategoryId === category.id && category.subcategories.length > 0 && (
-                        <div className="ml-4 mt-2 space-y-1">
-                          <div
-                            className={cn(
-                              "p-1 px-2 rounded text-sm cursor-pointer transition-colors",
-                              "hover:bg-muted/30",
-                              !selectedSubcategory && "bg-primary/5 text-primary"
-                            )}
-                            onClick={() => handleSubcategorySelect(null)}
-                          >
-                            All ({category.cards.length})
+                  {selectedDeck.categories.map((category) => {
+                    const isExpanded = expandedCategories.has(category.id)
+                    const hasSubcategories = category.subcategories && category.subcategories.length > 0
+
+                    return (
+                      <div key={category.id}>
+                        <div
+                          className={cn(
+                            "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
+                            "hover:bg-muted/50",
+                            selectedCategoryId === category.id && "bg-primary/10 border border-primary/20"
+                          )}
+                          onClick={() => {
+                            handleCategorySelect(category.id)
+                            if (hasSubcategories) {
+                              handleCategoryToggle(category.id)
+                            }
+                          }}
+                        >
+                          <div className="flex items-center justify-between gap-1">
+                            <div className="flex items-center gap-1 flex-1 min-w-0">
+                              {hasSubcategories && (
+                                isExpanded ? (
+                                  <ChevronDown className="h-3 w-3 flex-shrink-0" />
+                                ) : (
+                                  <ChevronRight className="h-3 w-3 flex-shrink-0" />
+                                )
+                              )}
+                              <span className={cn(
+                                "font-medium truncate",
+                                selectedCategoryId === category.id && "text-primary"
+                              )}>
+                                {category.name}
+                              </span>
+                            </div>
+                            <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0">
+                              {category.cards.length}
+                            </Badge>
                           </div>
-                          {category.subcategories.map((subcategory) => {
-                            const subcategoryCards = category.cards.filter(card => {
-                              const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
-                              if (!ankomaTag) return false
-                              const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
-                              return formatTagName(tagParts[2] || '') === subcategory
-                            })
-                            
-                            return (
-                              <div
-                                key={subcategory}
-                                className={cn(
-                                  "p-1 px-2 rounded text-sm cursor-pointer transition-colors",
-                                  "hover:bg-muted/30",
-                                  selectedSubcategory === subcategory && "bg-primary/5 text-primary"
-                                )}
-                                onClick={() => handleSubcategorySelect(subcategory)}
-                              >
-                                {subcategory} ({subcategoryCards.length})
-                              </div>
-                            )
-                          })}
                         </div>
-                      )}
-                    </div>
-                  ))}
+
+                        {/* Subcategories */}
+                        {hasSubcategories && isExpanded && (
+                          <div className="ml-5 mt-1 space-y-0.5">
+                            {category.subcategories.map((subcategory) => {
+                              const subcategoryCards = category.cards.filter(card => {
+                                const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
+                                if (!ankomaTag) return false
+                                const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
+                                return formatTagName(tagParts[2] || '') === subcategory
+                              })
+
+                              return (
+                                <div
+                                  key={subcategory}
+                                  className={cn(
+                                    "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
+                                    "hover:bg-muted/50",
+                                    selectedSubcategory === subcategory && "bg-primary/10 border border-primary/20"
+                                  )}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleSubcategorySelect(subcategory)
+                                  }}
+                                >
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className="truncate">{subcategory}</span>
+                                    <Badge variant="secondary" className="text-xs px-1.5 py-0 flex-shrink-0">
+                                      {subcategoryCards.length}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </ScrollArea>
             ) : (
