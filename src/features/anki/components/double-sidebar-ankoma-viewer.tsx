@@ -702,15 +702,15 @@ export function DoubleSidebarAnkomaViewer({
           <div className="flex items-center justify-between gap-1 sm:gap-2">
             {/* Left: Sidebar toggle */}
             <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-              {/* Mobile: Library icon instead of hamburger */}
+              {/* Mobile: Icon + Text button */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
-                title="Toggle navigation"
-                className="md:hidden h-8 w-8 p-0"
+                className="md:hidden h-8 px-2 gap-1.5"
               >
-                <Library className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4" />
+                <span className="text-sm font-medium">Decks</span>
               </Button>
 
               {/* Desktop: Single toggle for both */}
@@ -795,10 +795,14 @@ export function DoubleSidebarAnkomaViewer({
               card={currentCard}
               onNext={currentCardIndex < currentCards.length - 1 ? handleNextCard : undefined}
               onPrevious={currentCardIndex > 0 ? handlePreviousCard : undefined}
+              currentCardIndex={currentCardIndex}
+              totalCards={currentCards.length}
+              categoryName={selectedCategory?.name}
+              subcategoryName={selectedSubcategory}
               className="w-full"
             />
           ) : selectedCategory ? (
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-7xl mx-auto">
               <Card>
                 <CardContent className="flex items-center justify-center h-64">
                   <div className="text-center">
@@ -815,7 +819,7 @@ export function DoubleSidebarAnkomaViewer({
               </Card>
             </div>
           ) : (
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-7xl mx-auto">
               <Card>
                 <CardContent className="flex items-center justify-center h-64">
                   <div className="text-center">

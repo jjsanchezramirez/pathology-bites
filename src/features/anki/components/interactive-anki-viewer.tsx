@@ -33,6 +33,10 @@ interface InteractiveAnkiViewerProps extends Omit<AnkiCardViewerProps, 'showAnsw
   onNext?: () => void
   onPrevious?: () => void
   className?: string
+  currentCardIndex?: number
+  totalCards?: number
+  categoryName?: string
+  subcategoryName?: string
 }
 
 // Function to format tag names by splitting on uppercase letters and symbols
@@ -55,7 +59,11 @@ export function InteractiveAnkiViewer({
   card,
   onNext,
   onPrevious,
-  className
+  className,
+  currentCardIndex,
+  totalCards,
+  categoryName,
+  subcategoryName
 }: InteractiveAnkiViewerProps) {
   const [revealedClozes, setRevealedClozes] = useState<Set<number>>(new Set())
   const [showAnswer, setShowAnswer] = useState(false)
@@ -296,7 +304,7 @@ export function InteractiveAnkiViewer({
   const revealedCount = revealedClozes.size
 
   return (
-    <div className={cn("w-full max-w-6xl mx-auto mb-3 md:mb-6 pb-3 md:pb-6 px-2 md:px-0", className)}>
+    <div className={cn("w-full max-w-7xl mx-auto mb-3 md:mb-6 pb-3 md:pb-6 px-2 md:px-0", className)}>
       <style jsx>{`
         .inline-image {
           max-width: 100%;
@@ -315,27 +323,34 @@ export function InteractiveAnkiViewer({
           vertical-align: middle;
         }
       `}</style>
+
+      {/* Breadcrumb above card */}
+      {(categoryName || subcategoryName) && (
+        <div className="mb-3 md:mb-4 px-2 md:px-0">
+          {categoryName && (
+            <h2 className="text-lg md:text-xl font-semibold text-foreground">
+              {categoryName}
+            </h2>
+          )}
+          {subcategoryName && (
+            <p className="text-sm md:text-base text-muted-foreground mt-0.5">
+              {subcategoryName}
+            </p>
+          )}
+        </div>
+      )}
+
       <Card className="w-full">
-        <CardHeader className="pb-2 px-4 md:px-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              {(() => {
-                const ankomaTag = card.tags?.find(tag => tag.startsWith('#ANKOMA::'))
-                if (ankomaTag) {
-                  const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
-                  const formattedTag = tagParts.map(part => formatTagName(part)).join(' → ')
-                  return (
-                    <span className="text-sm md:text-base font-semibold text-foreground truncate block">
-                      {formattedTag}
-                    </span>
-                  )
-                }
-                return null
-              })()}
-            </div>
-            <div className="text-xs md:text-sm font-semibold text-foreground font-mono shrink-0">
+        <CardHeader className="pb-2 px-4 md:px-6 border-b">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-xs md:text-sm text-muted-foreground font-mono">
               Card ID #{card.id}
             </div>
+            {currentCardIndex !== undefined && totalCards !== undefined && (
+              <div className="text-xs md:text-sm font-semibold text-foreground">
+                {currentCardIndex + 1}/{totalCards}
+              </div>
+            )}
           </div>
         </CardHeader>
 
