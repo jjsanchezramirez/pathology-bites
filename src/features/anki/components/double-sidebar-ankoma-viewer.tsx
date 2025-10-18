@@ -94,9 +94,18 @@ export function DoubleSidebarAnkomaViewer({
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isShuffled, setIsShuffled] = useState(false)
-  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(true)
-  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
+  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(true) // Mobile: hidden, Desktop: shown (set in useEffect)
+  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(true) // Mobile: hidden, Desktop: shown (set in useEffect)
   const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null)
+
+  // Initialize desktop sidebars as visible on mount
+  useEffect(() => {
+    const isDesktop = window.innerWidth >= 768 // md breakpoint
+    if (isDesktop) {
+      setLeftSidebarCollapsed(false)
+      setRightSidebarCollapsed(false)
+    }
+  }, [])
 
   // Loading message cycling state
   const [currentLoadingMessage, setCurrentLoadingMessage] = useState('')
