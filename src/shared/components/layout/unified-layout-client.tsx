@@ -133,8 +133,8 @@ export function UnifiedLayoutClient({
     <div
       className="overflow-hidden bg-background"
       style={{
-        height: '100dvh', // Use dynamic viewport height for mobile browsers
-        minHeight: '100vh', // Fallback for browsers that don't support dvh
+        height: '100svh', // Use small viewport height for mobile browsers (excludes address bar)
+        minHeight: '100vh', // Fallback for browsers that don't support svh
       }}
     >
       {/* Mobile Backdrop - subtle dark tint */}
@@ -183,8 +183,8 @@ export function UnifiedLayoutClient({
               : 'left-64' // Desktop expanded: 256px
         }`}
         style={{
-          height: '100dvh', // Use dynamic viewport height for mobile browsers
-          minHeight: '100vh', // Fallback for browsers that don't support dvh
+          height: '100svh', // Use small viewport height for mobile browsers (excludes address bar)
+          minHeight: '100vh', // Fallback for browsers that don't support svh
         }}
       >
         {/* Header */}
@@ -195,7 +195,7 @@ export function UnifiedLayoutClient({
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto bg-background">
-          <div className="container mx-auto max-w-7xl p-6">
+          <div className="container mx-auto max-w-7xl p-6 pb-24">
             {children}
           </div>
         </main>

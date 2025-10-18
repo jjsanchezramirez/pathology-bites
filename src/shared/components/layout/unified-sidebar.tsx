@@ -124,8 +124,8 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
         isCollapsed ? 'w-16' : 'w-64'
       } bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-300 border-r border-sidebar-border`}
       style={{
-        height: '100dvh', // Use dynamic viewport height for mobile browsers
-        minHeight: '100vh', // Fallback for browsers that don't support dvh
+        height: '100svh', // Use small viewport height for mobile browsers (excludes address bar)
+        minHeight: '100vh', // Fallback for browsers that don't support svh
       }}
     >
       {/* Logo Section */}

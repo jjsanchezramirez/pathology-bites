@@ -407,7 +407,7 @@ export function DoubleSidebarAnkomaViewer({
   const selectedCategory = selectedDeck?.categories.find(c => c.id === selectedCategoryId)
 
   return (
-    <div className={cn("w-full h-full min-h-0 flex gap-4 p-0 md:p-4", className)}>
+    <div className={cn("w-full flex gap-4 p-0 md:p-4", className)}>
       {/* Mobile: Backdrop overlay */}
       {!leftSidebarCollapsed && (
         <div
@@ -707,7 +707,7 @@ export function DoubleSidebarAnkomaViewer({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+      <div className="flex-1 flex flex-col">
         {/* Header */}
         <div className="border-b bg-background p-2 md:p-3">
           <div className="flex items-center justify-between gap-1 sm:gap-2">
@@ -812,7 +812,7 @@ export function DoubleSidebarAnkomaViewer({
         </div>
 
         {/* Card Content */}
-        <div className="flex-1 overflow-auto p-2 md:p-3 min-h-0">
+        <div className="flex-1 p-2 md:p-3">
           {currentCard ? (
             <InteractiveAnkiViewer
               card={currentCard}

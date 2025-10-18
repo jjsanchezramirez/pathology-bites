@@ -475,13 +475,13 @@
   }
 
   /* Mobile viewport optimizations */
-  @supports (height: 100dvh) {
+  @supports (height: 100svh) {
     .mobile-full-height {
-      height: 100dvh;
+      height: 100svh;
     }
   }
 
-  /* Fallback for browsers without dvh support */
+  /* Fallback for browsers without svh support */
   .mobile-full-height {
     height: 100vh;
   }
