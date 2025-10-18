@@ -788,7 +788,7 @@ export function DoubleSidebarAnkomaViewer({
         </div>
 
         {/* Card Content */}
-        <div className="flex-1 overflow-auto p-4 sm:p-6 min-h-0">
+        <div className="flex-1 overflow-auto p-2 sm:p-3 md:p-4 min-h-0">
           {currentCard ? (
             <InteractiveAnkiViewer
               card={currentCard}
@@ -801,7 +801,7 @@ export function DoubleSidebarAnkomaViewer({
               className="w-full"
             />
           ) : selectedCategory ? (
-            <div className="max-w-[95%] mx-auto">
+            <div className="max-w-[98%] mx-auto">
               <Card>
                 <CardContent className="flex items-center justify-center h-64">
                   <div className="text-center">
@@ -818,7 +818,7 @@ export function DoubleSidebarAnkomaViewer({
               </Card>
             </div>
           ) : (
-            <div className="max-w-[95%] mx-auto">
+            <div className="max-w-[98%] mx-auto">
               <Card>
                 <CardContent className="flex items-center justify-center h-64">
                   <div className="text-center">
