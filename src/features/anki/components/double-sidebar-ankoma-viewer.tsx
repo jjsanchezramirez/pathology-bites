@@ -93,7 +93,7 @@ export function DoubleSidebarAnkomaViewer({
   const [isShuffled, setIsShuffled] = useState(false)
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false)
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
+  const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null)
 
   // Loading message cycling state
   const [currentLoadingMessage, setCurrentLoadingMessage] = useState('')
@@ -278,15 +278,8 @@ export function DoubleSidebarAnkomaViewer({
   }
 
   const handleCategoryToggle = (categoryId: string) => {
-    setExpandedCategories(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(categoryId)) {
-        newSet.delete(categoryId)
-      } else {
-        newSet.add(categoryId)
-      }
-      return newSet
-    })
+    // Accordion behavior: only one category can be open at a time
+    setExpandedCategoryId(prev => prev === categoryId ? null : categoryId)
   }
 
   const handleSubcategorySelect = (subcategory: string | null) => {
@@ -476,7 +469,7 @@ export function DoubleSidebarAnkomaViewer({
                 <ScrollArea className="h-auto max-h-[50vh]">
                   <div className="space-y-0.5">
                     {selectedDeck.categories.map((category) => {
-                      const isExpanded = expandedCategories.has(category.id)
+                      const isExpanded = expandedCategoryId === category.id
                       const hasSubcategories = category.subcategories && category.subcategories.length > 0
 
                       return (
@@ -621,7 +614,7 @@ export function DoubleSidebarAnkomaViewer({
               <ScrollArea className="h-auto max-h-[calc(100vh-200px)]">
                 <div className="space-y-0.5">
                   {selectedDeck.categories.map((category) => {
-                    const isExpanded = expandedCategories.has(category.id)
+                    const isExpanded = expandedCategoryId === category.id
                     const hasSubcategories = category.subcategories && category.subcategories.length > 0
 
                     return (
