@@ -1,5 +1,6 @@
 import { createClient } from '@/shared/services/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { NotificationTriggers } from '@/shared/services/notification-triggers'
 
 /**
  * POST /api/questions/:id/reject
@@ -84,8 +85,6 @@ export async function POST(
       .update({
         status: 'rejected',
         reviewer_feedback: feedback.trim(),
-        rejected_at: new Date().toISOString(),
-        rejected_by: user.id,
         updated_at: new Date().toISOString(),
         updated_by: user.id,
       })
@@ -114,6 +113,21 @@ export async function POST(
     if (reviewError) {
       console.error('Error recording review:', reviewError)
       // Don't fail the request if review recording fails
+    }
+
+    // Send notification to creator
+    try {
+      const notificationTriggers = new NotificationTriggers()
+      await notificationTriggers.onQuestionRejected(
+        updatedQuestion.created_by,
+        questionId,
+        updatedQuestion.title,
+        user.id,
+        feedback.trim()
+      )
+    } catch (error) {
+      console.error('Error sending rejection notification:', error)
+      // Don't fail the request if notification fails
     }
 
     return NextResponse.json({

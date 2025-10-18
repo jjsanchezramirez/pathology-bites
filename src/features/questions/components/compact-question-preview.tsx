@@ -4,8 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Badge } from "@/shared/components/ui/badge"
 import { Check } from "lucide-react"
 import { QuestionWithDetails } from '@/features/questions/types/questions'
-import { ImprovedImageDialog } from "@/shared/components/common/improved-image-dialog"
-import { ImageCarousel } from "@/features/images/components/image-carousel"
+import { SimpleImageCarousel } from './simple-image-carousel'
 
 interface CompactQuestionPreviewProps {
   question: QuestionWithDetails | null
@@ -50,25 +49,16 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
           {/* Stem Images */}
           {stemImages.length > 0 && (
             <div>
-              {stemImages.length === 1 ? (
-                <ImprovedImageDialog
-                  src={stemImages[0].images?.url || ''}
-                  alt={stemImages[0].images?.alt_text || ''}
-                  caption={stemImages[0].images?.description || ''}
-                  className="border rounded-lg"
-                  aspectRatio="16/10"
-                />
-              ) : (
-                <ImageCarousel
-                  images={stemImages.map(si => ({
-                    id: si.images?.id || '',
-                    url: si.images?.url || '',
-                    alt: si.images?.alt_text || '',
-                    caption: si.images?.description || ''
+              <SimpleImageCarousel
+                images={stemImages
+                  .filter(si => (si.image?.url || si.images?.url))
+                  .map(si => ({
+                    url: si.image?.url || si.images?.url || '',
+                    alt: si.image?.alt_text || si.images?.alt_text || 'Question image',
+                    caption: si.image?.description || si.images?.description || undefined
                   }))}
-                  className="border rounded-lg"
-                />
-              )}
+                className="border rounded-lg"
+              />
             </div>
           )}
 
@@ -145,26 +135,17 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
               {/* Explanation Images */}
               {explanationImages.length > 0 && (
                 <div>
-                  <h4 className="font-medium text-xs uppercase mb-1">Reference Images</h4>
-                  {explanationImages.length === 1 ? (
-                    <ImprovedImageDialog
-                      src={explanationImages[0].images?.url || ''}
-                      alt={explanationImages[0].images?.alt_text || ''}
-                      caption={explanationImages[0].images?.description || ''}
-                      className="border rounded-lg"
-                      aspectRatio="16/10"
-                    />
-                  ) : (
-                    <ImageCarousel
-                      images={explanationImages.map(ei => ({
-                        id: ei.images?.id || '',
-                        url: ei.images?.url || '',
-                        alt: ei.images?.alt_text || '',
-                        caption: ei.images?.description || ''
+                  <h4 className="font-medium text-xs uppercase mb-2">Reference Images</h4>
+                  <SimpleImageCarousel
+                    images={explanationImages
+                      .filter(ei => (ei.image?.url || ei.images?.url))
+                      .map(ei => ({
+                        url: ei.image?.url || ei.images?.url || '',
+                        alt: ei.image?.alt_text || ei.images?.alt_text || 'Reference image',
+                        caption: ei.image?.description || ei.images?.description || undefined
                       }))}
-                      className="border rounded-lg"
-                    />
-                  )}
+                    className="bg-white border rounded-lg"
+                  />
                 </div>
               )}
 
@@ -180,19 +161,62 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
             </div>
           )}
 
-          {/* Question Metadata */}
-          <div className="flex items-center justify-between pt-2 border-t text-xs text-muted-foreground">
-            <div className="flex items-center gap-4">
-              <Badge variant="outline" className="text-xs">
-                {question.difficulty}
-              </Badge>
-              <span>Status: {question.status}</span>
-              {question.categories && question.categories.length > 0 && (
-                <span>Category: {question.categories[0].name}</span>
+          {/* Question Metadata - Single horizontal line */}
+          <div className="pt-3 border-t">
+            <div className="flex items-center gap-2 flex-wrap text-xs">
+              {/* Category with color */}
+              {question.categories && (
+                <Badge
+                  variant="outline"
+                  className="text-xs"
+                  style={{
+                    backgroundColor: question.categories.color ? `${question.categories.color}15` : undefined,
+                    borderColor: question.categories.color || undefined,
+                    color: question.categories.color || undefined
+                  }}
+                >
+                  {question.categories.name}
+                </Badge>
               )}
-            </div>
-            <div>
-              Created: {new Date(question.created_at).toLocaleDateString()}
+
+              {/* Set */}
+              {question.question_sets && (
+                <Badge variant="outline" className="text-xs">
+                  {question.question_sets.name || 'Unknown'}
+                </Badge>
+              )}
+
+              {/* Version */}
+              {question.version && (
+                <span className="text-muted-foreground">v{question.version}</span>
+              )}
+
+              {/* Created */}
+              {question.created_at && (
+                <span className="text-muted-foreground">
+                  Created {new Date(question.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  {question.created_by_user && (
+                    <> by {question.created_by_user.first_name} {question.created_by_user.last_name}</>
+                  )}
+                </span>
+              )}
+
+              {/* Last Modified */}
+              {question.updated_at && question.updated_at !== question.created_at && (
+                <span className="text-muted-foreground">
+                  Modified {new Date(question.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  {question.updated_by_user && (
+                    <> by {question.updated_by_user.first_name} {question.updated_by_user.last_name}</>
+                  )}
+                </span>
+              )}
+
+              {/* Reviewer */}
+              {question.reviewer_user && (
+                <span className="text-muted-foreground">
+                  Reviewed by {question.reviewer_user.first_name} {question.reviewer_user.last_name}
+                </span>
+              )}
             </div>
           </div>
         </CardContent>

@@ -7,7 +7,7 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogPortal } from '@/shared/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
-import { Badge } from '@/shared/components/ui/badge'
+
 import { Search, X, Plus, Image as ImageIcon } from 'lucide-react'
 import { fetchImages } from '@/features/images/services/images'
 import { ImageData } from '@/features/images/types/images'
@@ -51,7 +51,8 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
       })
 
       if (result.error) {
-        throw new Error(result.error)
+        console.error('Failed to load images:', result.error)
+        throw new Error(typeof result.error === 'string' ? result.error : 'Failed to load images')
       }
 
       setAvailableImages(result.data)
@@ -123,22 +124,22 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
 
   return (
     <div>
-      <div className="grid grid-cols-5 gap-4">
-        {/* Existing Images */}
+      <div className="flex flex-wrap gap-4">
+        {/* Existing Images - Stacked to Left with Space for 5 */}
         {images.map((imageItem, index) => {
           const uniqueKey = `${imageItem.image_id}-${index}`
           const imageInfo = getImageInfo(imageItem.image_id)
 
           return (
             <div key={uniqueKey} className="relative group">
-              <div className="aspect-square bg-muted rounded border overflow-hidden relative">
+              <div className="aspect-square bg-muted rounded-lg border overflow-hidden relative w-32 h-32">
                 {imageInfo ? (
                   <Image
                     src={imageInfo.url}
                     alt={imageInfo.alt_text || ''}
                     fill
                     className="object-cover"
-                    sizes="150px"
+                    sizes="128px"
                     unoptimized
                   />
                 ) : (
@@ -151,7 +152,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                 type="button"
                 variant="destructive"
                 size="sm"
-                className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                 onClick={() => handleRemoveImage(imageItem.image_id, index)}
               >
                 <X className="h-3 w-3" />
@@ -162,114 +163,125 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
 
         {/* Add Image Button */}
         {images.length < maxImages && (
-          <Dialog open={showImagePicker} onOpenChange={setShowImagePicker} modal={false}>
+          <Dialog open={showImagePicker} onOpenChange={setShowImagePicker}>
             <DialogTrigger asChild>
               <Button
                 type="button"
                 variant="outline"
-                className="aspect-square h-auto flex-col gap-2 border-dashed"
+                className="w-32 h-32 flex-col gap-2 border-dashed border-2 hover:border-primary/50"
               >
                 <Plus className="h-6 w-6" />
                 <span className="text-xs">Add Image</span>
               </Button>
             </DialogTrigger>
             <DialogPortal>
-              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Select Images for {section === 'stem' ? 'Question Body' : 'Explanation'}</DialogTitle>
-                </DialogHeader>
+              <div className="fixed inset-0 z-50 flex items-center justify-center">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowImagePicker(false)} />
+                <div className="relative bg-background border rounded-lg shadow-lg w-full max-w-5xl mx-4 max-h-[85vh] overflow-hidden">
+                  <div className="p-6 border-b">
+                    <h2 className="text-xl font-semibold">Select Images for {section === 'stem' ? 'Question Body' : 'Explanation'}</h2>
+                  </div>
 
-                <div className="space-y-4">
-                  {/* Search Controls */}
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        placeholder="Search images..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-8"
-                      />
+                  <div className="p-6 space-y-4">
+                    {/* Search Controls */}
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          placeholder="Search images..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-8"
+                        />
+                      </div>
+                      <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="gross">Gross</SelectItem>
+                          <SelectItem value="microscopic">Microscopic</SelectItem>
+                          <SelectItem value="figure">Figure</SelectItem>
+                          <SelectItem value="question">Question</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button onClick={loadImages} disabled={loading}>
+                        {loading ? 'Loading...' : 'Search'}
+                      </Button>
                     </div>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="gross">Gross</SelectItem>
-                        <SelectItem value="microscopic">Microscopic</SelectItem>
-                        <SelectItem value="figure">Figure</SelectItem>
-                        <SelectItem value="question">Question</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button onClick={loadImages} disabled={loading}>
-                      {loading ? 'Loading...' : 'Search'}
-                    </Button>
-                  </div>
 
-                  {/* Image Grid */}
-                  <div className="grid grid-cols-6 gap-3 max-h-96 overflow-y-auto">
-                    {availableImages.map((image) => {
-                      const isSelected = selectedImageIds.includes(image.id)
-                      const isAlreadyAdded = images.some(img => img.image_id === image.id)
-                      const canSelect = !isAlreadyAdded && (selectedImageIds.length < maxImages - images.length || isSelected)
-
-                      return (
-                        <div
-                          key={image.id}
-                          className={`relative cursor-pointer rounded border-2 transition-all ${
-                            isAlreadyAdded
-                              ? 'border-muted bg-muted/50 opacity-50 cursor-not-allowed'
-                              : isSelected
-                                ? 'border-primary bg-primary/10'
-                                : canSelect
-                                  ? 'border-border hover:border-primary/50'
-                                  : 'border-muted opacity-50 cursor-not-allowed'
-                          }`}
-                          onClick={() => canSelect && handleImageToggle(image.id)}
-                          title={isAlreadyAdded ? 'Already added to this section' : image.alt_text || ''}
-                        >
-                          <div className="aspect-square overflow-hidden rounded relative">
-                            <Image
-                              src={image.url}
-                              alt={image.alt_text || ''}
-                              fill
-                              className="object-cover"
-                              sizes="120px"
-                              unoptimized
-                            />
-                          </div>
-                          {isSelected && (
-                            <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                              ✓
-                            </div>
-                          )}
-                          {isAlreadyAdded && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded">
-                              <span className="text-white text-xs font-medium">Added</span>
-                            </div>
-                          )}
+                    {/* Image Grid - Fixed height for 2 rows */}
+                    <div className="grid grid-cols-5 gap-4 overflow-y-auto" style={{ height: '320px' }}>
+                      {availableImages.length === 0 && !loading ? (
+                        <div className="col-span-5 flex flex-col items-center justify-center h-full text-muted-foreground">
+                          <ImageIcon className="h-12 w-12 mb-2 opacity-50" />
+                          <p>No images found</p>
+                          {searchTerm && <p className="text-sm">Try a different search term</p>}
                         </div>
-                      )
-                    })}
-                  </div>
+                      ) : (
+                        availableImages.map((image) => {
+                          const isSelected = selectedImageIds.includes(image.id)
+                          const isAlreadyAdded = images.some(img => img.image_id === image.id)
+                          const canSelect = !isAlreadyAdded && (selectedImageIds.length < maxImages - images.length || isSelected)
 
-                  {/* Action Buttons */}
-                  <div className="flex justify-end gap-2 pt-4 border-t">
-                    <Button type="button" variant="outline" onClick={handleCancelSelection}>
-                      Cancel
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={handleSelectImages}
-                      disabled={selectedImageIds.length === 0}
-                    >
-                      Add {selectedImageIds.length} Image{selectedImageIds.length !== 1 ? 's' : ''}
-                    </Button>
+                          return (
+                            <div
+                              key={image.id}
+                              className={`relative cursor-pointer rounded-lg border-2 transition-all h-fit ${
+                                isAlreadyAdded
+                                  ? 'border-muted bg-muted/50 opacity-50 cursor-not-allowed'
+                                  : isSelected
+                                    ? 'border-primary bg-primary/10'
+                                    : canSelect
+                                      ? 'border-border hover:border-primary/50'
+                                      : 'border-muted opacity-50 cursor-not-allowed'
+                              }`}
+                              onClick={() => canSelect && handleImageToggle(image.id)}
+                              title={isAlreadyAdded ? 'Already added to this section' : image.alt_text || ''}
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg relative">
+                                <Image
+                                  src={image.url}
+                                  alt={image.alt_text || ''}
+                                  fill
+                                  className="object-cover"
+                                  sizes="140px"
+                                  unoptimized
+                                />
+                              </div>
+                              {isSelected && (
+                                <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                                  ✓
+                                </div>
+                              )}
+                              {isAlreadyAdded && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
+                                  <span className="text-white text-sm font-medium">Added</span>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex justify-end gap-2 pt-4 border-t">
+                      <Button type="button" variant="outline" onClick={handleCancelSelection}>
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={handleSelectImages}
+                        disabled={selectedImageIds.length === 0}
+                      >
+                        Add {selectedImageIds.length} Image{selectedImageIds.length !== 1 ? 's' : ''}
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </DialogContent>
+              </div>
             </DialogPortal>
           </Dialog>
         )}
@@ -291,14 +303,9 @@ export function ImageAttachmentsTab({ attachedImages, onAttachedImagesChange }: 
       {/* Question Body Images */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <ImageIcon className="h-5 w-5" />
-              Question Body Images
-            </span>
-            <Badge variant="outline">
-              {stemImages.length}/3 images
-            </Badge>
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="h-5 w-5" />
+            Question Body Images
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -317,14 +324,9 @@ export function ImageAttachmentsTab({ attachedImages, onAttachedImagesChange }: 
       {/* Explanation Images */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <ImageIcon className="h-5 w-5" />
-              Explanation Images
-            </span>
-            <Badge variant="outline">
-              {explanationImages.length}/1 image
-            </Badge>
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="h-5 w-5" />
+            Explanation Images
           </CardTitle>
         </CardHeader>
         <CardContent>

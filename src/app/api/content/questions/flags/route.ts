@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/shared/services/server';
 
+// Hard-coded flag threshold - questions are removed from circulation after this many flags
+const FLAG_THRESHOLD = 1;
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -71,7 +74,8 @@ export async function POST(request: NextRequest) {
         question_id,
         flagged_by: user.id,
         flag_type,
-        description: description ? description.trim() : null
+        description: description ? description.trim() : null,
+        status: 'open'
       })
       .select()
       .single();
@@ -81,13 +85,72 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to flag question' }, { status: 500 });
     }
 
-    // Update question flag metadata (handled by trigger)
-    // No need to change question status - flags are now metadata
+    // Check total number of open flags for this question
+    const { data: openFlags, error: countError } = await supabase
+      .from('question_flags')
+      .select('id', { count: 'exact' })
+      .eq('question_id', question_id)
+      .eq('status', 'open');
 
-    return NextResponse.json({ 
-      success: true, 
+    if (countError) {
+      console.error('Error counting flags:', countError);
+      // Continue anyway - flag was created successfully
+    }
+
+    const flagCount = openFlags?.length || 1;
+
+    // If flag count meets or exceeds threshold, remove question from circulation
+    if (flagCount >= FLAG_THRESHOLD) {
+      // Get current question to check its status
+      const { data: currentQuestion } = await supabase
+        .from('questions')
+        .select('status')
+        .eq('id', question_id)
+        .single();
+
+      // Only change status if question is currently published
+      // Don't change if it's already draft, pending_review, or rejected
+      if (currentQuestion && currentQuestion.status === 'published') {
+        // Change question status to 'draft' (back to creator's queue)
+        const { error: statusError } = await supabase
+          .from('questions')
+          .update({
+            status: 'draft',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', question_id);
+
+        if (statusError) {
+          console.error('Error updating question status:', statusError);
+          // Continue anyway - flag was created successfully
+        }
+
+        // Create a question_review record to track this action
+        const { error: reviewError } = await supabase
+          .from('question_reviews')
+          .insert({
+            question_id,
+            reviewer_id: user.id,
+            action: 'flagged',
+            feedback: `Question flagged by user (${flagCount} flag${flagCount > 1 ? 's' : ''}): ${flag_type}. ${description || ''}`.trim()
+          });
+
+        if (reviewError) {
+          console.error('Error creating review record:', reviewError);
+          // Continue anyway - flag was created successfully
+        }
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
       flag,
-      message: 'Question flagged successfully'
+      flagCount,
+      threshold: FLAG_THRESHOLD,
+      removedFromCirculation: flagCount >= FLAG_THRESHOLD,
+      message: flagCount >= FLAG_THRESHOLD
+        ? `Question flagged and removed from circulation (${flagCount}/${FLAG_THRESHOLD} flags)`
+        : `Question flagged successfully (${flagCount}/${FLAG_THRESHOLD} flags)`
     });
 
   } catch (error) {

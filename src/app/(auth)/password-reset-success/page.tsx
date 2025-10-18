@@ -31,7 +31,7 @@ export default function PasswordResetSuccessPage() {
         description="Your password has been successfully updated"
         content="You can now log in with your new password."
         footer={
-          <Button asChild>
+          <Button asChild className="w-full">
             <Link href="/login">
               Continue to login ({countdown})
             </Link>

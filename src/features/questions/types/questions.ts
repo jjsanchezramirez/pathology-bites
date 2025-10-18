@@ -193,7 +193,7 @@ export const DIFFICULTY_CONFIG = {
 } as const;
 
 // Review and workflow types - ALIGNED WITH DATABASE
-export type ReviewAction = 'approve' | 'request_changes' | 'reject';
+export type ReviewAction = 'approve' | 'request_changes' | 'reject' | 'flagged';
 export type QuestionStatus = Database['public']['Enums']['question_status'];
 export type FlagType = 'incorrect_answer' | 'unclear_question' | 'outdated_content' | 'incorrect_explanations' | 'other';
 export type FlagStatus = 'open' | 'closed';
@@ -263,27 +263,37 @@ export interface FlagFormData {
   description: string;
 }
 
-// Status configuration for UI - SIMPLIFIED TO 4 STATUSES
+// Status configuration for UI
 export const STATUS_CONFIG = {
   draft: {
     label: 'Draft',
-    color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300',
+    color: 'border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100',
     description: 'Question is being created or edited'
   },
-  pending: {
-    label: 'Pending Review',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
+  pending_review: {
+    label: 'Pending review',
+    color: 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100',
     description: 'Question is submitted and awaiting review'
   },
-  approved: {
-    label: 'Approved',
-    color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
-    description: 'Question is approved and live for users'
+  published: {
+    label: 'Published',
+    color: 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
+    description: 'Question is published and live for users'
+  },
+  rejected: {
+    label: 'Rejected',
+    color: 'border-red-300 bg-red-50 text-red-700 hover:bg-red-100',
+    description: 'Question was rejected during review'
   },
   flagged: {
     label: 'Flagged',
-    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300',
-    description: 'Approved question with user-reported issues'
+    color: 'border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100',
+    description: 'Published question with user-reported issues'
+  },
+  archived: {
+    label: 'Archived',
+    color: 'border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100',
+    description: 'Question is archived and no longer active'
   }
 } as const;
 
@@ -294,7 +304,7 @@ export const REVIEW_ACTION_CONFIG = {
     description: 'Approve and publish the question',
     color: 'bg-green-600 hover:bg-green-700',
     icon: '✓',
-    resultStatus: 'approved' as QuestionStatus
+    resultStatus: 'published' as QuestionStatus
   },
   request_changes: {
     label: 'Request Changes',

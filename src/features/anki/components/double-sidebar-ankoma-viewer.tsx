@@ -16,6 +16,8 @@ import {
   Search,
   ChevronRight,
   ChevronDown,
+  ChevronLeft,
+  ChevronsLeft,
   RotateCcw,
   Play,
   Shuffle,
@@ -23,9 +25,12 @@ import {
   FolderOpen,
   FileText,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  X,
+  Menu,
+  Library
 } from 'lucide-react'
-import { InteractiveAnkiViewer } from '../../debug/components/interactive-anki-viewer'
+import { InteractiveAnkiViewer } from './interactive-anki-viewer'
 import { AnkomaData, AnkomaSection, AnkomaViewerProps, AnkiCard } from '../types/anki-card'
 import {
   findSectionById,
@@ -36,28 +41,28 @@ import { useClientAnkoma } from '@/shared/hooks/use-client-ankoma'
 import { cn } from '@/shared/utils'
 import { toast } from 'sonner'
 
-// Funny loading messages for Anki deck loading (Debug Interface)
-const DEBUG_ANKI_LOADING_MESSAGES = [
-  "Debugging the digital flashcard matrix...",
-  "Teaching the debug console what 'spaced repetition' means...",
+// Funny loading messages for Anki deck loading
+const ANKI_LOADING_MESSAGES = [
+  "Loading the digital flashcard matrix...",
+  "Teaching the system what 'spaced repetition' means...",
   "Parsing JSON like a pathologist reads slides (but faster)...",
   "Loading cards from the R2 cloud dimension...",
-  "Convincing Anki cards to reveal their debug secrets...",
+  "Convincing Anki cards to reveal their secrets...",
   "Calibrating the memory palace algorithms...",
-  "Converting study anxiety into debug data...",
+  "Converting study anxiety into productive learning...",
   "Assembling the army of forgotten medical facts...",
   "Teaching AI the difference between 'easy' and 'impossible'...",
-  "Channeling the spirit of Hermann Ebbinghaus (debug edition)...",
+  "Channeling the spirit of Hermann Ebbinghaus...",
   "Importing wisdom from the depths of ankoma.json...",
-  "Transforming procrastination into productive debugging...",
-  "Loading cards that will haunt your debug dreams...",
-  "Preparing your daily dose of educational debugging torture...",
-  "Organizing knowledge into bite-sized debug chunks...",
-  "Converting medical terminology into debug-friendly format...",
-  "Assembling your personalized debug knowledge database...",
-  "Preparing cards that make medical school debugging look easy...",
-  "Shuffling through thousands of digital debug flashcards...",
-  "Loading from R2 storage with aggressive debug caching..."
+  "Transforming procrastination into productive studying...",
+  "Loading cards that will enhance your learning...",
+  "Preparing your daily dose of educational excellence...",
+  "Organizing knowledge into bite-sized chunks...",
+  "Converting medical terminology into learner-friendly format...",
+  "Assembling your personalized knowledge database...",
+  "Preparing cards that make medical school more manageable...",
+  "Shuffling through thousands of digital flashcards...",
+  "Loading from R2 storage with optimized caching..."
 ]
 
 interface CategoryData {
@@ -89,8 +94,18 @@ export function DoubleSidebarAnkomaViewer({
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isShuffled, setIsShuffled] = useState(false)
-  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false)
-  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
+  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(true) // Mobile: hidden, Desktop: shown (set in useEffect)
+  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(true) // Mobile: hidden, Desktop: shown (set in useEffect)
+  const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null)
+
+  // Initialize desktop sidebars as visible on mount
+  useEffect(() => {
+    const isDesktop = window.innerWidth >= 768 // md breakpoint
+    if (isDesktop) {
+      setLeftSidebarCollapsed(false)
+      setRightSidebarCollapsed(false)
+    }
+  }, [])
 
   // Loading message cycling state
   const [currentLoadingMessage, setCurrentLoadingMessage] = useState('')
@@ -230,15 +245,15 @@ export function DoubleSidebarAnkomaViewer({
   useEffect(() => {
     if (isLoading) {
       // Set initial message
-      const initialIndex = Math.floor(Math.random() * DEBUG_ANKI_LOADING_MESSAGES.length)
+      const initialIndex = Math.floor(Math.random() * ANKI_LOADING_MESSAGES.length)
       setLoadingMessageIndex(initialIndex)
-      setCurrentLoadingMessage(DEBUG_ANKI_LOADING_MESSAGES[initialIndex])
+      setCurrentLoadingMessage(ANKI_LOADING_MESSAGES[initialIndex])
 
       // Cycle through messages every 3 seconds
       loadingIntervalRef.current = setInterval(() => {
         setLoadingMessageIndex(prev => {
-          const nextIndex = (prev + 1) % DEBUG_ANKI_LOADING_MESSAGES.length
-          setCurrentLoadingMessage(DEBUG_ANKI_LOADING_MESSAGES[nextIndex])
+          const nextIndex = (prev + 1) % ANKI_LOADING_MESSAGES.length
+          setCurrentLoadingMessage(ANKI_LOADING_MESSAGES[nextIndex])
           return nextIndex
         })
       }, 3000)
@@ -272,6 +287,11 @@ export function DoubleSidebarAnkomaViewer({
     setSelectedSubcategory(null)
     setCurrentCardIndex(0)
     setIsShuffled(false)
+  }
+
+  const handleCategoryToggle = (categoryId: string) => {
+    // Accordion behavior: only one category can be open at a time
+    setExpandedCategoryId(prev => prev === categoryId ? null : categoryId)
   }
 
   const handleSubcategorySelect = (subcategory: string | null) => {
@@ -387,46 +407,188 @@ export function DoubleSidebarAnkomaViewer({
   const selectedCategory = selectedDeck?.categories.find(c => c.id === selectedCategoryId)
 
   return (
-    <div className={cn("w-full h-full min-h-0 flex", className)}>
-      {/* Left Sidebar - Decks */}
+    <div className={cn("w-full h-full min-h-0 flex gap-4 p-0 md:p-4", className)}>
+      {/* Mobile: Backdrop overlay */}
+      {!leftSidebarCollapsed && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setLeftSidebarCollapsed(true)}
+        />
+      )}
+
+      {/* Mobile: Sidebar */}
       <div className={cn(
-        "border-r bg-background transition-all duration-300",
-        leftSidebarCollapsed ? "w-0" : "w-60"
+        "md:hidden fixed inset-y-0 left-0 z-50 bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-transform duration-300 w-64 flex flex-col",
+        leftSidebarCollapsed ? "-translate-x-full" : "translate-x-0"
       )}>
-        {!leftSidebarCollapsed && (
-        <Card className="h-full border-0 rounded-none flex flex-col min-h-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <BookOpen className="h-5 w-5" />
-              Decks
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0 flex-1 min-h-0">
-            <ScrollArea className="h-full">
-              <div className="space-y-2">
+        {/* Header */}
+        <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border shrink-0">
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5" />
+            <h2 className="font-semibold text-sm">Ankoma</h2>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLeftSidebarCollapsed(true)}
+            className="h-8 w-8 p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto">
+          <div className="p-3">
+            {/* Decks Section */}
+            <div className="mb-6">
+              <h3 className="px-3 mb-2 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
+                Decks
+              </h3>
+              <div className="space-y-1">
                 {organizedDecks.map((deck) => (
                   <div
                     key={deck.id}
                     className={cn(
-                      "p-3 rounded-md cursor-pointer transition-colors",
+                      "flex items-center justify-between px-3 h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors cursor-pointer",
+                      selectedDeckId === deck.id && "bg-sidebar-foreground/20 text-sidebar-foreground"
+                    )}
+                    onClick={() => handleDeckSelect(deck.id)}
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <Folder className="h-4 w-4 shrink-0" />
+                      <span className="truncate text-sm">{deck.name}</span>
+                    </div>
+                    <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
+                      {deck.totalCards}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Categories Section */}
+            {selectedDeck && (
+              <div>
+                <h3 className="px-3 mb-2 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
+                  {selectedDeck.name}
+                </h3>
+                <div className="space-y-1">
+                  {selectedDeck.categories.map((category) => {
+                    const isExpanded = expandedCategoryId === category.id
+                    const hasSubcategories = category.subcategories && category.subcategories.length > 0
+
+                    return (
+                      <div key={category.id}>
+                        <div
+                          className={cn(
+                            "flex items-center justify-between px-3 h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors cursor-pointer",
+                            selectedCategoryId === category.id && !selectedSubcategory && "bg-sidebar-foreground/20 text-sidebar-foreground"
+                          )}
+                          onClick={() => {
+                            handleCategorySelect(category.id)
+                            if (hasSubcategories) {
+                              handleCategoryToggle(category.id)
+                            }
+                          }}
+                        >
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            {hasSubcategories && (
+                              isExpanded ? (
+                                <ChevronDown className="h-4 w-4 shrink-0" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4 shrink-0" />
+                              )
+                            )}
+                            {!hasSubcategories && <FileText className="h-4 w-4 shrink-0" />}
+                            <span className="truncate text-sm">{category.name}</span>
+                          </div>
+                          <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
+                            {category.cards.length}
+                          </Badge>
+                        </div>
+
+                        {/* Subcategories */}
+                        {hasSubcategories && isExpanded && (
+                          <div className="ml-6 mt-1 space-y-1">
+                            {category.subcategories.map((subcategory) => {
+                              const subcategoryCards = category.cards.filter(card => {
+                                const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
+                                if (!ankomaTag) return false
+                                const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
+                                return formatTagName(tagParts[2] || '') === subcategory
+                              })
+
+                              return (
+                                <div
+                                  key={subcategory}
+                                  className={cn(
+                                    "flex items-center justify-between px-3 h-9 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors cursor-pointer",
+                                    selectedSubcategory === subcategory && "bg-sidebar-foreground/20 text-sidebar-foreground"
+                                  )}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleSubcategorySelect(subcategory)
+                                  }}
+                                >
+                                  <span className="truncate text-sm">{subcategory}</span>
+                                  <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
+                                    {subcategoryCards.length}
+                                  </Badge>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </nav>
+      </div>
+
+      {/* Desktop: Left Sidebar - Decks */}
+      <div className={cn(
+        "hidden md:block transition-all duration-300 overflow-hidden flex-shrink-0",
+        leftSidebarCollapsed ? "w-0" : "w-52"
+      )}>
+        {!leftSidebarCollapsed && (
+        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border mt-[72px]">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <BookOpen className="h-4 w-4" />
+              Decks
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 flex-1 min-h-0 px-3 pb-3">
+            <ScrollArea className="h-auto max-h-[calc(100vh-200px)]">
+              <div className="space-y-1.5">
+                {organizedDecks.map((deck) => (
+                  <div
+                    key={deck.id}
+                    className={cn(
+                      "p-2 rounded-md cursor-pointer transition-colors text-xs",
                       "hover:bg-muted/50",
                       selectedDeckId === deck.id && "bg-primary/10 border border-primary/20"
                     )}
                     onClick={() => handleDeckSelect(deck.id)}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-1">
                       <span className={cn(
-                        "font-medium",
+                        "font-medium truncate",
                         selectedDeckId === deck.id && "text-primary"
                       )}>
                         {deck.name}
                       </span>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0">
                         {deck.totalCards}
                       </Badge>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {deck.categories.length} categories
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {deck.categories.length} cats
                     </div>
                   </div>
                 ))}
@@ -437,84 +599,101 @@ export function DoubleSidebarAnkomaViewer({
         )}
       </div>
 
-      {/* Middle Sidebar - Categories */}
+      {/* Desktop: Right Sidebar - Categories */}
       <div className={cn(
-        "border-r bg-background transition-all duration-300",
-        rightSidebarCollapsed ? "w-0" : "w-80"
+        "hidden md:block transition-all duration-300 overflow-hidden flex-shrink-0",
+        rightSidebarCollapsed ? "w-0" : "w-60"
       )}>
         {!rightSidebarCollapsed && (
-        <Card className="h-full border-0 rounded-none flex flex-col min-h-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">
-              {selectedDeck ? `${selectedDeck.name} Categories` : 'Categories'}
+        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border mt-[72px]">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">
+              {selectedDeck ? `${selectedDeck.name}` : 'Categories'}
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0 flex-1 min-h-0">
+          <CardContent className="pt-0 flex-1 min-h-0 px-3 pb-3">
             {selectedDeck ? (
-              <ScrollArea className="h-full">
-                <div className="space-y-1">
-                  {selectedDeck.categories.map((category) => (
-                    <div key={category.id}>
-                      <div
-                        className={cn(
-                          "p-2 rounded-md cursor-pointer transition-colors",
-                          "hover:bg-muted/50",
-                          selectedCategoryId === category.id && "bg-primary/10 border border-primary/20"
-                        )}
-                        onClick={() => handleCategorySelect(category.id)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className={cn(
-                            "font-medium",
-                            selectedCategoryId === category.id && "text-primary"
-                          )}>
-                            {category.name}
-                          </span>
-                          <Badge variant="secondary" className="text-xs">
-                            {category.cards.length}
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      {/* Subcategories */}
-                      {selectedCategoryId === category.id && category.subcategories.length > 0 && (
-                        <div className="ml-4 mt-2 space-y-1">
-                          <div
-                            className={cn(
-                              "p-1 px-2 rounded text-sm cursor-pointer transition-colors",
-                              "hover:bg-muted/30",
-                              !selectedSubcategory && "bg-primary/5 text-primary"
-                            )}
-                            onClick={() => handleSubcategorySelect(null)}
-                          >
-                            All ({category.cards.length})
+              <ScrollArea className="h-auto max-h-[calc(100vh-200px)]">
+                <div className="space-y-0.5">
+                  {selectedDeck.categories.map((category) => {
+                    const isExpanded = expandedCategoryId === category.id
+                    const hasSubcategories = category.subcategories && category.subcategories.length > 0
+
+                    return (
+                      <div key={category.id}>
+                        <div
+                          className={cn(
+                            "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
+                            "hover:bg-muted/50",
+                            selectedCategoryId === category.id && "bg-primary/10 border border-primary/20"
+                          )}
+                          onClick={() => {
+                            handleCategorySelect(category.id)
+                            if (hasSubcategories) {
+                              handleCategoryToggle(category.id)
+                            }
+                          }}
+                        >
+                          <div className="flex items-center justify-between gap-1">
+                            <div className="flex items-center gap-1 flex-1 min-w-0">
+                              {hasSubcategories && (
+                                isExpanded ? (
+                                  <ChevronDown className="h-3 w-3 flex-shrink-0" />
+                                ) : (
+                                  <ChevronRight className="h-3 w-3 flex-shrink-0" />
+                                )
+                              )}
+                              <span className={cn(
+                                "font-medium truncate",
+                                selectedCategoryId === category.id && "text-primary"
+                              )}>
+                                {category.name}
+                              </span>
+                            </div>
+                            <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0">
+                              {category.cards.length}
+                            </Badge>
                           </div>
-                          {category.subcategories.map((subcategory) => {
-                            const subcategoryCards = category.cards.filter(card => {
-                              const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
-                              if (!ankomaTag) return false
-                              const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
-                              return formatTagName(tagParts[2] || '') === subcategory
-                            })
-                            
-                            return (
-                              <div
-                                key={subcategory}
-                                className={cn(
-                                  "p-1 px-2 rounded text-sm cursor-pointer transition-colors",
-                                  "hover:bg-muted/30",
-                                  selectedSubcategory === subcategory && "bg-primary/5 text-primary"
-                                )}
-                                onClick={() => handleSubcategorySelect(subcategory)}
-                              >
-                                {subcategory} ({subcategoryCards.length})
-                              </div>
-                            )
-                          })}
                         </div>
-                      )}
-                    </div>
-                  ))}
+
+                        {/* Subcategories */}
+                        {hasSubcategories && isExpanded && (
+                          <div className="ml-5 mt-1 space-y-0.5">
+                            {category.subcategories.map((subcategory) => {
+                              const subcategoryCards = category.cards.filter(card => {
+                                const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
+                                if (!ankomaTag) return false
+                                const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
+                                return formatTagName(tagParts[2] || '') === subcategory
+                              })
+
+                              return (
+                                <div
+                                  key={subcategory}
+                                  className={cn(
+                                    "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
+                                    "hover:bg-muted/50",
+                                    selectedSubcategory === subcategory && "bg-primary/10 border border-primary/20"
+                                  )}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleSubcategorySelect(subcategory)
+                                  }}
+                                >
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className="truncate">{subcategory}</span>
+                                    <Badge variant="secondary" className="text-xs px-1.5 py-0 flex-shrink-0">
+                                      {subcategoryCards.length}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </ScrollArea>
             ) : (
@@ -530,15 +709,28 @@ export function DoubleSidebarAnkomaViewer({
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         {/* Header */}
-        <div className="border-b bg-background p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+        <div className="border-b bg-background p-2 md:p-3">
+          <div className="flex items-center justify-between gap-1 sm:gap-2">
+            {/* Left: Sidebar toggle */}
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+              {/* Mobile: Select Deck button */}
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
+                className="md:hidden h-8 px-3 gap-1.5"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="text-sm font-medium">Select Deck</span>
+              </Button>
+
+              {/* Desktop: Single toggle for both */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleToggleBothSidebars}
                 title="Toggle sidebars"
-                className="flex items-center gap-2"
+                className="hidden md:flex items-center gap-2"
               >
                 {leftSidebarCollapsed && rightSidebarCollapsed ? (
                   <PanelLeftOpen className="h-4 w-4" />
@@ -550,28 +742,30 @@ export function DoubleSidebarAnkomaViewer({
                 </span>
               </Button>
             </div>
-            
-            <div className="text-center">
-              <h1 className="text-xl font-semibold">
+
+            {/* Center: Title - hidden on very small screens when cards are present */}
+            <div className="text-center flex-1 min-w-0 hidden sm:block">
+              <h1 className="text-sm sm:text-base md:text-xl font-semibold truncate">
                 {selectedDeck?.name || 'Ankoma Deck'}
               </h1>
               {selectedCategory && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs md:text-sm text-muted-foreground truncate hidden md:block">
                   {selectedCategory.name}
                   {selectedSubcategory && ` → ${selectedSubcategory}`}
                 </p>
               )}
             </div>
 
-            <div className="flex items-center gap-3">
-              {/* Card Navigation Info */}
+            {/* Right: Card info and controls */}
+            <div className="flex items-center gap-1 sm:gap-2 md:gap-3 shrink-0">
+              {/* Card Navigation Info - Desktop only */}
               {currentCards.length > 0 && (
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="font-medium">
-                    Card {currentCardIndex + 1} of {currentCards.length}
+                <div className="hidden md:flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <span className="font-medium whitespace-nowrap">
+                    {currentCardIndex + 1}/{currentCards.length}
                   </span>
                   {isShuffled && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs hidden lg:inline-flex">
                       Shuffled
                     </Badge>
                   )}
@@ -579,22 +773,38 @@ export function DoubleSidebarAnkomaViewer({
               )}
 
               {/* Controls */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleShuffle}
                   disabled={currentCards.length <= 1}
+                  title="Shuffle cards"
+                  className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 p-0"
                 >
-                  <Shuffle className="h-4 w-4" />
+                  <Shuffle className="h-3 w-3 md:h-4 md:w-4" />
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleReset}
                   disabled={currentCards.length === 0}
+                  title="Reset to first card"
+                  className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 p-0"
                 >
-                  <RotateCcw className="h-4 w-4" />
+                  <RotateCcw className="h-3 w-3 md:h-4 md:w-4" />
+                </Button>
+                {/* Mobile: Previous button with text */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePreviousCard}
+                  disabled={currentCardIndex === 0}
+                  title="Previous card"
+                  className="md:hidden h-7 px-2 gap-1"
+                >
+                  <ChevronsLeft className="h-3 w-3" />
+                  <span className="text-xs font-medium">Previous</span>
                 </Button>
               </div>
             </div>
@@ -602,23 +812,27 @@ export function DoubleSidebarAnkomaViewer({
         </div>
 
         {/* Card Content */}
-        <div className="flex-1 overflow-auto p-6 min-h-0 pb-16">
+        <div className="flex-1 overflow-auto p-2 md:p-3 min-h-0">
           {currentCard ? (
             <InteractiveAnkiViewer
               card={currentCard}
               onNext={currentCardIndex < currentCards.length - 1 ? handleNextCard : undefined}
               onPrevious={currentCardIndex > 0 ? handlePreviousCard : undefined}
+              currentCardIndex={currentCardIndex}
+              totalCards={currentCards.length}
+              categoryName={selectedCategory?.name}
+              subcategoryName={selectedSubcategory}
               className="w-full"
             />
           ) : selectedCategory ? (
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-[98%] mx-auto">
               <Card>
                 <CardContent className="flex items-center justify-center h-64">
                   <div className="text-center">
                     <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-semibold mb-2">No Cards Available</h3>
                     <p className="text-muted-foreground">
-                      {selectedSubcategory 
+                      {selectedSubcategory
                         ? `No cards found in "${selectedSubcategory}" subcategory.`
                         : "This category doesn't contain any cards to study."
                       }
@@ -628,7 +842,7 @@ export function DoubleSidebarAnkomaViewer({
               </Card>
             </div>
           ) : (
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-[98%] mx-auto">
               <Card>
                 <CardContent className="flex items-center justify-center h-64">
                   <div className="text-center">

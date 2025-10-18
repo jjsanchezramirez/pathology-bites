@@ -1,5 +1,6 @@
 import { createClient } from '@/shared/services/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { NotificationTriggers } from '@/shared/services/notification-triggers'
 
 /**
  * POST /api/questions/:id/approve
@@ -99,6 +100,20 @@ export async function POST(
     if (reviewError) {
       console.error('Error recording review:', reviewError)
       // Don't fail the request if review recording fails
+    }
+
+    // Send notification to creator
+    try {
+      const notificationTriggers = new NotificationTriggers()
+      await notificationTriggers.onQuestionApproved(
+        updatedQuestion.created_by,
+        questionId,
+        updatedQuestion.title,
+        user.id
+      )
+    } catch (error) {
+      console.error('Error sending approval notification:', error)
+      // Don't fail the request if notification fails
     }
 
     return NextResponse.json({

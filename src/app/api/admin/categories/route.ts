@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     // Auth is now handled by middleware
 
     const body = await request.json()
-    const { name, description, parentId, color } = body
+    const { name, shortForm, parentId, color } = body
 
     if (!name || !name.trim()) {
       return NextResponse.json({ error: 'Category name is required' }, { status: 400 })
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
       .from('categories')
       .insert({
         name: name.trim(),
-        description: description?.trim() || null,
+        short_form: shortForm?.trim() || null,
         parent_id: parentId || null,
         level,
         color: color?.trim() || null
@@ -172,7 +172,7 @@ export async function PATCH(request: NextRequest) {
     // Auth is now handled by middleware
 
     const body = await request.json()
-    const { categoryId, name, description, parentId, color } = body
+    const { categoryId, name, shortForm, parentId, color } = body
 
     if (!categoryId || !name || !name.trim()) {
       return NextResponse.json({ error: 'Category ID and name are required' }, { status: 400 })
@@ -197,7 +197,7 @@ export async function PATCH(request: NextRequest) {
       .from('categories')
       .update({
         name: name.trim(),
-        description: description?.trim() || null,
+        short_form: shortForm?.trim() || null,
         parent_id: parentId || null,
         level,
         color: color?.trim() || null

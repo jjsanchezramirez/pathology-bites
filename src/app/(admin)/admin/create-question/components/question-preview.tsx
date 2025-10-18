@@ -264,7 +264,7 @@ Return the modified question in the same JSON format.
                          currentQuestion.difficulty === 'medium' ? 'default' : 'destructive'}>
             {currentQuestion.difficulty?.toUpperCase() || 'MEDIUM'}
           </Badge>
-          <Badge variant="outline">{currentQuestion.status || 'draft'}</Badge>
+          <Badge variant="outline">DRAFT</Badge>
         </div>
         
         <div className="flex gap-2">

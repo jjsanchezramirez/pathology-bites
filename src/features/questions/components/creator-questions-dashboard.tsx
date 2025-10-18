@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/shared/services/client'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import {
@@ -35,7 +36,6 @@ import {
   Loader2
 } from 'lucide-react'
 import { QuestionPreviewDialog } from './question-preview-dialog'
-import { EditQuestionDialog } from './edit-question-dialog'
 import { SubmitForReviewDialog } from './submit-for-review-dialog'
 import { ReassignReviewerDialog } from './reassign-reviewer-dialog'
 import { QUESTION_STATUSES, getQuestionStatusLabel } from '@/shared/constants/database-types'
@@ -44,7 +44,6 @@ import { STATUS_CONFIG, QuestionWithDetails } from '@/features/questions/types/q
 
 interface CreatorQuestion extends QuestionWithDetails {
   question_set_name?: string
-  reviewer_id?: string | null
   reviewer_feedback?: string | null
   rejected_at?: string | null
   rejected_by?: string | null
@@ -53,13 +52,13 @@ interface CreatorQuestion extends QuestionWithDetails {
 }
 
 export function CreatorQuestionsDashboard() {
+  const router = useRouter()
   const [questions, setQuestions] = useState<CreatorQuestion[]>([])
   const [filteredQuestions, setFilteredQuestions] = useState<CreatorQuestion[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedQuestion, setSelectedQuestion] = useState<CreatorQuestion | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
   const [submitForReviewOpen, setSubmitForReviewOpen] = useState(false)
   const [reassignOpen, setReassignOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('all')
@@ -148,25 +147,8 @@ export function CreatorQuestionsDashboard() {
     }
   }
 
-  const handleEdit = async (question: CreatorQuestion) => {
-    try {
-      // Use the same API endpoint as the All Questions page for consistency
-      const response = await fetch(`/api/admin/questions/${question.id}`)
-
-      if (!response.ok) {
-        console.error('Failed to fetch question details')
-        toast.error('Failed to load question details')
-        return
-      }
-
-      const { question: fullQuestion } = await response.json()
-
-      setSelectedQuestion(fullQuestion)
-      setEditOpen(true)
-    } catch (error) {
-      console.error('Error fetching question details:', error)
-      toast.error('Failed to load question details')
-    }
+  const handleEdit = (question: CreatorQuestion) => {
+    router.push(`/admin/questions/${question.id}/edit`)
   }
 
   const handleSubmitForReview = (question: CreatorQuestion) => {
@@ -471,16 +453,9 @@ export function CreatorQuestionsDashboard() {
 
       {/* Dialogs */}
       <QuestionPreviewDialog
-        question={selectedQuestion}
+        question={selectedQuestion as QuestionWithDetails}
         open={previewOpen}
         onOpenChange={setPreviewOpen}
-      />
-
-      <EditQuestionDialog
-        question={selectedQuestion}
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        onSave={fetchMyQuestions}
       />
 
       {selectedQuestion && (

@@ -12,7 +12,7 @@ src/
 │   ├── (dashboard)/       # User dashboard pages
 │   ├── (public)/          # Public pages (no auth required)
 │   ├── api/               # API route handlers
-│   ├── debug/             # Development debug tools
+
 │   ├── layout.tsx         # Root layout component
 │   ├── error.tsx          # Global error boundary
 │   └── not-found.tsx      # 404 page
@@ -93,7 +93,7 @@ src/
 ### Admin Features
 - User management
 - Content moderation
-- System monitoring and debug tools
+- System monitoring
 
 ## 🔄 Development Workflow
 

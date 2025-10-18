@@ -108,61 +108,32 @@ export async function fetchImages(params: {
     // Choose the appropriate table/view based on filter
     const tableName = showUnusedOnly ? 'v_orphaned_images' : 'images';
 
-    // Build the base query for counting
-    let countQuery = supabase
-      .from(tableName)
-      .select('*', { count: 'exact', head: true });
-
-    // Build the base query for data
+    // Build the base query for data first
     let dataQuery = supabase
       .from(tableName)
       .select('*');
 
     // Exclude external images from management table (only for regular images table)
     if (!showUnusedOnly) {
-      countQuery = countQuery.neq('category', 'external');
       dataQuery = dataQuery.neq('category', 'external');
     }
 
     // Filter to only microscopic and gross images if requested
     if (includeOnlyMicroscopicAndGross && !showUnusedOnly) {
-      countQuery = countQuery.in('category', ['microscopic', 'gross']);
       dataQuery = dataQuery.in('category', ['microscopic', 'gross']);
     }
 
-    // Apply filters to both queries
+    // Apply filters to data query
     if (searchTerm && searchTerm.trim()) {
       const cleanSearchTerm = searchTerm.trim();
 
-      // Smart search strategy: combine full-text search with partial matching
-      const words = cleanSearchTerm.split(/\s+/);
-      const searchPattern = `%${cleanSearchTerm}%`;
-
-      if (words.length === 1 && words[0].length >= 3) {
-        // Single word search: use prefix matching for better partial results
-        // This handles "castle" -> "castleman"
-        try {
-          const prefixQuery = `${words[0]}:*`;
-          countQuery = countQuery.textSearch('search_vector', prefixQuery);
-          dataQuery = dataQuery.textSearch('search_vector', prefixQuery);
-        } catch (error) {
-          // Fallback to ILIKE if prefix search fails
-          // Cast category to text to avoid ENUM operator error
-          countQuery = countQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category::text.ilike.${searchPattern}`);
-          dataQuery = dataQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category::text.ilike.${searchPattern}`);
-        }
-      } else {
-        // Multi-word or short search: use ILIKE for maximum flexibility
-        // This handles "castleman d" -> "castleman disease" and short terms
-        // Cast category to text to avoid ENUM operator error
-        countQuery = countQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category::text.ilike.${searchPattern}`);
-        dataQuery = dataQuery.or(`alt_text.ilike.${searchPattern},description.ilike.${searchPattern},source_ref.ilike.${searchPattern},category::text.ilike.${searchPattern}`);
-      }
+      // Use the correct Supabase .or() syntax based on working examples in the codebase
+      // This matches the pattern used in other parts of the application
+      dataQuery = dataQuery.or(`alt_text.ilike.%${cleanSearchTerm}%,description.ilike.%${cleanSearchTerm}%,source_ref.ilike.%${cleanSearchTerm}%`);
     }
 
     // Apply category filter (only for regular images, not unused filter)
     if (category && category !== 'all' && !showUnusedOnly) {
-      countQuery = countQuery.eq('category', category);
       dataQuery = dataQuery.eq('category', category);
     }
 
@@ -170,51 +141,39 @@ export async function fetchImages(params: {
     const from = page * pageSize;
     const to = from + pageSize - 1;
 
-    // Execute queries
-    const [countResult, dataResult] = await Promise.all([
-      countQuery,
-      dataQuery
-        .order('created_at', { ascending: false })
-        .range(from, to)
-    ]);
-
-    if (countResult.error) {
-      console.error('Count query error:', {
-        error: countResult.error,
-        message: countResult.error.message,
-        details: countResult.error.details,
-        hint: countResult.error.hint,
-        code: countResult.error.code,
-        params: { page, pageSize, searchTerm, category, showUnusedOnly, includeOnlyMicroscopicAndGross }
-      });
-      // Return default values instead of throwing to prevent UI crashes
-      return {
-        data: [],
-        total: 0,
-        error: `Failed to count images: ${countResult.error.message || 'Unknown error'}`
-      };
-    }
+    // Execute data query first
+    const dataResult = await dataQuery
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
     if (dataResult.error) {
       console.error('Data query error:', {
         error: dataResult.error,
-        message: dataResult.error.message,
-        details: dataResult.error.details,
-        hint: dataResult.error.hint,
-        code: dataResult.error.code,
+        message: dataResult.error?.message,
+        details: dataResult.error?.details,
+        hint: dataResult.error?.hint,
+        code: dataResult.error?.code,
         params: { page, pageSize, searchTerm, category, showUnusedOnly, includeOnlyMicroscopicAndGross }
       });
-      // Return default values instead of throwing to prevent UI crashes
       return {
         data: [],
         total: 0,
-        error: `Failed to fetch images: ${dataResult.error.message || 'Unknown error'}`
+        error: `Failed to fetch images: ${dataResult.error?.message || 'Unknown error'}`
       };
     }
 
+    // For now, return a simple count based on the data length
+    // This is a temporary fix to avoid the count query issues
+    const images = dataResult.data || [];
+    const estimatedTotal = images.length;
+
+    // If we got a full page, there might be more data
+    const hasMoreData = estimatedTotal === pageSize;
+    const total = hasMoreData ? (page + 1) * pageSize + 1 : (page * pageSize) + estimatedTotal;
+
     return {
-      data: dataResult.data || [],
-      total: countResult.count || 0,
+      data: images,
+      total: total,
       error: null
     };
   } catch (error) {

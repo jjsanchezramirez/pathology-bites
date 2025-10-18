@@ -7,7 +7,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { toast } from 'sonner';
-import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, FileText, Flag, ChevronRight, History, GitBranch, Eye, Download, Copy, Check, X, Send } from 'lucide-react';
+import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, Flag, ChevronRight, History, GitBranch, Eye, Download, Check, X, Send } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -34,7 +34,6 @@ import { shouldShowDeleteButton } from '@/features/questions/utils/deletion-help
 import { ComponentErrorBoundary } from '@/shared/components/common';
 import { CreateQuestionDialog } from './create-question-dialog';
 import { EditQuestionDialog } from './edit-question-dialog';
-import { EnhancedImportDialog } from './enhanced-import-dialog';
 import { QuestionFlagDialog } from './question-flag-dialog';
 import { DeleteQuestionDialog } from './delete-question-dialog';
 import { QuestionVersionHistory } from './question-version-history';
@@ -43,8 +42,10 @@ import { AdminVersionUpdateDialog } from './admin-version-update-dialog';
 import { QuestionPreviewDialog } from './question-preview-dialog';
 import { getQuestionSetDisplayName, getCategoryDisplayName } from '@/features/questions/utils/display-helpers';
 import { createClient } from '@/shared/services/client';
+import { BlurredDialog } from '@/shared/components/ui/blurred-dialog';
 
-const PAGE_SIZE = 10;
+const DEFAULT_PAGE_SIZE = 100;
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 // Difficulty configuration
 const DIFFICULTY_CONFIG = {
@@ -62,8 +63,6 @@ function TableControls({
   onDifficultyChange,
   onStatusChange,
   onQuestionSetChange,
-  onCreateNew,
-  onImportJson,
   onExportAll,
   difficultyFilter,
   statusFilter,
@@ -71,13 +70,12 @@ function TableControls({
   questionSets,
   selectedQuestions,
   onBulkOperation,
+  isAdmin,
 }: {
   onSearch: (term: string) => void;
   onDifficultyChange: (difficulty: string) => void;
   onStatusChange: (status: string) => void;
   onQuestionSetChange: (questionSetId: string) => void;
-  onCreateNew: () => void;
-  onImportJson: () => void;
   onExportAll: () => void;
   difficultyFilter: string;
   statusFilter: string;
@@ -85,10 +83,12 @@ function TableControls({
   questionSets: any[];
   selectedQuestions: string[];
   onBulkOperation: (action: string) => void;
+  isAdmin: boolean;
 }) {
   return (
-    <div className="flex gap-4 items-center justify-between">
-      <div className="flex gap-4 items-center flex-1">
+    <div className="space-y-4">
+      {/* Search and Filters Row */}
+      <div className="flex gap-4 items-center">
         <div className="relative flex-1">
           <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -113,11 +113,14 @@ function TableControls({
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="all">All status</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="pending">Pending Review</SelectItem>
+            <SelectItem value="pending_review">Pending review</SelectItem>
             <SelectItem value="approved">Approved</SelectItem>
+            <SelectItem value="published">Published</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
             <SelectItem value="flagged">Flagged</SelectItem>
+            <SelectItem value="archived">Archived</SelectItem>
           </SelectContent>
         </Select>
         <Select value={questionSetFilter} onValueChange={onQuestionSetChange}>
@@ -133,19 +136,22 @@ function TableControls({
             ))}
           </SelectContent>
         </Select>
+        <Button variant="outline" onClick={onExportAll}>
+          <Download className="h-4 w-4 mr-2" />
+          Export All
+        </Button>
       </div>
 
-      {/* Bulk Actions */}
-      {selectedQuestions.length > 0 && (
-        <div className="flex gap-2 items-center">
-          <span className="text-sm text-muted-foreground">
+      {/* Bulk Operations Row - Only shown for admins when questions are selected */}
+      {isAdmin && selectedQuestions.length > 0 && (
+        <div className="flex gap-2 items-center p-3 bg-muted/50 rounded-lg border">
+          <span className="text-sm font-medium mr-2">
             {selectedQuestions.length} selected
           </span>
           <Button
             variant="outline"
             size="sm"
             onClick={() => onBulkOperation('submit_for_review')}
-            className="text-blue-600 border-blue-600 hover:bg-blue-50"
           >
             <Send className="h-4 w-4 mr-2" />
             Submit for Review
@@ -154,7 +160,6 @@ function TableControls({
             variant="outline"
             size="sm"
             onClick={() => onBulkOperation('approve')}
-            className="text-green-600 border-green-600 hover:bg-green-50"
           >
             <Check className="h-4 w-4 mr-2" />
             Approve
@@ -163,16 +168,14 @@ function TableControls({
             variant="outline"
             size="sm"
             onClick={() => onBulkOperation('reject')}
-            className="text-orange-600 border-orange-600 hover:bg-orange-50"
           >
             <X className="h-4 w-4 mr-2" />
             Reject
           </Button>
           <Button
-            variant="outline"
+            variant="destructive"
             size="sm"
             onClick={() => onBulkOperation('delete')}
-            className="text-red-600 border-red-600 hover:bg-red-50"
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
@@ -187,32 +190,6 @@ function TableControls({
           </Button>
         </div>
       )}
-
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={onExportAll}>
-          <Download className="h-4 w-4 mr-2" />
-          Export All
-        </Button>
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Question
-              <ChevronDown className="h-4 w-4 ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={onCreateNew}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create New Question
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onImportJson}>
-              <FileText className="h-4 w-4 mr-2" />
-              Import from JSON
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
     </div>
   );
 }
@@ -223,19 +200,37 @@ function TablePagination({
   totalPages,
   onPageChange,
   totalItems,
+  pageSize,
+  onPageSizeChange,
 }: {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
   totalItems: number;
+  pageSize: number;
+  onPageSizeChange: (size: number) => void;
 }) {
   return (
     <div className="flex justify-between items-center">
-      <p className="text-sm text-muted-foreground">
-        Showing {totalItems > 0 ? currentPage * PAGE_SIZE + 1 : 0} to{" "}
-        {Math.min((currentPage + 1) * PAGE_SIZE, totalItems)} of{" "}
-        {totalItems} questions
-      </p>
+      <div className="flex items-center gap-4">
+        <p className="text-sm text-muted-foreground">
+          Showing {totalItems > 0 ? currentPage * pageSize + 1 : 0} to{" "}
+          {Math.min((currentPage + 1) * pageSize, totalItems)} of{" "}
+          {totalItems} questions
+        </p>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Per page:</span>
+          <select
+            value={pageSize}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
+            className="text-sm border rounded px-2 py-1 bg-background"
+          >
+            {PAGE_SIZE_OPTIONS.map(size => (
+              <option key={size} value={size}>{size}</option>
+            ))}
+          </select>
+        </div>
+      </div>
       <div className="flex gap-2">
         <Button
           variant="outline"
@@ -265,8 +260,7 @@ function RowActions({
   onViewHistory,
   onCreateVersion,
   onExport,
-  onCopyJson,
-  onCopy
+  onCopyJson
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
@@ -276,7 +270,6 @@ function RowActions({
   onCreateVersion?: (question: QuestionWithDetails) => void;
   onExport?: (question: QuestionWithDetails) => void;
   onCopyJson?: (question: QuestionWithDetails) => void;
-  onCopy?: (question: QuestionWithDetails) => void;
 }) {
   const { isAdmin, role } = useUserRole();
   const { user } = useAuthStatus();
@@ -328,12 +321,7 @@ function RowActions({
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        {onCopy && (
-          <DropdownMenuItem onClick={() => onCopy(question)}>
-            <Copy className="h-4 w-4 mr-2" />
-            Copy Question
-          </DropdownMenuItem>
-        )}
+
         {onExport && (
           <DropdownMenuItem onClick={() => onExport(question)}>
             <Download className="h-4 w-4 mr-2" />
@@ -342,7 +330,7 @@ function RowActions({
         )}
         {onCopyJson && (
           <DropdownMenuItem onClick={() => onCopyJson(question)}>
-            <Copy className="h-4 w-4 mr-2" />
+            <Download className="h-4 w-4 mr-2" />
             Copy JSON
           </DropdownMenuItem>
         )}
@@ -376,9 +364,9 @@ function QuestionRow({
   onPreview,
   onExport,
   onCopyJson,
-  onCopy,
   isSelected,
-  onSelect
+  onSelect,
+  isAdmin
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
@@ -389,69 +377,90 @@ function QuestionRow({
   onPreview?: (question: QuestionWithDetails) => void;
   onExport?: (question: QuestionWithDetails) => void;
   onCopyJson?: (question: QuestionWithDetails) => void;
-  onCopy?: (question: QuestionWithDetails) => void;
   isSelected: boolean;
   onSelect: (questionId: string, checked: boolean) => void;
+  isAdmin: boolean;
 }) {
 
   return (
     <TableRow key={question.id}>
-      <TableCell className="text-center">
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={(checked) => onSelect(question.id, checked as boolean)}
-        />
-      </TableCell>
+      {isAdmin && (
+        <TableCell className="text-center">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={(checked) => onSelect(question.id, checked as boolean)}
+          />
+        </TableCell>
+      )}
       <TableCell className="text-center">
         {(question.flag_count || 0) > 0 && (
           <Flag className="h-4 w-4 text-red-500" />
         )}
       </TableCell>
-      <TableCell className="max-w-xs">
+      <TableCell className="min-w-[200px]">
         <div className="flex-1 min-w-0">
           <p className="line-clamp-2 text-sm font-medium">{question.title}</p>
         </div>
       </TableCell>
-        <TableCell>
-          <Badge className={STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.color}>
-            {STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.label || question.status}
-          </Badge>
-        </TableCell>
-        <TableCell>
-          <div className="flex flex-wrap gap-1 max-w-[150px]">
-            {question.categories && question.categories.length > 0 ? (
-              question.categories.slice(0, 2).map((category) => (
-                <Badge
-                  key={category.id}
-                  variant="outline"
-                  className="text-[10px] px-1.5 py-0"
-                >
-                  {getCategoryDisplayName(category)}
-                </Badge>
-              ))
-            ) : (
-              <span className="text-xs text-muted-foreground">No category</span>
-            )}
-            {question.categories && question.categories.length > 2 && (
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                +{question.categories.length - 2}
+      <TableCell className="w-[120px]">
+        <Badge
+          variant="outline"
+          className={`${STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.color || 'border-gray-300 bg-gray-50 text-gray-700'} text-xs`}
+        >
+          {STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.label || question.status}
+        </Badge>
+      </TableCell>
+      <TableCell className="w-[140px]">
+        <div className="flex flex-wrap gap-1">
+          {question.categories && question.categories.length > 0 ? (
+            question.categories.slice(0, 1).map((category) => (
+              <Badge
+                key={category.id}
+                variant="outline"
+                className="text-[10px] px-1.5 py-0 border"
+                style={{
+                  backgroundColor: category.color ? `${category.color}20` : undefined,
+                  borderColor: category.color || undefined,
+                  color: category.color || undefined
+                }}
+              >
+                {category.short_form || category.name}
               </Badge>
-            )}
-          </div>
-        </TableCell>
-        <TableCell className="max-w-xs">
-          <p className="line-clamp-1 text-sm">
-            {question.question_set ? getQuestionSetDisplayName(question.question_set) : 'No set assigned'}
-          </p>
-        </TableCell>
-        <TableCell>
-          <div className="text-sm">
-            {question.version_string || `${question.version_major || 1}.${question.version_minor || 0}.${question.version_patch || 0}`}
-          </div>
-        </TableCell>
-        <TableCell className="text-sm text-muted-foreground">
-          {new Date(question.created_at).toLocaleDateString()}
-        </TableCell>
+            ))
+          ) : (
+            <span className="text-xs text-muted-foreground">No category</span>
+          )}
+          {question.categories && question.categories.length > 1 && (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+              +{question.categories.length - 1}
+            </Badge>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="w-[120px]">
+        <p className="line-clamp-1 text-sm">
+          {question.question_set?.short_form || question.question_set?.name || 'No set'}
+        </p>
+      </TableCell>
+      <TableCell className="w-[80px]">
+        <div className="text-sm font-mono">
+          {question.version || 'v1.0.0'}
+        </div>
+      </TableCell>
+      <TableCell className="w-[100px] text-sm text-muted-foreground">
+        {new Date(question.created_at).toLocaleDateString('en-US', {
+          month: 'numeric',
+          day: 'numeric',
+          year: '2-digit'
+        })}
+      </TableCell>
+      <TableCell className="w-[100px] text-sm text-muted-foreground">
+        {new Date(question.updated_at).toLocaleDateString('en-US', {
+          month: 'numeric',
+          day: 'numeric',
+          year: '2-digit'
+        })}
+      </TableCell>
         <TableCell className="text-center">
           {onPreview && (
             <Button
@@ -474,25 +483,37 @@ function QuestionRow({
             onCreateVersion={onCreateVersion}
             onExport={onExport}
             onCopyJson={onCopyJson}
-            onCopy={onCopy}
           />
         </TableCell>
       </TableRow>
   );
 }
 
-export function QuestionsTable() {
+interface QuestionsTableProps {
+  adminMode?: string
+}
+
+export function QuestionsTable({ adminMode = 'admin' }: QuestionsTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [questionSetFilter, setQuestionSetFilter] = useState('all');
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
+  // Get user role to determine admin access
+  const { role } = useUserRole();
+  const isActualAdmin = role === 'admin';
+
+  // Use adminMode to determine what features to show (but still check actual permissions for security)
+  const showAdminFeatures = adminMode === 'admin' && isActualAdmin;
 
   const supabase = createClient();
   const [selectedQuestion, setSelectedQuestion] = useState<QuestionWithDetails | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showImportDialog, setShowImportDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
@@ -515,7 +536,7 @@ export function QuestionsTable() {
     deleteQuestion,
   } = useQuestions({
     page,
-    pageSize: PAGE_SIZE,
+    pageSize,
     searchTerm: searchTerm || undefined,
     difficulty: difficultyFilter === 'all' ? undefined : difficultyFilter,
     status: statusFilter === 'all' ? undefined : statusFilter,
@@ -525,7 +546,12 @@ export function QuestionsTable() {
   // Fetch question sets for filter dropdown
   const { questionSets } = useQuestionSets();
 
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const totalPages = Math.ceil(total / pageSize);
+
+  const handlePageSizeChange = useCallback((newSize: number) => {
+    setPageSize(newSize);
+    setPage(0); // Reset to first page when changing page size
+  }, []);
 
   const handleSearch = useCallback((value: string) => {
     setSearchTerm(value);
@@ -597,7 +623,25 @@ export function QuestionsTable() {
           *,
           question_options(*),
           question_images(*, image:images(*)),
-          categories(*)
+          categories(*),
+          question_sets(
+            id,
+            name,
+            source_type,
+            short_form
+          ),
+          created_by_user:users!questions_created_by_fkey(
+            first_name,
+            last_name
+          ),
+          updated_by_user:users!questions_updated_by_fkey(
+            first_name,
+            last_name
+          ),
+          reviewer_user:users!questions_reviewer_id_fkey(
+            first_name,
+            last_name
+          )
         `)
         .eq('id', question.id)
         .single()
@@ -714,6 +758,12 @@ export function QuestionsTable() {
       return
     }
 
+    // Show confirmation dialog for delete action
+    if (action === 'delete') {
+      setShowBulkDeleteConfirm(true);
+      return;
+    }
+
     try {
       const response = await fetch('/api/admin/questions/bulk', {
         method: 'POST',
@@ -758,37 +808,44 @@ export function QuestionsTable() {
     }
   }, [selectedQuestions, refetch]);
 
-  const handleCopyQuestion = useCallback(async (question: QuestionWithDetails) => {
+  // Confirmed bulk delete handler
+  const handleConfirmedBulkDelete = useCallback(async () => {
+    setIsBulkDeleting(true);
     try {
-      const response = await fetch(`/api/admin/questions/${question.id}/copy`, {
+      const response = await fetch('/api/admin/questions/bulk', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
+        body: JSON.stringify({
+          action: 'delete',
+          questionIds: selectedQuestions
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to copy question');
+        throw new Error(data.error || 'Failed to delete questions');
       }
 
-      toast.success(data.message || 'Question copied successfully');
+      toast.success(data.message || `Successfully deleted ${data.affectedCount} question(s)`);
       refetch();
+      setSelectedQuestions([]);
+      setShowBulkDeleteConfirm(false);
     } catch (error) {
-      console.error('Error copying question:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to copy question');
+      console.error('Error performing bulk delete:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to delete questions');
+    } finally {
+      setIsBulkDeleting(false);
     }
-  }, [refetch]);
+  }, [selectedQuestions, refetch]);
+
+
 
   const handleCreateSave = useCallback(() => {
     setShowCreateDialog(false);
-    refetch();
-  }, [refetch]);
-
-  const handleImportSave = useCallback(() => {
-    setShowImportDialog(false);
     refetch();
   }, [refetch]);
 
@@ -834,8 +891,6 @@ export function QuestionsTable() {
         onDifficultyChange={handleDifficultyChange}
         onStatusChange={handleStatusChange}
         onQuestionSetChange={handleQuestionSetChange}
-        onCreateNew={() => setShowCreateDialog(true)}
-        onImportJson={() => setShowImportDialog(true)}
         onExportAll={handleExportAll}
         difficultyFilter={difficultyFilter}
         statusFilter={statusFilter}
@@ -843,25 +898,29 @@ export function QuestionsTable() {
         questionSets={questionSets}
         selectedQuestions={selectedQuestions}
         onBulkOperation={handleBulkOperation}
+        isAdmin={showAdminFeatures}
       />
 
       <div className="rounded-md border bg-card">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead className="w-[50px]">
-                <Checkbox
-                  checked={selectedQuestions.length === questions?.length && questions.length > 0}
-                  onCheckedChange={handleSelectAll}
-                />
-              </TableHead>
+              {showAdminFeatures && (
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={selectedQuestions.length === questions?.length && questions.length > 0}
+                    onCheckedChange={handleSelectAll}
+                  />
+                </TableHead>
+              )}
               <TableHead className="w-[50px]"></TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Set</TableHead>
-              <TableHead>Version</TableHead>
-              <TableHead className="w-32">Created</TableHead>
+              <TableHead className="min-w-[200px]">Title</TableHead>
+              <TableHead className="w-[120px]">Status</TableHead>
+              <TableHead className="w-[140px]">Category</TableHead>
+              <TableHead className="w-[120px]">Set</TableHead>
+              <TableHead className="w-[80px]">Version</TableHead>
+              <TableHead className="w-[100px]">Created</TableHead>
+              <TableHead className="w-[100px]">Updated</TableHead>
               <TableHead className="w-[50px]"></TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
@@ -869,13 +928,13 @@ export function QuestionsTable() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={10} className="h-24 text-center">
+                <TableCell colSpan={showAdminFeatures ? 11 : 10} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : questions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={showAdminFeatures ? 11 : 10} className="h-24 text-center text-muted-foreground">
                   {searchTerm || difficultyFilter !== 'all' || statusFilter !== 'all' || questionSetFilter !== 'all'
                     ? 'No questions found matching your filters'
                     : 'No questions created yet'
@@ -895,9 +954,9 @@ export function QuestionsTable() {
                   onPreview={handlePreview}
                   onExport={handleExportQuestion}
                   onCopyJson={handleCopyJsonQuestion}
-                  onCopy={handleCopyQuestion}
                   isSelected={selectedQuestions.includes(question.id)}
                   onSelect={handleSelectQuestion}
+                  isAdmin={showAdminFeatures}
                 />
               ))
             )}
@@ -911,6 +970,8 @@ export function QuestionsTable() {
           totalPages={totalPages}
           onPageChange={setPage}
           totalItems={total}
+          pageSize={pageSize}
+          onPageSizeChange={handlePageSizeChange}
         />
       )}
 
@@ -921,11 +982,7 @@ export function QuestionsTable() {
         onSave={handleCreateSave}
       />
 
-      <EnhancedImportDialog
-        open={showImportDialog}
-        onOpenChange={setShowImportDialog}
-        onSave={handleImportSave}
-      />
+
 
       {/* Preview Dialog */}
       <QuestionPreviewDialog
@@ -978,6 +1035,48 @@ export function QuestionsTable() {
         }}
         onDelete={deleteQuestion}
       />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <BlurredDialog
+        open={showBulkDeleteConfirm}
+        onOpenChange={setShowBulkDeleteConfirm}
+        title="Delete Selected Questions"
+        description={`Are you sure you want to delete ${selectedQuestions.length} selected question${selectedQuestions.length === 1 ? '' : 's'}? This action cannot be undone.`}
+        maxWidth="md"
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowBulkDeleteConfirm(false)}
+              disabled={isBulkDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmedBulkDelete}
+              disabled={isBulkDeleting}
+              variant="destructive"
+            >
+              {isBulkDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                `Delete ${selectedQuestions.length} Question${selectedQuestions.length === 1 ? '' : 's'}`
+              )}
+            </Button>
+          </>
+        }
+      >
+        <div className="py-4">
+          <p className="text-sm text-muted-foreground">
+            This will permanently remove the selected questions from the database.
+            Questions that are currently approved or in use may not be deletable based on your permissions.
+          </p>
+        </div>
+      </BlurredDialog>
       </div>
     </ComponentErrorBoundary>
   );

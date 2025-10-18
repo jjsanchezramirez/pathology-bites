@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, BookOpen, Target, TrendingUp } from 'lucide-react'
+import { X, Microscope, BookOpen } from 'lucide-react'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { userSettingsService } from '@/shared/services/user-settings'
@@ -14,7 +14,6 @@ interface WelcomeMessageProps {
 
 export function WelcomeMessage({ onDismiss }: WelcomeMessageProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const [isCreatingQuiz, setIsCreatingQuiz] = useState(false)
 
   const handleDismiss = async () => {
     setIsLoading(true)
@@ -30,94 +29,58 @@ export function WelcomeMessage({ onDismiss }: WelcomeMessageProps) {
     }
   }
 
-  const handleStartQuiz = async () => {
-    setIsCreatingQuiz(true)
-    try {
-      // Create a random 20-question quiz
-      const quizPayload = {
-        title: `Starter Quiz - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-        mode: 'practice',
-        timing: 'untimed',
-        questionCount: 20,
-        questionType: 'unused',
-        categorySelection: 'all',
-        selectedCategories: [],
-        shuffleQuestions: true,
-        shuffleAnswers: true,
-        showProgress: true,
-        showExplanations: true
-      }
-
-      const response = await fetch('/api/content/quiz/sessions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(quizPayload),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to create quiz')
-      }
-
-      const result = await response.json()
-
-      // Mark welcome message as seen
-      await userSettingsService.markWelcomeMessageSeen()
-
-      // Redirect to the quiz
-      window.location.href = `/dashboard/quiz/${result.data.sessionId}`
-    } catch (error) {
-      console.error('Error creating starter quiz:', error)
-      // Fall back to the quiz creation page
-      window.location.href = '/dashboard/quiz/new'
-    } finally {
-      setIsCreatingQuiz(false)
-    }
-  }
-
   return (
     <Card className="relative bg-card border border-gray-200">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              📖 Welcome to PathologyBites!
+              🎓 Welcome to Pathology Bites!
             </h3>
 
             <div className="text-sm text-muted-foreground space-y-2 mb-4">
-              <p>Your dashboard is empty because you're just getting started.</p>
-
               <p>
-                <strong>Take a quick starter quiz</strong> to see how we track your progress. We'll track which questions you master,
-                which ones need work, and what you should focus on next.
+                We're thrilled to have you join our pathology learning community! 🎉
               </p>
 
               <p>
-                Your percentile ranking and performance stats will update as you go. No pressure - this is all about
-                finding your starting point and building from there.
+                <strong>Explore our learning tools:</strong>
               </p>
 
-              <p className="font-medium">Ready to start?</p>
+              <ul className="list-disc list-inside space-y-1 ml-2">
+                <li>
+                  <strong>WSI Questions:</strong> Test yourself with whole slide image-based questions to practice real-world pathology analysis
+                </li>
+                <li>
+                  <strong>Anki Deck:</strong> Learn something new with our comprehensive online Anki deck for spaced repetition learning
+                </li>
+              </ul>
+
+              <p>
+                Both tools are available now and ready to help you master pathology at your own pace.
+              </p>
             </div>
 
-            <div className="flex gap-3">
-              <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90 w-sm px-16 py-3 flex items-center gap-2"
-                onClick={handleStartQuiz}
-                disabled={isCreatingQuiz}
-              >
-                {isCreatingQuiz ? (
-                  <>
-                    <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Creating Quiz...
-                  </>
-                ) : (
-                  'Start Quiz'
-                )}
-              </Button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link href="/dashboard/wsi-questions" className="flex-1">
+                <Button
+                  size="lg"
+                  className="w-full bg-primary hover:bg-primary/90 flex items-center justify-center gap-2"
+                >
+                  <Microscope className="h-4 w-4" />
+                  Try WSI Questions
+                </Button>
+              </Link>
+              <Link href="/dashboard/anki" className="flex-1">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  View Anki Deck
+                </Button>
+              </Link>
             </div>
           </div>
 

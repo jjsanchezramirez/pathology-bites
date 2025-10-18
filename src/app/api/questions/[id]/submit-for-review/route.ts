@@ -1,5 +1,6 @@
 import { createClient } from '@/shared/services/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { NotificationTriggers } from '@/shared/services/notification-triggers'
 
 /**
  * POST /api/questions/:id/submit-for-review
@@ -102,16 +103,12 @@ export async function POST(
 
     // Update question to pending_review
     // Clear reviewer_feedback when resubmitting (feedback has been addressed)
-    // Store resubmission_notes if provided (for rejected → pending_review transitions)
     const { data: updatedQuestion, error: updateError } = await supabase
       .from('questions')
       .update({
         status: 'pending_review',
         reviewer_id: reviewer_id,
         reviewer_feedback: null, // Clear old feedback
-        rejected_at: null,
-        rejected_by: null,
-        resubmission_notes: resubmission_notes || null, // Store creator's change notes
         updated_at: new Date().toISOString(),
         updated_by: user.id,
       })
@@ -125,6 +122,48 @@ export async function POST(
         { error: `Failed to submit question: ${updateError.message}` },
         { status: 500 }
       )
+    }
+
+    // Create review record if resubmission notes are provided (for rejected → pending_review transitions)
+    if (resubmission_notes && question.status === 'rejected') {
+      try {
+        const { error: reviewError } = await supabase
+          .from('question_reviews')
+          .insert({
+            question_id: questionId,
+            reviewer_id: user.id, // Creator is the "reviewer" of their own changes
+            action: 'resubmitted',
+            feedback: null,
+            changes_made: {
+              resubmission_notes: resubmission_notes.trim(),
+              timestamp: new Date().toISOString(),
+              previous_status: 'rejected',
+              new_status: 'pending_review'
+            }
+          })
+
+        if (reviewError) {
+          console.error('Error creating resubmission review record:', reviewError)
+          // Don't fail the request if review record creation fails
+        }
+      } catch (error) {
+        console.error('Unexpected error creating resubmission review record:', error)
+        // Don't fail the request if review record creation fails
+      }
+    }
+
+    // Send notification to reviewer
+    try {
+      const notificationTriggers = new NotificationTriggers()
+      await notificationTriggers.onQuestionSubmittedForReview(
+        reviewer_id,
+        questionId,
+        updatedQuestion.title,
+        user.id
+      )
+    } catch (error) {
+      console.error('Error sending submission notification:', error)
+      // Don't fail the request if notification fails
     }
 
     return NextResponse.json({

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/shared/services/client'
 import {
   Table,
@@ -34,7 +35,6 @@ import {
   CheckCircle
 } from 'lucide-react'
 import { QuestionPreviewDialog } from './question-preview-dialog'
-import { EditQuestionDialog } from './edit-question-dialog'
 import { FlagResolutionDialog } from './flag-resolution-dialog'
 import { toast } from 'sonner'
 import { FLAG_TYPE_CONFIG, QuestionWithDetails, QuestionFlagData } from '@/features/questions/types/questions'
@@ -63,6 +63,7 @@ interface FlaggedQuestion extends QuestionWithDetails {
 }
 
 export function FlaggedQuestionsTable() {
+  const router = useRouter()
   const [questions, setQuestions] = useState<FlaggedQuestion[]>([])
   const [filteredQuestions, setFilteredQuestions] = useState<FlaggedQuestion[]>([])
   const [loading, setLoading] = useState(true)
@@ -70,7 +71,6 @@ export function FlaggedQuestionsTable() {
   const [flagTypeFilter, setFlagTypeFilter] = useState('all')
   const [selectedQuestion, setSelectedQuestion] = useState<FlaggedQuestion | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
   const [resolutionOpen, setResolutionOpen] = useState(false)
   const [selectedFlags, setSelectedFlags] = useState<QuestionFlagData[]>([])
   const [selectedQuestionTitle, setSelectedQuestionTitle] = useState('')
@@ -169,22 +169,8 @@ export function FlaggedQuestionsTable() {
     setPreviewOpen(true)
   }
 
-  const handleEditQuestion = async (question: FlaggedQuestion) => {
-    try {
-      // Fetch the full question details from the API to ensure we have all related data
-      const response = await fetch(`/api/admin/questions/${question.id}`)
-      if (response.ok) {
-        const { question: questionDetails } = await response.json()
-        setSelectedQuestion(questionDetails)
-        setEditOpen(true)
-      } else {
-        console.error('Failed to fetch question details')
-        toast.error('Failed to load question details')
-      }
-    } catch (error) {
-      console.error('Failed to fetch question details:', error)
-      toast.error('Failed to load question details')
-    }
+  const handleEditQuestion = (question: FlaggedQuestion) => {
+    router.push(`/admin/questions/${question.id}/edit`)
   }
 
   const handleResolveFlags = (question: FlaggedQuestion) => {
@@ -414,16 +400,6 @@ export function FlaggedQuestionsTable() {
         open={previewOpen}
         onOpenChange={setPreviewOpen}
       />
-
-      {/* Edit Dialog */}
-      {selectedQuestion && (
-        <EditQuestionDialog
-          question={selectedQuestion}
-          open={editOpen}
-          onOpenChange={setEditOpen}
-          onSave={fetchFlaggedQuestions}
-        />
-      )}
 
       {/* Flag Resolution Dialog */}
       <FlagResolutionDialog

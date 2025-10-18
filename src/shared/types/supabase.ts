@@ -768,6 +768,7 @@ export interface Database {
           status: Database["public"]["Enums"]["user_status"]
           created_at: string
           updated_at: string
+          deleted_at: string | null
         }
         Insert: {
           id: string
@@ -780,6 +781,7 @@ export interface Database {
           status?: Database["public"]["Enums"]["user_status"]
           created_at?: string
           updated_at?: string
+          deleted_at?: string | null
         }
         Update: {
           id?: string
@@ -1953,7 +1955,7 @@ export interface Database {
       user_role: "admin" | "creator" | "reviewer" | "user"
       user_status: "active" | "inactive" | "suspended"
       user_type: "student" | "resident" | "faculty" | "other"
-      question_status: "draft" | "pending_review" | "rejected" | "published" | "approved" | "flagged" | "archived"
+      question_status: "draft" | "pending_review" | "rejected" | "published" | "flagged" | "archived"
       difficulty_level: "easy" | "medium" | "hard"
       session_status: "not_started" | "in_progress" | "completed" | "abandoned"
       report_type: "incorrect_answer" | "unclear_explanation" | "broken_image" | "inappropriate_content" | "other"

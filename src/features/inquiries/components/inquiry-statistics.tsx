@@ -6,6 +6,7 @@ import { createClient } from '@/shared/services/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { MessageSquare, CheckCircle, Clock, HelpCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import { INQUIRY_TYPES } from '../types/inquiries'
 
 interface InquiryStats {
   totalInquiries: number
@@ -53,7 +54,7 @@ export function InquiryStatistics({ onStatsChange, refreshTrigger }: InquiryStat
         (inquiry) => inquiry.request_type === 'general' && inquiry.status === 'pending'
       ).length
       const pendingTech = inquiriesData.filter(
-        (inquiry) => inquiry.request_type === 'tech' && inquiry.status === 'pending'
+        (inquiry) => inquiry.request_type === INQUIRY_TYPES.TECH && inquiry.status === 'pending'
       ).length
       const resolvedInquiries = inquiriesData.filter(
         (inquiry) => inquiry.status === 'resolved' || inquiry.status === 'closed'

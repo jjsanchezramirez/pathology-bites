@@ -134,47 +134,10 @@ export class NotificationJobs {
     }
   }
 
-  // Goal completion detection
+  // Goal completion detection - deprecated (Goals feature removed)
   async processGoalCompletions(): Promise<void> {
-    try {
-
-      // This would integrate with a goals system
-      // For now, we'll create a placeholder implementation
-      
-      const { data: goals, error } = await this.supabase
-        .from('user_goals')
-        .select('*')
-        .eq('status', 'active')
-
-      if (error) {
-        return
-      }
-
-      for (const goal of goals || []) {
-        try {
-          const isCompleted = await this.checkGoalCompletion(goal)
-          
-          if (isCompleted) {
-            await notificationGenerators.createAchievementNotification(
-              goal.user_id,
-              'goal_completion',
-              `🏆 Goal Completed: ${goal.title}`,
-              `Congratulations! You've successfully completed your goal: ${goal.title}. Time to set new challenges!`,
-              { goal_id: goal.id, goal_title: goal.title }
-            )
-
-            // Update goal status
-            await this.supabase
-              .from('user_goals')
-              .update({ status: 'completed', completed_at: new Date().toISOString() })
-              .eq('id', goal.id)
-          }
-        } catch (error) {
-        }
-      }
-
-    } catch (error) {
-    }
+    // Goals feature has been removed
+    return
   }
 
   // Helper methods

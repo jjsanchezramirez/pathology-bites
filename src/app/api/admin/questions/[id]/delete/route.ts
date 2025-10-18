@@ -15,8 +15,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    console.log('DELETE route called');
     const supabase = await createClient()
     const { id: questionId } = await params
+    console.log(`Question ID to delete: ${questionId}`);
 
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -89,15 +91,18 @@ export async function DELETE(
     }
 
     // Delete the question (cascade will handle related records)
-    const { error: deleteError } = await supabase
+    console.log(`Attempting to delete question: ${questionId}`);
+    const { error: deleteError, data: deleteData } = await supabase
       .from('questions')
       .delete()
       .eq('id', questionId)
 
+    console.log('Delete result:', { deleteError, deleteData });
+
     if (deleteError) {
       console.error('Error deleting question:', deleteError)
       return NextResponse.json(
-        { error: `Failed to delete question: ${deleteError.message}` },
+        { error: `Failed to delete question: ${deleteError.message}`, details: deleteError },
         { status: 500 }
       )
     }
@@ -111,7 +116,7 @@ export async function DELETE(
   } catch (error) {
     console.error('Unexpected error deleting question:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

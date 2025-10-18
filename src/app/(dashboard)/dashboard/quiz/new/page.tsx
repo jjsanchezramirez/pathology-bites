@@ -13,7 +13,7 @@ import { Badge } from "@/shared/components/ui/badge"
 import { Slider } from "@/shared/components/ui/slider"
 import { Separator } from "@/shared/components/ui/separator"
 import { Input } from "@/shared/components/ui/input"
-import { BookOpen, WifiOff, Wifi, RefreshCw } from "lucide-react"
+import { BookOpen, WifiOff, Wifi, RefreshCw, Plus } from "lucide-react"
 import { userSettingsService } from '@/shared/services/user-settings'
 
 import {
@@ -31,6 +31,8 @@ import {
   DEFAULT_QUIZ_CONFIG
 } from "@/features/quiz/types/quiz"
 import { toast } from "sonner"
+import { FeaturePlaceholder } from "@/features/dashboard/components"
+import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags"
 
 interface QuizOptionsData {
   categories: CategoryWithStats[]
@@ -44,6 +46,19 @@ interface QuizOptionsData {
 // Remove local interface since we're using the one from the service
 
 export default function NewQuizPage() {
+  const featuresEnabled = isQuizFeaturesEnabled()
+
+  // Show placeholder if features are disabled
+  if (!featuresEnabled) {
+    return (
+      <FeaturePlaceholder
+        title="New Quiz"
+        description="Enhanced quiz creation with more customization options is nearly ready. Soon you'll be able to create custom quizzes with advanced filtering, difficulty selection, and personalized question sets tailored to your learning goals."
+        status="in-final-stages"
+      />
+    )
+  }
+
   const router = useRouter()
   const { isOnline, forceCheck, connectionType, effectiveType, browserOnline } = useZeroApiNetworkStatus()
   const [formData, setFormData] = useState<QuizCreationForm>(DEFAULT_QUIZ_CONFIG)

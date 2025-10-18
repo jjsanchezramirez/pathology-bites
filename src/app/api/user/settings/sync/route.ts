@@ -82,6 +82,8 @@ export async function POST(request: NextRequest) {
           font_size: 'medium',
           text_zoom: 1.0,
           dashboard_theme: 'default',
+          dashboard_theme_admin: 'default',
+          dashboard_theme_user: 'tangerine',
           sidebar_collapsed: false,
           welcome_message_seen: false
         }

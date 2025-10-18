@@ -50,7 +50,8 @@ class NetworkService {
   private setupListeners(): void {
     window.addEventListener('online', this.handleOnline);
     window.addEventListener('offline', this.handleOffline);
-    window.addEventListener('focus', this.handleWindowFocus);
+    // Temporarily disable focus listener to prevent admin dashboard refresh on tab changes
+    // window.addEventListener('focus', this.handleWindowFocus);
     window.addEventListener('storage', this.handleStorageChange);
   }
 
@@ -358,7 +359,7 @@ class NetworkService {
     if (typeof window !== 'undefined') {
       window.removeEventListener('online', this.handleOnline);
       window.removeEventListener('offline', this.handleOffline);
-      window.removeEventListener('focus', this.handleWindowFocus);
+      // window.removeEventListener('focus', this.handleWindowFocus);
       window.removeEventListener('storage', this.handleStorageChange);
     }
     this.stopPeriodicChecks();

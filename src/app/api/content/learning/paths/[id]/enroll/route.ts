@@ -262,11 +262,20 @@ export async function PUT(
       )
     }
 
-    // If completing the path, update completion count
+    // If completing the path, increment completion count
     if (status === 'completed' && currentEnrollment.status !== 'completed') {
-      await supabase.rpc('increment_learning_path_completion_count', {
-        path_id: pathId
-      })
+      // Get current completion count and increment it
+      const { data: pathData } = await supabase
+        .from('learning_paths')
+        .select('completion_count')
+        .eq('id', pathId)
+        .single()
+
+      const currentCount = pathData?.completion_count || 0
+      await supabase
+        .from('learning_paths')
+        .update({ completion_count: currentCount + 1 })
+        .eq('id', pathId)
     }
 
     return NextResponse.json({ data: enrollment })

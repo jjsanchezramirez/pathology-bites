@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/shared/components/ui/badge'
 import { Upload, Check, AlertCircle, Loader2 } from 'lucide-react'
 import { createClient } from '@/shared/services/client'
-import { useSharedAuth } from '@/shared/hooks/use-shared-auth'
+import { useSimpleAuth } from '@/shared/hooks/use-simple-auth'
 import { toast } from 'sonner'
 import { getCategoryIdFromContent } from '../utils/category-mapping'
 import { TagAutocomplete } from './tag-autocomplete'

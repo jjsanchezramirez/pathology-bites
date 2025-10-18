@@ -144,7 +144,16 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', '${GA_MEASUREMENT_ID}');
+
+              // Set default consent to denied (will be updated by cookie banner)
+              gtag('consent', 'default', {
+                'analytics_storage': 'denied'
+              });
+
+              gtag('config', '${GA_MEASUREMENT_ID}', {
+                'anonymize_ip': true,
+                'cookie_flags': 'SameSite=None;Secure'
+              });
             `}
           </Script>
 
@@ -170,8 +179,8 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
 declare global {
   interface Window {
     gtag: (
-      command: 'config' | 'event' | 'js' | 'set',
-      targetId: string | Date,
+      command: 'config' | 'event' | 'js' | 'set' | 'consent',
+      targetId: string | Date | 'default' | 'update',
       config?: Record<string, any>
     ) => void
     dataLayer: any[]

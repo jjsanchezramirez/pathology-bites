@@ -19,7 +19,7 @@ import {
   ShieldAlert,
   ShieldCheck
 } from 'lucide-react'
-import { useSharedAuth } from '@/shared/hooks/use-shared-auth'
+import { useSimpleAuth } from '@/shared/hooks/use-simple-auth'
 
 interface UserProfile {
   id: string
@@ -34,7 +34,7 @@ interface SidebarAuthStatusProps {
 }
 
 export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProps) {
-  const { user, isLoading, isAuthenticated, error } = useSharedAuth()
+  const { user, isLoading, isAuthenticated, error } = useSimpleAuth()
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)

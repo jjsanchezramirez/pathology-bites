@@ -9,11 +9,11 @@ import { Progress } from '@/shared/components/ui/progress'
 import {
   TrendingUp,
   TrendingDown,
-  Target,
-  BarChart3
+  Target
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { PerformanceAnalytics } from '@/features/dashboard/components'
+import { PerformanceAnalytics, FeaturePlaceholder } from '@/features/dashboard/components'
+import { isQuizFeaturesEnabled } from '@/shared/config/feature-flags'
 
 interface DashboardStats {
   performance?: {
@@ -48,6 +48,19 @@ interface CategoryDetail {
 }
 
 export default function PerformancePage() {
+  const featuresEnabled = isQuizFeaturesEnabled()
+
+  // Show placeholder if features are disabled
+  if (!featuresEnabled) {
+    return (
+      <FeaturePlaceholder
+        title="Performance Analytics"
+        description="We're preparing comprehensive performance analytics to help you track your mastery of pathology topics. Soon you'll be able to see detailed insights into your quiz performance, identify knowledge gaps, and measure your progress across different subjects."
+        status="launching-soon"
+      />
+    )
+  }
+
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [categoryDetails, setCategoryDetails] = useState<CategoryDetail[]>([])
   const [loading, setLoading] = useState(true)

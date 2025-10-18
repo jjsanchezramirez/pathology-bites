@@ -2,6 +2,7 @@
 'use client'
 
 import React, { useState, memo, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { ImageIcon, PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon, Loader2 } from 'lucide-react'
 import { Badge } from '@/shared/components/ui/badge'
@@ -20,7 +21,6 @@ import {
   YIELD_CONFIG
 } from '@/features/questions/types/questions'
 import { getCategoryDisplayName } from '@/features/questions/utils/display-helpers'
-import { EditQuestionDialog } from './edit-question-dialog'
 import { createClient } from '@/shared/services/client'
 import { useUserRole } from '@/shared/hooks/use-user-role'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
@@ -50,12 +50,10 @@ function getCategoryPathString(category: Category, categoryPaths: Map<number, Ca
 }
 
 const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelete }: QuestionRowProps) {
+  const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [showImages, setShowImages] = useState(false)
-  const [showEditDialog, setShowEditDialog] = useState(false)
-  const [fullQuestion, setFullQuestion] = useState<QuestionWithDetails | null>(null)
-  const [isLoadingQuestion, setIsLoadingQuestion] = useState(false)
 
   const supabase = createClient()
   const { role } = useUserRole()
@@ -64,24 +62,10 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
   // Check if user can delete this question
   const canDelete = shouldShowDeleteButton(question, role, user?.id || null)
 
-  const handleEdit = useCallback(async () => {
-    setIsLoadingQuestion(true)
-    try {
-      // Fetch the full question details from the API
-      const response = await fetch(`/api/admin/questions/${question.id}`)
-      if (response.ok) {
-        const { question: questionDetails } = await response.json()
-        setFullQuestion(questionDetails)
-        setShowEditDialog(true)
-      } else {
-        console.error('Failed to fetch question details')
-      }
-    } catch (error) {
-      console.error('Failed to fetch question details:', error)
-    } finally {
-      setIsLoadingQuestion(false)
-    }
-  }, [question.id])
+  const handleEdit = useCallback(() => {
+    // Navigate to edit page
+    router.push(`/admin/questions/${question.id}/edit`)
+  }, [router, question.id])
 
   const handleDelete = useCallback(async () => {
     if (!window.confirm('Are you sure you want to delete this question? This action cannot be undone.')) {
@@ -253,13 +237,8 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
               size="sm"
               className="h-7 w-7 p-0 hover:bg-muted/50 dark:hover:bg-muted/20 dark:text-gray-300 dark:hover:text-gray-100"
               onClick={handleEdit}
-              disabled={isLoadingQuestion}
             >
-              {isLoadingQuestion ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <PencilIcon className="h-3 w-3" />
-              )}
+              <PencilIcon className="h-3 w-3" />
             </Button>
             {canDelete && (
               <Button
@@ -296,20 +275,6 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
         </tr>
       )}
 
-      {/* Edit Question Dialog */}
-      {showEditDialog && fullQuestion && (
-        <EditQuestionDialog
-          question={fullQuestion}
-          open={showEditDialog}
-          onOpenChange={setShowEditDialog}
-          onSave={() => {
-            setShowEditDialog(false)
-            setFullQuestion(null)
-            // Note: In a real implementation, you might want to refresh the data
-            // or call a callback to notify the parent component
-          }}
-        />
-      )}
     </>
   )
 })

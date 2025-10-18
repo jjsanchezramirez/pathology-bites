@@ -187,8 +187,8 @@ export async function GET(request: NextRequest) {
         {
           id: 'welcome-1',
           type: 'welcome',
-          title: 'Welcome to Pathology Bites!',
-          description: 'Start your first quiz to begin tracking your progress.',
+          title: 'Start Your First Quiz',
+          description: 'Take a quick starter quiz to see how we track your progress and identify your learning needs.',
           timestamp: 'Just now',
           navigationUrl: '/dashboard/quiz/new'
         },
@@ -196,7 +196,7 @@ export async function GET(request: NextRequest) {
           id: 'welcome-2',
           type: 'tip',
           title: 'Explore Educational Tools',
-          description: 'Check out our citation generator, gene lookup, and virtual slides.',
+          description: 'Check out our citation generator, gene lookup, and virtual slides to enhance your learning.',
           timestamp: 'Just now',
           navigationUrl: '/tools'
         }

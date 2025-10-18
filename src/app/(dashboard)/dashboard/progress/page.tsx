@@ -16,8 +16,22 @@ import {
   Settings
 } from "lucide-react"
 import Link from "next/link"
+import { FeaturePlaceholder } from "@/features/dashboard/components"
+import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags"
 
 export default function ProgressPage() {
+  const featuresEnabled = isQuizFeaturesEnabled()
+
+  // Show placeholder if features are disabled
+  if (!featuresEnabled) {
+    return (
+      <FeaturePlaceholder
+        title="Progress Tracking"
+        description="Structured learning paths are being built to guide your pathology education journey. Soon you'll be able to track your learning milestones, maintain study streaks, monitor module completion rates, and celebrate your achievements."
+        status="coming-very-soon"
+      />
+    )
+  }
   return (
     <div className="space-y-6">
       {/* Page Header */}

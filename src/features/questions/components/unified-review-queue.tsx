@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/shared/services/client'
 import {
   Table,
@@ -33,7 +33,6 @@ import {
 } from 'lucide-react'
 import { QuestionPreviewDialog } from './question-preview-dialog'
 import { QuestionReviewDialog } from './question-review-dialog'
-import { EditQuestionDialog } from './edit-question-dialog'
 import { FlagResolutionDialog } from './flag-resolution-dialog'
 import { toast } from 'sonner'
 import { STATUS_CONFIG, QuestionWithDetails, QuestionFlagData } from '@/features/questions/types/questions'
@@ -63,6 +62,7 @@ interface ReviewQueueItem extends QuestionWithDetails {
 }
 
 export function UnifiedReviewQueue() {
+  const router = useRouter()
   const [items, setItems] = useState<ReviewQueueItem[]>([])
   const [filteredItems, setFilteredItems] = useState<ReviewQueueItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -70,7 +70,6 @@ export function UnifiedReviewQueue() {
   const [selectedItem, setSelectedItem] = useState<ReviewQueueItem | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [reviewOpen, setReviewOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
   const [resolutionOpen, setResolutionOpen] = useState(false)
   const [selectedFlags, setSelectedFlags] = useState<QuestionFlagData[]>([])
   const [selectedQuestionTitle, setSelectedQuestionTitle] = useState('')
@@ -139,8 +138,7 @@ export function UnifiedReviewQueue() {
   }
 
   const handleEdit = (item: ReviewQueueItem) => {
-    setSelectedItem(item)
-    setEditOpen(true)
+    router.push(`/admin/questions/${item.id}/edit`)
   }
 
   const handleResolveFlags = async (item: ReviewQueueItem) => {
@@ -373,13 +371,6 @@ export function UnifiedReviewQueue() {
         open={reviewOpen}
         onOpenChange={setReviewOpen}
         onReviewComplete={fetchReviewQueue}
-      />
-
-      <EditQuestionDialog
-        question={selectedItem}
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        onSave={fetchReviewQueue}
       />
 
       <FlagResolutionDialog

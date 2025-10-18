@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { Badge } from '@/shared/components/ui/badge'
@@ -145,7 +145,33 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
     }
   }, [selectedFile])
 
-  // Update content preview when topic is selected
+  // Auto-select content when all dropdowns have valid selections
+  const handleAutoSelect = useCallback(() => {
+    if (contentData && selectedLesson && selectedTopic) {
+      const lesson = contentData.subject.lessons[selectedLesson]
+      const topic = lesson?.topics[selectedTopic]
+      if (topic) {
+        const newContent = {
+          category: contentData.category,
+          subject: contentData.subject.name,
+          lesson: selectedLesson,
+          topic: selectedTopic,
+          content: topic.content
+        }
+
+        // Only call if content has actually changed
+        if (!selectedContent ||
+            selectedContent.category !== newContent.category ||
+            selectedContent.subject !== newContent.subject ||
+            selectedContent.lesson !== newContent.lesson ||
+            selectedContent.topic !== newContent.topic) {
+          onContentSelect(newContent)
+        }
+      }
+    }
+  }, [contentData, selectedLesson, selectedTopic, selectedContent, onContentSelect])
+
+  // Update content preview and auto-select when topic is selected
   useEffect(() => {
     if (contentData && selectedLesson && selectedTopic) {
       const lesson = contentData.subject.lessons[selectedLesson]
@@ -153,25 +179,12 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
       if (topic?.content) {
         const contentStr = JSON.stringify(topic.content, null, 2)
         setContentPreview(contentStr.substring(0, 2000) + (contentStr.length > 2000 ? '...' : ''))
+
+        // Auto-select content when all dropdowns are filled
+        handleAutoSelect()
       }
     }
   }, [contentData, selectedLesson, selectedTopic])
-
-  const handleSelectContent = () => {
-    if (contentData && selectedLesson && selectedTopic) {
-      const lesson = contentData.subject.lessons[selectedLesson]
-      const topic = lesson?.topics[selectedTopic]
-      if (topic) {
-        onContentSelect({
-          category: contentData.category,
-          subject: contentData.subject.name,
-          lesson: selectedLesson,
-          topic: selectedTopic,
-          content: topic.content
-        })
-      }
-    }
-  }
 
   const groupedFiles = availableFiles.reduce((acc, file) => {
     if (!acc[file.category]) {
@@ -300,16 +313,7 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
         </Card>
       )}
 
-      {/* Action Button */}
-      <div className="flex justify-end gap-2">
-        <Button
-          onClick={handleSelectContent}
-          disabled={!contentData || !selectedLesson || !selectedTopic || loading}
-        >
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Select This Content
-        </Button>
-      </div>
+
     </div>
   )
 }

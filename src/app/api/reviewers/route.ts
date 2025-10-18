@@ -66,8 +66,10 @@ export async function GET() {
       email: reviewer.email,
       first_name: reviewer.first_name,
       last_name: reviewer.last_name,
-      full_name: reviewer.first_name && reviewer.last_name 
-        ? `${reviewer.first_name} ${reviewer.last_name}`
+      full_name: reviewer.first_name
+        ? reviewer.last_name
+          ? `${reviewer.first_name} ${reviewer.last_name}`
+          : reviewer.first_name
         : reviewer.email,
       role: reviewer.role,
       pending_count: workloadMap.get(reviewer.id) || 0,

@@ -47,11 +47,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Question not found' }, { status: 404 });
     }
 
-    // Determine new status based on action - SIMPLIFIED TO 4 STATUSES
+    // Determine new status based on action
     let newStatus = question.status;
     switch (action) {
       case 'approve':
-        newStatus = 'approved';
+        newStatus = 'published';
         break;
       case 'request_changes':
         newStatus = 'draft';

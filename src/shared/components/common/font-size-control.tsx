@@ -11,9 +11,10 @@ import {
 import { Separator } from '@/shared/components/ui/separator'
 import { useState } from 'react'
 import { useDashboardSettings } from '@/shared/contexts/dashboard-settings-provider'
-import { getTextZoomConfig } from '@/shared/utils/text-zoom'
+import { getTextZoomConfig, getValidZoomLevel } from '@/shared/utils/text-zoom'
 import { useDashboardTheme } from '@/shared/contexts/dashboard-theme-context'
 import { cn } from '@/shared/utils'
+import { userSettingsService } from '@/shared/services/user-settings'
 
 export function FontSizeControl() {
   const [isOpen, setIsOpen] = useState(false)
@@ -33,13 +34,15 @@ export function FontSizeControl() {
 
   const increaseTextZoom = () => {
     if (canIncrease) {
-      setTextZoom(textZoom + config.step)
+      const newZoom = textZoom + config.step
+      setTextZoom(newZoom)
     }
   }
 
   const decreaseTextZoom = () => {
     if (canDecrease) {
-      setTextZoom(textZoom - config.step)
+      const newZoom = textZoom - config.step
+      setTextZoom(newZoom)
     }
   }
 
@@ -47,8 +50,18 @@ export function FontSizeControl() {
     setTextZoom(config.default)
   }
 
+  // Handle theme selection - update immediately
+  const handleThemeSelect = (themeId: string) => {
+    setTheme(themeId)
+  }
+
+  // Handle popover close
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open)
+  }
+
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
@@ -73,7 +86,7 @@ export function FontSizeControl() {
                 variant="outline"
                 size="icon"
                 onClick={decreaseTextZoom}
-                disabled={!canDecrease || isLoading}
+                disabled={textZoom <= config.min || isLoading}
                 className="h-8 w-8"
                 title="Decrease text size"
               >
@@ -88,7 +101,7 @@ export function FontSizeControl() {
                 variant="outline"
                 size="icon"
                 onClick={increaseTextZoom}
-                disabled={!canIncrease || isLoading}
+                disabled={textZoom >= config.max || isLoading}
                 className="h-8 w-8"
                 title="Increase text size"
               >
@@ -126,7 +139,7 @@ export function FontSizeControl() {
               {availableThemes.map((theme) => (
                 <button
                   key={theme.id}
-                  onClick={() => setTheme(theme.id)}
+                  onClick={() => handleThemeSelect(theme.id)}
                   disabled={isLoading}
                   className={cn(
                     "flex items-center gap-2 p-2 rounded-md text-left transition-colors",

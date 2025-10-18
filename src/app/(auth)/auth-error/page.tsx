@@ -30,7 +30,7 @@ export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps
           )
         }
         footer={
-          <div className="flex flex-col gap-2 w-full">
+          <div className="flex flex-col gap-3 w-full">
             <Button asChild className="w-full">
               <Link href="/login">Back to Login</Link>
             </Button>

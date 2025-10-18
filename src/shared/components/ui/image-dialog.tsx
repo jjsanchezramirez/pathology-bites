@@ -14,6 +14,7 @@ interface ImageDialogProps {
 
 export function ImageDialog({ src, alt, caption, className = '' }: ImageDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const handleImageLoad = useImageCacheHandler(src)
 
   return (
     <>
@@ -30,13 +31,13 @@ export function ImageDialog({ src, alt, caption, className = '' }: ImageDialogPr
           className="w-full h-auto object-contain hover:opacity-90 transition-opacity"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           unoptimized
-          onLoad={useImageCacheHandler(src)}
+          onLoad={handleImageLoad}
         />
       </div>
 
       {/* Fullscreen dialog */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
           onClick={() => setIsOpen(false)}
         >
@@ -49,7 +50,7 @@ export function ImageDialog({ src, alt, caption, className = '' }: ImageDialogPr
               className="w-full h-full object-contain"
               sizes="100vw"
               unoptimized
-              onLoad={useImageCacheHandler(src)}
+              onLoad={handleImageLoad}
             />
             
             {/* Close button */}

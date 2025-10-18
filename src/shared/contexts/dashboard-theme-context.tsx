@@ -5,7 +5,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { dashboardThemes, getThemeById, getDefaultTheme, type DashboardTheme } from '@/shared/config/dashboard-themes'
 import { useUserRole } from '@/shared/hooks/use-user-role'
 
-type AdminMode = 'admin' | 'user'
+type AdminMode = 'admin' | 'creator' | 'reviewer' | 'user'
 
 interface DashboardThemeContextType {
   currentTheme: DashboardTheme
@@ -27,14 +27,28 @@ interface DashboardThemeProviderProps {
 
 export function DashboardThemeProvider({ children }: DashboardThemeProviderProps) {
   const { isAdmin } = useUserRole()
+
+  // Initialize adminMode based on cookie and isAdmin status
+  const getInitialAdminMode = (): AdminMode => {
+    if (typeof document === 'undefined') return 'admin'
+
+    const adminModeCookie = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('admin-mode='))
+      ?.split('=')[1] as AdminMode
+
+    // If no cookie and user is not admin, default to 'user' mode
+    return !adminModeCookie && !isAdmin ? 'user' : (adminModeCookie || 'admin')
+  }
+
   const [currentTheme, setCurrentTheme] = useState<DashboardTheme>(getDefaultTheme())
-  const [adminMode, setAdminModeState] = useState<AdminMode>('admin')
+  const [adminMode, setAdminModeState] = useState<AdminMode>(getInitialAdminMode())
   const [isLoading, setIsLoading] = useState(true)
 
   // Get available themes based on admin mode
   const getAvailableThemes = (mode: AdminMode): DashboardTheme[] => {
-    if (mode === 'admin') {
-      // Admin mode: only default theme for now
+    if (mode === 'admin' || mode === 'creator' || mode === 'reviewer') {
+      // Admin/Creator/Reviewer modes: only default theme for now
       return dashboardThemes.filter(theme => theme.id === 'default')
     } else {
       // User mode: notebook and tangerine themes
@@ -44,7 +58,7 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
 
   // Get default theme for mode
   const getDefaultThemeForMode = (mode: AdminMode): DashboardTheme => {
-    if (mode === 'admin') {
+    if (mode === 'admin' || mode === 'creator' || mode === 'reviewer') {
       return getThemeById('default') || getDefaultTheme()
     } else {
       return getThemeById('tangerine') || getDefaultTheme()
@@ -60,12 +74,16 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
       const adminModeCookie = document.cookie
         .split('; ')
         .find(row => row.startsWith('admin-mode='))
-        ?.split('=')[1] as AdminMode || 'admin'
+        ?.split('=')[1] as AdminMode
 
-      setAdminModeState(adminModeCookie)
+      // If no cookie, check if user is admin - if not, default to 'user' mode
+      const defaultMode = !adminModeCookie && !isAdmin ? 'user' : (adminModeCookie || 'admin')
+
+      console.log('[DashboardTheme] Admin mode from cookie:', adminModeCookie, 'isAdmin:', isAdmin, 'defaultMode:', defaultMode)
+      setAdminModeState(defaultMode)
 
       // Load theme based on admin mode from localStorage
-      const availableThemes = getAvailableThemes(adminModeCookie)
+      const availableThemes = getAvailableThemes(defaultMode)
       let themeToSet: DashboardTheme
 
       // Load from localStorage (synced by SettingsSyncProvider)
@@ -75,11 +93,11 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
       if (uiSettingsStr) {
         try {
           const uiSettings = JSON.parse(uiSettingsStr)
-          const themeId = adminModeCookie === 'admin'
+          const themeId = defaultMode === 'admin'
             ? uiSettings.dashboard_theme_admin
             : uiSettings.dashboard_theme_user
 
-          console.log(`[DashboardTheme] Mode: ${adminModeCookie}, Theme:`, themeId)
+          console.log(`[DashboardTheme] Mode: ${defaultMode}, Theme:`, themeId)
 
           if (themeId) {
             const theme = getThemeById(themeId)
@@ -87,19 +105,19 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
               themeToSet = theme
               console.log('[DashboardTheme] Loaded from localStorage:', themeToSet.id)
             } else {
-              themeToSet = getDefaultThemeForMode(adminModeCookie)
+              themeToSet = getDefaultThemeForMode(defaultMode)
               console.log('[DashboardTheme] Theme not available, using default:', themeToSet.id)
             }
           } else {
-            themeToSet = getDefaultThemeForMode(adminModeCookie)
+            themeToSet = getDefaultThemeForMode(defaultMode)
             console.log('[DashboardTheme] No theme preference, using default:', themeToSet.id)
           }
         } catch (parseError) {
           console.warn('[DashboardTheme] Failed to parse ui_settings:', parseError)
-          themeToSet = getDefaultThemeForMode(adminModeCookie)
+          themeToSet = getDefaultThemeForMode(defaultMode)
         }
       } else {
-        themeToSet = getDefaultThemeForMode(adminModeCookie)
+        themeToSet = getDefaultThemeForMode(defaultMode)
         console.log('[DashboardTheme] No ui_settings in localStorage, using default:', themeToSet.id)
       }
 
@@ -120,11 +138,45 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
         .split('; ')
         .find(row => row.startsWith('admin-mode='))
         ?.split('=')[1] as AdminMode || 'admin'
-      
+
       if (adminModeCookie !== adminMode) {
         setAdminModeState(adminModeCookie)
-        // Switch to default theme for new mode
-        const newTheme = getDefaultThemeForMode(adminModeCookie)
+
+        // Load saved theme for new mode from localStorage
+        const uiSettingsStr = localStorage.getItem('pathology-bites-ui-settings')
+        let newTheme: DashboardTheme
+
+        if (uiSettingsStr) {
+          try {
+            const uiSettings = JSON.parse(uiSettingsStr)
+            const themeKey = adminModeCookie === 'admin'
+              ? 'dashboard_theme_admin'
+              : 'dashboard_theme_user'
+            const themeId = uiSettings[themeKey]
+
+            if (themeId) {
+              const theme = getThemeById(themeId)
+              const availableThemes = getAvailableThemes(adminModeCookie)
+              if (theme && availableThemes.some(t => t.id === theme.id)) {
+                newTheme = theme
+                console.log(`[DashboardTheme] Loaded saved theme for ${adminModeCookie} mode:`, themeId)
+              } else {
+                newTheme = getDefaultThemeForMode(adminModeCookie)
+                console.log(`[DashboardTheme] Theme not available for ${adminModeCookie} mode, using default`)
+              }
+            } else {
+              newTheme = getDefaultThemeForMode(adminModeCookie)
+              console.log(`[DashboardTheme] No saved theme for ${adminModeCookie} mode, using default`)
+            }
+          } catch (error) {
+            console.warn('[DashboardTheme] Failed to load theme for mode change:', error)
+            newTheme = getDefaultThemeForMode(adminModeCookie)
+          }
+        } else {
+          newTheme = getDefaultThemeForMode(adminModeCookie)
+          console.log(`[DashboardTheme] No ui_settings in localStorage for ${adminModeCookie} mode, using default`)
+        }
+
         setCurrentTheme(newTheme)
       }
     }
@@ -132,6 +184,35 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
     // Poll for cookie changes every 100ms (simple approach)
     const interval = setInterval(handleCookieChange, 100)
     return () => clearInterval(interval)
+  }, [adminMode])
+
+  // Watch for localStorage changes (when DashboardSettingsProvider syncs settings)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'pathology-bites-ui-settings' && e.newValue) {
+        try {
+          const uiSettings = JSON.parse(e.newValue)
+          const themeKey = adminMode === 'admin'
+            ? 'dashboard_theme_admin'
+            : 'dashboard_theme_user'
+          const themeId = uiSettings[themeKey]
+
+          if (themeId) {
+            const theme = getThemeById(themeId)
+            const availableThemes = getAvailableThemes(adminMode)
+            if (theme && availableThemes.some(t => t.id === theme.id)) {
+              setCurrentTheme(theme)
+              console.log('[DashboardTheme] Updated theme from localStorage:', themeId)
+            }
+          }
+        } catch (error) {
+          console.warn('[DashboardTheme] Failed to update theme from storage event:', error)
+        }
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
   }, [adminMode])
 
   // Apply theme CSS variables when theme changes
@@ -235,10 +316,13 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
     setCurrentTheme(newTheme)
   }
 
+  // Recalculate available themes whenever adminMode changes
+  const availableThemes = getAvailableThemes(adminMode)
+
   const value: DashboardThemeContextType = {
     currentTheme,
     setTheme,
-    availableThemes: getAvailableThemes(adminMode),
+    availableThemes,
     isLoading,
     adminMode,
     setAdminMode

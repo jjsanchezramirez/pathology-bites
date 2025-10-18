@@ -36,22 +36,12 @@ export async function GET(request: NextRequest) {
     // Get all dashboard data in parallel to minimize latency
     const [
       statsResult,
-      goalsResult,
       activitiesResult,
       settingsResult,
       recentQuizzesResult
     ] = await Promise.all([
       // Simplified stats query - using RPC if available
       getDashboardStats(supabase, userId),
-      
-      // Active goals
-      supabase
-        .from('user_goals')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(5),
 
       // Recent activities (from quiz sessions)
       supabase
@@ -96,23 +86,13 @@ export async function GET(request: NextRequest) {
         ...stats
         // Weekly calculations moved to client-side for better performance
       },
-      goals: goals.map(goal => ({
-        id: goal.id,
-        title: goal.title,
-        description: goal.description,
-        targetValue: goal.target_value,
-        currentValue: goal.current_value,
-        deadline: goal.deadline,
-        progress: Math.min(100, Math.round((goal.current_value / goal.target_value) * 100))
-      })),
       recentActivity: activities,
       settings,
       recentQuizzes,
       summary: {
         totalQuizzesCompleted: stats.totalQuizzes || 0,
         currentStreak: stats.studyStreak || 0,
-        averageScore: stats.averageScore || 0,
-        activeGoals: goals.length
+        averageScore: stats.averageScore || 0
       },
       lastUpdated: new Date().toISOString()
     }
@@ -156,22 +136,13 @@ export async function GET(request: NextRequest) {
 // Optimized stats calculation
 async function getDashboardStats(supabase: any, userId: string) {
   try {
-    // Try to use the existing optimized RPC function
-    const { data: rpcResult, error: rpcError } = await supabase.rpc('get_user_dashboard_stats', {
-      target_user_id: userId
-    })
-
-    if (!rpcError && rpcResult) {
-      return rpcResult[0] || getDefaultStats()
-    }
-
-    // Fallback to optimized manual calculation
+    // Fetch quiz sessions and attempts for stats calculation
     const [sessionsResult, attemptsResult] = await Promise.all([
       supabase
         .from('quiz_sessions')
         .select('id, score, total_questions, correct_answers, created_at, status')
         .eq('user_id', userId),
-      
+
       supabase
         .from('quiz_attempts')
         .select('question_id, is_correct, attempted_at')
@@ -187,7 +158,7 @@ async function getDashboardStats(supabase: any, userId: string) {
 
     const completedSessions = sessions.filter(s => s.status === 'completed')
     const totalQuizzes = completedSessions.length
-    const averageScore = totalQuizzes > 0 
+    const averageScore = totalQuizzes > 0
       ? Math.round(completedSessions.reduce((sum, s) => sum + (s.score || 0), 0) / totalQuizzes)
       : 0
 

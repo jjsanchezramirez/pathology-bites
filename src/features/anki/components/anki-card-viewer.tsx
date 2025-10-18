@@ -9,25 +9,47 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
 import { Separator } from '@/shared/components/ui/separator'
-import { 
-  Eye, 
-  EyeOff, 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  Eye,
+  EyeOff,
+  ChevronLeft,
+  ChevronRight,
   RotateCcw,
   Clock,
   Hash,
   BookOpen
 } from 'lucide-react'
 import { AnkiCard, AnkiCardViewerProps } from '../types/anki-card'
-import { 
-  processClozeText, 
-  hasClozes, 
+import {
+  processClozeText,
+  hasClozes,
   getClozeIndices,
   generateClozeQuestion,
   generateClozeAnswer
 } from '../utils/cloze-processor'
 import { cn } from '@/shared/utils'
+
+// Separate component for cached images to avoid hook violations
+function CachedAnkiImage({ src, alt, index }: { src: string; alt: string; index: number }) {
+  const handleImageLoad = useImageCacheHandler(src, true)
+
+  return (
+    <div className="flex justify-center">
+      <div className="relative max-w-2xl w-full">
+        <Image
+          src={src}
+          alt={alt}
+          width={800}
+          height={600}
+          className="w-full h-auto rounded-xl border object-contain"
+          style={{ maxHeight: '70vh' }}
+          unoptimized={true}
+          onLoad={handleImageLoad}
+        />
+      </div>
+    </div>
+  )
+}
 
 export function AnkiCardViewer({
   card,
@@ -223,25 +245,14 @@ export function AnkiCardViewer({
             {/* Question images */}
             {questionImages.length > 0 && (
               <div className="flex flex-col items-center gap-4">
-                {questionImages.map((src, index) => {
-                  const handleImageLoad = useImageCacheHandler(src, true); // Priority cache for Anki images
-                  return (
-                    <div key={index} className="flex justify-center">
-                      <div className="relative max-w-2xl w-full">
-                        <Image
-                          src={src}
-                          alt={`Question image ${index + 1}`}
-                          width={800}
-                          height={600}
-                          className="w-full h-auto rounded-xl border object-contain"
-                          style={{ maxHeight: '70vh' }}
-                          unoptimized={true}
-                          onLoad={handleImageLoad}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
+                {questionImages.map((src, index) => (
+                  <CachedAnkiImage
+                    key={index}
+                    src={src}
+                    alt={`Question image ${index + 1}`}
+                    index={index}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -261,25 +272,14 @@ export function AnkiCardViewer({
                 {/* Answer images */}
                 {answerImages.length > 0 && (
                   <div className="flex flex-col items-center gap-4">
-                    {answerImages.map((src, index) => {
-                      const handleImageLoad = useImageCacheHandler(src, true); // Priority cache for Anki images
-                      return (
-                        <div key={index} className="flex justify-center">
-                          <div className="relative max-w-2xl w-full">
-                            <Image
-                              src={src}
-                              alt={`Answer image ${index + 1}`}
-                              width={800}
-                              height={600}
-                              className="w-full h-auto rounded-xl border object-contain"
-                              style={{ maxHeight: '70vh' }}
-                              unoptimized={true}
-                              onLoad={handleImageLoad}
-                            />
-                          </div>
-                        </div>
-                      )
-                    })}
+                    {answerImages.map((src, index) => (
+                      <CachedAnkiImage
+                        key={index}
+                        src={src}
+                        alt={`Answer image ${index + 1}`}
+                        index={index}
+                      />
+                    ))}
                   </div>
                 )}
               </div>

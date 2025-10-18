@@ -62,6 +62,7 @@ export async function GET(
           id,
           name,
           source_type,
+          source_details,
           short_form
         ),
         created_by_user:users!questions_created_by_fkey(
@@ -124,10 +125,16 @@ export async function GET(
       )
     }
 
-    // Flatten the tags structure for easier consumption
+    // Flatten the tags structure and add user names for easier consumption
     const questionWithFlattenedTags = {
       ...question,
-      tags: question.question_tags?.map((qt: { tag: any }) => qt.tag).filter(Boolean) || []
+      tags: question.question_tags?.map((qt: { tag: any }) => qt.tag).filter(Boolean) || [],
+      created_by_name: question.created_by_user
+        ? `${question.created_by_user.first_name || ''} ${question.created_by_user.last_name || ''}`.trim() || 'Unknown'
+        : 'Unknown',
+      updated_by_name: question.updated_by_user
+        ? `${question.updated_by_user.first_name || ''} ${question.updated_by_user.last_name || ''}`.trim() || 'Unknown'
+        : 'Unknown'
     }
 
     return NextResponse.json({
@@ -144,6 +151,26 @@ export async function GET(
   }
 }
 
+/**
+ * PATCH /api/admin/questions/:id
+ *
+ * Update a question with role-based permissions
+ *
+ * PERMISSION RULES:
+ * 1. Admins: Can edit any question at any time
+ * 2. Creators: Can only edit their own draft/rejected questions
+ *    - CANNOT edit approved/published questions (prevents breaking changes)
+ *    - CAN edit pending_review questions (before review starts)
+ * 3. Reviewers: Can make patch-level edits to assigned pending_review questions
+ *    - Patch edits = typos, rewording, minor corrections
+ *    - Tracked via updated_by field for audit trail
+ *    - Speeds up review process, reduces back-and-forth
+ *
+ * VERSIONING:
+ * - Approved/published questions automatically create versions (admin only)
+ * - Reviewer patch edits do NOT create versions (minor changes only)
+ * - Tracked via updated_by and updated_at for audit trail
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -213,7 +240,7 @@ export async function PATCH(
     console.log('PATCH - Fetching question with ID:', questionId)
     const { data: currentQuestion, error: questionError } = await adminClient
       .from('questions')
-      .select('id, status, created_by, version')
+      .select('id, status, created_by, reviewer_id, version')
       .eq('id', questionId)
       .single()
 
@@ -242,24 +269,74 @@ export async function PATCH(
       )
     }
 
-    // Check permissions based on question status
-    // Support both 'approved' and 'published' for backwards compatibility
-    if (currentQuestion.status === 'published' || currentQuestion.status === 'approved') {
-      // Only admins can edit published/approved questions
-      if (profile?.role !== 'admin') {
+    // NEW PERMISSION SYSTEM
+    // 1. Admins can edit anything, anytime
+    // 2. Creators can only edit their own draft/rejected questions
+    // 3. Reviewers can only make patch edits to assigned pending_review questions
+    // 4. Nobody (except admins) can edit approved/published questions
+
+    const isAdmin = profile?.role === 'admin'
+    const isCreator = profile?.role === 'creator'
+    const isReviewer = profile?.role === 'reviewer'
+    const isQuestionCreator = currentQuestion.created_by === user.id
+    const isAssignedReviewer = currentQuestion.reviewer_id === user.id
+
+    // Check if question is published
+    if (currentQuestion.status === 'published') {
+      if (!isAdmin) {
         return NextResponse.json(
-          { error: 'Only admins can edit published questions' },
+          {
+            error: 'Cannot edit approved/published questions',
+            message: 'Approved and published questions cannot be edited. Please contact an admin if changes are needed, or create a new version of the question.'
+          },
           { status: 403 }
         )
       }
-
-      // For published/approved questions, we'll automatically create a version
-      // No need to require updateType - simplified versioning
-    } else {
-      // For non-published questions, check if user is creator or admin
-      if (currentQuestion.created_by !== user.id && profile?.role !== 'admin') {
+      // Admins can edit approved/published questions
+      // Automatically create a version for audit trail
+    }
+    // Check if question is pending review
+    else if (currentQuestion.status === 'pending_review') {
+      // Reviewers can make patch edits to assigned questions
+      if (isReviewer && isAssignedReviewer) {
+        // Reviewer can make patch-level edits (typos, rewording, etc.)
+        // This is allowed and will be tracked via updated_by
+        console.log('PATCH - Reviewer making patch edit to assigned question')
+      }
+      // Creators can edit their own pending questions (before review starts)
+      else if (isCreator && isQuestionCreator) {
+        console.log('PATCH - Creator editing own pending question')
+      }
+      // Admins can always edit
+      else if (isAdmin) {
+        console.log('PATCH - Admin editing pending question')
+      }
+      else {
         return NextResponse.json(
-          { error: 'You can only edit your own questions or be an admin' },
+          {
+            error: 'Insufficient permissions',
+            message: 'You can only edit questions you created or are assigned to review.'
+          },
+          { status: 403 }
+        )
+      }
+    }
+    // For draft/rejected questions
+    else {
+      // Creators can edit their own draft/rejected questions
+      if (isCreator && isQuestionCreator) {
+        console.log('PATCH - Creator editing own draft/rejected question')
+      }
+      // Admins can edit any draft/rejected question
+      else if (isAdmin) {
+        console.log('PATCH - Admin editing draft/rejected question')
+      }
+      else {
+        return NextResponse.json(
+          {
+            error: 'Insufficient permissions',
+            message: 'You can only edit questions you created.'
+          },
           { status: 403 }
         )
       }
@@ -496,9 +573,9 @@ export async function PATCH(
         }
       }
 
-      // Handle versioning for published/approved questions (simplified)
+      // Handle versioning for published questions (simplified)
       let versionId = null
-      if (currentQuestion.status === 'published' || currentQuestion.status === 'approved') {
+      if (currentQuestion.status === 'published') {
         // Use simplified versioning function
         const { data: newVersionId, error: versionError } = await adminClient
           .rpc('create_question_version_simplified', {

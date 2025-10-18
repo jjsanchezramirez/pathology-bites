@@ -43,14 +43,6 @@ export class QuizCompletionHandler {
       })
       await ActivityGenerator.createActivity(userId, activityData)
 
-      // Update goal progress
-      await this.updateGoalProgress(userId, {
-        questionsAnswered: quizResults.totalQuestions,
-        quizzesCompleted: 1,
-        studyTimeMinutes: Math.round((quizResults.timeSpent || 0) / 60),
-        accuracy: quizResults.score
-      })
-
       // Trigger notification events
       await notificationTriggers.onQuizCompleted(userId, {
         score: quizResults.score,
@@ -75,30 +67,7 @@ export class QuizCompletionHandler {
     }
   }
 
-  /**
-   * Update goal progress based on quiz completion
-   */
-  private async updateGoalProgress(userId: string, progressData: {
-    questionsAnswered: number
-    quizzesCompleted: number
-    studyTimeMinutes: number
-    accuracy: number
-  }) {
-    try {
-      const response = await fetch('/api/user/dashboard/goals/batch/progress', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(progressData)
-      })
 
-      if (!response.ok) {
-      }
-    } catch (error) {
-      // Don't throw - goal progress update shouldn't break quiz completion
-    }
-  }
 
   private async saveQuizResults(
     userId: string,

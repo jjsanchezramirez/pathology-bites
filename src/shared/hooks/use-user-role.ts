@@ -1,8 +1,8 @@
 // src/shared/hooks/use-user-role.ts
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useSharedAuth } from '@/shared/hooks/use-shared-auth'
+import { useState, useEffect, useRef } from 'react'
+import { useSimpleAuth } from '@/shared/hooks/use-simple-auth'
 import { createClient } from '@/shared/services/client'
 import { TABLE_NAMES, USER_ROLES, UserRole as DatabaseUserRole } from '@/shared/constants/database-types'
 
@@ -37,6 +37,7 @@ const FEATURE_PERMISSIONS: Record<string, UserRole[]> = {
   // Creator permissions - can create and manage content
   'questions.create': ['admin', 'creator'],
   'questions.edit.own': ['admin', 'creator'], // Can edit own draft questions
+  'questions.update': ['admin', 'creator', 'reviewer'], // Can update questions (with API-level permission checks)
   'questions.submit': ['admin', 'creator'], // Can submit for review
 
   // Reviewer permissions - can review and approve
@@ -55,18 +56,33 @@ const FEATURE_PERMISSIONS: Record<string, UserRole[]> = {
 } as const
 
 export function useUserRole(): UserRoleData {
-  const { user, isLoading: authLoading } = useSharedAuth()
+  const { user, isLoading: authLoading } = useSimpleAuth()
   const [role, setRole] = useState<UserRole>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Track the previous user ID to prevent unnecessary re-fetches
+  const previousUserIdRef = useRef<string | null>(null)
+
   useEffect(() => {
     async function fetchUserRole() {
       if (!user) {
+        console.log('[useUserRole] No user, clearing role')
         setRole(null)
         setIsLoading(false)
+        previousUserIdRef.current = null
         return
       }
+
+      // Only fetch if the user ID has actually changed
+      if (previousUserIdRef.current === user.id) {
+        // User object reference changed but ID is the same - no need to re-fetch
+        console.log('[useUserRole] User ID unchanged, skipping fetch:', user.id)
+        return
+      }
+
+      console.log('[useUserRole] 🔄 User ID changed, fetching role for:', user.id)
+      previousUserIdRef.current = user.id
 
       try {
         setIsLoading(true)

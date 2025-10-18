@@ -1,19 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 
 const bulkDeleteSchema = z.object({
   inquiryIds: z.array(z.string().uuid()).min(1, 'At least one inquiry ID is required').max(100, 'Cannot delete more than 100 inquiries at once')
 })
 
+// Create Supabase client with service role for admin operations (bypasses RLS)
+function createAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey)
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     console.log('Bulk delete inquiries API called')
 
-    const supabase = await createClient()
+    // Use regular client for auth verification
+    const authClient = await createClient()
+    // Use admin client for database operations (bypasses RLS)
+    const supabase = createAdminClient()
 
     // Auth is handled by middleware - user should be admin
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await authClient.auth.getUser()
     if (authError || !user) {
       console.error('Authentication failed:', authError)
       return NextResponse.json(
@@ -23,7 +34,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Verify user has admin permissions
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError } = await authClient
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -86,7 +97,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Perform bulk delete
-    const { error: deleteError, count } = await supabase
+    const { error: deleteError } = await supabase
       .from('inquiries')
       .delete()
       .in('id', inquiryIds)
@@ -99,7 +110,8 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    console.log(`Successfully deleted ${count} inquiries`)
+    const deletedCount = inquiryIds.length
+    console.log(`Successfully deleted ${deletedCount} inquiries`)
 
     // Log the deletion for audit purposes
     console.log('Deleted inquiries:', existingInquiries?.map(inquiry => ({
@@ -111,8 +123,8 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      deletedCount: count,
-      message: `Successfully deleted ${count} inquiries`
+      deletedCount: deletedCount,
+      message: `Successfully deleted ${deletedCount} inquiries`
     })
 
   } catch (error) {

@@ -23,12 +23,15 @@ import {
   Brain,
   FolderOpen,
   Clock,
+  Layers,
   type LucideIcon
 } from "lucide-react"
 import { cn } from "@/shared/utils"
 import { SidebarAuthStatus } from "@/shared/components/layout/sidebar-auth-status"
 import { NavigationItem, NavigationSection, filterNavigationItems, filterNavigationSections } from "@/shared/config/navigation"
 import { useUserRole } from "@/shared/hooks/use-user-role"
+import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context"
+import { usePendingInquiriesCount } from "@/shared/hooks/use-pending-inquiries-count"
 
 // Icon mapping for string identifiers to actual components
 const iconMap: Record<string, LucideIcon> = {
@@ -51,6 +54,7 @@ const iconMap: Record<string, LucideIcon> = {
   Microscope,
   FolderOpen,
   Clock,
+  Layers,
 }
 
 interface UnifiedSidebarProps {
@@ -63,20 +67,24 @@ interface UnifiedSidebarProps {
 export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSections, isMobileMode = false }: UnifiedSidebarProps) {
   const pathname = usePathname()
   const { canAccess, isAdmin, isLoading } = useUserRole()
+  const { adminMode } = useDashboardTheme()
+  const { count: pendingInquiriesCount } = usePendingInquiriesCount()
 
-  // Always show navigation immediately, but filter based on loading state
+  // Always show navigation immediately, but filter based on loading state and admin mode
   const filteredNavigation = navigationItems ? filterNavigationItems(
     navigationItems,
     canAccess,
     isAdmin,
-    isLoading
+    isLoading,
+    adminMode
   ) : []
 
   const filteredSections = navigationSections ? filterNavigationSections(
     navigationSections,
     canAccess,
     isAdmin,
-    isLoading
+    isLoading,
+    adminMode
   ) : []
 
   // Loading skeleton component for navigation items
@@ -169,6 +177,14 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
                           {!isCollapsed && (
                             <span className="truncate ml-3">{item.name}</span>
                           )}
+                          {!isCollapsed && item.href === '/admin/inquiries' && pendingInquiriesCount > 0 && (
+                            <span className="ml-auto text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                              {pendingInquiriesCount}
+                            </span>
+                          )}
+                          {!isCollapsed && item.comingSoon && (
+                            <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Soon</span>
+                          )}
                           {!isCollapsed && item.adminOnly && !isAdmin && !isLoading && (
                             <span className="ml-auto text-xs text-sidebar-foreground/50">Admin</span>
                           )}
@@ -200,6 +216,14 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
                     <IconComponent className="h-5 w-5 shrink-0" style={{ marginLeft: '-1px' }} />
                     {!isCollapsed && (
                       <span className="truncate ml-3">{item.name}</span>
+                    )}
+                    {!isCollapsed && item.href === '/admin/inquiries' && pendingInquiriesCount > 0 && (
+                      <span className="ml-auto text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                        {pendingInquiriesCount}
+                      </span>
+                    )}
+                    {!isCollapsed && item.comingSoon && (
+                      <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Soon</span>
                     )}
                     {!isCollapsed && item.adminOnly && !isAdmin && !isLoading && (
                       <span className="ml-auto text-xs text-sidebar-foreground/50">Admin</span>

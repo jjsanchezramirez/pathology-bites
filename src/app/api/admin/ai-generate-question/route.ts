@@ -5,16 +5,31 @@ import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from '@/shared/config/a
 const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter(model => model.available).map(model => model.id)
 
 interface QuestionGenerationRequest {
-  content: {
+  mode?: 'educational_content' | 'refinement' | 'metadata_suggestion'
+  content?: {
     category: string
     subject: string
     lesson: string
     topic: string
-    text: string
+    content?: any
+    // For metadata suggestion mode
+    title?: string
+    stem?: string
+    teaching_point?: string
+    available_categories?: Array<{ id: string; name: string }>
+    available_question_sets?: Array<{ id: string; name: string }>
+    available_tags?: Array<{ id: string; name: string }>
+  }
+  currentQuestion?: {
+    title: string
+    stem: string
+    answer_options: any[]
+    teaching_point: string
+    question_references: string
   }
   instructions: string
   additionalContext?: string
-  model: string
+  model?: string
 }
 
 // AI API call functions
@@ -187,14 +202,15 @@ async function callMistralAPI(prompt: string, model: string, apiKey: string): Pr
   }
 }
 
-function buildAdminQuestionPrompt(content: any, instructions: string, additionalContext: string): string {
-  return `Create a high-quality medical/pathology question based on the following educational content:
+function buildAdminQuestionPrompt(content: any, instructions: string, additionalContext: string, mode: string = 'educational_content'): string {
+  if (mode === 'educational_content') {
+    return `Create a high-quality medical/pathology question based on the following educational content:
 
 EDUCATIONAL CONTENT:
+Category: ${content.category}
 Subject: ${content.subject}
-Lesson: ${content.lesson}  
+Lesson: ${content.lesson}
 Topic: ${content.topic}
-Content: ${content.text}
 
 INSTRUCTIONS:
 ${instructions}
@@ -202,15 +218,16 @@ ${instructions}
 ADDITIONAL CONTEXT:
 ${additionalContext || 'None provided'}
 
-REQUIREMENTS:
+CRITICAL REQUIREMENTS:
 1. Create a clinically relevant multiple-choice question
-2. Include exactly 5 answer options (A, B, C, D, E)
-3. Only ONE option should be correct
-4. Provide detailed explanations for each option
-5. Include a meaningful teaching point
-6. Use appropriate medical terminology
-7. Make the question challenging but fair
-8. Base the question on the provided content and follow the given instructions
+2. Include exactly 5 answer options (A, B, C, D, E) with one clearly correct answer
+3. Provide detailed explanations for ALL 5 answer options (not just the correct one)
+4. Include a meaningful teaching point that summarizes the key learning objective
+5. Use appropriate medical terminology and pathology concepts
+6. Make the question challenging but fair for medical students/residents
+7. Base the question on the provided educational content
+8. Focus on clinical correlation and diagnostic reasoning
+9. Include relevant references if applicable
 
 Return your response in this EXACT JSON format (no markdown, no code blocks, just pure JSON):
 
@@ -219,39 +236,41 @@ Return your response in this EXACT JSON format (no markdown, no code blocks, jus
   "stem": "The question text ending with a clear question mark",
   "question_options": [
     {
-      "id": "A",
       "text": "First answer option",
       "is_correct": false,
-      "explanation": "Detailed explanation why this is incorrect"
+      "explanation": "Detailed explanation why this is incorrect, including clinical and pathological reasoning",
+      "order_index": 0
     },
     {
-      "id": "B",
       "text": "Second answer option",
       "is_correct": true,
-      "explanation": "Detailed explanation why this is correct"
+      "explanation": "Detailed explanation why this is correct, including clinical correlation and key diagnostic features",
+      "order_index": 1
     },
     {
-      "id": "C",
       "text": "Third answer option",
       "is_correct": false,
-      "explanation": "Detailed explanation why this is incorrect"
+      "explanation": "Detailed explanation why this is incorrect, including differential diagnosis considerations",
+      "order_index": 2
     },
     {
-      "id": "D",
       "text": "Fourth answer option",
       "is_correct": false,
-      "explanation": "Detailed explanation why this is incorrect"
+      "explanation": "Detailed explanation why this is incorrect, mentioning distinguishing features",
+      "order_index": 3
     },
     {
-      "id": "E",
       "text": "Fifth answer option",
       "is_correct": false,
-      "explanation": "Detailed explanation why this is incorrect"
+      "explanation": "Detailed explanation why this is incorrect, including clinical and histological differences",
+      "order_index": 4
     }
   ],
-  "teaching_point": "Key learning objective or clinical pearl from this question",
-  "references": ["Relevant medical references if applicable"],
-  "suggested_tags": ["Tag1", "Tag2", "Tag3"]
+  "teaching_point": "Concise 1-2 sentence key learning point about the specific concept being tested",
+  "question_references": "Relevant medical/pathology references or citations",
+  "suggested_tags": ["Tag1", "Tag2", "Tag3"],
+  "difficulty": "medium",
+  "status": "draft"
 }
 
 IMPORTANT: For suggested_tags, provide 3-5 relevant medical/pathology tags that describe the key concepts, diseases, or techniques in this question. Tags should be:
@@ -259,6 +278,119 @@ IMPORTANT: For suggested_tags, provide 3-5 relevant medical/pathology tags that 
 - Relevant to the question content
 - Useful for categorizing and searching questions
 - Concise (1-3 words each)`;
+  }
+
+  if (mode === 'metadata_suggestion') {
+    return `Analyze the following question content and suggest appropriate metadata:
+
+QUESTION CONTENT:
+Title: ${content.title}
+Stem: ${content.stem}
+Teaching Point: ${content.teaching_point || 'Not provided'}
+
+AVAILABLE OPTIONS:
+
+Categories:
+${content.available_categories?.map((cat: any) => `- ${cat.name} (ID: ${cat.id})`).join('\n') || 'None available'}
+
+Question Sets:
+${content.available_question_sets?.map((qs: any) => `- ${qs.name} (ID: ${qs.id})`).join('\n') || 'None available'}
+
+Available Tags:
+${content.available_tags?.map((tag: any) => `- ${tag.name} (ID: ${tag.id})`).join('\n') || 'None available'}
+
+INSTRUCTIONS:
+Based on the question content, suggest the most appropriate:
+1. Category ID (from the available categories)
+2. Question Set ID (from the available question sets)
+3. Difficulty level (easy, medium, or hard)
+4. Tag IDs (select 3-5 most relevant tags from available tags)
+
+Return your response in this EXACT JSON format:
+{
+  "category_id": "most_appropriate_category_id_or_null",
+  "question_set_id": "most_appropriate_question_set_id_or_null",
+  "difficulty": "easy_medium_or_hard",
+  "suggested_tag_ids": ["tag_id_1", "tag_id_2", "tag_id_3"]
+}
+
+IMPORTANT: Only use IDs that exist in the available options above. If no appropriate option exists, use null for that field.`;
+  }
+
+  // For refinement mode
+  return `Refine the following medical/pathology question based on the provided instructions:
+
+CURRENT QUESTION:
+Title: ${content.title}
+Stem: ${content.stem}
+Teaching Point: ${content.teaching_point}
+References: ${content.question_references}
+
+CURRENT ANSWER OPTIONS:
+${content.answer_options.map((opt: any, i: number) =>
+  `${String.fromCharCode(65 + i)}. ${opt.text} ${opt.is_correct ? '(CORRECT)' : '(INCORRECT)'}\n   Explanation: ${opt.explanation}`
+).join('\n')}
+
+REFINEMENT INSTRUCTIONS:
+${instructions}
+
+CRITICAL REQUIREMENTS:
+1. Maintain exactly 5 answer options (A, B, C, D, E) with one clearly correct answer
+2. Provide detailed explanations for ALL 5 answer options
+3. Keep the same clinical relevance and educational value
+4. Apply the refinement instructions while preserving the question structure
+
+Return your response in this EXACT JSON format:
+{
+  "title": "Question title here",
+  "stem": "Question stem/body here",
+  "question_options": [
+    {
+      "text": "Option A text",
+      "is_correct": false,
+      "explanation": "Detailed explanation for option A"
+    },
+    {
+      "text": "Option B text",
+      "is_correct": true,
+      "explanation": "Detailed explanation for option B"
+    },
+    {
+      "text": "Option C text",
+      "is_correct": false,
+      "explanation": "Detailed explanation for option C"
+    },
+    {
+      "text": "Option D text",
+      "is_correct": false,
+      "explanation": "Detailed explanation for option D"
+    },
+    {
+      "text": "Option E text",
+      "is_correct": false,
+      "explanation": "Detailed explanation for option E"
+    }
+  ],
+  "teaching_point": "Key learning objective or teaching point",
+  "question_references": "Relevant citations or references",
+  "difficulty": "medium",
+  "status": "draft"
+}`;
+}
+
+// Helper function to sanitize JSON string by removing/escaping control characters
+function sanitizeJSONString(jsonStr: string): string {
+  return jsonStr
+    // Replace unescaped newlines, tabs, and carriage returns with escaped versions
+    .replace(/(?<!\\)\n/g, '\\n')
+    .replace(/(?<!\\)\t/g, '\\t')
+    .replace(/(?<!\\)\r/g, '\\r')
+    // Remove other control characters that might break JSON parsing
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Fix common issues with quotes - be more careful here
+    .replace(/\\"/g, '___ESCAPED_QUOTE___') // Temporarily replace escaped quotes
+    .replace(/"/g, '\\"') // Escape all remaining quotes
+    .replace(/___ESCAPED_QUOTE___/g, '\\"') // Restore escaped quotes
 }
 
 function extractJSON(text: string): any {
@@ -310,10 +442,15 @@ function extractJSON(text: string): any {
           if (braceCount === 0) {
             const jsonStr = cleanedText.substring(firstBrace, i + 1)
             try {
-              return JSON.parse(jsonStr)
+              return JSON.parse(sanitizeJSONString(jsonStr))
             } catch (e) {
-              // Continue to other strategies
-              break
+              // Try without sanitization as fallback
+              try {
+                return JSON.parse(jsonStr)
+              } catch (e2) {
+                console.log('[Admin AI] JSON parsing failed, trying next strategy:', e instanceof Error ? e.message : 'Unknown error')
+                break
+              }
             }
           }
         }
@@ -326,9 +463,13 @@ function extractJSON(text: string): any {
   const codeBlockMatch = cleanedText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/)
   if (codeBlockMatch) {
     try {
-      return JSON.parse(codeBlockMatch[1])
+      return JSON.parse(sanitizeJSONString(codeBlockMatch[1]))
     } catch (e) {
-      // Continue to next strategy
+      try {
+        return JSON.parse(codeBlockMatch[1])
+      } catch (e2) {
+        console.log('[Admin AI] Code block JSON parsing failed:', e instanceof Error ? e.message : 'Unknown error')
+      }
     }
   }
 
@@ -336,19 +477,28 @@ function extractJSON(text: string): any {
   const greedyMatch = cleanedText.match(/\{[\s\S]*\}/)
   if (greedyMatch) {
     try {
-      return JSON.parse(greedyMatch[0])
+      return JSON.parse(sanitizeJSONString(greedyMatch[0]))
     } catch (e) {
-      // Try to fix common JSON issues
-      const fixedJson = greedyMatch[0]
-        .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Add quotes to unquoted keys
-        .replace(/:\s*'([^']*)'/g, ': "$1"') // Replace single quotes with double quotes
-        .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
-        .trim()
-
       try {
-        return JSON.parse(fixedJson)
-      } catch (fixError) {
-        throw new Error(`JSON parsing failed: ${e instanceof Error ? e.message : 'Parse error'}`)
+        return JSON.parse(greedyMatch[0])
+      } catch (e2) {
+        // Try to fix common JSON issues
+        const fixedJson = greedyMatch[0]
+          .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Add quotes to unquoted keys
+          .replace(/:\s*'([^']*)'/g, ': "$1"') // Replace single quotes with double quotes
+          .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+          .trim()
+
+        try {
+          return JSON.parse(sanitizeJSONString(fixedJson))
+        } catch (e3) {
+          try {
+            return JSON.parse(fixedJson)
+          } catch (fixError) {
+            console.error('[Admin AI] All JSON parsing strategies failed. Original response:', text.substring(0, 500))
+            throw new Error(`JSON parsing failed: ${e instanceof Error ? e.message : 'Parse error'}`)
+          }
+        }
       }
     }
   }
@@ -360,28 +510,47 @@ function extractJSON(text: string): any {
 export async function POST(request: NextRequest) {
   try {
     const body: QuestionGenerationRequest = await request.json()
-    const { content, instructions, additionalContext = '', model } = body
+    const { mode = 'educational_content', content, currentQuestion, instructions, additionalContext = '', model } = body
 
-    // Validate inputs
-    if (!content || !instructions || !model) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields: content, instructions, model' },
-        { status: 400 }
-      )
+    // Validate inputs based on mode
+    if (mode === 'educational_content') {
+      if (!content || !instructions) {
+        return NextResponse.json(
+          { success: false, error: 'Missing required fields for educational_content mode: content, instructions' },
+          { status: 400 }
+        )
+      }
+    } else if (mode === 'refinement') {
+      if (!currentQuestion || !instructions || !model) {
+        return NextResponse.json(
+          { success: false, error: 'Missing required fields for refinement mode: currentQuestion, instructions, model' },
+          { status: 400 }
+        )
+      }
+    } else if (mode === 'metadata_suggestion') {
+      if (!content || !content.title || !content.stem) {
+        return NextResponse.json(
+          { success: false, error: 'Missing required fields for metadata_suggestion mode: content.title, content.stem' },
+          { status: 400 }
+        )
+      }
     }
 
+    // Use default model for educational content mode if not specified
+    const selectedModel = model || 'Llama-3.3-8B-Instruct'
+
     // Validate model
-    if (!ADMIN_AI_MODELS.includes(model)) {
+    if (!ADMIN_AI_MODELS.includes(selectedModel)) {
       return NextResponse.json(
-        { success: false, error: `Unsupported model: ${model}. Supported: ${ADMIN_AI_MODELS.join(', ')}` },
+        { success: false, error: `Unsupported model: ${selectedModel}. Supported: ${ADMIN_AI_MODELS.join(', ')}` },
         { status: 400 }
       )
     }
 
     // Get API configuration
-    const provider = getModelProvider(model)
+    const provider = getModelProvider(selectedModel)
     const apiKey = getApiKey(provider)
-    
+
     if (!apiKey) {
       return NextResponse.json(
         { success: false, error: `No API key found for provider: ${provider}` },
@@ -389,20 +558,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`[Admin AI] Generating question using ${model} (${provider})`)
+    console.log(`[Admin AI] Generating question using ${selectedModel} (${provider}) in ${mode} mode`)
 
-    // Build the prompt
-    const prompt = buildAdminQuestionPrompt(content, instructions, additionalContext)
-    
+    // Build the prompt based on mode
+    const promptData = mode === 'refinement' ? currentQuestion : content
+    const prompt = buildAdminQuestionPrompt(promptData, instructions, additionalContext, mode)
+
     // Call AI service
     const startTime = Date.now()
-    const aiResponse = await callAIService(provider, prompt, model, apiKey)
+    const aiResponse = await callAIService(provider, prompt, selectedModel, apiKey)
     const generationTime = Date.now() - startTime
 
     console.log(`[Admin AI] Generated response in ${generationTime}ms`)
+    console.log(`[Admin AI] Raw AI response (${mode} mode):`, aiResponse.content.substring(0, 500) + '...')
 
     // Parse the AI response
     const questionData = extractJSON(aiResponse.content)
+    console.log(`[Admin AI] Extracted JSON (${mode} mode):`, JSON.stringify(questionData, null, 2))
 
     // Normalize options field - AI models sometimes use different field names despite our prompt
     // Accept question_options (preferred), answer_options, or options, then normalize to question_options
@@ -414,38 +586,88 @@ export async function POST(request: NextRequest) {
       delete questionData.options
     }
 
-    // Validate the response structure
-    if (!questionData.title || !questionData.stem || !questionData.question_options || !Array.isArray(questionData.question_options)) {
-      console.error('[Admin AI] Validation failed. Response structure:', {
-        hasTitle: !!questionData.title,
-        hasStem: !!questionData.stem,
-        hasQuestionOptions: !!questionData.question_options,
-        hasAnswerOptions: !!questionData.answer_options,
-        hasOptions: !!questionData.options,
-        isQuestionOptionsArray: Array.isArray(questionData.question_options),
-        actualKeys: Object.keys(questionData)
-      })
-      throw new Error('AI response missing required fields')
+    // Validate the response structure based on mode
+    if (mode === 'metadata_suggestion') {
+      // For metadata suggestion, we expect different fields
+      const hasMetadataFields = questionData.category_id || questionData.question_set_id || questionData.difficulty || questionData.suggested_tag_ids
+
+      if (!hasMetadataFields) {
+        console.error('[Admin AI] Metadata suggestion validation failed. Response structure:', {
+          hasCategoryId: !!questionData.category_id,
+          hasQuestionSetId: !!questionData.question_set_id,
+          hasDifficulty: !!questionData.difficulty,
+          hasSuggestedTagIds: !!questionData.suggested_tag_ids,
+          actualKeys: Object.keys(questionData),
+          mode: mode
+        })
+        throw new Error('AI response missing metadata fields. Expected at least one of: category_id, question_set_id, difficulty, suggested_tag_ids')
+      }
+    } else {
+      // For question generation modes, validate question structure
+      const hasRequiredFields = questionData.stem && questionData.question_options && Array.isArray(questionData.question_options)
+
+      if (!hasRequiredFields) {
+        console.error('[Admin AI] Validation failed. Response structure:', {
+          hasTitle: !!questionData.title,
+          hasStem: !!questionData.stem,
+          hasQuestionOptions: !!questionData.question_options,
+          hasAnswerOptions: !!questionData.answer_options,
+          hasOptions: !!questionData.options,
+          isQuestionOptionsArray: Array.isArray(questionData.question_options),
+          actualKeys: Object.keys(questionData),
+          mode: mode
+        })
+        throw new Error(`AI response missing required fields for ${mode} mode. Required: stem, question_options (array)`)
+      }
+
+      // For refinement mode, title is optional (can keep existing)
+      if (mode === 'educational_content' && !questionData.title) {
+        throw new Error('AI response missing title field (required for educational_content mode)')
+      }
+
+      if (questionData.question_options.length !== 5) {
+        throw new Error('AI response must contain exactly 5 options')
+      }
+
+      const correctCount = questionData.question_options.filter((opt: any) => opt.is_correct).length
+      if (correctCount !== 1) {
+        throw new Error(`AI response must have exactly 1 correct answer, found ${correctCount}`)
+      }
     }
 
-    if (questionData.question_options.length !== 5) {
-      throw new Error('AI response must contain exactly 5 options')
-    }
+    // Return the data in the format expected by the frontend
+    let responseData: any
 
-    const correctCount = questionData.question_options.filter((opt: any) => opt.is_correct).length
-    if (correctCount !== 1) {
-      throw new Error(`AI response must have exactly 1 correct answer, found ${correctCount}`)
+    if (mode === 'metadata_suggestion') {
+      responseData = {
+        category_id: questionData.category_id || null,
+        question_set_id: questionData.question_set_id || null,
+        difficulty: questionData.difficulty || null,
+        suggested_tag_ids: questionData.suggested_tag_ids || []
+      }
+    } else {
+      responseData = {
+        title: questionData.title || (mode === 'refinement' ? 'Refined Question' : 'Generated Question'),
+        stem: questionData.stem,
+        answer_options: questionData.question_options || questionData.answer_options,
+        teaching_point: questionData.teaching_point || '',
+        question_references: questionData.question_references || questionData.references || '',
+        difficulty: questionData.difficulty || 'medium',
+        status: questionData.status || 'draft',
+        suggested_tags: questionData.suggested_tags || []
+      }
     }
 
     return NextResponse.json({
       success: true,
-      question: questionData,
+      ...responseData,
       metadata: {
         generated_at: new Date().toISOString(),
         generation_time_ms: generationTime,
-        model: model,
+        model: selectedModel,
         provider: provider,
-        token_usage: aiResponse.tokenUsage
+        token_usage: aiResponse.tokenUsage,
+        mode: mode
       }
     })
 

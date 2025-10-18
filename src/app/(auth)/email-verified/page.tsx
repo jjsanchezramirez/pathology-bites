@@ -31,7 +31,7 @@ export default function EmailVerifiedPage() {
         description="Your email has been successfully verified"
         content="Thank you for verifying your email. Your account is now activated and ready to use."
         footer={
-          <Button asChild>
+          <Button asChild className="w-full">
             <Link href="/login">
               Proceed to login ({countdown})
             </Link>

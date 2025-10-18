@@ -59,12 +59,26 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
     setError(null);
 
     try {
-      // Build the base query
+      // Build the base query - SELECT only needed fields
       let query = supabase
         .from(TABLE_NAMES.QUESTIONS)
         .select(`
-          *,
-          question_set:question_sets(
+          id,
+          title,
+          stem,
+          difficulty,
+          teaching_point,
+          question_references,
+          status,
+          question_set_id,
+          category_id,
+          created_by,
+          updated_by,
+          created_at,
+          updated_at,
+          published_at,
+          version,
+          question_set:question_sets!questions_set_id_fkey(
             id,
             name,
             source_type,
@@ -126,6 +140,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
       const questionIds = (data || []).map(q => q.id);
       const categoryIds = [...new Set((data || []).map(q => q.category_id).filter(Boolean))];
       let categoriesData: any[] = [];
+      let latestVersionsData: any[] = [];
 
       if (categoryIds.length > 0) {
         const { data: categoriesResult } = await supabase
@@ -143,12 +158,38 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         categoriesData = categoriesResult || [];
       }
 
+      // Fetch latest versions for all questions
+      if (questionIds.length > 0) {
+        const { data: versionsResult } = await supabase
+          .from('question_versions')
+          .select(`
+            question_id,
+            version_string,
+            created_at
+          `)
+          .in('question_id', questionIds)
+          .order('created_at', { ascending: false });
+
+        // Group by question_id and get the latest version for each
+        const versionsByQuestion = (versionsResult || []).reduce((acc: any, version: any) => {
+          if (!acc[version.question_id]) {
+            acc[version.question_id] = version.version_string;
+          }
+          return acc;
+        }, {});
+
+        latestVersionsData = versionsByQuestion;
+      }
+
       // Transform the data
       const transformedQuestions: QuestionWithDetails[] = (data || []).map(question => {
         // Find the category for this question
         const questionCategory = question.category_id
           ? categoriesData.find(cat => cat.id === question.category_id)
           : null;
+
+        // Get the latest version for this question
+        const latestVersion = latestVersionsData[question.id] || question.version || '1.0.0';
 
         return {
           ...question,
@@ -157,7 +198,9 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
             : 'Unknown',
           image_count: question.question_images?.[0]?.count || 0,
           categories: questionCategory ? [questionCategory] : [],
-          tags: question.question_tags?.map((qt: any) => qt.tag).filter(Boolean) || []
+          tags: question.question_tags?.map((qt: any) => qt.tag).filter(Boolean) || [],
+          version_string: latestVersion,
+          version: latestVersion // Update the version field with the latest version
         };
       });
 
@@ -182,7 +225,18 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         credentials: 'include',
       });
 
-      const data = await response.json();
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      let data;
+
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        // If not JSON, get text for debugging
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error(`Server returned non-JSON response (${response.status})`);
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to delete question');

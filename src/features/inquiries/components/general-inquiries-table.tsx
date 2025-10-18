@@ -25,7 +25,7 @@ import { Search, Filter, MessageSquare, AlertCircle, Trash2 } from 'lucide-react
 import { Checkbox } from '@/shared/components/ui/checkbox'
 import { InquiryDetailsDialog } from './inquiry-details-dialog'
 import { InquiryActionsDropdown } from './inquiry-actions-dropdown'
-import { InquiryStatusBadge } from './inquiry-status-badge'
+import { InquiryStatusBadge, getStatusSortOrder } from './inquiry-status-badge'
 import { toast } from 'sonner'
 
 interface Inquiry {
@@ -42,12 +42,13 @@ interface Inquiry {
 }
 
 interface GeneralInquiriesTableProps {
-  type: 'general' | 'tech' | 'all'
+  type: 'general' | 'technical' | 'all'
   statusFilter?: 'pending' | 'solved' | 'all'
   onInquiriesChange?: () => void
+  refreshTrigger?: number
 }
 
-export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesChange }: GeneralInquiriesTableProps) {
+export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesChange, refreshTrigger }: GeneralInquiriesTableProps) {
   const [inquiries, setInquiries] = useState<Inquiry[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -60,7 +61,7 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
 
   useEffect(() => {
     fetchInquiries()
-  }, [type, statusFilter])
+  }, [type, statusFilter, refreshTrigger])
 
   const fetchInquiries = async () => {
     try {
@@ -79,6 +80,8 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
         query = query.eq('status', 'pending')
       } else if (statusFilter === 'solved') {
         query = query.in('status', ['resolved', 'closed'])
+      } else if (statusFilter === 'all') {
+        // No additional filter needed - get all statuses
       }
 
       const { data, error } = await query.order('created_at', { ascending: false })
@@ -89,7 +92,21 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
         return
       }
 
-      const inquiries = data || []
+      let inquiries = data || []
+
+      // For "all" tab, sort by status priority: red (delayed) → yellow (pending) → green (resolved)
+      if (type === 'all' && statusFilter === 'all') {
+        inquiries = inquiries.sort((a, b) => {
+          const orderA = getStatusSortOrder(a.status, a.created_at)
+          const orderB = getStatusSortOrder(b.status, b.created_at)
+          if (orderA !== orderB) {
+            return orderA - orderB
+          }
+          // If same status priority, sort by created_at (newest first)
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        })
+      }
+
       setInquiries(inquiries)
 
       if (inquiries.length === 0) {
@@ -188,7 +205,7 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
   }
 
   const getStatusBadge = (inquiry: Inquiry) => {
-    return <InquiryStatusBadge status={inquiry.status || 'pending'} />
+    return <InquiryStatusBadge status={inquiry.status || 'pending'} createdAt={inquiry.created_at} />
   }
 
   const isOldInquiry = (createdAt: string) => {
@@ -218,7 +235,7 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
     } else if (statusFilter === 'solved') {
       return 'Solved inquiries will appear here.'
     }
-    return `${type === 'general' ? 'General' : type === 'tech' ? 'Technical support' : ''} inquiries will appear here when submitted.`
+    return `${type === 'general' ? 'General' : type === 'technical' ? 'Technical support' : ''} inquiries will appear here when submitted.`
   }
 
   if (loading) {
@@ -287,8 +304,7 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
                   aria-label="Select all inquiries"
                 />
               </TableHead>
-              <TableHead className="w-[200px]">Contact</TableHead>
-              <TableHead>Inquiry</TableHead>
+              <TableHead>Contact & Inquiry</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
@@ -297,7 +313,7 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
           <TableBody>
             {filteredInquiries.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12">
+                <TableCell colSpan={5} className="text-center py-12">
                   <div className="flex flex-col items-center gap-3">
                     <MessageSquare className="h-12 w-12 text-muted-foreground/50" />
                     <div className="space-y-1">
@@ -327,23 +343,20 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
                       aria-label={`Select inquiry from ${inquiry.first_name} ${inquiry.last_name}`}
                     />
                   </TableCell>
-                  <TableCell className="font-medium">
+                  <TableCell>
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span>{inquiry.first_name} {inquiry.last_name}</span>
-                        {isOldInquiry(inquiry.created_at) && (
-                          <AlertCircle className="h-4 w-4 text-orange-500" />
+                      {/* Line 1: Name • Email */}
+                      <div className="text-sm">
+                        <span className="font-medium">{inquiry.first_name} {inquiry.last_name}</span>
+                        <span className="text-muted-foreground"> • {inquiry.email}</span>
+                        {inquiry.organization && (
+                          <span className="text-muted-foreground"> • {inquiry.organization}</span>
                         )}
                       </div>
-                      <div className="text-sm text-muted-foreground">{inquiry.email}</div>
-                      {inquiry.organization && (
-                        <div className="text-xs text-muted-foreground">{inquiry.organization}</div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-md">
-                    <div className="text-sm">
-                      {truncateText(inquiry.inquiry)}
+                      {/* Line 2: Inquiry Text */}
+                      <div className="text-sm text-muted-foreground">
+                        {truncateText(inquiry.inquiry)}
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>{getStatusBadge(inquiry)}</TableCell>

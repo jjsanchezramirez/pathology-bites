@@ -36,7 +36,7 @@ interface SubmitForReviewDialogProps {
   questionId: string
   questionTitle: string
   questionStatus?: string  // To determine if this is a resubmission
-  onSuccess: () => void
+  onSuccess: (reviewerId?: string) => void
 }
 
 export function SubmitForReviewDialog({
@@ -97,7 +97,7 @@ export function SubmitForReviewDialog({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           reviewer_id: selectedReviewerId,
-          resubmission_notes: isResubmission ? resubmissionNotes : null
+          resubmission_notes: isResubmission ? resubmissionNotes.trim() : null
         }),
       })
 
@@ -107,7 +107,7 @@ export function SubmitForReviewDialog({
       }
 
       toast.success(isResubmission ? 'Question resubmitted for review' : 'Question submitted for review')
-      onSuccess()
+      onSuccess(selectedReviewerId)
       onOpenChange(false)
       setSelectedReviewerId('')
       setResubmissionNotes('')
@@ -143,18 +143,18 @@ export function SubmitForReviewDialog({
           {isResubmission && (
             <div className="space-y-2">
               <Label htmlFor="resubmission-notes">
-                Changes Made <span className="text-destructive">*</span>
+                What changes did you make? <span className="text-destructive">*</span>
               </Label>
               <Textarea
                 id="resubmission-notes"
-                placeholder="Describe what changes you made to address the reviewer's feedback..."
+                placeholder="Describe what you changed to address the reviewer's feedback..."
                 value={resubmissionNotes}
                 onChange={(e) => setResubmissionNotes(e.target.value)}
                 rows={4}
                 className="resize-none"
               />
               <p className="text-xs text-muted-foreground">
-                Help the reviewer understand what you changed since the last review.
+                Help the reviewer understand what you changed since their last review.
               </p>
             </div>
           )}

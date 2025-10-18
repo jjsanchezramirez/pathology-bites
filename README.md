@@ -6,20 +6,22 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue)](https://www.typescriptlang.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-15.3.2-black)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15.5.3-black)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.1.0-61DAFB)](https://reactjs.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1.7-38B2AC)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green)](https://supabase.com/)
 [![Cloudflare R2](https://img.shields.io/badge/Cloudflare-R2-orange)](https://developers.cloudflare.com/r2/)
 
 ## 📊 Current Status
 
-**🚀 Optimized Architecture - Performance & Cost Efficiency Achieved**
+**🚀 Production-Ready Educational Platform with Advanced Question Management Workflow**
 
-✅ **Complete Egress Optimization**
-- Zero local JSON data access - all content served from Cloudflare R2
-- Smart client-side caching with 24-hour TTL for citations, 7-day for genes
-- Background pre-loading of common pathology genes and frequent searches
-- Only essential app assets (icons, favicon, social images) served locally
+✅ **Question Management Workflow**
+- **Creator Dashboard**: Streamlined workflow for question creation, editing, and submission
+- **Review System**: Multi-role review process with approve/reject/request changes actions
+- **Resubmission Notes**: Creators can communicate changes to reviewers during resubmission
+- **Version Control**: Automatic versioning for published questions with change tracking
+- **Status Tracking**: Real-time status updates across draft → review → published lifecycle
 
 ✅ **Advanced Tool Suite**
 - **Citations Manager**: Smart caching, 24h TTL, supports URL/DOI/ISBN with external API integration
@@ -39,7 +41,7 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 - Cloudflare R2 private bucket access with S3Client authentication
 - All images unoptimized to avoid Vercel transformation costs
 - Content Security Policy configured for external medical repositories
-- Rate limiting on all critical endpoints
+- Row Level Security (RLS) with 58 policies across 21 database tables
 
 ✅ **Quality & Testing**
 - Build: ✅ Successful production build with zero warnings
@@ -47,33 +49,314 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 - TypeScript: ✅ Strict compilation without errors
 - Performance: ✅ Optimized bundle size and loading times
 
+## 📋 Question Management Workflow
+
+### Overview
+
+Pathology Bites implements a comprehensive question management workflow that ensures quality control and collaborative content creation. The system supports multiple user roles and provides a structured process from question creation to publication.
+
+### User Roles
+
+- **Creator**: Creates and edits questions, submits for review
+- **Reviewer**: Reviews submitted questions, provides feedback
+- **Admin**: Full access to all questions and administrative functions
+- **Editor**: Can edit approved questions and manage content
+
+### Workflow States
+
+```mermaid
+graph LR
+    A[Draft] --> B[Pending Review]
+    B --> C[Approved/Published]
+    B --> D[Rejected]
+    D --> A
+    C --> E[Flagged]
+    E --> B
+```
+
+#### Question Status Flow
+
+1. **Draft** - Initial creation state, editable by creator
+2. **Pending Review** - Submitted for review, awaiting reviewer action
+3. **Approved/Published** - Approved by reviewer, live on platform
+4. **Rejected** - Rejected by reviewer with feedback, returns to draft
+5. **Flagged** - Published question flagged for review
+
+### Database Tables Modified by Workflow
+
+#### Core Question Creation/Editing
+```sql
+-- Main question data
+questions (title, stem, teaching_point, status, version, created_by, updated_by)
+
+-- Answer options
+question_options (question_id, text, is_correct, explanation)
+
+-- Associated images
+question_images (question_id, image_id, display_order)
+images (filename, url, alt_text)
+
+-- Tags and categorization
+question_tags (question_id, tag_id)
+```
+
+#### Submit for Review Process
+```sql
+-- Status change and reviewer assignment
+UPDATE questions SET
+  status = 'pending_review',
+  reviewer_id = ?,
+  reviewer_feedback = NULL,
+  rejected_at = NULL,
+  rejected_by = NULL,
+  updated_at = NOW(),
+  updated_by = ?
+
+-- Resubmission notes (for rejected → pending_review)
+INSERT INTO question_reviews (
+  question_id,
+  reviewer_id,     -- Creator's ID
+  action,          -- 'resubmitted'
+  changes_made     -- JSONB with resubmission_notes
+)
+
+-- Notification to reviewer
+INSERT INTO notification_states (user_id, type, data)
+```
+
+#### Review Process (Approve/Reject)
+```sql
+-- Review decision record
+INSERT INTO question_reviews (
+  question_id,
+  reviewer_id,
+  action,           -- 'approve', 'reject', 'request_changes'
+  feedback,         -- Reviewer's feedback
+  changes_made      -- JSONB field for metadata
+)
+
+-- Question status update
+UPDATE questions SET
+  status = ?,                    -- 'approved', 'rejected', 'draft'
+  reviewer_feedback = ?,         -- For rejections
+  rejected_at = ?,              -- Timestamp for rejections
+  rejected_by = ?,              -- Reviewer ID for rejections
+  published_at = ?,             -- Timestamp for approvals
+  updated_at = NOW()
+```
+
+#### Versioning (Published Questions Only)
+```sql
+-- Only happens for approved/published questions being updated
+CALL create_question_version_simplified(question_id, change_summary, changed_by)
+
+-- Creates version history
+INSERT INTO question_versions (
+  question_id,
+  version_major, version_minor, version_patch,
+  version_string,
+  question_data,     -- JSONB snapshot of current question
+  update_type,       -- 'minor' (simplified)
+  change_summary,
+  changed_by
+)
+
+-- Updates question version
+UPDATE questions SET version = new_version_string
+```
+
+### Resubmission Notes Feature
+
+When creators resubmit rejected questions, they can provide notes explaining what changes were made:
+
+#### Creator Experience
+1. **Submit Dialog**: Shows textarea for resubmission notes (required for rejected questions)
+2. **Change Communication**: Notes are stored in `question_reviews.changes_made` JSONB field
+3. **Workflow Dashboard**: Shows resubmission status and change summaries
+
+#### Reviewer Experience
+1. **Review Interface**: Displays creator's change notes prominently
+2. **Context**: Helps reviewers understand what was modified since last review
+3. **History**: Full audit trail of all resubmissions and reviews
+
+#### Technical Implementation
+```typescript
+// API: Submit for Review
+{
+  reviewer_id: string,
+  resubmission_notes?: string  // Only for rejected questions
+}
+
+// Database: question_reviews table
+{
+  question_id: string,
+  reviewer_id: string,        // Creator's ID for resubmissions
+  action: 'resubmitted',
+  changes_made: {
+    resubmission_notes: string,
+    timestamp: string,
+    previous_status: 'rejected',
+    new_status: 'pending_review'
+  }
+}
+```
+
 ## 🔧 Architecture Overview
 
-### Smart Caching System
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   User Request  │───▶│ Client-Side Cache │───▶│ External APIs   │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                │                        │
-                                ▼                        ▼
-                       ┌──────────────────┐    ┌─────────────────┐
-                       │  localStorage    │    │ CrossRef/HGNC   │
-                       │  TTL Management  │    │ OpenLibrary     │
-                       └──────────────────┘    └─────────────────┘
-```
+### Technology Stack
+- **Frontend**: Next.js 15.5.3 + React 19 + TypeScript
+- **Styling**: Tailwind CSS v4 + shadcn/ui components
+- **Database**: Supabase (PostgreSQL) with Row Level Security
+- **Storage**: Cloudflare R2 for images and static assets
+- **Deployment**: Vercel with serverless functions
+- **Authentication**: Supabase Auth with role-based access
 
-### Data Flow Optimization
+### Database Architecture
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│ Cloudflare R2   │───▶│    Next.js API   │───▶│  Client Cache   │
-│ Private Buckets │    │   Smart Proxy    │    │   24h TTL       │
+│   Questions     │───▶│ Question Options │    │ Question Images │
+│   (Core Data)   │    │  (A, B, C, D, E) │    │  (Media Files)  │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
         │                        │                        │
         ▼                        ▼                        ▼
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│ Zero Egress     │    │ Background       │    │ Instant         │
-│ Costs           │    │ Pre-loading      │    │ Responses       │
+│ Question Reviews│    │ Question Versions│    │     Images      │
+│ (Audit Trail)   │    │ (Change History) │    │ (R2 Storage)    │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### Question Workflow Data Flow
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Creator       │───▶│   Submit for     │───▶│    Reviewer     │
+│   Dashboard     │    │     Review       │    │   Interface     │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+        │                        │                        │
+        ▼                        ▼                        ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ Resubmission    │    │ question_reviews │    │ Status Updates  │
+│ Notes           │    │ Table (JSONB)    │    │ & Notifications │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### Security & Performance
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ Row Level       │───▶│    API Routes    │───▶│ Client-Side     │
+│ Security (RLS)  │    │  (Serverless)    │    │ State Mgmt      │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+        │                        │                        │
+        ▼                        ▼                        ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ 58 Policies     │    │ Smart Caching    │    │ SWR + React     │
+│ 21 Tables       │    │ & Optimization   │    │ Hooks           │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### API Structure
+
+The application follows a feature-based API organization:
+
+```
+/api/
+├── questions/
+│   ├── [id]/
+│   │   ├── submit-for-review/     # Submit question for review
+│   │   ├── approve/               # Approve question (reviewers)
+│   │   └── reject/                # Reject question (reviewers)
+│   └── route.ts                   # List/create questions
+├── admin/
+│   ├── questions/[id]/
+│   │   ├── version/               # Create question version
+│   │   └── route.ts               # Admin question management
+│   └── review-queue/              # Review queue management
+├── user/
+│   ├── profile/                   # User profile management
+│   └── settings/                  # User preferences
+├── public/
+│   ├── health/                    # Health checks
+│   └── data/                      # Public data endpoints
+└── media/
+    ├── images/                    # Image upload/management
+    └── r2/                        # R2 storage operations
+```
+
+### Database Schema (Key Tables)
+
+#### Core Question Tables
+```sql
+-- Main questions table
+questions (
+  id UUID PRIMARY KEY,
+  title TEXT NOT NULL,
+  stem TEXT NOT NULL,
+  teaching_point TEXT,
+  status question_status_enum,  -- draft, pending_review, approved, rejected, flagged
+  version TEXT DEFAULT '1.0.0',
+  created_by UUID REFERENCES users(id),
+  updated_by UUID REFERENCES users(id),
+  reviewer_id UUID REFERENCES users(id),
+  reviewer_feedback TEXT,
+  rejected_at TIMESTAMPTZ,
+  rejected_by UUID REFERENCES users(id),
+  published_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+)
+
+-- Question options (A, B, C, D, E)
+question_options (
+  id UUID PRIMARY KEY,
+  question_id UUID REFERENCES questions(id) ON DELETE CASCADE,
+  text TEXT NOT NULL,
+  is_correct BOOLEAN DEFAULT FALSE,
+  explanation TEXT,
+  display_order INTEGER
+)
+
+-- Review audit trail
+question_reviews (
+  id UUID PRIMARY KEY,
+  question_id UUID REFERENCES questions(id) ON DELETE CASCADE,
+  reviewer_id UUID REFERENCES users(id),
+  action TEXT NOT NULL,  -- 'approve', 'reject', 'request_changes', 'resubmitted'
+  feedback TEXT,
+  changes_made JSONB,    -- Stores resubmission notes and metadata
+  created_at TIMESTAMPTZ DEFAULT NOW()
+)
+
+-- Version history (only for published questions)
+question_versions (
+  id UUID PRIMARY KEY,
+  question_id UUID REFERENCES questions(id) ON DELETE CASCADE,
+  version_major INTEGER,
+  version_minor INTEGER,
+  version_patch INTEGER,
+  version_string TEXT,
+  question_data JSONB,   -- Full question snapshot
+  update_type TEXT,      -- 'major', 'minor', 'patch'
+  change_summary TEXT,
+  changed_by UUID REFERENCES users(id),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+)
+```
+
+#### Supporting Tables
+```sql
+-- User management
+users (id, email, role, first_name, last_name, created_at, updated_at)
+
+-- Images and media
+images (id, filename, url, alt_text, created_at)
+question_images (question_id, image_id, display_order)
+
+-- Categorization
+categories (id, name, description)
+tags (id, name, color)
+question_tags (question_id, tag_id)
+
+-- Notifications
+notification_states (user_id, type, data, read_at, created_at)
 ```
 
 ## 🛠️ Educational Tools
@@ -164,6 +447,146 @@ pathology-bites/
 ├── tests/                      # Testing suite
 └── tools/                      # Development utilities
 ```
+
+## 👥 User Roles & Permissions
+
+### Role-Based Access Control
+
+The platform implements comprehensive role-based access control with the following roles:
+
+#### Creator
+- **Permissions**: Create, edit, and submit questions for review
+- **Dashboard**: My Questions workflow dashboard
+- **Features**:
+  - Draft question creation and editing
+  - Submit questions for review with resubmission notes
+  - View own question status and reviewer feedback
+  - Preview questions before submission
+
+#### Reviewer
+- **Permissions**: Review submitted questions, approve/reject with feedback
+- **Dashboard**: Review Queue with pending questions
+- **Features**:
+  - Approve questions (publishes immediately)
+  - Reject questions with detailed feedback
+  - Request changes (returns to creator as draft)
+  - View creator's resubmission notes and change summaries
+
+#### Admin
+- **Permissions**: Full access to all questions and administrative functions
+- **Dashboard**: Complete admin interface
+- **Features**:
+  - All Creator and Reviewer permissions
+  - Edit any question regardless of status
+  - Manage users, roles, and permissions
+  - Access to analytics and system management
+  - Version control for published questions
+
+#### Editor
+- **Permissions**: Edit approved questions and manage content
+- **Features**:
+  - Edit published questions (creates versions)
+  - Manage categories, tags, and question sets
+  - Content organization and curation
+
+### Workflow Permissions Matrix
+
+| Action | Creator | Reviewer | Editor | Admin |
+|--------|---------|----------|--------|-------|
+| Create Question | ✅ | ❌ | ❌ | ✅ |
+| Edit Own Draft | ✅ | ❌ | ❌ | ✅ |
+| Submit for Review | ✅ | ❌ | ❌ | ✅ |
+| Review Questions | ❌ | ✅ | ❌ | ✅ |
+| Approve/Reject | ❌ | ✅ | ❌ | ✅ |
+| Edit Published | ❌ | ❌ | ✅ | ✅ |
+| Manage Users | ❌ | ❌ | ❌ | ✅ |
+| View Analytics | ❌ | ❌ | ❌ | ✅ |
+
+## 🔄 Development Workflow
+
+### Question Development Lifecycle
+
+1. **Local Development**
+   ```bash
+   npm run dev          # Start development server
+   npm run lint         # Check code quality
+   npm run type-check   # TypeScript validation
+   ```
+
+2. **Testing**
+   ```bash
+   npm run test         # Run test suite
+   npm run test:watch   # Watch mode for development
+   npm run test:coverage # Generate coverage report
+   ```
+
+3. **Pre-commit Validation**
+   ```bash
+   npm run lint         # Must pass
+   npm run build        # Must build successfully
+   npm run type-check   # Must have no TypeScript errors
+   ```
+
+4. **Database Changes**
+   - Use Supabase migrations for schema changes
+   - Update TypeScript types in `src/shared/types/supabase.ts`
+   - Test RLS policies thoroughly
+   - Document changes in migration files
+
+5. **Deployment**
+   - Push to GitHub triggers Vercel deployment
+   - Environment variables managed in Vercel dashboard
+   - Database migrations applied via Supabase dashboard
+
+### Code Organization
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── (admin)/           # Admin-only routes
+│   ├── (dashboard)/       # User dashboard routes
+│   └── api/               # API endpoints
+├── features/              # Feature-based organization
+│   ├── auth/              # Authentication
+│   ├── questions/         # Question management
+│   │   ├── components/    # React components
+│   │   ├── hooks/         # Custom hooks
+│   │   ├── types/         # TypeScript types
+│   │   └── utils/         # Utility functions
+│   └── users/             # User management
+├── shared/                # Shared utilities
+│   ├── components/        # Reusable UI components
+│   ├── hooks/             # Shared hooks
+│   ├── services/          # API clients
+│   └── utils/             # Helper functions
+└── styles/                # Global styles
+```
+
+### Best Practices
+
+#### Database Operations
+- Always use RLS policies for data access
+- Use database views (v_ prefix) for complex queries
+- Implement proper error handling for all database operations
+- Use transactions for multi-table operations
+
+#### API Development
+- Follow RESTful conventions
+- Implement proper error responses with status codes
+- Use TypeScript for request/response validation
+- Add comprehensive logging for debugging
+
+#### Frontend Development
+- Use React hooks for state management
+- Implement loading states and error boundaries
+- Follow accessibility guidelines (WCAG 2.1)
+- Use semantic HTML and proper ARIA labels
+
+#### Testing Strategy
+- Unit tests for utility functions
+- Integration tests for API endpoints
+- Component tests for React components
+- End-to-end tests for critical workflows
 
 ## 🚀 Getting Started
 
