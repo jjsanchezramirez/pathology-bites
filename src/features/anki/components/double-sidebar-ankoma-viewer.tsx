@@ -702,15 +702,14 @@ export function DoubleSidebarAnkomaViewer({
           <div className="flex items-center justify-between gap-1 sm:gap-2">
             {/* Left: Sidebar toggle */}
             <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-              {/* Mobile: Icon + Text button */}
+              {/* Mobile: Select Deck button */}
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
-                className="md:hidden h-8 px-2 gap-1.5"
+                className="md:hidden h-8 px-3"
               >
-                <ChevronRight className="h-4 w-4" />
-                <span className="text-sm font-medium">Decks</span>
+                <span className="text-sm font-medium">Select Deck</span>
               </Button>
 
               {/* Desktop: Single toggle for both */}
@@ -802,7 +801,7 @@ export function DoubleSidebarAnkomaViewer({
               className="w-full"
             />
           ) : selectedCategory ? (
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-[95%] mx-auto">
               <Card>
                 <CardContent className="flex items-center justify-center h-64">
                   <div className="text-center">
@@ -819,7 +818,7 @@ export function DoubleSidebarAnkomaViewer({
               </Card>
             </div>
           ) : (
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-[95%] mx-auto">
               <Card>
                 <CardContent className="flex items-center justify-center h-64">
                   <div className="text-center">
