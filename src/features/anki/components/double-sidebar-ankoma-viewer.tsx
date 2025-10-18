@@ -94,7 +94,7 @@ export function DoubleSidebarAnkomaViewer({
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isShuffled, setIsShuffled] = useState(false)
-  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false)
+  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(true)
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
   const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null)
 
