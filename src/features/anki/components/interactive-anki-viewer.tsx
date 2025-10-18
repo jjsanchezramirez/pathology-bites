@@ -8,9 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
 import { Separator } from '@/shared/components/ui/separator'
-import { 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
   RotateCcw,
   Clock,
   Hash,
@@ -326,7 +327,7 @@ export function InteractiveAnkiViewer({
 
       {/* Breadcrumb above card */}
       {(categoryName || subcategoryName) && (
-        <div className="mb-3 md:mb-4 px-2 md:px-0">
+        <div className="mb-3 md:mb-4 px-2 md:px-0 text-center">
           {categoryName && (
             <h2 className="text-lg md:text-xl font-semibold text-foreground">
               {categoryName}
@@ -347,8 +348,20 @@ export function InteractiveAnkiViewer({
               Card ID #{card.id}
             </div>
             {currentCardIndex !== undefined && totalCards !== undefined && (
-              <div className="text-xs md:text-sm font-semibold text-foreground">
-                {currentCardIndex + 1}/{totalCards}
+              <div className="flex items-center gap-2">
+                {/* Mobile: Previous button + Card counter */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onPrevious}
+                  disabled={!onPrevious}
+                  className="md:hidden h-7 w-7 p-0"
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <div className="text-xs md:text-sm font-semibold text-foreground">
+                  Card {currentCardIndex + 1}/{totalCards}
+                </div>
               </div>
             )}
           </div>
@@ -396,31 +409,8 @@ export function InteractiveAnkiViewer({
           )}
 
           {/* Navigation Controls - Mobile only */}
-          <div className="md:hidden space-y-2 pt-3">
-            {/* Previous/Next row */}
-            <div className="flex items-center justify-between gap-2">
-              <Button
-                variant="outline"
-                onClick={onPrevious}
-                disabled={!onPrevious}
-                className="flex-1"
-              >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Previous
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={onNext}
-                disabled={!onNext}
-                className="flex-1"
-              >
-                Next
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-            </div>
-
-            {/* Reveal Next button */}
+          <div className="md:hidden pt-3">
+            {/* Single button: Reveal Next or Next Card */}
             {(!isImageOcclusion && hasAnyClozes && !allClozesRevealed) ||
              ((isImageOcclusion || isBasicCard) && !showAnswer && card.answer && card.answer.trim() &&
               (isBasicCard ? basicHasNonCitationAnswer : true)) ? (
@@ -443,7 +433,17 @@ export function InteractiveAnkiViewer({
                 <Eye className="h-4 w-4 mr-2" />
                 Reveal Next
               </Button>
-            ) : null}
+            ) : (
+              <Button
+                variant="default"
+                onClick={onNext}
+                disabled={!onNext}
+                className="w-full"
+              >
+                Next Card
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            )}
           </div>
 
           {/* Instructions - Desktop only */}
