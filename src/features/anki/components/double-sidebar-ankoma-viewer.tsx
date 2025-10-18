@@ -404,148 +404,138 @@ export function DoubleSidebarAnkomaViewer({
         />
       )}
 
-      {/* Mobile: Combined Sidebar (Decks + Categories stacked) */}
+      {/* Mobile: Sidebar */}
       <div className={cn(
-        "md:hidden fixed inset-y-0 left-0 z-50 bg-background border-r transition-transform duration-300 w-80 overflow-y-auto",
+        "md:hidden fixed inset-y-0 left-0 z-50 bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-transform duration-300 w-64 flex flex-col",
         leftSidebarCollapsed ? "-translate-x-full" : "translate-x-0"
       )}>
-        <div className="p-4 space-y-4">
-          {/* Close button */}
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-base font-semibold">Ankoma Deck Viewer</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setLeftSidebarCollapsed(true)}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+        {/* Header */}
+        <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border shrink-0">
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5" />
+            <h2 className="font-semibold text-sm">Ankoma</h2>
           </div>
-
-          {/* Decks Section */}
-          <Card className="border">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <BookOpen className="h-4 w-4" />
-                Decks
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0 px-3 pb-3">
-              <ScrollArea className="h-auto max-h-[30vh]">
-                <div className="space-y-1.5">
-                  {organizedDecks.map((deck) => (
-                    <div
-                      key={deck.id}
-                      className={cn(
-                        "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
-                        "hover:bg-muted/50",
-                        selectedDeckId === deck.id && "bg-primary/10 border border-primary/20"
-                      )}
-                      onClick={() => handleDeckSelect(deck.id)}
-                    >
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="font-medium truncate">{deck.name}</span>
-                        <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                          {deck.totalCards}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-
-          {/* Categories Section */}
-          {selectedDeck && (
-            <Card className="border">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">
-                  {selectedDeck.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0 px-3 pb-3">
-                <ScrollArea className="h-auto max-h-[50vh]">
-                  <div className="space-y-0.5">
-                    {selectedDeck.categories.map((category) => {
-                      const isExpanded = expandedCategoryId === category.id
-                      const hasSubcategories = category.subcategories && category.subcategories.length > 0
-
-                      return (
-                        <div key={category.id}>
-                          <div
-                            className={cn(
-                              "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
-                              "hover:bg-muted/50",
-                              selectedCategoryId === category.id && "bg-primary/10 border border-primary/20"
-                            )}
-                            onClick={() => {
-                              handleCategorySelect(category.id)
-                              if (hasSubcategories) {
-                                handleCategoryToggle(category.id)
-                              }
-                            }}
-                          >
-                            <div className="flex items-center justify-between gap-1">
-                              <div className="flex items-center gap-1 flex-1 min-w-0">
-                                {hasSubcategories && (
-                                  isExpanded ? (
-                                    <ChevronDown className="h-3 w-3 flex-shrink-0" />
-                                  ) : (
-                                    <ChevronRight className="h-3 w-3 flex-shrink-0" />
-                                  )
-                                )}
-                                <span className="font-medium truncate">{category.name}</span>
-                              </div>
-                              <Badge variant="secondary" className="text-xs px-1.5 py-0 flex-shrink-0">
-                                {category.cards.length}
-                              </Badge>
-                            </div>
-                          </div>
-                          {hasSubcategories && isExpanded && (
-                            <div className="ml-5 mt-0.5 space-y-0.5">
-                              {category.subcategories.map((subcategory) => {
-                                const subcategoryCards = category.cards.filter(card => {
-                                  const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
-                                  if (!ankomaTag) return false
-                                  const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
-                                  return formatTagName(tagParts[2] || '') === subcategory
-                                })
-
-                                return (
-                                  <div
-                                    key={subcategory}
-                                    className={cn(
-                                      "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
-                                      "hover:bg-muted/50",
-                                      selectedSubcategory === subcategory && "bg-primary/10 border border-primary/20"
-                                    )}
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleSubcategorySelect(subcategory)
-                                    }}
-                                  >
-                                    <div className="flex items-center justify-between gap-1">
-                                      <span className="truncate">{subcategory}</span>
-                                      <Badge variant="secondary" className="text-xs px-1.5 py-0 flex-shrink-0">
-                                        {subcategoryCards.length}
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLeftSidebarCollapsed(true)}
+            className="h-8 w-8 p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto">
+          <div className="p-3">
+            {/* Decks Section */}
+            <div className="mb-6">
+              <h3 className="px-3 mb-2 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
+                Decks
+              </h3>
+              <div className="space-y-1">
+                {organizedDecks.map((deck) => (
+                  <div
+                    key={deck.id}
+                    className={cn(
+                      "flex items-center justify-between px-3 h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors cursor-pointer",
+                      selectedDeckId === deck.id && "bg-sidebar-foreground/20 text-sidebar-foreground"
+                    )}
+                    onClick={() => handleDeckSelect(deck.id)}
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <Folder className="h-4 w-4 shrink-0" />
+                      <span className="truncate text-sm">{deck.name}</span>
+                    </div>
+                    <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
+                      {deck.totalCards}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Categories Section */}
+            {selectedDeck && (
+              <div>
+                <h3 className="px-3 mb-2 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
+                  {selectedDeck.name}
+                </h3>
+                <div className="space-y-1">
+                  {selectedDeck.categories.map((category) => {
+                    const isExpanded = expandedCategoryId === category.id
+                    const hasSubcategories = category.subcategories && category.subcategories.length > 0
+
+                    return (
+                      <div key={category.id}>
+                        <div
+                          className={cn(
+                            "flex items-center justify-between px-3 h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors cursor-pointer",
+                            selectedCategoryId === category.id && !selectedSubcategory && "bg-sidebar-foreground/20 text-sidebar-foreground"
+                          )}
+                          onClick={() => {
+                            handleCategorySelect(category.id)
+                            if (hasSubcategories) {
+                              handleCategoryToggle(category.id)
+                            }
+                          }}
+                        >
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            {hasSubcategories && (
+                              isExpanded ? (
+                                <ChevronDown className="h-4 w-4 shrink-0" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4 shrink-0" />
+                              )
+                            )}
+                            {!hasSubcategories && <FileText className="h-4 w-4 shrink-0" />}
+                            <span className="truncate text-sm">{category.name}</span>
+                          </div>
+                          <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
+                            {category.cards.length}
+                          </Badge>
+                        </div>
+
+                        {/* Subcategories */}
+                        {hasSubcategories && isExpanded && (
+                          <div className="ml-6 mt-1 space-y-1">
+                            {category.subcategories.map((subcategory) => {
+                              const subcategoryCards = category.cards.filter(card => {
+                                const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
+                                if (!ankomaTag) return false
+                                const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
+                                return formatTagName(tagParts[2] || '') === subcategory
+                              })
+
+                              return (
+                                <div
+                                  key={subcategory}
+                                  className={cn(
+                                    "flex items-center justify-between px-3 h-9 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors cursor-pointer",
+                                    selectedSubcategory === subcategory && "bg-sidebar-foreground/20 text-sidebar-foreground"
+                                  )}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleSubcategorySelect(subcategory)
+                                  }}
+                                >
+                                  <span className="truncate text-sm">{subcategory}</span>
+                                  <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
+                                    {subcategoryCards.length}
+                                  </Badge>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </nav>
       </div>
 
       {/* Desktop: Left Sidebar - Decks */}
