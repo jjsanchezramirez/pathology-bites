@@ -78,7 +78,7 @@ export function WelcomeMessage({ onDismiss }: WelcomeMessageProps) {
                   className="w-full flex items-center justify-center gap-2"
                 >
                   <BookOpen className="h-4 w-4" />
-                  View Anki Deck
+                  View Ankoma Deck
                 </Button>
               </Link>
             </div>

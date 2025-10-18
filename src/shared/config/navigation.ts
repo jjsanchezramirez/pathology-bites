@@ -264,9 +264,9 @@ export const userNavigationItems: NavigationItem[] = [
     icon: "Microscope",
   },
   {
-    name: "Anki Deck Viewer",
+    name: "Ankoma Deck",
     href: "/dashboard/anki",
-    icon: "BookOpen",
+    icon: "Library",
   },
   {
     name: "Performance",
@@ -328,9 +328,9 @@ export const userNavigationSections: NavigationSection[] = [
         icon: "Microscope",
       },
       {
-        name: "Anki Deck Viewer",
+        name: "Ankoma Deck",
         href: "/dashboard/anki",
-        icon: "BookOpen",
+        icon: "Library",
       },
       {
         name: "Learning Modules",

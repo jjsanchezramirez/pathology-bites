@@ -18,7 +18,7 @@ export default function DashboardAnkiPage() {
       {/* Minimal Header */}
       <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm px-4 py-2">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight">Ankoma Deck Viewer</h1>
+          <h1 className="text-lg font-semibold tracking-tight">Ankoma Deck</h1>
           <p className="text-sm text-muted-foreground">
             Interactive pathology flashcards with spaced repetition
           </p>

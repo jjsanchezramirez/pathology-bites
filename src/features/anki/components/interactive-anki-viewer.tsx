@@ -305,7 +305,7 @@ export function InteractiveAnkiViewer({
   const revealedCount = revealedClozes.size
 
   return (
-    <div className={cn("w-full max-w-[99%] mx-auto mb-2 md:mb-4 pb-2 md:pb-4", className)}>
+    <div className={cn("w-full max-w-[99%] md:max-w-4xl mx-auto mb-2 md:mb-4 pb-2 md:pb-4", className)}>
       <style jsx>{`
         .inline-image {
           max-width: 100%;
@@ -546,16 +546,20 @@ export function InteractiveAnkiViewer({
         /* Ensure images don't exceed container but keep natural size by default */
         .io-wrapper img {
           max-width: 100%;
+          max-height: 600px;
           height: auto;
           display: inline-block;
+          object-fit: contain;
         }
 
         /* Center all prose images except small icons */
         .prose img:not(.inline-image-small) {
           max-width: 100% !important;
+          max-height: 600px !important;
           height: auto !important;
           display: block !important;
           margin: 0.5rem auto !important;
+          object-fit: contain !important;
         }
 
         /* Support inline SVG overlays and IMG-wrapped SVG overlays */

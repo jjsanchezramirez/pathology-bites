@@ -430,7 +430,7 @@ export default function DashboardPage() {
 
               <Link href="/dashboard/anki" className="block">
                 <Button variant="outline" className="w-full justify-between">
-                  Anki Deck Viewer
+                  Ankoma Deck
                   <BookOpen className="h-4 w-4" />
                 </Button>
               </Link>
