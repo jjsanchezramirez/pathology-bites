@@ -305,7 +305,7 @@ export function InteractiveAnkiViewer({
   const revealedCount = revealedClozes.size
 
   return (
-    <div className={cn("w-full max-w-[98%] mx-auto mb-3 md:mb-6 pb-3 md:pb-6", className)}>
+    <div className={cn("w-full max-w-[99%] mx-auto mb-2 md:mb-4 pb-2 md:pb-4", className)}>
       <style jsx>{`
         .inline-image {
           max-width: 100%;

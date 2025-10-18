@@ -700,7 +700,7 @@ export function DoubleSidebarAnkomaViewer({
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         {/* Header */}
-        <div className="border-b bg-background p-2 sm:p-3 md:p-4">
+        <div className="border-b bg-background p-2 md:p-3">
           <div className="flex items-center justify-between gap-1 sm:gap-2">
             {/* Left: Sidebar toggle */}
             <div className="flex items-center gap-1 sm:gap-2 shrink-0">
@@ -803,7 +803,7 @@ export function DoubleSidebarAnkomaViewer({
         </div>
 
         {/* Card Content */}
-        <div className="flex-1 overflow-auto p-2 sm:p-3 md:p-4 min-h-0">
+        <div className="flex-1 overflow-auto p-2 md:p-3 min-h-0">
           {currentCard ? (
             <InteractiveAnkiViewer
               card={currentCard}
