@@ -1,8 +1,6 @@
 'use client'
 
 import { Card } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import Link from 'next/link'
 import { Microscope } from 'lucide-react'
 import { PublicHero } from '@/shared/components/common/public-hero'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
@@ -13,38 +11,25 @@ export default function WSIQuestionsPage() {
       {/* Hero Section */}
       <PublicHero
         title="Digital Slides Questions"
-        description="Practice with AI-generated questions based on real virtual slide images. This tool is now available exclusively to registered users as part of our authenticated learning platform."
+        description="Practice with AI-generated questions based on real virtual slide images and educational content."
         icon={Microscope}
       />
 
       {/* Main Content */}
       <section className="py-16 relative">
         <div className="container px-4 mx-auto">
-          <div className="max-w-2xl mx-auto space-y-8">
+          <div className="max-w-2xl mx-auto">
             <Card className="p-8 shadow-lg">
-              <h2 className="text-2xl font-bold mb-4">Tool Access</h2>
+              <h2 className="text-2xl font-bold mb-4">Tool Has Moved</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  To provide you with a better learning experience and personalized features,
-                  our Digital Slides Questions tool is now available exclusively to registered users.
+                  The Digital Slides Questions tool is now available exclusively to registered users
+                  as part of our authenticated learning platform.
                 </p>
                 <p>
-                  Creating an account is completely free and gives you access to all our interactive
-                  learning tools, progress tracking, and personalized study features.
+                  Creating a free account gives you access to this tool along with all our interactive
+                  learning features, progress tracking, and personalized study recommendations.
                 </p>
-              </div>
-            </Card>
-
-            <Card className="p-8 shadow-lg">
-              <h2 className="text-2xl font-bold mb-4">What You'll Get</h2>
-              <div className="space-y-4 text-muted-foreground">
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>AI-generated questions from real virtual slide images</li>
-                  <li>Personalized learning recommendations</li>
-                  <li>Progress tracking and performance analytics</li>
-                  <li>Access to all interactive learning tools</li>
-                  <li>100% free with no credit card required</li>
-                </ul>
               </div>
             </Card>
           </div>
