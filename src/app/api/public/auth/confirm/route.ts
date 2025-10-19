@@ -89,9 +89,9 @@ export async function GET(request: NextRequest) {
 
         if (authUser) {
           // Check if user exists in public.users
-          const { data: existingUser, error: checkError } = await supabase
+          const { error: checkError } = await supabase
             .from('users')
-            .select('id, status')
+            .select('id')
             .eq('id', authUser.id)
             .single()
 
@@ -113,49 +113,53 @@ export async function GET(request: NextRequest) {
             if (createError) {
               console.error('Error creating user:', createError)
               // Don't fail - user can still proceed
+            } else {
+              console.log('User created successfully via email confirmation:', authUser.id)
             }
-          } else if (existingUser?.status === 'deleted') {
-            // User exists but is soft-deleted - restore them
-            console.log('Restoring soft-deleted user via email confirmation:', { userId: authUser.id, email: authUser.email })
 
-            const { error: restoreError } = await supabase
-              .from('users')
-              .update({
-                status: 'active',
-                deleted_at: null,
-                updated_at: new Date().toISOString()
+            // Create default user_settings for new user
+            const { error: settingsError } = await supabase
+              .from('user_settings')
+              .insert({
+                user_id: authUser.id,
+                quiz_settings: DEFAULT_QUIZ_SETTINGS,
+                notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
+                ui_settings: DEFAULT_UI_SETTINGS
               })
-              .eq('id', authUser.id)
 
-            if (restoreError) {
-              console.error('Error restoring user:', restoreError)
+            if (settingsError) {
+              console.error('Error creating user settings for new user:', settingsError)
               // Don't fail - user can still proceed
             } else {
-              console.log('User restored successfully via email confirmation:', authUser.id)
+              console.log('User settings created successfully for new user:', authUser.id)
             }
+          }
+        }
 
-            // Check if user_settings exist before creating
-            const { data: existingSettings } = await supabase
+        // Final safeguard: Ensure user_settings exist for all users
+        if (authUser) {
+          const { data: existingSettings } = await supabase
+            .from('user_settings')
+            .select('user_id')
+            .eq('user_id', authUser.id)
+            .single()
+
+          if (!existingSettings) {
+            console.log('Creating missing user_settings as final safeguard:', authUser.id)
+            const { error: settingsError } = await supabase
               .from('user_settings')
-              .select('user_id')
-              .eq('user_id', authUser.id)
-              .single()
+              .insert({
+                user_id: authUser.id,
+                quiz_settings: DEFAULT_QUIZ_SETTINGS,
+                notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
+                ui_settings: DEFAULT_UI_SETTINGS
+              })
 
-            if (!existingSettings) {
-              console.log('Creating missing user_settings for restored user:', authUser.id)
-              const { error: settingsError } = await supabase
-                .from('user_settings')
-                .insert({
-                  user_id: authUser.id,
-                  quiz_settings: DEFAULT_QUIZ_SETTINGS,
-                  notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
-                  ui_settings: DEFAULT_UI_SETTINGS
-                })
-
-              if (settingsError) {
-                console.error('Error creating user settings:', settingsError)
-                // Don't fail - user can still proceed
-              }
+            if (settingsError) {
+              console.error('Error creating user settings in final safeguard:', settingsError)
+              // Don't fail - user can still proceed
+            } else {
+              console.log('User settings created successfully in final safeguard:', authUser.id)
             }
           }
         }

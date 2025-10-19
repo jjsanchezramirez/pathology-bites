@@ -1,20 +1,12 @@
 // src/app/api/public/auth/callback/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { withRateLimit, authRateLimiter } from '@/shared/utils/api-rate-limiter'
 import {
   DEFAULT_QUIZ_SETTINGS,
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_UI_SETTINGS
 } from '@/shared/constants/user-settings-defaults'
-
-// Create Supabase client with service role for admin operations
-function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  return createSupabaseClient(supabaseUrl, supabaseServiceKey)
-}
 
 const rateLimitedHandler = withRateLimit(authRateLimiter)
 
@@ -49,98 +41,11 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
       let userData = null
       const { data: existingUser, error: profileError } = await supabase
         .from('users')
-        .select('id, role, status, deleted_at')
+        .select('id, role, status')
         .eq('id', data.user.id)
         .single()
 
-      // Also check for soft-deleted user by email (in case auth.users was deleted and recreated)
-      let softDeletedUser = null
-      if (profileError && profileError.code === 'PGRST116' && data.user.email) {
-        const { data: emailMatch } = await supabase
-          .from('users')
-          .select('id, role, status, deleted_at, email')
-          .eq('email', data.user.email)
-          .eq('status', 'deleted')
-          .single()
-
-        if (emailMatch) {
-          softDeletedUser = emailMatch
-          console.log('Found soft-deleted user by email:', {
-            email: data.user.email,
-            oldUserId: emailMatch.id,
-            newUserId: data.user.id
-          })
-        }
-      }
-
-      // If we found a soft-deleted user by email, restore them with new auth ID
-      if (softDeletedUser) {
-        console.log('Restoring soft-deleted user with new auth ID:', {
-          oldId: softDeletedUser.id,
-          newId: data.user.id,
-          email: data.user.email,
-          role: softDeletedUser.role
-        })
-
-        // Use admin client to bypass RLS policies for restoration
-        const adminClient = createAdminClient()
-
-        // Delete the old user record first (must be done with admin client)
-        const { error: deleteOldUserError } = await adminClient
-          .from('users')
-          .delete()
-          .eq('id', softDeletedUser.id)
-
-        if (deleteOldUserError) {
-          console.error('Error deleting old user record:', deleteOldUserError)
-        }
-
-        // Delete old user_settings if they exist
-        await adminClient
-          .from('user_settings')
-          .delete()
-          .eq('user_id', softDeletedUser.id)
-
-        // Create new user record with new ID but preserve old user's data
-        const { data: restoredUser, error: createError } = await adminClient
-          .from('users')
-          .insert({
-            id: data.user.id, // New auth.users ID
-            email: data.user.email || softDeletedUser.email,
-            first_name: data.user.user_metadata?.first_name || '',
-            last_name: data.user.user_metadata?.last_name || '',
-            user_type: data.user.user_metadata?.user_type || 'other',
-            role: softDeletedUser.role, // Preserve original role (admin/creator/reviewer)
-            status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .select('role')
-          .single()
-
-        if (createError) {
-          console.error('Error creating restored user:', createError)
-          return NextResponse.redirect(`${origin}/auth-error?error=user_restore_failed&description=Failed to restore user account`)
-        }
-
-        // Create user_settings for the new ID
-        const { error: settingsError } = await adminClient
-          .from('user_settings')
-          .insert({
-            user_id: data.user.id,
-            quiz_settings: DEFAULT_QUIZ_SETTINGS,
-            notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
-            ui_settings: DEFAULT_UI_SETTINGS
-          })
-
-        if (settingsError) {
-          console.error('Error creating user settings for restored user:', settingsError)
-          // Don't fail - user can still log in
-        }
-
-        userData = restoredUser
-        console.log('User restored successfully with new ID:', { userId: data.user.id, role: restoredUser.role })
-      } else if (profileError && profileError.code === 'PGRST116') {
+      if (profileError && profileError.code === 'PGRST116') {
         // If user doesn't exist, create them
         // In admin-only modes, prevent new account creation
         if (isAdminOnlyMode) {
@@ -238,6 +143,34 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
         console.log('User restored successfully:', { userId: data.user.id, role: restoredUser.role })
       } else {
         userData = existingUser
+      }
+
+      // Final safeguard: Ensure user_settings exist for all users
+      if (userData) {
+        const { data: existingSettings } = await supabase
+          .from('user_settings')
+          .select('user_id')
+          .eq('user_id', data.user.id)
+          .single()
+
+        if (!existingSettings) {
+          console.log('Creating missing user_settings as final safeguard:', data.user.id)
+          const { error: settingsError } = await supabase
+            .from('user_settings')
+            .insert({
+              user_id: data.user.id,
+              quiz_settings: DEFAULT_QUIZ_SETTINGS,
+              notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
+              ui_settings: DEFAULT_UI_SETTINGS
+            })
+
+          if (settingsError) {
+            console.error('Error creating user settings in final safeguard:', settingsError)
+            // Don't fail - user can still log in
+          } else {
+            console.log('User settings created successfully in final safeguard:', data.user.id)
+          }
+        }
       }
 
       // Redirect based on user role - consistent with middleware logic
