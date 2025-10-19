@@ -45,7 +45,7 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
  * - sidebar_collapsed: Not used anywhere in the codebase
  */
 export const DEFAULT_UI_SETTINGS = {
-  text_zoom: 0.8,
+  text_zoom: 1.0,
   dashboard_theme_admin: 'default',
   dashboard_theme_user: 'tangerine',
   welcome_message_seen: false,
