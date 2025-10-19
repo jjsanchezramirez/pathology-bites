@@ -68,30 +68,19 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
       try {
         setProfileLoading(true)
 
-        // Use API endpoint instead of direct Supabase query to avoid RLS/header issues
-        const response = await fetch('/api/user/profile', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        })
+        const { data: profile, error: profileError } = await supabase
+          .from('users')
+          .select('id, email, role, first_name, last_name')
+          .eq('id', user.id)
+          .single()
 
         if (!mounted) return
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}))
-          console.error('Profile fetch error:', errorData.error || `HTTP ${response.status}`)
+        if (profileError) {
+          console.error('Profile error:', profileError)
           setUserProfile(null)
-          return
-        }
-
-        const data = await response.json()
-        if (data.success && data.data) {
-          setUserProfile(data.data)
         } else {
-          console.error('Invalid profile response:', data)
-          setUserProfile(null)
+          setUserProfile(profile)
         }
       } catch (err) {
         if (!mounted) return
@@ -109,7 +98,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
     return () => {
       mounted = false
     }
-  }, [user, isAuthenticated])
+  }, [user, isAuthenticated, supabase])
 
   const handleSignOut = async () => {
     try {
