@@ -72,7 +72,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
           .from('users')
           .select('id, email, role, first_name, last_name')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
 
         if (!mounted) return
 
@@ -81,15 +81,40 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
           if (profileError.message || profileError.code) {
             console.error('Profile error:', profileError)
           }
-          // Still set profile to null on error, but don't spam console with empty errors
-          setUserProfile(null)
-        } else {
+          // Fallback to auth metadata when database query fails
+          const fallbackProfile = {
+            id: user.id,
+            email: user.email || null,
+            role: 'user',
+            first_name: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || null,
+            last_name: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null
+          }
+          setUserProfile(fallbackProfile)
+        } else if (profile) {
           setUserProfile(profile)
+        } else {
+          // User exists in auth but not found in database - use auth metadata as fallback
+          const fallbackProfile = {
+            id: user.id,
+            email: user.email || null,
+            role: 'user',
+            first_name: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || null,
+            last_name: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null
+          }
+          setUserProfile(fallbackProfile)
         }
       } catch (err) {
         if (!mounted) return
         console.error('Profile fetch error:', err)
-        setUserProfile(null)
+        // Fallback to auth metadata on exception
+        const fallbackProfile = {
+          id: user.id,
+          email: user.email || null,
+          role: 'user',
+          first_name: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || null,
+          last_name: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null
+        }
+        setUserProfile(fallbackProfile)
       } finally {
         if (mounted) {
           setProfileLoading(false)
