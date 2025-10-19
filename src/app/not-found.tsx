@@ -61,21 +61,10 @@ export default function NotFoundPage() {
   const [randomContent, setRandomContent] = useState<RandomContent | null>(null);
 
   useEffect(() => {
-    // Enforce light mode and default dashboard theme on 404 page
+    // Enforce light mode on 404 page (but NOT dashboard theme)
     const html = document.documentElement
     html.classList.remove('dark')
     html.classList.add('light')
-
-    // Enforce default dashboard theme by setting localStorage
-    // This ensures the default theme is used if DashboardThemeProvider is ever instantiated
-    const uiSettingsStr = localStorage.getItem('pathology-bites-ui-settings')
-    const uiSettings = uiSettingsStr ? JSON.parse(uiSettingsStr) : {}
-
-    // Set default theme for both admin and user modes
-    uiSettings.dashboard_theme_admin = 'default'
-    uiSettings.dashboard_theme_user = 'default'
-
-    localStorage.setItem('pathology-bites-ui-settings', JSON.stringify(uiSettings))
 
     // Set data attribute to identify forced theme state
     html.setAttribute('data-not-found-page-enforced', 'true')
