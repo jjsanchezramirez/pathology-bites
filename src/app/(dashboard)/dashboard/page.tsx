@@ -50,6 +50,7 @@ interface DashboardStats {
     userPercentile: number
     peerRank: number
     totalUsers: number
+    completedQuizzes: number
     subjectsForImprovement: Array<{
       name: string
       score: number

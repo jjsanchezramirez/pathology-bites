@@ -37,6 +37,7 @@ interface DashboardStats {
     userPercentile: number
     peerRank: number
     totalUsers: number
+    completedQuizzes: number
     subjectsForImprovement: Array<{
       name: string
       score: number
@@ -99,6 +100,7 @@ export async function GET(request: NextRequest) {
         userPercentile: 50,
         peerRank: 50,
         totalUsers: 100,
+        completedQuizzes: 0,
         subjectsForImprovement: [],
         subjectsMastered: [],
         overallScore: 0
@@ -150,9 +152,11 @@ export async function GET(request: NextRequest) {
       if (!sessionsError && sessions) {
         console.log('Found quiz sessions:', sessions.length)
         stats.recentQuizzes = sessions.length
-        
+
         // Calculate basic stats from sessions
         const completedSessions = sessions.filter(s => s.status === SESSION_STATUSES[2]) // 'completed'
+        stats.performance!.completedQuizzes = completedSessions.length
+
         if (completedSessions.length > 0) {
           const scores = completedSessions.map(s => s.score || 0)
           stats.averageScore = Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
@@ -240,6 +244,7 @@ export async function GET(request: NextRequest) {
           userPercentile: 50,
           peerRank: 50,
           totalUsers: 100,
+          completedQuizzes: 0,
           subjectsForImprovement: [],
           subjectsMastered: [],
           overallScore: 0

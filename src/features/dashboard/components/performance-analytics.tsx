@@ -9,6 +9,7 @@ interface PerformanceData {
   userPercentile: number
   peerRank: number
   totalUsers: number
+  completedQuizzes: number
   subjectsForImprovement: Array<{
     name: string
     score: number
@@ -99,8 +100,8 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
     }
   }
 
-  // Only show percentile and ranking if there are at least 30 users
-  const showRankingData = data.totalUsers >= 30
+  // Only show percentile and ranking if user has completed at least 3 quizzes
+  const showRankingData = data.completedQuizzes >= 3
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -137,10 +138,10 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
                 Coming Soon
               </div>
               <p className="text-xs text-muted-foreground">
-                Percentile ranking available when we have 30+ active users
+                Percentile ranking available after completing 3 quizzes
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Current users: {data.totalUsers}
+                Completed: {data.completedQuizzes}/3 quizzes
               </p>
             </div>
           </CardContent>
@@ -184,10 +185,10 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
                 Coming Soon
               </div>
               <p className="text-xs text-muted-foreground">
-                Peer ranking available when we have 30+ active users
+                Peer ranking available after completing 3 quizzes
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Current users: {data.totalUsers}
+                Completed: {data.completedQuizzes}/3 quizzes
               </p>
             </div>
           </CardContent>

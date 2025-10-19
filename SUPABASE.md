@@ -7,7 +7,7 @@ Pathology Bites uses Supabase (PostgreSQL) as its primary database with comprehe
 **Database Statistics:**
 - **Total Tables**: 43 tables (33 regular tables + 10 views)
 - **Row Level Security**: 100% coverage with 58 policies
-- **Database Triggers**: 18 triggers for automation (removed 2 public stats refresh triggers)
+- **Database Triggers**: 18 triggers for automation
 - **Secure Functions**: 19 database functions with SECURITY DEFINER
 - **Materialized Views**: 1 (mv_user_category_stats)
 - **Regular Views**: 9 (including v_public_stats)
@@ -32,8 +32,9 @@ Pathology Bites uses Supabase (PostgreSQL) as its primary database with comprehe
 - Email verification
 
 **`storage` schema** - File storage (managed by Supabase)
-- Cloudflare R2 integration
-- Image and media files
+- Cloudflare R2 integration for actual file storage
+- Image metadata (URL, storage_path, etc.) stored in `public.images` table
+- Media files (heavy JSON documents) stored entirely in R2
 
 ---
 
@@ -437,8 +438,6 @@ Quiz/module session status
 
 ## Database Triggers
 
-See [DATABASE_TRIGGERS_AND_FUNCTIONS.md](DATABASE_TRIGGERS_AND_FUNCTIONS.md) for complete documentation.
-
 ### User Management Triggers (2)
 - `trigger_handle_user_deletion` - Cascades user deletion to related tables
 
@@ -493,8 +492,6 @@ See [DATABASE_TRIGGERS_AND_FUNCTIONS.md](DATABASE_TRIGGERS_AND_FUNCTIONS.md) for
 
 ## Database Functions
 
-See [DATABASE_TRIGGERS_AND_FUNCTIONS.md](DATABASE_TRIGGERS_AND_FUNCTIONS.md) for complete documentation.
-
 ### User Management Functions (3)
 - `handle_new_user()` - Creates user record on auth signup
 - `handle_auth_user_deletion()` - Handles user deletion cascade
@@ -516,8 +513,7 @@ See [DATABASE_TRIGGERS_AND_FUNCTIONS.md](DATABASE_TRIGGERS_AND_FUNCTIONS.md) for
 - `refresh_public_stats()` - Refreshes public stats view
 - `update_images_search_vector()` - Updates image search
 - `update_questions_search_vector()` - Updates question search
-- `update_updated_at_column()` - Generic timestamp updater
-- And more...
+- And countless generic timestamp updater functions
 
 ---
 
@@ -548,7 +544,7 @@ See [DATABASE_TRIGGERS_AND_FUNCTIONS.md](DATABASE_TRIGGERS_AND_FUNCTIONS.md) for
 
 ### For Developers
 
-1. **Never manually create/delete users** - Use triggers (see DATABASE_TRIGGERS_AND_FUNCTIONS.md)
+1. **Never manually create/delete users** - Use triggers
 2. **Always use RLS-aware queries** - Respect row-level security
 3. **Use views for complex queries** - Leverage pre-built views
 4. **Respect foreign key constraints** - Understand CASCADE vs SET NULL
@@ -561,18 +557,6 @@ See [DATABASE_TRIGGERS_AND_FUNCTIONS.md](DATABASE_TRIGGERS_AND_FUNCTIONS.md) for
 3. **Review RLS policies** - Audit security policies periodically
 4. **Optimize indexes** - Use Index Advisor for recommendations
 5. **Backup regularly** - Supabase handles this, but verify
-
----
-
-## Migration Files
-
-All database migrations are in `supabase/migrations/`:
-
-- `20240119000000_create_public_stats_mv.sql` - Public stats materialized view
-- `20250119000000_update_user_settings_defaults.sql` - User settings defaults
-- `20250119000001_remove_legacy_dashboard_theme.sql` - Remove legacy field
-- `20250119000002_fix_user_creation_trigger.sql` - User creation trigger
-- `20250119000004_fix_user_deletion_remove_nonexistent_table.sql` - User deletion fix
 
 ---
 
