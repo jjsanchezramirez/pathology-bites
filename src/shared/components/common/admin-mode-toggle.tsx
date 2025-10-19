@@ -26,14 +26,11 @@ export function AdminModeToggle() {
       setTransitioning(true)
       setIsLoading(true)
 
-      // Small delay to ensure skeleton states are visible before theme changes
-      await new Promise(resolve => setTimeout(resolve, 150))
-
-      // Update admin mode (this will also handle theme switching)
+      // Update admin mode first (this will also handle theme switching)
       setAdminMode(newMode)
 
       // Small delay to allow theme to apply
-      await new Promise(resolve => setTimeout(resolve, 200))
+      await new Promise(resolve => setTimeout(resolve, 150))
 
       // Navigate to appropriate dashboard
       if (newMode === 'admin' || newMode === 'creator' || newMode === 'reviewer') {

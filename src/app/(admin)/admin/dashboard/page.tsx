@@ -68,42 +68,16 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          {adminMode === 'creator' ? 'Creator Dashboard' :
-           adminMode === 'reviewer' ? 'Reviewer Dashboard' :
-           adminMode === 'user' ? 'Student Dashboard' : 'Admin Dashboard'}
-        </h1>
-        <p className="text-muted-foreground">
-          {adminMode === 'creator' ? 'Question creation and content management.' :
-           adminMode === 'reviewer' ? 'Review queue and question approval.' :
-           adminMode === 'user' ? 'Learning progress and quiz performance.' :
-           'Administrative overview and system management.'}
-        </p>
-      </div>
-
-      {error ? (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Dashboard</h3>
-              <p className="text-red-600 mb-4">{error}</p>
-              <button
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    window.location.reload()
-                  }
-                }}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              >
-                Retry
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : isLoading ? (
+      {/* Hide content completely when transitioning to avoid title flickering */}
+      {isTransitioning ? (
         <>
-          {/* Stats Loading */}
+          {/* Title skeleton */}
+          <div className="space-y-2">
+            <div className="h-9 bg-muted animate-pulse rounded w-64"></div>
+            <div className="h-5 bg-muted animate-pulse rounded w-96"></div>
+          </div>
+          
+          {/* Stats skeleton */}
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <Card key={i}>
@@ -118,65 +92,120 @@ export default function AdminDashboardPage() {
               </Card>
             ))}
           </div>
-
-          {/* Activity and Actions Loading */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="flex items-start space-x-4 p-3">
-                      <Skeleton className="h-4 w-4 mt-1" />
-                      <div className="flex-1">
-                        <Skeleton className="h-4 w-48 mb-2" />
-                        <Skeleton className="h-3 w-64" />
-                      </div>
-                      <Skeleton className="h-3 w-12" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="col-span-3">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="flex items-center justify-between p-3">
-                      <div className="flex-1">
-                        <Skeleton className="h-4 w-32 mb-2" />
-                        <Skeleton className="h-3 w-48" />
-                      </div>
-                      <Skeleton className="h-4 w-4" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </>
       ) : (
         <>
-          {/* Stats Cards */}
-          <StatsCards stats={stats} />
-
-          {/* Main Content Area */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            {/* Recent Activity */}
-            <RecentActivityCard activities={activities} />
-
-            {/* Quick Actions */}
-            <QuickActionsCard actions={quickActions} />
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {adminMode === 'creator' ? 'Creator Dashboard' :
+               adminMode === 'reviewer' ? 'Reviewer Dashboard' :
+               adminMode === 'user' ? 'Student Dashboard' : 'Admin Dashboard'}
+            </h1>
+            <p className="text-muted-foreground">
+              {adminMode === 'creator' ? 'Question creation and content management.' :
+               adminMode === 'reviewer' ? 'Review queue and question approval.' :
+               adminMode === 'user' ? 'Learning progress and quiz performance.' :
+               'Administrative overview and system management.'}
+            </p>
           </div>
 
-          {/* System Status - Only show for admin mode */}
-          {adminMode === 'admin' && <SystemStatus />}
+          {error ? (
+            <Card className="border-red-200 bg-red-50">
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Dashboard</h3>
+                  <p className="text-red-600 mb-4">{error}</p>
+                  <button
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        window.location.reload()
+                      }
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    Retry
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : isLoading ? (
+            <>
+              {/* Stats Loading */}
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Card key={i}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-4" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-8 w-16 mb-2" />
+                      <Skeleton className="h-3 w-32" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Activity and Actions Loading */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                <Card className="col-span-4">
+                  <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="flex items-start space-x-4 p-3">
+                          <Skeleton className="h-4 w-4 mt-1" />
+                          <div className="flex-1">
+                            <Skeleton className="h-4 w-48 mb-2" />
+                            <Skeleton className="h-3 w-64" />
+                          </div>
+                          <Skeleton className="h-3 w-12" />
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="col-span-3">
+                  <CardHeader>
+                    <CardTitle>Quick Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <div key={i} className="flex items-center justify-between p-3">
+                          <div className="flex-1">
+                            <Skeleton className="h-4 w-32 mb-2" />
+                            <Skeleton className="h-3 w-48" />
+                          </div>
+                          <Skeleton className="h-4 w-4" />
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Stats Cards */}
+              <StatsCards stats={stats} />
+
+              {/* Main Content Area */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                {/* Recent Activity */}
+                <RecentActivityCard activities={activities} />
+
+                {/* Quick Actions */}
+                <QuickActionsCard actions={quickActions} />
+              </div>
+
+              {/* System Status - Only show for admin mode */}
+              {adminMode === 'admin' && <SystemStatus />}
+            </>
+          )}
         </>
       )}
     </div>

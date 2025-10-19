@@ -89,7 +89,7 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
 
   // Loading skeleton component for navigation items
   const LoadingSkeleton = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-[5px]">
       {/* Skeleton for multiple sections */}
       {[...Array(3)].map((_, sectionIndex) => (
         <div key={sectionIndex} className={sectionIndex > 0 ? "pt-2" : ""}>
