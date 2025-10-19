@@ -7,18 +7,17 @@ DROP MATERIALIZED VIEW IF EXISTS v_public_stats CASCADE;
 -- Create materialized view for public stats
 CREATE MATERIALIZED VIEW v_public_stats AS
 SELECT
-  -- Total approved questions count
-  (SELECT COUNT(*) FROM questions WHERE status = 'approved')::integer AS total_questions,
-  
+  -- Total questions count (ALL statuses)
+  (SELECT COUNT(*) FROM questions)::integer AS total_questions,
+
   -- Total images count
   (SELECT COUNT(*) FROM images)::integer AS total_images,
-  
-  -- Unique categories count (from approved questions only)
-  (SELECT COUNT(DISTINCT category_id) 
-   FROM questions 
-   WHERE status = 'approved' 
-   AND category_id IS NOT NULL)::integer AS total_categories,
-  
+
+  -- Unique categories count (from ALL questions)
+  (SELECT COUNT(DISTINCT category_id)
+   FROM questions
+   WHERE category_id IS NOT NULL)::integer AS total_categories,
+
   -- Timestamp for cache invalidation
   NOW() AS last_refreshed;
 
@@ -65,7 +64,7 @@ $$;
 -- Create triggers on questions table
 DROP TRIGGER IF EXISTS trigger_questions_refresh_public_stats ON questions;
 CREATE TRIGGER trigger_questions_refresh_public_stats
-  AFTER INSERT OR UPDATE OF status OR DELETE ON questions
+  AFTER INSERT OR UPDATE OR DELETE ON questions
   FOR EACH STATEMENT
   EXECUTE FUNCTION trigger_refresh_public_stats();
 
