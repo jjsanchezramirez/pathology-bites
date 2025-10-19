@@ -19,7 +19,7 @@ import {
   ShieldAlert,
   ShieldCheck
 } from 'lucide-react'
-import { useSimpleAuth } from '@/shared/hooks/use-simple-auth'
+import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 
 interface UserProfile {
   id: string
@@ -34,26 +34,11 @@ interface SidebarAuthStatusProps {
 }
 
 export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProps) {
-  const { user, isLoading, isAuthenticated, error } = useSimpleAuth()
+  const { user, isLoading, isAuthenticated, error, refreshAuth, isHydrated } = useAuthStatus()
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
-  const [isHydrated, setIsHydrated] = useState(false)
 
   const supabase = createClient()
-
-  // Set hydrated after initial load
-  useEffect(() => {
-    setIsHydrated(true)
-  }, [])
-
-  // Refresh auth function
-  const refreshAuth = async () => {
-    try {
-      await supabase.auth.refreshSession()
-    } catch (error) {
-      console.error('Failed to refresh auth:', error)
-    }
-  }
 
   // Load user profile when user changes
   useEffect(() => {
