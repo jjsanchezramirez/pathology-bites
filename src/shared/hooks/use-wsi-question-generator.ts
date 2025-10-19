@@ -14,6 +14,18 @@ interface QuestionData {
   references: string[]
 }
 
+interface APIQuestionData {
+  stem: string
+  question_options: Array<{
+    id: string
+    text: string
+    is_correct: boolean
+    explanation: string
+  }>
+  teaching_point: string
+  references: string[]
+}
+
 interface GeneratedQuestion {
   id: string
   wsi: VirtualSlide
@@ -143,10 +155,18 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
       // Combine all data into the expected format
       const generationTime = Date.now() - startTime
+      
+      // Map API response format to hook interface format
+      const apiQuestion = questionData.question as APIQuestionData
+      const questionWithOptions: QuestionData = {
+        ...apiQuestion,
+        options: apiQuestion.question_options || []
+      }
+      
       const generatedQuestion: GeneratedQuestion = {
         id: `wsi-${selectedWSI.id}-${Date.now()}`,
         wsi: selectedWSI,
-        question: questionData.question,
+        question: questionWithOptions,
         context: null,
         metadata: {
           generated_at: new Date().toISOString(),

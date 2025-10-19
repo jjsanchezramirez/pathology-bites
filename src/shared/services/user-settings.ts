@@ -1,31 +1,16 @@
 // src/shared/services/user-settings.ts
 // Service for managing user settings
 
-export interface QuizSettings {
-  default_question_count: number
-  default_mode: 'tutor' | 'practice'
-  default_timing: 'timed' | 'untimed'
-  default_question_type: 'all' | 'unused' | 'needsReview' | 'marked' | 'mastered'
-  default_category_selection: 'all' | 'ap_only' | 'cp_only' | 'custom'
-}
+import {
+  DEFAULT_QUIZ_SETTINGS,
+  DEFAULT_NOTIFICATION_SETTINGS,
+  DEFAULT_UI_SETTINGS,
+  type QuizSettings,
+  type NotificationSettings,
+  type UISettings,
+} from '@/shared/constants/user-settings-defaults'
 
-export interface NotificationSettings {
-  email_notifications: boolean
-  quiz_reminders: boolean
-  progress_updates: boolean
-}
-
-export interface UISettings {
-  theme: 'light' | 'dark' | 'system'
-  font_size: 'small' | 'medium' | 'large'
-  text_zoom: number
-  dashboard_theme: string
-  // Mode-specific dashboard themes
-  dashboard_theme_admin?: string
-  dashboard_theme_user?: string
-  sidebar_collapsed: boolean
-  welcome_message_seen: boolean
-}
+export type { QuizSettings, NotificationSettings, UISettings }
 
 export interface UserSettings {
   quiz_settings: QuizSettings
@@ -173,10 +158,12 @@ class UserSettingsService {
 
     if (!response.ok) {
       let error
+      let responseText = ''
       try {
-        error = await response.json()
+        responseText = await response.text()
+        error = responseText ? JSON.parse(responseText) : {}
       } catch (e) {
-        error = { error: 'Failed to parse error response' }
+        error = { error: 'Failed to parse error response', rawResponse: responseText }
       }
       console.error('[UserSettings] Update failed:', {
         status: response.status,
@@ -186,6 +173,7 @@ class UserSettingsService {
         settings: mappedSettings
       })
       console.error('[UserSettings] Full error object:', JSON.stringify(error, null, 2))
+      console.error('[UserSettings] Raw response:', responseText)
       throw new Error(error.error || error.details || 'Failed to update user settings')
     }
 
@@ -223,14 +211,7 @@ class UserSettingsService {
       return userSettings.quiz_settings
     } catch (error) {
       console.error('Error fetching quiz settings, using defaults:', error)
-      // Return default quiz settings if fetch fails
-      return {
-        default_question_count: 10,
-        default_mode: 'tutor',
-        default_timing: 'untimed',
-        default_question_type: 'unused',
-        default_category_selection: 'all'
-      }
+      return DEFAULT_QUIZ_SETTINGS
     }
   }
 
@@ -243,12 +224,7 @@ class UserSettingsService {
       return userSettings.notification_settings
     } catch (error) {
       console.error('Error fetching notification settings, using defaults:', error)
-      // Return default notification settings if fetch fails
-      return {
-        email_notifications: true,
-        quiz_reminders: true,
-        progress_updates: true
-      }
+      return DEFAULT_NOTIFICATION_SETTINGS
     }
   }
 
@@ -287,15 +263,7 @@ class UserSettingsService {
       return userSettings.ui_settings
     } catch (error) {
       console.error('Error fetching UI settings, using defaults:', error)
-      // Return default UI settings if fetch fails
-      return {
-        theme: 'system',
-        font_size: 'medium',
-        text_zoom: 1.0,
-        dashboard_theme: 'default',
-        sidebar_collapsed: false,
-        welcome_message_seen: true
-      }
+      return DEFAULT_UI_SETTINGS
     }
   }
 }

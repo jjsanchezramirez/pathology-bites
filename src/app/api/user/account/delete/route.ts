@@ -70,8 +70,26 @@ export async function DELETE(request: NextRequest) {
         }
       })
 
-    // Delete user from auth system
-    // Trigger will handle soft delete (admin/creator/reviewer) or hard delete (students)
+    /**
+     * USER DELETION NOTE:
+     * User deletion is handled AUTOMATICALLY by database triggers.
+     * When a user is deleted from auth.users, the following cascade occurs:
+     *
+     * 1. Trigger: on_auth_user_deleted (AFTER DELETE on auth.users)
+     *    - Calls: handle_auth_user_deletion()
+     *    - For admin/creator/reviewer: SOFT DELETE (sets deleted_at, status='deleted')
+     *    - For student/user: HARD DELETE (deletes from all user-related tables)
+     *
+     * 2. If hard delete, Trigger: trigger_handle_user_deletion (BEFORE DELETE on public.users)
+     *    - Calls: handle_user_deletion()
+     *    - Explicitly deletes from: user_settings, user_favorites, user_achievements,
+     *      performance_analytics, notification_states, quiz_sessions, quiz_attempts,
+     *      module_sessions, module_attempts, user_learning
+     *
+     * See: Database functions handle_auth_user_deletion() and handle_user_deletion()
+     */
+
+    // Delete user from auth system - triggers will handle the cascade
     try {
       const adminClient = createAdminClient()
       const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(user.id)

@@ -20,6 +20,20 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data?.user) {
+      /**
+       * USER CREATION NOTE:
+       * User creation in public.users and user_settings is handled AUTOMATICALLY by database triggers.
+       * When a user is created in auth.users (via OAuth), the following triggers fire:
+       *
+       * 1. Trigger: on_auth_user_created (AFTER INSERT on auth.users)
+       *    - Calls: handle_new_user()
+       *    - Creates record in public.users with user metadata
+       *    - Calls create_user_settings_for_new_user() to create default settings
+       *
+       * No manual user creation is needed here. The trigger handles everything.
+       * See: supabase/migrations/20250119000002_fix_user_creation_trigger.sql
+       */
+
       // Check if user exists in database
       const { data: userData, error: profileError } = await supabase
         .from('users')
@@ -34,25 +48,6 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
 
         const modeText = isMaintenanceMode ? 'maintenance' : 'coming soon'
         return NextResponse.redirect(`${origin}/auth-error?error=account_creation_disabled&description=New account creation is disabled during ${modeText} mode. Please contact an administrator if you need access.`)
-      }
-
-      // Create user profile if it doesn't exist (only when not in admin-only mode)
-      if (profileError && profileError.code === 'PGRST116') {
-        const metadata = data.user.user_metadata
-        await supabase.from('users').insert({
-          id: data.user.id,
-          email: data.user.email,
-          first_name: metadata.full_name?.split(' ')[0] || metadata.given_name || '',
-          last_name: metadata.full_name?.split(' ').slice(1).join(' ') || metadata.family_name || '',
-          role: 'user',
-          user_type: 'other',
-          status: 'active'
-        })
-
-        // Create default user settings for new user
-        await supabase.rpc('create_user_settings_for_new_user', { p_user_id: data.user.id })
-
-        return NextResponse.redirect(`${origin}/dashboard`)
       }
 
       // Redirect based on user role - consistent with middleware logic

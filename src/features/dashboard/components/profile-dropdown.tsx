@@ -100,6 +100,9 @@ export function ProfileDropdown() {
       if (typeof window !== 'undefined') {
         localStorage.clear()
         sessionStorage.clear()
+
+        // Clear admin-mode cookie to prevent it from persisting across sessions
+        document.cookie = 'admin-mode=; path=/; max-age=0'
       }
 
       // Force a hard refresh to clear all cached data and redirect to login

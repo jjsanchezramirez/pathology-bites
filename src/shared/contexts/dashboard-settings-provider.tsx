@@ -6,6 +6,7 @@ import { userSettingsService } from '@/shared/services/user-settings'
 import { createClient } from '@/shared/services/client'
 import { getTextZoomConfig, applyTextZoom, getValidZoomLevel } from '@/shared/utils/text-zoom'
 import { useUserRole } from '@/shared/hooks/use-user-role'
+import { getAdminModeFromCookie, getThemeKeyForMode } from '@/shared/utils/admin-mode'
 
 interface DashboardSettingsContextType {
   textZoom: number
@@ -47,19 +48,9 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
         setTextZoomState(validZoom)
         applyTextZoom(validZoom)
 
-        // Apply dashboard theme - use same logic as DashboardThemeContext
-        const adminModeCookie = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('admin-mode='))
-          ?.split('=')[1]
-
-        // If no cookie and user is not admin, default to 'user' mode (same as DashboardThemeContext)
-        const adminMode = !adminModeCookie && !isAdmin ? 'user' : (adminModeCookie || 'admin')
-
-        const themeKey = adminMode === 'admin'
-          ? 'dashboard_theme_admin'
-          : 'dashboard_theme_user'
-
+        // Apply dashboard theme using utility function
+        const adminMode = getAdminModeFromCookie(isAdmin)
+        const themeKey = getThemeKeyForMode(adminMode)
         const theme = settings.ui_settings?.[themeKey] ?? 'default'
         setDashboardThemeState(theme)
 
@@ -93,17 +84,8 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
     setDashboardThemeState(theme)
 
     try {
-      const adminModeCookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('admin-mode='))
-        ?.split('=')[1]
-
-      // Use same logic as loadSettings
-      const adminMode = !adminModeCookie && !isAdmin ? 'user' : (adminModeCookie || 'admin')
-
-      const themeKey = adminMode === 'admin'
-        ? 'dashboard_theme_admin'
-        : 'dashboard_theme_user'
+      const adminMode = getAdminModeFromCookie(isAdmin)
+      const themeKey = getThemeKeyForMode(adminMode)
 
       await userSettingsService.updateUISettings({ [themeKey]: theme })
       console.log('[DashboardSettings] Theme saved:', theme)

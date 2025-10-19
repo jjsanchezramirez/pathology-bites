@@ -214,10 +214,9 @@ export default function SettingsPage() {
   const handleDashboardThemeChange = async (newTheme: string) => {
     try {
       setSaving(true)
+      // Use DashboardThemeProvider's setTheme which handles saving to correct field
+      // (dashboard_theme_admin or dashboard_theme_user based on admin mode)
       setDashboardTheme(newTheme)
-
-      // Save to database
-      await userSettingsService.updateUISettings({ dashboard_theme: newTheme })
       toast.success('Dashboard theme updated')
     } catch (error) {
       console.error('Error updating dashboard theme:', error)
@@ -249,7 +248,6 @@ export default function SettingsPage() {
         theme: 'system' as const,
         font_size: 'medium' as const,
         text_zoom: config.default,
-        dashboard_theme: 'default',
         sidebar_collapsed: false,
         welcome_message_seen: false
       }
@@ -259,6 +257,7 @@ export default function SettingsPage() {
       setQuizSettings(defaultQuizSettings)
       setTextZoomContext(config.default)
       setTheme('system')
+      // Reset dashboard theme using DashboardThemeProvider which handles admin mode
       setDashboardTheme('default')
 
       // Save to database

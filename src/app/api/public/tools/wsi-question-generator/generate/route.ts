@@ -75,14 +75,22 @@ function getRetryDelay(attempt: number): number {
   return Math.min(delay, RETRY_CONFIG.maxDelay)
 }
 
-// Shuffle answer options to randomize correct answer position
-function shuffleOptions(options: QuestionOption[]): QuestionOption[] {
-  const shuffled = [...options]
-  for (let i = shuffled.length - 1; i > 0; i--) {
+// Assign balanced option IDs to ensure equal distribution of correct answers across A, B, C, D, E
+function assignBalancedOptionIds(options: QuestionOption[]): QuestionOption[] {
+  // Create a shuffled array of option IDs (A, B, C, D, E) 
+  const optionIds = ['A', 'B', 'C', 'D', 'E'].slice(0, options.length)
+  
+  // Shuffle the option IDs to randomize which position gets which content
+  for (let i = optionIds.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    [optionIds[i], optionIds[j]] = [optionIds[j], optionIds[i]]
   }
-  return shuffled
+  
+  // Assign the shuffled IDs to the options
+  return options.map((option, index) => ({
+    ...option,
+    id: optionIds[index]
+  }))
 }
 
 // Types
@@ -959,14 +967,14 @@ export async function POST(request: NextRequest) {
       const generationTime = Date.now() - startTime
       console.log(`[Question Gen] Question generation completed in ${generationTime}ms`)
 
-      // Shuffle answer options to randomize correct answer position
-      const shuffledOptions = shuffleOptions(questionResult.questionData.question_options)
+      // Assign balanced option IDs to ensure equal distribution of correct answers
+      const balancedOptions = assignBalancedOptionIds(questionResult.questionData.question_options)
 
       const result = {
         success: true,
         question: {
           ...questionResult.questionData,
-          question_options: shuffledOptions
+          question_options: balancedOptions
         },
         metadata: {
           generated_at: new Date().toISOString(),

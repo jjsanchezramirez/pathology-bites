@@ -5,10 +5,17 @@ import { withRateLimit, generalAPIRateLimiter } from '@/shared/utils/api-rate-li
 
 const rateLimitedHandler = withRateLimit(generalAPIRateLimiter)
 
-// Cache for public stats with 5-minute TTL
-const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+// Cache for public stats with 24-hour TTL
+const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
 let cachedStats: any = null
 let cacheTimestamp: number = 0
+
+interface PublicStatsResponse {
+  total_questions: number
+  total_images: number
+  total_categories: number
+  last_refreshed: string
+}
 
 export const GET = rateLimitedHandler(async function() {
   try {
@@ -24,11 +31,10 @@ export const GET = rateLimitedHandler(async function() {
 
     const supabase = await createClient()
 
-    // Use materialized view for efficient stats retrieval
+    // Use secure function to retrieve public stats
     const { data: statsData, error: statsError } = await supabase
-      .from('v_public_stats')
-      .select('total_questions, total_images, total_categories')
-      .single()
+      .rpc('get_public_stats')
+      .single<PublicStatsResponse>()
 
     if (statsError) {
       console.error('Error fetching public stats from materialized view:', statsError)

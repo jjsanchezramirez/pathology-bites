@@ -1,4 +1,33 @@
 // src/components/theme/conditional-theme-provider.tsx
+/**
+ * ConditionalThemeProvider
+ *
+ * Manages color mode (light/dark/system) across the application using next-themes.
+ *
+ * THEME SYSTEM OVERVIEW:
+ * ----------------------
+ * The application has TWO separate theming concepts:
+ *
+ * 1. COLOR MODE (managed by this provider):
+ *    - Controls light/dark/system color scheme
+ *    - Stored in ui_settings.theme
+ *    - Public pages: FORCED to light mode
+ *    - Dashboard/Admin pages: User can toggle light/dark/system
+ *
+ * 2. DASHBOARD THEME (managed by DashboardThemeContext):
+ *    - Controls which theme CSS variables are applied (Default/Notebook/Tangerine)
+ *    - Stored in ui_settings.dashboard_theme_admin or ui_settings.dashboard_theme_user
+ *    - Admin/Creator/Reviewer mode: Only 'default' theme available
+ *    - Student mode: 'notebook' and 'tangerine' themes available
+ *
+ * ROUTE BEHAVIOR:
+ * ---------------
+ * - Public routes (/, /about, /login, etc.): Light mode enforced, Default theme
+ * - Auth routes (/login, /signup, etc.): Light mode enforced, Default theme
+ * - Error routes (/not-found, etc.): Light mode enforced, Default theme
+ * - Dashboard routes (/dashboard/*): User can toggle color mode, theme based on role
+ * - Admin routes (/admin/*): User can toggle color mode, Default theme only
+ */
 'use client'
 
 import { useEffect } from 'react'
@@ -8,8 +37,8 @@ import type { ThemeProviderProps } from 'next-themes'
 
 export function ConditionalThemeProvider({ children, ...props }: ThemeProviderProps) {
   const pathname = usePathname()
-  
-  // Define which routes allow theming
+
+  // Define which routes allow color mode customization
   const themedRoutes = ['/admin', '/dashboard']
   const isThemedRoute = pathname ? themedRoutes.some(route => pathname.startsWith(route)) : false
   

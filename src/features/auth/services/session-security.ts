@@ -397,6 +397,11 @@ class SessionSecurity {
           }
         })
       }
+
+      // Clear admin-mode cookie to prevent it from persisting across sessions
+      if (typeof document !== 'undefined') {
+        document.cookie = 'admin-mode=; path=/; max-age=0'
+      }
     } catch (error) {
       console.warn('Failed to clear session data:', error)
     }

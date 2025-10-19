@@ -646,15 +646,90 @@ notification_states (user_id, type, data, read_at, created_at)
 
 #### Database Functions & Triggers
 
-**User Deletion Triggers**:
-- `handle_auth_user_deletion()` - Triggered on `auth.users` DELETE
-  - Soft deletes admin/creator/reviewer users (sets `deleted_at`, `status='deleted'`)
-  - Hard deletes student/user users (CASCADE removes all data)
-  - Uses `SECURITY DEFINER` to bypass RLS policies
+**IMPORTANT: User creation and deletion are handled AUTOMATICALLY by database triggers.**
+**Application code should NOT manually create or delete user records.**
 
-- `handle_user_deletion()` - Triggered on `public.users` BEFORE DELETE
-  - Explicitly deletes from all user-related tables
-  - Ensures RLS policies don't block cascade deletes
+##### User Creation Triggers
+
+When a user signs up (via email or OAuth), they are created in `auth.users`. The following trigger automatically creates the corresponding application records:
+
+**Trigger: `on_auth_user_created`**
+- **Table**: `auth.users`
+- **Timing**: AFTER INSERT
+- **Function**: `handle_new_user()`
+- **Actions**:
+  1. Creates record in `public.users` with user metadata (email, first_name, last_name, user_type, role='user', status='active')
+  2. Calls `create_user_settings_for_new_user()` to create default user settings
+- **Security**: SECURITY DEFINER (bypasses RLS policies)
+- **Migration**: `supabase/migrations/20250119000002_fix_user_creation_trigger.sql`
+
+**Function: `create_user_settings_for_new_user(p_user_id UUID)`**
+- **Purpose**: Creates default user settings for new users
+- **Creates**: Record in `user_settings` with default quiz_settings, notification_settings, and ui_settings
+- **Defaults**: Match `src/shared/constants/user-settings-defaults.ts`
+- **Security**: SECURITY DEFINER (bypasses RLS policies)
+
+**Application Code**: Auth callback routes (`/api/public/auth/callback`, `/api/public/auth/confirm`) do NOT manually create users. The trigger handles everything automatically.
+
+##### User Deletion Triggers
+
+When a user is deleted (via admin or self-deletion), the deletion is initiated from `auth.users`. The following triggers handle the cascade:
+
+**Trigger: `on_auth_user_deleted`**
+- **Table**: `auth.users`
+- **Timing**: AFTER DELETE
+- **Function**: `handle_auth_user_deletion()`
+- **Actions**:
+  - **For admin/creator/reviewer**: SOFT DELETE
+    - Sets `deleted_at = NOW()`
+    - Sets `status = 'deleted'`
+    - Preserves record for attribution (questions, reviews, etc.)
+  - **For student/user**: HARD DELETE
+    - Explicitly deletes from all user-related tables (bypasses RLS)
+    - Then deletes from `public.users`
+- **Security**: SECURITY DEFINER (bypasses RLS policies)
+- **Migration**: Database function (check with `SELECT pg_get_functiondef(oid) FROM pg_proc WHERE proname = 'handle_auth_user_deletion'`)
+
+**Trigger: `trigger_handle_user_deletion`**
+- **Table**: `public.users`
+- **Timing**: BEFORE DELETE
+- **Function**: `handle_user_deletion()`
+- **Actions**: Explicitly deletes from all user-related tables:
+  - `user_settings`
+  - `user_favorites`
+  - `user_achievements`
+  - `performance_analytics`
+  - `notification_states`
+  - `quiz_sessions`
+  - `quiz_attempts`
+  - `module_sessions`
+  - `module_attempts`
+  - `user_learning`
+- **Purpose**: Ensures RLS policies don't block cascade deletes
+- **Security**: SECURITY DEFINER (bypasses RLS policies)
+- **Note**: Only deletes from tables with `user_id` foreign key (CASCADE delete). Tables with `created_by`, `reviewed_by`, etc. use SET NULL.
+
+**Application Code**: User deletion routes (`/api/user/account/delete`, `/api/admin/users DELETE`) only call `adminClient.auth.admin.deleteUser()`. The triggers handle all cascade logic automatically.
+
+##### Other Database Triggers
+
+**Question Analytics Triggers**:
+- `quiz_attempts_analytics_trigger` - Updates question analytics after quiz attempts
+- `question_flags_analytics_trigger` - Updates analytics when questions are flagged
+- `question_reviews_analytics_trigger` - Updates analytics after reviews
+
+**Search Vector Triggers**:
+- `images_search_vector_trigger` - Updates full-text search vector for images
+- `questions_search_vector_trigger` - Updates full-text search vector for questions
+
+**Timestamp Triggers**:
+- `update_updated_at_column` - Auto-updates `updated_at` on various tables
+- `update_questions_updated_by` - Auto-updates `updated_by` on questions table
+
+**Public Stats Triggers**:
+- **Removed**: Automatic refresh triggers were causing conflicts during user deletion
+  - API now uses 24-hour cache instead of real-time refresh
+  - Manual refresh available via `get_public_stats()` function if needed
 
 **Foreign Key Cascade Rules**:
 - **CASCADE DELETE**: user_settings, user_favorites, user_achievements, performance_analytics, notification_states, quiz_sessions, quiz_attempts, module_sessions, module_attempts, user_learning, question_reviews

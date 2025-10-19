@@ -67,41 +67,20 @@ export async function GET(request: NextRequest) {
       
       // Handle different verification types
       if (type === 'signup' || type === 'email') { // Accept both types
-        // Create user profile if it doesn't exist
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        if (user) {
-          console.log('Creating user profile for:', user.email)
-          
-          const { error: profileError } = await supabase
-            .from('users')
-            .select('id')
-            .eq('id', user.id)
-            .single()
+        /**
+         * USER CREATION NOTE:
+         * User creation in public.users and user_settings is handled AUTOMATICALLY by database triggers.
+         * When a user is created in auth.users, the following triggers fire:
+         *
+         * 1. Trigger: on_auth_user_created (AFTER INSERT on auth.users)
+         *    - Calls: handle_new_user()
+         *    - Creates record in public.users with user metadata
+         *    - Calls create_user_settings_for_new_user() to create default settings
+         *
+         * No manual user creation is needed here. The trigger handles everything.
+         * See: supabase/migrations/20250119000002_fix_user_creation_trigger.sql
+         */
 
-          if (profileError && profileError.code === 'PGRST116') {
-            // User doesn't exist in database, create profile
-            // Check if user was invited with a specific role (from invitation metadata)
-            const invitedRole = user.user_metadata.role || 'user'
-
-            const insertResult = await supabase.from('users').insert({
-              id: user.id,
-              email: user.email,
-              first_name: user.user_metadata.first_name || '',
-              last_name: user.user_metadata.last_name || '',
-              user_type: user.user_metadata.user_type || 'other',
-              role: invitedRole, // Use role from invitation metadata if available
-              status: 'active'
-            })
-
-            console.log('User profile created:', insertResult.error ? 'failed' : 'success')
-
-            // Create default user settings for new user
-            await supabase.rpc('create_user_settings_for_new_user', { p_user_id: user.id })
-            console.log('User settings created for new user')
-          }
-        }
-        
         console.log('Redirecting to email-verified page')
         return NextResponse.redirect(`${origin}/email-verified`)
       } else if (type === 'recovery') {

@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/shared/services/server'
 import { z } from 'zod'
 import { validateCSRFToken } from '@/features/auth/utils/csrf-protection'
-import { headers } from 'next/headers'
+import { headers, cookies } from 'next/headers'
 import { loginRateLimiter, getClientIP } from '@/features/auth/utils/rate-limiter'
 
 // Validation schema for signup
@@ -271,6 +271,10 @@ export async function signOut() {
   if (error) {
     redirect('/login?error=Failed to sign out')
   }
+
+  // Clear admin-mode cookie on server side
+  const cookieStore = await cookies()
+  cookieStore.delete('admin-mode')
 
   revalidatePath('/', 'layout')
   redirect('/login')

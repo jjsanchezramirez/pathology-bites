@@ -3,6 +3,11 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import {
+  DEFAULT_QUIZ_SETTINGS,
+  DEFAULT_NOTIFICATION_SETTINGS,
+  DEFAULT_UI_SETTINGS,
+} from '@/shared/constants/user-settings-defaults'
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,28 +37,9 @@ export async function GET(request: NextRequest) {
     // If no settings exist for user, create default settings
     if (!data) {
         const defaultSettings = {
-          quiz_settings: {
-            default_question_count: 10,
-            default_mode: 'tutor',
-            default_timing: 'untimed',
-            default_question_type: 'unused',
-            default_category_selection: 'all'
-          },
-          notification_settings: {
-            email_notifications: true,
-            quiz_reminders: true,
-            progress_updates: true
-          },
-          ui_settings: {
-            theme: 'system',
-            font_size: 'medium',
-            text_zoom: 1.0,
-            dashboard_theme: 'default',
-            dashboard_theme_admin: 'default',
-            dashboard_theme_user: 'tangerine',
-            sidebar_collapsed: false,
-            welcome_message_seen: false
-          }
+          quiz_settings: DEFAULT_QUIZ_SETTINGS,
+          notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
+          ui_settings: DEFAULT_UI_SETTINGS,
         }
 
         // Try to create default settings for the user
@@ -91,28 +77,9 @@ export async function GET(request: NextRequest) {
 
     // Combine the separate columns into the expected format
     const combinedSettings = {
-      quiz_settings: data.quiz_settings || {
-        default_question_count: 10,
-        default_mode: 'tutor',
-        default_timing: 'untimed',
-        default_question_type: 'unused',
-        default_category_selection: 'all'
-      },
-      notification_settings: data.notification_settings || {
-        email_notifications: true,
-        quiz_reminders: true,
-        progress_updates: true
-      },
-      ui_settings: data.ui_settings || {
-        theme: 'system',
-        font_size: 'medium',
-        text_zoom: 1.0,
-        dashboard_theme: 'default',
-        dashboard_theme_admin: 'default',
-        dashboard_theme_user: 'tangerine',
-        sidebar_collapsed: false,
-        welcome_message_seen: false
-      },
+      quiz_settings: data.quiz_settings || DEFAULT_QUIZ_SETTINGS,
+      notification_settings: data.notification_settings || DEFAULT_NOTIFICATION_SETTINGS,
+      ui_settings: data.ui_settings || DEFAULT_UI_SETTINGS,
       created_at: data.created_at,
       updated_at: data.updated_at
     }
@@ -124,8 +91,13 @@ export async function GET(request: NextRequest) {
       data: combinedSettings
     })
   } catch (error) {
+    console.error('[UserSettings GET] Unexpected error:', error instanceof Error ? error.message : String(error))
+    console.error('[UserSettings GET] Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
@@ -228,32 +200,13 @@ export async function PATCH(request: NextRequest) {
     // If no current data exists, we need to provide defaults for other sections
     if (!currentData) {
       if (section !== 'quiz_settings') {
-        updateData.quiz_settings = {
-          default_question_count: 10,
-          default_mode: 'tutor',
-          default_timing: 'untimed',
-          default_question_type: 'unused',
-          default_category_selection: 'all'
-        }
+        updateData.quiz_settings = DEFAULT_QUIZ_SETTINGS
       }
       if (section !== 'notification_settings') {
-        updateData.notification_settings = {
-          email_notifications: true,
-          quiz_reminders: true,
-          progress_updates: true
-        }
+        updateData.notification_settings = DEFAULT_NOTIFICATION_SETTINGS
       }
       if (section !== 'ui_settings') {
-        updateData.ui_settings = {
-          theme: 'system',
-          font_size: 'medium',
-          text_zoom: 1.0,
-          dashboard_theme: 'default',
-          dashboard_theme_admin: 'default',
-          dashboard_theme_user: 'tangerine',
-          sidebar_collapsed: false,
-          welcome_message_seen: false
-        }
+        updateData.ui_settings = DEFAULT_UI_SETTINGS
       }
     }
 
@@ -277,15 +230,24 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
+    // Check if upsert returned no data (RLS policy might have blocked it)
+    if (!data) {
+      console.warn('[UserSettings PATCH] Upsert returned no data - RLS policy may have blocked the operation')
+      return NextResponse.json(
+        { error: 'Failed to update user settings', details: 'No data returned from database' },
+        { status: 500 }
+      )
+    }
+
     console.log('[UserSettings PATCH] Update successful')
 
     // Return the combined settings in the expected format
     const combinedSettings = {
-      quiz_settings: data?.quiz_settings || {},
-      notification_settings: data?.notification_settings || {},
-      ui_settings: data?.ui_settings || {},
-      created_at: data?.created_at,
-      updated_at: data?.updated_at
+      quiz_settings: data.quiz_settings || {},
+      notification_settings: data.notification_settings || {},
+      ui_settings: data.ui_settings || {},
+      created_at: data.created_at,
+      updated_at: data.updated_at
     }
 
     return NextResponse.json({
@@ -293,8 +255,13 @@ export async function PATCH(request: NextRequest) {
       data: combinedSettings
     })
   } catch (error) {
+    console.error('[UserSettings PATCH] Unexpected error:', error instanceof Error ? error.message : String(error))
+    console.error('[UserSettings PATCH] Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
