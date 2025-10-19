@@ -26,158 +26,127 @@ export function InteractiveLearningTools({
             Practice with our specialized tools designed to enhance your diagnostic skills
           </p>
         </div>
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
-          {/* Core Learning Resources */}
-          <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold mb-2">Image Database</h3>
-              <p className="text-muted-foreground">Visual learning library</p>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto">
+          {/* Row 1: Core Learning Resources & Quiz Tools */}
+          <div className="group relative overflow-hidden rounded-xl border bg-card p-6 hover:shadow-lg transition-all duration-300 flex flex-col">
+            <div className="mb-4 min-h-[4.5rem]">
+              <h3 className="text-xl font-bold mb-2 line-clamp-2">Image Database</h3>
+              <p className="text-sm text-muted-foreground line-clamp-1">Visual learning library</p>
             </div>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed flex-1 line-clamp-3">
               Proprietary high-quality pathology images with detailed annotations.
             </p>
-            <Link href="/tools/images">
-              <Button className="w-full">
+            <Link href="/tools/images" className="mt-auto">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                 Browse Images
               </Button>
             </Link>
           </div>
 
-          <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold mb-2">ABPath Content</h3>
-              <p className="text-muted-foreground">Board-aligned learning</p>
+          <div className="group relative overflow-hidden rounded-xl border bg-card p-6 hover:shadow-lg transition-all duration-300 flex flex-col">
+            <div className="mb-4 min-h-[4.5rem]">
+              <h3 className="text-xl font-bold mb-2 line-clamp-2">ABPath Content</h3>
+              <p className="text-sm text-muted-foreground line-clamp-1">Board-aligned learning</p>
             </div>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed flex-1 line-clamp-3">
               Filter by section, category, and designation – Core, Advance Resident, Fellow
             </p>
-            <Link href="/tools/abpath">
-              <Button className="w-full">
+            <Link href="/tools/abpath" className="mt-auto">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                 Explore Specifications
               </Button>
             </Link>
           </div>
 
-          {/* Quiz & Practice Tools */}
-          <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold mb-2">Cell Quiz</h3>
-              <p className="text-muted-foreground">Test your hematology skills</p>
+          <div className="group relative overflow-hidden rounded-xl border bg-card p-6 hover:shadow-lg transition-all duration-300 flex flex-col">
+            <div className="mb-4 min-h-[4.5rem]">
+              <h3 className="text-xl font-bold mb-2 line-clamp-2">Cell Quiz</h3>
+              <p className="text-sm text-muted-foreground line-clamp-1">Test your hematology skills</p>
             </div>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed flex-1 line-clamp-3">
               Quiz with 500+ cell images across myeloid, erythroid, and bone marrow categories.
             </p>
-            <Link href="/tools/cell-quiz">
-              <Button className="w-full">
+            <Link href="/tools/cell-quiz" className="mt-auto">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                 Start Quiz
               </Button>
             </Link>
           </div>
 
-          <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold mb-2">WSI Questions (Beta)</h3>
-              <p className="text-muted-foreground">AI-driven virtual slide questions</p>
+          <div className="group relative overflow-hidden rounded-xl border bg-card p-6 hover:shadow-lg transition-all duration-300 flex flex-col">
+            <div className="mb-4 min-h-[4.5rem]">
+              <h3 className="text-xl font-bold mb-2 line-clamp-2">Digital Slides Questions</h3>
+              <p className="text-sm text-muted-foreground line-clamp-1">AI-driven virtual slide questions</p>
             </div>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed flex-1 line-clamp-3">
               Practice with AI-generated questions based on real virtual slide images and educational content.
             </p>
-            <Link href="/login">
-              <Button className="w-full">
-                Sign In to Access
+            <Link href="/tools/wsi-question-generator" className="mt-auto">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                Learn More
               </Button>
             </Link>
           </div>
 
-          {/* Laboratory Tools */}
-          <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold mb-2">Cell Counter</h3>
-              <p className="text-muted-foreground">Efficient cell counting</p>
+          {/* Row 2: Laboratory & Reference Tools */}
+          <div className="group relative overflow-hidden rounded-xl border bg-card p-6 hover:shadow-lg transition-all duration-300 flex flex-col">
+            <div className="mb-4 min-h-[4.5rem]">
+              <h3 className="text-xl font-bold mb-2 line-clamp-2">Cell Counter</h3>
+              <p className="text-sm text-muted-foreground line-clamp-1">Efficient cell counting</p>
             </div>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed flex-1 line-clamp-3">
               Customizable cell counter with keyboard shortcuts for differential counts and laboratory work.
             </p>
-            <Link href="/tools/cell-counter">
-              <Button className="w-full">
+            <Link href="/tools/cell-counter" className="mt-auto">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                 Start Counting
               </Button>
             </Link>
           </div>
 
-          <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold mb-2">Lupus Anticoagulant</h3>
-              <p className="text-muted-foreground">Calculate lupus anticoagulant results</p>
+          <div className="group relative overflow-hidden rounded-xl border bg-card p-6 hover:shadow-lg transition-all duration-300 flex flex-col">
+            <div className="mb-4 min-h-[4.5rem]">
+              <h3 className="text-xl font-bold mb-2 line-clamp-2">Lupus Anticoagulant</h3>
+              <p className="text-sm text-muted-foreground line-clamp-1">Calculate lupus anticoagulant results</p>
             </div>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed flex-1 line-clamp-3">
               Comprehensive calculator for lupus anticoagulant testing with automated interpretation.
             </p>
-            <Link href="/tools/lupus-anticoagulant">
-              <Button className="w-full">
+            <Link href="/tools/lupus-anticoagulant" className="mt-auto">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                 Calculate Results
               </Button>
             </Link>
           </div>
 
-          {/* Reference & Search Tools */}
-          <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold mb-2">Gene Lookup</h3>
-              <p className="text-muted-foreground">Molecular pathology reference</p>
+          <div className="group relative overflow-hidden rounded-xl border bg-card p-6 hover:shadow-lg transition-all duration-300 flex flex-col">
+            <div className="mb-4 min-h-[4.5rem]">
+              <h3 className="text-xl font-bold mb-2 line-clamp-2">Gene Lookup</h3>
+              <p className="text-sm text-muted-foreground line-clamp-1">Molecular pathology reference</p>
             </div>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed flex-1 line-clamp-3">
               Comprehensive gene information database for molecular pathology diagnostics and research.
             </p>
-            <Link href="/tools/gene-lookup">
-              <Button className="w-full">
+            <Link href="/tools/gene-lookup" className="mt-auto">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                 Search Genes
               </Button>
             </Link>
           </div>
 
-          <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold mb-2">Diagnostic Search (Beta)</h3>
-              <p className="text-muted-foreground">Comprehensive diagnostic information</p>
+          <div className="group relative overflow-hidden rounded-xl border bg-card p-6 hover:shadow-lg transition-all duration-300 flex flex-col">
+            <div className="mb-4 min-h-[4.5rem]">
+              <h3 className="text-xl font-bold mb-2 line-clamp-2">Citations Generator</h3>
+              <p className="text-sm text-muted-foreground line-clamp-1">Generate academic citations</p>
             </div>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              Search diagnostic entities for differential diagnosis, immunohistochemistry, and histologic clues.
-            </p>
-            <Link href="/tools/diagnostic-search">
-              <Button className="w-full">
-                Search Diagnostics
-              </Button>
-            </Link>
-          </div>
-
-          <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold mb-2">Citations Generator</h3>
-              <p className="text-muted-foreground">Generate academic citations</p>
-            </div>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed flex-1 line-clamp-3">
               Generate citations in APA, MLA, AMA, and Vancouver styles.
             </p>
-            <Link href="/tools/citations">
-              <Button className="w-full">
+            <Link href="/tools/citations" className="mt-auto">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                 Generate Citations
               </Button>
             </Link>
-          </div>
-
-          {/* Coming Soon */}
-          <div className="group relative overflow-hidden rounded-xl border bg-background p-8 hover:shadow-lg transition-all duration-300">
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold mb-2">Molecular Syndromes</h3>
-              <p className="text-muted-foreground">Coming soon</p>
-            </div>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              High-yield molecular syndrome concepts and accompanying virtual slides.
-            </p>
-            <Button className="w-full" disabled>
-              Coming Soon
-            </Button>
           </div>
         </div>
       </div>
