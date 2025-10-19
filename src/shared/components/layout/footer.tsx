@@ -132,7 +132,7 @@ export function Footer() {
                       href="/tools/wsi-question-generator"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
                     >
-                      Digital Slides Questions
+                      Digital Slides
                     </Link>
                     {/* Laboratory Tools */}
                     <Link
@@ -153,12 +153,6 @@ export function Footer() {
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
                     >
                       Gene Lookup
-                    </Link>
-                    <Link
-                      href="/tools/diagnostic-search"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Diagnostic Search (Beta)
                     </Link>
                     <Link
                       href="/tools/citations"
@@ -192,7 +186,7 @@ export function Footer() {
                           Cell Quiz
                         </Link>
                         <Link href="/tools/wsi-question-generator" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          Digital Slides Questions
+                          Digital Slides
                         </Link>
                         {/* Laboratory Tools */}
                         <Link href="/tools/cell-counter" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
@@ -204,9 +198,6 @@ export function Footer() {
                         {/* Reference & Search Tools */}
                         <Link href="/tools/gene-lookup" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
                           Gene Lookup
-                        </Link>
-                        <Link href="/tools/diagnostic-search" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          Diagnostic Search (Beta)
                         </Link>
                         <Link href="/tools/citations" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
                           Citations Generator
