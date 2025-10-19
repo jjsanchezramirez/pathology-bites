@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/shared/components/ui/button'
+import { Skeleton } from '@/shared/components/ui/skeleton'
 import { Shield, User, Loader2, PenTool, Eye } from 'lucide-react'
 import { useUserRole } from '@/shared/hooks/use-user-role'
 import { useDashboardTheme } from '@/shared/contexts/dashboard-theme-context'
@@ -66,31 +67,41 @@ export function AdminModeToggle() {
 
   const availableModes = getAvailableModes()
 
-  return (
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-        <span>View as:</span>
-      </div>
-
-      <div className="flex items-center bg-muted/30 rounded-md p-1 gap-1">
-        {availableModes.map(({ key, label, icon: Icon }) => (
-          <Button
-            key={key}
-            variant={adminMode === key ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => switchToMode(key as any)}
-            disabled={isLoading || adminMode === key}
-            className="h-6 px-2 text-xs font-medium transition-all duration-200"
-          >
-            {isLoading && adminMode !== key ? (
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            ) : (
-              <Icon className="h-3 w-3 mr-1" />
-            )}
-            {label}
-          </Button>
+  // Show skeleton loading state while switching modes
+  if (isLoading) {
+    return (
+      <div className="flex items-center bg-muted/20 rounded-lg p-1 gap-0.5">
+        {Array.from({ length: availableModes.length }).map((_, index) => (
+          <div key={index} className="flex items-center h-7 px-3 gap-1.5">
+            <Skeleton className="h-3 w-3 rounded-sm" />
+            <Skeleton className="h-3 w-12" />
+          </div>
         ))}
       </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center bg-muted/20 rounded-lg p-1 gap-0.5">
+      {availableModes.map(({ key, label, icon: Icon }) => (
+        <Button
+          key={key}
+          variant={adminMode === key ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => switchToMode(key as any)}
+          disabled={isLoading}
+          className={`
+            h-7 px-3 text-xs font-medium transition-all duration-200 
+            ${adminMode === key 
+              ? 'bg-background shadow-sm text-foreground' 
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+            }
+          `}
+        >
+          <Icon className="h-3 w-3 mr-1.5" />
+          {label}
+        </Button>
+      ))}
     </div>
   )
 }
