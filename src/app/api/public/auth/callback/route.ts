@@ -41,12 +41,92 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
       let userData = null
       const { data: existingUser, error: profileError } = await supabase
         .from('users')
-        .select('role, status, deleted_at')
+        .select('id, role, status, deleted_at')
         .eq('id', data.user.id)
         .single()
 
-      // If user doesn't exist, create them
-      if (profileError && profileError.code === 'PGRST116') {
+      // Also check for soft-deleted user by email (in case auth.users was deleted and recreated)
+      let softDeletedUser = null
+      if (profileError && profileError.code === 'PGRST116' && data.user.email) {
+        const { data: emailMatch } = await supabase
+          .from('users')
+          .select('id, role, status, deleted_at, email')
+          .eq('email', data.user.email)
+          .eq('status', 'deleted')
+          .single()
+
+        if (emailMatch) {
+          softDeletedUser = emailMatch
+          console.log('Found soft-deleted user by email:', {
+            email: data.user.email,
+            oldUserId: emailMatch.id,
+            newUserId: data.user.id
+          })
+        }
+      }
+
+      // If we found a soft-deleted user by email, restore them with new auth ID
+      if (softDeletedUser) {
+        console.log('Restoring soft-deleted user with new auth ID:', {
+          oldId: softDeletedUser.id,
+          newId: data.user.id,
+          email: data.user.email,
+          role: softDeletedUser.role
+        })
+
+        // Create new user record with new ID but preserve old user's data
+        const { data: restoredUser, error: createError } = await supabase
+          .from('users')
+          .insert({
+            id: data.user.id, // New auth.users ID
+            email: data.user.email || softDeletedUser.email,
+            first_name: data.user.user_metadata?.first_name || '',
+            last_name: data.user.user_metadata?.last_name || '',
+            user_type: data.user.user_metadata?.user_type || 'other',
+            role: softDeletedUser.role, // Preserve original role (admin/creator/reviewer)
+            status: 'active',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select('role')
+          .single()
+
+        if (createError) {
+          console.error('Error creating restored user:', createError)
+          return NextResponse.redirect(`${origin}/auth-error?error=user_restore_failed&description=Failed to restore user account`)
+        }
+
+        // Delete the old user record
+        await supabase
+          .from('users')
+          .delete()
+          .eq('id', softDeletedUser.id)
+
+        // Create user_settings for the new ID
+        const { error: settingsError } = await supabase
+          .from('user_settings')
+          .insert({
+            user_id: data.user.id,
+            quiz_settings: DEFAULT_QUIZ_SETTINGS,
+            notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
+            ui_settings: DEFAULT_UI_SETTINGS
+          })
+
+        if (settingsError) {
+          console.error('Error creating user settings for restored user:', settingsError)
+          // Don't fail - user can still log in
+        }
+
+        // Delete old user_settings if they exist
+        await supabase
+          .from('user_settings')
+          .delete()
+          .eq('user_id', softDeletedUser.id)
+
+        userData = restoredUser
+        console.log('User restored successfully with new ID:', { userId: data.user.id, role: restoredUser.role })
+      } else if (profileError && profileError.code === 'PGRST116') {
+        // If user doesn't exist, create them
         // In admin-only modes, prevent new account creation
         if (isAdminOnlyMode) {
           // Sign out the user since we don't want to create a new account
