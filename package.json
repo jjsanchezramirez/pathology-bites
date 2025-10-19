@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "clean": "rm -rf .next",
     "clean-build": "rm -rf .next && npm run build",
     "lint:fix": "eslint --fix .",
@@ -95,7 +95,7 @@
     "zod": "^3.24.4"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
+    "@eslint/eslintrc": "^3.3.1",
     "@jest/globals": "^29.7.0",
     "@playwright/test": "^1.48.0",
     "@testing-library/jest-dom": "^6.6.3",
