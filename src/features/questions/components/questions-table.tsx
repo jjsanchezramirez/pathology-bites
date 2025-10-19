@@ -57,6 +57,77 @@ const DIFFICULTY_CONFIG = {
 // Import the status configuration from types
 import { STATUS_CONFIG } from '@/features/questions/types/questions'
 
+// Category color mapping for better badge appearance
+const getCategoryBadgeClass = (category: { short_form?: string; color?: string; parent_short_form?: string }) => {
+  // If custom color is set, return empty string to use inline styles
+  if (category.color) {
+    return ''
+  }
+
+  // Fallback to predefined colors based on short form
+  const shortForm = category.short_form || category.parent_short_form
+
+  // Main categories
+  if (shortForm === 'AP') return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
+  if (shortForm === 'CP') return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800'
+
+  // AP subspecialties - stronger colors
+  if (category.parent_short_form === 'AP') {
+    const colors = [
+      'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800',
+      'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800',
+      'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800',
+      'bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800',
+      'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800',
+      'bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800',
+      'bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-900/20 dark:text-teal-300 dark:border-teal-800',
+      'bg-lime-100 text-lime-800 border-lime-200 dark:bg-lime-900/20 dark:text-lime-300 dark:border-lime-800'
+    ]
+    const hash = shortForm ? shortForm.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : 0
+    return colors[hash % colors.length]
+  }
+
+  // CP subspecialties - stronger colors
+  if (category.parent_short_form === 'CP') {
+    const colors = [
+      'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/20 dark:text-sky-300 dark:border-sky-800',
+      'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800',
+      'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800',
+      'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800',
+      'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/20 dark:text-violet-300 dark:border-violet-800'
+    ]
+    const hash = shortForm ? shortForm.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : 0
+    return colors[hash % colors.length]
+  }
+
+  // Default fallback
+  return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800'
+}
+
+// Helper function to create standardized custom color styles
+const getCustomColorStyle = (color: string) => {
+  // Convert HSL to a lighter background version for consistency
+  // Extract HSL values and create a light background with darker text
+  const hslMatch = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/)
+  if (hslMatch) {
+    const [, h, s] = hslMatch
+    return {
+      backgroundColor: `hsl(${h} ${Math.min(parseInt(s), 50)}% 90%)`, // Light background
+      color: `hsl(${h} ${s}% 20%)`, // Dark text
+      borderColor: `hsl(${h} ${Math.min(parseInt(s), 60)}% 70%)` // Medium border
+    }
+  }
+  return undefined
+}
+
+// Helper function to format version string in semantic versioning format
+const getVersionString = (question: QuestionWithDetails): string => {
+  const major = question.version_major ?? 1
+  const minor = question.version_minor ?? 0
+  const patch = question.version_patch ?? 0
+  return `v${major}.${minor}.${patch}`
+}
+
 // Table Controls component
 function TableControls({
   onSearch,
@@ -417,12 +488,8 @@ function QuestionRow({
               <Badge
                 key={category.id}
                 variant="outline"
-                className="text-[10px] px-1.5 py-0 border"
-                style={{
-                  backgroundColor: category.color ? `${category.color}20` : undefined,
-                  borderColor: category.color || undefined,
-                  color: category.color || undefined
-                }}
+                className={`text-[10px] px-1.5 py-0 border ${getCategoryBadgeClass(category)}`}
+                style={category.color ? getCustomColorStyle(category.color) : undefined}
               >
                 {category.short_form || category.name}
               </Badge>
@@ -444,7 +511,7 @@ function QuestionRow({
       </TableCell>
       <TableCell className="w-[80px]">
         <div className="text-sm font-mono">
-          {question.version || 'v1.0.0'}
+          {getVersionString(question)}
         </div>
       </TableCell>
       <TableCell className="w-[100px] text-sm text-muted-foreground">

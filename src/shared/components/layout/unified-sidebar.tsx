@@ -67,7 +67,7 @@ interface UnifiedSidebarProps {
 export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSections, isMobileMode = false }: UnifiedSidebarProps) {
   const pathname = usePathname()
   const { canAccess, isAdmin, isLoading } = useUserRole()
-  const { adminMode } = useDashboardTheme()
+  const { adminMode, isTransitioning } = useDashboardTheme()
   const { count: pendingInquiriesCount } = usePendingInquiriesCount()
 
   // Always show navigation immediately, but filter based on loading state and admin mode
@@ -129,8 +129,11 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
       }}
     >
       {/* Logo Section */}
-      <div className="h-16 flex items-center px-6 border-b border-sidebar-border shrink-0">
-        <Microscope className="h-6 w-6 shrink-0" style={{ marginLeft: '-4px' }} />
+      <div className={cn(
+        "h-16 flex items-center border-b border-sidebar-border shrink-0",
+        isCollapsed ? "justify-center px-0" : "pl-[26px] pr-6"
+      )}>
+        <Microscope className="h-6 w-6 shrink-0" />
         {!isCollapsed && (
           <h1 className="font-bold text-lg ml-3 whitespace-nowrap">Pathology Bites</h1>
         )}
@@ -139,8 +142,8 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto">
         <div className="p-3">
-          {/* Show loading skeleton when no navigation items are provided */}
-          {(!navigationSections?.length && !navigationItems?.length) || isLoading ? (
+          {/* Show loading skeleton when no navigation items are provided or transitioning */}
+          {(!navigationSections?.length && !navigationItems?.length) || isLoading || isTransitioning ? (
             <LoadingSkeleton />
           ) : (
             <>
@@ -148,14 +151,17 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
               {filteredSections.length > 0 ? (
             <div className="space-y-6">
               {filteredSections.map((section, sectionIndex) => (
-                <div key={section.title} className={sectionIndex > 0 ? "pt-2" : ""}>
-                  {/* Section header */}
-                  {!isCollapsed && (
-                    <h3 className="px-3 mb-2 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
-                      {section.title}
-                    </h3>
-                  )}
-                  
+                <div key={section.title} className={cn(
+                  sectionIndex === 0 && !isCollapsed ? "mt-[4px]" : "" // Move Dashboard down 4px in expanded state
+                )}>
+                  {/* Section header - always takes space to keep alignment consistent */}
+                  <h3 className={cn(
+                    "px-3 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-2",
+                    isCollapsed ? "invisible" : "" // Invisible but takes up exact same space when collapsed
+                  )}>
+                    {section.title}
+                  </h3>
+
                   {/* Section items */}
                   <div className="space-y-1">
                     {section.items.map((item) => {
@@ -167,13 +173,14 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
                           key={item.href}
                           href={item.href}
                           className={cn(
-                            "flex items-center px-3 h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
+                            "flex items-center h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
+                            isCollapsed ? "justify-center px-0 w-10" : "pl-[8px] pr-3",
                             isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
                             isLoading && "pointer-events-none opacity-60"
                           )}
                           title={isCollapsed ? item.name : undefined}
                         >
-                          <IconComponent className="h-5 w-5 shrink-0" style={{ marginLeft: '-1px' }} />
+                          <IconComponent className="h-5 w-5 shrink-0" />
                           {!isCollapsed && (
                             <span className="truncate ml-3">{item.name}</span>
                           )}
@@ -207,13 +214,14 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center px-3 h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
+                      "flex items-center h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
+                      isCollapsed ? "justify-center px-0 w-10" : "px-3",
                       isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
                       isLoading && "pointer-events-none opacity-60"
                     )}
                     title={isCollapsed ? item.name : undefined}
                   >
-                    <IconComponent className="h-5 w-5 shrink-0" style={{ marginLeft: '-1px' }} />
+                    <IconComponent className="h-5 w-5 shrink-0" />
                     {!isCollapsed && (
                       <span className="truncate ml-3">{item.name}</span>
                     )}

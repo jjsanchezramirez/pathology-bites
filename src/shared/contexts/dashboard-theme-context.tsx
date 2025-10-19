@@ -19,6 +19,8 @@ interface DashboardThemeContextType {
   isLoading: boolean
   adminMode: AdminMode
   setAdminMode: (mode: AdminMode) => void
+  isTransitioning: boolean
+  setTransitioning: (transitioning: boolean) => void
 }
 
 const DashboardThemeContext = createContext<DashboardThemeContextType | undefined>(undefined)
@@ -33,6 +35,7 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
   const [currentTheme, setCurrentTheme] = useState<DashboardTheme>(getDefaultTheme())
   const [adminMode, setAdminModeState] = useState<AdminMode>(() => getAdminModeFromCookie(isAdmin))
   const [isLoading, setIsLoading] = useState(true)
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
   // Get available themes based on admin mode
   const getAvailableThemes = (mode: AdminMode): DashboardTheme[] => {
@@ -314,6 +317,10 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
     setCurrentTheme(newTheme)
   }
 
+  const setTransitioning = (transitioning: boolean) => {
+    setIsTransitioning(transitioning)
+  }
+
   // Recalculate available themes whenever adminMode changes
   const availableThemes = getAvailableThemes(adminMode)
 
@@ -323,7 +330,9 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
     availableThemes,
     isLoading,
     adminMode,
-    setAdminMode
+    setAdminMode,
+    isTransitioning,
+    setTransitioning
   }
 
   return (

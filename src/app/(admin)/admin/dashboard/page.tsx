@@ -17,7 +17,7 @@ import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context"
 export default function AdminDashboardPage() {
   const { role, isLoading: roleLoading } = useUserRole()
   const { user } = useAuthStatus()
-  const { adminMode } = useDashboardTheme()
+  const { adminMode, isTransitioning } = useDashboardTheme()
 
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [activities, setActivities] = useState<RecentActivity[] | null>(null)
@@ -63,8 +63,8 @@ export default function AdminDashboardPage() {
   const quickActions = stats ? clientDashboardService.getQuickActions(stats, effectiveRole as any) : []
 
   // Single loading state - show skeleton until ALL data is ready
-  // Only show loading if we don't have user yet, or if role is still loading, or if we don't have data yet
-  const isLoading = !user || roleLoading || !stats || !activities
+  // Only show loading if we don't have user yet, or if role is still loading, or if we don't have data yet, or if transitioning
+  const isLoading = !user || roleLoading || !stats || !activities || isTransitioning
 
   return (
     <div className="space-y-6">

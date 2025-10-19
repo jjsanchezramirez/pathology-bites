@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 
 export function AdminModeToggle() {
   const { isAdmin, isCreator, isReviewer } = useUserRole()
-  const { adminMode, setAdminMode } = useDashboardTheme()
+  const { adminMode, setAdminMode, isTransitioning, setTransitioning } = useDashboardTheme()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -21,14 +21,19 @@ export function AdminModeToggle() {
   const switchToMode = async (newMode: 'admin' | 'creator' | 'reviewer' | 'user') => {
     if (newMode === adminMode) return // Already in this mode
 
-    setIsLoading(true)
-
     try {
+      // Start global transition state immediately
+      setTransitioning(true)
+      setIsLoading(true)
+
+      // Small delay to ensure skeleton states are visible before theme changes
+      await new Promise(resolve => setTimeout(resolve, 150))
+
       // Update admin mode (this will also handle theme switching)
       setAdminMode(newMode)
 
       // Small delay to allow theme to apply
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 200))
 
       // Navigate to appropriate dashboard
       if (newMode === 'admin' || newMode === 'creator' || newMode === 'reviewer') {
@@ -37,11 +42,15 @@ export function AdminModeToggle() {
         router.push('/dashboard')
       }
 
-      // Clear loading state after navigation
-      setTimeout(() => setIsLoading(false), 500)
+      // Clear loading states after navigation with longer delay for content to load
+      setTimeout(() => {
+        setIsLoading(false)
+        setTransitioning(false)
+      }, 800)
     } catch (error) {
       console.error('Error switching mode:', error)
       setIsLoading(false)
+      setTransitioning(false)
     }
   }
 
@@ -68,7 +77,7 @@ export function AdminModeToggle() {
   const availableModes = getAvailableModes()
 
   // Show skeleton loading state while switching modes
-  if (isLoading) {
+  if (isLoading || isTransitioning) {
     return (
       <div className="flex items-center bg-muted/20 rounded-lg p-1 gap-0.5">
         {Array.from({ length: availableModes.length }).map((_, index) => (
@@ -89,7 +98,7 @@ export function AdminModeToggle() {
           variant={adminMode === key ? 'default' : 'ghost'}
           size="sm"
           onClick={() => switchToMode(key as any)}
-          disabled={isLoading}
+          disabled={isLoading || isTransitioning}
           className={`
             h-7 px-3 text-xs font-medium transition-all duration-200 
             ${adminMode === key 

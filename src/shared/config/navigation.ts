@@ -135,7 +135,7 @@ export const adminNavigationSections: NavigationSection[] = [
     ]
   },
   {
-    title: "Question Management",
+    title: "Questions",
     items: [
       {
         name: "Question Database",
@@ -175,7 +175,7 @@ export const adminNavigationSections: NavigationSection[] = [
     ]
   },
   {
-    title: "Content Management",
+    title: "Media",
     items: [
       {
         name: "Images",
@@ -187,7 +187,7 @@ export const adminNavigationSections: NavigationSection[] = [
     ]
   },
   {
-    title: "User Management",
+    title: "Users",
     items: [
       {
         name: "Users",
@@ -214,7 +214,7 @@ export const adminNavigationSections: NavigationSection[] = [
     ]
   },
   {
-    title: "System Administration",
+    title: "System",
     items: [
       {
         name: "Site Analytics",
@@ -295,7 +295,90 @@ export const userNavigationItems: NavigationItem[] = [
   },
 ]
 
-// User Navigation Sections Configuration
+// Helper function to get user navigation sections with feature flags applied
+export function getUserNavigationSections(): NavigationSection[] {
+  const { ENABLE_QUIZ_FEATURES } = require('./feature-flags').FEATURE_FLAGS
+
+  return [
+    {
+      title: "Overview",
+      items: [
+        {
+          name: "Dashboard",
+          href: "/dashboard",
+          icon: "LayoutDashboard",
+        }
+      ]
+    },
+    {
+      title: "Education",
+      items: [
+        {
+          name: "New Quiz",
+          href: "/dashboard/quiz/new",
+          icon: "Plus",
+          comingSoon: !ENABLE_QUIZ_FEATURES
+        },
+        {
+          name: "My Quizzes",
+          href: "/dashboard/quizzes",
+          icon: "ClipboardList",
+          comingSoon: !ENABLE_QUIZ_FEATURES
+        },
+        {
+          name: "Digital Slides",
+          href: "/dashboard/wsi-questions",
+          icon: "Microscope",
+        },
+        {
+          name: "Ankoma Deck",
+          href: "/dashboard/anki",
+          icon: "Library",
+        },
+        {
+          name: "Learning Modules",
+          href: "/dashboard/learning",
+          icon: "BookOpen",
+          comingSoon: !ENABLE_QUIZ_FEATURES
+        }
+      ]
+    },
+    {
+      title: "Analytics",
+      items: [
+        {
+          name: "Performance",
+          href: "/dashboard/performance",
+          icon: "BarChart2",
+          comingSoon: !ENABLE_QUIZ_FEATURES
+        },
+        {
+          name: "Progress",
+          href: "/dashboard/progress",
+          icon: "TrendingUp",
+          comingSoon: !ENABLE_QUIZ_FEATURES
+        }
+      ]
+    },
+    {
+      title: "Account",
+      items: [
+        {
+          name: "Profile",
+          href: "/dashboard/profile",
+          icon: "User",
+        },
+        {
+          name: "Settings",
+          href: "/dashboard/settings",
+          icon: "Settings",
+        }
+      ]
+    }
+  ]
+}
+
+// User Navigation Sections Configuration (deprecated - use getUserNavigationSections() instead)
 export const userNavigationSections: NavigationSection[] = [
   {
     title: "Overview",
@@ -308,7 +391,7 @@ export const userNavigationSections: NavigationSection[] = [
     ]
   },
   {
-    title: "Study & Practice",
+    title: "Education",
     items: [
       {
         name: "New Quiz",
@@ -388,7 +471,7 @@ export function getNavigationConfig(userRole: 'admin' | 'creator' | 'reviewer' |
     case 'user':
     default:
       return {
-        sections: userNavigationSections,
+        sections: getUserNavigationSections(),
         items: userNavigationItems, // Keep for backward compatibility
         userRole: 'user'
       }
