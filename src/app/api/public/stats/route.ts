@@ -24,51 +24,21 @@ export const GET = rateLimitedHandler(async function() {
 
     const supabase = await createClient()
 
-    // Parallel execution of all queries
-    const [
-      { count: questionCount, error: questionError },
-      { count: imageCount, error: imageError },
-      { data: questionsWithCategories, error: categoryError }
-    ] = await Promise.all([
-      // Get approved questions count
-      supabase
-        .from('questions')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'approved'),
-      
-      // Get total images count
-      supabase
-        .from('images')
-        .select('*', { count: 'exact', head: true }),
-      
-      // Get unique categories from approved questions
-      supabase
-        .from('questions')
-        .select('category_id')
-        .eq('status', 'approved')
-        .not('category_id', 'is', null)
-    ])
+    // Use materialized view for efficient stats retrieval
+    const { data: statsData, error: statsError } = await supabase
+      .from('v_public_stats')
+      .select('total_questions, total_images, total_categories')
+      .single()
 
-    // Calculate unique categories count
-    const uniqueCategories = questionsWithCategories
-      ? [...new Set(questionsWithCategories.map(q => q.category_id))].length
-      : 0
-
-    // Log any errors but don't fail the request
-    if (questionError) {
-      console.error('Error fetching question count:', questionError)
-    }
-    if (imageError) {
-      console.error('Error fetching image count:', imageError)
-    }
-    if (categoryError) {
-      console.error('Error fetching category data:', categoryError)
+    if (statsError) {
+      console.error('Error fetching public stats from materialized view:', statsError)
+      throw statsError
     }
 
     const stats = {
-      questions: questionCount || 0,
-      images: imageCount || 0,
-      categories: uniqueCategories || 0
+      questions: statsData?.total_questions || 0,
+      images: statsData?.total_images || 0,
+      categories: statsData?.total_categories || 0
     }
 
     // Update cache
