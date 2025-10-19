@@ -359,6 +359,307 @@ question_tags (question_id, tag_id)
 notification_states (user_id, type, data, read_at, created_at)
 ```
 
+### Complete Database Architecture
+
+#### Database Overview
+- **Database**: PostgreSQL via Supabase
+- **Total Tables**: 32 tables
+- **Row Level Security**: 100% coverage with 58 policies
+- **Secure Functions**: 19 database functions
+- **User Deletion**: Role-based soft/hard delete with triggers
+
+#### User Management & Authentication
+
+**`users` Table** - Core user data (references `auth.users`)
+- `id` (UUID, PK) - Matches `auth.users.id`
+- `email` (VARCHAR, NOT NULL, UNIQUE)
+- `first_name`, `last_name` (VARCHAR)
+- `institution` (TEXT) - Educational/professional institution
+- `role` (ENUM: admin, creator, reviewer, user)
+- `user_type` (ENUM: student, resident, faculty, other)
+- `status` (ENUM: active, inactive, suspended, deleted)
+- `deleted_at` (TIMESTAMPTZ) - For soft delete
+- **Constraints**: All user references use `public.users.id` (not `auth.users.id`)
+- **Deletion Behavior**:
+  - Admin/Creator/Reviewer: Soft delete (record preserved for attribution)
+  - Student/User: Hard delete (CASCADE removes all data)
+
+**`user_settings` Table** - User preferences
+- `user_id` (UUID, FK → users.id, CASCADE DELETE)
+- `quiz_settings` (JSONB) - Quiz preferences
+- `notification_settings` (JSONB) - Notification preferences
+- `ui_settings` (JSONB) - Theme, font size, sidebar state
+
+**`user_favorites` Table** - Favorited questions
+- `user_id` (UUID, FK → users.id, CASCADE DELETE)
+- `question_id` (UUID, FK → questions.id)
+
+**`user_achievements` Table** - User achievements/notifications
+- `user_id` (UUID, FK → users.id, CASCADE DELETE)
+- `type`, `title`, `description` - Achievement details
+- `group_key` - For grouping related achievements
+- `is_read`, `priority` - Notification state
+
+#### Question Management
+
+**`questions` Table** - Main question data
+- `id` (UUID, PK)
+- `title`, `stem`, `teaching_point`, `question_references` (TEXT)
+- `status` (ENUM: draft, pending_review, rejected, published, flagged, archived)
+- `difficulty` (ENUM: easy, medium, hard)
+- `version` (TEXT, DEFAULT '1.0.0')
+- `created_by`, `updated_by` (UUID, FK → users.id, SET NULL)
+- `reviewer_id` (UUID, FK → users.id, SET NULL)
+- `reviewer_feedback` (TEXT) - Latest feedback from reviewer
+- `published_at` (TIMESTAMPTZ)
+- `category_id` (UUID, FK → categories.id)
+- `question_set_id` (UUID, FK → question_sets.id)
+- `search_vector` (TSVECTOR) - Full-text search
+
+**`question_options` Table** - Answer choices
+- `question_id` (UUID, FK → questions.id, CASCADE DELETE)
+- `text` (TEXT, NOT NULL)
+- `is_correct` (BOOLEAN, DEFAULT FALSE)
+- `explanation` (TEXT)
+- `order_index` (INTEGER)
+
+**`question_images` Table** - Question-image associations
+- `question_id` (UUID, FK → questions.id, CASCADE DELETE)
+- `image_id` (UUID, FK → images.id)
+- `question_section` (VARCHAR) - Where image appears
+- `order_index` (INTEGER)
+
+**`question_tags` Table** - Question-tag associations
+- `question_id` (UUID, FK → questions.id, CASCADE DELETE)
+- `tag_id` (UUID, FK → tags.id)
+
+**`question_reviews` Table** - Review audit trail
+- `question_id` (UUID, FK → questions.id, CASCADE DELETE)
+- `reviewer_id` (UUID, FK → users.id, CASCADE DELETE)
+- `action` (TEXT) - approve, reject, request_changes, resubmitted
+- `feedback` (TEXT)
+- `changes_made` (JSONB) - Resubmission notes and metadata
+
+**`question_versions` Table** - Version history for published questions
+- `question_id` (UUID, FK → questions.id, CASCADE DELETE)
+- `version_string` (TEXT) - Semantic version (e.g., "1.2.3")
+- `question_data` (JSONB) - Full question snapshot
+- `update_type` (TEXT) - major, minor, patch
+- `change_summary` (TEXT)
+- `changed_by` (UUID, FK → users.id, SET NULL)
+
+**`question_flags` Table** - User-reported issues
+- `question_id` (UUID, FK → questions.id)
+- `flagged_by`, `resolved_by` (UUID, FK → users.id, SET NULL)
+- `flag_type`, `description`, `resolution_notes` (TEXT)
+- `status` (TEXT, DEFAULT 'open')
+- `resolved_at` (TIMESTAMPTZ)
+
+**`question_reports` Table** - Question reports
+- `question_id` (UUID, FK → questions.id)
+- `reported_by` (UUID, FK → users.id, SET NULL)
+- `report_type` (ENUM: incorrect_answer, unclear_explanation, broken_image, inappropriate_content, other)
+- `description` (TEXT)
+- `status` (VARCHAR, DEFAULT 'pending')
+
+**`question_analytics` Table** - Question performance metrics
+- `question_id` (UUID, FK → questions.id)
+- `total_attempts`, `correct_attempts` (INTEGER)
+- `avg_time_spent`, `median_time_spent` (INTERVAL)
+- `success_rate`, `difficulty_score` (NUMERIC)
+- `flag_count`, `review_count` (INTEGER)
+
+#### Content Organization
+
+**`categories` Table** - Hierarchical categories
+- `id` (UUID, PK)
+- `name` (VARCHAR, NOT NULL)
+- `parent_id` (UUID, FK → categories.id) - For hierarchy
+- `level` (INTEGER, DEFAULT 1)
+- `color`, `short_form` (VARCHAR)
+
+**`tags` Table** - Question tags
+- `id` (UUID, PK)
+- `name` (VARCHAR, NOT NULL, UNIQUE)
+
+**`question_sets` Table** - Question collections
+- `id` (UUID, PK)
+- `name`, `description`, `short_form` (VARCHAR/TEXT)
+- `source_type` (VARCHAR) - Type of source
+- `source_details` (JSONB) - Source metadata
+- `is_active` (BOOLEAN, DEFAULT TRUE)
+- `created_by` (UUID, FK → users.id, SET NULL)
+
+**`demo_questions` Table** - Featured demo questions
+- `question_id` (UUID, FK → questions.id)
+- `is_active` (BOOLEAN, DEFAULT TRUE)
+- `display_order` (INTEGER)
+
+#### Media Management
+
+**`images` Table** - Image metadata
+- `id` (UUID, PK)
+- `url`, `storage_path` (TEXT)
+- `file_type`, `description`, `alt_text`, `source_ref` (TEXT)
+- `file_size_bytes` (BIGINT)
+- `width`, `height` (INTEGER)
+- `category` (ENUM: microscopic, gross, figure, table, external)
+- `created_by` (UUID, FK → users.id, SET NULL)
+- `search_vector` (TSVECTOR)
+
+#### Quiz System
+
+**`quiz_sessions` Table** - Quiz instances
+- `user_id` (UUID, FK → users.id, CASCADE DELETE)
+- `title` (TEXT)
+- `config` (JSONB) - Quiz configuration
+- `question_ids` (UUID[]) - Array of question IDs
+- `current_question_index` (INTEGER)
+- `status` (ENUM: not_started, in_progress, completed, abandoned)
+- `started_at`, `completed_at` (TIMESTAMPTZ)
+- `total_time_spent`, `total_time_limit`, `time_remaining` (INTEGER)
+- `score`, `correct_answers`, `total_questions` (INTEGER)
+
+**`quiz_attempts` Table** - Individual question attempts
+- `quiz_session_id` (UUID, FK → quiz_sessions.id)
+- `user_id` (UUID, FK → users.id, CASCADE DELETE)
+- `question_id` (UUID, FK → questions.id)
+- `selected_answer_id`, `first_answer_id` (UUID)
+- `is_correct` (BOOLEAN)
+- `time_spent` (INTEGER)
+- `attempted_at`, `reviewed_at` (TIMESTAMPTZ)
+- `category_id` (UUID, FK → categories.id)
+
+**`performance_analytics` Table** - User performance by category
+- `user_id` (UUID, FK → users.id, CASCADE DELETE)
+- `category_id` (UUID, FK → categories.id)
+- `total_questions`, `questions_answered`, `correct_answers` (INTEGER)
+- `average_time` (INTEGER)
+- `peer_rank` (NUMERIC)
+- `last_attempt_at` (TIMESTAMPTZ)
+
+#### Learning Modules
+
+**`learning_modules` Table** - Educational modules
+- `id` (UUID, PK)
+- `title`, `slug`, `description`, `content` (TEXT)
+- `learning_objectives` (TEXT[])
+- `difficulty_level` (TEXT)
+- `estimated_duration_minutes` (INTEGER, DEFAULT 15)
+- `content_type` (TEXT) - Type of content
+- `external_content_url` (TEXT)
+- `category_id` (UUID, FK → categories.id)
+- `parent_module_id` (UUID, FK → learning_modules.id)
+- `sort_order` (INTEGER)
+- `status` (TEXT, DEFAULT 'draft')
+- `is_featured` (BOOLEAN)
+- `view_count`, `rating_count` (INTEGER)
+- `average_rating`, `average_completion_time_minutes` (NUMERIC)
+- `quiz_id` (UUID)
+- `created_by`, `reviewed_by` (UUID, FK → users.id, SET NULL)
+- `published_at` (TIMESTAMPTZ)
+
+**`learning_paths` Table** - Structured learning paths
+- `id` (UUID, PK)
+- `title`, `slug`, `description` (TEXT)
+- `learning_objectives`, `prerequisites`, `tags` (TEXT[])
+- `target_audience`, `difficulty_level` (TEXT)
+- `estimated_total_duration_minutes` (INTEGER)
+- `category_id` (UUID, FK → categories.id)
+- `thumbnail_image_id` (UUID, FK → images.id)
+- `status` (TEXT, DEFAULT 'draft')
+- `is_featured` (BOOLEAN)
+- `average_rating` (NUMERIC)
+- `rating_count` (INTEGER)
+- `created_by` (UUID, FK → users.id, SET NULL)
+
+**`learning_path_modules` Table** - Path-module associations
+- `learning_path_id` (UUID, FK → learning_paths.id)
+- `module_id` (UUID, FK → learning_modules.id)
+- `sort_order` (INTEGER)
+- `is_required` (BOOLEAN, DEFAULT TRUE)
+- `unlock_criteria` (JSONB)
+- `custom_description` (TEXT)
+- `estimated_duration_override` (INTEGER)
+
+**`module_prerequisites` Table** - Module dependencies
+- `module_id` (UUID, FK → learning_modules.id)
+- `prerequisite_module_id` (UUID, FK → learning_modules.id)
+- `requirement_type` (TEXT, DEFAULT 'required')
+
+**`module_images` Table** - Module-image associations
+- `module_id` (UUID, FK → learning_modules.id)
+- `image_id` (UUID, FK → images.id)
+- `usage_type`, `caption`, `alt_text`, `content_section` (TEXT)
+- `sort_order` (INTEGER)
+
+**`user_learning` Table** - User learning path enrollments
+- `user_id` (UUID, FK → users.id, CASCADE DELETE)
+- `learning_path_id` (UUID, FK → learning_paths.id)
+- `status` (TEXT, DEFAULT 'active')
+- `enrolled_at`, `started_at`, `completed_at`, `last_accessed_at` (TIMESTAMPTZ)
+- `current_module_id` (UUID, FK → learning_modules.id)
+- `modules_completed`, `total_modules` (INTEGER)
+- `progress_percentage` (INTEGER)
+- `total_time_minutes` (INTEGER)
+- `average_score` (NUMERIC)
+
+**`module_sessions` Table** - Module viewing sessions
+- `user_id` (UUID, FK → users.id, CASCADE DELETE)
+- `module_id` (UUID, FK → learning_modules.id)
+- `learning_path_id` (UUID, FK → learning_paths.id)
+- `started_at`, `ended_at` (TIMESTAMPTZ)
+- `duration_minutes` (INTEGER)
+- `sections_viewed` (TEXT[])
+- `completion_percentage` (INTEGER)
+- `accessed_via` (TEXT, DEFAULT 'direct')
+
+**`module_attempts` Table** - Module completion attempts
+- `user_id` (UUID, FK → users.id, CASCADE DELETE)
+- `module_id` (UUID, FK → learning_modules.id)
+- `learning_path_id` (UUID, FK → learning_paths.id)
+- `attempt_number` (INTEGER, DEFAULT 1)
+- `started_at`, `completed_at` (TIMESTAMPTZ)
+- `time_spent_minutes` (INTEGER)
+- `completion_status` (TEXT, DEFAULT 'in_progress')
+- `assessment_score` (NUMERIC)
+- `quiz_attempt_id` (UUID)
+- `self_rating`, `confidence_level` (INTEGER)
+- `feedback` (TEXT)
+- `found_helpful` (BOOLEAN)
+- `prerequisite_check_passed` (BOOLEAN, DEFAULT TRUE)
+
+#### System Tables
+
+**`notification_states` Table** - User notification tracking
+- `user_id` (UUID, FK → users.id, CASCADE DELETE)
+- `source_type`, `source_id` (TEXT/UUID)
+- `read` (BOOLEAN, DEFAULT FALSE)
+
+**`inquiries` Table** - Contact form submissions
+- `request_type`, `first_name`, `last_name`, `organization`, `email`, `inquiry` (TEXT/VARCHAR)
+- `status` (VARCHAR, DEFAULT 'pending')
+
+**`waitlist` Table** - Email waitlist
+- `email` (TEXT, NOT NULL)
+- `type` (TEXT, DEFAULT 'launch')
+
+#### Database Functions & Triggers
+
+**User Deletion Triggers**:
+- `handle_auth_user_deletion()` - Triggered on `auth.users` DELETE
+  - Soft deletes admin/creator/reviewer users (sets `deleted_at`, `status='deleted'`)
+  - Hard deletes student/user users (CASCADE removes all data)
+  - Uses `SECURITY DEFINER` to bypass RLS policies
+
+- `handle_user_deletion()` - Triggered on `public.users` BEFORE DELETE
+  - Explicitly deletes from all user-related tables
+  - Ensures RLS policies don't block cascade deletes
+
+**Foreign Key Cascade Rules**:
+- **CASCADE DELETE**: user_settings, user_favorites, user_achievements, performance_analytics, notification_states, quiz_sessions, quiz_attempts, module_sessions, module_attempts, user_learning, question_reviews
+- **SET NULL**: questions.created_by, questions.updated_by, questions.reviewer_id, question_sets.created_by, question_versions.changed_by, question_flags.flagged_by, question_flags.resolved_by, question_reports.reported_by, learning_modules.created_by, learning_modules.reviewed_by, learning_paths.created_by, images.created_by
+
 ## 🛠️ Educational Tools
 
 ### 📚 Citations Manager
