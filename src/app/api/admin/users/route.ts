@@ -220,10 +220,13 @@ export async function DELETE(request: NextRequest) {
 
     try {
       // Delete user data from public.users and related tables
-      await deleteUser(adminClient, supabase, userId, targetUser.role as any)
+      const result = await deleteUser(adminClient, supabase, userId, targetUser.role as any)
 
-      // Delete user from auth system
-      await deleteUserFromAuth(adminClient, userId)
+      // Delete user from auth system ONLY for hard deletes
+      // For soft deletes, preserve auth record so user can log back in and be restored
+      if (result.deletionType === 'hard_delete') {
+        await deleteUserFromAuth(adminClient, userId)
+      }
 
       console.log('Successfully deleted user:', { userId, email: targetUser.email, deletionType })
       return NextResponse.json({

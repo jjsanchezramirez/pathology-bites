@@ -97,11 +97,14 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
         return NextResponse.redirect(`${origin}/auth-error?error=user_check_failed&description=Failed to check user account`)
       } else if (existingUser?.status === 'deleted') {
         // User exists but is soft-deleted - restore them
+        console.log('Restoring soft-deleted user:', { userId: data.user.id, email: data.user.email })
+
         const { data: restoredUser, error: restoreError } = await supabase
           .from('users')
           .update({
             status: 'active',
-            deleted_at: null
+            deleted_at: null,
+            updated_at: new Date().toISOString()
           })
           .eq('id', data.user.id)
           .select('role')
@@ -112,7 +115,32 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
           return NextResponse.redirect(`${origin}/auth-error?error=user_restore_failed&description=Failed to restore user account`)
         }
 
+        // Check if user_settings exist, create if missing
+        const { data: existingSettings } = await supabase
+          .from('user_settings')
+          .select('user_id')
+          .eq('user_id', data.user.id)
+          .single()
+
+        if (!existingSettings) {
+          console.log('Creating missing user_settings for restored user:', data.user.id)
+          const { error: settingsError } = await supabase
+            .from('user_settings')
+            .insert({
+              user_id: data.user.id,
+              quiz_settings: DEFAULT_QUIZ_SETTINGS,
+              notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
+              ui_settings: DEFAULT_UI_SETTINGS
+            })
+
+          if (settingsError) {
+            console.error('Error creating user settings for restored user:', settingsError)
+            // Don't fail - user can still log in
+          }
+        }
+
         userData = restoredUser
+        console.log('User restored successfully:', { userId: data.user.id, role: restoredUser.role })
       } else {
         userData = existingUser
       }

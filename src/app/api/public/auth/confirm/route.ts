@@ -116,32 +116,46 @@ export async function GET(request: NextRequest) {
             }
           } else if (existingUser?.status === 'deleted') {
             // User exists but is soft-deleted - restore them
+            console.log('Restoring soft-deleted user via email confirmation:', { userId: authUser.id, email: authUser.email })
+
             const { error: restoreError } = await supabase
               .from('users')
               .update({
                 status: 'active',
-                deleted_at: null
+                deleted_at: null,
+                updated_at: new Date().toISOString()
               })
               .eq('id', authUser.id)
 
             if (restoreError) {
               console.error('Error restoring user:', restoreError)
               // Don't fail - user can still proceed
+            } else {
+              console.log('User restored successfully via email confirmation:', authUser.id)
             }
 
-            // Create default user settings
-            const { error: settingsError } = await supabase
+            // Check if user_settings exist before creating
+            const { data: existingSettings } = await supabase
               .from('user_settings')
-              .insert({
-                user_id: authUser.id,
-                quiz_settings: DEFAULT_QUIZ_SETTINGS,
-                notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
-                ui_settings: DEFAULT_UI_SETTINGS
-              })
+              .select('user_id')
+              .eq('user_id', authUser.id)
+              .single()
 
-            if (settingsError) {
-              console.error('Error creating user settings:', settingsError)
-              // Don't fail - user can still proceed
+            if (!existingSettings) {
+              console.log('Creating missing user_settings for restored user:', authUser.id)
+              const { error: settingsError } = await supabase
+                .from('user_settings')
+                .insert({
+                  user_id: authUser.id,
+                  quiz_settings: DEFAULT_QUIZ_SETTINGS,
+                  notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
+                  ui_settings: DEFAULT_UI_SETTINGS
+                })
+
+              if (settingsError) {
+                console.error('Error creating user settings:', settingsError)
+                // Don't fail - user can still proceed
+              }
             }
           }
         }
