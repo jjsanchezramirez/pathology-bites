@@ -660,6 +660,225 @@ notification_states (user_id, type, data, read_at, created_at)
 - **CASCADE DELETE**: user_settings, user_favorites, user_achievements, performance_analytics, notification_states, quiz_sessions, quiz_attempts, module_sessions, module_attempts, user_learning, question_reviews
 - **SET NULL**: questions.created_by, questions.updated_by, questions.reviewer_id, question_sets.created_by, question_versions.changed_by, question_flags.flagged_by, question_flags.resolved_by, question_reports.reported_by, learning_modules.created_by, learning_modules.reviewed_by, learning_paths.created_by, images.created_by
 
+### Complete API Reference
+
+The application provides a comprehensive REST API organized by feature area. All authenticated endpoints require a valid Supabase session token.
+
+#### Admin APIs (`/api/admin/*`)
+
+**Question Management**
+- `POST /api/admin/ai-generate-question` - Generate questions using AI models (OpenAI, Anthropic, Meta Llama)
+- `POST /api/admin/question-generator` - Legacy question generator endpoint
+- `POST /api/admin/questions-create` - Create new question with full validation
+- `GET /api/admin/questions/[id]` - Get question details with all relationships
+- `PATCH /api/admin/questions/[id]` - Update question (admin override)
+- `DELETE /api/admin/questions/[id]/delete` - Permanently delete question
+- `POST /api/admin/questions/[id]/copy` - Duplicate question as new draft
+- `POST /api/admin/questions/[id]/version` - Create new version of published question
+- `POST /api/admin/questions/bulk` - Bulk operations (submit_for_review, approve, reject, delete, export)
+
+**Category Management**
+- `GET /api/admin/categories` - List all categories with hierarchy
+- `POST /api/admin/categories` - Create new category
+- `PATCH /api/admin/categories` - Update category details
+- `DELETE /api/admin/categories` - Delete category (if unused)
+- `POST /api/admin/categories/bulk-assign-parent` - Bulk update parent categories
+- `POST /api/admin/categories/bulk-delete` - Bulk delete unused categories
+
+**Question Set Management**
+- `GET /api/admin/question-sets` - List all question sets
+- `POST /api/admin/question-sets` - Create new question set
+- `PATCH /api/admin/question-sets` - Update question set
+- `DELETE /api/admin/question-sets` - Delete question set
+- `POST /api/admin/question-sets/merge` - Merge multiple question sets
+- `POST /api/admin/question-sets/bulk-delete` - Bulk delete question sets
+
+**Tag Management**
+- `GET /api/admin/tags` - List all tags with usage counts
+- `POST /api/admin/tags` - Create new tag
+- `PATCH /api/admin/tags` - Update tag name/color
+- `DELETE /api/admin/tags` - Delete tag (if unused)
+- `POST /api/admin/tags/merge` - Merge multiple tags into one
+- `GET /api/admin/tags/[tagId]/questions` - Get all questions with specific tag
+
+**User Management**
+- `GET /api/admin/users` - List all users with filtering and pagination
+- `POST /api/admin/users` - Create new user account
+- `PATCH /api/admin/users` - Update user role/status
+- `DELETE /api/admin/users` - Soft/hard delete user (role-based)
+
+**Inquiry Management**
+- `GET /api/admin/inquiries/[id]` - Get inquiry details
+- `PATCH /api/admin/inquiries/[id]` - Update inquiry
+- `DELETE /api/admin/inquiries/[id]` - Delete inquiry
+- `POST /api/admin/inquiries/[id]/respond` - Send response email
+- `PATCH /api/admin/inquiries/[id]/status` - Update inquiry status
+- `POST /api/admin/inquiries/bulk-delete` - Bulk delete inquiries
+
+**Learning Module Management**
+- `GET /api/admin/learning-modules` - List all learning modules
+- `POST /api/admin/learning-modules` - Create new module
+- `PATCH /api/admin/learning-modules` - Update module content
+- `DELETE /api/admin/learning-modules` - Delete module
+
+**System Management**
+- `GET /api/admin/system-status` - Get system health and metrics
+- `GET /api/admin/r2-storage-stats` - Get R2 bucket usage statistics
+- `GET /api/admin/rate-limit-status` - Check rate limit status for user
+- `POST /api/admin/refresh-stats` - Refresh materialized views
+- `POST /api/admin/test-notifications` - Create test notifications
+- `POST /api/admin/notifications/system-update` - Send system-wide notification
+- `GET /api/admin/waitlist` - Get waitlist entries
+- `POST /api/admin/waitlist` - Add to waitlist
+- `DELETE /api/admin/waitlist` - Remove from waitlist
+
+#### Content APIs (`/api/content/*`)
+
+**Demo Questions**
+- `GET /api/content/demo-questions` - List featured demo questions (public access)
+- `GET /api/content/demo-questions/[id]` - Get single demo question with full details
+
+**Question Operations**
+- `GET /api/content/questions/[id]/export` - Export question as JSON
+- `POST /api/content/questions/[id]/submit-for-review` - Submit draft for review
+- `GET /api/content/questions/export` - Export multiple questions
+- `GET /api/content/questions/answer-options` - Get answer options for question
+- `POST /api/content/questions/answer-options` - Create/update answer options
+- `GET /api/content/questions/flags` - Get question flags/reports
+- `POST /api/content/questions/flags` - Flag question for review
+- `GET /api/content/questions/images` - Get question images
+- `POST /api/content/questions/images` - Associate images with question
+- `GET /api/content/questions/reviews` - Get review history
+- `POST /api/content/questions/reviews` - Submit review feedback
+- `GET /api/content/questions/tags` - Get question tags
+- `POST /api/content/questions/tags` - Add tags to question
+
+**Learning Paths & Modules**
+- `GET /api/content/learning/modules` - List learning modules with user progress
+- `GET /api/content/learning/paths` - List learning paths
+- `GET /api/content/learning/paths/[id]` - Get learning path details
+- `POST /api/content/learning/paths/[id]/enroll` - Enroll in learning path
+
+**Quiz System**
+- `GET /api/content/quiz/sessions` - List user's quiz sessions
+- `POST /api/content/quiz/sessions` - Create new quiz session
+- `GET /api/content/quiz/sessions/[id]` - Get quiz session details
+- `PATCH /api/content/quiz/sessions/[id]` - Update quiz session state
+- `POST /api/content/quiz/sessions/[id]/complete` - Complete quiz session
+- `GET /api/content/quiz/sessions/[id]/results` - Get quiz results
+- `GET /api/content/quiz/attempts` - Get quiz attempts for user
+- `POST /api/content/quiz/attempts` - Record quiz attempt
+- `POST /api/content/quiz/attempts/batch` - Batch record multiple attempts
+- `GET /api/content/quiz/attempts/optimized` - Get optimized attempt data
+- `GET /api/content/quiz/options` - Get quiz configuration options
+- `GET /api/content/quiz/questions/paginated` - Get paginated quiz questions
+
+#### Media APIs (`/api/media/*`)
+
+**Image Management**
+- `POST /api/media/images/upload` - Upload image to R2 storage
+- `DELETE /api/media/images/delete` - Delete image from R2 and database
+- `POST /api/media/images/replace` - Replace existing image
+- `POST /api/media/images/bulk-delete` - Bulk delete images
+
+**R2 Storage Operations**
+- `POST /api/media/r2/signed-url` - Generate signed URL for single file
+- `POST /api/media/r2/signed-urls/batch` - Generate batch signed URLs
+- `GET /api/media/r2/download` - Download file from R2
+- `POST /api/media/r2/upload-anki-media` - Upload Anki media files
+- `DELETE /api/media/r2/anki-media/delete-all` - Bulk delete all Anki media
+
+#### Public APIs (`/api/public/*`)
+
+**Authentication**
+- `GET /api/public/auth/callback` - OAuth callback handler
+- `POST /api/public/auth/check-email` - Check if email exists
+- `GET /api/public/auth/confirm` - Email confirmation handler
+
+**Data Endpoints** (No authentication required)
+- `GET /api/public/data/cell-quiz-images` - Cell quiz image dataset (24h cache)
+- `GET /api/public/data/cell-quiz-references` - Cell quiz references (24h cache)
+- `GET /api/public/data/virtual-slides` - Full virtual slides dataset (15MB)
+- `GET /api/public/data/virtual-slides/paginated` - Paginated virtual slides
+
+**Educational Tools**
+- `POST /api/public/tools/citation-generator/extract-url-metadata` - Extract citation from URL
+- `POST /api/public/tools/citation-generator/extract-journal-metadata` - Extract DOI metadata
+- `POST /api/public/tools/citation-generator/extract-book-metadata` - Extract ISBN metadata
+- `POST /api/public/tools/gene-lookup` - Look up gene information (HGNC/Harmonizome)
+- `POST /api/public/tools/diagnostic-search` - Search diagnostic criteria
+- `POST /api/public/tools/wsi-question-generator/generate` - Generate WSI questions with AI
+
+**System Endpoints**
+- `GET /api/public/health` - Health check endpoint
+- `GET /api/public/csrf-token` - Get CSRF token
+- `GET /api/public/stats` - Public statistics
+- `GET /api/public/maintenance` - Maintenance mode status
+- `POST /api/public/subscribe` - Subscribe to newsletter/waitlist
+- `GET /api/public/security/events` - Get security events (admin only)
+- `POST /api/public/security/events` - Log security event
+
+#### Question Review APIs (`/api/questions/*`)
+
+**Review Workflow**
+- `POST /api/questions/[id]/submit-for-review` - Submit question for review
+- `POST /api/questions/[id]/approve` - Approve question (reviewer/admin)
+- `POST /api/questions/[id]/reject` - Reject question with feedback
+- `POST /api/questions/[id]/reassign` - Reassign to different reviewer
+
+**Reviewer Management**
+- `GET /api/reviewers` - List all reviewers with workload stats
+
+#### User APIs (`/api/user/*`)
+
+**Account Management**
+- `DELETE /api/user/account/delete` - Delete user account (soft/hard based on role)
+- `POST /api/user/password-reset` - Request password reset
+- `POST /api/user/data-export` - Export all user data (GDPR compliance)
+
+**User Settings**
+- `GET /api/user/settings` - Get user settings
+- `PATCH /api/user/settings` - Update user settings
+- `POST /api/user/settings/sync` - Sync settings from localStorage to database
+
+**Dashboard Data**
+- `GET /api/user/dashboard/stats` - Get dashboard statistics
+- `GET /api/user/dashboard/activities` - Get recent activities
+- `GET /api/user/dashboard/consolidated` - Get consolidated dashboard data
+
+**Favorites**
+- `GET /api/user/favorites` - Get user's favorite questions
+- `POST /api/user/favorites` - Add question to favorites
+- `DELETE /api/user/favorites` - Remove from favorites
+
+#### API Features
+
+**Authentication & Authorization**
+- All authenticated endpoints use Supabase JWT tokens
+- Role-based access control (Admin, Creator, Reviewer, User)
+- Row Level Security (RLS) enforced at database level
+
+**Caching Strategy**
+- Public data endpoints: 24h cache with stale-while-revalidate
+- R2 data: Zero-egress optimization with aggressive caching
+- Client-side caching for educational tools (localStorage)
+
+**Rate Limiting**
+- Admin endpoints: 200 requests/minute
+- Public endpoints: 100 requests/minute
+- Tool endpoints: 50 requests/minute
+
+**Error Handling**
+- Consistent error response format
+- HTTP status codes: 200 (success), 400 (bad request), 401 (unauthorized), 403 (forbidden), 404 (not found), 500 (server error)
+- Detailed error messages in development, sanitized in production
+
+**Performance Optimizations**
+- Batch operations for bulk updates
+- Optimized database queries with proper indexing
+- Pagination for large datasets
+- Progressive loading for large files
+
 ## 🛠️ Educational Tools
 
 ### 📚 Citations Manager
