@@ -77,7 +77,11 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
         if (!mounted) return
 
         if (profileError) {
-          console.error('Profile error:', profileError)
+          // Only log meaningful errors (empty objects are often false positives from RLS)
+          if (profileError.message || profileError.code) {
+            console.error('Profile error:', profileError)
+          }
+          // Still set profile to null on error, but don't spam console with empty errors
           setUserProfile(null)
         } else {
           setUserProfile(profile)
