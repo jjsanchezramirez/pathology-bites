@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { userSettingsService } from '@/shared/services/user-settings'
 import { createClient } from '@/shared/services/client'
 import { getTextZoomConfig, applyTextZoom, getValidZoomLevel } from '@/shared/utils/text-zoom'
+import { useUserRole } from '@/shared/hooks/use-user-role'
 
 interface DashboardSettingsContextType {
   textZoom: number
@@ -17,6 +18,7 @@ interface DashboardSettingsContextType {
 const DashboardSettingsContext = createContext<DashboardSettingsContextType | undefined>(undefined)
 
 export function DashboardSettingsProvider({ children }: { children: ReactNode }) {
+  const { isAdmin } = useUserRole()
   const [textZoom, setTextZoomState] = useState(1.0)
   const [dashboardTheme, setDashboardThemeState] = useState('default')
   const [isLoading, setIsLoading] = useState(true)
@@ -45,20 +47,23 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
         setTextZoomState(validZoom)
         applyTextZoom(validZoom)
 
-        // Apply dashboard theme
+        // Apply dashboard theme - use same logic as DashboardThemeContext
         const adminModeCookie = document.cookie
           .split('; ')
           .find(row => row.startsWith('admin-mode='))
-          ?.split('=')[1] || 'admin'
+          ?.split('=')[1]
 
-        const themeKey = adminModeCookie === 'admin'
+        // If no cookie and user is not admin, default to 'user' mode (same as DashboardThemeContext)
+        const adminMode = !adminModeCookie && !isAdmin ? 'user' : (adminModeCookie || 'admin')
+
+        const themeKey = adminMode === 'admin'
           ? 'dashboard_theme_admin'
           : 'dashboard_theme_user'
 
         const theme = settings.ui_settings?.[themeKey] ?? 'default'
         setDashboardThemeState(theme)
 
-        console.log('[DashboardSettings] Applied - zoom:', validZoom, 'theme:', theme)
+        console.log('[DashboardSettings] Applied - zoom:', validZoom, 'theme:', theme, 'adminMode:', adminMode)
       } catch (error) {
         console.error('[DashboardSettings] Failed to load:', error)
       } finally {
@@ -67,7 +72,7 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
     }
 
     loadSettings()
-  }, [config.default])
+  }, [config.default, isAdmin])
 
   // Update text zoom
   const setTextZoom = async (newZoom: number) => {
@@ -91,10 +96,13 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
       const adminModeCookie = document.cookie
         .split('; ')
         .find(row => row.startsWith('admin-mode='))
-        ?.split('=')[1] || 'admin'
-      
-      const themeKey = adminModeCookie === 'admin' 
-        ? 'dashboard_theme_admin' 
+        ?.split('=')[1]
+
+      // Use same logic as loadSettings
+      const adminMode = !adminModeCookie && !isAdmin ? 'user' : (adminModeCookie || 'admin')
+
+      const themeKey = adminMode === 'admin'
+        ? 'dashboard_theme_admin'
         : 'dashboard_theme_user'
 
       await userSettingsService.updateUISettings({ [themeKey]: theme })
