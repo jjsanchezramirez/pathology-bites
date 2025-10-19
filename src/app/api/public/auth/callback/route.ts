@@ -41,7 +41,7 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
       let userData = null
       const { data: existingUser, error: profileError } = await supabase
         .from('users')
-        .select('role')
+        .select('role, status, deleted_at')
         .eq('id', data.user.id)
         .single()
 
@@ -95,6 +95,24 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
       } else if (profileError) {
         console.error('Error checking user:', profileError)
         return NextResponse.redirect(`${origin}/auth-error?error=user_check_failed&description=Failed to check user account`)
+      } else if (existingUser?.status === 'deleted') {
+        // User exists but is soft-deleted - restore them
+        const { data: restoredUser, error: restoreError } = await supabase
+          .from('users')
+          .update({
+            status: 'active',
+            deleted_at: null
+          })
+          .eq('id', data.user.id)
+          .select('role')
+          .single()
+
+        if (restoreError) {
+          console.error('Error restoring user:', restoreError)
+          return NextResponse.redirect(`${origin}/auth-error?error=user_restore_failed&description=Failed to restore user account`)
+        }
+
+        userData = restoredUser
       } else {
         userData = existingUser
       }

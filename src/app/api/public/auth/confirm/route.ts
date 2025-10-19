@@ -89,9 +89,9 @@ export async function GET(request: NextRequest) {
 
         if (authUser) {
           // Check if user exists in public.users
-          const { error: checkError } = await supabase
+          const { data: existingUser, error: checkError } = await supabase
             .from('users')
-            .select('id')
+            .select('id, status')
             .eq('id', authUser.id)
             .single()
 
@@ -112,6 +112,20 @@ export async function GET(request: NextRequest) {
 
             if (createError) {
               console.error('Error creating user:', createError)
+              // Don't fail - user can still proceed
+            }
+          } else if (existingUser?.status === 'deleted') {
+            // User exists but is soft-deleted - restore them
+            const { error: restoreError } = await supabase
+              .from('users')
+              .update({
+                status: 'active',
+                deleted_at: null
+              })
+              .eq('id', authUser.id)
+
+            if (restoreError) {
+              console.error('Error restoring user:', restoreError)
               // Don't fail - user can still proceed
             }
 
