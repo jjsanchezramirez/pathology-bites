@@ -59,7 +59,7 @@ export function BulkSubmitDialog({
 
       setLoading(true)
       try {
-        const response = await fetch('/api/reviewers')
+        const response = await fetch('/api/admin/reviewers')
         if (!response.ok) {
           throw new Error('Failed to fetch reviewers')
         }

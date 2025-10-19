@@ -647,69 +647,56 @@ notification_states (user_id, type, data, read_at, created_at)
 #### Database Functions & Triggers
 
 **IMPORTANT: User creation and deletion are handled AUTOMATICALLY by database triggers.**
-**Application code should NOT manually create or delete user records.**
+**Application code IS responsible for creating user records in `public.users` and `public.user_settings`.**
 
-##### User Creation Triggers
+##### User Creation (Application Code)
 
-When a user signs up (via email or OAuth), they are created in `auth.users`. The following trigger automatically creates the corresponding application records:
+When a user signs up (via email or OAuth), they are created in `auth.users` by Supabase. The application code then creates the corresponding records in `public.users` and `public.user_settings`.
 
-**Trigger: `on_auth_user_created`**
-- **Table**: `auth.users`
-- **Timing**: AFTER INSERT
-- **Function**: `handle_new_user()`
-- **Actions**:
-  1. Creates record in `public.users` with user metadata (email, first_name, last_name, user_type, role='user', status='active')
-  2. Calls `create_user_settings_for_new_user()` to create default user settings
-- **Security**: SECURITY DEFINER (bypasses RLS policies)
-- **Migration**: `supabase/migrations/20250119000002_fix_user_creation_trigger.sql`
+**Auth Callback Routes** (`/api/public/auth/callback`, `/api/public/auth/confirm`):
+- **Responsibility**: Manually create `public.users` and `public.user_settings` entries
+- **Process**:
+  1. User is created in `auth.users` by Supabase
+  2. Auth callback/confirm route checks if user exists in `public.users`
+  3. If not, creates user record with metadata from `auth.users` (email, first_name, last_name, user_type, role='user', status='active')
+  4. Creates default `user_settings` with quiz_settings, notification_settings, and ui_settings
+  5. Defaults match `src/shared/constants/user-settings-defaults.ts`
+- **Error Handling**: If user creation fails, logs error but allows user to proceed (they can still log in)
+- **Files**:
+  - `src/app/api/public/auth/callback/route.ts` (OAuth flow)
+  - `src/app/api/public/auth/confirm/route.ts` (Email verification flow)
 
-**Function: `create_user_settings_for_new_user(p_user_id UUID)`**
-- **Purpose**: Creates default user settings for new users
-- **Creates**: Record in `user_settings` with default quiz_settings, notification_settings, and ui_settings
-- **Defaults**: Match `src/shared/constants/user-settings-defaults.ts`
-- **Security**: SECURITY DEFINER (bypasses RLS policies)
+##### User Deletion (Application Code)
 
-**Application Code**: Auth callback routes (`/api/public/auth/callback`, `/api/public/auth/confirm`) do NOT manually create users. The trigger handles everything automatically.
+When a user is deleted (via admin or self-deletion), the deletion is handled in APPLICATION CODE.
 
-##### User Deletion Triggers
+**Deletion Service**: `src/shared/services/user-deletion.ts`
+- **Functions**:
+  - `deleteUser()` - Handles soft/hard deletion of user data
+  - `deleteUserFromAuth()` - Deletes user from auth system
+- **Process**:
+  1. Determine deletion type based on user role
+  2. Delete user data from `public.users` and related tables
+  3. Delete user from `auth.users`
+  4. Sign out the user (for self-deletion)
 
-When a user is deleted (via admin or self-deletion), the deletion is initiated from `auth.users`. The following triggers handle the cascade:
+**Deletion Types**:
+- **Soft Delete** (admin/creator/reviewer):
+  - Sets `deleted_at = NOW()`
+  - Sets `status = 'deleted'`
+  - Preserves record for attribution (questions, reviews, etc.)
+- **Hard Delete** (student/user):
+  - Deletes from all user-related tables:
+    - `user_settings`, `user_favorites`, `user_achievements`
+    - `performance_analytics`, `notification_states`
+    - `quiz_sessions`, `quiz_attempts`
+    - `module_sessions`, `module_attempts`, `user_learning`
+  - Deletes from `public.users`
+  - Deletes from `auth.users`
 
-**Trigger: `on_auth_user_deleted`**
-- **Table**: `auth.users`
-- **Timing**: AFTER DELETE
-- **Function**: `handle_auth_user_deletion()`
-- **Actions**:
-  - **For admin/creator/reviewer**: SOFT DELETE
-    - Sets `deleted_at = NOW()`
-    - Sets `status = 'deleted'`
-    - Preserves record for attribution (questions, reviews, etc.)
-  - **For student/user**: HARD DELETE
-    - Explicitly deletes from all user-related tables (bypasses RLS)
-    - Then deletes from `public.users`
-- **Security**: SECURITY DEFINER (bypasses RLS policies)
-- **Migration**: Database function (check with `SELECT pg_get_functiondef(oid) FROM pg_proc WHERE proname = 'handle_auth_user_deletion'`)
-
-**Trigger: `trigger_handle_user_deletion`**
-- **Table**: `public.users`
-- **Timing**: BEFORE DELETE
-- **Function**: `handle_user_deletion()`
-- **Actions**: Explicitly deletes from all user-related tables:
-  - `user_settings`
-  - `user_favorites`
-  - `user_achievements`
-  - `performance_analytics`
-  - `notification_states`
-  - `quiz_sessions`
-  - `quiz_attempts`
-  - `module_sessions`
-  - `module_attempts`
-  - `user_learning`
-- **Purpose**: Ensures RLS policies don't block cascade deletes
-- **Security**: SECURITY DEFINER (bypasses RLS policies)
-- **Note**: Only deletes from tables with `user_id` foreign key (CASCADE delete). Tables with `created_by`, `reviewed_by`, etc. use SET NULL.
-
-**Application Code**: User deletion routes (`/api/user/account/delete`, `/api/admin/users DELETE`) only call `adminClient.auth.admin.deleteUser()`. The triggers handle all cascade logic automatically.
+**API Routes**:
+- `DELETE /api/user/account/delete` - Self-deletion (requires password verification)
+- `DELETE /api/admin/users` - Admin deletion (requires admin role)
 
 ##### Other Database Triggers
 
@@ -902,7 +889,7 @@ The application provides a comprehensive REST API organized by feature area. All
 - `POST /api/questions/[id]/reassign` - Reassign to different reviewer
 
 **Reviewer Management**
-- `GET /api/reviewers` - List all reviewers with workload stats
+- `GET /api/admin/reviewers` - List all reviewers with workload stats
 
 #### User APIs (`/api/user/*`)
 

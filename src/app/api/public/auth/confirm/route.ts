@@ -64,22 +64,86 @@ export async function GET(request: NextRequest) {
 
     if (!error) {
       console.log('OTP verification successful')
-      
+
       // Handle different verification types
       if (type === 'signup' || type === 'email') { // Accept both types
         /**
          * USER CREATION NOTE:
-         * User creation in public.users and user_settings is handled AUTOMATICALLY by database triggers.
-         * When a user is created in auth.users, the following triggers fire:
+         * User creation in public.users and user_settings is handled in APPLICATION CODE.
+         * This ensures all users have corresponding entries in both tables.
          *
-         * 1. Trigger: on_auth_user_created (AFTER INSERT on auth.users)
-         *    - Calls: handle_new_user()
-         *    - Creates record in public.users with user metadata
-         *    - Calls create_user_settings_for_new_user() to create default settings
-         *
-         * No manual user creation is needed here. The trigger handles everything.
-         * See: supabase/migrations/20250119000002_fix_user_creation_trigger.sql
+         * Process:
+         * 1. Get the authenticated user from session
+         * 2. Check if user exists in public.users
+         * 3. If not, create user record with metadata from auth.users
+         * 4. Create default user_settings for the new user
          */
+
+        // Get the authenticated user
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+
+        if (authUser) {
+          // Check if user exists in public.users
+          const { data: existingUser, error: checkError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', authUser.id)
+            .single()
+
+          // If user doesn't exist, create them
+          if (checkError && checkError.code === 'PGRST116') {
+            // Create user in public.users
+            const { error: createError } = await supabase
+              .from('users')
+              .insert({
+                id: authUser.id,
+                email: authUser.email || '',
+                first_name: authUser.user_metadata?.first_name || '',
+                last_name: authUser.user_metadata?.last_name || '',
+                user_type: authUser.user_metadata?.user_type || 'other',
+                role: 'user',
+                status: 'active'
+              })
+
+            if (createError) {
+              console.error('Error creating user:', createError)
+              // Don't fail - user can still proceed
+            }
+
+            // Create default user settings
+            const { error: settingsError } = await supabase
+              .from('user_settings')
+              .insert({
+                user_id: authUser.id,
+                quiz_settings: {
+                  default_question_count: 10,
+                  default_mode: 'tutor',
+                  default_timing: 'untimed',
+                  default_question_type: 'unused',
+                  default_category_selection: 'all'
+                },
+                notification_settings: {
+                  email_notifications: true,
+                  quiz_reminders: true,
+                  progress_updates: true
+                },
+                ui_settings: {
+                  theme: 'system',
+                  font_size: 'medium',
+                  text_zoom: 1.0,
+                  dashboard_theme_admin: 'default',
+                  dashboard_theme_user: 'tangerine',
+                  sidebar_collapsed: false,
+                  welcome_message_seen: false
+                }
+              })
+
+            if (settingsError) {
+              console.error('Error creating user settings:', settingsError)
+              // Don't fail - user can still proceed
+            }
+          }
+        }
 
         console.log('Redirecting to email-verified page')
         return NextResponse.redirect(`${origin}/email-verified`)
@@ -89,7 +153,7 @@ export async function GET(request: NextRequest) {
       } else if (type === 'email_change') {
         return NextResponse.redirect(`${origin}/dashboard?message=Email updated successfully`)
       }
-      
+
       // Default redirect
       return NextResponse.redirect(`${origin}${next}`)
     } else {

@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { deleteUser, deleteUserFromAuth } from '@/shared/services/user-deletion'
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
@@ -72,34 +73,28 @@ export async function DELETE(request: NextRequest) {
 
     /**
      * USER DELETION NOTE:
-     * User deletion is handled AUTOMATICALLY by database triggers.
-     * When a user is deleted from auth.users, the following cascade occurs:
+     * User deletion is handled in APPLICATION CODE.
      *
-     * 1. Trigger: on_auth_user_deleted (AFTER DELETE on auth.users)
-     *    - Calls: handle_auth_user_deletion()
-     *    - For admin/creator/reviewer: SOFT DELETE (sets deleted_at, status='deleted')
-     *    - For student/user: HARD DELETE (deletes from all user-related tables)
-     *
-     * 2. If hard delete, Trigger: trigger_handle_user_deletion (BEFORE DELETE on public.users)
-     *    - Calls: handle_user_deletion()
-     *    - Explicitly deletes from: user_settings, user_favorites, user_achievements,
-     *      performance_analytics, notification_states, quiz_sessions, quiz_attempts,
-     *      module_sessions, module_attempts, user_learning
-     *
-     * See: Database functions handle_auth_user_deletion() and handle_user_deletion()
+     * Process:
+     * 1. Delete user data from public.users and related tables based on role
+     *    - Soft delete: For admin/creator/reviewer (preserves record for attribution)
+     *    - Hard delete: For student/user (removes all data)
+     * 2. Delete user from auth.users
+     * 3. Sign out the user
      */
 
-    // Delete user from auth system - triggers will handle the cascade
     try {
       const adminClient = createAdminClient()
-      const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(user.id)
 
-      if (authDeleteError) {
-        console.error('Error deleting user from auth:', authDeleteError)
-        return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 })
-      }
-    } catch (authDeleteError) {
-      console.error('Error deleting user from auth:', authDeleteError)
+      // Delete user data from public.users and related tables
+      await deleteUser(adminClient, supabase, user.id, userData.role as any)
+
+      // Delete user from auth system
+      await deleteUserFromAuth(adminClient, user.id)
+
+      console.log('User account deleted successfully:', { userId: user.id, email: user.email, deletionType })
+    } catch (deletionError) {
+      console.error('Error deleting user account:', deletionError)
       return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 })
     }
 

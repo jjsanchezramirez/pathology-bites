@@ -438,8 +438,11 @@ Quiz/module session status
 
 ## Database Triggers
 
-### User Management Triggers (2)
-- `trigger_handle_user_deletion` - Cascades user deletion to related tables
+### User Management Triggers
+- **Removed**: All user management triggers have been removed
+  - `on_auth_user_created` - Removed (user creation now in application code)
+  - `on_auth_user_deleted` - Removed (user deletion now in application code)
+  - `trigger_handle_user_deletion` - Removed (user deletion now in application code)
 
 ### Question Analytics Triggers (3)
 - `quiz_attempts_analytics_trigger` - Updates analytics on quiz attempts
@@ -492,11 +495,13 @@ Quiz/module session status
 
 ## Database Functions
 
-### User Management Functions (3)
-- `handle_new_user()` - Creates user record on auth signup
-- `handle_auth_user_deletion()` - Handles user deletion cascade
-- `handle_user_deletion()` - Explicit deletion from user tables
-- `create_user_settings_for_new_user()` - Creates default settings
+### User Management Functions
+- **Removed**: All user management functions have been removed
+  - `handle_new_user()` - Removed (user creation now in application code)
+  - `create_user_settings_for_new_user()` - Removed (user creation now in application code)
+  - `handle_auth_user_deletion()` - Removed (user deletion now in application code)
+  - `handle_user_deletion()` - Removed (user deletion now in application code)
+- **Location**: User management logic is now in `src/shared/services/user-deletion.ts`
 
 ### Analytics Functions (5)
 - `calculate_question_analytics()` - Calculates question metrics

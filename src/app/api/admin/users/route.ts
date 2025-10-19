@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { deleteUser, deleteUserFromAuth } from '@/shared/services/user-deletion'
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
@@ -208,45 +209,21 @@ export async function DELETE(request: NextRequest) {
 
     /**
      * USER DELETION NOTE:
-     * User deletion is handled AUTOMATICALLY by database triggers.
-     * When a user is deleted from auth.users, the following cascade occurs:
+     * User deletion is handled in APPLICATION CODE.
      *
-     * 1. Trigger: on_auth_user_deleted (AFTER DELETE on auth.users)
-     *    - Calls: handle_auth_user_deletion()
-     *    - For admin/creator/reviewer: SOFT DELETE (sets deleted_at, status='deleted')
-     *    - For student/user: HARD DELETE (deletes from all user-related tables)
-     *
-     * 2. If hard delete, Trigger: trigger_handle_user_deletion (BEFORE DELETE on public.users)
-     *    - Calls: handle_user_deletion()
-     *    - Explicitly deletes from: user_settings, user_favorites, user_achievements,
-     *      performance_analytics, notification_states, quiz_sessions, quiz_attempts,
-     *      module_sessions, module_attempts, user_learning
-     *
-     * See: Database functions handle_auth_user_deletion() and handle_user_deletion()
+     * Process:
+     * 1. Delete user data from public.users and related tables based on role
+     *    - Soft delete: For admin/creator/reviewer (preserves record for attribution)
+     *    - Hard delete: For student/user (removes all data)
+     * 2. Delete user from auth.users
      */
 
-    // Delete user from auth system - triggers will handle the cascade
     try {
-      const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(userId)
+      // Delete user data from public.users and related tables
+      await deleteUser(adminClient, supabase, userId, targetUser.role as any)
 
-      if (authDeleteError) {
-        console.error('Error deleting user from auth:', {
-          error: authDeleteError,
-          userId,
-          targetUser: { id: targetUser.id, email: targetUser.email, role: targetUser.role }
-        })
-
-        // Provide more specific error messages based on the error type
-        if (authDeleteError.message?.includes('not found')) {
-          return NextResponse.json({ error: 'User not found in authentication system' }, { status: 404 })
-        } else if (authDeleteError.message?.includes('permission')) {
-          return NextResponse.json({ error: 'Insufficient permissions to delete user' }, { status: 403 })
-        } else {
-          return NextResponse.json({
-            error: `Failed to delete user: ${authDeleteError.message || 'Unknown error'}`
-          }, { status: 500 })
-        }
-      }
+      // Delete user from auth system
+      await deleteUserFromAuth(adminClient, userId)
 
       console.log('Successfully deleted user:', { userId, email: targetUser.email, deletionType })
       return NextResponse.json({
@@ -255,16 +232,25 @@ export async function DELETE(request: NextRequest) {
         deletionType
       })
 
-    } catch (authDeleteError) {
+    } catch (deletionError) {
       console.error('Exception during user deletion:', {
-        error: authDeleteError,
+        error: deletionError,
         userId,
         targetUser: { id: targetUser.id, email: targetUser.email, role: targetUser.role }
       })
 
-      return NextResponse.json({
-        error: `Failed to delete user: ${authDeleteError instanceof Error ? authDeleteError.message : 'Unknown error'}`
-      }, { status: 500 })
+      const errorMessage = deletionError instanceof Error ? deletionError.message : 'Unknown error'
+
+      // Provide more specific error messages based on the error type
+      if (errorMessage.includes('not found')) {
+        return NextResponse.json({ error: 'User not found in authentication system' }, { status: 404 })
+      } else if (errorMessage.includes('permission')) {
+        return NextResponse.json({ error: 'Insufficient permissions to delete user' }, { status: 403 })
+      } else {
+        return NextResponse.json({
+          error: `Failed to delete user: ${errorMessage}`
+        }, { status: 500 })
+      }
     }
 
   } catch (error) {

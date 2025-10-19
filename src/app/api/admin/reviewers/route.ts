@@ -2,7 +2,7 @@ import { createClient } from '@/shared/services/server'
 import { NextResponse } from 'next/server'
 
 /**
- * GET /api/reviewers
+ * GET /api/admin/reviewers
  * 
  * Get list of available reviewers (users with admin or reviewer role)
  * Optionally includes workload (number of pending questions assigned)
