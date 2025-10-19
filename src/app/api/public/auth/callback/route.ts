@@ -1,12 +1,20 @@
 // src/app/api/public/auth/callback/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { withRateLimit, authRateLimiter } from '@/shared/utils/api-rate-limiter'
 import {
   DEFAULT_QUIZ_SETTINGS,
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_UI_SETTINGS
 } from '@/shared/constants/user-settings-defaults'
+
+// Create Supabase client with service role for admin operations
+function createAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey)
+}
 
 const rateLimitedHandler = withRateLimit(authRateLimiter)
 
@@ -74,8 +82,27 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
           role: softDeletedUser.role
         })
 
+        // Use admin client to bypass RLS policies for restoration
+        const adminClient = createAdminClient()
+
+        // Delete the old user record first (must be done with admin client)
+        const { error: deleteOldUserError } = await adminClient
+          .from('users')
+          .delete()
+          .eq('id', softDeletedUser.id)
+
+        if (deleteOldUserError) {
+          console.error('Error deleting old user record:', deleteOldUserError)
+        }
+
+        // Delete old user_settings if they exist
+        await adminClient
+          .from('user_settings')
+          .delete()
+          .eq('user_id', softDeletedUser.id)
+
         // Create new user record with new ID but preserve old user's data
-        const { data: restoredUser, error: createError } = await supabase
+        const { data: restoredUser, error: createError } = await adminClient
           .from('users')
           .insert({
             id: data.user.id, // New auth.users ID
@@ -96,14 +123,8 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
           return NextResponse.redirect(`${origin}/auth-error?error=user_restore_failed&description=Failed to restore user account`)
         }
 
-        // Delete the old user record
-        await supabase
-          .from('users')
-          .delete()
-          .eq('id', softDeletedUser.id)
-
         // Create user_settings for the new ID
-        const { error: settingsError } = await supabase
+        const { error: settingsError } = await adminClient
           .from('user_settings')
           .insert({
             user_id: data.user.id,
@@ -116,12 +137,6 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
           console.error('Error creating user settings for restored user:', settingsError)
           // Don't fail - user can still log in
         }
-
-        // Delete old user_settings if they exist
-        await supabase
-          .from('user_settings')
-          .delete()
-          .eq('user_id', softDeletedUser.id)
 
         userData = restoredUser
         console.log('User restored successfully with new ID:', { userId: data.user.id, role: restoredUser.role })
