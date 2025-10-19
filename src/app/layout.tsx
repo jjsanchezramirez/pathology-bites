@@ -1,5 +1,6 @@
 // src/app/layout.tsx
 import { ConditionalThemeProvider } from '@/shared/components/common/conditional-theme-provider'
+import { PublicThemeEnforcer } from '@/shared/components/common/public-theme-enforcer'
 import { Toaster as SonnerToaster } from "@/shared/components/ui/sonner"
 import { ConnectionStatus } from "@/shared/components/common/connection-status"
 import { CookieConsentBanner } from "@/shared/components/common/cookie-consent-banner"
@@ -150,6 +151,7 @@ export default async function RootLayout({
 
         <AnalyticsProvider>
           <ConditionalThemeProvider attribute="class" defaultTheme="system">
+            <PublicThemeEnforcer />
             <div className="relative flex min-h-screen flex-col">
               <AuthProvider>
                 <div>{children}</div>

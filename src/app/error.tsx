@@ -41,18 +41,24 @@ const ERROR_CONTENT = {
 const getRandomElement = <T,>(arr: readonly T[]): T => 
   arr[Math.floor(Math.random() * arr.length)];
 
-export default function ErrorPage({ 
+export default function ErrorPage({
   error,
 }: {
   error: Error & { digest?: string };
 }) {
   useEffect(() => {
+    // Enforce light mode on error pages
+    const html = document.documentElement
+    html.classList.remove('dark')
+    html.classList.add('light')
+    html.setAttribute('data-error-page-enforced', 'true')
+
     // Log error
     console.error('Page Error:', error);
-    
+
     // Create and use the error message for screen readers
     const errorMessage = `Error occurred: ${error.message}`;
-    
+
     // You could use this with an aria-live region if needed
     // For now, just focus the error message element
     if (typeof window !== 'undefined') {

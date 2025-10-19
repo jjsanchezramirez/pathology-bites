@@ -15,6 +15,7 @@ export * from './loading-spinner'
 export * from './mouse-avoiding-logos'
 export * from './public-hero'
 export * from './public-stats-section'
+export * from './public-theme-enforcer'
 export * from './scroll-to-top'
 
 export * from './simple-image-viewer'

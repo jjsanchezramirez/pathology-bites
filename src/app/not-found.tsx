@@ -61,6 +61,12 @@ export default function NotFoundPage() {
   const [randomContent, setRandomContent] = useState<RandomContent | null>(null);
 
   useEffect(() => {
+    // Enforce light mode on 404 page
+    const html = document.documentElement
+    html.classList.remove('dark')
+    html.classList.add('light')
+    html.setAttribute('data-not-found-page-enforced', 'true')
+
     if (!randomContent) {
       setRandomContent(generateRandomContent());
     }
