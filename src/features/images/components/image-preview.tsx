@@ -171,12 +171,14 @@ export function ImagePreview({
       {isPreviewVisible && (
         <div
           ref={previewRef}
-          className="fixed z-100 rounded-xl shadow-lg bg-white/5 backdrop-blur-xs"
+          className="fixed z-100 rounded-lg shadow-lg bg-white/5 backdrop-blur-xs overflow-hidden"
           style={{
             top: position.top,
             left: position.left,
             opacity: 0,
-            animation: 'preview-fade-in 200ms ease-out forwards'
+            animation: 'preview-fade-in 200ms ease-out forwards',
+            maxWidth: '320px',
+            maxHeight: '320px'
           }}
         >
           <style jsx>{`
@@ -194,16 +196,14 @@ export function ImagePreview({
           <Image
             src={src}
             alt={alt}
-            width={0}
-            height={0}
+            width={320}
+            height={320}
             unoptimized
-            sizes="(max-width: 768px) 50vw, 25vw"
-            className="max-w-[50vw] max-h-[50vh] md:max-w-[25vw] md:max-h-[25vh] w-auto h-auto object-contain rounded-xl"
+            sizes="320px"
+            className="w-full h-full object-cover rounded-lg"
             style={{
-              width: 'auto',
-              height: 'auto',
-              maxWidth: '50vw',
-              maxHeight: '50vh',
+              width: '100%',
+              height: '100%',
             }}
           />
         </div>
