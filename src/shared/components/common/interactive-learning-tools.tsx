@@ -121,7 +121,7 @@ export function InteractiveLearningTools({
 
           <div className="group relative overflow-hidden rounded-xl border bg-card p-6 hover:shadow-lg transition-all duration-300 flex flex-col">
             <div className="mb-4">
-              <h3 className="text-xl font-bold mb-2">Gene Lookup</h3>
+              <h3 className="text-xl font-bold mb-2">Gene Finder</h3>
               <p className="text-sm text-muted-foreground font-medium">Molecular references</p>
             </div>
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed flex-1">

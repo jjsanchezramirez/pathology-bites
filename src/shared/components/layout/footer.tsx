@@ -108,7 +108,6 @@ export function Footer() {
 
                   {isToolsOpen && (
                     <div id="mobile-tools-menu" className="mt-2 grid grid-cols-2 gap-2">
-                    {/* Core Learning Resources */}
                     <Link
                       href="/tools/images"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
@@ -119,22 +118,20 @@ export function Footer() {
                       href="/tools/abpath"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
                     >
-                      ABPath Content
+                      ABPath Content Specs
                     </Link>
-                    {/* Quiz & Practice Tools */}
                     <Link
                       href="/tools/cell-quiz"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
                     >
-                      Cell Quiz
+                      Hemepath Quiz
                     </Link>
                     <Link
                       href="/tools/wsi-question-generator"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
                     >
-                      Digital Slides
+                      Digital Slides Questions
                     </Link>
-                    {/* Laboratory Tools */}
                     <Link
                       href="/tools/cell-counter"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
@@ -145,14 +142,13 @@ export function Footer() {
                       href="/tools/lupus-anticoagulant"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
                     >
-                      Lupus Anticoagulant
+                      LAC Calculator
                     </Link>
-                    {/* Reference & Search Tools */}
                     <Link
                       href="/tools/gene-lookup"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
                     >
-                      Gene Lookup
+                      Gene Finder
                     </Link>
                     <Link
                       href="/tools/citations"
@@ -179,28 +175,28 @@ export function Footer() {
                           Image Database
                         </Link>
                         <Link href="/tools/abpath" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          ABPath Content
+                          ABPath Content Specs
                         </Link>
                         {/* Quiz & Practice Tools */}
                         <Link href="/tools/cell-quiz" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          Cell Quiz
+                          Hemepath Quiz
                         </Link>
                         <Link href="/tools/wsi-question-generator" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          Digital Slides
+                          Digital Slides Questions
                         </Link>
                         {/* Laboratory Tools */}
                         <Link href="/tools/cell-counter" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
                           Cell Counter
                         </Link>
                         <Link href="/tools/lupus-anticoagulant" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          Lupus Anticoagulant
+                          LAC Calculator
                         </Link>
                         {/* Reference & Search Tools */}
                         <Link href="/tools/gene-lookup" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          Gene Lookup
+                          Gene Finder
                         </Link>
                         <Link href="/tools/citations" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
-                          Citations Generator
+                          Citation Generator
                         </Link>
                       </div>
                     </div>

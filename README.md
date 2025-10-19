@@ -24,10 +24,10 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 - **Status Tracking**: Real-time status updates across draft → review → published lifecycle
 
 ✅ **Advanced Tool Suite**
-- **Citations Manager**: Smart caching, 24h TTL, supports URL/DOI/ISBN with external API integration
-- **Gene Lookup**: 7-day caching, pre-loading of common pathology genes, HGNC/Harmonizome integration
-- **Lupus Anticoagulant Interpreter**: Pure client-side calculations, zero API calls (gold standard)
-- **Virtual Slides**: R2-optimized data serving with progressive loading
+- **Citations Generator**: Smart caching, 24h TTL, supports URL/DOI/ISBN with external API integration
+- **Gene Finder**: 7-day caching, pre-loading of common pathology genes, HGNC/Harmonizome integration
+- **Lupus Anticoagulant Calculator**: Pure client-side calculations, zero API calls (gold standard)
+- **Virtual Slides Search Engine**: R2-optimized data serving with progressive loading
 - **ABPath Content Specifications**: R2 private bucket access with full dataset filtering
 - **Cell Quiz**: Optimized image delivery with smart caching strategies
 
@@ -881,14 +881,14 @@ The application provides a comprehensive REST API organized by feature area. All
 
 ## 🛠️ Educational Tools
 
-### 📚 Citations Manager
+### 📚 Citations Creator
 - **Smart Caching**: 24-hour TTL with localStorage persistence
 - **Multi-format Support**: URL, DOI, ISBN automatic detection
 - **Citation Formats**: APA, MLA, AMA, Vancouver with live editing
 - **External Integration**: CrossRef, OpenLibrary, Google Books APIs
 - **Cache Management**: 100-entry limit with automatic cleanup
 
-### 🧬 Gene Lookup Tool  
+### 🧬 Gene Finder Tool  
 - **Comprehensive Database**: HGNC and Harmonizome integration
 - **7-day Caching**: Long-term storage for stable gene information
 - **Pre-loading**: Background loading of 30+ common pathology genes
@@ -902,9 +902,9 @@ The application provides a comprehensive REST API organized by feature area. All
 - **Clinical Guidance**: Detailed explanations and interference detection
 - **Reference Standards**: Based on current laboratory guidelines
 
-### 🔬 Virtual Slides Viewer
+### 🔬 Virtual Slides Search Engine
 - **R2 Optimized**: Private bucket access with progressive loading
-- **Medical Repositories**: Integration with 15+ pathology slide libraries
+- **Medical Repositories**: Integration with 7+ pathology slide libraries
 - **Smart Loading**: Pagination → full dataset based on usage patterns
 - **High Resolution**: Support for medical-grade slide images
 - **Repository Links**: Direct access to source institutions
@@ -916,7 +916,7 @@ The application provides a comprehensive REST API organized by feature area. All
 - **Statistics**: Accurate counts with smart filtering logic
 - **Export Options**: PDF generation with customizable content
 
-### 🩸 Cell Quiz System
+### 🩸 Hemepath Quiz
 - **Image Optimization**: Cloudflare R2 delivery with smart caching
 - **Reference Integration**: Comprehensive blood cell morphology database
 - **Progressive Learning**: Adaptive difficulty based on performance
@@ -1206,7 +1206,7 @@ npm run start            # Production server
 ## 📚 Core Features
 
 ### Educational Tools Suite
-- **6 Specialized Tools**: Citations, Gene Lookup, LAC Interpreter, Virtual Slides, ABPath, Cell Quiz
+- **6 Specialized Tools**: Citations, Gene Finder, LAC Interpreter, Virtual Slides, ABPath, Hemepath Quiz
 - **Smart Caching**: Reduces repeat API calls by 80-90%
 - **Client-Side Processing**: Instant results for complex calculations
 - **External Integration**: Medical databases and reference sources

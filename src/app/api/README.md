@@ -21,7 +21,7 @@ All APIs implement intelligent caching and optimization strategies:
 
 ### **/tools**: Educational Tool APIs
 - **Citations Manager**: CrossRef, OpenLibrary, Google Books proxies
-- **Gene Lookup**: HGNC and Harmonizome API integration
+- **Gene Finder**: HGNC and Harmonizome API integration
 - **Virtual Slides**: R2-optimized slide data delivery
 - **ABPath Content**: ASCP content specifications with R2 access
 - **Cell Quiz**: Optimized cell morphology data and references
