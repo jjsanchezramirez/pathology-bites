@@ -24,9 +24,7 @@ import {
 } from 'lucide-react'
 import {
   getTextZoomConfig,
-  getValidZoomLevel,
-  legacyFontSizeToZoom,
-  zoomToLegacyFontSize
+  getValidZoomLevel
 } from '@/shared/utils/text-zoom'
 import { useDashboardSettings } from '@/shared/contexts/dashboard-settings-provider'
 import { useDashboardTheme } from '@/shared/contexts/dashboard-theme-context'
@@ -117,14 +115,9 @@ export default function SettingsPage() {
       setPreferences(userSettings.notification_settings)
       setQuizSettings(userSettings.quiz_settings)
 
-      // Handle text zoom - migrate from legacy font size if needed
+      // Handle text zoom
       const config = getTextZoomConfig()
-      let zoom = userSettings.ui_settings.text_zoom
-      if (!zoom) {
-        // Migrate from legacy font size
-        zoom = legacyFontSizeToZoom(userSettings.ui_settings.font_size || 'medium')
-      }
-      zoom = getValidZoomLevel(zoom || config.default)
+      const zoom = getValidZoomLevel(userSettings.ui_settings.text_zoom || config.default)
       // Use context to set text zoom (this will sync with header)
       setTextZoomContext(zoom)
     } catch (error) {
@@ -245,10 +238,7 @@ export default function SettingsPage() {
         default_category_selection: 'all' as const
       }
       const defaultUISettings = {
-        theme: 'system' as const,
-        font_size: 'medium' as const,
         text_zoom: config.default,
-        sidebar_collapsed: false,
         welcome_message_seen: false
       }
 

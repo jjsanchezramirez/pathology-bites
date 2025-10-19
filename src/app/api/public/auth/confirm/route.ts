@@ -2,6 +2,11 @@
 import { type EmailOtpType } from '@supabase/supabase-js'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import {
+  DEFAULT_QUIZ_SETTINGS,
+  DEFAULT_NOTIFICATION_SETTINGS,
+  DEFAULT_UI_SETTINGS
+} from '@/shared/constants/user-settings-defaults'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -84,7 +89,7 @@ export async function GET(request: NextRequest) {
 
         if (authUser) {
           // Check if user exists in public.users
-          const { data: existingUser, error: checkError } = await supabase
+          const { error: checkError } = await supabase
             .from('users')
             .select('id')
             .eq('id', authUser.id)
@@ -115,27 +120,9 @@ export async function GET(request: NextRequest) {
               .from('user_settings')
               .insert({
                 user_id: authUser.id,
-                quiz_settings: {
-                  default_question_count: 10,
-                  default_mode: 'tutor',
-                  default_timing: 'untimed',
-                  default_question_type: 'unused',
-                  default_category_selection: 'all'
-                },
-                notification_settings: {
-                  email_notifications: true,
-                  quiz_reminders: true,
-                  progress_updates: true
-                },
-                ui_settings: {
-                  theme: 'system',
-                  font_size: 'medium',
-                  text_zoom: 1.0,
-                  dashboard_theme_admin: 'default',
-                  dashboard_theme_user: 'tangerine',
-                  sidebar_collapsed: false,
-                  welcome_message_seen: false
-                }
+                quiz_settings: DEFAULT_QUIZ_SETTINGS,
+                notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
+                ui_settings: DEFAULT_UI_SETTINGS
               })
 
             if (settingsError) {

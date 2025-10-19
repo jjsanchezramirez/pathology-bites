@@ -34,21 +34,20 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
  * Default UI settings for new users
  *
  * Field explanations:
- * - theme: Color mode (light/dark/system) - controlled by next-themes
- * - font_size: Text size preference (small/medium/large)
  * - text_zoom: Zoom level multiplier (0.8 to 1.5)
  * - dashboard_theme_admin: Dashboard theme for admin/creator/reviewer mode (always 'default')
  * - dashboard_theme_user: Dashboard theme for student mode (default 'tangerine', can be 'notebook' or 'tangerine')
- * - sidebar_collapsed: Whether sidebar is collapsed
  * - welcome_message_seen: Whether user has seen the welcome message
+ *
+ * REMOVED LEGACY FIELDS:
+ * - theme: Color mode is managed by next-themes library (stored in localStorage as 'pathology-bites-theme')
+ * - font_size: Replaced by text_zoom field
+ * - sidebar_collapsed: Not used anywhere in the codebase
  */
 export const DEFAULT_UI_SETTINGS = {
-  theme: 'system' as const,
-  font_size: 'medium' as const,
-  text_zoom: 1.0,
+  text_zoom: 0.8,
   dashboard_theme_admin: 'default',
   dashboard_theme_user: 'tangerine',
-  sidebar_collapsed: false,
   welcome_message_seen: false,
 }
 
