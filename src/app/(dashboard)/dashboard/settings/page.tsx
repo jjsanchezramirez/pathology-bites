@@ -92,8 +92,6 @@ export default function SettingsPage() {
   const { textZoom, setTextZoom: setTextZoomContext } = useDashboardSettings()
   const [isExporting, setIsExporting] = useState(false)
   const [deletePassword, setDeletePassword] = useState('')
-  const [isResettingPassword, setIsResettingPassword] = useState(false)
-  const [lastPasswordResetTime, setLastPasswordResetTime] = useState<Date | null>(null)
 
 
 
@@ -302,52 +300,6 @@ export default function SettingsPage() {
       toast.error('Failed to export data')
     } finally {
       setIsExporting(false)
-    }
-  }
-
-  const handlePasswordReset = async () => {
-    if (!user?.email) {
-      toast.error('No email address found for current user')
-      return
-    }
-
-    // Check cooldown (1 minute)
-    if (lastPasswordResetTime) {
-      const timeSinceLastReset = Date.now() - lastPasswordResetTime.getTime()
-      const cooldownPeriod = 60000 // 1 minute
-      if (timeSinceLastReset < cooldownPeriod) {
-        const remainingSeconds = Math.ceil((cooldownPeriod - timeSinceLastReset) / 1000)
-        toast.error(`Please wait ${remainingSeconds} seconds before requesting another password reset`)
-        return
-      }
-    }
-
-    try {
-      setIsResettingPassword(true)
-
-      const response = await fetch('/api/user/password-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: user.email,
-          type: 'reset'
-        })
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to send password reset email')
-      }
-
-      toast.success('Password reset email sent! Check your email to change your password.')
-      setLastPasswordResetTime(new Date())
-
-    } catch (error) {
-      console.error('Password reset error:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to send password reset email')
-    } finally {
-      setIsResettingPassword(false)
     }
   }
 
@@ -808,35 +760,6 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Change Password</Label>
-              <p className="text-sm text-muted-foreground">
-                We'll send a secure password reset link to <strong>{user?.email}</strong>
-              </p>
-              {lastPasswordResetTime && (
-                <p className="text-sm text-muted-foreground">
-                  Last reset email sent: {lastPasswordResetTime.toLocaleTimeString()}
-                </p>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePasswordReset}
-                disabled={isResettingPassword}
-              >
-                {isResettingPassword ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Sending Reset Email...
-                  </>
-                ) : (
-                  'Send Password Reset Email'
-                )}
-              </Button>
-            </div>
-
-            <Separator />
-
             <div className="space-y-2">
               <Label>Data Export</Label>
               <p className="text-sm text-muted-foreground">
