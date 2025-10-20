@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { Resend } from 'resend'
 import { z } from 'zod'
 
 const passwordResetSchema = z.object({
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
       redirectTo = `${baseUrl}/api/public/auth/confirm?type=recovery&next=/reset-password`
     }
 
-    // Send password reset email using admin client to bypass CAPTCHA requirement
+    // Generate password reset link using admin client to bypass CAPTCHA requirement
     // Note: This endpoint is only accessible to authenticated users (admin tools, user settings),
     // so we can safely bypass CAPTCHA by using the service role client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    const { error: resetError } = await adminClient.auth.admin.generateLink({
+    const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
       type: type === 'magic_link' ? 'magiclink' : 'recovery',
       email: email,
       options: {
@@ -93,8 +94,32 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    if (resetError) {
-      console.error('Password reset error:', resetError)
+    if (linkError || !linkData) {
+      console.error('Password reset link generation error:', linkError)
+      return NextResponse.json({ error: 'Failed to generate password reset link' }, { status: 500 })
+    }
+
+    // Send email via Resend
+    // Note: generateLink() does NOT send emails automatically - we must send it ourselves
+    const resend = new Resend(process.env.RESEND_API_KEY!)
+
+    const emailSubject = type === 'magic_link'
+      ? 'Your Magic Link for Pathology Bites'
+      : 'Reset Your Pathology Bites Password'
+
+    const emailHtml = type === 'magic_link'
+      ? getMagicLinkEmailHtml(linkData.properties.action_link)
+      : getPasswordResetEmailHtml(linkData.properties.action_link)
+
+    const { error: emailError } = await resend.emails.send({
+      from: 'Pathology Bites <noreply@pathologybites.com>',
+      to: email,
+      subject: emailSubject,
+      html: emailHtml,
+    })
+
+    if (emailError) {
+      console.error('Email sending error:', emailError)
       return NextResponse.json({ error: 'Failed to send password reset email' }, { status: 500 })
     }
 
@@ -188,4 +213,171 @@ export async function PATCH(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+// Email template functions
+function getPasswordResetEmailHtml(resetLink: string): string {
+  return `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reset Your Pathology Bites Password</title>
+  <style type="text/css">
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+    @media only screen and (max-width: 600px) {
+      .email-container { width: 100% !important; }
+      .button { width: 100% !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background: radial-gradient(ellipse at top, #e0f2f1, #ffffff);">
+  <center style="width: 100%; background: radial-gradient(ellipse at top, #e0f2f1, #ffffff);">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: auto;">
+      <tr><td height="40">&nbsp;</td></tr>
+      <tr>
+        <td style="padding: 20px 0; text-align: center;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: auto;">
+            <tr>
+              <td style="border-radius: 8px; background: #5BA4A4; padding: 12px 24px;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
+                  Pathology Bites
+                </h1>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 20px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container" style="margin: auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <tr>
+              <td style="padding: 40px 40px 20px 40px; text-align: center;">
+                <h2 style="margin: 0 0 16px 0; font-size: 28px; font-weight: 700; color: #1a1a1a;">
+                  Reset Your Password
+                </h2>
+                <p style="margin: 0; font-size: 16px; line-height: 24px; color: #666666;">
+                  We received a request to reset your password. Click the button below to create a new password.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 20px 40px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: auto;">
+                  <tr>
+                    <td style="border-radius: 8px; background: #5BA4A4;">
+                      <a href="${resetLink}" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none;">
+                        Reset Password
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 20px 40px 40px 40px;">
+                <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 20px; color: #666666; text-align: center;">
+                  Or copy and paste this link into your browser:
+                </p>
+                <p style="margin: 0; font-size: 12px; line-height: 18px; color: #999999; word-break: break-all; text-align: center;">
+                  ${resetLink}
+                </p>
+                <p style="margin: 24px 0 0 0; font-size: 14px; line-height: 20px; color: #666666; text-align: center;">
+                  This link will expire in 24 hours. If you didn't request a password reset, please disregard this email.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr><td height="40">&nbsp;</td></tr>
+    </table>
+  </center>
+</body>
+</html>
+  `.trim()
+}
+
+function getMagicLinkEmailHtml(magicLink: string): string {
+  return `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Magic Link for Pathology Bites</title>
+  <style type="text/css">
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+    @media only screen and (max-width: 600px) {
+      .email-container { width: 100% !important; }
+      .button { width: 100% !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background: radial-gradient(ellipse at top, #e0f2f1, #ffffff);">
+  <center style="width: 100%; background: radial-gradient(ellipse at top, #e0f2f1, #ffffff);">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: auto;">
+      <tr><td height="40">&nbsp;</td></tr>
+      <tr>
+        <td style="padding: 20px 0; text-align: center;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: auto;">
+            <tr>
+              <td style="border-radius: 8px; background: #5BA4A4; padding: 12px 24px;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
+                  Pathology Bites
+                </h1>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 20px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container" style="margin: auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <tr>
+              <td style="padding: 40px 40px 20px 40px; text-align: center;">
+                <h2 style="margin: 0 0 16px 0; font-size: 28px; font-weight: 700; color: #1a1a1a;">
+                  Your Magic Link
+                </h2>
+                <p style="margin: 0; font-size: 16px; line-height: 24px; color: #666666;">
+                  Click the button below to instantly log in to your Pathology Bites account.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 20px 40px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: auto;">
+                  <tr>
+                    <td style="border-radius: 8px; background: #5BA4A4;">
+                      <a href="${magicLink}" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none;">
+                        Log In Now
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 20px 40px 40px 40px;">
+                <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 20px; color: #666666; text-align: center;">
+                  Or copy and paste this link into your browser:
+                </p>
+                <p style="margin: 0; font-size: 12px; line-height: 18px; color: #999999; word-break: break-all; text-align: center;">
+                  ${magicLink}
+                </p>
+                <p style="margin: 24px 0 0 0; font-size: 14px; line-height: 20px; color: #666666; text-align: center;">
+                  This link will expire in 24 hours. If you didn't request this magic link, please disregard this email.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr><td height="40">&nbsp;</td></tr>
+    </table>
+  </center>
+</body>
+</html>
+  `.trim()
 }
