@@ -99,6 +99,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to generate password reset link' }, { status: 500 })
     }
 
+    // Extract the action_link from the response
+    // The action_link contains the full URL with token_hash that works with our /api/public/auth/confirm endpoint
+    const actionLink = linkData.properties?.action_link
+
+    if (!actionLink) {
+      console.error('No action_link in generateLink response:', linkData)
+      return NextResponse.json({ error: 'Failed to generate password reset link' }, { status: 500 })
+    }
+
     // Send email via Resend
     // Note: generateLink() does NOT send emails automatically - we must send it ourselves
     const resend = new Resend(process.env.RESEND_API_KEY!)
@@ -108,8 +117,8 @@ export async function POST(request: NextRequest) {
       : 'Reset Your Pathology Bites Password'
 
     const emailHtml = type === 'magic_link'
-      ? getMagicLinkEmailHtml(linkData.properties.action_link)
-      : getPasswordResetEmailHtml(linkData.properties.action_link)
+      ? getMagicLinkEmailHtml(actionLink)
+      : getPasswordResetEmailHtml(actionLink)
 
     const { error: emailError } = await resend.emails.send({
       from: 'Pathology Bites <noreply@pathologybites.com>',
