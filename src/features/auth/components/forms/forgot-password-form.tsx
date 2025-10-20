@@ -36,6 +36,9 @@ export function ForgotPasswordForm({
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  const { captchaToken, setCaptchaToken } = useTurnstile()
+  const turnstileRef = useRef<TurnstileInstance | null>(null)
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY
 
   // Show initial error as toast
   useEffect(() => {
