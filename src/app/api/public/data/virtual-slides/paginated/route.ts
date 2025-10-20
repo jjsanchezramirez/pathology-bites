@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic' // Prevent pre-rendering during build
 export const revalidate = 86400 // 24h ISR-like caching
 
 // In-memory cache for the full dataset to avoid repeated fetches
