@@ -120,7 +120,11 @@ export async function POST(request: NextRequest) {
       ? getMagicLinkEmailHtml(actionLink)
       : getPasswordResetEmailHtml(actionLink)
 
-    const { error: emailError } = await resend.emails.send({
+    console.log('[Password Reset] Attempting to send email to:', email)
+    console.log('[Password Reset] Email type:', type)
+    console.log('[Password Reset] Action link generated:', actionLink)
+
+    const { data: emailData, error: emailError } = await resend.emails.send({
       from: 'Pathology Bites <noreply@pathologybites.com>',
       to: email,
       subject: emailSubject,
@@ -128,9 +132,11 @@ export async function POST(request: NextRequest) {
     })
 
     if (emailError) {
-      console.error('Email sending error:', emailError)
+      console.error('[Password Reset] Email sending error:', emailError)
       return NextResponse.json({ error: 'Failed to send password reset email' }, { status: 500 })
     }
+
+    console.log('[Password Reset] Email sent successfully. Email ID:', emailData?.id)
 
     // Create audit log
     await supabase
