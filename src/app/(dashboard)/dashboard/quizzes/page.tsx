@@ -77,18 +77,6 @@ interface QuizSessionListItem {
 
 export default function QuizzesPage() {
   const featuresEnabled = isQuizFeaturesEnabled()
-
-  // Show placeholder if features are disabled
-  if (!featuresEnabled) {
-    return (
-      <FeaturePlaceholder
-        title="My Quizzes"
-        description="Your complete quiz history and detailed review tools are being finalized. Soon you'll be able to review all your past quizzes, track your performance over time, and revisit questions to reinforce your learning."
-        status="almost-ready"
-      />
-    )
-  }
-
   const [quizzes, setQuizzes] = useState<QuizSessionListItem[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -168,6 +156,17 @@ export default function QuizzesPage() {
     const matchesMode = modeFilter === "all" || quiz.mode === modeFilter
     return matchesSearch && matchesMode
   })
+
+  // Show placeholder if features are disabled
+  if (!featuresEnabled) {
+    return (
+      <FeaturePlaceholder
+        title="My Quizzes"
+        description="Your complete quiz history and detailed review tools are being finalized. Soon you'll be able to review all your past quizzes, track your performance over time, and revisit questions to reinforce your learning."
+        status="almost-ready"
+      />
+    )
+  }
 
   const formatDate = (dateString: string) => {
     try {

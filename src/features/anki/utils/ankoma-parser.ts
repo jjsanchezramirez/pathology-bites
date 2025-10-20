@@ -224,7 +224,7 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
   }
 
   // Build the answer (back of card) from Extra, Personal Notes, Textbook, and Citation
-  let answerParts = []
+  const answerParts = []
 
   if (extra.trim()) {
     answerParts.push(`<div class=\"extra-section\">${extra}</div>`)

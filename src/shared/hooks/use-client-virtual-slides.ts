@@ -220,7 +220,7 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
     if (options.randomMode) {
       const seedBase = options.randomSeed ?? Date.now()
       const seed = (options.page || 1) * 1337 + seedBase
-      let rng = (n: number) => {
+      const rng = (n: number) => {
         const x = Math.sin(seed + n) * 10000
         return x - Math.floor(x)
       }

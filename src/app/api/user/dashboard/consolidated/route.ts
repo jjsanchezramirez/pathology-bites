@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 
 // Cache for dashboard data to reduce database load and Vercel function costs
-let dashboardCache = new Map<string, { data: any; timestamp: number }>()
+const dashboardCache = new Map<string, { data: any; timestamp: number }>()
 const CACHE_TTL = 10 * 60 * 1000 // 10 minutes for dashboard data (increased from 2 minutes)
 
 export async function GET(request: NextRequest) {

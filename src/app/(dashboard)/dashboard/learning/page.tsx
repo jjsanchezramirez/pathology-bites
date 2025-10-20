@@ -30,17 +30,6 @@ import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags"
 
 export default function LearningPage() {
   const featuresEnabled = isQuizFeaturesEnabled()
-
-  // Show placeholder if features are disabled
-  if (!featuresEnabled) {
-    return (
-      <FeaturePlaceholder
-        title="Learning Modules"
-        description="Structured learning paths are being built to guide your pathology education journey. Soon you'll be able to complete curated modules, track your progress through different topics, and unlock advanced content as you master the fundamentals."
-        status="coming-very-soon"
-      />
-    )
-  }
   const [learningData, setLearningData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -48,15 +37,17 @@ export default function LearningPage() {
 
   // Fetch learning data from optimized API
   useEffect(() => {
+    if (!featuresEnabled) return
+
     const fetchLearningData = async () => {
       try {
         setLoading(true)
         const response = await fetch('/api/content/learning/modules')
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch learning data')
         }
-        
+
         const result = await response.json()
         setLearningData(result.data)
       } catch (err) {
@@ -77,17 +68,28 @@ export default function LearningPage() {
     }
 
     fetchLearningData()
-  }, [])
+  }, [featuresEnabled])
+
+  // Show placeholder if features are disabled
+  if (!featuresEnabled) {
+    return (
+      <FeaturePlaceholder
+        title="Learning Modules"
+        description="Structured learning paths are being built to guide your pathology education journey. Soon you'll be able to complete curated modules, track your progress through different topics, and unlock advanced content as you master the fundamentals."
+        status="coming-very-soon"
+      />
+    )
+  }
 
   // Use data from API or fallback to static data
   const modules = learningData?.modules || LEARNING_MODULES
   const overallStats = learningData?.overallStats || { totalModules: 12, completedModules: 0, progressPercentage: 0 }
 
   // Calculate additional stats
-  const inProgressModules = modules.reduce((count: number, module: LearningCategory) => 
+  const inProgressModules = modules.reduce((count: number, module: LearningCategory) =>
     count + module.modules.filter(m => m.status === 'in_progress').length, 0
   )
-  const availableModules = modules.reduce((count: number, module: LearningCategory) => 
+  const availableModules = modules.reduce((count: number, module: LearningCategory) =>
     count + module.modules.filter(m => m.status === 'available').length, 0
   )
 

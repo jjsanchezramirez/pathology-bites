@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
     console.log('User authenticated:', user.id)
 
     // Start with safe defaults
-    let stats: DashboardStats = {
+    const stats: DashboardStats = {
       allQuestions: 0,
       needsReview: 0,
       mastered: 0,

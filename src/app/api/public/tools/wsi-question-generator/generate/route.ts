@@ -490,7 +490,7 @@ function buildOptimizedPrompt(normalizedWSI: VirtualSlide, context: any | null =
 // Enhanced question generation with retry logic for each model
 async function generateQuestionWithRetries(wsi: VirtualSlide, modelId: string, context: any | null = null, customPrompt?: string): Promise<{ questionData: QuestionData; debug: any; modelUsed: string; tokenUsage?: any; retryInfo?: any }> {
   let lastError: any = null
-  let retryInfo = { attempts: 0, totalTime: 0, retries: 0 }
+  const retryInfo = { attempts: 0, totalTime: 0, retries: 0 }
   const startTime = Date.now()
 
   // Fast preprocessing - do validation and normalization upfront

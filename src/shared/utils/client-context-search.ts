@@ -105,7 +105,7 @@ function extractDiagnosticTerms(diagnosis: string): {
   wholePhrases: string[]
 } {
   // Clean the diagnosis
-  let cleaned = diagnosis
+  const cleaned = diagnosis
     .replace(/\([^)]*\)/g, '') // Remove content in parentheses
     .replace(/\[[^\]]*\]/g, '') // Remove content in brackets
     .replace(/[^\w\s-]/g, ' ') // Remove punctuation except hyphens

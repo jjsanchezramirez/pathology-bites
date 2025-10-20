@@ -133,7 +133,7 @@ class ClientDataManager {
       const json = await response.json()
       
       // Handle the PathPresenter cases JSON format (same as use-client-wsi-data.ts)
-      let pathPresenterCases = json.cases || []
+      const pathPresenterCases = json.cases || []
       
       // Convert PathPresenter cases to VirtualSlide format
       const entries: VirtualSlide[] = pathPresenterCases.map((pathCase: any, index: number) => {

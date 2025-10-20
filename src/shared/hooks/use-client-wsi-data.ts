@@ -45,7 +45,7 @@ export async function loadClientWSIData(): Promise<VirtualSlide[]> {
       const json = await res.json()
       
       // Handle the new PathPresenter cases JSON format
-      let pathPresenterCases = json.cases || []
+      const pathPresenterCases = json.cases || []
       
       // Convert PathPresenter cases to VirtualSlide format
       const entries: VirtualSlide[] = pathPresenterCases.map((pathCase: any, index: number) => {

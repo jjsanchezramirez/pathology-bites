@@ -47,18 +47,6 @@ interface QuizOptionsData {
 
 export default function NewQuizPage() {
   const featuresEnabled = isQuizFeaturesEnabled()
-
-  // Show placeholder if features are disabled
-  if (!featuresEnabled) {
-    return (
-      <FeaturePlaceholder
-        title="New Quiz"
-        description="Enhanced quiz creation with more customization options is nearly ready. Soon you'll be able to create custom quizzes with advanced filtering, difficulty selection, and personalized question sets tailored to your learning goals."
-        status="in-final-stages"
-      />
-    )
-  }
-
   const router = useRouter()
   const { isOnline, forceCheck, connectionType, effectiveType, browserOnline } = useZeroApiNetworkStatus()
   const [formData, setFormData] = useState<QuizCreationForm>(DEFAULT_QUIZ_CONFIG)
@@ -184,6 +172,17 @@ export default function NewQuizPage() {
       }))
     }
   }, [formData.questionType, formData.categorySelection, formData.selectedCategories, quizOptions])
+
+  // Show placeholder if features are disabled
+  if (!featuresEnabled) {
+    return (
+      <FeaturePlaceholder
+        title="New Quiz"
+        description="Enhanced quiz creation with more customization options is nearly ready. Soon you'll be able to create custom quizzes with advanced filtering, difficulty selection, and personalized question sets tailored to your learning goals."
+        status="in-final-stages"
+      />
+    )
+  }
 
   // Generate sequential quiz title based on previous quizzes
   const generateQuizTitle = (): string => {
