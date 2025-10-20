@@ -58,8 +58,11 @@ export async function signup(formData: FormData) {
 
   // Use environment variable for redirect URL
   const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/confirm`
-  
+
   console.log('Signup redirect URL:', redirectTo) // Debug log
+
+  // Get CAPTCHA token if provided
+  const captchaToken = formData.get('captchaToken') as string | null
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -70,7 +73,8 @@ export async function signup(formData: FormData) {
         last_name: lastName,
         user_type: userType,
       },
-      emailRedirectTo: redirectTo
+      emailRedirectTo: redirectTo,
+      ...(captchaToken && { captchaToken })
     },
   })
 
