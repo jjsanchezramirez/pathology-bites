@@ -82,7 +82,7 @@ export function PasswordChangeForm({ className, onSuccess }: PasswordChangeFormP
           Change Password
         </CardTitle>
         <CardDescription>
-          Change your password via a secure link via.
+          Change your password via a secure email link.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
