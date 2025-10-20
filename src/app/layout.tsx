@@ -133,9 +133,6 @@ export default async function RootLayout({
 
         {/* Viewport meta tag for responsive design */}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-        {/* Cloudflare Turnstile CAPTCHA script */}
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
       </head>
       <body className={cn('min-h-screen bg-background font-sans antialiased overflow-x-hidden')}>
         {/* Structured Data */}

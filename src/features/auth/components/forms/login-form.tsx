@@ -97,6 +97,11 @@ export function LoginForm({
       // Call the server action
       await action(formData)
     } catch (error) {
+      // Don't catch NEXT_REDIRECT errors - they're used for navigation and should propagate
+      if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+        throw error
+      }
+
       console.error("Login error:", error)
       toast.error("An unexpected error occurred. Please try again.")
       // Reset CAPTCHA on error
