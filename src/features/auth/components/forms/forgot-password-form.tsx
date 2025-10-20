@@ -1,17 +1,19 @@
 // src/features/auth/components/forms/forgot-password-form.tsx
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { AuthCard } from "@/features/auth/components/ui/auth-card"
 import { FormField } from "@/features/auth/components/ui/form-field"
 import { FormButton } from "@/features/auth/components/ui/form-button"
 import { createClient } from '@/shared/services/client'
+import { useTurnstile } from '@/features/auth/hooks/use-turnstile'
 
 // Form schema definition
 const formSchema = z.object({
@@ -64,10 +66,14 @@ export function ForgotPasswordForm({
 
       const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
         redirectTo: redirectTo,
+        captchaToken: captchaToken || undefined,
       })
 
       if (error) {
         toast.error(error.message)
+        // Reset CAPTCHA on error
+        turnstileRef.current?.reset()
+        setCaptchaToken(null)
         return
       }
 
@@ -78,6 +84,9 @@ export function ForgotPasswordForm({
     } catch (error) {
       console.error("Forgot password error:", error)
       toast.error("An unexpected error occurred. Please try again.")
+      // Reset CAPTCHA on error
+      turnstileRef.current?.reset()
+      setCaptchaToken(null)
     } finally {
       setLoading(false)
     }
@@ -107,10 +116,28 @@ export function ForgotPasswordForm({
           {...register("email")}
         />
 
+        {siteKey && (
+          <div className="flex justify-center">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={siteKey}
+              onSuccess={(token) => setCaptchaToken(token)}
+              onError={() => {
+                setCaptchaToken(null)
+                toast.error("CAPTCHA verification failed. Please try again.")
+              }}
+              onExpire={() => {
+                setCaptchaToken(null)
+                toast.error("CAPTCHA expired. Please verify again.")
+              }}
+            />
+          </div>
+        )}
+
         <FormButton
           type="submit"
           fullWidth
-          disabled={loading}
+          disabled={loading || (siteKey && !captchaToken)}
         >
           {loading ? 'Sending reset link...' : 'Send reset link'}
         </FormButton>
