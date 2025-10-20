@@ -1,13 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Input } from '@/shared/components/ui/input'
 import { Textarea } from '@/shared/components/ui/textarea'
-import { Button } from '@/shared/components/ui/button'
 import { Label } from '@/shared/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
-import { Badge } from '@/shared/components/ui/badge'
 import { FormState } from '../multi-step-question-form'
 import { getModelById } from '@/shared/config/ai-models'
 import { createClient } from '@/shared/services/client'
@@ -34,9 +30,6 @@ interface Tag {
 }
 
 export function StepContentEdit({ formState, updateFormState, questionSetAIModel }: StepContentEditProps) {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [questionSets, setQuestionSets] = useState<QuestionSet[]>([])
-  const [tags, setTags] = useState<Tag[]>([])
 
   // Determine which AI model to use for refinement
   // Priority: 1. Question set's AI model, 2. Selected AI model from Step 1, 3. Default fast model

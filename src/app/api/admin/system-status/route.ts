@@ -1,5 +1,5 @@
 // src/app/api/admin/system-status/route.ts
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { getBucketSize } from '@/shared/services/r2-storage'
 import { formatSize } from '@/features/images/services/image-upload'

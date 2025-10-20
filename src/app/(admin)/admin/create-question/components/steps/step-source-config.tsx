@@ -121,7 +121,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
       const parsed = JSON.parse(jsonString)
       setJsonError(null)
       return parsed
-    } catch (error) {
+    } catch {
       setJsonError('Invalid JSON format. Please check your input.')
       return null
     }
@@ -253,7 +253,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
         try {
           const errorData = JSON.parse(errorText)
           throw new Error(errorData.error || `HTTP ${response.status}: Failed to generate question`)
-        } catch (parseError) {
+        } catch {
           throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to generate question'}`)
         }
       }

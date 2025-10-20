@@ -1,7 +1,6 @@
 // src/app/api/admin/rate-limit-status/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { loginRateLimiter, getClientIP } from '@/features/auth/utils/rate-limiter'
-import { createClient } from '@/shared/services/server'
 
 export async function GET(request: NextRequest) {
   try {

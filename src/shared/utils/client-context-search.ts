@@ -263,14 +263,12 @@ function identifyOrganSystem(diagnosis: string): string {
  * Get targeted files based on category/subcategory (from server logic)
  */
 function getTargetedFiles(category: string, subcategory: string, diagnosis: string): string[] {
-  const allFiles = CONTENT_FILES
   const primaryFiles: string[] = []
   const secondaryFiles: string[] = []
   const fallbackFiles: string[] = []
 
   const categoryLower = category.toLowerCase()
   const subcategoryLower = subcategory.toLowerCase()
-  const diagnosisLower = diagnosis.toLowerCase()
 
   // PRIMARY SEARCH: Direct subcategory mapping
   if (subcategoryLower.includes('hematopathology') || subcategoryLower.includes('blood') || subcategoryLower.includes('lymph')) {

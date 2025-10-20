@@ -2,12 +2,10 @@
 // API endpoint for admins to broadcast system update notifications
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/shared/services/client'
 import { notificationGenerators } from '@/shared/services/notification-generators'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient()
 
     // Auth is now handled by middleware
 

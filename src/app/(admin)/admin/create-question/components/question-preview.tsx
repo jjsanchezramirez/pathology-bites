@@ -143,15 +143,6 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
     setIsRefining(true)
 
     try {
-      const prompt = `
-Please modify the following question based on this request: "${chatMessage}"
-
-Current Question:
-${JSON.stringify(question, null, 2)}
-
-Return the modified question in the same JSON format.
-`
-
       // Use the same model that generated the original question, or default to a supported model
       const originalModel = question?.metadata?.generated_by?.model || 'Llama-3.3-70B-Instruct'
 

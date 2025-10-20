@@ -29,7 +29,6 @@ import { VisualLearningPath } from "@/features/learning-path/components/visual-l
 
 export default function CategoryLearningPathPage() {
   const params = useParams()
-  const router = useRouter()
   const categoryId = params.categoryId as string
 
   const [category, setCategory] = useState<LearningCategory | null>(null)

@@ -142,7 +142,7 @@ export default function CellCounterPage() {
           isComplete: false
         }))
       }
-    } catch (error) {
+    } catch {
       // Failed to load saved state - will use defaults
     }
   }, [])
@@ -155,7 +155,7 @@ export default function CellCounterPage() {
         settings: newState.settings
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave))
-    } catch (error) {
+    } catch {
       // Failed to save state - operation will continue
     }
   }, [])

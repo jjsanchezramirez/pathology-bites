@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Delete the source question sets
-    const { error: deleteError, count: deletedCount } = await supabase
+    const { error: deleteError } = await supabase
       .from('question_sets')
       .delete()
       .in('id', sourceSetIds)

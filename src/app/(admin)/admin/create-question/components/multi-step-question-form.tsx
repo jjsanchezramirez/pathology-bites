@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
-import { Progress } from '@/shared/components/ui/progress'
 import { ChevronLeft, ChevronRight, Check, Loader2, Brain } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/shared/services/client'
@@ -97,7 +95,6 @@ export function MultiStepQuestionForm({
 
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [autoProgressEnabled, setAutoProgressEnabled] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [showAISidebar, setShowAISidebar] = useState(true)
 
@@ -203,9 +200,6 @@ export function MultiStepQuestionForm({
   const updateFormState = (updates: Partial<FormState>) => {
     setFormState(prev => ({ ...prev, ...updates }))
   }
-
-  // Calculate progress percentage
-  const progressPercentage = (currentStep / steps.length) * 100
 
   // Navigation handlers with smooth transitions
   const goToNextStep = () => {

@@ -30,9 +30,7 @@ export default function QuizSessionPage() {
   const [reviewResult, setReviewResult] = useState<QuizResult | null>(null)
   const [reviewSession, setReviewSession] = useState<any>(null)
   const [reviewLoading, setReviewLoading] = useState(isReviewMode)
-  const [reviewError, setReviewError] = useState<string | null>(null)
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0)
-  const [showExplanations, setShowExplanations] = useState<{[key: string]: boolean}>({})
 
   // Initialize hybrid quiz system (disabled in review mode)
   const [hybridState, hybridActions] = useHybridQuiz({
@@ -75,9 +73,6 @@ export default function QuizSessionPage() {
   });
 
   // Legacy state for review mode compatibility
-  const [legacySelectedAnswerId, setLegacySelectedAnswerId] = useState<string | null>(null)
-  const [legacyShowExplanation, setLegacyShowExplanation] = useState(false)
-  const [legacyIsPaused, setLegacyIsPaused] = useState(false)
   const [legacyFlagDialogOpen, setLegacyFlagDialogOpen] = useState(false)
 
   // Fetch review data if in review mode
@@ -179,13 +174,6 @@ export default function QuizSessionPage() {
   }
 
   // Helper functions for review mode
-  const toggleExplanation = (questionId: string) => {
-    setShowExplanations(prev => ({
-      ...prev,
-      [questionId]: !prev[questionId]
-    }))
-  }
-
   const handlePreviousReview = () => {
     if (currentReviewIndex > 0) {
       setCurrentReviewIndex(currentReviewIndex - 1)

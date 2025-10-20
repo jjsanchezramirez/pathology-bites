@@ -51,13 +51,7 @@ const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
 // Direct R2 access URL (same as other files)
 const WSI_DATA_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json'
 
-// Embeddable repositories (matching server-side logic)
-const EMBEDDABLE_REPOSITORIES = [
-  'Hematopathology eTutorial',
-  'Rosai Collection', 
-  'PathPresenter',
-  'MGH Pathology'
-]
+
 
 /**
  * Load and cache virtual slides data directly from R2

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
-import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from '@/shared/config/ai-models'
-import { parseAIResponse } from '@/shared/utils/ai-response-parser'
+import { getApiKey, getModelProvider } from '@/shared/config/ai-models'
 
 // Question generation schema for structured output
 const QUESTION_SCHEMA = {

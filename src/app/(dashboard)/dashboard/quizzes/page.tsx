@@ -43,7 +43,6 @@ import {
   Star,
   CheckCircle2,
   Circle,
-  ClipboardList,
 } from "lucide-react"
 
 import { toast } from "sonner"
@@ -144,7 +143,7 @@ export default function QuizzesPage() {
       setQuizzes(prev => prev.filter(quiz => quiz.id !== selectedQuiz.id))
       setShowDeleteDialog(false)
       setSelectedQuiz(null)
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete quiz')
     } finally {
       setIsDeleting(false)

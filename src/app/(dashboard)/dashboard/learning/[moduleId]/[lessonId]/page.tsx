@@ -76,7 +76,6 @@ export default function LessonPage() {
   const [module, setModule] = useState<any>(null)
   const [lesson, setLesson] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [currentQuestion, setCurrentQuestion] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState<{[key: string]: number}>({})
   const [showResults, setShowResults] = useState(false)
   const [quizCompleted, setQuizCompleted] = useState(false)

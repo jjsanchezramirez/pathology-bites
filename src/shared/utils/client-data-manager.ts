@@ -286,7 +286,7 @@ class ClientDataManager {
         if (onProgress) {
           onProgress(this.getLoadingProgress())
         }
-      } catch (error) {
+      } catch {
         console.warn(`[DataManager] ⚠️ Failed to preload ${filename}, will load on-demand`)
       }
     })
@@ -398,11 +398,11 @@ class ClientDataManager {
   /**
    * Get files needed for a specific search (intelligent targeting)
    */
-  getTargetedFiles(category: string, subcategory: string, diagnosis: string): string[] {
+  getTargetedFiles(category: string, subcategory: string): string[] {
     const primaryFiles: string[] = []
     const secondaryFiles: string[] = []
-    
-    const categoryLower = category.toLowerCase()  
+
+    const categoryLower = category.toLowerCase()
     const subcategoryLower = subcategory.toLowerCase()
 
     // PRIMARY: Direct subcategory mapping

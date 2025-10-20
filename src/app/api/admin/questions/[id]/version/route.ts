@@ -107,9 +107,6 @@ export async function GET(
     const { id: questionId } = await params
     console.log('Version history API called for question:', questionId)
 
-    // Auth is now handled by middleware
-    const userClient = await createClient()
-
     // Use admin client to fetch version history
     const adminClient = await createAdminClient()
 

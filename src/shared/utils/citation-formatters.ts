@@ -44,7 +44,7 @@ async function loadJournalAbbreviations(): Promise<void> {
           return
         }
       }
-    } catch (storageError) {
+    } catch {
       console.log('localStorage cache miss or invalid')
     }
 

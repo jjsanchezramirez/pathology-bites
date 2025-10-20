@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/shared/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Textarea } from '@/shared/components/ui/textarea'
 import { Badge } from '@/shared/components/ui/badge'
 import { Loader2, Sparkles, RefreshCw, AlertCircle } from 'lucide-react'

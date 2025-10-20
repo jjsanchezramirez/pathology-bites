@@ -96,7 +96,7 @@ export class ABPathPDFGenerator {
         };
         img.src = '/icons/apple-touch-icon.png';
       });
-    } catch (error) {
+    } catch {
       // Silent fail
     }
   }
@@ -168,7 +168,7 @@ export class ABPathPDFGenerator {
     if (this.logoImage) {
       try {
         this.doc.addImage(this.logoImage, 'PNG', logoX, logoY, logoSize, logoSize);
-      } catch (error) {
+      } catch {
         // Fallback - just text
         this.doc.setTextColor(...this.teal);
         this.doc.setFont('helvetica', 'normal');

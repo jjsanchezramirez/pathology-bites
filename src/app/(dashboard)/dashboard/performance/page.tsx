@@ -133,7 +133,7 @@ export default function PerformancePage() {
         ]
 
         setCategoryDetails(mockCategoryDetails)
-      } catch (error) {
+      } catch {
         toast.error('Failed to load performance data')
       } finally {
         setLoading(false)

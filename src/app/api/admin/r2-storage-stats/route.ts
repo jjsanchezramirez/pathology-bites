@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getBucketSize } from '@/shared/services/r2-storage'
 import { formatSize } from '@/features/images/services/image-upload'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Get sizes for both buckets
     const [imagesBucketStats, dataBucketStats] = await Promise.all([

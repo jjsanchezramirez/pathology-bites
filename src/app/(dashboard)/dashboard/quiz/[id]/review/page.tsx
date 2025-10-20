@@ -20,7 +20,6 @@ import { UIQuizQuestion } from "@/features/quiz/types/quiz-question"
 import { createClient } from "@/shared/services/client"
 import { toast } from "sonner"
 import Link from "next/link"
-import Image from "next/image"
 
 export default function QuizReviewPage() {
   const params = useParams()
@@ -64,14 +63,14 @@ export default function QuizReviewPage() {
           if (error) {
             console.error('Error fetching full question data:', error)
             toast.error('Failed to load question details')
-          } else {
+          } else if (questions) {
             // Order questions to match the quiz order
             const questionMap = new Map(questions?.map((q: any) => [q.id, q]) || [])
             const orderedQuestions = questionIds.map(id => questionMap.get(id)).filter(Boolean) as UIQuizQuestion[]
             setFullQuestions(orderedQuestions)
           }
         }
-      } catch (error) {
+      } catch {
         toast.error('Failed to load quiz results')
         setResult(null)
       } finally {

@@ -1,8 +1,7 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Alert, AlertDescription } from '@/shared/components/ui/alert'
-import { Image as ImageIcon, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
 import { FormState } from '../multi-step-question-form'
 import { ImageAttachmentsTab } from '../image-attachments-tab'
 
