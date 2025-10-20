@@ -2,6 +2,7 @@
 // Uses comprehensive NLM journal abbreviations database (~37,000 journals)
 
 import { CitationData } from './citation-extractor'
+import { R2_PUBLIC_URLS } from './r2-direct-access'
 
 /**
  * NLM journal abbreviations database
@@ -48,19 +49,15 @@ async function loadJournalAbbreviations(): Promise<void> {
     }
 
     // Fetch from R2 if not cached
-    const r2Url = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/citations/nlm-journal-abbreviations.json'
+    const r2Url = R2_PUBLIC_URLS.NLM_JOURNAL_ABBREVIATIONS_JSON
 
     console.log('🔄 Loading NLM journal abbreviations from R2:', r2Url)
 
     const response = await fetch(r2Url, {
-      method: 'GET',
       headers: {
-        'Accept': 'application/json',
-        'Cache-Control': 'public, max-age=86400', // 24 hour cache for citations data
-        'X-Requested-With': 'pathology-bites'
+        'Accept': 'application/json'
       },
-      mode: 'cors',
-      cache: 'force-cache' // Aggressive browser caching - file is immutable
+      cache: 'force-cache'
     })
 
     if (!response.ok) {
