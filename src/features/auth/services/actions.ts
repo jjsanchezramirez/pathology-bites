@@ -117,14 +117,28 @@ export async function login(formData: FormData) {
     return
   }
 
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  }
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+  const captchaToken = formData.get('captchaToken') as string | null
 
   const redirectPath = formData.get('redirect') as string
 
-  const { error, data: authData } = await supabase.auth.signInWithPassword(data)
+  // Prepare sign-in data with optional CAPTCHA token
+  const signInData: {
+    email: string
+    password: string
+    options?: { captchaToken: string }
+  } = {
+    email,
+    password,
+  }
+
+  // Add CAPTCHA token if provided
+  if (captchaToken) {
+    signInData.options = { captchaToken }
+  }
+
+  const { error, data: authData } = await supabase.auth.signInWithPassword(signInData)
 
   if (error) {
     console.error('[Auth] Login error:', error)

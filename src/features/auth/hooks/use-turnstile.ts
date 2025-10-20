@@ -12,7 +12,7 @@ interface UseTurnstileReturn {
 
 /**
  * Custom hook for managing Cloudflare Turnstile CAPTCHA token state
- * Used in signup form only (Supabase only supports CAPTCHA for signUp, not signInWithPassword)
+ * Used in signup and login forms for bot protection
  *
  * @returns Object containing captcha token state and utility functions
  */

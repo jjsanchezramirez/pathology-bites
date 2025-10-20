@@ -6,11 +6,14 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import Link from "next/link"
+import { toast } from "sonner"
+import { Turnstile } from '@marsidev/react-turnstile'
 import { FormField } from "@/features/auth/components/ui/form-field"
 import { FormButton } from "@/features/auth/components/ui/form-button"
 import { GoogleSignInButton } from "@/features/auth/components/google-sign-in-button"
 import { AuthDivider } from "@/features/auth/components/ui/auth-divider"
 import { useCSRFToken } from '@/features/auth/hooks/use-csrf-token'
+import { useTurnstile } from '@/features/auth/hooks/use-turnstile'
 
 // Form schema definition
 const formSchema = z.object({
@@ -34,6 +37,8 @@ export function LoginForm({
 }: LoginFormProps) {
   const [loading, setLoading] = useState(false)
   const { getToken, addTokenToFormData } = useCSRFToken()
+  const { captchaToken, setCaptchaToken } = useTurnstile()
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY
 
   // Initialize form with useForm hook
   const {
@@ -59,6 +64,11 @@ export function LoginForm({
       formData.append('password', values.password)
       if (redirect) {
         formData.append('redirect', redirect)
+      }
+
+      // Add CAPTCHA token if available
+      if (captchaToken) {
+        formData.append('captchaToken', captchaToken)
       }
 
       // Add CSRF token
@@ -110,7 +120,24 @@ export function LoginForm({
           {...register("password")}
         />
 
-        <FormButton type="submit" fullWidth disabled={loading}>
+        {siteKey && (
+          <div className="flex justify-center">
+            <Turnstile
+              siteKey={siteKey}
+              onSuccess={(token) => setCaptchaToken(token)}
+              onError={() => {
+                setCaptchaToken(null)
+                toast.error("CAPTCHA verification failed. Please try again.")
+              }}
+              onExpire={() => {
+                setCaptchaToken(null)
+                toast.error("CAPTCHA expired. Please verify again.")
+              }}
+            />
+          </div>
+        )}
+
+        <FormButton type="submit" fullWidth disabled={loading || (siteKey && !captchaToken)}>
           {loading ? "Signing in..." : "Login"}
         </FormButton>
       </form>
