@@ -95,18 +95,23 @@ export async function POST(request: NextRequest) {
     })
 
     if (linkError || !linkData) {
-      console.error('Password reset link generation error:', linkError)
+      console.error('[Password Reset] Link generation error:', linkError)
       return NextResponse.json({ error: 'Failed to generate password reset link' }, { status: 500 })
     }
 
-    // Extract the action_link from the response
-    // The action_link contains the full URL with token_hash that works with our /api/public/auth/confirm endpoint
-    const actionLink = linkData.properties?.action_link
+    console.log('[Password Reset] generateLink response:', JSON.stringify(linkData, null, 2))
 
-    if (!actionLink) {
-      console.error('No action_link in generateLink response:', linkData)
+    // Extract the hashed_token from the response and construct our own callback URL
+    // Supabase's action_link goes directly to Supabase, but we want to use our callback endpoint
+    const hashedToken = linkData.properties?.hashed_token
+
+    if (!hashedToken) {
+      console.error('[Password Reset] No hashed_token in generateLink response:', linkData)
       return NextResponse.json({ error: 'Failed to generate password reset link' }, { status: 500 })
     }
+
+    // Construct the proper callback URL that goes through our app
+    const actionLink = `${baseUrl}/api/public/auth/confirm?token_hash=${hashedToken}&type=${type === 'magic_link' ? 'magiclink' : 'recovery'}&next=${type === 'magic_link' ? '/dashboard' : '/reset-password'}`
 
     // Send email via Resend
     // Note: generateLink() does NOT send emails automatically - we must send it ourselves
