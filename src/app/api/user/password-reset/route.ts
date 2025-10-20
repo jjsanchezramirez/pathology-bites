@@ -243,76 +243,175 @@ function getPasswordResetEmailHtml(resetLink: string): string {
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reset Your Pathology Bites Password</title>
+  <title>Reset Your Password - Pathology Bites</title>
+  <!--[if mso]>
   <style type="text/css">
-    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
-    @media only screen and (max-width: 600px) {
+    body, table, td, h1, p, a {font-family: Arial, Helvetica, sans-serif !important;}
+  </style>
+  <![endif]-->
+  <style type="text/css">
+    /* CLIENT-SPECIFIC STYLES */
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    table { border-collapse: collapse !important; }
+    body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+
+    /* iOS BLUE LINKS */
+    a[x-apple-data-detectors] {
+      color: inherit !important;
+      text-decoration: none !important;
+      font-size: inherit !important;
+      font-family: inherit !important;
+      font-weight: inherit !important;
+      line-height: inherit !important;
+    }
+
+    /* GMAIL/WEBMAIL STYLES */
+    .ExternalClass { width: 100%; }
+    .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div { line-height: 100%; }
+
+    /* FALLBACK LINK STYLES */
+    .fallback-link {
+      color: #5BA4A4 !important;
+      text-decoration: underline !important;
+      word-break: break-all;
+    }
+
+    /* MOBILE STYLES */
+    @media screen and (max-width: 600px) {
       .email-container { width: 100% !important; }
-      .button { width: 100% !important; }
+      .fluid { max-width: 100% !important; height: auto !important; margin-left: auto !important; margin-right: auto !important; }
+      .stack-column { display: block !important; width: 100% !important; max-width: 100% !important; direction: ltr !important; }
+      h1 { font-size: 30px !important; line-height: 36px !important; }
+      p { font-size: 16px !important; line-height: 24px !important; }
+      .no-shadow-mobile { box-shadow: none !important; }
     }
   </style>
 </head>
-<body style="margin: 0; padding: 0; background: radial-gradient(ellipse at top, #e0f2f1, #ffffff);">
-  <center style="width: 100%; background: radial-gradient(ellipse at top, #e0f2f1, #ffffff);">
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: auto;">
-      <tr><td height="40">&nbsp;</td></tr>
+<body bgcolor="#f0f4f8" width="100%" style="margin: 0; mso-line-height-rule: exactly; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-image: radial-gradient(circle at 30% 50%, rgba(56, 189, 248, 0.08), transparent 25%), radial-gradient(circle at 70% 50%, rgba(56, 189, 248, 0.08), transparent 25%), linear-gradient(to bottom, rgba(56, 189, 248, 0.05), transparent);">
+  <center style="width: 100%; background-color: #f0f4f8; text-align: left;">
+    <!-- Visually Hidden Preheader Text -->
+    <div style="display: none; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; font-family: sans-serif;">
+      Reset your password for Pathology Bites
+    </div>
+
+    <!-- Email Body -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" width="600" style="margin: auto; background-color: transparent;" class="email-container">
+      <!-- Logo Header -->
       <tr>
-        <td style="padding: 20px 0; text-align: center;">
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: auto;">
+        <td style="padding: 30px 0; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+          <!--[if mso]>
+          <table role="presentation" border="0" cellspacing="0" cellpadding="0" width="600">
+          <tr>
+          <td align="center" valign="top" width="600">
+          <![endif]-->
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
             <tr>
-              <td style="border-radius: 8px; background: #5BA4A4; padding: 12px 24px;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
-                  Pathology Bites
-                </h1>
+              <td align="center" style="font-size: 24px; font-weight: 500; color: #5BA4A4;">
+                <!--[if mso]>
+                <table role="presentation" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                <td width="30" style="text-align: center; padding-right: 10px; color: #5BA4A4; font-size: 22px;">
+                  <img src="https://www.pathologybites.com/icons/favicon-32x32.png" width="24" height="24" style="display: block; border: 0;" />
+                </td>
+                <td style="text-align: center; color: #5BA4A4; font-size: 24px;">Pathology Bites</td>
+                </tr>
+                </table>
+                <![endif]-->
+                <!--[if !mso]><!-->
+                <table role="presentation" border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td style="padding-right: 8px; color: #5BA4A4;">
+                      <img src="https://www.pathologybites.com/icons/favicon-32x32.png" width="24" height="24" style="display: inline-block; border: 0;" />
+                    </td>
+                    <td style="color: #5BA4A4; font-size: 24px; vertical-align: middle; font-weight: bold;">Pathology Bites</td>
+                  </tr>
+                </table>
+                <!--<![endif]-->
               </td>
             </tr>
           </table>
+          <!--[if mso]>
+          </td>
+          </tr>
+          </table>
+          <![endif]-->
         </td>
       </tr>
+
+      <!-- White Card -->
       <tr>
-        <td style="padding: 20px;">
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container" style="margin: auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <td style="padding: 0 20px;">
+          <!--[if mso]>
+          <table role="presentation" border="0" cellspacing="0" cellpadding="0" width="560">
+          <tr>
+          <td width="560" bgcolor="#ffffff" style="border-radius: 12px;">
+          <![endif]-->
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" width="100%" style="border-radius: 12px; box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);" class="no-shadow-mobile">
             <tr>
-              <td style="padding: 40px 40px 20px 40px; text-align: center;">
-                <h2 style="margin: 0 0 16px 0; font-size: 28px; font-weight: 700; color: #1a1a1a;">
+              <td style="padding: 40px 40px 25px; text-align: center; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                <h1 style="margin: 0 0 20px; font-size: 32px; line-height: 38px; font-weight: 700; color: #000000;">
                   Reset Your Password
-                </h2>
-                <p style="margin: 0; font-size: 16px; line-height: 24px; color: #666666;">
-                  We received a request to reset your password. Click the button below to create a new password.
+                </h1>
+                <p style="margin: 0 0 25px; font-size: 16px; line-height: 26px; color: #6b7280;">
+                  We received a request to reset the password for your Pathology Bites account. Click the button below to create a new password.
                 </p>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 20px 40px;">
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: auto;">
+                <p style="margin: 0 0 35px; font-size: 16px; line-height: 26px; color: #6b7280;">
+                  If you didn't request this password reset, you can safely ignore this email.
+                </p>
+
+                <!-- Button : BEGIN -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: auto;">
                   <tr>
-                    <td style="border-radius: 8px; background: #5BA4A4;">
-                      <a href="${resetLink}" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none;">
+                    <td style="border-radius: 6px; background: #5BA4A4; text-align: center;">
+                      <a href="${resetLink}"
+                         role="button"
+                         aria-label="Reset your password"
+                         style="background: #5BA4A4; border: 12px solid #5BA4A4; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1; text-align: center; text-decoration: none; display: block; border-radius: 6px; font-weight: 500; color: #ffffff;">
                         Reset Password
                       </a>
                     </td>
                   </tr>
                 </table>
+                <!-- Button : END -->
+
+                <p style="margin: 35px 0 15px; font-size: 16px; line-height: 26px; color: #6b7280;">
+                  If the button above doesn't work, copy and paste this link into your browser:
+                </p>
+                <p style="margin: 0 0 0px; font-size: 14px; line-height: 20px; word-break: break-all;">
+                  <a href="${resetLink}"
+                     class="fallback-link"
+                     style="color: #5BA4A4; text-decoration: underline;">
+                    ${resetLink}
+                  </a>
+                </p>
+
               </td>
             </tr>
             <tr>
-              <td style="padding: 20px 40px 40px 40px;">
-                <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 20px; color: #666666; text-align: center;">
-                  Or copy and paste this link into your browser:
-                </p>
-                <p style="margin: 0; font-size: 12px; line-height: 18px; color: #999999; word-break: break-all; text-align: center;">
-                  ${resetLink}
-                </p>
-                <p style="margin: 24px 0 0 0; font-size: 14px; line-height: 20px; color: #666666; text-align: center;">
-                  This link will expire in 24 hours. If you didn't request a password reset, please disregard this email.
+              <td style="padding: 25px 40px 40px; text-align: center; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 20px; color: #5BA4A4;">
+                <p style="margin: 0;">
+                  This password reset link will expire in 24 hours. If you didn't request this reset, please disregard this email.
                 </p>
               </td>
             </tr>
           </table>
+          <!--[if mso]>
+          </td>
+          </tr>
+          </table>
+          <![endif]-->
         </td>
       </tr>
-      <tr><td height="40">&nbsp;</td></tr>
+
+      <!-- Spacer -->
+      <tr>
+        <td height="40">&nbsp;</td>
+      </tr>
+
     </table>
+    <!-- Email Body : END -->
   </center>
 </body>
 </html>
