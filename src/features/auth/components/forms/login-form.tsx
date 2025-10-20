@@ -1,13 +1,14 @@
 // src/features/auth/components/forms/login-form.tsx
 "use client"
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
-import { Turnstile } from '@marsidev/react-turnstile'
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { FormField } from "@/features/auth/components/ui/form-field"
 import { FormButton } from "@/features/auth/components/ui/form-button"
 import { GoogleSignInButton } from "@/features/auth/components/google-sign-in-button"
@@ -38,7 +39,25 @@ export function LoginForm({
   const [loading, setLoading] = useState(false)
   const { getToken, addTokenToFormData } = useCSRFToken()
   const { captchaToken, setCaptchaToken } = useTurnstile()
+  const turnstileRef = useRef<TurnstileInstance | null>(null)
+  const searchParams = useSearchParams()
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY
+
+  // Show error/message toasts from URL params
+  useEffect(() => {
+    const error = searchParams.get('error')
+    const message = searchParams.get('message')
+
+    if (error) {
+      toast.error(error)
+      // Reset CAPTCHA when there's an error
+      turnstileRef.current?.reset()
+      setCaptchaToken(null)
+    }
+    if (message) {
+      toast.info(message)
+    }
+  }, [searchParams, setCaptchaToken])
 
   // Initialize form with useForm hook
   const {
@@ -79,6 +98,10 @@ export function LoginForm({
       await action(formData)
     } catch (error) {
       console.error("Login error:", error)
+      toast.error("An unexpected error occurred. Please try again.")
+      // Reset CAPTCHA on error
+      turnstileRef.current?.reset()
+      setCaptchaToken(null)
     } finally {
       setLoading(false)
     }
@@ -123,6 +146,7 @@ export function LoginForm({
         {siteKey && (
           <div className="flex justify-center">
             <Turnstile
+              ref={turnstileRef}
               siteKey={siteKey}
               onSuccess={(token) => setCaptchaToken(token)}
               onError={() => {

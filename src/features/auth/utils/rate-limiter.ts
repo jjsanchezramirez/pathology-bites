@@ -103,9 +103,9 @@ class RateLimiter {
 const RATE_LIMIT_CONFIG = {
   LOGIN: {
     WINDOW_MINUTES: 15,
-    MAX_ATTEMPTS: 5,
-    BLOCK_MINUTES_DEV: 2,
-    BLOCK_MINUTES_PROD: 10,
+    MAX_ATTEMPTS: 10, // Increased from 5 to 10
+    BLOCK_MINUTES_DEV: 1, // Reduced from 2 to 1
+    BLOCK_MINUTES_PROD: 5, // Reduced from 10 to 5
   }
 } as const
 

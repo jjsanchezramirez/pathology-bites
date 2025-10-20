@@ -101,12 +101,12 @@ export async function login(formData: FormData) {
   const rateLimitResult = loginRateLimiter.checkLimit(clientIP, 'login')
   const currentAttempts = loginRateLimiter.getAttempts(clientIP, 'login')
 
-  console.log(`Login attempt from IP ${clientIP}: ${currentAttempts}/5 attempts`)
+  console.log(`Login attempt from IP ${clientIP}: ${currentAttempts}/10 attempts`)
 
   if (!rateLimitResult.allowed) {
     const retryAfterMinutes = Math.ceil((rateLimitResult.retryAfter || 0) / (1000 * 60))
     console.log(`Rate limit exceeded for IP ${clientIP}. Retry after: ${retryAfterMinutes} minutes`)
-    redirect('/login?error=' + encodeURIComponent(`Too many login attempts. Please try again in ${retryAfterMinutes} minutes.`))
+    redirect('/login?error=' + encodeURIComponent(`Too many login attempts. Please try again in ${retryAfterMinutes} minute${retryAfterMinutes > 1 ? 's' : ''}.`))
     return
   }
 
@@ -161,8 +161,12 @@ export async function login(formData: FormData) {
 
   console.log('[Auth] Login successful for user:', authData.user.id)
 
+  // Reset rate limit on successful login
+  loginRateLimiter.reset(clientIP, 'login')
+  console.log(`[Auth] Rate limit reset for IP ${clientIP} after successful login`)
+
   revalidatePath('/', 'layout')
-  
+
   // Use redirect path if provided
   if (redirectPath) {
     console.log('[Auth] Redirecting to provided path:', redirectPath)

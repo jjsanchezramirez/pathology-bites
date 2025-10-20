@@ -2,11 +2,10 @@
 import { login } from '@/features/auth/services/actions'
 import { AuthPageLayout } from '@/features/auth/components/ui/auth-page-layout'
 import { AuthCard } from '@/features/auth/components/ui/auth-card'
-import { Alert, AlertDescription } from '@/shared/components/ui/alert'
 import { LoginForm } from '@/features/auth/components/forms/login-form'
 
 interface LoginPageProps {
-  searchParams: Promise<{ error?: string; message?: string; redirect?: string }>
+  searchParams: Promise<{ redirect?: string }>
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -28,18 +27,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         description={isAdminOnlyMode ? "Admin access to Pathology Bites" : "Login with Google or your email account"}
         showPrivacyFooter
       >
-        {params.error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{params.error}</AlertDescription>
-          </Alert>
-        )}
-
-        {params.message && (
-          <Alert className="mb-4">
-            <AlertDescription>{params.message}</AlertDescription>
-          </Alert>
-        )}
-
         <LoginForm
           action={login}
           redirect={params.redirect}
