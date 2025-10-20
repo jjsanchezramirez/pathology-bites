@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useClientWSIData } from './use-client-wsi-data'
 import { VirtualSlide } from '@/shared/types/virtual-slides'
+import { getWSIHistoryTracker } from '@/shared/utils/wsi-history-tracker'
 
 interface QuestionData {
   stem: string
@@ -99,26 +100,57 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         throw new Error('No WSI slides available. This may be due to repository filtering or data loading issues.')
       }
 
-      // Step 1: Select WSI using simplified approach
+      // Step 1: Select WSI using simplified approach with history tracking
       console.log(`[WSI Generator] Step 1 - Selecting WSI from ${finalWSIData.length} available slides...`)
       let selectedWSI: VirtualSlide
 
+      // Get history tracker
+      const historyTracker = getWSIHistoryTracker()
+      const effectiveCategory = category || 'all'
+      const recentIds = historyTracker.getRecentIds(effectiveCategory)
+
+      console.log(`[WSI Generator] Recent history size for "${effectiveCategory}": ${recentIds.length} slides`)
+
       if (category && category !== 'all') {
-        const categorySlides = finalWSIData.filter(slide =>
+        // Filter by category first
+        let categorySlides = finalWSIData.filter(slide =>
           slide.category.toLowerCase().includes(category.toLowerCase())
         )
+
         if (categorySlides.length === 0) {
           throw new Error(`No WSI slides found for category: ${category}. Available slides: ${finalWSIData.length}`)
         }
-        selectedWSI = categorySlides[Math.floor(Math.random() * categorySlides.length)]
-        console.log(`[WSI Generator] Selected from ${categorySlides.length} slides in category: ${category}`)
+
+        // Filter out recently shown slides
+        let availableSlides = categorySlides.filter(slide => !recentIds.includes(slide.id))
+
+        // If all slides in category have been shown, reset and use all category slides
+        if (availableSlides.length === 0) {
+          console.log(`[WSI Generator] All ${categorySlides.length} slides in "${category}" have been shown. Resetting history for this category.`)
+          historyTracker.clearCategory(effectiveCategory)
+          availableSlides = categorySlides
+        }
+
+        selectedWSI = availableSlides[Math.floor(Math.random() * availableSlides.length)]
+        console.log(`[WSI Generator] Selected from ${availableSlides.length} available slides in category: ${category} (${categorySlides.length} total, ${recentIds.length} recently shown)`)
       } else {
-        const randomIndex = Math.floor(Math.random() * finalWSIData.length)
-        selectedWSI = finalWSIData[randomIndex]
+        // Filter out recently shown slides from all slides
+        let availableSlides = finalWSIData.filter(slide => !recentIds.includes(slide.id))
+
+        // If all slides have been shown, reset and use all slides
+        if (availableSlides.length === 0) {
+          console.log(`[WSI Generator] All ${finalWSIData.length} slides have been shown. Resetting history.`)
+          historyTracker.clearAll()
+          availableSlides = finalWSIData
+        }
+
+        const randomIndex = Math.floor(Math.random() * availableSlides.length)
+        selectedWSI = availableSlides[randomIndex]
+
         if (!selectedWSI) {
           throw new Error('Failed to select random WSI')
         }
-        console.log(`[WSI Generator] Selected random slide (index ${randomIndex} of ${finalWSIData.length})`)
+        console.log(`[WSI Generator] Selected random slide from ${availableSlides.length} available slides (${finalWSIData.length} total, ${recentIds.length} recently shown)`)
       }
 
       console.log(`[WSI Generator] Selected WSI - ${selectedWSI.diagnosis}`)
@@ -155,14 +187,14 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
       // Combine all data into the expected format
       const generationTime = Date.now() - startTime
-      
+
       // Map API response format to hook interface format
       const apiQuestion = questionData.question as APIQuestionData
       const questionWithOptions: QuestionData = {
         ...apiQuestion,
         options: apiQuestion.question_options || []
       }
-      
+
       const generatedQuestion: GeneratedQuestion = {
         id: `wsi-${selectedWSI.id}-${Date.now()}`,
         wsi: selectedWSI,
@@ -177,6 +209,10 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         },
         debug: questionData.debug
       }
+
+      // Add to history after successful generation
+      historyTracker.addToHistory(selectedWSI.id, effectiveCategory)
+      console.log(`[WSI Generator] Added ${selectedWSI.id} to history. Stats:`, historyTracker.getStats())
 
       return generatedQuestion
 
