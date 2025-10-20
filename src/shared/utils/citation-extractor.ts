@@ -16,28 +16,6 @@ export interface CitationData {
   type: 'journal' | 'book' | 'website'
 }
 
-// OpenLibrary API response types
-interface OpenLibraryWork {
-  title: string
-  authors?: Array<{ name: string }>
-  publish_date?: string
-  publishers?: string[]
-  edition_name?: string
-}
-
-interface OpenLibraryResponse {
-  [isbn: string]: {
-    title: string
-    authors: Array<{ name: string }>
-    publish_date: string
-    publishers: string[]
-    identifiers?: {
-      isbn_10?: string[]
-      isbn_13?: string[]
-    }
-  }
-}
-
 // CrossRef API response types
 interface CrossRefWork {
   title: string[]
@@ -50,19 +28,6 @@ interface CrossRefWork {
   DOI: string
   URL?: string
 }
-
-interface CrossRefResponse {
-  message: CrossRefWork
-}
-
-// PubMed API response types (simplified)
-interface PubMedArticle {
-  title: string
-  authors: string[]
-  journal: string
-  year: string
-  volume?: string
-  issue?: string
   pages?: string
   doi?: string
 }

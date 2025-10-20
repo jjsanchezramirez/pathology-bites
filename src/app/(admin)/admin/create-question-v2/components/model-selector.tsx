@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/shared/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Badge } from '@/shared/components/ui/badge'
 import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group'
 import { Label } from '@/shared/components/ui/label'

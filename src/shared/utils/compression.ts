@@ -24,7 +24,6 @@ export async function createOptimizedResponse(
   options: CompressionOptions = {}
 ): Promise<NextResponse> {
   const {
-    compress = false, // DISABLED: Let Next.js handle compression automatically
     cache = {
       maxAge: 3600, // 1 hour default
       staleWhileRevalidate: 300, // 5 minutes

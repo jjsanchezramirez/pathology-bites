@@ -5,18 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Button } from '@/shared/components/ui/button'
 import { Textarea } from '@/shared/components/ui/textarea'
 import { Label } from '@/shared/components/ui/label'
-import { Badge } from '@/shared/components/ui/badge'
 import { Separator } from '@/shared/components/ui/separator'
-import { 
-  Brain, 
-  Sparkles, 
-  Loader2, 
-  Wand2, 
-  Tags, 
-  FolderTree, 
+import {
+  Brain,
+  Sparkles,
+  Loader2,
+  Wand2,
+  Tags,
+  FolderTree,
   BarChart3,
-  Lightbulb,
-  FileText,
   Zap
 } from 'lucide-react'
 import { toast } from 'sonner'

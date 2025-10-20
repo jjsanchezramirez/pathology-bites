@@ -413,7 +413,7 @@ function extractJSON(text: string): any {
         }
       }
     }
-  } catch (e) {
+  } catch {
     // Continue with original text if parsing fails
   }
 
@@ -443,12 +443,12 @@ function extractJSON(text: string): any {
             const jsonStr = cleanedText.substring(firstBrace, i + 1)
             try {
               return JSON.parse(sanitizeJSONString(jsonStr))
-            } catch (e) {
+            } catch {
               // Try without sanitization as fallback
               try {
                 return JSON.parse(jsonStr)
-              } catch (e2) {
-                console.log('[Admin AI] JSON parsing failed, trying next strategy:', e instanceof Error ? e.message : 'Unknown error')
+              } catch {
+                console.log('[Admin AI] JSON parsing failed, trying next strategy')
                 break
               }
             }
@@ -464,11 +464,11 @@ function extractJSON(text: string): any {
   if (codeBlockMatch) {
     try {
       return JSON.parse(sanitizeJSONString(codeBlockMatch[1]))
-    } catch (e) {
+    } catch {
       try {
         return JSON.parse(codeBlockMatch[1])
-      } catch (e2) {
-        console.log('[Admin AI] Code block JSON parsing failed:', e instanceof Error ? e.message : 'Unknown error')
+      } catch {
+        console.log('[Admin AI] Code block JSON parsing failed')
       }
     }
   }
@@ -478,10 +478,10 @@ function extractJSON(text: string): any {
   if (greedyMatch) {
     try {
       return JSON.parse(sanitizeJSONString(greedyMatch[0]))
-    } catch (e) {
+    } catch {
       try {
         return JSON.parse(greedyMatch[0])
-      } catch (e2) {
+      } catch {
         // Try to fix common JSON issues
         const fixedJson = greedyMatch[0]
           .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Add quotes to unquoted keys
@@ -491,12 +491,12 @@ function extractJSON(text: string): any {
 
         try {
           return JSON.parse(sanitizeJSONString(fixedJson))
-        } catch (e3) {
+        } catch {
           try {
             return JSON.parse(fixedJson)
-          } catch (fixError) {
+          } catch {
             console.error('[Admin AI] All JSON parsing strategies failed. Original response:', text.substring(0, 500))
-            throw new Error(`JSON parsing failed: ${e instanceof Error ? e.message : 'Parse error'}`)
+            throw new Error('JSON parsing failed: Parse error')
           }
         }
       }

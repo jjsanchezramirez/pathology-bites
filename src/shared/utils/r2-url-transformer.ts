@@ -83,11 +83,11 @@ export function transformCellQuizData(cellData: any): any {
   if (!cellData || typeof cellData !== 'object') return cellData
   
   const transformed = { ...cellData }
-  
+
   // Transform each cell type's images
-  for (const [cellType, cellInfo] of Object.entries(transformed)) {
+  for (const cellInfo of Object.values(transformed)) {
     if (cellInfo && typeof cellInfo === 'object' && Array.isArray((cellInfo as any).images)) {
-      (cellInfo as any).images = (cellInfo as any).images.map((imagePath: string) => 
+      (cellInfo as any).images = (cellInfo as any).images.map((imagePath: string) =>
         transformCellQuizImageUrl(imagePath)
       )
     }

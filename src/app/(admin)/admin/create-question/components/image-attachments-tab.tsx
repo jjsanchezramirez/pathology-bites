@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Button } from '@/shared/components/ui/button'
 
 import { Input } from '@/shared/components/ui/input'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogPortal } from '@/shared/components/ui/dialog'
+import { Dialog, DialogTrigger, DialogPortal } from '@/shared/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 
 import { Search, X, Plus, Image as ImageIcon } from 'lucide-react'

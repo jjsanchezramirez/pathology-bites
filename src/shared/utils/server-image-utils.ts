@@ -46,7 +46,7 @@ export async function validateImageBuffer(buffer: Buffer): Promise<boolean> {
   try {
     const metadata = await sharp(buffer).metadata();
     return !!(metadata.width && metadata.height && metadata.format);
-  } catch (error) {
+  } catch {
     return false;
   }
 }

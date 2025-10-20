@@ -47,10 +47,6 @@ interface PathologySection {
 }
 
 interface ContentSpecifications {
-  content_specifications: {
-    ap_sections: PathologySection[];
-    cp_sections: PathologySection[];
-  };
   metadata: {
     total_sections: number;
     ap_sections: number;

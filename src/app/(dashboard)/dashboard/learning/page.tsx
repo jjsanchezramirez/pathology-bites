@@ -23,7 +23,7 @@ import {
   GraduationCap,
 
 } from "lucide-react"
-import { LEARNING_MODULES, getAllSubModules } from "@/features/learning-path/data/learning-categories"
+import { LEARNING_MODULES } from "@/features/learning-path/data/learning-categories"
 import { LearningCategory } from "@/features/learning-path/types/learning-path"
 import { FeaturePlaceholder } from "@/features/dashboard/components"
 import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags"

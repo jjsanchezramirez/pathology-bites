@@ -75,8 +75,8 @@ export function QuestionFinalization({ question, attachedImages, onQuestionCreat
         throw new Error(errorData.error || 'Failed to create question')
       }
 
-      const data = await response.json()
-      
+      await response.json()
+
       toast.success('Question created successfully!')
       onQuestionCreated()
 

@@ -41,7 +41,6 @@ export function StepMetadata({ formState, updateFormState, initialQuestionSetId 
   const [tags, setTags] = useState<Tag[]>([])
   const [loadingCategories, setLoadingCategories] = useState(true)
   const [loadingQuestionSets, setLoadingQuestionSets] = useState(true)
-  const [loadingTags, setLoadingTags] = useState(true)
   const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false)
   const [hasAutoAssignedQuestionSet, setHasAutoAssignedQuestionSet] = useState(false)
 

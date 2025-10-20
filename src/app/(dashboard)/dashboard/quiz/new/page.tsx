@@ -13,7 +13,7 @@ import { Badge } from "@/shared/components/ui/badge"
 import { Slider } from "@/shared/components/ui/slider"
 import { Separator } from "@/shared/components/ui/separator"
 import { Input } from "@/shared/components/ui/input"
-import { BookOpen, WifiOff, Wifi, RefreshCw, Plus } from "lucide-react"
+import { BookOpen, WifiOff } from "lucide-react"
 import { userSettingsService } from '@/shared/services/user-settings'
 
 import {
@@ -48,7 +48,7 @@ interface QuizOptionsData {
 export default function NewQuizPage() {
   const featuresEnabled = isQuizFeaturesEnabled()
   const router = useRouter()
-  const { isOnline, forceCheck, connectionType, effectiveType, browserOnline } = useZeroApiNetworkStatus()
+  const { isOnline } = useZeroApiNetworkStatus()
   const [formData, setFormData] = useState<QuizCreationForm>(DEFAULT_QUIZ_CONFIG)
   const [quizOptions, setQuizOptions] = useState<QuizOptionsData | null>(null)
   const [loading, setLoading] = useState(true)

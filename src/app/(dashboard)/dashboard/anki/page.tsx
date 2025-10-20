@@ -9,8 +9,6 @@
 
 import React from 'react'
 import { DoubleSidebarAnkomaViewer } from '@/features/anki/components/double-sidebar-ankoma-viewer'
-import { BookOpen, Brain, Shuffle, TrendingUp } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
 
 export default function DashboardAnkiPage() {
   return (

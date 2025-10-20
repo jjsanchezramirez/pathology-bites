@@ -95,8 +95,7 @@ const isCompleteWordMatch = (text: string, term: string): boolean => {
 // Main search algorithm
 export const searchSlides = (
   searchTerm: string,
-  searchIndex: SearchIndex[],
-  acronymMap: Map<string, string[]>
+  searchIndex: SearchIndex[]
 ): VirtualSlide[] => {
   if (!searchTerm.trim()) {
     return searchIndex.map(item => item.slide)

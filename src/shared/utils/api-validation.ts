@@ -32,7 +32,7 @@ export async function validateRequestBody(
     }
     
     return { isValid: true, data: validation.data }
-  } catch (error) {
+  } catch {
     return {
       isValid: false,
       response: NextResponse.json(

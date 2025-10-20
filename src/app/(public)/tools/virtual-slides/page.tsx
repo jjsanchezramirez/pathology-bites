@@ -44,11 +44,8 @@ export default function VirtualSlidesPage() {
     totalResults,
     search,
     searchWithFilters,
-    nextPage,
-    previousPage,
     goToPage,
-    totalSlides,
-    currentSearchOptions
+    totalSlides
   } = {
     slides: client.slides,
     isLoading: client.isLoading,
@@ -58,11 +55,8 @@ export default function VirtualSlidesPage() {
     totalResults: client.totalResults,
     search: client.search,
     searchWithFilters: client.searchWithFilters,
-    nextPage: client.nextPage,
-    previousPage: client.previousPage,
     goToPage: client.goToPage,
-    totalSlides: client.totalSlides,
-    currentSearchOptions: client.currentSearchOptions
+    totalSlides: client.totalSlides
   }
 
   const [searchTerm, setSearchTerm] = useState('')
@@ -76,7 +70,6 @@ export default function VirtualSlidesPage() {
   const [repositories, setRepositories] = useState<string[]>([])
   const [categories, setCategories] = useState<string[]>([])
   const [organSystems, setOrganSystems] = useState<string[]>([])
-  const [isLoadingMetadata, setIsLoadingMetadata] = useState(true)
 
   // Enhanced features
   const [showDiagnoses, setShowDiagnoses] = useState(true)
