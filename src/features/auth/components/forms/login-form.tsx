@@ -110,7 +110,6 @@ export function LoginForm({
           {...register("password")}
         />
 
-        {/* Turnstile CAPTCHA - Only show if sitekey is configured */}
         <FormButton type="submit" fullWidth disabled={loading}>
           {loading ? "Signing in..." : "Login"}
         </FormButton>
