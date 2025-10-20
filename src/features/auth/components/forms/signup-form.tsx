@@ -8,12 +8,13 @@ import * as z from "zod"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { Turnstile } from '@marsidev/react-turnstile'
 import { AuthCard } from "@/features/auth/components/ui/auth-card"
 import { FormField } from "@/features/auth/components/ui/form-field"
 import { FormButton } from "@/features/auth/components/ui/form-button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select"
 import { createClient } from '@/shared/services/client'
-import { useCSRFToken } from '@/features/auth/hooks/use-csrf-token'
+import { useTurnstile } from '@/features/auth/hooks/use-turnstile'
 
 // Enhanced form schema with proper password validation
 const formSchema = z.object({
@@ -40,7 +41,8 @@ export function SignupForm() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
-  const { getToken, addTokenToFormData } = useCSRFToken()
+  const { captchaToken, setCaptchaToken } = useTurnstile()
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY
 
   const {
     register,
@@ -48,7 +50,6 @@ export function SignupForm() {
     formState: { errors, isSubmitted },
     setValue,
     watch,
-    setError,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -75,15 +76,22 @@ export function SignupForm() {
       })
 
       if (!response.ok) {
-        console.error('Error checking email existence')
-        return false
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Error checking email existence:', {
+          status: response.status,
+          error: errorData.error
+        })
+        // If the API fails, we should fail safely by not allowing signup
+        // This prevents users from bypassing the check
+        throw new Error(`Email check failed: ${errorData.error || 'Unknown error'}`)
       }
 
       const data = await response.json()
       return data.exists
     } catch (error) {
       console.error("Error checking email existence:", error)
-      return false
+      // Re-throw to let the caller handle it
+      throw error
     }
   }
 
@@ -91,12 +99,18 @@ export function SignupForm() {
     try {
       setLoading(true)
 
-      // Temporarily disable email check to isolate the issue
-      // const emailExists = await checkEmailExists(values.email)
-      // if (emailExists) {
-      //   toast.error("An account with this email already exists")
-      //   return
-      // }
+      // Check if email already exists (single source of truth via public.users)
+      try {
+        const emailExists = await checkEmailExists(values.email)
+        if (emailExists) {
+          toast.error("An account with this email already exists")
+          return
+        }
+      } catch (emailCheckError) {
+        console.error('Email check failed:', emailCheckError)
+        toast.error("Unable to verify email availability. Please try again.")
+        return
+      }
 
       // Use environment variable for redirect URL with fallback
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
@@ -122,7 +136,8 @@ export function SignupForm() {
             last_name: values.lastName,
             user_type: values.userType,
           },
-          emailRedirectTo: redirectTo
+          emailRedirectTo: redirectTo,
+          captchaToken: captchaToken || undefined,
         },
       })
 
@@ -258,7 +273,25 @@ export function SignupForm() {
           </ul>
         </div>
 
-        <FormButton type="submit" fullWidth disabled={loading}>
+        {/* Turnstile CAPTCHA - Only show if sitekey is configured */}
+        {siteKey && (
+          <div className="flex justify-center">
+            <Turnstile
+              siteKey={siteKey}
+              onSuccess={(token) => setCaptchaToken(token)}
+              onError={() => {
+                setCaptchaToken(null)
+                toast.error("CAPTCHA verification failed. Please try again.")
+              }}
+              onExpire={() => {
+                setCaptchaToken(null)
+                toast.error("CAPTCHA expired. Please verify again.")
+              }}
+            />
+          </div>
+        )}
+
+        <FormButton type="submit" fullWidth disabled={loading || (siteKey && !captchaToken)}>
           {loading ? "Creating Account..." : "Create Account"}
         </FormButton>
 

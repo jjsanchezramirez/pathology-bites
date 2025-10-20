@@ -36,7 +36,17 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Check if email exists in the users table
+    /**
+     * EMAIL EXISTENCE CHECK - SINGLE SOURCE OF TRUTH
+     *
+     * We check public.users table which is kept in sync with auth.users via:
+     * 1. Application code in auth routes creates public.users when auth.users is created
+     * 2. Safeguards ensure public.users entries are created on signup/login
+     * 3. Email uniqueness is enforced at the auth level by Supabase
+     *
+     * This ensures consistency with supabase.auth.signUp() which checks auth.users
+     * If email exists in auth.users, it will also exist in public.users (via safeguards)
+     */
     const { data, error } = await supabase
       .from('users')
       .select('id')
@@ -45,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     if (error && error.code !== 'PGRST116') {
       // PGRST116 means no rows found, which is what we want for new emails
-      console.error('Database error checking email:', error)
+      console.error('Database error checking email in public.users:', error)
       return NextResponse.json(
         { error: 'Database error' },
         { status: 500 }
