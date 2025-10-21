@@ -10,11 +10,12 @@ interface SystemMetrics {
   supabaseStatus: 'operational' | 'error'
   cloudflareR2Status: 'operational' | 'error'
   responseTime: number
+  dbQueryTime: number
   dbConnections: number
+  activeUsers: number
   storageUsage: number // Supabase storage in MB
   r2StorageUsage: number // R2 storage in MB
   r2StorageFormatted: string // Formatted R2 storage
-  errorRate: number // percentage
   lastUpdated: Date
 }
 
@@ -24,11 +25,12 @@ export function SystemStatus() {
     supabaseStatus: 'operational',
     cloudflareR2Status: 'operational',
     responseTime: 0,
+    dbQueryTime: 0,
     dbConnections: 0,
+    activeUsers: 0,
     storageUsage: 0,
     r2StorageUsage: 0,
     r2StorageFormatted: '0 MB',
-    errorRate: 0,
     lastUpdated: new Date()
   })
 
@@ -47,11 +49,12 @@ export function SystemStatus() {
             supabaseStatus: data.supabaseStatus,
             cloudflareR2Status: data.cloudflareR2Status || 'operational',
             responseTime: data.responseTime,
+            dbQueryTime: data.dbQueryTime || 0,
             dbConnections: data.dbConnections || 0,
+            activeUsers: data.activeUsers || 0,
             storageUsage: data.storageUsage || 0,
             r2StorageUsage: data.r2StorageUsage || 0,
             r2StorageFormatted: data.r2StorageFormatted || '0 MB',
-            errorRate: data.errorRate || 0,
             lastUpdated: new Date(data.lastUpdated)
           })
         } else {
@@ -70,11 +73,12 @@ export function SystemStatus() {
             supabaseStatus: error ? 'error' : 'operational',
             cloudflareR2Status: 'operational', // Default when API fails
             responseTime,
+            dbQueryTime: 0,
             dbConnections: 0,
+            activeUsers: 0,
             storageUsage: 0,
             r2StorageUsage: 0,
             r2StorageFormatted: '0 MB',
-            errorRate: 0,
             lastUpdated: new Date()
           })
         }
@@ -86,11 +90,12 @@ export function SystemStatus() {
           supabaseStatus: 'error',
           cloudflareR2Status: 'error',
           responseTime: 0,
+          dbQueryTime: 0,
           dbConnections: 0,
+          activeUsers: 0,
           storageUsage: 0,
           r2StorageUsage: 0,
           r2StorageFormatted: '0 MB',
-          errorRate: 100,
           lastUpdated: new Date()
         })
       }
@@ -161,63 +166,67 @@ export function SystemStatus() {
             </div>
             <div className="mt-4">
               <p className="text-xs text-muted-foreground">
-                {metrics.responseTime}ms response
+                {metrics.supabaseStatus === 'operational' ? 'Operational' : 'Error'}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Cloudflare R2 Status */}
+        {/* API Response Time */}
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Cloudflare R2</p>
-                <p className="text-xs text-muted-foreground">Storage</p>
+                <p className="text-sm font-medium">API Response</p>
+                <p className="text-xs text-muted-foreground">Total Time</p>
               </div>
-              <div className={`h-3 w-3 rounded-full ${getStatusColor(metrics.cloudflareR2Status)}`} />
+              <div className={`h-3 w-3 rounded-full ${metrics.responseTime > 1000 ? 'bg-red-500' : metrics.responseTime > 300 ? 'bg-yellow-500' : 'bg-emerald-500'}`} />
             </div>
             <div className="mt-4">
               <p className="text-xs text-muted-foreground">
-                {metrics.r2StorageFormatted} used
+                {metrics.responseTime}ms
               </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* System Performance */}
+        {/* Database Query Time */}
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Performance</p>
-                <p className="text-xs text-muted-foreground">Error Rate</p>
+                <p className="text-sm font-medium">DB Query</p>
+                <p className="text-xs text-muted-foreground">Query Time</p>
               </div>
-              <div className={`h-3 w-3 rounded-full ${metrics.errorRate > 5 ? 'bg-red-500' : metrics.errorRate > 1 ? 'bg-yellow-500' : 'bg-emerald-500'}`} />
+              <div className={`h-3 w-3 rounded-full ${metrics.dbQueryTime > 500 ? 'bg-red-500' : metrics.dbQueryTime > 100 ? 'bg-yellow-500' : 'bg-emerald-500'}`} />
             </div>
             <div className="mt-4">
               <p className="text-xs text-muted-foreground">
-                {metrics.errorRate.toFixed(1)}% errors
+                {metrics.dbQueryTime}ms
               </p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Additional Metrics */}
+      {/* System Metrics */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">System Metrics</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
             <div className="text-center">
-              <p className="text-2xl font-bold">{metrics.dbConnections}</p>
+              <p className="text-2xl font-bold">1</p>
               <p className="text-xs text-muted-foreground">DB Connections</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold">{metrics.responseTime}ms</p>
-              <p className="text-xs text-muted-foreground">Avg Response Time</p>
+              <p className="text-2xl font-bold">{metrics.activeUsers}</p>
+              <p className="text-xs text-muted-foreground">Active Users (60 min)</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold">{metrics.r2StorageFormatted}</p>
+              <p className="text-xs text-muted-foreground">Cloudflare R2</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold">{(metrics.storageUsage / 1024).toFixed(1)}GB</p>

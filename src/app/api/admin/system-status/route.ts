@@ -9,11 +9,12 @@ interface SystemHealth {
   supabaseStatus: 'operational' | 'error'
   cloudflareR2Status: 'operational' | 'error'
   responseTime: number
+  dbQueryTime: number // Average database query time in ms
   dbConnections: number
+  activeUsers: number // Currently active users (logged in within last 60 minutes)
   storageUsage: number // Supabase storage in MB
   r2StorageUsage: number // R2 storage in MB
   r2StorageFormatted: string // Formatted R2 storage
-  errorRate: number // percentage
   lastUpdated: string
 }
 
@@ -23,19 +24,32 @@ export async function GET() {
   try {
     const supabase = await createClient()
 
-    // Test multiple services and get metrics
-    const [dbTest, storageStats, vercelStatusResponse, r2ImagesStats, r2DataStats] = await Promise.allSettled([
-      supabase
-        .from('users')
-        .select('id', { count: 'exact', head: true })
-        .limit(1),
+    // Measure database query time separately
+    const dbStartTime = performance.now()
+    const dbTestPromise = supabase
+      .from('users')
+      .select('id', { count: 'exact', head: true })
+      .limit(1)
+    const dbTestResult = await dbTestPromise
+    const dbEndTime = performance.now()
+    const dbQueryTime = Math.round(dbEndTime - dbStartTime)
+
+    // Test other services and get metrics in parallel
+    const sixtyMinutesAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+
+    const [storageStats, vercelStatusResponse, r2ImagesStats, r2DataStats, activeUsersResult] = await Promise.allSettled([
       supabase
         .from('v_storage_stats')
         .select('*')
         .single(),
       fetch('https://www.vercel-status.com/api/v2/status.json'),
       getBucketSize('pathology-bites-images'),
-      getBucketSize('pathology-bites-data')
+      getBucketSize('pathology-bites-data'),
+      // Count active users (those with activity in last 60 minutes)
+      supabase
+        .from('users')
+        .select('id', { count: 'exact', head: true })
+        .gte('last_sign_in_at', sixtyMinutesAgo)
     ])
 
     const endTime = performance.now()
@@ -86,34 +100,29 @@ export async function GET() {
       cloudflareR2Status = 'error'
     }
 
-    // Calculate error rate based on service failures
-    const totalServices = 5 // DB, Storage, Vercel, R2 Images, R2 Data
-    let failedServices = 0
-
-    if (dbTest.status === 'rejected') failedServices++
-    if (storageStats.status === 'rejected') failedServices++
-    if (vercelStatusResponse.status === 'rejected' || vercelStatus === 'error') failedServices++
-    if (r2ImagesStats.status === 'rejected') failedServices++
-    if (r2DataStats.status === 'rejected') failedServices++
-
-    const errorRate = Math.round((failedServices / totalServices) * 100)
+    // Get active users count
+    let activeUsers = 0
+    if (activeUsersResult.status === 'fulfilled' && activeUsersResult.value.count !== null) {
+      activeUsers = activeUsersResult.value.count
+    }
 
     const systemHealth: SystemHealth = {
       vercelStatus,
-      supabaseStatus: dbTest.status === 'rejected' ? 'error' : 'operational',
+      supabaseStatus: dbTestResult.error ? 'error' : 'operational',
       cloudflareR2Status,
       responseTime,
-      dbConnections: 1, // Simplified - could query actual connection pool stats
+      dbQueryTime,
+      dbConnections: 1, // Hardcoded as requested
+      activeUsers,
       storageUsage, // Supabase storage
       r2StorageUsage, // R2 storage
       r2StorageFormatted, // Formatted R2 storage
-      errorRate,
       lastUpdated: new Date().toISOString()
     }
 
     // Only log errors, not successful checks
-    if (dbTest.status === 'rejected') {
-      console.error('Supabase connection error:', dbTest.reason)
+    if (dbTestResult.error) {
+      console.error('Supabase connection error:', dbTestResult.error)
     }
 
     return NextResponse.json(systemHealth, { status: 200 })
@@ -129,11 +138,12 @@ export async function GET() {
       supabaseStatus: 'error',
       cloudflareR2Status: 'error',
       responseTime,
+      dbQueryTime: 0,
       dbConnections: 0,
+      activeUsers: 0,
       storageUsage: 0,
       r2StorageUsage: 0,
       r2StorageFormatted: '0 MB',
-      errorRate: 100,
       lastUpdated: new Date().toISOString()
     }
 

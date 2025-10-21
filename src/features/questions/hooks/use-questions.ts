@@ -78,6 +78,9 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
           updated_at,
           published_at,
           version,
+          version_major,
+          version_minor,
+          version_patch,
           question_set:question_sets!questions_set_id_fkey(
             id,
             name,

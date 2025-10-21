@@ -47,7 +47,10 @@ export async function POST(request: NextRequest) {
         category_id: questionData.category_id,
         created_by: user.id,
         updated_by: user.id,
-        version: 1
+        version: '1.0.0',
+        version_major: 1,
+        version_minor: 0,
+        version_patch: 0
       })
       .select()
       .single()
