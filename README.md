@@ -1314,6 +1314,51 @@ npm run test:tools        # Educational tools
 npm run test:performance  # Performance benchmarks
 ```
 
+### Comprehensive Authentication Testing Guide
+
+For a detailed guide on testing the complete authentication flow from start to finish, see [Authentication Testing Guide](./docs/auth-testing-guide.md).
+
+The guide covers:
+- **Sign Up Flow**: Email validation, password requirements, CAPTCHA, rate limiting
+- **Email Verification**: Confirmation links, expired tokens, resend functionality
+- **Login Flow**: Email/password, OAuth, session management, role-based redirects
+- **Password Reset**: Request flow, token handling, security measures
+- **Session Management**: Persistence, expiry, refresh, fingerprinting, concurrent sessions
+- **Protected Routes**: Middleware, client-side guards, API protection
+- **Security Testing**: SQL injection, XSS, CSRF, timing attacks, session fixation
+- **Performance**: Concurrent logins, network interruption, database failover
+
+Quick test checklist:
+```bash
+# 1. Sign Up & Verification
+□ Valid signup with email verification
+□ Duplicate email prevention
+□ Password strength validation
+□ CAPTCHA requirement
+□ Rate limiting (3 signups/hour)
+
+# 2. Login & Session
+□ Successful email/password login
+□ OAuth (Google) login
+□ Unverified email blocked
+□ Invalid credentials handling
+□ Session persistence & expiry
+□ Rate limiting (10 attempts/15min)
+
+# 3. Password Reset
+□ Request reset email
+□ Complete password change
+□ Expired link handling
+□ Rate limiting (3 requests/hour)
+
+# 4. Security
+□ CSRF token validation
+□ Session fingerprint detection
+□ SQL injection prevention
+□ XSS sanitization
+□ Protected route enforcement
+```
+
 ### Code Quality
 - **TypeScript Strict Mode**: Full type safety with strict configuration
 - **ESLint**: Comprehensive linting with medical terminology support
