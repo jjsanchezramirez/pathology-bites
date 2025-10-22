@@ -447,6 +447,14 @@ export function formatVancouver(data: CitationData): string {
   return cleanCitation(citation)
 }
 
+/**
+ * Format citation in NLM (National Library of Medicine) style
+ * NLM style is identical to Vancouver style
+ */
+export function formatNLM(data: CitationData): string {
+  return formatVancouver(data)
+}
+
 // APA Formatting Functions
 function formatAuthorsAPA(authors: string[]): string {
   if (authors.length === 0) return 'Unknown Author'

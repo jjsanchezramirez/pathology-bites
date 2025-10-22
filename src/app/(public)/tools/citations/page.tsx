@@ -16,6 +16,7 @@ import {
   formatMLA,
   formatAMA,
   formatVancouver,
+  formatNLM,
   getJournalAbbreviationStats,
   forceReloadJournalAbbreviations
 } from '@/shared/utils/citation-formatters'
@@ -486,7 +487,7 @@ export default function CitationGeneratorPage() {
                     )}
 
                     <Tabs defaultValue="apa" className="w-full">
-                      <TabsList className="grid w-full grid-cols-4">
+                      <TabsList className="grid w-full grid-cols-5">
                         <TabsTrigger value="apa">APA</TabsTrigger>
                         <TabsTrigger value="mla">MLA</TabsTrigger>
                         <TabsTrigger value="ama">AMA</TabsTrigger>
@@ -494,6 +495,7 @@ export default function CitationGeneratorPage() {
                           <span className="hidden sm:inline">Vancouver</span>
                           <span className="sm:hidden">Vanc.</span>
                         </TabsTrigger>
+                        <TabsTrigger value="nlm">NLM</TabsTrigger>
                       </TabsList>
                       
                       <TabsContent value="apa" className="space-y-4">
@@ -587,6 +589,30 @@ export default function CitationGeneratorPage() {
                             <>
                               <Copy className="h-4 w-4 mr-2" />
                               Copy Vancouver Citation
+                            </>
+                          )}
+                        </Button>
+                      </TabsContent>
+
+                      <TabsContent value="nlm" className="space-y-4">
+                        <div className="p-4 bg-gray-50 rounded-lg border">
+                          <p className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: formatNLM(editableData).replace(/\*(.*?)\*/g, '<em>$1</em>') }} />
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(formatNLM(editableData).replace(/\*(.*?)\*/g, '$1'), 'nlm')}
+                          className="w-full"
+                        >
+                          {copiedFormat === 'nlm' ? (
+                            <>
+                              <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-4 w-4 mr-2" />
+                              Copy NLM Citation
                             </>
                           )}
                         </Button>
