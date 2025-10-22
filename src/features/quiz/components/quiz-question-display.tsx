@@ -4,6 +4,7 @@
 
 import { Card, CardContent } from "@/shared/components/ui/card"
 import { ImageCarousel } from "@/features/images/components/image-carousel"
+import { ReferencesList } from "@/shared/components/common/references-list"
 import { Check, X } from "lucide-react"
 import { UIQuizQuestion } from "@/features/quiz/types/quiz-question"
 
@@ -151,12 +152,7 @@ export function QuizQuestionDisplay({
 
             {/* References */}
             {question.question_references && (
-              <div className="text-xs text-muted-foreground">
-                <h4 className="font-medium uppercase mb-1">References</h4>
-                <div className="break-words">
-                  {question.question_references}
-                </div>
-              </div>
+              <ReferencesList references={question.question_references} />
             )}
           </div>
         )}
