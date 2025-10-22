@@ -18,15 +18,16 @@ export interface ParsedReference {
 function extractDOI(text: string): string | undefined {
   // Match DOI patterns
   const doiPatterns = [
-    /doi:\s*(10\.\d{4,}\/[-._;()\/:a-zA-Z0-9]+)/i,
-    /https?:\/\/doi\.org\/(10\.\d{4,}\/[-._;()\/:a-zA-Z0-9]+)/i,
-    /\b(10\.\d{4,}\/[-._;()\/:a-zA-Z0-9]+)\b/
+    /doi:\s*(10\.\d{4,}\/[-._;()\/:a-zA-Z0-9]+[a-zA-Z0-9])/i,
+    /https?:\/\/doi\.org\/(10\.\d{4,}\/[-._;()\/:a-zA-Z0-9]+[a-zA-Z0-9])/i,
+    /\b(10\.\d{4,}\/[-._;()\/:a-zA-Z0-9]+[a-zA-Z0-9])\b/
   ]
 
   for (const pattern of doiPatterns) {
     const match = text.match(pattern)
     if (match) {
-      return match[1]
+      // Remove any trailing punctuation that might have been captured
+      return match[1].replace(/[.,;:]+$/, '')
     }
   }
 

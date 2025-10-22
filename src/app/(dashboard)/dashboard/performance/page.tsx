@@ -37,16 +37,19 @@ interface DashboardStats {
 }
 
 interface CategoryDetail {
-  name: string
+  category_id: string
+  category_name: string
+  total_attempts: number
+  correct_attempts: number
   accuracy: number
-  totalQuestions: number
-  averageTime: number
-  trend: 'up' | 'down' | 'stable'
-  recentPerformance: Array<{
+  average_time: number
+  last_attempt_at: string
+  recent_performance: Array<{
     date: string
     accuracy: number
-    questionsAnswered: number
+    questions_answered: number
   }>
+  trend?: 'up' | 'down' | 'stable'
 }
 
 export default function PerformancePage() {
@@ -60,80 +63,48 @@ export default function PerformancePage() {
 
     const fetchPerformanceData = async () => {
       try {
-        // Fetch dashboard stats (same as dashboard page)
-        const response = await fetch('/api/user/dashboard/stats')
-        if (!response.ok) {
+        // Fetch dashboard stats and category details in parallel
+        const [statsResponse, categoryResponse] = await Promise.all([
+          fetch('/api/user/dashboard/stats'),
+          fetch('/api/user/performance/category-details')
+        ])
+
+        if (!statsResponse.ok || !categoryResponse.ok) {
           throw new Error('Failed to fetch performance data')
         }
-        const result = await response.json()
-        setStats(result.data)
 
-        // Mock detailed category data for now
-        const mockCategoryDetails: CategoryDetail[] = [
-          {
-            name: 'Cardiovascular Pathology',
-            accuracy: 85,
-            totalQuestions: 42,
-            averageTime: 38,
-            trend: 'up',
-            recentPerformance: [
-              { date: '2024-01-15', accuracy: 87, questionsAnswered: 8 },
-              { date: '2024-01-14', accuracy: 83, questionsAnswered: 6 },
-              { date: '2024-01-13', accuracy: 85, questionsAnswered: 4 },
-            ]
-          },
-          {
-            name: 'Respiratory Pathology',
-            accuracy: 82,
-            totalQuestions: 38,
-            averageTime: 41,
-            trend: 'stable',
-            recentPerformance: [
-              { date: '2024-01-15', accuracy: 80, questionsAnswered: 5 },
-              { date: '2024-01-14', accuracy: 84, questionsAnswered: 7 },
-              { date: '2024-01-13', accuracy: 82, questionsAnswered: 3 },
-            ]
-          },
-          {
-            name: 'Gastrointestinal Pathology',
-            accuracy: 76,
-            totalQuestions: 35,
-            averageTime: 47,
-            trend: 'up',
-            recentPerformance: [
-              { date: '2024-01-15', accuracy: 78, questionsAnswered: 4 },
-              { date: '2024-01-14', accuracy: 74, questionsAnswered: 6 },
-              { date: '2024-01-13', accuracy: 76, questionsAnswered: 5 },
-            ]
-          },
-          {
-            name: 'Genitourinary Pathology',
-            accuracy: 74,
-            totalQuestions: 28,
-            averageTime: 52,
-            trend: 'down',
-            recentPerformance: [
-              { date: '2024-01-15', accuracy: 72, questionsAnswered: 3 },
-              { date: '2024-01-14', accuracy: 76, questionsAnswered: 4 },
-              { date: '2024-01-13', accuracy: 74, questionsAnswered: 2 },
-            ]
-          },
-          {
-            name: 'Neuropathology',
-            accuracy: 68,
-            totalQuestions: 22,
-            averageTime: 58,
-            trend: 'down',
-            recentPerformance: [
-              { date: '2024-01-15', accuracy: 65, questionsAnswered: 2 },
-              { date: '2024-01-14', accuracy: 70, questionsAnswered: 3 },
-              { date: '2024-01-13', accuracy: 68, questionsAnswered: 1 },
-            ]
+        const [statsResult, categoryResult] = await Promise.all([
+          statsResponse.json(),
+          categoryResponse.json()
+        ])
+
+        setStats(statsResult.data)
+
+        // Process category details and calculate trends
+        const categoryData: CategoryDetail[] = categoryResult.data.map((cat: CategoryDetail) => {
+          // Calculate trend based on recent performance
+          let trend: 'up' | 'down' | 'stable' = 'stable'
+
+          if (cat.recent_performance && cat.recent_performance.length >= 2) {
+            const recentAccuracies = cat.recent_performance.slice(0, 3).map(p => p.accuracy)
+            const avgRecent = recentAccuracies.reduce((sum, acc) => sum + acc, 0) / recentAccuracies.length
+
+            if (avgRecent > cat.accuracy + 5) {
+              trend = 'up'
+            } else if (avgRecent < cat.accuracy - 5) {
+              trend = 'down'
+            }
           }
-        ]
 
-        setCategoryDetails(mockCategoryDetails)
-      } catch {
+          return {
+            ...cat,
+            trend
+          }
+        })
+
+        setCategoryDetails(categoryData)
+      } catch (error) {
+        console.error('Error fetching performance data:', error)
         toast.error('Failed to load performance data')
       } finally {
         setLoading(false)
@@ -275,59 +246,80 @@ export default function PerformancePage() {
       <PerformanceAnalytics data={stats.performance} />
 
       {/* Detailed Category Breakdown */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Detailed Category Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {categoryDetails.map((category, index) => (
-              <div key={index} className="space-y-3 pb-6 border-b last:border-b-0">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold">{category.name}</h3>
-                    {getTrendIcon(category.trend)}
+      {categoryDetails.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Detailed Category Performance
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {categoryDetails.map((category, index) => (
+                <div key={category.category_id || index} className="space-y-3 pb-6 border-b last:border-b-0">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold">{category.category_name}</h3>
+                      {category.trend && getTrendIcon(category.trend)}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Badge variant={getAccuracyBadgeVariant(category.accuracy)}>
+                        {category.accuracy}% accuracy
+                      </Badge>
+                      <span className="text-sm text-muted-foreground">
+                        {category.total_attempts} attempts
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {category.average_time}s avg
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant={getAccuracyBadgeVariant(category.accuracy)}>
-                      {category.accuracy}% accuracy
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {category.totalQuestions} questions
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {category.averageTime}s avg
-                    </span>
-                  </div>
-                </div>
 
-                <Progress value={category.accuracy} className="h-3" />
+                  <Progress value={category.accuracy} className="h-3" />
 
-                {/* Recent Performance for this category */}
-                <div className="mt-3">
-                  <h4 className="text-sm font-medium mb-2">Recent Performance</h4>
-                  <div className="grid grid-cols-3 gap-2">
-                    {category.recentPerformance.map((perf, perfIndex) => (
-                      <div key={perfIndex} className="text-center p-2 bg-gray-50 rounded">
-                        <div className="text-xs text-muted-foreground">{perf.date}</div>
-                        <div className={`text-sm font-medium ${getAccuracyColor(perf.accuracy)}`}>
-                          {perf.accuracy}%
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {perf.questionsAnswered} questions
-                        </div>
+                  {/* Recent Performance for this category */}
+                  {category.recent_performance && category.recent_performance.length > 0 && (
+                    <div className="mt-3">
+                      <h4 className="text-sm font-medium mb-2">Recent Performance (Last 7 Days)</h4>
+                      <div className="grid grid-cols-3 gap-2">
+                        {category.recent_performance.slice(0, 3).map((perf, perfIndex) => (
+                          <div key={perfIndex} className="text-center p-2 bg-muted/50 rounded">
+                            <div className="text-xs text-muted-foreground">
+                              {new Date(perf.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </div>
+                            <div className={`text-sm font-medium ${getAccuracyColor(perf.accuracy)}`}>
+                              {perf.accuracy}%
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {perf.questions_answered} questions
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Detailed Category Performance
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No category performance data available yet.</p>
+              <p className="text-sm mt-2">Start taking quizzes to see your performance by category!</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

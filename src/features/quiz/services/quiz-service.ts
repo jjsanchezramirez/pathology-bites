@@ -619,19 +619,30 @@ export class QuizService {
         hard: { correct: 0, total: 0 }
       }
 
-      // Calculate category breakdown
-      const categoryMap = new Map<string, { name: string, correct: number, total: number }>()
-
       // Get unique category IDs from questions
       const categoryIds = [...new Set(session.questions.map(q => q.category_id).filter(Boolean))]
 
-      // Fetch category names
+      // Fetch category names, short forms, colors, and parent info
       const { data: categories } = await supabaseClient
         .from('categories')
-        .select('id, name')
+        .select(`
+          id,
+          name,
+          short_form,
+          color,
+          parent:categories!categories_parent_id_fkey(short_form)
+        `)
         .in('id', categoryIds)
 
-      const categoryNameMap = new Map(categories?.map((c: any) => [c.id, c.name]) || [])
+      const categoryInfoMap = new Map(categories?.map((c: any) => [
+        c.id,
+        {
+          name: c.name,
+          shortForm: c.short_form,
+          color: c.color,
+          parentShortForm: c.parent?.short_form
+        }
+      ]) || [])
 
       session.questions.forEach(question => {
         const difficulty = question.difficulty as 'easy' | 'medium' | 'hard'
@@ -641,63 +652,88 @@ export class QuizService {
         if (attempt?.is_correct) {
           difficultyBreakdown[difficulty].correct++
         }
-
-        // Category breakdown
-        if (question.category_id) {
-          if (!categoryMap.has(question.category_id)) {
-            categoryMap.set(question.category_id, {
-              name: (categoryNameMap.get(question.category_id) as string) || 'Unknown Category',
-              correct: 0,
-              total: 0
-            })
-          }
-          const categoryStats = categoryMap.get(question.category_id)!
-          categoryStats.total++
-          if (attempt?.is_correct) {
-            categoryStats.correct++
-          }
-        }
       })
 
-      const categoryBreakdown = Array.from(categoryMap.entries()).map(([categoryId, stats]) => ({
-        categoryId,
-        categoryName: stats.name,
-        correct: stats.correct,
-        total: stats.total
-      }))
+      // Get all success rates in a single batched query
+      const questionIds = session.questions.map(q => q.id)
+      const { data: allQuestionAttempts } = await supabaseClient
+        .from('quiz_attempts')
+        .select('question_id, is_correct')
+        .in('question_id', questionIds)
+
+      // Calculate success rates for all questions
+      const successRateMap = new Map<string, number>()
+      questionIds.forEach(questionId => {
+        const questionAttempts = allQuestionAttempts?.filter((a: any) => a.question_id === questionId) || []
+        const totalAttempts = questionAttempts.length
+        const correctAttempts = questionAttempts.filter((a: any) => a.is_correct).length
+        const successRate = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 0
+        successRateMap.set(questionId, successRate)
+      })
 
       // Get detailed question information for review
-      const questionDetails = await Promise.all(session.questions.map(async question => {
+      const questionDetails = session.questions.map(question => {
         const attempt = attempts?.find((a: any) => a.question_id === question.id)
 
-        // Get category name
-        const { data: category } = await supabaseClient
-          .from('categories')
-          .select('name')
-          .eq('id', question.category_id)
-          .single()
-
-        // Get success rate for this question
-        const { data: allAttempts } = await supabaseClient
-          .from('quiz_attempts')
-          .select('is_correct')
-          .eq('question_id', question.id)
-
-        const totalAttempts = allAttempts?.length || 0
-        const correctAttempts = allAttempts?.filter((a: any) => a.is_correct).length || 0
-        const successRate = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 0
+        // Handle time conversion (might be in milliseconds)
+        let timeSpent = attempt?.time_spent || 0
+        if (timeSpent > 3600) {
+          timeSpent = Math.round(timeSpent / 1000)
+        }
 
         return {
           id: question.id,
           title: question.title,
           stem: question.stem,
           difficulty: question.difficulty,
-          category: category?.name || 'Unknown',
+          category: categoryInfoMap.get(question.category_id || '')?.name || 'Unknown',
           isCorrect: attempt?.is_correct || false,
           selectedAnswerId: attempt?.selected_answer_id || null,
-          timeSpent: attempt?.time_spent || 0,
-          successRate
+          timeSpent: timeSpent,
+          successRate: successRateMap.get(question.id) || 0
         }
+      })
+
+      // Calculate category breakdown using the same approach as questionDetails
+      const categoryMap = new Map<string, { name: string, shortForm?: string, color?: string, parentShortForm?: string, correct: number, total: number, totalTime: number }>()
+
+      session.questions.forEach(question => {
+        if (!question.category_id) return
+
+        const questionDetail = questionDetails.find(qd => qd.id === question.id)
+        if (!questionDetail) return
+
+        if (!categoryMap.has(question.category_id)) {
+          const categoryInfo = categoryInfoMap.get(question.category_id)
+          categoryMap.set(question.category_id, {
+            name: categoryInfo?.name || 'Unknown Category',
+            shortForm: categoryInfo?.shortForm,
+            color: categoryInfo?.color,
+            parentShortForm: categoryInfo?.parentShortForm,
+            correct: 0,
+            total: 0,
+            totalTime: 0
+          })
+        }
+
+        const categoryStats = categoryMap.get(question.category_id)!
+        categoryStats.total++
+        if (questionDetail.isCorrect) {
+          categoryStats.correct++
+        }
+        categoryStats.totalTime += questionDetail.timeSpent
+      })
+
+      const categoryBreakdown = Array.from(categoryMap.entries()).map(([categoryId, stats]) => ({
+        categoryId,
+        categoryName: stats.name,
+        categoryShortForm: stats.shortForm,
+        categoryColor: stats.color,
+        parentShortForm: stats.parentShortForm,
+        correct: stats.correct,
+        total: stats.total,
+        totalTime: stats.totalTime,
+        averageTime: stats.total > 0 ? Math.round(stats.totalTime / stats.total) : 0
       }))
 
       return {

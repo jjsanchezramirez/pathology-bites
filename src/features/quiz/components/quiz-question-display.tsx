@@ -75,8 +75,8 @@ export function QuizQuestionDisplay({
                 className={`
                   w-full p-3 text-left border rounded-lg transition-colors
                   ${isSelected && !showExplanation ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}
-                  ${showCorrect ? 'border-green-500 bg-green-50' : ''}
-                  ${showIncorrect ? 'border-red-500 bg-red-50' : ''}
+                  ${showCorrect ? 'border-green-500 bg-green-50 text-green-900 dark:text-green-950' : ''}
+                  ${showIncorrect ? 'border-red-500 bg-red-50 text-red-900 dark:text-red-950' : ''}
                   ${!showExplanation ? 'hover:border-gray-300 cursor-pointer' : 'cursor-default'}
                 `}
                 role="option"
@@ -92,8 +92,8 @@ export function QuizQuestionDisplay({
                     {optionLabel}
                   </span>
                   <span className="flex-1">{option.text}</span>
-                  {showCorrect && <Check className="w-4 h-4 text-green-500" />}
-                  {showIncorrect && <X className="w-4 h-4 text-red-500" />}
+                  {showCorrect && <Check className="w-4 h-4 text-green-700 dark:text-green-800" />}
+                  {showIncorrect && <X className="w-4 h-4 text-red-700 dark:text-red-800" />}
                 </div>
               </button>
             )

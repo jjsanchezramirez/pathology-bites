@@ -27,6 +27,11 @@ export function QuizResultsSummary({
   const incorrectCount = result.totalQuestions - result.correctAnswers
   
   const formatTime = (timeValue: number): string => {
+    // Handle invalid input (but allow 0)
+    if (timeValue == null || isNaN(timeValue) || timeValue < 0) {
+      return '0:00'
+    }
+
     // Handle legacy data that might be in milliseconds
     // If the value is unreasonably large (> 3600 seconds = 1 hour), assume it's in milliseconds
     let seconds = timeValue
@@ -201,33 +206,142 @@ export function QuizResultsSummary({
             <CardTitle className="text-lg">Performance by Category</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {result.categoryBreakdown.map((category) => {
-                const categoryPercentage = category.total > 0 
-                  ? Math.round((category.correct / category.total) * 100) 
-                  : 0
-                return (
-                  <div key={category.categoryId} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="font-medium">{category.categoryName}</span>
-                      <Badge variant="outline">
-                        {category.correct}/{category.total}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-24 bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-500 h-2 rounded-full transition-all duration-1000"
-                          style={{ width: `${categoryPercentage}%` }}
-                        />
-                      </div>
-                      <span className="text-sm font-medium w-12 text-right">
-                        {categoryPercentage}%
-                      </span>
-                    </div>
-                  </div>
-                )
-              })}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b text-sm text-muted-foreground">
+                    <th className="text-left py-3 px-3 font-medium">Category</th>
+                    <th className="text-center py-3 px-3 font-medium">Correct</th>
+                    <th className="text-center py-3 px-3 font-medium">Incorrect</th>
+                    <th className="text-center py-3 px-3 font-medium">Total</th>
+                    <th className="text-center py-3 px-3 font-medium">Avg Time</th>
+                    <th className="text-right py-3 px-3 font-medium hidden md:table-cell">Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.categoryBreakdown.map((category) => {
+                    const incorrect = category.total - category.correct
+                    const categoryPercentage = category.total > 0
+                      ? Math.round((category.correct / category.total) * 100)
+                      : 0
+
+                    // Use exact admin category badge styling
+                    const getCategoryBadgeClass = (cat: typeof category) => {
+                      if (cat.categoryColor) {
+                        return ''
+                      }
+
+                      const shortForm = cat.categoryShortForm || cat.parentShortForm
+
+                      // Main categories
+                      if (shortForm === 'AP') return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
+                      if (shortForm === 'CP') return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800'
+
+                      // AP subspecialties
+                      if (cat.parentShortForm === 'AP') {
+                        const colors = [
+                          'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800',
+                          'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800',
+                          'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800',
+                          'bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800',
+                          'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800',
+                          'bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800',
+                          'bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-900/20 dark:text-teal-300 dark:border-teal-800',
+                          'bg-lime-100 text-lime-800 border-lime-200 dark:bg-lime-900/20 dark:text-lime-300 dark:border-lime-800'
+                        ]
+                        const hash = shortForm ? shortForm.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : 0
+                        return colors[hash % colors.length]
+                      }
+
+                      // CP subspecialties
+                      if (cat.parentShortForm === 'CP') {
+                        const colors = [
+                          'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/20 dark:text-sky-300 dark:border-sky-800',
+                          'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/20 dark:text-violet-300 dark:border-violet-800',
+                          'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800',
+                          'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800',
+                          'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800'
+                        ]
+                        const hash = shortForm ? shortForm.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : 0
+                        return colors[hash % colors.length]
+                      }
+
+                      return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800'
+                    }
+
+                    const getCustomColorStyle = (color: string) => {
+                      const hslMatch = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/)
+                      if (hslMatch) {
+                        const [, h, s] = hslMatch
+                        return {
+                          backgroundColor: `hsl(${h} ${Math.min(parseInt(s), 50)}% 90%)`,
+                          color: `hsl(${h} ${s}% 20%)`,
+                          borderColor: `hsl(${h} ${Math.min(parseInt(s), 60)}% 70%)`
+                        }
+                      }
+                      return {
+                        backgroundColor: color + '20',
+                        color: color,
+                        borderColor: color + '40'
+                      }
+                    }
+
+                    return (
+                      <tr key={category.categoryId}>
+                        <td className="py-4 px-3">
+                          {/* Desktop: Full name */}
+                          <Badge
+                            variant="outline"
+                            className={`hidden md:inline-flex ${getCategoryBadgeClass(category)}`}
+                            style={category.categoryColor ? getCustomColorStyle(category.categoryColor) : undefined}
+                          >
+                            {category.categoryName}
+                          </Badge>
+                          {/* Mobile: Short form */}
+                          <Badge
+                            variant="outline"
+                            className={`md:hidden ${getCategoryBadgeClass(category)}`}
+                            style={category.categoryColor ? getCustomColorStyle(category.categoryColor) : undefined}
+                          >
+                            {category.categoryShortForm || category.categoryName}
+                          </Badge>
+                        </td>
+                        <td className="py-4 px-3 text-center">
+                          <span className={`font-semibold text-base ${category.correct > 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
+                            {category.correct}
+                          </span>
+                        </td>
+                        <td className="py-4 px-3 text-center">
+                          <span className={`font-semibold text-base ${incorrect > 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'}`}>
+                            {incorrect}
+                          </span>
+                        </td>
+                        <td className="py-4 px-3 text-center font-semibold text-base">
+                          {category.total}
+                        </td>
+                        <td className="py-4 px-3 text-center text-sm text-muted-foreground">
+                          {formatTime(category.averageTime)}
+                        </td>
+                        <td className="py-4 px-3 text-right hidden md:table-cell">
+                          <div className="flex items-center justify-end gap-3">
+                            <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                              <div
+                                className={`h-2 rounded-full transition-all duration-1000 ${
+                                  categoryPercentage >= 70 ? 'bg-green-500' : categoryPercentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                                }`}
+                                style={{ width: `${categoryPercentage}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-semibold w-12">
+                              {categoryPercentage}%
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
           </CardContent>
         </Card>
@@ -241,51 +355,58 @@ export function QuizResultsSummary({
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {result.questionDetails.map((question, index) => (
-                <div key={question.id} className="flex items-center justify-between p-3 rounded-lg border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-medium">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-sm truncate max-w-md">
-                        {question.title || `Question ${index + 1}`}
+              {result.questionDetails.map((question, index) => {
+                // Get category badge styling
+                const getCategoryBadgeClass = (categoryName: string) => {
+                  if (categoryName.includes('Hematopathology')) return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
+                  if (categoryName.includes('Clinical')) return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800'
+                  if (categoryName.includes('Dermatopathology')) return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800'
+                  return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800'
+                }
+
+                const successRatePercentage = Math.round(question.successRate)
+
+                return (
+                  <div key={question.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-4 rounded-lg border gap-3">
+                    <div className="flex items-start md:items-center gap-3 flex-1 min-w-0">
+                      <div className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-full bg-muted text-sm font-semibold">
+                        Q{index + 1}
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          {question.category}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {question.difficulty}
-                        </Badge>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm line-clamp-2 md:line-clamp-1 mb-2">
+                          {question.title || `Question ${index + 1}`}
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <Badge variant="outline" className={`text-xs w-fit ${getCategoryBadgeClass(question.category)}`}>
+                            {question.category}
+                          </Badge>
+                          <div className="text-xs text-muted-foreground">
+                            {successRatePercentage}% of users answered correctly
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
+                    <div className="flex items-center justify-between md:justify-end gap-3 md:flex-shrink-0">
                       <div className="text-sm text-muted-foreground">
                         {formatTime(question.timeSpent)}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {Math.round(question.successRate)}% success rate
-                      </div>
+                      <Badge variant={question.isCorrect ? "default" : "destructive"} className="flex-shrink-0">
+                        {question.isCorrect ? (
+                          <>
+                            <Target className="h-3 w-3 mr-1" />
+                            Correct
+                          </>
+                        ) : (
+                          <>
+                            <Target className="h-3 w-3 mr-1" />
+                            Incorrect
+                          </>
+                        )}
+                      </Badge>
                     </div>
-                    <Badge variant={question.isCorrect ? "default" : "destructive"} className="ml-2">
-                      {question.isCorrect ? (
-                        <>
-                          <Target className="h-3 w-3 mr-1" />
-                          Correct
-                        </>
-                      ) : (
-                        <>
-                          <Target className="h-3 w-3 mr-1" />
-                          Incorrect
-                        </>
-                      )}
-                    </Badge>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </CardContent>
         </Card>

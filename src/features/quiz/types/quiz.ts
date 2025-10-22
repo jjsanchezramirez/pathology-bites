@@ -94,8 +94,13 @@ export interface QuizResult {
   categoryBreakdown: Array<{
     categoryId: string
     categoryName: string
+    categoryShortForm?: string
+    categoryColor?: string
+    parentShortForm?: string
     correct: number
     total: number
+    totalTime: number
+    averageTime: number
   }>
   questionDetails: Array<{
     id: string
