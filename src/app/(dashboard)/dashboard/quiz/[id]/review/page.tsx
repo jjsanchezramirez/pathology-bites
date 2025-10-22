@@ -11,11 +11,13 @@ import {
   CheckCircle,
   XCircle,
   ArrowLeft,
+  ArrowRight,
   Clock,
   Target
 } from "lucide-react"
 import { QuizResult } from "@/features/quiz/types/quiz"
 import { QuizQuestionDisplay } from "@/features/quiz/components/quiz-question-display"
+import { QuizSidebar } from "@/features/quiz/components/quiz-sidebar"
 import { UIQuizQuestion } from "@/features/quiz/types/quiz-question"
 import { createClient } from "@/shared/services/client"
 import { toast } from "sonner"
@@ -27,6 +29,7 @@ export default function QuizReviewPage() {
   const [result, setResult] = useState<QuizResult | null>(null)
   const [fullQuestions, setFullQuestions] = useState<UIQuizQuestion[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
 
   const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id
 
@@ -106,34 +109,51 @@ export default function QuizReviewPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header Skeleton */}
-        <div className="flex items-center gap-4 mb-6">
-          <Skeleton className="h-10 w-10 rounded-md" />
-          <div>
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-32" />
+      <div className="min-h-screen bg-background/0 relative">
+        <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-4 py-6">
+          {/* Sidebar Skeleton */}
+          <div className="lg:flex-shrink-0 order-2 lg:order-1 w-full lg:w-80">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Content Skeleton */}
+          <div className="flex-1 space-y-6 order-1 lg:order-2">
+            {/* Header Skeleton */}
+            <div className="flex items-center justify-between">
+              <div>
+                <Skeleton className="h-8 w-48 mb-2" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <Skeleton className="h-10 w-32" />
+            </div>
+
+            {/* Question Skeleton */}
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Skeleton className="h-32 w-full" />
+                  <div className="space-y-2">
+                    {Array.from({ length: 5 }).map((_, j) => (
+                      <Skeleton key={j} className="h-12 w-full" />
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
-
-        {/* Questions Skeleton */}
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-6 w-3/4" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Skeleton className="h-32 w-full" />
-                <div className="space-y-2">
-                  {Array.from({ length: 4 }).map((_, j) => (
-                    <Skeleton key={j} className="h-12 w-full" />
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
       </div>
     )
   }
@@ -159,108 +179,147 @@ export default function QuizReviewPage() {
     )
   }
 
+  // Get current question and result
+  const currentQuestion = fullQuestions[currentQuestionIndex]
+  const currentResult = result.questionDetails?.[currentQuestionIndex]
+
+  // Create session object for sidebar
+  const reviewSession = {
+    id: sessionId || '',
+    questions: fullQuestions,
+    settings: {
+      showExplanations: true
+    },
+    status: 'completed' as const
+  }
+
+  // Create attempts array for sidebar
+  const attempts = result.questionDetails?.map((q: any) => ({
+    questionId: q.id,
+    selectedAnswerId: q.selectedAnswerId,
+    isCorrect: q.isCorrect,
+    timeSpent: q.timeSpent || 0
+  })) || []
+
+  // Navigation handlers
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1)
+    }
+  }
+
+  const handleNext = () => {
+    if (currentQuestionIndex < fullQuestions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1)
+    }
+  }
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Results
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Quiz Review</h1>
-          <p className="text-muted-foreground text-sm">
-            Review all questions and answers from your quiz
-          </p>
+    <div className="min-h-screen bg-background/0 relative">
+      <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-4 py-6">
+        {/* Sidebar */}
+        <div className="lg:flex-shrink-0 order-2 lg:order-1">
+          <QuizSidebar
+            session={reviewSession as any}
+            currentQuestionIndex={currentQuestionIndex}
+            attempts={attempts}
+            onQuestionSelect={(index) => setCurrentQuestionIndex(index)}
+            timeRemaining={null}
+          />
         </div>
-      </div>
 
-      {/* Questions Review */}
-      <div className="space-y-6">
-        {result.questionDetails?.map((question, index) => {
-          const fullQuestion = fullQuestions.find(fq => fq.id === question.id)
-
-          // If we don't have the full question data yet, show a skeleton
-          if (!fullQuestion) {
-            return (
-              <Card key={question.id} id={`question-${index + 1}`} className="scroll-mt-6">
-                <CardContent className="p-6">
-                  <Skeleton className="h-4 w-3/4 mb-4" />
-                  <Skeleton className="h-20 w-full mb-4" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-12 w-full" />
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          }
-
-          return (
-            <div key={question.id} id={`question-${index + 1}`} className="scroll-mt-6 space-y-4">
-              {/* Question Header with Stats */}
-              <Card>
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg flex items-center gap-3">
-                      {question.isCorrect ? (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <XCircle className="h-5 w-5 text-red-500" />
-                      )}
-                      Question {index + 1}: {question.title}
-                    </CardTitle>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        {question.category}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {question.difficulty}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      Time spent: {formatTime(question.timeSpent)}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Target className="h-3 w-3" />
-                      {question.totalAttempts && question.totalAttempts >= 30
-                        ? `${question.successRate}% success rate`
-                        : 'Insufficient data'
-                      }
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-
-              {/* Quiz Question Display Component */}
-              <QuizQuestionDisplay
-                question={fullQuestion}
-                selectedAnswerId={question.selectedAnswerId}
-                showExplanation={true}
-                onAnswerSelect={() => {}} // No-op since this is review mode
-              />
+        {/* Main Content */}
+        <div className="flex-1 space-y-6 order-1 lg:order-2">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Quiz Review</h1>
+              <p className="text-muted-foreground">
+                Question {currentQuestionIndex + 1} of {fullQuestions.length}
+              </p>
             </div>
-          )
-        })}
-      </div>
+            <Link href={`/dashboard/quiz/${sessionId}/results`}>
+              <Button variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Results
+              </Button>
+            </Link>
+          </div>
 
-      {/* Back to Results Button */}
-      <div className="flex justify-center pt-6">
-        <Link href={`/dashboard/quiz/${sessionId}/results`}>
-          <Button variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Results
-          </Button>
-        </Link>
+          {/* Question Metadata Card */}
+          {currentResult && (
+            <Card>
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-3">
+                    {currentResult.isCorrect ? (
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <XCircle className="h-5 w-5 text-red-500" />
+                    )}
+                    {currentResult.title}
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {currentResult.category}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {currentResult.difficulty}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Time spent: {formatTime(currentResult.timeSpent)}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Target className="h-3 w-3" />
+                    {currentResult.totalAttempts && currentResult.totalAttempts >= 30
+                      ? `${currentResult.successRate}% success rate`
+                      : 'Insufficient data'
+                    }
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+          )}
+
+          {/* Question Display */}
+          {currentQuestion && currentResult && (
+            <QuizQuestionDisplay
+              question={currentQuestion}
+              selectedAnswerId={currentResult.selectedAnswerId}
+              showExplanation={true}
+              onAnswerSelect={() => {}} // No-op in review mode
+            />
+          )}
+
+          {/* Navigation */}
+          <div className="flex justify-between items-center pt-4">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentQuestionIndex === 0}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Previous
+            </Button>
+
+            <div className="text-sm text-muted-foreground">
+              {currentQuestionIndex + 1} / {fullQuestions.length}
+            </div>
+
+            <Button
+              variant="outline"
+              onClick={handleNext}
+              disabled={currentQuestionIndex === fullQuestions.length - 1}
+            >
+              Next
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )
