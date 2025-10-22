@@ -627,6 +627,9 @@ export interface Database {
           created_by: string
           updated_by: string
           version: string
+          version_major: number
+          version_minor: number
+          version_patch: number
           question_set_id: string | null
           category_id: string | null
           reviewer_id: string | null
@@ -649,6 +652,9 @@ export interface Database {
           created_by: string
           updated_by: string
           version?: string
+          version_major?: number
+          version_minor?: number
+          version_patch?: number
           question_set_id?: string | null
           category_id?: string | null
           reviewer_id?: string | null
@@ -671,6 +677,9 @@ export interface Database {
           created_by?: string
           updated_by?: string
           version?: string
+          version_major?: number
+          version_minor?: number
+          version_patch?: number
           question_set_id?: string | null
           category_id?: string | null
           reviewer_id?: string | null

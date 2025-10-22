@@ -38,13 +38,14 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [showImagePicker, setShowImagePicker] = useState(false)
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([])
+  const [imageCache, setImageCache] = useState<Map<string, ImageData>>(new Map())
 
   const loadImages = async () => {
     setLoading(true)
     try {
       const result = await fetchImages({
         page: 0,
-        pageSize: 20,
+        pageSize: 100, // Fetch more images to ensure we have 20 available
         searchTerm: searchTerm || undefined,
         category: categoryFilter === 'all' ? undefined : categoryFilter,
         showUnusedOnly: false
@@ -56,6 +57,10 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
       }
 
       setAvailableImages(result.data)
+      // Cache images by ID for quick lookup
+      const newCache = new Map(imageCache)
+      result.data.forEach(img => newCache.set(img.id, img))
+      setImageCache(newCache)
     } catch (error) {
       console.error('Failed to load images:', error)
     } finally {
@@ -70,7 +75,8 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
   }, [showImagePicker, searchTerm, categoryFilter])
 
   const getImageInfo = (imageId: string): ImageData | null => {
-    return availableImages.find(img => img.id === imageId) || null
+    // First check cache, then check availableImages
+    return imageCache.get(imageId) || availableImages.find(img => img.id === imageId) || null
   }
 
   const handleRemoveImage = (imageId: string, index: number) => {
@@ -177,14 +183,14 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
             <DialogPortal>
               <div className="fixed inset-0 z-50 flex items-center justify-center">
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowImagePicker(false)} />
-                <div className="relative bg-background border rounded-lg shadow-lg w-full max-w-5xl mx-4 max-h-[85vh] overflow-hidden">
-                  <div className="p-6 border-b">
+                <div className="relative bg-background border rounded-lg shadow-lg w-[1200px] max-w-[95vw] h-[75vh] flex flex-col overflow-hidden">
+                  <div className="p-6 border-b flex-shrink-0">
                     <h2 className="text-xl font-semibold">Select Images for {section === 'stem' ? 'Question Body' : 'Explanation'}</h2>
                   </div>
 
-                  <div className="p-6 space-y-4">
+                  <div className="p-6 space-y-4 flex flex-col flex-1 overflow-hidden">
                     {/* Search Controls */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-shrink-0">
                       <div className="relative flex-1">
                         <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
@@ -211,8 +217,8 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                       </Button>
                     </div>
 
-                    {/* Image Grid - Fixed height for 2 rows */}
-                    <div className="grid grid-cols-5 gap-4 overflow-y-auto" style={{ height: '320px' }}>
+                    {/* Image Grid - 4 rows x 5 columns (20 images) with bigger previews */}
+                    <div className="grid grid-cols-5 gap-4 overflow-y-auto flex-1" style={{ minHeight: 0 }}>
                       {availableImages.length === 0 && !loading ? (
                         <div className="col-span-5 flex flex-col items-center justify-center h-full text-muted-foreground">
                           <ImageIcon className="h-12 w-12 mb-2 opacity-50" />
@@ -240,13 +246,13 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                               onClick={() => canSelect && handleImageToggle(image.id)}
                               title={isAlreadyAdded ? 'Already added to this section' : image.alt_text || ''}
                             >
-                              <div className="aspect-square overflow-hidden rounded-lg relative">
+                              <div className="aspect-square overflow-hidden rounded-lg relative w-40 h-40">
                                 <Image
                                   src={image.url}
                                   alt={image.alt_text || ''}
                                   fill
                                   className="object-cover"
-                                  sizes="140px"
+                                  sizes="160px"
                                   unoptimized
                                 />
                               </div>
@@ -312,7 +318,7 @@ export function ImageAttachmentsTab({ attachedImages, onAttachedImagesChange }: 
           <MediaSection
             images={stemImages}
             section="stem"
-            maxImages={3}
+            maxImages={5}
             onImagesChange={(newImages) => {
               const explanationImages = attachedImages.filter(img => img.question_section === 'explanation')
               handleImagesChange([...newImages, ...explanationImages])
@@ -333,7 +339,7 @@ export function ImageAttachmentsTab({ attachedImages, onAttachedImagesChange }: 
           <MediaSection
             images={explanationImages}
             section="explanation"
-            maxImages={1}
+            maxImages={5}
             onImagesChange={(newImages) => {
               const stemImages = attachedImages.filter(img => img.question_section === 'stem')
               handleImagesChange([...stemImages, ...newImages])

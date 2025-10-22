@@ -177,8 +177,6 @@ export function QuestionForm({
         }
 
         await new Promise(resolve => setTimeout(resolve, delay))
-
-        console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms delay`)
       }
     }
 
@@ -202,7 +200,6 @@ export function QuestionForm({
     try {
       const contextContent = JSON.stringify(selectedContent.content, null, 2)
       const selectedModel = ADMIN_AI_MODELS[selectedModelIndex]
-      console.log('🔍 Model:', selectedModel, 'Using admin AI generate question API')
 
       const response = await fetchWithRetry('/api/admin/ai-generate-question', {
         method: 'POST',
@@ -236,8 +233,6 @@ export function QuestionForm({
           throw new Error('No question data received from AI service')
         }
 
-        console.log('🔍 AI Response received, question generated successfully')
-
         try {
           // Convert admin API response format to the expected format
           const completeQuestion: GeneratedQuestion = {
@@ -268,10 +263,6 @@ export function QuestionForm({
               }
             }
           }
-
-          console.log('🎯 Generated question data:', completeQuestion)
-          console.log('📋 Question title:', completeQuestion.title)
-          console.log('📝 Answer options count:', completeQuestion.answer_options?.length)
 
           onQuestionGenerated(completeQuestion)
           toast.success(`Question generated successfully using ${selectedModel}!`)

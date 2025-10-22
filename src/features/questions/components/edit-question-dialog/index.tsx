@@ -56,9 +56,13 @@ export function EditQuestionDialog({
     selectedTagIds,
     answerOptions,
     questionImages,
+    isPatchEdit,
+    patchEditReason,
     setSelectedTagIds,
     setAnswerOptions,
     setQuestionImages,
+    setIsPatchEdit,
+    setPatchEditReason,
     handleSubmit,
     handleUnsavedChanges,
   } = useEditQuestionForm({
@@ -386,6 +390,128 @@ export function EditQuestionDialog({
                         />
                       )}
                     </div>
+
+                    {/* Edit Type Selection Section - for published questions */}
+                    {question?.status === 'published' && (
+                      <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg space-y-4">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-sm text-blue-900 dark:text-blue-100">Edit Type</h4>
+                            <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                              Select the type of edit you're making to this published question.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          {/* Patch Edit Option */}
+                          <div className="flex items-start gap-3 p-3 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100/50 dark:hover:bg-blue-900/30 cursor-pointer transition-colors"
+                            onClick={() => {
+                              setIsPatchEdit(true);
+                              form.setValue('updateType', 'patch');
+                              handleUnsavedChanges();
+                            }}>
+                            <input
+                              type="radio"
+                              id="editType-patch"
+                              name="editType"
+                              checked={isPatchEdit}
+                              onChange={() => {
+                                setIsPatchEdit(true);
+                                form.setValue('updateType', 'patch');
+                                handleUnsavedChanges();
+                              }}
+                              className="mt-1"
+                            />
+                            <div className="flex-1">
+                              <label htmlFor="editType-patch" className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer">
+                                Patch Edit (No Review Needed)
+                              </label>
+                              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                                Typos, formatting, metadata only. Version: 1.0.x
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Minor Edit Option */}
+                          <div className="flex items-start gap-3 p-3 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100/50 dark:hover:bg-blue-900/30 cursor-pointer transition-colors"
+                            onClick={() => {
+                              setIsPatchEdit(false);
+                              form.setValue('updateType', 'minor');
+                              handleUnsavedChanges();
+                            }}>
+                            <input
+                              type="radio"
+                              id="editType-minor"
+                              name="editType"
+                              checked={!isPatchEdit && form.getValues('updateType') === 'minor'}
+                              onChange={() => {
+                                setIsPatchEdit(false);
+                                form.setValue('updateType', 'minor');
+                                handleUnsavedChanges();
+                              }}
+                              className="mt-1"
+                            />
+                            <div className="flex-1">
+                              <label htmlFor="editType-minor" className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer">
+                                Minor Edit (Requires Review)
+                              </label>
+                              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                                Content changes (stem, options, explanations, teaching point). Version: 1.x.0
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Major Edit Option */}
+                          <div className="flex items-start gap-3 p-3 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100/50 dark:hover:bg-blue-900/30 cursor-pointer transition-colors"
+                            onClick={() => {
+                              setIsPatchEdit(false);
+                              form.setValue('updateType', 'major');
+                              handleUnsavedChanges();
+                            }}>
+                            <input
+                              type="radio"
+                              id="editType-major"
+                              name="editType"
+                              checked={!isPatchEdit && form.getValues('updateType') === 'major'}
+                              onChange={() => {
+                                setIsPatchEdit(false);
+                                form.setValue('updateType', 'major');
+                                handleUnsavedChanges();
+                              }}
+                              className="mt-1"
+                            />
+                            <div className="flex-1">
+                              <label htmlFor="editType-major" className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer">
+                                Major Edit (Requires Review)
+                              </label>
+                              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                                Question overhaul or answer change. Version: x.0.0
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {isPatchEdit && (
+                          <div>
+                            <label htmlFor="patchEditReason" className="text-xs font-medium text-blue-900 dark:text-blue-100">
+                              Reason for patch edit (optional)
+                            </label>
+                            <textarea
+                              id="patchEditReason"
+                              value={patchEditReason}
+                              onChange={(e) => {
+                                setPatchEditReason(e.target.value);
+                                handleUnsavedChanges();
+                              }}
+                              placeholder="e.g., Fixed typo in question stem"
+                              className="mt-1 w-full text-xs p-2 border border-blue-200 dark:border-blue-800 rounded bg-white dark:bg-blue-950/50 text-foreground"
+                              rows={2}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 

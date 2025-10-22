@@ -153,56 +153,8 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   const stateRef = useRef(quizState);
   stateRef.current = quizState;
 
-  // Initialize quiz data (API Call #1)
-  useEffect(() => {
-    if (sessionId && !isInitialized) {
-      initializeQuiz();
-    }
-  }, [sessionId, isInitialized]);
-
-  // Auto-sync on completion
-  useEffect(() => {
-    if (isCompleted && syncOnComplete && quizState.syncStatus.pendingChanges) {
-      handleCompleteQuiz();
-    }
-  }, [isCompleted, syncOnComplete, quizState.syncStatus.pendingChanges]);
-
-  // Auto-save quiz state to localStorage
-  useEffect(() => {
-    if (isInitialized && sessionId) {
-      const saveToLocal = () => {
-        try {
-          const quizData = {
-            sessionId,
-            answers: Array.from(quizState.answers.entries()),
-            progress: quizState.progress,
-            currentIndex: quizState.currentQuestionIndex,
-            status: quizState.status,
-            totalTimeSpent: quizState.totalTimeSpent,
-            lastSaved: Date.now()
-          };
-          localStorage.setItem(`quiz_${sessionId}`, JSON.stringify(quizData));
-        } catch (error) {
-          console.warn('Failed to save quiz state to localStorage:', error);
-        }
-      };
-
-      saveToLocal();
-    }
-  }, [isInitialized, sessionId, quizState.answers, quizState.progress, quizState.currentQuestionIndex, quizState.status, quizState.totalTimeSpent]);
-
-  // Beforeunload protection - warn user about unsaved progress
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (quizState.status === 'in_progress' && quizState.answers.size > 0) {
-        e.preventDefault();
-        return "Quiz progress will be saved locally and can be resumed";
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [quizState.status, quizState.answers.size]);
+  // Track if we've already triggered completion to prevent infinite loop
+  const hasCompletedRef = useRef(false);
 
   // Initialize quiz with server data
   const initializeQuiz = useCallback(async () => {
@@ -211,7 +163,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
       // API Call #1: Fetch quiz data
       const { questions, config, existingAnswers } = await syncManager.current!.fetchQuizData(sessionId);
-      
+
       // Track API call metrics
       const responseTime = Date.now() - startTime;
       metricsRef.current.totalApiCalls += 1;
@@ -223,7 +175,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
       // Try to recover from localStorage first
       const localData = recoverLocalState();
-      
+
       // Restore existing answers (prioritize localStorage over server data)
       const answersToRestore = localData?.answers || existingAnswers;
       if (answersToRestore && answersToRestore.length > 0) {
@@ -269,6 +221,14 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   // Handle quiz completion with sync
   const handleCompleteQuiz = useCallback(async (): Promise<SyncResult> => {
     try {
+      // Prevent duplicate completion calls
+      if (hasCompletedRef.current) {
+        console.log('[Hybrid] Quiz already completed, skipping duplicate completion');
+        return { success: true, timestamp: Date.now() };
+      }
+
+      hasCompletedRef.current = true;
+
       // Complete the quiz first
       stateActions.completeQuiz();
 
@@ -304,7 +264,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
       if (result.success) {
         stateActions.markSyncSuccess(result.timestamp);
-        
+
         // If the quiz was already completed, log this for debugging
         if (result.serverResponse?.message?.includes('already completed')) {
           console.log('[Hybrid] Quiz was already completed on server, sync treated as success');
@@ -317,9 +277,61 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to complete quiz';
       onError?.(errorMessage);
+      hasCompletedRef.current = false; // Reset on error so user can retry
       return { success: false, timestamp: Date.now(), error: errorMessage };
     }
-  }, [quizState, stateActions, onError, onQuizCompleted]);
+  }, [quizState, stateActions, onError, sessionId]);
+
+  // Initialize quiz data (API Call #1)
+  useEffect(() => {
+    if (sessionId && !isInitialized) {
+      initializeQuiz();
+    }
+  }, [sessionId, isInitialized, initializeQuiz]);
+
+  // Auto-sync on completion
+  useEffect(() => {
+    if (isCompleted && syncOnComplete && quizState.syncStatus.pendingChanges && !hasCompletedRef.current) {
+      handleCompleteQuiz();
+    }
+  }, [isCompleted, syncOnComplete, quizState.syncStatus.pendingChanges]);
+
+  // Auto-save quiz state to localStorage
+  useEffect(() => {
+    if (isInitialized && sessionId) {
+      const saveToLocal = () => {
+        try {
+          const quizData = {
+            sessionId,
+            answers: Array.from(quizState.answers.entries()),
+            progress: quizState.progress,
+            currentIndex: quizState.currentQuestionIndex,
+            status: quizState.status,
+            totalTimeSpent: quizState.totalTimeSpent,
+            lastSaved: Date.now()
+          };
+          localStorage.setItem(`quiz_${sessionId}`, JSON.stringify(quizData));
+        } catch (error) {
+          console.warn('Failed to save quiz state to localStorage:', error);
+        }
+      };
+
+      saveToLocal();
+    }
+  }, [isInitialized, sessionId, quizState.answers, quizState.progress, quizState.currentQuestionIndex, quizState.status, quizState.totalTimeSpent]);
+
+  // Beforeunload protection - warn user about unsaved progress
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (quizState.status === 'in_progress' && quizState.answers.size > 0) {
+        e.preventDefault();
+        return "Quiz progress will be saved locally and can be resumed";
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [quizState.status, quizState.answers.size]);
 
   // Create hybrid state
   const hybridState: HybridQuizState = {

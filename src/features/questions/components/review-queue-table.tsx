@@ -75,7 +75,7 @@ export function ReviewQueueTable() {
           created_by_user:users!questions_created_by_fkey(first_name, last_name),
           question_set:question_sets(name),
           question_options(id, text, is_correct, order_index),
-          question_images(id, question_section, order_index, image:images(id, url))
+          question_images(question_section, order_index, image:images(id, url))
         `)
         .in('status', ['pending_review', 'flagged'])
         .order('created_at', { ascending: false })
@@ -160,7 +160,7 @@ export function ReviewQueueTable() {
           category_id,
           created_at,
           question_options(id, text, is_correct, explanation, order_index),
-          question_images(id, question_section, order_index, image:images(id, url, alt_text, description)),
+          question_images(question_section, order_index, image:images(id, url, alt_text, description)),
           categories(id, name, description)
         `)
         .eq('id', question.id)

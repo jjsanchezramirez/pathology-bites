@@ -111,22 +111,17 @@ export function QuestionFinalization({ question, attachedImages, onQuestionCreat
     const categoryId = getCategoryIdFromContent(category, subject)
 
     if (categoryId) {
-      console.log(`Auto-mapped educational content "${category} > ${subject}" to category ID: ${categoryId}`)
       return categoryId
     }
 
-    console.warn(`No mapping found for educational content "${category} > ${subject}"`)
     return ''
   }
 
   // Function to automatically assign question set based on AI model
   const getAutoQuestionSetId = (aiModel: string, availableQuestionSets: QuestionSet[]): string => {
     if (!availableQuestionSets.length) {
-      console.log('No question sets available for auto-selection')
       return ''
     }
-
-    console.log('Available question sets:', availableQuestionSets.map(s => ({ name: s.name, source_type: s.source_type })))
 
     let specificSetNames: string[] = []
 
@@ -148,7 +143,6 @@ export function QuestionFinalization({ question, attachedImages, onQuestionCreat
         set.name.toLowerCase() === specificName.toLowerCase()
       )
       if (exactMatch) {
-        console.log('Found exact match for question set:', exactMatch.name)
         return exactMatch.id
       }
     }
@@ -159,7 +153,6 @@ export function QuestionFinalization({ question, attachedImages, onQuestionCreat
         set.name.toLowerCase().includes(specificName.toLowerCase())
       )
       if (partialMatch) {
-        console.log('Found partial match for question set:', partialMatch.name)
         return partialMatch.id
       }
     }
@@ -169,7 +162,6 @@ export function QuestionFinalization({ question, attachedImages, onQuestionCreat
       set.source_type === 'ai_generated'
     )
     if (aiGeneratedSet) {
-      console.log('Found AI-generated set:', aiGeneratedSet.name)
       return aiGeneratedSet.id
     }
 
@@ -178,11 +170,9 @@ export function QuestionFinalization({ question, attachedImages, onQuestionCreat
       set.name.toLowerCase().includes('ai') || set.name.toLowerCase().includes('generated')
     )
     if (aiNamedSet) {
-      console.log('Found AI-named set:', aiNamedSet.name)
       return aiNamedSet.id
     }
 
-    console.log('No suitable question set found for AI model:', aiModel)
     return ''
   }
 
@@ -195,11 +185,9 @@ export function QuestionFinalization({ question, attachedImages, onQuestionCreat
         let loadedQuestionSets: QuestionSet[] = []
 
         // Load categories with better error handling
-        console.log('Loading categories...')
         const categoriesResponse = await fetch('/api/admin/categories?page=0&pageSize=1000')
         if (categoriesResponse.ok) {
           const categoriesData = await categoriesResponse.json()
-          console.log('Categories loaded:', categoriesData.categories?.length || 0)
           loadedCategories = categoriesData.categories || []
           setCategories(loadedCategories)
         } else {
@@ -209,11 +197,9 @@ export function QuestionFinalization({ question, attachedImages, onQuestionCreat
         }
 
         // Load all tags for autocomplete functionality
-        console.log('Loading all tags...')
         const tagsResponse = await fetch('/api/admin/tags?page=0&pageSize=1000')
         if (tagsResponse.ok) {
           const tagsData = await tagsResponse.json()
-          console.log('All tags loaded:', tagsData.tags?.length || 0)
           loadedTags = tagsData.tags || []
           setTags(loadedTags)
         } else {
@@ -223,11 +209,9 @@ export function QuestionFinalization({ question, attachedImages, onQuestionCreat
         }
 
         // Load question sets with better error handling
-        console.log('Loading question sets...')
         const setsResponse = await fetch('/api/admin/question-sets?page=0&pageSize=1000')
         if (setsResponse.ok) {
           const setsData = await setsResponse.json()
-          console.log('Question sets loaded:', setsData.questionSets?.length || 0)
           loadedQuestionSets = setsData.questionSets || []
           setQuestionSets(loadedQuestionSets)
 

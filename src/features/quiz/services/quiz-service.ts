@@ -130,7 +130,6 @@ export class QuizService {
         updated_at,
         question_options(id, text, is_correct, explanation, order_index),
         question_images(
-          id,
           question_section,
           order_index,
           image:images(id, url, alt_text, description)
@@ -234,7 +233,7 @@ export class QuizService {
 
       const { data: session, error } = await supabaseClient
         .from('quiz_sessions')
-        .select('id, user_id, question_ids, status, score, total_questions, correct_answers, incorrect_answers, skipped_answers, time_spent, created_at, updated_at, completed_at')
+        .select('id, user_id, title, config, question_ids, current_question_index, status, score, total_questions, correct_answers, total_time_spent, total_time_limit, time_remaining, started_at, completed_at, created_at, updated_at')
         .eq('id', sessionId)
         .single()
 
@@ -301,7 +300,6 @@ export class QuizService {
         updated_at,
         question_options(id, text, is_correct, explanation, order_index),
         question_images(
-          id,
           question_section,
           order_index,
           image:images(id, url, alt_text, description)

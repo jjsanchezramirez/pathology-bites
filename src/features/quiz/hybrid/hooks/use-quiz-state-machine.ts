@@ -186,10 +186,10 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
 
       // Get the answer result for callback
       const question = state.questions.find(q => q.id === questionId);
-      if (question) {
-        const selectedOption = question.options.find(opt => opt.id === selectedOptionId);
+      if (question && question.question_options) {
+        const selectedOption = question.question_options.find(opt => opt.id === selectedOptionId);
         const isCorrect = selectedOption?.is_correct ?? false;
-        
+
         const answer: QuizAnswer = {
           questionId,
           selectedOptionId,

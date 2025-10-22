@@ -24,12 +24,9 @@ interface CrossRefWork {
   'container-title': string[]
   volume?: string
   issue?: string
-  page?: string
-  DOI: string
-  URL?: string
-}
   pages?: string
   doi?: string
+  url?: string
 }
 
 /**

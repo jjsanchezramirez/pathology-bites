@@ -29,6 +29,11 @@ function ImageCarouselInternal({ images, className = '' }: ImageCarouselProps) {
   const currentImage = images && images.length > 0 ? images[currentIndex] : null
   const handleImageLoad = useImageCacheHandler(currentImage?.url || '')
 
+  // Reset to first image when images array changes (e.g., new question)
+  useEffect(() => {
+    setCurrentIndex(0)
+  }, [images])
+
   // Keyboard navigation for fullscreen - must be before early return
   useEffect(() => {
     if (!showModal || !images || images.length === 0) return

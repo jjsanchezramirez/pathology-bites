@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/shared/components/ui/button'
-import { ChevronLeft, ChevronRight, Check, Loader2, Brain } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Check, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/shared/services/client'
 
@@ -11,7 +11,7 @@ import { StepSourceConfig } from './steps/step-source-config'
 import { StepContentEdit } from './steps/step-content-edit'
 import { StepImageSelection } from './steps/step-image-selection'
 import { StepMetadata } from './steps/step-metadata'
-import { AIQuickActionsSidebar } from './ai-quick-actions-sidebar'
+import { StepProgressBar } from './step-progress-bar'
 
 // Import types
 import { QuestionFormData, QuestionWithDetails } from '@/features/questions/types/questions'
@@ -96,7 +96,6 @@ export function MultiStepQuestionForm({
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
-  const [showAISidebar, setShowAISidebar] = useState(true)
 
   // Data for AI Assistant
   const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([])
@@ -385,98 +384,13 @@ export function MultiStepQuestionForm({
       <div className="flex flex-col xl:flex-row gap-8">
         {/* Main Content Area */}
         <div className="flex-1 space-y-8 min-w-0">
-          {/* AI Assistant Toggle */}
-          <div className="flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAISidebar(!showAISidebar)}
-              className="flex items-center gap-2"
-            >
-              <Brain className="h-4 w-4" />
-              {showAISidebar ? 'Hide AI Assistant' : 'Show AI Assistant'}
-            </Button>
-          </div>
-
-          {/* Step Navigation - Centered within main content area */}
-          <div className="flex justify-center">
-            <div className="relative" style={{ width: '600px' }}>
-              {/* Connecting Lines Layer - Behind circles */}
-              <div className="absolute top-4 left-0 right-0 flex items-center">
-                <div className="flex items-center w-full">
-                  {/* Calculate positions for lines between circles */}
-                  {steps.map((step, index) => {
-                    if (index === steps.length - 1) return null // No line after last step
-
-                    const isLineCompleted = step.id < currentStep
-
-                    return (
-                      <div key={`line-${step.id}`} className="flex items-center flex-1">
-                        {/* Spacer for current circle */}
-                        <div className="w-4" />
-
-                        {/* Connecting line */}
-                        <div className="flex-1 h-0.5 bg-border relative">
-                          <div
-                            className={`absolute top-0 left-0 h-full transition-all duration-500 ease-in-out ${
-                              isLineCompleted ? 'w-full bg-primary' : 'w-0 bg-primary'
-                            }`}
-                          />
-                        </div>
-
-                        {/* Spacer for next circle */}
-                        <div className="w-4" />
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Steps Layer - Above lines */}
-              <div className="relative flex items-start justify-between">
-                {steps.map((step) => {
-                  const isCompleted = step.id < currentStep
-                  const isCurrent = step.id === currentStep
-
-                  return (
-                    <div key={step.id} className="flex flex-col items-center">
-                      {/* Circle */}
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 relative z-10 ${
-                          isCompleted
-                            ? 'bg-primary border-primary text-primary-foreground'
-                            : isCurrent
-                            ? 'bg-background border-primary text-primary'
-                            : 'bg-background border-border text-muted-foreground'
-                        } ${
-                          mode === 'edit' ? 'cursor-pointer hover:scale-105 hover:shadow-md' : ''
-                        }`}
-                        onClick={() => goToStep(step.id)}
-                      >
-                        {isCompleted ? (
-                          <Check className="h-3 w-3 stroke-[3]" />
-                        ) : (
-                          <span className="text-sm font-semibold">{step.id}</span>
-                        )}
-                      </div>
-
-                      {/* Label */}
-                      <div className="mt-3 text-center">
-                        <p className={`text-sm font-semibold transition-colors duration-300 ${
-                          isCurrent ? 'text-foreground' : isCompleted ? 'text-primary' : 'text-muted-foreground'
-                        }`}>
-                          {step.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5 max-w-[120px]">
-                          {step.description}
-                        </p>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
+          {/* Step Progress Bar */}
+          <StepProgressBar
+            steps={steps}
+            currentStep={currentStep}
+            onStepClick={goToStep}
+            mode={mode}
+          />
 
         {/* Step Content with Smooth Transitions */}
         <div className="min-h-[500px] relative overflow-hidden">
@@ -494,36 +408,23 @@ export function MultiStepQuestionForm({
         {/* Navigation Buttons - Streamlined Layout */}
         <div className="flex justify-between items-center pt-6 border-t">
           <div>
-            {currentStep > 1 ? (
-              <Button
-                variant="outline"
-                onClick={goToPreviousStep}
-                disabled={isSubmitting || isTransitioning}
-                size="lg"
-                className="min-w-[120px]"
-              >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Previous
-              </Button>
-            ) : (
-              onCancel && (
-                <Button
-                  variant="ghost"
-                  onClick={onCancel}
-                  disabled={isSubmitting}
-                  size="lg"
-                >
-                  Cancel
-                </Button>
-              )
-            )}
+            <Button
+              variant="outline"
+              onClick={goToPreviousStep}
+              disabled={currentStep === 1 || isSubmitting || isTransitioning}
+              size="lg"
+              className="min-w-[120px]"
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Previous
+            </Button>
           </div>
 
           <div>
             {currentStep < steps.length ? (
               <Button
                 onClick={goToNextStep}
-                disabled={!canProceedToNextStep() || isSubmitting || isTransitioning}
+                disabled={isSubmitting || isTransitioning}
                 size="lg"
                 className="min-w-[120px]"
               >
@@ -553,20 +454,6 @@ export function MultiStepQuestionForm({
           </div>
         </div>
         </div>
-
-        {/* AI Assistant Sidebar - Responsive: Side on XL+, Bottom on smaller screens */}
-        {showAISidebar && (
-          <div className="w-full xl:w-96 shrink-0">
-            <AIQuickActionsSidebar
-              formState={formState}
-              updateFormState={updateFormState}
-              modelName={questionSetAIModel || formState.selectedAIModel || 'Llama-3.3-8B-Instruct'}
-              categories={categories}
-              questionSets={questionSets}
-              tags={tags}
-            />
-          </div>
-        )}
       </div>
     </div>
   )

@@ -116,7 +116,6 @@ export async function GET(
             explanation
           ),
           question_images(
-            image_id,
             question_section,
             order_index,
             image:images(

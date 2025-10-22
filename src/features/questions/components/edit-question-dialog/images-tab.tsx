@@ -202,46 +202,47 @@ function ImageSection({ images, section, maxImages, onImagesChange, question }: 
               </Button>
             </DialogTrigger>
         <DialogPortal>
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowImagePicker(false)} />
-            <div className="relative bg-background border rounded-lg shadow-lg w-full max-w-5xl mx-4 max-h-[85vh] overflow-hidden">
-              <div className="p-6 border-b">
-                <h2 className="text-xl font-semibold">Select Images for {section === 'stem' ? 'Question Body' : 'Explanation'}</h2>
+            <div className="relative bg-background border rounded-lg shadow-lg w-full max-w-5xl flex flex-col max-h-[90vh]">
+              {/* Header */}
+              <div className="px-4 py-2.5 border-b flex-shrink-0">
+                <h2 className="text-base font-semibold">Select Images for {section === 'stem' ? 'Question Body' : 'Explanation'}</h2>
               </div>
 
-              <div className="p-6 space-y-4">
-                {/* Search Controls */}
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      placeholder="Search images..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-8"
-                    />
-                  </div>
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="gross">Gross</SelectItem>
-                      <SelectItem value="microscopic">Microscopic</SelectItem>
-                      <SelectItem value="figure">Figure</SelectItem>
-                      <SelectItem value="question">Question</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button onClick={loadImages} disabled={loading}>
-                    {loading ? 'Loading...' : 'Search'}
-                  </Button>
+              {/* Search Controls */}
+              <div className="px-4 py-2.5 border-b flex gap-2 flex-shrink-0">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Search images..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8 h-8 text-sm"
+                  />
                 </div>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-28 h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="gross">Gross</SelectItem>
+                    <SelectItem value="microscopic">Microscopic</SelectItem>
+                    <SelectItem value="figure">Figure</SelectItem>
+                    <SelectItem value="question">Question</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button onClick={loadImages} disabled={loading} size="sm" className="h-8 px-3 text-sm">
+                  {loading ? 'Loading...' : 'Search'}
+                </Button>
+              </div>
 
-                {/* Image Grid */}
-                <div className="grid grid-cols-5 gap-4 max-h-96 overflow-y-auto">
+              {/* Image Grid - Scrollable content area */}
+              <div className="flex-1 overflow-y-auto p-3">
+                <div className="grid grid-cols-7 gap-2">
                   {availableImages.length === 0 && !loading ? (
-                    <div className="col-span-5 text-center py-8 text-muted-foreground">
+                    <div className="col-span-7 text-center py-12 text-muted-foreground">
                       <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
                       <p>No images found</p>
                       {searchTerm && <p className="text-sm">Try a different search term</p>}
@@ -255,7 +256,7 @@ function ImageSection({ images, section, maxImages, onImagesChange, question }: 
                       return (
                         <div
                           key={image.id}
-                          className={`relative cursor-pointer rounded-lg border-2 transition-all ${
+                          className={`relative cursor-pointer rounded border-2 transition-all overflow-hidden ${
                             isAlreadyAdded
                               ? 'border-muted bg-muted/50 opacity-50 cursor-not-allowed'
                               : isSelected
@@ -267,7 +268,7 @@ function ImageSection({ images, section, maxImages, onImagesChange, question }: 
                           onClick={() => canSelect && handleImageToggle(image.id)}
                           title={isAlreadyAdded ? 'Already added to this section' : image.alt_text || ''}
                         >
-                          <div className="aspect-square overflow-hidden rounded-lg relative">
+                          <div className="aspect-square relative w-full">
                             <Image
                               src={image.url}
                               alt={image.alt_text || ''}
@@ -278,13 +279,13 @@ function ImageSection({ images, section, maxImages, onImagesChange, question }: 
                             />
                           </div>
                           {isSelected && (
-                            <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                            <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold shadow-sm">
                               ✓
                             </div>
                           )}
                           {isAlreadyAdded && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
-                              <span className="text-white text-sm font-medium">Added</span>
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                              <span className="text-white text-xs font-medium">Added</span>
                             </div>
                           )}
                         </div>
@@ -292,20 +293,22 @@ function ImageSection({ images, section, maxImages, onImagesChange, question }: 
                     })
                   )}
                 </div>
+              </div>
 
-                {/* Action Buttons */}
-                <div className="flex justify-end gap-2 pt-4 border-t">
-                  <Button type="button" variant="outline" onClick={handleCancelSelection}>
-                    Cancel
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleSelectImages}
-                    disabled={selectedImageIds.length === 0}
-                  >
-                    Add {selectedImageIds.length} Image{selectedImageIds.length !== 1 ? 's' : ''}
-                  </Button>
-                </div>
+              {/* Action Buttons */}
+              <div className="px-4 py-2.5 border-t flex justify-end gap-2 flex-shrink-0">
+                <Button type="button" variant="outline" onClick={handleCancelSelection} size="sm" className="h-8">
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSelectImages}
+                  disabled={selectedImageIds.length === 0}
+                  size="sm"
+                  className="h-8"
+                >
+                  Add {selectedImageIds.length} Image{selectedImageIds.length !== 1 ? 's' : ''}
+                </Button>
               </div>
             </div>
           </div>

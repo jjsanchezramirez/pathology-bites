@@ -188,7 +188,10 @@ export async function PATCH(
       answerOptions,
       questionImages,
       tagIds,
-      categoryId
+      categoryId,
+      isPatchEdit,
+      patchEditReason,
+      updateType
     } = body
 
     console.log('PATCH /api/admin/questions/[id] - Body received:', {
@@ -283,17 +286,46 @@ export async function PATCH(
 
     // Check if question is published
     if (currentQuestion.status === 'published') {
-      if (!isAdmin) {
-        return NextResponse.json(
-          {
-            error: 'Cannot edit approved/published questions',
-            message: 'Approved and published questions cannot be edited. Please contact an admin if changes are needed, or create a new version of the question.'
-          },
-          { status: 403 }
-        )
+      // Allow patch edits for creators and reviewers
+      if (isPatchEdit) {
+        // Creators can make patch edits to their own published questions
+        if (isCreator && isQuestionCreator) {
+          console.log('PATCH - Creator making patch edit to own published question')
+        }
+        // Reviewers can make patch edits to any published question
+        else if (isReviewer) {
+          console.log('PATCH - Reviewer making patch edit to published question')
+        }
+        // Admins can always edit
+        else if (isAdmin) {
+          console.log('PATCH - Admin making patch edit to published question')
+        }
+        else {
+          return NextResponse.json(
+            {
+              error: 'Insufficient permissions for patch edit',
+              message: 'Only creators (of their own questions) and reviewers can make patch edits to published questions.'
+            },
+            { status: 403 }
+          )
+        }
+      } else {
+        // Non-patch edits (minor/major) require admin or creator with review
+        if (!isAdmin && !isCreator) {
+          return NextResponse.json(
+            {
+              error: 'Cannot edit published questions',
+              message: 'Only admins and creators can make non-patch edits to published questions. Non-patch edits require review.'
+            },
+            { status: 403 }
+          )
+        }
+        // For creators making non-patch edits, they need to go through review
+        if (isCreator && isQuestionCreator && !isAdmin) {
+          // This will be handled by changing status to pending_review
+          console.log('PATCH - Creator making minor/major edit to published question (will require review)')
+        }
       }
-      // Admins can edit approved/published questions
-      // Automatically create a version for audit trail
     }
     // Check if question is pending review
     else if (currentQuestion.status === 'pending_review') {
@@ -345,13 +377,20 @@ export async function PATCH(
     // Start transaction-like operations
     try {
       // Update the main question data - only include valid question table fields
+      // For published questions with minor/major edits, change status to pending_review
+      let statusToSet = questionData.status
+      if (currentQuestion.status === 'published' && !isPatchEdit && updateType && ['minor', 'major'].includes(updateType)) {
+        statusToSet = 'pending_review'
+        console.log(`PATCH - Changing status from published to pending_review for ${updateType} edit`)
+      }
+
       const validQuestionFields = {
         ...(questionData.title && { title: questionData.title }),
         ...(questionData.stem && { stem: questionData.stem }),
         ...(questionData.difficulty && { difficulty: questionData.difficulty }),
         ...(questionData.teaching_point && { teaching_point: questionData.teaching_point }),
         ...(questionData.question_references !== undefined && { question_references: questionData.question_references }),
-        ...(questionData.status && { status: questionData.status }),
+        ...(statusToSet && { status: statusToSet }),
         ...(questionData.question_set_id !== undefined && { question_set_id: questionData.question_set_id }),
         updated_by: user.id,
         updated_at: new Date().toISOString()
@@ -573,22 +612,112 @@ export async function PATCH(
         }
       }
 
-      // Handle versioning for published questions (simplified)
+      // Handle versioning for published questions
       let versionId = null
       if (currentQuestion.status === 'published') {
-        // Use simplified versioning function
-        const { data: newVersionId, error: versionError } = await adminClient
-          .rpc('create_question_version_simplified', {
-            question_id_param: questionId,
-            change_summary_param: changeSummary || 'Question updated',
-            changed_by_param: user.id
-          })
+        if (isPatchEdit) {
+          // For patch edits, increment patch version only
+          const newVersionPatch = (currentQuestion.version_patch || 0) + 1
 
-        if (versionError) {
-          console.error('Error creating question version:', versionError)
-          // Continue without versioning rather than failing the entire update
-        } else {
-          versionId = newVersionId
+          const { error: versionUpdateError } = await adminClient
+            .from('questions')
+            .update({
+              version_patch: newVersionPatch,
+              updated_by: user.id,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', questionId)
+
+          if (versionUpdateError) {
+            console.error('Error updating patch version:', versionUpdateError)
+            throw new Error(`Failed to update patch version: ${versionUpdateError.message}`)
+          }
+
+          // Create version history entry for patch edit
+          const { data: newVersionId, error: versionError } = await adminClient
+            .from('question_versions')
+            .insert({
+              question_id: questionId,
+              version_major: currentQuestion.version_major || 1,
+              version_minor: currentQuestion.version_minor || 0,
+              version_patch: newVersionPatch,
+              version_string: `${currentQuestion.version_major || 1}.${currentQuestion.version_minor || 0}.${newVersionPatch}`,
+              update_type: 'patch',
+              change_summary: patchEditReason || changeSummary || 'Patch edit',
+              question_data: {
+                title: questionData?.title,
+                stem: questionData?.stem,
+                teaching_point: questionData?.teaching_point,
+                question_references: questionData?.question_references
+              },
+              changed_by: user.id
+            })
+            .select('id')
+            .single()
+
+          if (versionError) {
+            console.error('Error creating patch version history:', versionError)
+            // Continue without version history rather than failing the entire update
+          } else {
+            versionId = newVersionId?.id
+          }
+        } else if (updateType && ['minor', 'major'].includes(updateType)) {
+          // For minor/major edits, increment appropriate version numbers
+          let newVersionMajor = currentQuestion.version_major || 1
+          let newVersionMinor = currentQuestion.version_minor || 0
+          let newVersionPatch = 0
+
+          if (updateType === 'minor') {
+            newVersionMinor += 1
+          } else if (updateType === 'major') {
+            newVersionMajor += 1
+            newVersionMinor = 0
+          }
+
+          const { error: versionUpdateError } = await adminClient
+            .from('questions')
+            .update({
+              version_major: newVersionMajor,
+              version_minor: newVersionMinor,
+              version_patch: newVersionPatch,
+              updated_by: user.id,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', questionId)
+
+          if (versionUpdateError) {
+            console.error('Error updating version:', versionUpdateError)
+            throw new Error(`Failed to update version: ${versionUpdateError.message}`)
+          }
+
+          // Create version history entry for minor/major edit
+          const { data: newVersionId, error: versionError } = await adminClient
+            .from('question_versions')
+            .insert({
+              question_id: questionId,
+              version_major: newVersionMajor,
+              version_minor: newVersionMinor,
+              version_patch: newVersionPatch,
+              version_string: `${newVersionMajor}.${newVersionMinor}.${newVersionPatch}`,
+              update_type: updateType as 'minor' | 'major',
+              change_summary: changeSummary || `${updateType} update`,
+              question_data: {
+                title: questionData?.title,
+                stem: questionData?.stem,
+                teaching_point: questionData?.teaching_point,
+                question_references: questionData?.question_references
+              },
+              changed_by: user.id
+            })
+            .select('id')
+            .single()
+
+          if (versionError) {
+            console.error('Error creating version history:', versionError)
+            // Continue without version history rather than failing the entire update
+          } else {
+            versionId = newVersionId?.id
+          }
         }
       }
 

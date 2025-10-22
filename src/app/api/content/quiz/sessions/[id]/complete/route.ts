@@ -40,12 +40,16 @@ export async function POST(
       )
     }
 
-    // Check if quiz is already completed
+    // Check if quiz is already completed - return success for idempotency
     if (session.status === 'completed') {
-      return NextResponse.json(
-        { error: 'Quiz session is already completed' },
-        { status: 400 }
-      )
+      // Get the existing quiz results
+      const existingResults = await quizService.getQuizResults(id, supabase)
+
+      return NextResponse.json({
+        success: true,
+        data: existingResults,
+        message: 'Quiz was already completed'
+      })
     }
 
     // Complete the quiz using the service

@@ -145,6 +145,13 @@ export const adminNavigationSections: NavigationSection[] = [
         showToRoles: ["admin", "creator", "reviewer"] // Visible to all, but bulk operations only for admin
       },
       {
+        name: "Create Question",
+        href: "/admin/create-question",
+        icon: "Brain",
+        requiredPermission: "questions.create",
+        showToRoles: ["admin", "creator"]
+      },
+      {
         name: "My Workflow",
         href: "/admin/my-questions",
         icon: "ListTodo",
@@ -159,14 +166,7 @@ export const adminNavigationSections: NavigationSection[] = [
         showToRoles: ["admin", "reviewer"]
       },
       {
-        name: "Create Question",
-        href: "/admin/create-question",
-        icon: "Brain",
-        requiredPermission: "questions.create",
-        showToRoles: ["admin", "creator"]
-      },
-      {
-        name: "Question Labels",
+        name: "Question Metadata",
         href: "/admin/labels",
         icon: "Tags",
         requiredPermission: "categories.manage",

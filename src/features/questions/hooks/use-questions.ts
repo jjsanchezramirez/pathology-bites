@@ -266,6 +266,8 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
       questionImages?: any[];
       tagIds?: string[];
       categoryId?: string;
+      isPatchEdit?: boolean;
+      patchEditReason?: string;
     }
   ) => {
     try {
@@ -284,6 +286,8 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
           questionImages: options?.questionImages,
           tagIds: options?.tagIds,
           categoryId: options?.categoryId,
+          isPatchEdit: options?.isPatchEdit,
+          patchEditReason: options?.patchEditReason,
         }),
       });
 

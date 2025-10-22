@@ -5,8 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { Badge } from '@/shared/components/ui/badge'
 
-import { ScrollArea } from '@/shared/components/ui/scroll-area'
-import { Loader2, FileText, BookOpen, GraduationCap, Target } from 'lucide-react'
+import { Loader2, BookOpen, GraduationCap, Target } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface EducationalContent {
@@ -52,7 +51,6 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
   const [selectedLesson, setSelectedLesson] = useState<string>('')
   const [selectedTopic, setSelectedTopic] = useState<string>('')
   const [loading, setLoading] = useState(false)
-  const [contentPreview, setContentPreview] = useState<string>('')
 
   // Parse available educational content files
   useEffect(() => {
@@ -115,7 +113,6 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
           setContentData(data)
           setSelectedLesson('')
           setSelectedTopic('')
-          setContentPreview('')
 
         } catch (error) {
           console.error('Error loading educational content data:', error)
@@ -123,7 +120,6 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
           setContentData(null)
           setSelectedLesson('')
           setSelectedTopic('')
-          setContentPreview('')
         } finally {
           setLoading(false)
         }
@@ -140,7 +136,6 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
       setContentData(null)
       setSelectedLesson('')
       setSelectedTopic('')
-      setContentPreview('')
     }
   }, [selectedFile])
 
@@ -170,15 +165,12 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
     }
   }, [contentData, selectedLesson, selectedTopic, selectedContent, onContentSelect])
 
-  // Update content preview and auto-select when topic is selected
+  // Auto-select content when topic is selected
   useEffect(() => {
     if (contentData && selectedLesson && selectedTopic) {
       const lesson = contentData.subject.lessons[selectedLesson]
       const topic = lesson?.topics[selectedTopic]
       if (topic?.content) {
-        const contentStr = JSON.stringify(topic.content, null, 2)
-        setContentPreview(contentStr.substring(0, 2000) + (contentStr.length > 2000 ? '...' : ''))
-
         // Auto-select content when all dropdowns are filled
         handleAutoSelect()
       }
@@ -274,44 +266,6 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
           </Select>
         </div>
       )}
-
-      {/* Content Preview */}
-      {contentPreview && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Content Preview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-48 w-full rounded border p-4">
-              <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
-                {contentPreview}
-              </pre>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Selected Content Summary */}
-      {selectedContent && (
-        <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-2">
-              <Badge variant="secondary">{selectedContent.category}</Badge>
-              <Badge variant="outline">{selectedContent.subject}</Badge>
-            </div>
-            <p className="text-sm">
-              <strong>Lesson:</strong> {selectedContent.lesson}
-            </p>
-            <p className="text-sm">
-              <strong>Topic:</strong> {selectedContent.topic}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
 
     </div>
   )

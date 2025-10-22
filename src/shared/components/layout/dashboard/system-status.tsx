@@ -13,6 +13,8 @@ interface SystemMetrics {
   dbQueryTime: number
   dbConnections: number
   activeUsers: number
+  activeUsersWeekly: number
+  activeUsersMonthly: number
   storageUsage: number // Supabase storage in MB
   r2StorageUsage: number // R2 storage in MB
   r2StorageFormatted: string // Formatted R2 storage
@@ -28,6 +30,8 @@ export function SystemStatus() {
     dbQueryTime: 0,
     dbConnections: 0,
     activeUsers: 0,
+    activeUsersWeekly: 0,
+    activeUsersMonthly: 0,
     storageUsage: 0,
     r2StorageUsage: 0,
     r2StorageFormatted: '0 MB',
@@ -52,6 +56,8 @@ export function SystemStatus() {
             dbQueryTime: data.dbQueryTime || 0,
             dbConnections: data.dbConnections || 0,
             activeUsers: data.activeUsers || 0,
+            activeUsersWeekly: data.activeUsersWeekly || 0,
+            activeUsersMonthly: data.activeUsersMonthly || 0,
             storageUsage: data.storageUsage || 0,
             r2StorageUsage: data.r2StorageUsage || 0,
             r2StorageFormatted: data.r2StorageFormatted || '0 MB',
@@ -76,6 +82,8 @@ export function SystemStatus() {
             dbQueryTime: 0,
             dbConnections: 0,
             activeUsers: 0,
+            activeUsersWeekly: 0,
+            activeUsersMonthly: 0,
             storageUsage: 0,
             r2StorageUsage: 0,
             r2StorageFormatted: '0 MB',
@@ -93,6 +101,8 @@ export function SystemStatus() {
           dbQueryTime: 0,
           dbConnections: 0,
           activeUsers: 0,
+          activeUsersWeekly: 0,
+          activeUsersMonthly: 0,
           storageUsage: 0,
           r2StorageUsage: 0,
           r2StorageFormatted: '0 MB',
@@ -215,14 +225,22 @@ export function SystemStatus() {
           <CardTitle className="text-base">System Metrics</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
             <div className="text-center">
               <p className="text-2xl font-bold">1</p>
               <p className="text-xs text-muted-foreground">DB Connections</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold">{metrics.activeUsers}</p>
-              <p className="text-xs text-muted-foreground">Active Users (60 min)</p>
+              <p className="text-xs text-muted-foreground">Daily Active</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold">{metrics.activeUsersWeekly}</p>
+              <p className="text-xs text-muted-foreground">Weekly Active</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold">{metrics.activeUsersMonthly}</p>
+              <p className="text-xs text-muted-foreground">Monthly Active</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold">{metrics.r2StorageFormatted}</p>

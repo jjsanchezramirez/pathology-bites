@@ -19,6 +19,9 @@ const editQuestionSchema = z.object({
   status: z.enum(['draft', 'pending_review', 'approved', 'flagged']),
   question_set_id: z.string(),
   category_id: z.string().nullable().optional(),
+  updateType: z.enum(['patch', 'minor', 'major']).optional(),
+  isPatchEdit: z.boolean().optional(),
+  patchEditReason: z.string().max(500, 'Reason too long').optional(),
 });
 
 export type EditQuestionFormData = z.infer<typeof editQuestionSchema>;
@@ -38,6 +41,8 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [answerOptions, setAnswerOptions] = useState<QuestionOptionFormData[]>([]);
   const [questionImages, setQuestionImages] = useState<QuestionImageFormData[]>([]);
+  const [isPatchEdit, setIsPatchEdit] = useState(false);
+  const [patchEditReason, setPatchEditReason] = useState('');
 
   // Hooks
   const { updateQuestion } = useQuestions();
@@ -54,6 +59,9 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
       status: 'draft',
       question_set_id: 'none',
       category_id: null,
+      updateType: 'patch',
+      isPatchEdit: false,
+      patchEditReason: '',
     },
   });
 
@@ -72,6 +80,10 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
     if (open && question) {
       setIsInitializing(true);
 
+      // For published questions, default to patch edit
+      const isPublished = question.status === 'published';
+      setIsPatchEdit(isPublished);
+
       form.reset({
         title: question.title || '',
         stem: question.stem || '',
@@ -81,6 +93,9 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
         status: (question.status as 'draft' | 'pending_review' | 'approved' | 'flagged') || 'draft',
         question_set_id: question.question_set_id || 'none',
         category_id: question.category_id || null,
+        updateType: isPublished ? 'patch' : 'minor',
+        isPatchEdit: isPublished,
+        patchEditReason: '',
       });
 
       // Initialize selected tag IDs
@@ -141,9 +156,12 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
         questionImages: questionImages,
         tagIds: selectedTagIds,
         categoryId: data.category_id || undefined,
+        updateType: data.updateType,
+        changeSummary: isPatchEdit ? patchEditReason : 'Question updated',
+        isPatchEdit: isPatchEdit,
+        patchEditReason: patchEditReason,
       });
 
-      toast.success('Question updated successfully');
       setHasUnsavedChanges(false);
       onSave();
       onClose();
@@ -153,7 +171,7 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
     } finally {
       setIsSubmitting(false);
     }
-  }, [question, answerOptions, questionImages, selectedTagIds, updateQuestion, onSave, onClose]);
+  }, [question, answerOptions, questionImages, selectedTagIds, updateQuestion, onSave, onClose, isPatchEdit, patchEditReason]);
 
   // Handle unsaved changes
   const handleUnsavedChanges = useCallback(() => {
@@ -165,22 +183,26 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
   return {
     // Form
     form,
-    
+
     // State
     isSubmitting,
     hasUnsavedChanges,
     isInitializing,
-    
+    isPatchEdit,
+    patchEditReason,
+
     // Form data
     selectedTagIds,
     answerOptions,
     questionImages,
-    
+
     // Setters
     setSelectedTagIds,
     setAnswerOptions,
     setQuestionImages,
-    
+    setIsPatchEdit,
+    setPatchEditReason,
+
     // Handlers
     handleSubmit,
     handleUnsavedChanges,

@@ -1,18 +1,19 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Textarea } from '@/shared/components/ui/textarea'
 import { Button } from '@/shared/components/ui/button'
 import { Alert, AlertDescription } from '@/shared/components/ui/alert'
-import { Upload, FileJson, Brain, AlertCircle, Loader2 } from 'lucide-react'
+import { Upload, FileJson, Brain, AlertCircle, Loader2, Edit3 } from 'lucide-react'
 import { toast } from 'sonner'
 import { FormState } from '../multi-step-question-form'
 import { ContentSelector } from '../content-selector'
 import { ACTIVE_AI_MODELS } from '@/shared/config/ai-models'
 import { createClient } from '@/shared/services/client'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { Label } from '@/shared/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
+import { getCategoryIdFromContent } from '../../utils/category-mapping'
 
 interface StepSourceConfigProps {
   formState: FormState
@@ -114,6 +115,18 @@ async function findQuestionSetIdByName(name: string): Promise<string | null> {
 export function StepSourceConfig({ formState, updateFormState, onNext }: StepSourceConfigProps) {
   const [jsonError, setJsonError] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [additionalContent, setAdditionalContent] = useState('')
+
+  // Auto-select first AI model on mount
+  useEffect(() => {
+    if (!formState.selectedAIModel && ACTIVE_AI_MODELS.length > 0) {
+      const firstAvailableModel = ACTIVE_AI_MODELS.find(m => m.available)
+      if (firstAvailableModel) {
+        updateFormState({ selectedAIModel: firstAvailableModel.id })
+      }
+    }
+  }, [])
 
   // Parse and validate JSON
   const parseJSON = useCallback((jsonString: string) => {
@@ -241,7 +254,8 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
         body: JSON.stringify({
           mode: 'educational_content',
           content: formState.selectedContent,
-          instructions: 'Generate a comprehensive pathology question with 5 answer options (A, B, C, D, E) based on the provided educational content. Include detailed explanations for all answer options.',
+          additionalContext: additionalContent,
+          instructions: 'Generate a comprehensive pathology question with 5 answer options (A, B, C, D, E) based on the provided educational content. IMPORTANT: Assume there is a histologic image attached and do NOT describe the image in the question stem. Include detailed explanations for all answer options.',
           model: formState.selectedAIModel
         }),
       })
@@ -262,7 +276,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
       console.log('🎯 AI generation response:', data)
 
       // Extract and normalize the generated question data
-      const generatedData = {
+      const generatedData: any = {
         title: data.title || '',
         stem: data.stem || data.question || '',
         answerOptions: data.answer_options || data.question_options || [],
@@ -280,6 +294,41 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
           explanation: option.explanation || '',
           order_index: index
         }))
+      }
+
+      // Auto-assign category based on educational content mapping
+      if (!generatedData.category_id && formState.selectedContent) {
+        const categoryId = getCategoryIdFromContent(
+          formState.selectedContent.category,
+          formState.selectedContent.subject
+        )
+        if (categoryId) {
+          generatedData.category_id = categoryId
+          console.log('✅ Auto-assigned category from content mapping:', categoryId)
+        }
+      }
+
+      // Fallback: Auto-assign category based on AI context
+      if (!generatedData.category_id && data.category_id) {
+        generatedData.category_id = data.category_id
+      } else if (!generatedData.category_id && data.category) {
+        const categoryId = await findCategoryIdByName(data.category)
+        if (categoryId) generatedData.category_id = categoryId
+      }
+
+      // Auto-assign question set to AI model name
+      if (formState.selectedAIModel) {
+        const modelName = ACTIVE_AI_MODELS.find(m => m.id === formState.selectedAIModel)?.name
+        if (modelName) {
+          const setId = await findQuestionSetIdByName(modelName)
+          if (setId) generatedData.question_set_id = setId
+        }
+      }
+
+      // Auto-suggest tags based on AI response
+      if (data.suggested_tags && Array.isArray(data.suggested_tags)) {
+        const tagIds = await matchOrCreateTags(data.suggested_tags)
+        if (tagIds.length > 0) generatedData.tag_ids = tagIds
       }
 
       updateFormState(generatedData)
@@ -300,17 +349,107 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
     }
   }
 
-  const [isGenerating, setIsGenerating] = useState(false)
-
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      {/* JSON Import Section */}
+      {/* AI Model Selection Card */}
       <Card className="shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <div className="p-2 rounded-lg bg-blue-100">
-              <FileJson className="h-5 w-5 text-blue-600" />
+            <Brain className="h-5 w-5 text-blue-600" />
+            Select AI Model
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Select value={formState.selectedAIModel || ''} onValueChange={(value) => updateFormState({ selectedAIModel: value })}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Choose an AI model..." />
+            </SelectTrigger>
+            <SelectContent>
+              {ACTIVE_AI_MODELS.map((model) => (
+                <SelectItem key={model.id} value={model.id}>
+                  {model.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+
+      {/* AI Generation from Educational Content - FIRST */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Brain className="h-5 w-5 text-primary" />
             </div>
+            Generate with AI
+          </CardTitle>
+          <CardDescription>
+            Create a question using AI based on educational content
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Educational Content Selection */}
+          <div className="space-y-3">
+            <Label className="text-base font-semibold">Educational Content</Label>
+            <ContentSelector
+              selectedContent={formState.selectedContent}
+              onContentSelect={handleContentSelected}
+            />
+          </div>
+
+          {/* Additional Content */}
+          <div className="space-y-3">
+            <Label htmlFor="additional-content" className="text-base font-semibold">
+              Additional Context <span className="text-muted-foreground font-normal">(Optional)</span>
+            </Label>
+            <Textarea
+              id="additional-content"
+              placeholder="Add any additional instructions or context for the AI (e.g., 'Focus on differential diagnosis', 'Include clinical presentation')"
+              value={additionalContent}
+              onChange={(e) => setAdditionalContent(e.target.value)}
+              rows={3}
+              className="resize-none"
+            />
+          </div>
+
+          {/* Generate Button */}
+          <Button
+            onClick={handleGenerateFromContent}
+            disabled={isGenerating || !formState.selectedContent}
+            className="w-full"
+            size="lg"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                Generating Question...
+              </>
+            ) : (
+              <>
+                <Brain className="h-5 w-5 mr-2" />
+                Generate Question with AI
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* OR Divider */}
+      <div className="relative py-4">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-muted" />
+        </div>
+        <div className="relative flex justify-center text-sm uppercase">
+          <span className="bg-background px-4 text-muted-foreground font-medium">Or</span>
+        </div>
+      </div>
+
+      {/* JSON Import Section - SIMPLIFIED */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <FileJson className="h-5 w-5 text-blue-600" />
             Import from JSON
           </CardTitle>
           <CardDescription>
@@ -355,7 +494,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
         </CardContent>
       </Card>
 
-      {/* OR Divider */}
+      {/* OR Divider for Manual Creation */}
       <div className="relative py-4">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-muted" />
@@ -365,89 +504,21 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
         </div>
       </div>
 
-      {/* AI Generation from Educational Content */}
+      {/* Manual Creation Section */}
       <Card className="shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Brain className="h-5 w-5 text-primary" />
-            </div>
-            AI Generation from Educational Content
+            <Edit3 className="h-5 w-5 text-green-600" />
+            Create Manually
           </CardTitle>
           <CardDescription>
-            Select AI model and educational content to generate a question
+            Skip this step and create your question manually in the next section
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* AI Model Selection */}
-          <div className="space-y-3">
-            <Label htmlFor="ai-model" className="text-base font-semibold">AI Model</Label>
-            <Select
-              value={formState.selectedAIModel || ''}
-              onValueChange={(value) => updateFormState({ selectedAIModel: value })}
-            >
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder="Select an AI model..." />
-              </SelectTrigger>
-              <SelectContent>
-                {ACTIVE_AI_MODELS.filter(model => model.available).map((model) => (
-                  <SelectItem key={model.id} value={model.id}>
-                    <div className="flex items-center justify-between w-full">
-                      <span className="font-medium">{model.name}</span>
-                      <span className="text-xs text-muted-foreground ml-3">
-                        {model.provider}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {formState.selectedAIModel && (
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Brain className="h-4 w-4" />
-                Selected: {ACTIVE_AI_MODELS.find(m => m.id === formState.selectedAIModel)?.name}
-              </p>
-            )}
-          </div>
-
-          {/* Content Selection - Only show if model is selected */}
-          {formState.selectedAIModel && (
-            <>
-              <div className="border-t pt-6 space-y-3">
-                <Label className="text-base font-semibold">Educational Content</Label>
-                <ContentSelector
-                  selectedContent={formState.selectedContent}
-                  onContentSelect={handleContentSelected}
-                />
-              </div>
-
-              {formState.selectedContent && (
-                <div className="pt-6 border-t space-y-3">
-                  <Button
-                    onClick={handleGenerateFromContent}
-                    disabled={isGenerating}
-                    className="w-full"
-                    size="lg"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                        Generating Question...
-                      </>
-                    ) : (
-                      <>
-                        <Brain className="h-5 w-5 mr-2" />
-                        Generate Question with AI
-                      </>
-                    )}
-                  </Button>
-                  <p className="text-sm text-muted-foreground text-center">
-                    Using <span className="font-medium">{ACTIVE_AI_MODELS.find(m => m.id === formState.selectedAIModel)?.name}</span> to create a complete question with 5 answer options and explanations
-                  </p>
-                </div>
-              )}
-            </>
-          )}
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            You can proceed to the next step to manually enter all question details, including title, stem, answer options, and explanations.
+          </p>
         </CardContent>
       </Card>
     </div>

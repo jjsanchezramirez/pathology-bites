@@ -41,6 +41,7 @@ export function StepMetadata({ formState, updateFormState, initialQuestionSetId 
   const [tags, setTags] = useState<Tag[]>([])
   const [loadingCategories, setLoadingCategories] = useState(true)
   const [loadingQuestionSets, setLoadingQuestionSets] = useState(true)
+  const [loadingTags, setLoadingTags] = useState(true)
   const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false)
   const [hasAutoAssignedQuestionSet, setHasAutoAssignedQuestionSet] = useState(false)
 
@@ -98,8 +99,23 @@ export function StepMetadata({ formState, updateFormState, initialQuestionSetId 
     fetchTags()
   }, [])
 
-  // Auto-assign question set if provided and not already set
+  // Auto-assign category and question set if not already set
   useEffect(() => {
+    // Auto-assign category if not already set
+    if (
+      !formState.category_id &&
+      !loadingCategories &&
+      categories.length > 0
+    ) {
+      // Auto-assign first category as default
+      const firstCategory = categories[0]
+      if (firstCategory) {
+        updateFormState({ category_id: firstCategory.id })
+        console.log('Auto-assigned default category:', firstCategory.name)
+      }
+    }
+
+    // Auto-assign question set if provided and not already set
     if (
       !formState.question_set_id &&
       !hasAutoAssignedQuestionSet &&
@@ -121,7 +137,7 @@ export function StepMetadata({ formState, updateFormState, initialQuestionSetId 
         }
       }
     }
-  }, [initialQuestionSetId, formState.question_set_id, hasAutoAssignedQuestionSet, loadingQuestionSets, questionSets, updateFormState])
+  }, [initialQuestionSetId, formState.question_set_id, formState.category_id, hasAutoAssignedQuestionSet, loadingCategories, loadingQuestionSets, categories, questionSets, updateFormState])
 
   // Auto-suggest metadata based on question content
   const handleAIMetadataSuggestion = async () => {

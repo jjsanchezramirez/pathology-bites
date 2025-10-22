@@ -263,7 +263,7 @@ export async function GET() {
       supabase
         .from('questions')
         .select('category_id, status')
-        .eq('status', 'approved') // Focus on approved questions only for better performance
+        .eq('status', 'published') // Focus on published questions only for better performance
         .limit(5000) // Limit to prevent excessive data transfer
     ])
 
@@ -396,10 +396,10 @@ function calculateOverallStats(categories: any[]) {
   return categories.reduce((acc, cat) => ({
     all: acc.all + cat.questionStats.all,
     unused: acc.unused + cat.questionStats.unused,
-    needsReview: acc.needsReview + cat.questionStats.needsReview,
+    incorrect: acc.incorrect + cat.questionStats.incorrect,
     marked: acc.marked + cat.questionStats.marked,
-    mastered: acc.mastered + cat.questionStats.mastered
-  }), { all: 0, unused: 0, needsReview: 0, marked: 0, mastered: 0 })
+    correct: acc.correct + cat.questionStats.correct
+  }), { all: 0, unused: 0, incorrect: 0, marked: 0, correct: 0 })
 }
 
 function calculateStatsForParent(categories: any[], parent: 'AP' | 'CP') {

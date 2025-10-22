@@ -103,8 +103,6 @@ export class DatabaseSyncManager {
       // Handle API response format: { success: true, data: quizSession }
       const data = response_data.data || response_data;
 
-
-
       // Transform QuestionWithDetails[] to QuizQuestion[] format using standardized transformer
       const transformedQuestions = (data.questions || []).map((q: any) =>
         QuizQuestionTransformer.apiToHybrid(q)
@@ -223,18 +221,17 @@ export class DatabaseSyncManager {
 
         if (!batchResponse.ok) {
           const errorText = await batchResponse.text();
-          
+
           // Check if the error is because quiz is already completed - this is not really an error
-          if (errorText.includes('Quiz session is already completed') || 
+          if (errorText.includes('Quiz session is already completed') ||
               errorText.includes('already completed')) {
-            console.log('[Hybrid Sync] Quiz already completed, treating as success');
             return {
               success: true,
               timestamp: Date.now(),
               serverResponse: { message: 'Quiz was already completed' }
             };
           }
-          
+
           throw new Error(`Batch answer submission failed: ${batchResponse.statusText} - ${errorText}`);
         }
 
@@ -249,18 +246,17 @@ export class DatabaseSyncManager {
 
         if (!completeResponse.ok) {
           const errorText = await completeResponse.text();
-          
+
           // Check if the error is because quiz is already completed - this is not really an error
-          if (errorText.includes('Quiz session is already completed') || 
+          if (errorText.includes('Quiz session is already completed') ||
               errorText.includes('already completed')) {
-            console.log('[Hybrid Sync] Quiz already completed at completion step, treating as success');
             return {
               success: true,
               timestamp: Date.now(),
               serverResponse: { message: 'Quiz was already completed' }
             };
           }
-          
+
           throw new Error(`Quiz completion failed: ${completeResponse.statusText} - ${errorText}`);
         }
 

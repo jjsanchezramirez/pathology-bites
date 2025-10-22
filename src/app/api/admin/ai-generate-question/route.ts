@@ -202,6 +202,134 @@ async function callMistralAPI(prompt: string, model: string, apiKey: string): Pr
   }
 }
 
+// Simple in-memory cache for Semantic Scholar references
+// Cache structure: { queryKey: { references: string[], timestamp: number } }
+const referencesCache = new Map<string, { references: string[], timestamp: number }>()
+const CACHE_DURATION_MS = 24 * 60 * 60 * 1000 // 24 hours
+let lastRequestTime = 0
+const MIN_REQUEST_INTERVAL_MS = 1100 // 1.1 seconds to respect 1 req/sec limit
+
+/**
+ * Sleep function for rate limiting
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/**
+ * Fetch references from Semantic Scholar API based on search terms
+ * Implements caching and rate limiting to respect API limits (1 req/sec)
+ */
+async function fetchSemanticScholarReferences(searchTerms: string): Promise<string[]> {
+  try {
+    // Add "pathology" to help focus results on pathology literature
+    const searchQuery = `${searchTerms} pathology`
+    const cacheKey = searchQuery.toLowerCase().trim()
+
+    // Check cache first
+    const cached = referencesCache.get(cacheKey)
+    if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION_MS) {
+      console.log(`[Admin AI] Using cached references for: "${searchQuery}"`)
+      return cached.references
+    }
+
+    console.log(`[Admin AI] Fetching references from Semantic Scholar for: "${searchQuery}"`)
+
+    // Rate limiting: ensure at least 1.1 seconds between requests
+    const timeSinceLastRequest = Date.now() - lastRequestTime
+    if (timeSinceLastRequest < MIN_REQUEST_INTERVAL_MS) {
+      const waitTime = MIN_REQUEST_INTERVAL_MS - timeSinceLastRequest
+      console.log(`[Admin AI] Rate limiting: waiting ${waitTime}ms before request`)
+      await sleep(waitTime)
+    }
+
+    const semanticScholarUrl = new URL('https://api.semanticscholar.org/graph/v1/paper/search')
+    semanticScholarUrl.searchParams.append('query', searchQuery)
+    semanticScholarUrl.searchParams.append('limit', '5')
+    semanticScholarUrl.searchParams.append('fields', 'title,authors,year,venue,journal,publicationDate')
+
+    const headers: Record<string, string> = {
+      'Accept': 'application/json',
+    }
+
+    // Optional: Add API key if available
+    if (process.env.SEMANTIC_SCHOLAR_API_KEY) {
+      headers['x-api-key'] = process.env.SEMANTIC_SCHOLAR_API_KEY
+    }
+
+    // Update last request time
+    lastRequestTime = Date.now()
+
+    const response = await fetch(semanticScholarUrl.toString(), {
+      headers,
+      signal: AbortSignal.timeout(10000) // 10 second timeout
+    })
+
+    if (!response.ok) {
+      console.warn(`[Admin AI] Semantic Scholar API error: ${response.status}`)
+
+      // If rate limited, try one retry after waiting
+      if (response.status === 429) {
+        console.log('[Admin AI] Rate limited, waiting 2 seconds before retry...')
+        await sleep(2000)
+        lastRequestTime = Date.now()
+
+        const retryResponse = await fetch(semanticScholarUrl.toString(), {
+          headers,
+          signal: AbortSignal.timeout(10000)
+        })
+
+        if (!retryResponse.ok) {
+          console.warn(`[Admin AI] Retry also failed: ${retryResponse.status}`)
+          return []
+        }
+
+        const retryData = await retryResponse.json()
+        const retryPapers = retryData.data || []
+        return formatReferences(retryPapers, searchQuery, cacheKey)
+      }
+
+      return []
+    }
+
+    const data = await response.json()
+    const papers = data.data || []
+
+    return formatReferences(papers, searchQuery, cacheKey)
+  } catch (error) {
+    console.warn('[Admin AI] Failed to fetch references from Semantic Scholar:', error)
+    return []
+  }
+}
+
+/**
+ * Format and cache references
+ */
+function formatReferences(papers: any[], searchQuery: string, cacheKey: string): string[] {
+  // Format references from the top 3 papers
+  const references = papers.slice(0, 3).map((paper: any) => {
+    const authors = paper.authors?.slice(0, 2).map((a: any) => a.name).join(', ') || 'Unknown'
+    const year = paper.year || 'Unknown'
+    const title = paper.title || 'Unknown'
+    const venue = paper.journal?.name || paper.venue || 'Unknown'
+
+    return `${authors} (${year}). ${title}. ${venue}.`
+  })
+
+  // Cache the results
+  if (references.length > 0) {
+    referencesCache.set(cacheKey, {
+      references,
+      timestamp: Date.now()
+    })
+    console.log(`[Admin AI] Successfully fetched and cached ${references.length} references`)
+  } else {
+    console.log('[Admin AI] No references found for query')
+  }
+
+  return references
+}
+
 function buildAdminQuestionPrompt(content: any, instructions: string, additionalContext: string, mode: string = 'educational_content'): string {
   if (mode === 'educational_content') {
     return `Create a high-quality medical/pathology question based on the following educational content:
@@ -227,7 +355,9 @@ CRITICAL REQUIREMENTS:
 6. Make the question challenging but fair for medical students/residents
 7. Base the question on the provided educational content
 8. Focus on clinical correlation and diagnostic reasoning
-9. Include relevant references if applicable
+9. DO NOT describe histologic/microscopic findings in the question stem - instead reference that "histologic images are shown below" or similar
+10. The question stem should focus on clinical presentation, patient demographics, and clinical context
+11. Detailed histopathological descriptions belong in the answer explanations, not the question stem
 
 Return your response in this EXACT JSON format (no markdown, no code blocks, just pure JSON):
 
@@ -267,7 +397,6 @@ Return your response in this EXACT JSON format (no markdown, no code blocks, jus
     }
   ],
   "teaching_point": "Concise 1-2 sentence key learning point about the specific concept being tested",
-  "question_references": "Relevant medical/pathology references or citations",
   "suggested_tags": ["Tag1", "Tag2", "Tag3"],
   "difficulty": "medium",
   "status": "draft"
@@ -646,12 +775,46 @@ export async function POST(request: NextRequest) {
         suggested_tag_ids: questionData.suggested_tag_ids || []
       }
     } else {
+      // Fetch real references from Semantic Scholar for educational_content mode
+      // Use combination of: topic + lesson + category (from educational content) AND title (from AI)
+      let references = ''
+      let referencesNote = ''
+      if (mode === 'educational_content') {
+        // Build search terms from available fields
+        const searchParts: string[] = []
+
+        // Add educational content fields (topic, lesson, category)
+        if (content?.topic) searchParts.push(content.topic)
+        if (content?.lesson) searchParts.push(content.lesson)
+        if (content?.category) searchParts.push(content.category)
+
+        // Add AI-generated title
+        if (questionData.title) searchParts.push(questionData.title)
+
+        const searchTerms = searchParts.join(' ').trim()
+
+        if (!searchTerms) {
+          console.error('[Admin AI] No search terms available for reference fetching. This should not happen - title should always be present.')
+          referencesNote = 'Error: Unable to fetch references - no search terms available. Please report this issue.'
+        } else {
+          console.log(`[Admin AI] Searching references with terms: "${searchTerms}"`)
+          const fetchedReferences = await fetchSemanticScholarReferences(searchTerms)
+          if (fetchedReferences.length > 0) {
+            references = fetchedReferences.join('\n')
+            console.log(`[Admin AI] Added ${fetchedReferences.length} references to question`)
+          } else {
+            console.log('[Admin AI] No references fetched (likely rate limited or no results)')
+            referencesNote = 'Note: References could not be automatically fetched. You can add them manually in the References section.'
+          }
+        }
+      }
+
       responseData = {
         title: questionData.title || (mode === 'refinement' ? 'Refined Question' : 'Generated Question'),
         stem: questionData.stem,
         answer_options: questionData.question_options || questionData.answer_options,
         teaching_point: questionData.teaching_point || '',
-        question_references: questionData.question_references || questionData.references || '',
+        question_references: references || referencesNote,
         difficulty: questionData.difficulty || 'medium',
         status: questionData.status || 'draft',
         suggested_tags: questionData.suggested_tags || []

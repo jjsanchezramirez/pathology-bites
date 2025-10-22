@@ -1,6 +1,7 @@
 // src/app/api/admin/system-status/route.ts
 import { NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { getBucketSize } from '@/shared/services/r2-storage'
 import { formatSize } from '@/features/images/services/image-upload'
 
@@ -11,7 +12,9 @@ interface SystemHealth {
   responseTime: number
   dbQueryTime: number // Average database query time in ms
   dbConnections: number
-  activeUsers: number // Currently active users (logged in within last 60 minutes)
+  activeUsers: number // Currently active users (logged in within last 24 hours)
+  activeUsersWeekly: number // Active users in last 7 days
+  activeUsersMonthly: number // Active users in last 30 days
   storageUsage: number // Supabase storage in MB
   r2StorageUsage: number // R2 storage in MB
   r2StorageFormatted: string // Formatted R2 storage
@@ -24,6 +27,18 @@ export async function GET() {
   try {
     const supabase = await createClient()
 
+    // Create a service role client for admin operations
+    const supabaseAdmin = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
+
     // Measure database query time separately
     const dbStartTime = performance.now()
     const dbTestPromise = supabase
@@ -35,7 +50,7 @@ export async function GET() {
     const dbQueryTime = Math.round(dbEndTime - dbStartTime)
 
     // Test other services and get metrics in parallel
-    const sixtyMinutesAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
     const [storageStats, vercelStatusResponse, r2ImagesStats, r2DataStats, activeUsersResult] = await Promise.allSettled([
       supabase
@@ -45,11 +60,9 @@ export async function GET() {
       fetch('https://www.vercel-status.com/api/v2/status.json'),
       getBucketSize('pathology-bites-images'),
       getBucketSize('pathology-bites-data'),
-      // Count active users (those with activity in last 60 minutes)
-      supabase
-        .from('users')
-        .select('id', { count: 'exact', head: true })
-        .gte('last_sign_in_at', sixtyMinutesAgo)
+      // Count active users from auth schema (last sign in within 24 hours)
+      // Use service role client to access auth.admin API
+      supabaseAdmin.auth.admin.listUsers()
     ])
 
     const endTime = performance.now()
@@ -100,10 +113,41 @@ export async function GET() {
       cloudflareR2Status = 'error'
     }
 
-    // Get active users count
+    // Get active users count from auth.admin.listUsers() - daily, weekly, monthly
     let activeUsers = 0
-    if (activeUsersResult.status === 'fulfilled' && activeUsersResult.value.count !== null) {
-      activeUsers = activeUsersResult.value.count
+    let activeUsersWeekly = 0
+    let activeUsersMonthly = 0
+
+    if (activeUsersResult.status === 'fulfilled') {
+      const usersResponse = activeUsersResult.value
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+
+      if (usersResponse.data?.users) {
+        // Filter users by last_sign_in_at for different time periods
+        usersResponse.data.users.forEach(user => {
+          if (!user.last_sign_in_at) return
+          const lastSignIn = new Date(user.last_sign_in_at)
+
+          // Count for 24 hours
+          if (lastSignIn >= twentyFourHoursAgo) {
+            activeUsers++
+          }
+
+          // Count for 7 days
+          if (lastSignIn >= sevenDaysAgo) {
+            activeUsersWeekly++
+          }
+
+          // Count for 30 days
+          if (lastSignIn >= thirtyDaysAgo) {
+            activeUsersMonthly++
+          }
+        })
+      } else if (usersResponse.error) {
+        console.error('[System Status] Error fetching users:', usersResponse.error)
+      }
     }
 
     const systemHealth: SystemHealth = {
@@ -114,6 +158,8 @@ export async function GET() {
       dbQueryTime,
       dbConnections: 1, // Hardcoded as requested
       activeUsers,
+      activeUsersWeekly,
+      activeUsersMonthly,
       storageUsage, // Supabase storage
       r2StorageUsage, // R2 storage
       r2StorageFormatted, // Formatted R2 storage
@@ -141,6 +187,8 @@ export async function GET() {
       dbQueryTime: 0,
       dbConnections: 0,
       activeUsers: 0,
+      activeUsersWeekly: 0,
+      activeUsersMonthly: 0,
       storageUsage: 0,
       r2StorageUsage: 0,
       r2StorageFormatted: '0 MB',

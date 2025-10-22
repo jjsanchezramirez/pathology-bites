@@ -19,6 +19,7 @@ import {
 import { toast } from 'sonner'
 import { createClient } from '@/shared/services/client'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useUserRole } from '@/shared/hooks/use-user-role'
 import { SubmitForReviewDialog } from './submit-for-review-dialog'
 import { QuestionPreviewDialog } from './question-preview-dialog'
 import { BulkSubmitDialog } from './bulk-submit-dialog'
@@ -34,7 +35,8 @@ import {
   MessageSquare,
   Eye,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  CheckCheck
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -57,13 +59,27 @@ interface WorkflowStats {
   underReview: number
   needsRevision: number
   flagged: number
+  published: number
+  needsReview?: number
+  underRevision?: number
 }
 
 export function CreatorWorkflowDashboard() {
   const router = useRouter()
   const supabase = createClient()
+  const { user } = useAuthStatus()
+  const { role } = useUserRole()
+
   const [questions, setQuestions] = useState<WorkflowQuestion[]>([])
-  const [stats, setStats] = useState<WorkflowStats>({ drafts: 0, underReview: 0, needsRevision: 0, flagged: 0 })
+  const [stats, setStats] = useState<WorkflowStats>({
+    drafts: 0,
+    underReview: 0,
+    needsRevision: 0,
+    flagged: 0,
+    published: 0,
+    needsReview: 0,
+    underRevision: 0
+  })
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false)
@@ -76,7 +92,8 @@ export function CreatorWorkflowDashboard() {
   const [bulkSubmitDialogOpen, setBulkSubmitDialogOpen] = useState(false)
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false)
 
-  const { user } = useAuthStatus()
+  const isReviewer = role === 'reviewer'
+  const isCreator = role === 'creator' || role === 'admin'
 
   const fetchWorkflowQuestions = useCallback(async (isRefresh = false) => {
     if (!user) return
@@ -88,32 +105,60 @@ export function CreatorWorkflowDashboard() {
       }
 
       const supabase = createClient()
+      let workflowQuestions: WorkflowQuestion[] = []
 
-      // Fetch only actionable questions (draft, pending_review, rejected)
-      const { data, error } = await supabase
-        .from('questions')
-        .select(`
-          id,
-          title,
-          stem,
-          status,
-          created_at,
-          updated_at,
-          reviewer_feedback,
-          question_sets(name),
-          question_flags(id, flag_type, description, status, created_at)
-        `)
-        .eq('created_by', user.id)
-        .in('status', ['draft', 'pending_review', 'rejected'])
-        .order('updated_at', { ascending: false })
+      if (isReviewer) {
+        // Reviewers see: Needs Review (pending_review) → Under Revision (rejected) → Published
+        const { data, error } = await supabase
+          .from('questions')
+          .select(`
+            id,
+            title,
+            stem,
+            status,
+            created_at,
+            updated_at,
+            reviewer_feedback,
+            question_sets(name),
+            question_flags(id, flag_type, description, status, created_at)
+          `)
+          .in('status', ['pending_review', 'rejected', 'published'])
+          .order('updated_at', { ascending: false })
 
-      if (error) {
-        console.error('Error fetching workflow questions:', error)
-        toast.error('Failed to load questions')
-        return
+        if (error) {
+          console.error('Error fetching reviewer workflow questions:', error)
+          toast.error('Failed to load questions')
+          return
+        }
+
+        workflowQuestions = data || []
+      } else {
+        // Creators see: Needs Revision (rejected) → Drafts (draft) → Under Review (pending_review) → Published
+        const { data, error } = await supabase
+          .from('questions')
+          .select(`
+            id,
+            title,
+            stem,
+            status,
+            created_at,
+            updated_at,
+            reviewer_feedback,
+            question_sets(name),
+            question_flags(id, flag_type, description, status, created_at)
+          `)
+          .eq('created_by', user.id)
+          .in('status', ['draft', 'pending_review', 'rejected', 'published'])
+          .order('updated_at', { ascending: false })
+
+        if (error) {
+          console.error('Error fetching creator workflow questions:', error)
+          toast.error('Failed to load questions')
+          return
+        }
+
+        workflowQuestions = data || []
       }
-
-      const workflowQuestions = data || []
 
       // Fetch resubmission notes for rejected questions
       const rejectedQuestionIds = workflowQuestions
@@ -132,7 +177,6 @@ export function CreatorWorkflowDashboard() {
             .order('created_at', { ascending: false })
 
           if (!resubmissionError && resubmissionData) {
-            // Create a map of question_id to latest resubmission notes
             const resubmissionMap = new Map()
             resubmissionData.forEach(review => {
               if (!resubmissionMap.has(review.question_id) && review.changes_made?.resubmission_notes) {
@@ -143,7 +187,6 @@ export function CreatorWorkflowDashboard() {
               }
             })
 
-            // Add resubmission notes to questions
             questionsWithResubmissionNotes = workflowQuestions.map(question => {
               const resubmissionInfo = resubmissionMap.get(question.id)
               return {
@@ -155,13 +198,12 @@ export function CreatorWorkflowDashboard() {
           }
         } catch (error) {
           console.error('Error fetching resubmission notes:', error)
-          // Continue without resubmission notes if there's an error
         }
       }
 
       setQuestions(questionsWithResubmissionNotes)
 
-      // Calculate stats
+      // Calculate stats based on role
       const flaggedCount = workflowQuestions.filter(q =>
         q.question_flags && q.question_flags.some((f: any) => f.status === 'open')
       ).length
@@ -170,20 +212,32 @@ export function CreatorWorkflowDashboard() {
         drafts: workflowQuestions.filter(q => q.status === 'draft').length,
         underReview: workflowQuestions.filter(q => q.status === 'pending_review').length,
         needsRevision: workflowQuestions.filter(q => q.status === 'rejected').length,
-        flagged: flaggedCount
+        flagged: flaggedCount,
+        published: workflowQuestions.filter(q => q.status === 'published').length,
+        needsReview: workflowQuestions.filter(q => q.status === 'pending_review').length,
+        underRevision: workflowQuestions.filter(q => q.status === 'rejected').length
       }
       setStats(newStats)
 
-      // Set default active tab based on priority: Needs Revision → Drafts → Under Review
-      if (newStats.needsRevision > 0) {
-        setActiveTab('needs-revision')
-      } else if (newStats.drafts > 0) {
-        setActiveTab('drafts')
-      } else if (newStats.underReview > 0) {
-        setActiveTab('under-review')
+      // Set default active tab based on role and priority
+      if (isReviewer) {
+        if (newStats.needsReview > 0) {
+          setActiveTab('needs-review')
+        } else if (newStats.underRevision > 0) {
+          setActiveTab('under-revision')
+        } else {
+          setActiveTab('published')
+        }
       } else {
-        // All tabs are empty, default to needs-revision
-        setActiveTab('needs-revision')
+        if (newStats.needsRevision > 0) {
+          setActiveTab('needs-revision')
+        } else if (newStats.drafts > 0) {
+          setActiveTab('drafts')
+        } else if (newStats.underReview > 0) {
+          setActiveTab('under-review')
+        } else {
+          setActiveTab('published')
+        }
       }
 
     } catch (error) {
@@ -194,7 +248,7 @@ export function CreatorWorkflowDashboard() {
       setRefreshing(false)
       setHasInitiallyLoaded(true)
     }
-  }, [user, hasInitiallyLoaded])
+  }, [user, hasInitiallyLoaded, isReviewer])
 
   useEffect(() => {
     fetchWorkflowQuestions()
@@ -374,6 +428,11 @@ export function CreatorWorkflowDashboard() {
   const rejectedQuestions = questions.filter(q => q.status === 'rejected')
   const draftQuestions = questions.filter(q => q.status === 'draft')
   const underReviewQuestions = questions.filter(q => q.status === 'pending_review')
+  const publishedQuestions = questions.filter(q => q.status === 'published')
+
+  // For reviewers
+  const needsReviewQuestions = questions.filter(q => q.status === 'pending_review')
+  const underRevisionQuestions = questions.filter(q => q.status === 'rejected')
 
   const renderQuestionTable = (questions: WorkflowQuestion[], showSelection = true, tabType?: string) => {
     if (questions.length === 0) {
@@ -395,6 +454,24 @@ export function CreatorWorkflowDashboard() {
           icon: Clock,
           title: 'No questions under review',
           description: 'Submit your draft questions for review.',
+          iconColor: 'text-muted-foreground'
+        },
+        'published': {
+          icon: CheckCheck,
+          title: 'No published questions yet',
+          description: 'Your published questions will appear here.',
+          iconColor: 'text-muted-foreground'
+        },
+        'needs-review': {
+          icon: Clock,
+          title: 'No questions to review',
+          description: 'All pending questions have been reviewed.',
+          iconColor: 'text-green-500'
+        },
+        'under-revision': {
+          icon: AlertTriangle,
+          title: 'No questions under revision',
+          description: 'All rejected questions have been addressed.',
           iconColor: 'text-muted-foreground'
         }
       }
@@ -724,129 +801,288 @@ export function CreatorWorkflowDashboard() {
       )}
 
       {/* Workflow Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-white dark:bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-4 w-4" />
-              Needs Revision
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive">{stats.needsRevision}</div>
-            <p className="text-xs text-muted-foreground">
-              Highest priority
-            </p>
-          </CardContent>
-        </Card>
+      {isReviewer ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="bg-white dark:bg-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
+                <Clock className="h-4 w-4" />
+                Needs Review
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{stats.needsReview}</div>
+              <p className="text-xs text-muted-foreground">
+                Pending your review
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-white dark:bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
-              <Edit3 className="h-4 w-4" />
-              Drafts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">{stats.drafts}</div>
-            <p className="text-xs text-muted-foreground">
-              Ready to submit
-            </p>
-          </CardContent>
-        </Card>
+          <Card className="bg-white dark:bg-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
+                <AlertTriangle className="h-4 w-4" />
+                Under Revision
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{stats.underRevision}</div>
+              <p className="text-xs text-muted-foreground">
+                Being revised by creators
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-white dark:bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
-              <Clock className="h-4 w-4" />
-              Under Review
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">{stats.underReview}</div>
-            <p className="text-xs text-muted-foreground">
-              Waiting for reviewer
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card className="bg-white dark:bg-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
+                <CheckCheck className="h-4 w-4" />
+                Published
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{stats.published}</div>
+              <p className="text-xs text-muted-foreground">
+                Approved by you
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="bg-white dark:bg-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-4 w-4" />
+                Needs Revision
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-destructive">{stats.needsRevision}</div>
+              <p className="text-xs text-muted-foreground">
+                Highest priority
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
+                <Edit3 className="h-4 w-4" />
+                Drafts
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{stats.drafts}</div>
+              <p className="text-xs text-muted-foreground">
+                Ready to submit
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
+                <Clock className="h-4 w-4" />
+                Under Review
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{stats.underReview}</div>
+              <p className="text-xs text-muted-foreground">
+                Waiting for reviewer
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
+                <CheckCheck className="h-4 w-4" />
+                Published
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{stats.published}</div>
+              <p className="text-xs text-muted-foreground">
+                Live on platform
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Workflow Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="needs-revision" className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4" />
-            Needs Revision ({stats.needsRevision})
-          </TabsTrigger>
-          <TabsTrigger value="drafts" className="flex items-center gap-2">
-            <Edit3 className="h-4 w-4" />
-            Drafts ({stats.drafts})
-          </TabsTrigger>
-          <TabsTrigger value="under-review" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Under Review ({stats.underReview})
-          </TabsTrigger>
-        </TabsList>
+        {isReviewer ? (
+          <>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="needs-review" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Needs Review ({stats.needsReview})
+              </TabsTrigger>
+              <TabsTrigger value="under-revision" className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Under Revision ({stats.underRevision})
+              </TabsTrigger>
+              <TabsTrigger value="published" className="flex items-center gap-2">
+                <CheckCheck className="h-4 w-4" />
+                Published ({stats.published})
+              </TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="needs-revision" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Questions Needing Revision</h3>
-              <p className="text-sm text-muted-foreground">
-                These questions were rejected and need your immediate attention. Review the feedback and make necessary changes.
-              </p>
-            </div>
-          </div>
-          {renderQuestionTable(rejectedQuestions, true, 'needs-revision')}
-        </TabsContent>
+            <TabsContent value="needs-review" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">Questions Needing Review</h3>
+                  <p className="text-sm text-muted-foreground">
+                    These questions are pending your review. Approve or request changes.
+                  </p>
+                </div>
+              </div>
+              {renderQuestionTable(needsReviewQuestions, false, 'needs-review')}
+            </TabsContent>
 
-        <TabsContent value="drafts" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Draft Questions</h3>
-              <p className="text-sm text-muted-foreground">
-                These questions are in draft status. Edit and submit them for review when ready.
-              </p>
-            </div>
-          </div>
-          {renderQuestionTable(draftQuestions, true, 'drafts')}
-        </TabsContent>
+            <TabsContent value="under-revision" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">Questions Under Revision</h3>
+                  <p className="text-sm text-muted-foreground">
+                    These questions were rejected and are being revised by creators.
+                  </p>
+                </div>
+              </div>
+              {renderQuestionTable(underRevisionQuestions, false, 'under-revision')}
+            </TabsContent>
 
-        <TabsContent value="under-review" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Questions Under Review</h3>
-              <p className="text-sm text-muted-foreground">
-                These questions are currently being reviewed. No action needed from you at this time.
-              </p>
-            </div>
-          </div>
-          {renderQuestionTable(underReviewQuestions, false, 'under-review')}
-        </TabsContent>
+            <TabsContent value="published" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">Published Questions</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Questions you have approved and published.
+                  </p>
+                </div>
+              </div>
+              {renderQuestionTable(publishedQuestions, false, 'published')}
+            </TabsContent>
+          </>
+        ) : (
+          <>
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="needs-revision" className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Needs Revision ({stats.needsRevision})
+              </TabsTrigger>
+              <TabsTrigger value="drafts" className="flex items-center gap-2">
+                <Edit3 className="h-4 w-4" />
+                Drafts ({stats.drafts})
+              </TabsTrigger>
+              <TabsTrigger value="under-review" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Under Review ({stats.underReview})
+              </TabsTrigger>
+              <TabsTrigger value="published" className="flex items-center gap-2">
+                <CheckCheck className="h-4 w-4" />
+                Published ({stats.published})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="needs-revision" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">Questions Needing Revision</h3>
+                  <p className="text-sm text-muted-foreground">
+                    These questions were rejected and need your immediate attention. Review the feedback and make necessary changes.
+                  </p>
+                </div>
+              </div>
+              {renderQuestionTable(rejectedQuestions, true, 'needs-revision')}
+            </TabsContent>
+
+            <TabsContent value="drafts" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">Draft Questions</h3>
+                  <p className="text-sm text-muted-foreground">
+                    These questions are in draft status. Edit and submit them for review when ready.
+                  </p>
+                </div>
+              </div>
+              {renderQuestionTable(draftQuestions, true, 'drafts')}
+            </TabsContent>
+
+            <TabsContent value="under-review" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">Questions Under Review</h3>
+                  <p className="text-sm text-muted-foreground">
+                    These questions are currently being reviewed. No action needed from you at this time.
+                  </p>
+                </div>
+              </div>
+              {renderQuestionTable(underReviewQuestions, false, 'under-review')}
+            </TabsContent>
+
+            <TabsContent value="published" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">Published Questions</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Your published questions. You can make patch edits to these questions.
+                  </p>
+                </div>
+              </div>
+              {renderQuestionTable(publishedQuestions, false, 'published')}
+            </TabsContent>
+          </>
+        )}
       </Tabs>
 
       {/* All Jobs Done State - Show when all tabs are empty */}
-      {stats.needsRevision === 0 && stats.drafts === 0 && stats.underReview === 0 && (
-        <Card className="bg-white dark:bg-card">
-          <CardContent className="pt-6">
-            <div className="text-center py-12">
-              <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-6" />
-              <h3 className="text-xl font-semibold mb-3 text-foreground">Excellent work! All jobs done! 🎉</h3>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                You don't have any questions that need your attention right now.
-                Time to create some new content or take a well-deserved break!
-              </p>
-              <div className="flex gap-3 justify-center">
-                <Button asChild>
-                  <a href="/admin/create-question">Create New Question</a>
-                </Button>
-                <Button variant="outline" asChild>
-                  <a href="/admin/questions">Browse All Questions</a>
-                </Button>
+      {isReviewer ? (
+        stats.needsReview === 0 && stats.underRevision === 0 && (
+          <Card className="bg-white dark:bg-card">
+            <CardContent className="pt-6">
+              <div className="text-center py-12">
+                <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-6" />
+                <h3 className="text-xl font-semibold mb-3 text-foreground">All caught up! 🎉</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  You don't have any questions that need your attention right now.
+                  Check the Published tab to see your approved questions.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Button variant="outline" asChild>
+                    <a href="/admin/questions">Browse All Questions</a>
+                  </Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )
+      ) : (
+        stats.needsRevision === 0 && stats.drafts === 0 && stats.underReview === 0 && (
+          <Card className="bg-white dark:bg-card">
+            <CardContent className="pt-6">
+              <div className="text-center py-12">
+                <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-6" />
+                <h3 className="text-xl font-semibold mb-3 text-foreground">Excellent work! All jobs done! 🎉</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  You don't have any questions that need your attention right now.
+                  Time to create some new content or take a well-deserved break!
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Button asChild>
+                    <a href="/admin/create-question">Create New Question</a>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <a href="/admin/questions">Browse All Questions</a>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )
       )}
 
       {/* Submit for Review Dialog */}
