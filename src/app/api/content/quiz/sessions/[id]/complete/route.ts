@@ -55,6 +55,12 @@ export async function POST(
     // Complete the quiz using the service
     const result = await quizService.completeQuiz(id, supabase)
 
+    // Validate result has required properties
+    if (!result || typeof result.score !== 'number' || typeof result.totalQuestions !== 'number') {
+      console.error('[Quiz Complete] Invalid result from completeQuiz:', result)
+      throw new Error('Invalid quiz completion result')
+    }
+
     // Update analytics for all questions in this quiz session (batch update)
     try {
       console.log('[Quiz Complete] Starting batch analytics update for session:', id)
@@ -72,7 +78,7 @@ export async function POST(
         title: `Quiz Session`, // We could get the actual quiz title from the session if needed
         score: result.score,
         totalQuestions: result.totalQuestions,
-        timeSpent: result.totalTimeSpent
+        timeSpent: result.totalTimeSpent || 0
       })
 
       await ActivityGenerator.createActivity(user.id, activityData)

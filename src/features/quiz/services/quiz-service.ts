@@ -807,7 +807,11 @@ export class QuizService {
       }
 
       session.questions.forEach(question => {
-        const difficulty = question.difficulty as 'easy' | 'medium' | 'hard'
+        // Ensure difficulty is one of the expected values, default to 'medium' if not
+        const difficulty = (question.difficulty === 'easy' || question.difficulty === 'medium' || question.difficulty === 'hard')
+          ? question.difficulty
+          : 'medium'
+
         const attempt = attempts?.find((a: any) => a.question_id === question.id)
 
         difficultyBreakdown[difficulty].total++
