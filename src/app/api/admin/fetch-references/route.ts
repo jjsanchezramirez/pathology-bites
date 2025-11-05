@@ -6,6 +6,81 @@ import { PATHOLOGY_JOURNALS } from '@/lib/constants/pathology-journals'
  * Optimized for pathology research with advanced filtering options
  */
 
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const searchTerms = body.searchTerms
+
+    if (!searchTerms || typeof searchTerms !== 'string') {
+      return NextResponse.json(
+        { error: 'searchTerms is required in request body' },
+        { status: 400 }
+      )
+    }
+
+    // Build Semantic Scholar API URL
+    const semanticScholarUrl = new URL('https://api.semanticscholar.org/graph/v1/paper/search')
+    semanticScholarUrl.searchParams.append('query', searchTerms)
+    semanticScholarUrl.searchParams.append('limit', '5') // Limit to 5 references for question creation
+    semanticScholarUrl.searchParams.append(
+      'fields',
+      'paperId,title,authors,year,venue,journal,publicationDate,citationCount,isOpenAccess,openAccessPdf'
+    )
+
+    const headers: Record<string, string> = {
+      'Accept': 'application/json',
+    }
+
+    if (process.env.SEMANTIC_SCHOLAR_API_KEY) {
+      headers['x-api-key'] = process.env.SEMANTIC_SCHOLAR_API_KEY
+    }
+
+    const response = await fetch(semanticScholarUrl.toString(), {
+      headers,
+      signal: AbortSignal.timeout(15000)
+    })
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        return NextResponse.json(
+          { error: 'Rate limited by Semantic Scholar. Please try again later.' },
+          { status: 429 }
+        )
+      }
+      throw new Error(`Semantic Scholar API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const papers = data.data || []
+
+    // Format references as strings
+    const references = papers.map((paper: any) => {
+      const authors = paper.authors?.map((a: any) => a.name).slice(0, 3).join(', ') || 'Unknown'
+      const moreAuthors = paper.authors?.length > 3 ? ' et al.' : ''
+      const year = paper.year || 'n.d.'
+      const title = paper.title || 'Untitled'
+      const venue = paper.venue || paper.journal?.name || ''
+      const venueText = venue ? ` ${venue}.` : ''
+      const url = `https://www.semanticscholar.org/paper/${paper.paperId}`
+
+      return `${authors}${moreAuthors}. (${year}). ${title}.${venueText} ${url}`
+    })
+
+    return NextResponse.json({
+      success: true,
+      references,
+      cached: false
+    })
+
+  } catch (error) {
+    console.error('Semantic Scholar API error:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch references from Semantic Scholar' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)

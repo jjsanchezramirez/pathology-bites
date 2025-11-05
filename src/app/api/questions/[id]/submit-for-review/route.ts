@@ -23,13 +23,22 @@ export async function POST(
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized. Please sign in and try again.' },
         { status: 401 }
       )
     }
 
-    // Parse request body
-    const body = await request.json()
+    // Parse request body with error handling
+    let body
+    try {
+      body = await request.json()
+    } catch (parseError) {
+      return NextResponse.json(
+        { error: 'Invalid request body. Expected JSON format.' },
+        { status: 400 }
+      )
+    }
+
     const { reviewer_id, resubmission_notes } = body
 
     // Validate reviewer_id is provided
@@ -47,7 +56,15 @@ export async function POST(
       .eq('id', reviewer_id)
       .single()
 
-    if (reviewerError || !reviewer) {
+    if (reviewerError) {
+      console.error('Error fetching reviewer:', reviewerError)
+      return NextResponse.json(
+        { error: 'Database error while validating reviewer. Please try again.' },
+        { status: 500 }
+      )
+    }
+
+    if (!reviewer) {
       return NextResponse.json(
         { error: 'Invalid reviewer_id: reviewer not found' },
         { status: 400 }
@@ -69,7 +86,15 @@ export async function POST(
       .eq('id', questionId)
       .single()
 
-    if (fetchError || !question) {
+    if (fetchError) {
+      console.error('Error fetching question:', fetchError)
+      return NextResponse.json(
+        { error: 'Database error while fetching question. Please try again.' },
+        { status: 500 }
+      )
+    }
+
+    if (!question) {
       return NextResponse.json(
         { error: 'Question not found' },
         { status: 404 }
@@ -173,8 +198,12 @@ export async function POST(
 
   } catch (error) {
     console.error('Unexpected error submitting question for review:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error. Please try again later.',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      },
       { status: 500 }
     )
   }

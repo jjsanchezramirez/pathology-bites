@@ -5,7 +5,7 @@ import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from '@/shared/config/a
 const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter(model => model.available).map(model => model.id)
 
 interface QuestionGenerationRequest {
-  mode?: 'educational_content' | 'refinement' | 'metadata_suggestion'
+  mode?: 'educational_content' | 'refinement' | 'enhance_question' | 'metadata_suggestion'
   content?: {
     category: string
     subject: string
@@ -638,22 +638,25 @@ export async function POST(request: NextRequest) {
     const body: QuestionGenerationRequest = await request.json()
     const { mode = 'educational_content', content, currentQuestion, instructions, additionalContext = '', model } = body
 
+    // Normalize mode (enhance_question is an alias for refinement)
+    const normalizedMode = mode === 'enhance_question' ? 'refinement' : mode
+
     // Validate inputs based on mode
-    if (mode === 'educational_content') {
+    if (normalizedMode === 'educational_content') {
       if (!content || !instructions) {
         return NextResponse.json(
           { success: false, error: 'Missing required fields for educational_content mode: content, instructions' },
           { status: 400 }
         )
       }
-    } else if (mode === 'refinement') {
-      if (!currentQuestion || !instructions || !model) {
+    } else if (normalizedMode === 'refinement') {
+      if (!content || !instructions) {
         return NextResponse.json(
-          { success: false, error: 'Missing required fields for refinement mode: currentQuestion, instructions, model' },
+          { success: false, error: 'Missing required fields for refinement/enhance_question mode: content, instructions' },
           { status: 400 }
         )
       }
-    } else if (mode === 'metadata_suggestion') {
+    } else if (normalizedMode === 'metadata_suggestion') {
       if (!content || !content.title || !content.stem) {
         return NextResponse.json(
           { success: false, error: 'Missing required fields for metadata_suggestion mode: content.title, content.stem' },
@@ -687,8 +690,8 @@ export async function POST(request: NextRequest) {
     console.log(`[Admin AI] Generating question using ${selectedModel} (${provider}) in ${mode} mode`)
 
     // Build the prompt based on mode
-    const promptData = mode === 'refinement' ? currentQuestion : content
-    const prompt = buildAdminQuestionPrompt(promptData, instructions, additionalContext, mode)
+    const promptData = normalizedMode === 'refinement' ? content : content
+    const prompt = buildAdminQuestionPrompt(promptData, instructions, additionalContext, normalizedMode)
 
     // Call AI service
     const startTime = Date.now()
@@ -713,7 +716,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate the response structure based on mode
-    if (mode === 'metadata_suggestion') {
+    if (normalizedMode === 'metadata_suggestion') {
       // For metadata suggestion, we expect different fields
       const hasMetadataFields = questionData.category_id || questionData.question_set_id || questionData.difficulty || questionData.suggested_tag_ids
 
@@ -747,7 +750,7 @@ export async function POST(request: NextRequest) {
       }
 
       // For refinement mode, title is optional (can keep existing)
-      if (mode === 'educational_content' && !questionData.title) {
+      if (normalizedMode === 'educational_content' && !questionData.title) {
         throw new Error('AI response missing title field (required for educational_content mode)')
       }
 
@@ -764,7 +767,7 @@ export async function POST(request: NextRequest) {
     // Return the data in the format expected by the frontend
     let responseData: any
 
-    if (mode === 'metadata_suggestion') {
+    if (normalizedMode === 'metadata_suggestion') {
       responseData = {
         category_id: questionData.category_id || null,
         question_set_id: questionData.question_set_id || null,
@@ -776,7 +779,7 @@ export async function POST(request: NextRequest) {
       // Use combination of: topic + lesson + category (from educational content) AND title (from AI)
       let references = ''
       let referencesNote = ''
-      if (mode === 'educational_content') {
+      if (normalizedMode === 'educational_content') {
         // Build search terms from available fields
         const searchParts: string[] = []
 
@@ -807,7 +810,7 @@ export async function POST(request: NextRequest) {
       }
 
       responseData = {
-        title: questionData.title || (mode === 'refinement' ? 'Refined Question' : 'Generated Question'),
+        title: questionData.title || (normalizedMode === 'refinement' ? 'Refined Question' : 'Generated Question'),
         stem: questionData.stem,
         answer_options: questionData.question_options || questionData.answer_options,
         teaching_point: questionData.teaching_point || '',
