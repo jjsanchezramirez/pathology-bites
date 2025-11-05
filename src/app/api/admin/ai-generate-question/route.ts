@@ -218,11 +218,10 @@ function sleep(ms: number): Promise<void> {
 
 /**
  * Fetch references from Semantic Scholar API based on search terms
- * Implements caching and rate limiting to respect API limits (1 req/sec)
+ * Uses the internal API route with optimized settings for pathology research
  */
 async function fetchSemanticScholarReferences(searchTerms: string): Promise<string[]> {
   try {
-    // Add "pathology" to help focus results on pathology literature
     const searchQuery = `${searchTerms} pathology`
     const cacheKey = searchQuery.toLowerCase().trim()
 
@@ -243,25 +242,24 @@ async function fetchSemanticScholarReferences(searchTerms: string): Promise<stri
       await sleep(waitTime)
     }
 
-    const semanticScholarUrl = new URL('https://api.semanticscholar.org/graph/v1/paper/search')
-    semanticScholarUrl.searchParams.append('query', searchQuery)
-    semanticScholarUrl.searchParams.append('limit', '5')
-    semanticScholarUrl.searchParams.append('fields', 'title,authors,year,venue,journal,publicationDate')
+    // Build URL for internal API with optimized settings for pathology research
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const apiUrl = new URL('/api/admin/fetch-references', baseUrl)
 
-    const headers: Record<string, string> = {
-      'Accept': 'application/json',
-    }
-
-    // Optional: Add API key if available
-    if (process.env.SEMANTIC_SCHOLAR_API_KEY) {
-      headers['x-api-key'] = process.env.SEMANTIC_SCHOLAR_API_KEY
-    }
+    // Apply settings: Last 10 years, Pathology Journals only, Sort by citations, Min 5 citations, Prefer reviews and open access
+    apiUrl.searchParams.append('query', searchQuery)
+    apiUrl.searchParams.append('limit', '10')
+    apiUrl.searchParams.append('yearRange', 'last10')
+    apiUrl.searchParams.append('venue', 'pathology-journals')
+    apiUrl.searchParams.append('sortBy', 'citations')
+    apiUrl.searchParams.append('minCitations', '5')
+    apiUrl.searchParams.append('onlyReviews', 'true')
+    apiUrl.searchParams.append('onlyOpenAccess', 'true')
 
     // Update last request time
     lastRequestTime = Date.now()
 
-    const response = await fetch(semanticScholarUrl.toString(), {
-      headers,
+    const response = await fetch(apiUrl.toString(), {
       signal: AbortSignal.timeout(10000) // 10 second timeout
     })
 
@@ -274,8 +272,7 @@ async function fetchSemanticScholarReferences(searchTerms: string): Promise<stri
         await sleep(2000)
         lastRequestTime = Date.now()
 
-        const retryResponse = await fetch(semanticScholarUrl.toString(), {
-          headers,
+        const retryResponse = await fetch(apiUrl.toString(), {
           signal: AbortSignal.timeout(10000)
         })
 
@@ -285,7 +282,7 @@ async function fetchSemanticScholarReferences(searchTerms: string): Promise<stri
         }
 
         const retryData = await retryResponse.json()
-        const retryPapers = retryData.data || []
+        const retryPapers = retryData.papers || []
         return formatReferences(retryPapers, searchQuery, cacheKey)
       }
 
@@ -293,7 +290,7 @@ async function fetchSemanticScholarReferences(searchTerms: string): Promise<stri
     }
 
     const data = await response.json()
-    const papers = data.data || []
+    const papers = data.papers || []
 
     return formatReferences(papers, searchQuery, cacheKey)
   } catch (error) {
