@@ -8,6 +8,8 @@ export interface NavigationItem {
   adminOnly?: boolean
   showToRoles?: string[] // Array of roles that can see this item
   comingSoon?: boolean // Badge to indicate feature is coming soon
+  showBadge?: boolean // Whether to show a badge count
+  badgeKey?: 'revisionQueue' | 'reviewQueue' // Key for fetching badge count
 }
 
 export interface NavigationSection {
@@ -145,16 +147,25 @@ export const adminNavigationSections: NavigationSection[] = [
         showToRoles: ["admin", "creator", "reviewer"] // Visible to all, but bulk operations only for admin
       },
       {
-        name: "Create Question",
-        href: "/admin/create-question",
-        icon: "Brain",
-        requiredPermission: "questions.create",
-        showToRoles: ["admin", "creator"]
+        name: "My Questions",
+        href: "/admin/my-questions",
+        icon: "FolderOpen",
+        requiredPermission: "questions.view",
+        showToRoles: ["admin", "creator", "reviewer"]
       },
       {
-        name: "My Workflow",
-        href: "/admin/my-questions",
-        icon: "ListTodo",
+        name: "My Revision Queue",
+        href: "/admin/my-revision-queue",
+        icon: "AlertTriangle",
+        requiredPermission: "questions.create",
+        showToRoles: ["admin", "creator"],
+        showBadge: true,
+        badgeKey: "revisionQueue"
+      },
+      {
+        name: "My Drafts",
+        href: "/admin/my-drafts",
+        icon: "FileText",
         requiredPermission: "questions.create",
         showToRoles: ["admin", "creator"]
       },
@@ -163,7 +174,16 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/review-queue",
         icon: "ClipboardList",
         requiredPermission: "questions.review",
-        showToRoles: ["admin", "reviewer"]
+        showToRoles: ["admin", "reviewer"],
+        showBadge: true,
+        badgeKey: "reviewQueue"
+      },
+      {
+        name: "Create Question",
+        href: "/admin/create-question",
+        icon: "Brain",
+        requiredPermission: "questions.create",
+        showToRoles: ["admin", "creator"]
       },
       {
         name: "Question Metadata",
