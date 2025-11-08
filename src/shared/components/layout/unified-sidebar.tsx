@@ -24,6 +24,8 @@ import {
   FolderOpen,
   Clock,
   Layers,
+  AlertTriangle,
+  FileText,
   type LucideIcon
 } from "lucide-react"
 import { cn } from "@/shared/utils"
@@ -32,6 +34,7 @@ import { NavigationItem, NavigationSection, filterNavigationItems, filterNavigat
 import { useUserRole } from "@/shared/hooks/use-user-role"
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context"
 import { usePendingInquiriesCount } from "@/shared/hooks/use-pending-inquiries-count"
+import { usePendingQuestionsCount } from "@/shared/hooks/use-pending-questions-count"
 
 // Icon mapping for string identifiers to actual components
 const iconMap: Record<string, LucideIcon> = {
@@ -55,6 +58,8 @@ const iconMap: Record<string, LucideIcon> = {
   FolderOpen,
   Clock,
   Layers,
+  AlertTriangle,
+  FileText,
 }
 
 interface UnifiedSidebarProps {
@@ -69,6 +74,7 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
   const { canAccess, isAdmin, isLoading } = useUserRole()
   const { adminMode, isTransitioning } = useDashboardTheme()
   const { count: pendingInquiriesCount } = usePendingInquiriesCount()
+  const { revisionQueueCount, reviewQueueCount } = usePendingQuestionsCount()
 
   // Always show navigation immediately, but filter based on loading state and admin mode
   const filteredNavigation = navigationItems ? filterNavigationItems(
@@ -189,6 +195,16 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
                               {pendingInquiriesCount}
                             </span>
                           )}
+                          {!isCollapsed && item.showBadge && item.badgeKey === 'revisionQueue' && revisionQueueCount > 0 && (
+                            <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                              {revisionQueueCount}
+                            </span>
+                          )}
+                          {!isCollapsed && item.showBadge && item.badgeKey === 'reviewQueue' && reviewQueueCount > 0 && (
+                            <span className="ml-auto text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                              {reviewQueueCount}
+                            </span>
+                          )}
                           {!isCollapsed && item.comingSoon && (
                             <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Soon</span>
                           )}
@@ -228,6 +244,16 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
                     {!isCollapsed && item.href === '/admin/inquiries' && pendingInquiriesCount > 0 && (
                       <span className="ml-auto text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">
                         {pendingInquiriesCount}
+                      </span>
+                    )}
+                    {!isCollapsed && item.showBadge && item.badgeKey === 'revisionQueue' && revisionQueueCount > 0 && (
+                      <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                        {revisionQueueCount}
+                      </span>
+                    )}
+                    {!isCollapsed && item.showBadge && item.badgeKey === 'reviewQueue' && reviewQueueCount > 0 && (
+                      <span className="ml-auto text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                        {reviewQueueCount}
                       </span>
                     )}
                     {!isCollapsed && item.comingSoon && (
