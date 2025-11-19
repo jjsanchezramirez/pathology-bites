@@ -80,7 +80,6 @@ export default function VirtualSlidesPage() {
   useEffect(() => {
     async function loadMetadata() {
       try {
-        setIsLoadingMetadata(true)
         // Derive from client data hook when ready
         if (!client.isLoading && client.totalSlides > 0) {
           setRepositories(client.repositories)
@@ -89,8 +88,6 @@ export default function VirtualSlidesPage() {
         }
       } catch (error) {
         console.error('Failed to load metadata:', error)
-      } finally {
-        setIsLoadingMetadata(false)
       }
     }
     loadMetadata()
