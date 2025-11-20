@@ -28,7 +28,7 @@ export default function QuizResultsPage() {
     setError(null);
 
     try {
-      const resultsResponse = await fetch(`/api/content/quiz/sessions/${sessionId}/results`);
+      const resultsResponse = await fetch(`/api/quiz/sessions/${sessionId}/results`);
 
       if (!resultsResponse.ok) {
         const resultsError = await resultsResponse.text()

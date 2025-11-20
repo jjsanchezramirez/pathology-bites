@@ -94,7 +94,7 @@ export default function QuizzesPage() {
       }
       params.append("limit", "50")
 
-      const response = await fetch(`/api/content/quiz/sessions?${params}`)
+      const response = await fetch(`/api/quiz/sessions?${params}`)
       if (!response.ok) {
         throw new Error('Failed to fetch quizzes')
       }
@@ -130,7 +130,7 @@ export default function QuizzesPage() {
 
     try {
       setIsDeleting(true)
-      const response = await fetch(`/api/content/quiz/sessions/${selectedQuiz.id}`, {
+      const response = await fetch(`/api/quiz/sessions/${selectedQuiz.id}`, {
         method: 'DELETE'
       })
 

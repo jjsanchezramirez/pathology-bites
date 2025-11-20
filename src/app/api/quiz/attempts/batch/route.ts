@@ -1,4 +1,4 @@
-// src/app/api/content/quiz/attempts/batch/route.ts
+// src/app/api/quiz/attempts/batch/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 

@@ -1,4 +1,4 @@
-// src/app/api/content/quiz/attempts/route.ts
+// src/app/api/quiz/attempts/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (sessionError || !session) {
-      console.error('[API] /api/content/quiz/attempts - Quiz session not found:', sessionId, sessionError)
+      console.error('[API] /api/quiz/attempts - Quiz session not found:', sessionId, sessionError)
       return NextResponse.json(
         { error: 'Quiz session not found' },
         { status: 404 }
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (session.user_id !== user.id) {
-      console.error('[API] /api/content/quiz/attempts - Unauthorized access attempt:', { sessionUserId: session.user_id, requestUserId: user.id })
+      console.error('[API] /api/quiz/attempts - Unauthorized access attempt:', { sessionUserId: session.user_id, requestUserId: user.id })
       return NextResponse.json(
         { error: 'Forbidden - You can only submit answers to your own quiz sessions' },
         { status: 403 }
@@ -70,9 +70,9 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (existingAttemptError) {
-      console.error('[API] /api/content/quiz/attempts - Error checking for existing attempt:', existingAttemptError)
+      console.error('[API] /api/quiz/attempts - Error checking for existing attempt:', existingAttemptError)
     } else if (existingAttempt) {
-      console.log('[API] /api/content/quiz/attempts - Duplicate submission detected, returning existing attempt')
+      console.log('[API] /api/quiz/attempts - Duplicate submission detected, returning existing attempt')
       // Return the existing attempt instead of creating a new one
       const { data: fullAttempt, error: fullAttemptError } = await supabase
         .from('quiz_attempts')
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (fullAttemptError) {
-        console.error('[API] /api/content/quiz/attempts - Error fetching existing attempt:', fullAttemptError)
+        console.error('[API] /api/quiz/attempts - Error fetching existing attempt:', fullAttemptError)
       } else {
         return NextResponse.json({
           success: true,
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (answerError || !answerOption) {
-        console.error('[API] /api/content/quiz/attempts - Selected answer not found:', { selectedAnswerId, answerError })
+        console.error('[API] /api/quiz/attempts - Selected answer not found:', { selectedAnswerId, answerError })
         return NextResponse.json(
           { error: 'Selected answer not found' },
           { status: 400 }
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       }
 
       if (answerOption.question_id !== questionId) {
-        console.error('[API] /api/content/quiz/attempts - Answer does not belong to question:', {
+        console.error('[API] /api/quiz/attempts - Answer does not belong to question:', {
           selectedAnswerId,
           answerQuestionId: answerOption.question_id,
           expectedQuestionId: questionId
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (firstAnswerError || !firstAnswerOption) {
-        console.error('[API] /api/content/quiz/attempts - First answer not found:', { firstAnswerId, firstAnswerError })
+        console.error('[API] /api/quiz/attempts - First answer not found:', { firstAnswerId, firstAnswerError })
         return NextResponse.json(
           { error: 'First answer not found' },
           { status: 400 }
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
       }
 
       if (firstAnswerOption.question_id !== questionId) {
-        console.error('[API] /api/content/quiz/attempts - First answer does not belong to question:', {
+        console.error('[API] /api/quiz/attempts - First answer does not belong to question:', {
           firstAnswerId,
           firstAnswerQuestionId: firstAnswerOption.question_id,
           expectedQuestionId: questionId
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Submit answer - triggers will handle correctness calculation and denormalized fields
-    console.log('[API] /api/content/quiz/attempts - Submitting quiz attempt with database triggers enabled')
+    console.log('[API] /api/quiz/attempts - Submitting quiz attempt with database triggers enabled')
 
     const { data: attempt, error: insertError } = await supabase
       .from('quiz_attempts')
@@ -168,11 +168,11 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (insertError) {
-      console.error('[API] /api/content/quiz/attempts - Database insertion failed:', insertError)
+      console.error('[API] /api/quiz/attempts - Database insertion failed:', insertError)
       throw insertError
     }
 
-    console.log('[API] /api/content/quiz/attempts - Answer submitted successfully:', {
+    console.log('[API] /api/quiz/attempts - Answer submitted successfully:', {
       attemptId: attempt.id,
       isCorrect: attempt.is_correct,
       timeSpent: attempt.time_spent
@@ -188,15 +188,15 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('[API] /api/content/quiz/attempts - Error submitting quiz attempt:', error)
+    console.error('[API] /api/quiz/attempts - Error submitting quiz attempt:', error)
 
     if (error instanceof Error) {
-      console.error('[API] /api/content/quiz/attempts - Error name:', error.name)
-      console.error('[API] /api/content/quiz/attempts - Error message:', error.message)
-      console.error('[API] /api/content/quiz/attempts - Error stack:', error.stack)
+      console.error('[API] /api/quiz/attempts - Error name:', error.name)
+      console.error('[API] /api/quiz/attempts - Error message:', error.message)
+      console.error('[API] /api/quiz/attempts - Error stack:', error.stack)
 
       // Log comprehensive context for debugging
-      console.error('[API] /api/content/quiz/attempts - Request context:', {
+      console.error('[API] /api/quiz/attempts - Request context:', {
         sessionId,
         questionId,
         selectedAnswerId,
@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
       const errorMessage = error.message.toLowerCase()
 
       if (errorMessage.includes('constraint') || errorMessage.includes('violates')) {
-        console.error('[API] /api/content/quiz/attempts - Database constraint violation:', {
+        console.error('[API] /api/quiz/attempts - Database constraint violation:', {
           type: 'constraint_violation',
           details: error.message
         })
@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
       }
 
       if (errorMessage.includes('foreign key') || errorMessage.includes('does not exist')) {
-        console.error('[API] /api/content/quiz/attempts - Foreign key constraint violation:', {
+        console.error('[API] /api/quiz/attempts - Foreign key constraint violation:', {
           type: 'foreign_key_violation',
           details: error.message
         })
@@ -232,7 +232,7 @@ export async function POST(request: NextRequest) {
       }
 
       if (errorMessage.includes('duplicate') || errorMessage.includes('unique')) {
-        console.error('[API] /api/content/quiz/attempts - Duplicate key violation:', {
+        console.error('[API] /api/quiz/attempts - Duplicate key violation:', {
           type: 'duplicate_key_violation',
           details: error.message
         })
@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
       }
 
       if (errorMessage.includes('trigger') || errorMessage.includes('function')) {
-        console.error('[API] /api/content/quiz/attempts - Database trigger/function error:', {
+        console.error('[API] /api/quiz/attempts - Database trigger/function error:', {
           type: 'trigger_function_error',
           details: error.message
         })
@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Generic database error
-      console.error('[API] /api/content/quiz/attempts - Generic database error:', {
+      console.error('[API] /api/quiz/attempts - Generic database error:', {
         type: 'database_error',
         details: error.message
       })
@@ -265,7 +265,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.error('[API] /api/content/quiz/attempts - Unknown error type:', {
+    console.error('[API] /api/quiz/attempts - Unknown error type:', {
       type: typeof error,
       error: error,
       timestamp: new Date().toISOString()

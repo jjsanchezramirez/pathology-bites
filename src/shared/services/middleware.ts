@@ -1,11 +1,34 @@
 // lib/supabase/middleware.ts
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { csrfProtection, createCSRFErrorResponse } from '@/features/auth/utils/csrf-protection'
+import { createRateLimiter } from '@/shared/utils/api-rate-limiter'
 
 // Cache for user role lookups to prevent race conditions
 const roleCache = new Map<string, { role: string; timestamp: number }>()
 const ROLE_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 const processingRequests = new Set<string>()
+
+// Rate limiters for different API routes
+const adminApiLimiter = createRateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 200
+})
+
+const userApiLimiter = createRateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 100
+})
+
+const quizApiLimiter = createRateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 50
+})
+
+const mediaApiLimiter = createRateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 30 // Lower limit for media uploads
+})
 
 // Admin API endpoints that don't require authentication (health checks, etc.)
 const PUBLIC_ADMIN_ENDPOINTS = [
@@ -29,6 +52,20 @@ async function handleAdminApiAuth(request: NextRequest) {
   }
 
   try {
+    // Rate limiting check
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+                     request.headers.get('x-real-ip') ||
+                     'unknown'
+    const rateLimitResult = adminApiLimiter.check(clientIp)
+
+    // CSRF protection for state-changing requests
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+      const csrfValid = await csrfProtection(request)
+      if (!csrfValid) {
+        return createCSRFErrorResponse()
+      }
+    }
+
     // Set up Supabase client
     let response = NextResponse.next({ request })
     const supabase = createServerClient(
@@ -79,6 +116,11 @@ async function handleAdminApiAuth(request: NextRequest) {
     response.headers.set('x-user-role', userRole)
     response.headers.set('x-user-email', user.email || '')
 
+    // Add rate limit headers
+    response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString())
+    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
+    response.headers.set('X-RateLimit-Reset', rateLimitResult.reset.toString())
+
     return response
 
   } catch (error) {
@@ -90,6 +132,28 @@ async function handleAdminApiAuth(request: NextRequest) {
 // Handle authentication for user and quiz API routes
 async function handleUserApiAuth(request: NextRequest) {
   try {
+    // Determine which rate limiter to use based on path
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+                     request.headers.get('x-real-ip') ||
+                     'unknown'
+
+    let rateLimitResult
+    if (request.nextUrl.pathname.startsWith('/api/quiz/')) {
+      rateLimitResult = quizApiLimiter.check(clientIp)
+    } else if (request.nextUrl.pathname.startsWith('/api/media/')) {
+      rateLimitResult = mediaApiLimiter.check(clientIp)
+    } else {
+      rateLimitResult = userApiLimiter.check(clientIp)
+    }
+
+    // CSRF protection for state-changing requests
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+      const csrfValid = await csrfProtection(request)
+      if (!csrfValid) {
+        return createCSRFErrorResponse()
+      }
+    }
+
     // Set up Supabase client
     let response = NextResponse.next({ request })
     const supabase = createServerClient(
@@ -113,7 +177,7 @@ async function handleUserApiAuth(request: NextRequest) {
 
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
+
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -121,6 +185,11 @@ async function handleUserApiAuth(request: NextRequest) {
     // Add user info to headers for the endpoint to use
     response.headers.set('x-user-id', user.id)
     response.headers.set('x-user-email', user.email || '')
+
+    // Add rate limit headers
+    response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString())
+    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
+    response.headers.set('X-RateLimit-Reset', rateLimitResult.reset.toString())
 
     return response
 
@@ -135,14 +204,15 @@ export async function updateSession(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/api/admin/')) {
     return handleAdminApiAuth(request)
   }
-  
-  // Handle user and quiz API routes with authentication
+
+  // Handle user, quiz, and media API routes with authentication
   if (request.nextUrl.pathname.startsWith('/api/user/') ||
-      request.nextUrl.pathname.startsWith('/api/content/quiz/')) {
+      request.nextUrl.pathname.startsWith('/api/quiz/') ||
+      request.nextUrl.pathname.startsWith('/api/media/')) {
     return handleUserApiAuth(request)
   }
-  
-  // Skip middleware for other API routes  
+
+  // Skip middleware for other API routes
   if (request.nextUrl.pathname.startsWith('/api/')) {
     return NextResponse.next()
   }

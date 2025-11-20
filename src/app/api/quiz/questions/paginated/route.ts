@@ -1,4 +1,4 @@
-// src/app/api/content/quiz/questions/paginated/route.ts
+// src/app/api/quiz/questions/paginated/route.ts
 /**
  * Paginated questions API endpoint for optimized data loading
  * Implements selective field loading and pagination to reduce bandwidth

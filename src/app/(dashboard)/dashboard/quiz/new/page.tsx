@@ -88,7 +88,7 @@ export default function NewQuizPage() {
   const { data: recentSessions } = useCachedData(
     'recent-quiz-titles',
     async () => {
-      const response = await fetch('/api/content/quiz/sessions?limit=100')
+      const response = await fetch('/api/quiz/sessions?limit=100')
       if (response.ok) {
         const data = await response.json()
         return data.data?.map((session: any) => session.title) || []
@@ -122,7 +122,7 @@ export default function NewQuizPage() {
   const { data: quizOptionsData, isLoading } = useCachedData(
     'quiz-options',
     async () => {
-      const response = await fetch('/api/content/quiz/options')
+      const response = await fetch('/api/quiz/options')
       if (!response.ok) {
         throw new Error('Failed to fetch quiz options')
       }
@@ -321,7 +321,7 @@ export default function NewQuizPage() {
         timePerQuestion: formData.timing === 'timed' ? QUIZ_TIMING_CONFIG.timed.timePerQuestion : undefined
       }
 
-      const response = await fetch('/api/content/quiz/sessions', {
+      const response = await fetch('/api/quiz/sessions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -38,7 +38,7 @@ export default function QuizReviewPage() {
     const fetchResults = async () => {
       try {
         // Fetch quiz results from API
-        const response = await fetch(`/api/content/quiz/sessions/${params?.id}/results`)
+        const response = await fetch(`/api/quiz/sessions/${params?.id}/results`)
         if (!response.ok) {
           throw new Error('Failed to fetch quiz results')
         }
