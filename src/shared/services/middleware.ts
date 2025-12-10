@@ -118,9 +118,9 @@ async function handleAdminApiAuth(request: NextRequest) {
     response.headers.set('x-user-email', user.email || '')
 
     // Add rate limit headers
-    response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString())
+    response.headers.set('X-RateLimit-Limit', rateLimitResult.total.toString())
     response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
-    response.headers.set('X-RateLimit-Reset', rateLimitResult.reset.toString())
+    response.headers.set('X-RateLimit-Reset', rateLimitResult.resetTime.toString())
 
     return response
 
@@ -203,9 +203,9 @@ async function handleUserApiAuth(request: NextRequest) {
     response.headers.set('x-user-email', user.email || '')
 
     // Add rate limit headers
-    response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString())
+    response.headers.set('X-RateLimit-Limit', rateLimitResult.total.toString())
     response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
-    response.headers.set('X-RateLimit-Reset', rateLimitResult.reset.toString())
+    response.headers.set('X-RateLimit-Reset', rateLimitResult.resetTime.toString())
 
     return response
 
