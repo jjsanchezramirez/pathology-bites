@@ -19,7 +19,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
-import { WelcomeMessage, PerformanceAnalytics } from "@/features/dashboard/components"
+import { WelcomeMessage, SecurityNotice, PerformanceAnalytics } from "@/features/dashboard/components"
 // import { EnhancedRecentActivity } from "@/features/dashboard/components/enhanced-recent-activity"
 import { useAuthStatus } from "@/features/auth/hooks/use-auth-status"
 import { userSettingsService } from "@/shared/services/user-settings"
@@ -118,6 +118,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false)
+  const [showSecurityNotice, setShowSecurityNotice] = useState(false)
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false)
   const [isReturningUser, setIsReturningUser] = useState(false)
 
@@ -151,6 +152,10 @@ export default function DashboardPage() {
         // Check if user has seen welcome message
         const hasSeenWelcome = await userSettingsService.hasSeenWelcomeMessage()
         setShowWelcomeMessage(!hasSeenWelcome)
+
+        // Check if security notice has been dismissed
+        const securityNoticeDismissed = localStorage.getItem('security-notice-12-09-2025-dismissed')
+        setShowSecurityNotice(!securityNoticeDismissed)
 
         // Determine user status based on activity
         const isFirstTime = !hasSeenWelcome && (statsResult.data.recentQuizzes === 0 || statsResult.data.completedQuestions === 0)
@@ -204,6 +209,11 @@ export default function DashboardPage() {
           }
         </p>
       </div>
+
+      {/* Security Notice */}
+      {showSecurityNotice && (
+        <SecurityNotice onDismiss={() => setShowSecurityNotice(false)} />
+      )}
 
       {/* Welcome Message for First-Time Users */}
       {showWelcomeMessage && (
