@@ -2,33 +2,17 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { csrfProtection, createCSRFErrorResponse } from '@/features/auth/utils/csrf-protection'
-import { createRateLimiter } from '@/shared/utils/api-rate-limiter'
+import {
+  adminAPIRateLimiter,
+  generalAPIRateLimiter,
+  quizAPIRateLimiter,
+  getClientIP
+} from '@/shared/utils/api-rate-limiter'
 
 // Cache for user role lookups to prevent race conditions
 const roleCache = new Map<string, { role: string; timestamp: number }>()
 const ROLE_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 const processingRequests = new Set<string>()
-
-// Rate limiters for different API routes
-const adminApiLimiter = createRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  maxRequests: 200
-})
-
-const userApiLimiter = createRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  maxRequests: 100
-})
-
-const quizApiLimiter = createRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  maxRequests: 50
-})
-
-const mediaApiLimiter = createRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  maxRequests: 30 // Lower limit for media uploads
-})
 
 // Admin API endpoints that don't require authentication (health checks, etc.)
 const PUBLIC_ADMIN_ENDPOINTS = [
@@ -53,10 +37,27 @@ async function handleAdminApiAuth(request: NextRequest) {
 
   try {
     // Rate limiting check
-    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] ||
-                     request.headers.get('x-real-ip') ||
-                     'unknown'
-    const rateLimitResult = adminApiLimiter.check(clientIp)
+    const clientIp = getClientIP(request)
+    const pathname = request.nextUrl.pathname
+    const rateLimitResult = adminAPIRateLimiter.checkLimit(clientIp, pathname)
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Too many requests, please try again later.',
+          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitResult.total.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+          }
+        }
+      )
+    }
 
     // CSRF protection for state-changing requests
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
@@ -133,17 +134,32 @@ async function handleAdminApiAuth(request: NextRequest) {
 async function handleUserApiAuth(request: NextRequest) {
   try {
     // Determine which rate limiter to use based on path
-    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] ||
-                     request.headers.get('x-real-ip') ||
-                     'unknown'
+    const clientIp = getClientIP(request)
+    const pathname = request.nextUrl.pathname
 
     let rateLimitResult
-    if (request.nextUrl.pathname.startsWith('/api/quiz/')) {
-      rateLimitResult = quizApiLimiter.check(clientIp)
-    } else if (request.nextUrl.pathname.startsWith('/api/media/')) {
-      rateLimitResult = mediaApiLimiter.check(clientIp)
+    if (pathname.startsWith('/api/quiz/')) {
+      rateLimitResult = quizAPIRateLimiter.checkLimit(clientIp, pathname)
     } else {
-      rateLimitResult = userApiLimiter.check(clientIp)
+      rateLimitResult = generalAPIRateLimiter.checkLimit(clientIp, pathname)
+    }
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Too many requests, please try again later.',
+          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitResult.total.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+          }
+        }
+      )
     }
 
     // CSRF protection for state-changing requests
