@@ -52,7 +52,7 @@ export function useOptimizedQuizOptions() {
   return useCachedData<QuizOptions>(
     'quiz-options',
     async () => {
-      const response = await fetch('/api/content/quiz/options')
+      const response = await fetch('/api/quiz/options')
       if (!response.ok) {
         throw new Error(`Failed to fetch quiz options: ${response.status}`)
       }
@@ -89,7 +89,7 @@ export function usePaginatedQuestions(
         params.append('category_id', categoryId)
       }
       
-      const response = await fetch(`/api/content/quiz/questions/paginated?${params}`)
+      const response = await fetch(`/api/quiz/questions/paginated?${params}`)
       if (!response.ok) {
         throw new Error(`Failed to fetch questions: ${response.status}`)
       }
@@ -111,7 +111,7 @@ export function useOptimizedQuestion(questionId: string) {
   return useCachedData<QuizQuestion>(
     `question-${questionId}`,
     async () => {
-      const response = await fetch(`/api/content/quiz/questions/${questionId}`)
+      const response = await fetch(`/api/quiz/questions/${questionId}`)
       if (!response.ok) {
         throw new Error(`Failed to fetch question: ${response.status}`)
       }
@@ -138,10 +138,10 @@ export function useDataPreloader() {
     
     try {
       // Preload quiz options (most commonly accessed)
-      const optionsPromise = fetch('/api/content/quiz/options').then(r => r.json())
+      const optionsPromise = fetch('/api/quiz/options').then(r => r.json())
       
       // Preload first page of questions
-      const questionsPromise = fetch('/api/content/quiz/questions/paginated?page=1&limit=10')
+      const questionsPromise = fetch('/api/quiz/questions/paginated?page=1&limit=10')
         .then(r => r.json())
       
       // Wait for both to complete
