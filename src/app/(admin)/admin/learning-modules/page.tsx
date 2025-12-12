@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/shared/components/ui/checkbox'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
+import { apiClient } from '@/shared/utils/api-client'
 
 export default function AdminLearningModulesPage() {
   const router = useRouter()
@@ -69,15 +70,9 @@ export default function AdminLearningModulesPage() {
     if (selectedModules.length === 0) return
 
     try {
-      const response = await fetch('/api/admin/learning-modules', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action,
-          module_ids: selectedModules
-        })
+      const response = await apiClient.patch('/api/admin/learning-modules', {
+        action,
+        module_ids: selectedModules
       })
 
       if (response.ok) {

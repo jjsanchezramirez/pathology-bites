@@ -17,6 +17,7 @@ interface CacheOptions {
 class CacheService {
   private static instance: CacheService
   private memoryCache: Map<string, CacheEntry<any>> = new Map()
+  private pendingRequests: Map<string, Promise<any>> = new Map()
   private defaultTTL = 5 * 60 * 1000 // 5 minutes
   private defaultPrefix = 'pathology-bites-cache'
 
@@ -220,6 +221,40 @@ class CacheService {
       memoryEntries: this.memoryCache.size,
       totalSize: JSON.stringify(Array.from(this.memoryCache.entries())).length
     }
+  }
+
+  /**
+   * Deduplicate concurrent requests for the same key
+   * If a request is already pending, return the existing promise
+   * Otherwise, execute the fetcher and cache the promise
+   */
+  public async dedupe<T>(
+    key: string,
+    fetcher: () => Promise<T>,
+    options: CacheOptions = {}
+  ): Promise<T> {
+    const {
+      prefix = this.defaultPrefix
+    } = options
+
+    const fullKey = `${prefix}:${key}`
+
+    // If there's already a pending request for this key, return it
+    if (this.pendingRequests.has(fullKey)) {
+      return this.pendingRequests.get(fullKey)!
+    }
+
+    // Create new request
+    const promise = fetcher()
+      .finally(() => {
+        // Clean up pending request when done
+        this.pendingRequests.delete(fullKey)
+      })
+
+    // Store pending request
+    this.pendingRequests.set(fullKey, promise)
+
+    return promise
   }
 }
 

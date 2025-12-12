@@ -4,6 +4,7 @@
 import { useState, useCallback, useEffect, memo } from 'react'
 import { createClient } from '@/shared/services/client'
 import { toast } from 'sonner'
+import { apiClient } from '@/shared/utils/api-client'
 import { Input } from '@/shared/components/ui/input'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
@@ -210,15 +211,8 @@ export function TagsManagementGrid() {
 
     setIsDeleting(true)
     try {
-      const response = await fetch('/api/admin/tags', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          tagId: selectedTag.id
-        })
+      const response = await apiClient.delete('/api/admin/tags', {
+        tagId: selectedTag.id
       })
 
       if (!response.ok) {

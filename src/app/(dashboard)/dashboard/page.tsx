@@ -23,6 +23,7 @@ import { WelcomeMessage, SecurityNotice, PerformanceAnalytics } from "@/features
 // import { EnhancedRecentActivity } from "@/features/dashboard/components/enhanced-recent-activity"
 import { useAuthStatus } from "@/features/auth/hooks/use-auth-status"
 import { userSettingsService } from "@/shared/services/user-settings"
+import { useUserSettings } from "@/shared/hooks/use-user-settings"
 import { RecentActivity } from "@/features/dashboard/services/service"
 import { PageErrorBoundary, FeatureErrorBoundary } from "@/shared/components/common"
 
@@ -122,6 +123,11 @@ export default function DashboardPage() {
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false)
   const [isReturningUser, setIsReturningUser] = useState(false)
 
+  // Use cached user settings (eliminates redundant API call)
+  const { data: userSettings } = useUserSettings({
+    enabled: !!user
+  })
+
   // Fetch dashboard stats and check welcome message status on component mount
   useEffect(() => {
     // Don't fetch until user is loaded
@@ -149,12 +155,14 @@ export default function DashboardPage() {
         }
         setStats(statsResult.data)
 
-        // Check if user has seen welcome message
-        const hasSeenWelcome = await userSettingsService.hasSeenWelcomeMessage()
+        // Check if user has seen welcome message (use cached settings if available)
+        const hasSeenWelcome = userSettings?.ui_settings?.welcome_message_seen ??
+                               await userSettingsService.hasSeenWelcomeMessage()
         setShowWelcomeMessage(!hasSeenWelcome)
 
-        // Check if security notice has been dismissed
-        const securityNoticeDismissed = localStorage.getItem('security-notice-12-09-2025-dismissed')
+        // Check if security notice has been dismissed (use cached settings if available)
+        const securityNoticeDismissed = userSettings?.ui_settings?.security_notice_dismissed ??
+                                        await userSettingsService.hasSeenSecurityNotice()
         setShowSecurityNotice(!securityNoticeDismissed)
 
         // Determine user status based on activity

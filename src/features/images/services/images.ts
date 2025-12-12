@@ -1,6 +1,7 @@
 // src/lib/images/images.ts
 import { createClient } from '@/shared/services/client';
 import type { ImageData } from '@/features/images/types/images';
+import { apiClient } from '@/shared/utils/api-client';
 
 
 export async function deleteImage(imagePath: string | null, imageId: string) {
@@ -10,16 +11,9 @@ export async function deleteImage(imagePath: string | null, imageId: string) {
     const url = '/api/media/images/delete';
     console.log('📡 Making DELETE request to:', url);
 
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Ensure cookies are sent
-      body: JSON.stringify({
-        imageId,
-        imagePath
-      })
+    const response = await apiClient.delete(url, {
+      imageId,
+      imagePath
     });
 
     console.log('📥 Delete response:', {

@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner'
 import { Send, AlertCircle } from 'lucide-react'
 import { createClient } from '@/shared/services/client'
+import { apiClient } from '@/shared/utils/api-client'
 
 interface SubmitForReviewButtonProps {
   questionId: string
@@ -39,14 +40,9 @@ export function SubmitForReviewButton({
 
   const handleSubmitForReview = async () => {
     setIsSubmitting(true)
-    
+
     try {
-      const response = await fetch(`/api/questions/${questionId}/submit-for-review`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
+      const response = await apiClient.post(`/api/questions/${questionId}/submit-for-review`, {})
 
       const data = await response.json()
 

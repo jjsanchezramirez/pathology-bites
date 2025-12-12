@@ -8,6 +8,7 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Loader2 } from 'lucide-react'
+import { apiClient } from '@/shared/utils/api-client'
 
 interface Tag {
   id: string
@@ -51,16 +52,9 @@ export function EditTagDialog({ open, onOpenChange, onSuccess, tag }: EditTagDia
 
     setIsUpdating(true)
     try {
-      const response = await fetch('/api/admin/tags', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          tagId: tag.id,
-          name: name.trim()
-        })
+      const response = await apiClient.patch('/api/admin/tags', {
+        tagId: tag.id,
+        name: name.trim()
       })
 
       if (!response.ok) {

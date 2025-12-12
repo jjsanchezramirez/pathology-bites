@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { QuestionData, QuestionInsert, QuestionUpdate, QuestionWithDetails } from '@/features/questions/types/questions';
 import { QuestionSetData } from '@/features/questions/types/question-sets';
 import { TABLE_NAMES } from '@/shared/constants/database-types';
+import { apiClient } from '@/shared/utils/api-client';
 
 export interface UseQuestionsParams {
   page?: number;
@@ -220,13 +221,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
 
   const deleteQuestion = useCallback(async (questionId: string) => {
     try {
-      const response = await fetch(`/api/admin/questions/${questionId}/delete`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
+      const response = await apiClient.delete(`/api/admin/questions/${questionId}/delete`);
 
       // Check if response is JSON
       const contentType = response.headers.get('content-type');
@@ -272,23 +267,16 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
   ) => {
     try {
       // Use the new versioning API for comprehensive updates
-      const response = await fetch(`/api/admin/questions/${questionId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          questionData: data,
-          updateType: options?.updateType,
-          changeSummary: options?.changeSummary,
-          answerOptions: options?.answerOptions,
-          questionImages: options?.questionImages,
-          tagIds: options?.tagIds,
-          categoryId: options?.categoryId,
-          isPatchEdit: options?.isPatchEdit,
-          patchEditReason: options?.patchEditReason,
-        }),
+      const response = await apiClient.patch(`/api/admin/questions/${questionId}`, {
+        questionData: data,
+        updateType: options?.updateType,
+        changeSummary: options?.changeSummary,
+        answerOptions: options?.answerOptions,
+        questionImages: options?.questionImages,
+        tagIds: options?.tagIds,
+        categoryId: options?.categoryId,
+        isPatchEdit: options?.isPatchEdit,
+        patchEditReason: options?.patchEditReason,
       });
 
       if (!response.ok) {

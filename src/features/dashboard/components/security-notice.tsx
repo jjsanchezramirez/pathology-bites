@@ -2,9 +2,10 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Shield } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
+import { userSettingsService } from '@/shared/services/user-settings'
 
 interface SecurityNoticeProps {
   onDismiss: () => void
@@ -16,11 +17,11 @@ export function SecurityNotice({ onDismiss }: SecurityNoticeProps) {
   const handleDismiss = async () => {
     setIsLoading(true)
     try {
-      // Store dismissal in localStorage
-      localStorage.setItem('security-notice-12-09-2025-dismissed', 'true')
+      await userSettingsService.markSecurityNoticeDismissed()
       onDismiss()
     } catch (error) {
       console.error('Error dismissing security notice:', error)
+      // Still dismiss the notice locally even if the API call fails
       onDismiss()
     } finally {
       setIsLoading(false)
@@ -33,7 +34,7 @@ export function SecurityNotice({ onDismiss }: SecurityNoticeProps) {
         <div className="flex items-start gap-4">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              🛡️ Security Update Complete
+              👌 Security Update Complete
             </h3>
 
             <div className="text-sm text-muted-foreground space-y-2">

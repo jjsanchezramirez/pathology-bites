@@ -2,15 +2,13 @@
 import { useState, useEffect } from 'react'
 
 export interface PublicStats {
-  questions: number
-  images: number
+  expertQuestions: number
   categories: number
 }
 
 export function usePublicStats() {
   const [stats, setStats] = useState<PublicStats>({
-    questions: 0,
-    images: 0,
+    expertQuestions: 0,
     categories: 0
   })
   const [loading, setLoading] = useState(true)
@@ -40,8 +38,7 @@ export function usePublicStats() {
         setError(err instanceof Error ? err.message : 'Failed to fetch stats')
         // Use fallback values only on error
         setStats({
-          questions: 0,
-          images: 0,
+          expertQuestions: 0,
           categories: 0
         })
       } finally {

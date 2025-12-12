@@ -436,11 +436,11 @@ export class QuizService {
 
   /**
    * Pause a quiz session
+   * Note: Status remains 'in_progress' - pause state is tracked locally
    */
   async pauseQuizSession(sessionId: string, timeRemaining: number, authenticatedSupabase?: any): Promise<void> {
     try {
       await this.updateQuizSession(sessionId, {
-        status: 'paused',
         timeRemaining // Save current time remaining when pausing
       }, authenticatedSupabase)
     } catch (error) {
@@ -622,17 +622,28 @@ export class QuizService {
       // Get unique category IDs from questions
       const categoryIds = [...new Set(session.questions.map(q => q.category_id).filter(Boolean))]
 
-      // Fetch category names, short forms, colors, and parent info
-      const { data: categories } = await supabaseClient
+      // Fetch category names, short forms, and colors
+      const { data: categories, error: categoriesError } = await supabaseClient
         .from('categories')
-        .select(`
-          id,
-          name,
-          short_form,
-          color,
-          parent:categories!categories_parent_id_fkey(short_form)
-        `)
+        .select('id, name, short_form, color, parent_id')
         .in('id', categoryIds)
+
+      if (categoriesError) {
+        console.error('[Quiz Results] Error fetching categories:', categoriesError)
+      }
+
+      // If we have parent IDs, fetch parent short forms separately
+      const parentIds = [...new Set(categories?.map((c: any) => c.parent_id).filter(Boolean) || [])]
+      let parentMap = new Map<string, string>()
+
+      if (parentIds.length > 0) {
+        const { data: parents } = await supabaseClient
+          .from('categories')
+          .select('id, short_form')
+          .in('id', parentIds)
+
+        parentMap = new Map(parents?.map((p: any) => [p.id, p.short_form]) || [])
+      }
 
       const categoryInfoMap = new Map(categories?.map((c: any) => [
         c.id,
@@ -640,7 +651,7 @@ export class QuizService {
           name: c.name,
           shortForm: c.short_form,
           color: c.color,
-          parentShortForm: c.parent?.short_form
+          parentShortForm: c.parent_id ? parentMap.get(c.parent_id) : undefined
         }
       ]) || [])
 
@@ -648,9 +659,12 @@ export class QuizService {
         const difficulty = question.difficulty as 'easy' | 'medium' | 'hard'
         const attempt = attempts?.find((a: any) => a.question_id === question.id)
 
-        difficultyBreakdown[difficulty].total++
-        if (attempt?.is_correct) {
-          difficultyBreakdown[difficulty].correct++
+        // Only count if difficulty is valid
+        if (difficulty && difficultyBreakdown[difficulty]) {
+          difficultyBreakdown[difficulty].total++
+          if (attempt?.is_correct) {
+            difficultyBreakdown[difficulty].correct++
+          }
         }
       })
 

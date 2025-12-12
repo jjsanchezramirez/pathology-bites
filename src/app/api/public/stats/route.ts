@@ -11,8 +11,7 @@ let cachedStats: any = null
 let cacheTimestamp: number = 0
 
 interface PublicStatsResponse {
-  total_questions: number
-  total_images: number
+  expert_questions: number
   total_categories: number
   last_refreshed: string
 }
@@ -31,20 +30,42 @@ export const GET = rateLimitedHandler(async function() {
 
     const supabase = await createClient()
 
-    // Use secure function to retrieve public stats
-    const { data: statsData, error: statsError } = await supabase
-      .rpc('get_public_stats')
-      .single<PublicStatsResponse>()
+    // First get expert_generated question set IDs
+    const { data: expertSets, error: setsError } = await supabase
+      .from('question_sets')
+      .select('id')
+      .eq('source_type', 'expert_generated')
 
-    if (statsError) {
-      console.error('Error fetching public stats from materialized view:', statsError)
-      throw statsError
+    if (setsError) {
+      console.error('Error fetching expert question sets:', setsError)
+    }
+
+    const expertSetIds = expertSets?.map(set => set.id) || []
+
+    // Get count of expert-curated questions
+    const { count: expertQuestionsCount, error: expertError } = await supabase
+      .from('questions')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'published')
+      .in('question_set_id', expertSetIds.length > 0 ? expertSetIds : [''])
+
+    if (expertError) {
+      console.error('Error fetching expert questions count:', expertError)
+    }
+
+    // Get count of subcategories (level > 0 or parent_id is not null)
+    const { count: categoriesCount, error: categoriesError } = await supabase
+      .from('categories')
+      .select('id', { count: 'exact', head: true })
+      .or('level.gt.0,parent_id.not.is.null')
+
+    if (categoriesError) {
+      console.error('Error fetching categories count:', categoriesError)
     }
 
     const stats = {
-      questions: statsData?.total_questions || 0,
-      images: statsData?.total_images || 0,
-      categories: statsData?.total_categories || 0
+      expertQuestions: expertQuestionsCount || 0,
+      categories: categoriesCount || 0
     }
 
     // Update cache
@@ -63,8 +84,7 @@ export const GET = rateLimitedHandler(async function() {
     return NextResponse.json({
       success: true,
       data: {
-        questions: 0,
-        images: 0,
+        expertQuestions: 0,
         categories: 0
       }
     })

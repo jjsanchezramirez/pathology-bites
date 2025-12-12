@@ -18,6 +18,7 @@ import {
 } from '@/shared/components/ui/select'
 import { toast } from 'sonner'
 import { Megaphone, Send, Loader2 } from 'lucide-react'
+import { apiClient } from '@/shared/utils/api-client'
 
 interface SystemUpdateForm {
   title: string
@@ -48,13 +49,7 @@ export function SystemUpdateBroadcaster() {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch('/api/admin/notifications/system-update', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(form),
-      })
+      const response = await apiClient.post('/api/admin/notifications/system-update', form)
 
       if (!response.ok) {
         const error = await response.json()

@@ -65,7 +65,7 @@ export interface QuizAnswer {
 export interface QuizState {
   // Session Info
   sessionId: string;
-  status: 'not_started' | 'in_progress' | 'paused' | 'completed';
+  status: 'not_started' | 'in_progress' | 'completed';
   
   // Questions & Navigation
   questions: QuizQuestion[];

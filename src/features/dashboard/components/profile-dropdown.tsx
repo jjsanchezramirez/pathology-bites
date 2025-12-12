@@ -15,6 +15,7 @@ import {
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar'
 import { User, Settings, LogOut, RefreshCw } from 'lucide-react'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { apiClient } from '@/shared/utils/api-client'
 
 interface UserProfile {
   id: string
@@ -104,6 +105,9 @@ export function ProfileDropdown() {
         // Clear admin-mode cookie to prevent it from persisting across sessions
         document.cookie = 'admin-mode=; path=/; max-age=0'
       }
+
+      // Clear cached CSRF token
+      apiClient.clearToken()
 
       // Force a hard refresh to clear all cached data and redirect to login
       window.location.href = '/login'

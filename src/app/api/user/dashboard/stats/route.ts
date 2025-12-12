@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { TABLE_NAMES, SESSION_STATUSES } from '@/shared/constants/database-types'
+import { devLog, measureTime } from '@/shared/utils/dev-logger'
 
 // Simplified interface matching frontend expectations
 interface DashboardStats {
@@ -53,15 +54,19 @@ interface DashboardStats {
 }
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now()
+  const requestId = request.headers.get('x-request-id') || 'unknown'
+
   try {
-    console.log('Dashboard stats API called')
-    
+    devLog.info('Dashboard stats API called', { requestId })
+
     // Create Supabase client
     let supabase
     try {
       supabase = await createClient()
+      devLog.debug('Supabase client created', { requestId })
     } catch (clientError) {
-      console.error('Dashboard stats - Supabase client creation failed:', clientError)
+      devLog.error('Supabase client creation failed', clientError)
       return NextResponse.json({
         error: 'Service temporarily unavailable',
         success: false,
@@ -72,7 +77,7 @@ export async function GET(request: NextRequest) {
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      console.error('Dashboard stats auth error:', authError)
+      devLog.error('Dashboard stats auth error', authError)
       return NextResponse.json({
         error: 'Unauthorized',
         success: false,
@@ -80,7 +85,7 @@ export async function GET(request: NextRequest) {
       }, { status: 401 })
     }
 
-    console.log('User authenticated:', user.id)
+    devLog.info('User authenticated', { userId: user.id, requestId })
 
     // Start with safe defaults
     const stats: DashboardStats = {
@@ -109,20 +114,28 @@ export async function GET(request: NextRequest) {
 
     // Try to get basic question count (this should work with any database)
     try {
+      const queryStart = Date.now()
       const { count: totalQuestions, error: questionsError } = await supabase
         .from(TABLE_NAMES.QUESTIONS)
         .select('*', { count: 'exact', head: true })
-      
+
+      const queryDuration = Date.now() - queryStart
+      devLog.database({
+        query: `SELECT COUNT(*) FROM ${TABLE_NAMES.QUESTIONS}`,
+        duration: queryDuration,
+        rows: totalQuestions || 0,
+      })
+
       if (!questionsError && totalQuestions !== null) {
         stats.allQuestions = totalQuestions
         stats.totalQuestions = totalQuestions
         stats.unused = totalQuestions // Default all to unused for now
-        console.log('Found questions:', totalQuestions)
+        devLog.info('Questions count retrieved', { totalQuestions, duration: queryDuration })
       } else {
-        console.warn('Could not get questions count:', questionsError)
+        devLog.warn('Could not get questions count', questionsError)
       }
     } catch (error) {
-      console.warn('Questions query failed:', error)
+      devLog.error('Questions query failed', error)
     }
 
     // Try to get user profile info
@@ -142,15 +155,23 @@ export async function GET(request: NextRequest) {
 
     // Try to get quiz data if tables exist
     try {
+      const queryStart = Date.now()
       // Check if quiz_sessions table exists by trying a simple query
       const { data: sessions, error: sessionsError } = await supabase
         .from(TABLE_NAMES.QUIZ_SESSIONS)
         .select('id, score, created_at, status')
         .eq('user_id', user.id)
         .limit(5)
-      
+
+      const queryDuration = Date.now() - queryStart
+      devLog.database({
+        query: `SELECT id, score, created_at, status FROM ${TABLE_NAMES.QUIZ_SESSIONS} WHERE user_id = $1 LIMIT 5`,
+        duration: queryDuration,
+        rows: sessions?.length || 0,
+      })
+
       if (!sessionsError && sessions) {
-        console.log('Found quiz sessions:', sessions.length)
+        devLog.info('Quiz sessions retrieved', { count: sessions.length, duration: queryDuration })
         stats.recentQuizzes = sessions.length
 
         // Calculate basic stats from sessions
@@ -207,15 +228,30 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    console.log('Dashboard stats compiled successfully')
-    
+    const totalDuration = Date.now() - startTime
+    devLog.performance('Dashboard stats compilation', totalDuration, {
+      requestId,
+      questionsCount: stats.allQuestions,
+      recentQuizzes: stats.recentQuizzes,
+    })
+
+    devLog.info('Dashboard stats compiled successfully', {
+      requestId,
+      duration: totalDuration,
+    })
+
     return NextResponse.json({
       success: true,
       data: stats
     })
 
   } catch (error) {
-    console.error('Error in dashboard stats API:', error)
+    const totalDuration = Date.now() - startTime
+    devLog.error('Error in dashboard stats API', error)
+    devLog.performance('Dashboard stats error', totalDuration, {
+      requestId,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
     
     // Return error response with safe defaults
     return NextResponse.json({

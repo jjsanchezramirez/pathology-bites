@@ -17,6 +17,7 @@ import {
 } from '@/shared/components/ui/select'
 import { Switch } from '@/shared/components/ui/switch'
 import { Loader2 } from 'lucide-react'
+import { apiClient } from '@/shared/utils/api-client'
 
 interface QuestionSet {
   id: string
@@ -84,21 +85,14 @@ export function EditSetDialog({ open, onOpenChange, onSuccess, questionSet }: Ed
 
     setIsUpdating(true)
     try {
-      const response = await fetch('/api/admin/question-sets', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          setId: questionSet.id,
-          updates: {
-            name: name.trim(),
-            description: description.trim() || null,
-            source_type: sourceType,
-            is_active: isActive
-          }
-        })
+      const response = await apiClient.patch('/api/admin/question-sets', {
+        setId: questionSet.id,
+        updates: {
+          name: name.trim(),
+          description: description.trim() || null,
+          source_type: sourceType,
+          is_active: isActive
+        }
       })
 
       if (!response.ok) {

@@ -43,6 +43,7 @@ import { QuestionPreviewDialog } from './question-preview-dialog';
 import { getQuestionSetDisplayName, getCategoryDisplayName } from '@/features/questions/utils/display-helpers';
 import { createClient } from '@/shared/services/client';
 import { BlurredDialog } from '@/shared/components/ui/blurred-dialog';
+import { apiClient } from '@/shared/utils/api-client';
 
 const DEFAULT_PAGE_SIZE = 100;
 const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
@@ -832,16 +833,9 @@ export function QuestionsTable({ adminMode = 'admin' }: QuestionsTableProps) {
     }
 
     try {
-      const response = await fetch('/api/admin/questions/bulk', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          action,
-          questionIds: selectedQuestions
-        }),
+      const response = await apiClient.post('/api/admin/questions/bulk', {
+        action,
+        questionIds: selectedQuestions
       });
 
       const data = await response.json();

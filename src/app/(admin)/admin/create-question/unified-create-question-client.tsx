@@ -12,6 +12,7 @@ import { QuestionForm } from '@/features/questions/components/question-form'
 import { Button } from '@/shared/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { apiClient } from '@/shared/utils/api-client'
 
 // Manual creation form data type
 type QuestionFormData = {
@@ -31,14 +32,7 @@ export function UnifiedCreateQuestionClient() {
   // Handle manual form submission
   const handleManualSubmit = async (data: QuestionFormData) => {
     try {
-      const response = await fetch('/api/questions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      });
+      const response = await apiClient.post('/api/questions', data);
 
       if (!response.ok) {
         throw new Error('Failed to create question');

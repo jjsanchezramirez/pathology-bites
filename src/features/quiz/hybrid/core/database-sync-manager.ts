@@ -35,6 +35,20 @@ export interface QuizSyncData {
   metadata?: Record<string, any>;
 }
 
+export interface QuizProgressData {
+  sessionId: string;
+  currentQuestionIndex: number;
+  timeRemaining?: number | null;
+  totalTimeSpent: number;
+  answers: Array<{
+    questionId: string;
+    selectedOptionId: string;
+    isCorrect: boolean;
+    timestamp: number;
+    timeSpent: number;
+  }>;
+}
+
 export interface SyncResult {
   success: boolean;
   timestamp: number;
@@ -48,6 +62,7 @@ export interface DatabaseSyncManagerOptions {
   enableRetry?: boolean;
   maxRetries?: number;
   retryDelay?: number;
+  csrfTokenGetter?: () => Promise<string>;
   onSyncStart?: () => void;
   onSyncSuccess?: (result: SyncResult) => void;
   onSyncError?: (error: string) => void;
@@ -69,6 +84,7 @@ export class DatabaseSyncManager {
       enableRetry: true,
       maxRetries: 3,
       retryDelay: 1000,
+      csrfTokenGetter: async () => '', // Default no-op, should be provided by caller
       onSyncStart: () => {},
       onSyncSuccess: () => {},
       onSyncError: () => {},
@@ -84,6 +100,8 @@ export class DatabaseSyncManager {
     questions: any[];
     config: any;
     existingAnswers?: QuizAnswer[];
+    timeRemaining?: number | null;
+    totalTimeLimit?: number | null;
   }> {
     try {
       const response = await fetch(`${this.options.apiBaseUrl}/sessions/${sessionId}`, {
@@ -120,7 +138,9 @@ export class DatabaseSyncManager {
       return {
         questions: transformedQuestions,
         config: transformedConfig,
-        existingAnswers: data.answers || []
+        existingAnswers: data.answers || [],
+        timeRemaining: data.timeRemaining ?? null,
+        totalTimeLimit: data.totalTimeLimit ?? null
       };
     } catch (error) {
       console.error('Failed to fetch quiz data:', error);
@@ -161,6 +181,92 @@ export class DatabaseSyncManager {
   }
 
   /**
+   * Save quiz progress without completing (for pause, navigation, periodic saves)
+   */
+  async saveProgress(quizState: QuizState, timeRemaining?: number | null): Promise<SyncResult> {
+    try {
+      this.options.onSyncStart();
+
+      const progressData: QuizProgressData = {
+        sessionId: quizState.sessionId,
+        currentQuestionIndex: quizState.currentQuestionIndex,
+        timeRemaining,
+        totalTimeSpent: quizState.totalTimeSpent,
+        answers: Array.from(quizState.answers.entries()).map(([questionId, answer]) => ({
+          questionId,
+          selectedOptionId: answer.selectedOptionId,
+          isCorrect: answer.isCorrect,
+          timestamp: answer.timestamp,
+          timeSpent: answer.timeSpent
+        }))
+      };
+
+      // Get CSRF token
+      const csrfToken = await this.options.csrfTokenGetter();
+
+      // Submit answers in batch if there are any
+      if (progressData.answers.length > 0) {
+        const batchResponse = await fetch(`${this.options.apiBaseUrl}/attempts/batch`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-csrf-token': csrfToken,
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            sessionId: progressData.sessionId,
+            answers: progressData.answers.map(answer => ({
+              questionId: answer.questionId,
+              selectedAnswerId: answer.selectedOptionId,
+              timeSpent: answer.timeSpent,
+              timestamp: answer.timestamp
+            }))
+          })
+        });
+
+        if (!batchResponse.ok) {
+          const errorText = await batchResponse.text();
+          throw new Error(`Failed to save answers: ${errorText}`);
+        }
+      }
+
+      // Update session progress (not completion)
+      const updateResponse = await fetch(`${this.options.apiBaseUrl}/sessions/${progressData.sessionId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-csrf-token': csrfToken,
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          status: 'in_progress', // Ensure status is set to in_progress
+          currentQuestionIndex: progressData.currentQuestionIndex,
+          timeRemaining: progressData.timeRemaining,
+          totalTimeSpent: progressData.totalTimeSpent
+        })
+      });
+
+      if (!updateResponse.ok) {
+        const errorText = await updateResponse.text();
+        throw new Error(`Failed to update progress: ${errorText}`);
+      }
+
+      const result = {
+        success: true,
+        timestamp: Date.now()
+      };
+
+      this.options.onSyncSuccess(result);
+      return result;
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.options.onSyncError(errorMessage);
+      return { success: false, timestamp: Date.now(), error: errorMessage };
+    }
+  }
+
+  /**
    * Prepare quiz state data for efficient transmission
    */
   private prepareSyncData(quizState: QuizState): QuizSyncData {
@@ -196,9 +302,12 @@ export class DatabaseSyncManager {
    */
   private async performSync(syncData: QuizSyncData): Promise<SyncResult> {
     let lastError: Error | null = null;
-    
+
     for (let attempt = 1; attempt <= this.options.maxRetries; attempt++) {
       try {
+        // Get CSRF token for POST requests
+        const csrfToken = await this.options.csrfTokenGetter();
+
         // Step 1: Submit all answers in batch
         const batchAnswerPayload = {
           sessionId: syncData.sessionId,
@@ -214,6 +323,7 @@ export class DatabaseSyncManager {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'x-csrf-token': csrfToken,
           },
           credentials: 'include', // Include cookies for authentication
           body: JSON.stringify(batchAnswerPayload)
@@ -240,6 +350,7 @@ export class DatabaseSyncManager {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'x-csrf-token': csrfToken,
           },
           credentials: 'include', // Include cookies for authentication
         });

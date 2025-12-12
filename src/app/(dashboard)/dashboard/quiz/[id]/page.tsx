@@ -19,23 +19,35 @@ import { useState, useEffect, useCallback } from "react"
 import { useHybridQuiz, HybridPresets } from "@/features/quiz/hybrid"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { useCSRFToken } from "@/features/auth/hooks/use-csrf-token"
 
 export default function QuizSessionPage() {
   const params = useParams()
   const searchParams = useSearchParams()
   const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id
   const isReviewMode = searchParams.get('review') === 'true'
-  
+
   // Review mode state
   const [reviewResult, setReviewResult] = useState<QuizResult | null>(null)
   const [reviewSession, setReviewSession] = useState<any>(null)
   const [reviewLoading, setReviewLoading] = useState(isReviewMode)
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0)
 
+  // Local pause state (not stored in database)
+  const [isPaused, setIsPaused] = useState(false)
+
+  // Exit confirmation dialog state
+  const [showExitDialog, setShowExitDialog] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+
+  // CSRF token for POST requests
+  const { getToken } = useCSRFToken()
+
   // Initialize hybrid quiz system (disabled in review mode)
   const [hybridState, hybridActions] = useHybridQuiz({
     sessionId: isReviewMode ? '' : (sessionId || ''), // Disable in review mode
     ...HybridPresets.TUTOR_MODE,
+    csrfTokenGetter: getToken,
     onAnswerSubmitted: (questionId, answerId, result) => {
       if (isReviewMode) return; // Skip in review mode
       // Toast messages removed for better UX
@@ -185,6 +197,48 @@ export default function QuizSessionPage() {
       setCurrentReviewIndex(currentReviewIndex + 1)
     }
   }
+
+  // Exit confirmation handlers
+  const handleSaveAndExit = useCallback(async () => {
+    if (isReviewMode) return;
+
+    try {
+      // Trigger auto-save with manual trigger
+      await hybridActions.saveAndExit();
+
+      // Navigate to quizzes page
+      window.location.href = '/dashboard/quizzes';
+    } catch (error) {
+      console.error('Error saving and exiting:', error);
+      toast.error('Failed to save quiz progress');
+    }
+  }, [isReviewMode, hybridActions]);
+
+  const handleExitConfirm = useCallback(async () => {
+    await handleSaveAndExit();
+    setShowExitDialog(false);
+  }, [handleSaveAndExit]);
+
+  const handleExitCancel = useCallback(() => {
+    setShowExitDialog(false);
+    setPendingNavigation(null);
+  }, []);
+
+  // Intercept browser navigation (back button, close tab, etc.)
+  useEffect(() => {
+    if (isReviewMode || hybridState.status !== 'in_progress') return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ''; // Chrome requires returnValue to be set
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isReviewMode, hybridState.status]);
 
   // Early returns for loading and error states
   if (reviewLoading || (!isReviewMode && hybridState.isLoading)) {
@@ -455,7 +509,7 @@ export default function QuizSessionPage() {
     <PageErrorBoundary pageName="Quiz Session" showHomeButton={true} showBackButton={true}>
       <div className="min-h-screen bg-background/0 relative">
       {/* Pause Overlay */}
-      {(isReviewMode ? legacyIsPaused : hybridState.status === 'paused') && (
+      {(isReviewMode ? legacyIsPaused : isPaused) && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
           <Card className="w-96 p-6 text-center">
             <CardHeader>
@@ -466,12 +520,39 @@ export default function QuizSessionPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                Your quiz is paused. Time remaining: {hybridActions.getTimeSpent() ? formatTime(Math.floor(hybridActions.getTimeSpent() / 1000)) : 'N/A'}
+                Your quiz is paused. {hybridState.timeRemaining !== null ? `Time remaining: ${formatTime(hybridState.timeRemaining)}` : ''}
               </p>
-              <Button onClick={!isReviewMode ? hybridActions.resumeQuiz : () => {}} className="w-full">
+              <Button onClick={!isReviewMode ? () => {
+                setIsPaused(false);
+                hybridActions.resumeQuiz();
+              } : () => {}} className="w-full">
                 <Play className="h-4 w-4 mr-2" />
                 Resume Quiz
               </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Exit Confirmation Dialog */}
+      {showExitDialog && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <Card className="w-96 p-6">
+            <CardHeader>
+              <CardTitle>Save and Exit?</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Your progress will be saved and you can resume this quiz later.
+              </p>
+              <div className="flex gap-2">
+                <Button onClick={handleExitCancel} variant="outline" className="flex-1">
+                  Cancel
+                </Button>
+                <Button onClick={handleExitConfirm} className="flex-1">
+                  Save & Exit
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -531,13 +612,22 @@ export default function QuizSessionPage() {
             title="Quiz Session"
             currentQuestionIndex={hybridState.currentQuestion - 1}
             totalQuestions={hybridState.totalQuestions}
-            globalTimeRemaining={null}
-            timing="untimed"
+            globalTimeRemaining={hybridState.timeRemaining}
+            timing={hybridActions.getQuizConfig?.()?.timing || 'untimed'}
             status={hybridState.status as any}
-            isPaused={hybridState.status === 'paused'}
-            onPauseQuiz={!isReviewMode ? hybridActions.pauseQuiz : () => {}}
-            onResumeQuiz={!isReviewMode ? hybridActions.resumeQuiz : () => {}}
+            isPaused={isPaused}
+            onPauseQuiz={!isReviewMode ? () => {
+              setIsPaused(true);
+              hybridActions.pauseQuiz();
+            } : () => {}}
+            onResumeQuiz={!isReviewMode ? () => {
+              setIsPaused(false);
+              hybridActions.resumeQuiz();
+            } : () => {}}
+            onSaveAndExit={!isReviewMode ? () => setShowExitDialog(true) : undefined}
             onFlagQuestion={() => setLegacyFlagDialogOpen(true)}
+            syncStatus={hybridState.syncStatus}
+            lastSyncTime={hybridState.lastSyncTime}
           />
           </FeatureErrorBoundary>
 

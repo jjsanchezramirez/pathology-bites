@@ -4,6 +4,7 @@ import { createClient } from '@/shared/services/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { getBucketSize } from '@/shared/services/r2-storage'
 import { formatSize } from '@/features/images/services/image-upload'
+import { devLog } from '@/shared/utils/dev-logger'
 
 interface SystemHealth {
   vercelStatus: 'operational' | 'error'
@@ -25,6 +26,8 @@ export async function GET() {
   const startTime = performance.now()
 
   try {
+    devLog.info('System status check started')
+
     const supabase = await createClient()
 
     // Create a service role client for admin operations
@@ -38,6 +41,7 @@ export async function GET() {
         }
       }
     )
+    devLog.debug('Supabase clients created')
 
     // Measure database query time separately
     const dbStartTime = performance.now()
@@ -49,8 +53,18 @@ export async function GET() {
     const dbEndTime = performance.now()
     const dbQueryTime = Math.round(dbEndTime - dbStartTime)
 
+    devLog.database({
+      query: 'SELECT id FROM users LIMIT 1',
+      duration: dbQueryTime,
+      rows: 1,
+      error: dbTestResult.error?.message,
+    })
+
     // Test other services and get metrics in parallel
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+
+    devLog.debug('Fetching system metrics in parallel')
+    const parallelStart = performance.now()
 
     const [storageStats, vercelStatusResponse, r2ImagesStats, r2DataStats, activeUsersResult] = await Promise.allSettled([
       supabase
@@ -64,6 +78,15 @@ export async function GET() {
       // Use service role client to access auth.admin API
       supabaseAdmin.auth.admin.listUsers()
     ])
+
+    const parallelDuration = Math.round(performance.now() - parallelStart)
+    devLog.performance('Parallel system checks', parallelDuration, {
+      storageStats: storageStats.status,
+      vercelStatus: vercelStatusResponse.status,
+      r2Images: r2ImagesStats.status,
+      r2Data: r2DataStats.status,
+      activeUsers: activeUsersResult.status,
+    })
 
     const endTime = performance.now()
     const responseTime = Math.round(endTime - startTime)
@@ -166,15 +189,28 @@ export async function GET() {
       lastUpdated: new Date().toISOString()
     }
 
+    // Log system health metrics
+    devLog.info('System status check completed', {
+      responseTime,
+      dbQueryTime,
+      activeUsers,
+      activeUsersWeekly,
+      activeUsersMonthly,
+      r2StorageFormatted,
+      allServicesOperational: vercelStatus === 'operational' &&
+        systemHealth.supabaseStatus === 'operational' &&
+        cloudflareR2Status === 'operational',
+    })
+
     // Only log errors, not successful checks
     if (dbTestResult.error) {
-      console.error('Supabase connection error:', dbTestResult.error)
+      devLog.error('Supabase connection error', dbTestResult.error)
     }
 
     return NextResponse.json(systemHealth, { status: 200 })
 
   } catch (error) {
-    console.error('System status check failed:', error)
+    devLog.error('System status check failed', error)
 
     const endTime = performance.now()
     const responseTime = Math.round(endTime - startTime)

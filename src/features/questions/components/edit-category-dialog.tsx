@@ -16,6 +16,7 @@ import {
 } from '@/shared/components/ui/select'
 import { Loader2 } from 'lucide-react'
 import { strongColors, lightColors } from '../utils/category-colors'
+import { apiClient } from '@/shared/utils/api-client'
 
 interface Category {
   id: string
@@ -98,19 +99,12 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
 
     setIsUpdating(true)
     try {
-      const response = await fetch('/api/admin/categories', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          categoryId: category.id,
-          name: name.trim(),
-          shortForm: shortForm.trim() || null,
-          parentId: parentId && parentId !== 'none' ? parentId : null,
-          color: color || null
-        })
+      const response = await apiClient.patch('/api/admin/categories', {
+        categoryId: category.id,
+        name: name.trim(),
+        shortForm: shortForm.trim() || null,
+        parentId: parentId && parentId !== 'none' ? parentId : null,
+        color: color || null
       })
 
       if (!response.ok) {

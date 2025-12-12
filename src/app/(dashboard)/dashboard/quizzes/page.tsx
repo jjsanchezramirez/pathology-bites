@@ -21,8 +21,6 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogOverlay,
-  DialogPortal,
   DialogTitle,
 } from "@/shared/components/ui/dialog"
 import {
@@ -49,6 +47,7 @@ import { toast } from "sonner"
 import Link from "next/link"
 import { FeaturePlaceholder } from "@/features/dashboard/components"
 import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags"
+import { apiClient } from "@/shared/utils/api-client"
 
 interface QuizSessionListItem {
   id: string
@@ -78,21 +77,18 @@ export default function QuizzesPage() {
   const featuresEnabled = isQuizFeaturesEnabled()
   const [quizzes, setQuizzes] = useState<QuizSessionListItem[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [modeFilter, setModeFilter] = useState<string>("all")
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([])
+  const [sortBy, setSortBy] = useState<string>("date-desc")
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [selectedQuiz, setSelectedQuiz] = useState<QuizSessionListItem | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Optimized quiz fetching with caching
-  const { data: quizzesData, isLoading, error } = useCachedData(
-    `quiz-sessions-${statusFilter}`,
+  // Optimized quiz fetching with caching (fetch all, filter client-side)
+  const { data: quizzesData, isLoading, error, invalidate } = useCachedData(
+    'quiz-sessions-all',
     async () => {
       const params = new URLSearchParams()
-      if (statusFilter !== "all") {
-        params.append("status", statusFilter)
-      }
-      params.append("limit", "50")
+      params.append("limit", "100") // Increased limit
 
       const response = await fetch(`/api/quiz/sessions?${params}`)
       if (!response.ok) {
@@ -130,31 +126,98 @@ export default function QuizzesPage() {
 
     try {
       setIsDeleting(true)
-      const response = await fetch(`/api/quiz/sessions/${selectedQuiz.id}`, {
-        method: 'DELETE'
-      })
+
+      const response = await apiClient.delete(`/api/quiz/sessions/${selectedQuiz.id}`)
 
       if (!response.ok) {
-        throw new Error('Failed to delete quiz')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to delete quiz')
       }
 
       toast.success('Quiz deleted successfully')
-      // Refresh the list by removing the deleted quiz
+
+      // Invalidate cache to force refresh
+      invalidate()
+
+      // Also update local state immediately for instant UI feedback
       setQuizzes(prev => prev.filter(quiz => quiz.id !== selectedQuiz.id))
       setShowDeleteDialog(false)
       setSelectedQuiz(null)
-    } catch {
-      toast.error('Failed to delete quiz')
+    } catch (error) {
+      console.error('Delete quiz error:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to delete quiz')
     } finally {
       setIsDeleting(false)
     }
   }
 
+  // Filter quizzes based on search and selected filters
   const filteredQuizzes = quizzes.filter(quiz => {
+    // Search filter
     const matchesSearch = quiz.title.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesMode = modeFilter === "all" || quiz.mode === modeFilter
-    return matchesSearch && matchesMode
+
+    // Multi-select filters
+    if (selectedFilters.length === 0) {
+      return matchesSearch
+    }
+
+    const matchesFilter = selectedFilters.some(filter => {
+      // Status filters
+      if (filter === quiz.status) return true
+      // Mode filters
+      if (filter === quiz.mode) return true
+      // Timing filters
+      if (filter === 'timed' && quiz.isTimedMode) return true
+      if (filter === 'untimed' && !quiz.isTimedMode) return true
+
+      return false
+    })
+
+    return matchesSearch && matchesFilter
   })
+
+  // Sort quizzes
+  const sortedQuizzes = [...filteredQuizzes].sort((a, b) => {
+    switch (sortBy) {
+      case 'date-desc':
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      case 'date-asc':
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      case 'score-desc':
+        return (b.score || 0) - (a.score || 0)
+      case 'score-asc':
+        return (a.score || 0) - (b.score || 0)
+      case 'progress':
+        // Incomplete first (not_started, in_progress), then completed
+        const statusOrder = { not_started: 0, in_progress: 1, completed: 2 }
+        return (statusOrder[a.status as keyof typeof statusOrder] || 99) -
+               (statusOrder[b.status as keyof typeof statusOrder] || 99)
+      default:
+        return 0
+    }
+  })
+
+  // Calculate statistics
+  const stats = {
+    total: quizzes.length,
+    completed: quizzes.filter(q => q.status === 'completed').length,
+    inProgress: quizzes.filter(q => q.status === 'in_progress').length,
+    averageScore: quizzes.filter(q => q.score !== undefined && q.score !== null).length > 0
+      ? Math.round(
+          quizzes
+            .filter(q => q.score !== undefined && q.score !== null)
+            .reduce((sum, q) => sum + (q.score || 0), 0) /
+          quizzes.filter(q => q.score !== undefined && q.score !== null).length
+        )
+      : 0,
+    totalTimeSpent: quizzes.reduce((sum, q) => sum + (q.totalTimeSpent || 0), 0)
+  }
+
+  const formatTimeSpent = (seconds: number) => {
+    if (seconds < 60) return `${seconds}s`
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`
+    return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`
+  }
 
   // Show placeholder if features are disabled
   if (!featuresEnabled) {
@@ -211,9 +274,7 @@ export default function QuizzesPage() {
       case 'in_progress':
         return <Badge variant="secondary" className="bg-blue-100 text-blue-800">In Progress</Badge>
       case 'not_started':
-        return <Badge variant="outline">Not Started</Badge>
-      case 'paused':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Paused</Badge>
+        return <Badge variant="destructive">Not Started</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -334,10 +395,47 @@ export default function QuizzesPage() {
         </Link>
       </div>
 
-      {/* Filters */}
+      {/* Statistics Summary */}
+      {!isLoading && quizzes.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Total Quizzes</div>
+              <div className="text-2xl font-bold">{stats.total}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Completed</div>
+              <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">In Progress</div>
+              <div className="text-2xl font-bold text-blue-600">{stats.inProgress}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Avg Score</div>
+              <div className="text-2xl font-bold">{stats.averageScore}%</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Total Time</div>
+              <div className="text-2xl font-bold">{formatTimeSpent(stats.totalTimeSpent)}</div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Search and Filters */}
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
+            {/* Search */}
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -349,43 +447,92 @@ export default function QuizzesPage() {
                 />
               </div>
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+
+            {/* Combined Filters Dropdown */}
+            <Select
+              value={selectedFilters.length === 0 ? "all" : selectedFilters.join(",")}
+              onValueChange={(value) => {
+                if (value === "all") {
+                  setSelectedFilters([])
+                } else {
+                  // Toggle filter
+                  const filter = value
+                  setSelectedFilters(prev =>
+                    prev.includes(filter)
+                      ? prev.filter(f => f !== filter)
+                      : [...prev, filter]
+                  )
+                }
+              }}
+            >
               <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder={selectedFilters.length === 0 ? "All Filters" : `${selectedFilters.length} filters`} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="not_started">Not Started</SelectItem>
-                <SelectItem value="paused">Paused</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={modeFilter} onValueChange={setModeFilter}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filter by mode" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Modes</SelectItem>
+                <SelectItem value="all">All Filters</SelectItem>
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Status</div>
+                <SelectItem value="completed">✓ Completed</SelectItem>
+                <SelectItem value="in_progress">⟳ In Progress</SelectItem>
+                <SelectItem value="not_started">○ Not Started</SelectItem>
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Mode</div>
                 <SelectItem value="tutor">Tutor</SelectItem>
-                <SelectItem value="timed">Timed</SelectItem>
-                <SelectItem value="untimed">Untimed</SelectItem>
                 <SelectItem value="practice">Practice</SelectItem>
                 <SelectItem value="review">Review</SelectItem>
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Timing</div>
+                <SelectItem value="timed">Timed</SelectItem>
+                <SelectItem value="untimed">Untimed</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Sort Dropdown */}
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date-desc">Newest First</SelectItem>
+                <SelectItem value="date-asc">Oldest First</SelectItem>
+                <SelectItem value="score-desc">Highest Score</SelectItem>
+                <SelectItem value="score-asc">Lowest Score</SelectItem>
+                <SelectItem value="progress">Incomplete First</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
+          {/* Active Filters Display */}
+          {selectedFilters.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {selectedFilters.map(filter => (
+                <Badge
+                  key={filter}
+                  variant="secondary"
+                  className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
+                  onClick={() => setSelectedFilters(prev => prev.filter(f => f !== filter))}
+                >
+                  {filter} ×
+                </Badge>
+              ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedFilters([])}
+                className="h-6 px-2 text-xs"
+              >
+                Clear all
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {/* Quiz List */}
       <div className="space-y-4">
-        {filteredQuizzes.length === 0 ? (
+        {sortedQuizzes.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
               <div className="space-y-4">
                 <div className="text-muted-foreground">
-                  {searchTerm || statusFilter !== "all" || modeFilter !== "all"
+                  {searchTerm || selectedFilters.length > 0
                     ? "No quizzes match your current filters"
                     : "You haven't taken any quizzes yet"
                   }
@@ -400,7 +547,7 @@ export default function QuizzesPage() {
             </CardContent>
           </Card>
         ) : (
-          filteredQuizzes.map((quiz) => (
+          sortedQuizzes.map((quiz) => (
             <Card key={quiz.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 {/* Desktop Layout */}
@@ -417,7 +564,12 @@ export default function QuizzesPage() {
                     <div className="flex items-center gap-6 text-sm text-muted-foreground flex-wrap">
                       <div className="flex items-center gap-1">
                         <Hash className="h-4 w-4" />
-                        <span>{quiz.totalQuestions} of {quiz.totalQuestions}</span>
+                        <span>
+                          {quiz.status === 'in_progress'
+                            ? `${(quiz.currentQuestionIndex || 0) + 1} of ${quiz.totalQuestions} (${Math.round(((quiz.currentQuestionIndex || 0) + 1) / quiz.totalQuestions * 100)}%)`
+                            : `${quiz.totalQuestions} questions`
+                          }
+                        </span>
                       </div>
 
                       {quiz.score !== undefined && quiz.score !== null && (
@@ -446,6 +598,27 @@ export default function QuizzesPage() {
                         {getQuestionTypeIcon(quiz)}
                         <span>{getQuestionTypeDisplay(quiz)}</span>
                       </div>
+
+                      {quiz.difficulty && (
+                        <div className="flex items-center gap-1">
+                          <Target className="h-4 w-4" />
+                          <span className="capitalize">{quiz.difficulty}</span>
+                        </div>
+                      )}
+
+                      {quiz.totalTimeSpent !== undefined && quiz.totalTimeSpent > 0 && (
+                        <div className="flex items-center gap-1">
+                          <Timer className="h-4 w-4" />
+                          <span>{formatTimeSpent(quiz.totalTimeSpent)}</span>
+                        </div>
+                      )}
+
+                      {quiz.isTimedMode && quiz.status === 'in_progress' && quiz.timeRemaining !== undefined && quiz.timeRemaining !== null && (
+                        <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
+                          <Timer className="h-4 w-4" />
+                          <span className="font-medium">{formatTimeSpent(quiz.timeRemaining)} left</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -460,7 +633,7 @@ export default function QuizzesPage() {
                       </Link>
                     )}
 
-                    {(quiz.status === 'in_progress' || quiz.status === 'paused') && (
+                    {quiz.status === 'in_progress' && (
                       <Link href={`/dashboard/quiz/${quiz.id}`}>
                         <Button size="sm">
                           <Play className="h-4 w-4 mr-2" />
@@ -501,7 +674,12 @@ export default function QuizzesPage() {
                   <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                     <div className="flex items-center gap-1">
                       <Hash className="h-4 w-4" />
-                      <span>{quiz.totalQuestions} of {quiz.totalQuestions}</span>
+                      <span>
+                        {quiz.status === 'in_progress'
+                          ? `${(quiz.currentQuestionIndex || 0) + 1} of ${quiz.totalQuestions} (${Math.round(((quiz.currentQuestionIndex || 0) + 1) / quiz.totalQuestions * 100)}%)`
+                          : `${quiz.totalQuestions} questions`
+                        }
+                      </span>
                     </div>
 
                     {quiz.score !== undefined && quiz.score !== null && (
@@ -518,7 +696,7 @@ export default function QuizzesPage() {
                     </div>
                   </div>
 
-                  {/* Third line: Mode, Timing, Question Type */}
+                  {/* Third line: Mode, Timing, Question Type, Difficulty, Time */}
                   <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                     <div className="flex items-center gap-1">
                       {getModeIcon(quiz)}
@@ -534,6 +712,27 @@ export default function QuizzesPage() {
                       {getQuestionTypeIcon(quiz)}
                       <span>{getQuestionTypeDisplay(quiz)}</span>
                     </div>
+
+                    {quiz.difficulty && (
+                      <div className="flex items-center gap-1">
+                        <Target className="h-4 w-4" />
+                        <span className="capitalize">{quiz.difficulty}</span>
+                      </div>
+                    )}
+
+                    {quiz.totalTimeSpent !== undefined && quiz.totalTimeSpent > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Timer className="h-4 w-4" />
+                        <span>{formatTimeSpent(quiz.totalTimeSpent)}</span>
+                      </div>
+                    )}
+
+                    {quiz.isTimedMode && quiz.status === 'in_progress' && quiz.timeRemaining !== undefined && quiz.timeRemaining !== null && (
+                      <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
+                        <Timer className="h-4 w-4" />
+                        <span className="font-medium">{formatTimeSpent(quiz.timeRemaining)} left</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Action buttons at bottom */}
@@ -547,7 +746,7 @@ export default function QuizzesPage() {
                       </Link>
                     )}
 
-                    {(quiz.status === 'in_progress' || quiz.status === 'paused') && (
+                    {quiz.status === 'in_progress' && (
                       <Link href={`/dashboard/quiz/${quiz.id}`} className="flex-1">
                         <Button className="w-full">
                           <Play className="h-4 w-4 mr-2" />
@@ -584,36 +783,33 @@ export default function QuizzesPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogPortal>
-          <DialogOverlay className="backdrop-blur-md bg-black/20" />
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Confirm Deletion</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete "{selectedQuiz?.title}"?
-                <br />
-                <br />
-                This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteDialog(false)}
-                disabled={isDeleting}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDeleteConfirm}
-                disabled={isDeleting}
-              >
-                {isDeleting ? 'Deleting...' : 'Delete Quiz'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </DialogPortal>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{selectedQuiz?.title}"?
+              <br />
+              <br />
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Quiz'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </div>
   )

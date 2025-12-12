@@ -13,10 +13,14 @@
  * - Optimized for Vercel's free tier
  */
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuizStateMachine } from './hooks/use-quiz-state-machine';
 import { DatabaseSyncManager, SyncResult } from './core/database-sync-manager';
+import { AutoSaveManager } from '../services/auto-save-manager';
+import { AUTO_SAVE_CONFIG, type SyncStatus, type AutoSaveTrigger } from '../config/auto-save-config';
 import { QuizQuestion, QuizAnswer, QuizState, QuizQuestionTransformer } from '../types/quiz-question';
+import { toast } from 'sonner';
 
 export interface UseHybridQuizOptions {
   sessionId: string;
@@ -24,6 +28,7 @@ export interface UseHybridQuizOptions {
   enableOfflineSupport?: boolean;
   autoSync?: boolean;
   syncOnComplete?: boolean;
+  csrfTokenGetter?: () => Promise<string>;
   onAnswerSubmitted?: (questionId: string, answerId: string, result: { isCorrect: boolean; feedback?: any }) => void;
   onQuizCompleted?: (result: { score: number; totalQuestions: number; timeSpent: number }) => void;
   onError?: (error: string) => void;
@@ -35,30 +40,43 @@ export interface HybridQuizState {
   isLoading: boolean;
   isInitialized: boolean;
   error: string | null;
-  
+
   // Current State
   status: QuizState['status'];
   currentQuestion: number;
   totalQuestions: number;
-  
+
   // Progress
   progress: {
     current: number;
     total: number;
     percentage: number;
   };
-  
+
   // Performance Metrics
   metrics: {
     totalApiCalls: number;
     averageResponseTime: number;
   };
-  
+
   // Real-time Status
   realtimeStats: {
     connected: boolean;
     latency: number;
   };
+
+  // Auto-save Status
+  syncStatus: SyncStatus;
+  lastSyncTime: number | null;
+  queueStatus: {
+    total: number;
+    ready: number;
+    waiting: number;
+  };
+
+  // Timer (for timed quizzes)
+  timeRemaining: number | null; // seconds remaining
+  totalTimeLimit: number | null; // total time limit in seconds
 }
 
 export interface HybridQuizActions {
@@ -66,24 +84,26 @@ export interface HybridQuizActions {
   startQuiz: () => Promise<boolean>;
   pauseQuiz: () => void;
   resumeQuiz: () => void;
+  saveAndExit: () => Promise<void>;
   completeQuiz: () => Promise<SyncResult>;
-  
+
   // Answer Management
   submitAnswer: (questionId: string, answerId: string) => { isCorrect: boolean; feedback?: any } | null;
-  
+
   // Navigation
   nextQuestion: () => boolean;
   previousQuestion: () => boolean;
   navigateToQuestion: (index: number) => boolean;
-  
+
   // Data Access
   getCurrentQuestion: () => any | null; // UI-compatible question format
   getQuestions: () => any[]; // UI-compatible question format
   getAnswerForQuestion: (questionId: string) => QuizAnswer | null;
-  
+  getQuizConfig: () => QuizState['config'] | null;
+
   // Sync Management
-  forcSync: () => Promise<SyncResult>;
-  
+  forceSync: () => Promise<SyncResult>;
+
   // Utilities
   getProgress: () => { answered: number; correct: number; total: number };
   getTimeSpent: () => number;
@@ -98,23 +118,54 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     enableOfflineSupport = true,
     autoSync = true,
     syncOnComplete = true,
+    csrfTokenGetter,
     onAnswerSubmitted,
     onQuizCompleted,
     onError,
     onSyncStatusChange
   } = options;
 
+  // Router for navigation detection
+  const router = useRouter();
+
+  // Sync status state
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>({ state: 'idle', message: '' });
+  const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
+
   // Initialize sync manager
   const syncManager = useRef<DatabaseSyncManager | null>(null);
   if (!syncManager.current) {
     syncManager.current = new DatabaseSyncManager({
-      onSyncStart: () => onSyncStatusChange?.('syncing'),
-      onSyncSuccess: () => onSyncStatusChange?.('synced'),
+      csrfTokenGetter,
+      onSyncStart: () => {
+        setSyncStatus({ state: 'syncing', message: 'Syncing...' });
+        onSyncStatusChange?.('syncing');
+      },
+      onSyncSuccess: () => {
+        setSyncStatus({ state: 'synced', message: 'All changes synced' });
+        setLastSyncTime(Date.now());
+        onSyncStatusChange?.('synced');
+      },
       onSyncError: (error) => {
+        setSyncStatus({ state: 'error', message: 'Sync failed - retrying...' });
         onError?.(error);
         onSyncStatusChange?.('error');
       }
     });
+  }
+
+  // Initialize auto-save manager
+  const autoSaveManager = useRef<AutoSaveManager | null>(null);
+  if (!autoSaveManager.current && syncManager.current) {
+    autoSaveManager.current = new AutoSaveManager(
+      syncManager.current,
+      (status) => {
+        setSyncStatus(status);
+        if (status.state === 'synced') {
+          setLastSyncTime(Date.now());
+        }
+      }
+    );
   }
 
   // Initialize state machine
@@ -146,6 +197,12 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     responseCount: 0
   });
 
+  // Timer state for timed quizzes
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [totalTimeLimit, setTotalTimeLimit] = useState<number | null>(null);
+  const [isTimerPaused, setIsTimerPaused] = useState(false);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   // Keep refs to callbacks and state to avoid stale closures
   const callbacksRef = useRef({ onQuizCompleted });
   callbacksRef.current = { onQuizCompleted };
@@ -156,13 +213,23 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   // Track if we've already triggered completion to prevent infinite loop
   const hasCompletedRef = useRef(false);
 
+  // Track if we're currently initializing to prevent duplicate fetches
+  const isInitializingRef = useRef(false);
+
   // Initialize quiz with server data
   const initializeQuiz = useCallback(async () => {
+    // Prevent duplicate initialization
+    if (isInitializingRef.current) {
+      console.log('[Hybrid] Already initializing, skipping duplicate fetch');
+      return;
+    }
+
     try {
+      isInitializingRef.current = true;
       const startTime = Date.now();
 
       // API Call #1: Fetch quiz data
-      const { questions, config, existingAnswers } = await syncManager.current!.fetchQuizData(sessionId);
+      const { questions, config, existingAnswers, timeRemaining: savedTimeRemaining, totalTimeLimit: savedTotalTimeLimit } = await syncManager.current!.fetchQuizData(sessionId);
 
       // Track API call metrics
       const responseTime = Date.now() - startTime;
@@ -172,6 +239,14 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
       // Initialize state machine with fetched data
       stateActions.initializeQuiz(questions, config);
+
+      // Initialize timer for timed quizzes
+      if (config.timing === 'timed') {
+        const limit = savedTotalTimeLimit || config.totalTimeLimit || (questions.length * 60); // 60 seconds per question
+        setTotalTimeLimit(limit);
+        // Use saved time remaining if available (resuming quiz), otherwise use full limit (new quiz)
+        setTimeRemaining(savedTimeRemaining !== null && savedTimeRemaining !== undefined ? savedTimeRemaining : limit);
+      }
 
       // Try to recover from localStorage first
       const localData = recoverLocalState();
@@ -197,6 +272,8 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const fullErrorMessage = `Failed to initialize quiz: ${errorMessage}`;
       onError?.(fullErrorMessage);
+    } finally {
+      isInitializingRef.current = false;
     }
   }, [sessionId, stateActions, onError]);
 
@@ -320,18 +397,78 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     }
   }, [isInitialized, sessionId, quizState.answers, quizState.progress, quizState.currentQuestionIndex, quizState.status, quizState.totalTimeSpent]);
 
-  // Beforeunload protection - warn user about unsaved progress
+  // Periodic auto-save (every 5 answers)
   useEffect(() => {
+    if (!AUTO_SAVE_CONFIG.enablePeriodicAutoSave || !autoSaveManager.current) return;
+
+    const answersCount = quizState.answers.size;
+    if (answersCount > 0 && autoSaveManager.current.shouldPeriodicSave(answersCount)) {
+      autoSaveManager.current.autoSave(sessionId, quizState, 'periodic', timeRemaining);
+    }
+  }, [quizState.answers.size, sessionId, timeRemaining]);
+
+  // Timer countdown for timed quizzes
+  useEffect(() => {
+    // Only run timer if quiz is timed, in progress, and not paused
+    if (quizState.config.timing !== 'timed' || quizState.status !== 'in_progress' || timeRemaining === null || isTimerPaused) {
+      // Clear timer if paused
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      return;
+    }
+
+    // Clear any existing interval
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+    }
+
+    // Start countdown
+    timerIntervalRef.current = setInterval(() => {
+      setTimeRemaining(prev => {
+        if (prev === null || prev <= 0) {
+          // Time's up - complete the quiz
+          if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+          }
+          handleCompleteQuiz();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    // Cleanup on unmount or when dependencies change
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
+  }, [quizState.config.timing, quizState.status, timeRemaining, isTimerPaused]);
+
+  // Auto-save on navigation away from quiz
+  useEffect(() => {
+    if (!AUTO_SAVE_CONFIG.enableAutoSaveOnNavigation || !autoSaveManager.current) return;
+
+    const handleRouteChange = async () => {
+      if (quizState.status === 'in_progress' && quizState.answers.size > 0) {
+        await autoSaveManager.current?.autoSave(sessionId, quizState, 'navigation', timeRemaining);
+      }
+    };
+
+    // Use beforeunload for now (Next.js 15 App Router doesn't have route change events)
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (quizState.status === 'in_progress' && quizState.answers.size > 0) {
+        handleRouteChange();
         e.preventDefault();
-        return "Quiz progress will be saved locally and can be resumed";
+        return "Quiz progress is being saved...";
       }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [quizState.status, quizState.answers.size]);
+  }, [quizState.status, quizState.answers.size, sessionId, timeRemaining]);
 
   // Create hybrid state
   const hybridState: HybridQuizState = {
@@ -348,30 +485,66 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     },
     metrics: {
       totalApiCalls: metricsRef.current.totalApiCalls,
-      averageResponseTime: metricsRef.current.responseCount > 0 
+      averageResponseTime: metricsRef.current.responseCount > 0
         ? Math.round(metricsRef.current.responseTimeSum / metricsRef.current.responseCount)
         : 0
     },
     realtimeStats: {
       connected: enableRealtime && quizState.syncStatus.isOnline,
       latency: 0 // Client-side operations have 0ms latency
-    }
+    },
+    syncStatus,
+    lastSyncTime,
+    queueStatus: autoSaveManager.current?.getQueueStatus() || { total: 0, ready: 0, waiting: 0 },
+    timeRemaining,
+    totalTimeLimit
   };
 
   // Create hybrid actions
   const hybridActions: HybridQuizActions = {
     startQuiz: useCallback(async () => {
       stateActions.startQuiz();
-      return true;
-    }, [stateActions]),
 
-    pauseQuiz: useCallback(() => {
+      // Save status to database when quiz starts
+      if (autoSaveManager.current) {
+        await autoSaveManager.current.autoSave(sessionId, quizState, 'manual', timeRemaining);
+      }
+
+      return true;
+    }, [stateActions, sessionId, quizState, timeRemaining]),
+
+    pauseQuiz: useCallback(async () => {
       stateActions.pauseQuiz();
-    }, [stateActions]),
+      setIsTimerPaused(true);
+
+      // Auto-save when pausing
+      if (autoSaveManager.current) {
+        await autoSaveManager.current.autoSave(sessionId, quizState, 'pause', timeRemaining);
+      }
+    }, [stateActions, sessionId, quizState, timeRemaining]),
 
     resumeQuiz: useCallback(() => {
       stateActions.resumeQuiz();
+      setIsTimerPaused(false);
     }, [stateActions]),
+
+    saveAndExit: useCallback(async () => {
+      if (!autoSaveManager.current) return;
+
+      try {
+        // Save current state to database
+        await autoSaveManager.current.autoSave(sessionId, quizState, 'manual', timeRemaining);
+
+        // Show success toast
+        toast.success('Quiz saved successfully');
+
+        // Navigate to My Quizzes page
+        router.push('/dashboard/quizzes');
+      } catch (error) {
+        console.error('Failed to save and exit:', error);
+        toast.error('Failed to save quiz. Please try again.');
+      }
+    }, [sessionId, quizState, router, timeRemaining]),
 
     completeQuiz: useCallback(async () => {
       return await handleCompleteQuiz();
@@ -419,7 +592,11 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       return stateActions.getAnswerForQuestion(questionId);
     }, [stateActions]),
 
-    forcSync: useCallback(async () => {
+    getQuizConfig: useCallback(() => {
+      return quizState.config;
+    }, [quizState.config]),
+
+    forceSync: useCallback(async () => {
       return await syncManager.current!.syncQuizData(quizState);
     }, [quizState]),
 

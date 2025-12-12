@@ -8,6 +8,7 @@ import {
   quizAPIRateLimiter,
   getClientIP
 } from '@/shared/utils/api-rate-limiter'
+import { devLog, generateRequestId, getClientIP as devGetClientIP } from '@/shared/utils/dev-logger'
 
 // Cache for user role lookups to prevent race conditions
 const roleCache = new Map<string, { role: string; timestamp: number }>()
@@ -30,18 +31,46 @@ const ADMIN_ONLY_ENDPOINTS = [
 
 // Handle authentication for admin API routes
 async function handleAdminApiAuth(request: NextRequest) {
+  const startTime = Date.now()
+  const requestId = generateRequestId()
+  const clientIp = getClientIP(request)
+  const { method, nextUrl: { pathname } } = request
+
+  // Log incoming request
+  devLog.request({
+    method,
+    path: pathname,
+    ip: clientIp,
+    requestId,
+  })
+
   // Allow public endpoints without auth
-  if (PUBLIC_ADMIN_ENDPOINTS.some(endpoint => request.nextUrl.pathname.startsWith(endpoint))) {
+  if (PUBLIC_ADMIN_ENDPOINTS.some(endpoint => pathname.startsWith(endpoint))) {
+    devLog.debug('Public admin endpoint - skipping auth', { pathname })
     return NextResponse.next()
   }
 
   try {
     // Rate limiting check
-    const clientIp = getClientIP(request)
-    const pathname = request.nextUrl.pathname
     const rateLimitResult = adminAPIRateLimiter.checkLimit(clientIp, pathname)
 
+    // Log rate limit status
+    if (rateLimitResult.remaining < 10) {
+      devLog.rateLimit(clientIp, pathname, rateLimitResult.remaining, new Date(rateLimitResult.resetTime))
+    }
+
     if (!rateLimitResult.allowed) {
+      const duration = Date.now() - startTime
+      devLog.warn('Rate limit exceeded', { clientIp, pathname, requestId })
+      devLog.response({
+        method,
+        path: pathname,
+        status: 429,
+        duration,
+        requestId,
+        error: 'Rate limit exceeded',
+      })
+
       return NextResponse.json(
         {
           error: 'Too many requests, please try again later.',
@@ -61,8 +90,19 @@ async function handleAdminApiAuth(request: NextRequest) {
 
     // CSRF protection for state-changing requests
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+      devLog.debug('Checking CSRF protection', { method, pathname })
       const csrfValid = await csrfProtection(request)
       if (!csrfValid) {
+        const duration = Date.now() - startTime
+        devLog.warn('CSRF validation failed', { method, pathname, requestId })
+        devLog.response({
+          method,
+          path: pathname,
+          status: 403,
+          duration,
+          requestId,
+          error: 'CSRF validation failed',
+        })
         return createCSRFErrorResponse()
       }
     }
@@ -90,25 +130,60 @@ async function handleAdminApiAuth(request: NextRequest) {
 
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
+
     if (authError || !user) {
+      const duration = Date.now() - startTime
+      devLog.auth('auth_check', undefined, false)
+      devLog.response({
+        method,
+        path: pathname,
+        status: 401,
+        duration,
+        requestId,
+        error: 'Unauthorized',
+      })
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    devLog.auth('auth_check', user.id, true)
+
     // Get user role with caching
     const userRole = await getUserRoleWithCache(user.id, user, supabase)
+    devLog.debug('User role retrieved', { userId: user.id, userRole })
 
     // Check if endpoint requires admin-only access
-    const requiresAdminOnly = ADMIN_ONLY_ENDPOINTS.some(endpoint => 
+    const requiresAdminOnly = ADMIN_ONLY_ENDPOINTS.some(endpoint =>
       request.nextUrl.pathname.startsWith(endpoint)
     )
 
     if (requiresAdminOnly && userRole !== 'admin') {
+      const duration = Date.now() - startTime
+      devLog.warn('Admin-only access denied', { userId: user.id, userRole, pathname })
+      devLog.response({
+        method,
+        path: pathname,
+        status: 403,
+        duration,
+        userId: user.id,
+        requestId,
+        error: 'Forbidden - Admin access required',
+      })
       return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
     }
 
     // Check if user has any admin privileges (admin, creator, reviewer)
     if (!['admin', 'creator', 'reviewer'].includes(userRole)) {
+      const duration = Date.now() - startTime
+      devLog.warn('Admin privileges required', { userId: user.id, userRole, pathname })
+      devLog.response({
+        method,
+        path: pathname,
+        status: 403,
+        duration,
+        userId: user.id,
+        requestId,
+        error: 'Forbidden - Admin privileges required',
+      })
       return NextResponse.json({ error: 'Forbidden - Admin privileges required' }, { status: 403 })
     }
 
@@ -116,35 +191,84 @@ async function handleAdminApiAuth(request: NextRequest) {
     response.headers.set('x-user-id', user.id)
     response.headers.set('x-user-role', userRole)
     response.headers.set('x-user-email', user.email || '')
+    response.headers.set('x-request-id', requestId)
 
     // Add rate limit headers
     response.headers.set('X-RateLimit-Limit', rateLimitResult.total.toString())
     response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
     response.headers.set('X-RateLimit-Reset', rateLimitResult.resetTime.toString())
 
+    // Log successful response
+    const duration = Date.now() - startTime
+    devLog.response({
+      method,
+      path: pathname,
+      status: 200,
+      duration,
+      userId: user.id,
+      requestId,
+    })
+
     return response
 
   } catch (error) {
-    console.error('Admin API auth error:', error)
+    const duration = Date.now() - startTime
+    devLog.error('Admin API auth error', error)
+    devLog.response({
+      method,
+      path: pathname,
+      status: 500,
+      duration,
+      requestId,
+      error: error instanceof Error ? error.message : 'Internal server error',
+    })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 // Handle authentication for user and quiz API routes
 async function handleUserApiAuth(request: NextRequest) {
+  const startTime = Date.now()
+  const requestId = generateRequestId()
+  const clientIp = getClientIP(request)
+  const { method, nextUrl: { pathname } } = request
+
+  // Log incoming request
+  devLog.request({
+    method,
+    path: pathname,
+    ip: clientIp,
+    requestId,
+  })
+
   try {
     // Determine which rate limiter to use based on path
-    const clientIp = getClientIP(request)
-    const pathname = request.nextUrl.pathname
-
     let rateLimitResult
     if (pathname.startsWith('/api/quiz/')) {
+      devLog.debug('Using quiz rate limiter', { pathname })
       rateLimitResult = quizAPIRateLimiter.checkLimit(clientIp, pathname)
     } else {
+      devLog.debug('Using general rate limiter', { pathname })
       rateLimitResult = generalAPIRateLimiter.checkLimit(clientIp, pathname)
     }
 
+    // Log rate limit status
+    if (rateLimitResult.remaining < 10) {
+      devLog.rateLimit(clientIp, pathname, rateLimitResult.remaining, new Date(rateLimitResult.resetTime))
+    }
+
     if (!rateLimitResult.allowed) {
+      const duration = Date.now() - startTime
+      devLog.warn('Rate limit exceeded', { clientIp, pathname, requestId })
+      devLog.response({
+        method,
+        path: pathname,
+        status: 429,
+        duration,
+        requestId,
+        error: 'Rate limit exceeded',
+      })
+
       return NextResponse.json(
         {
           error: 'Too many requests, please try again later.',
@@ -164,8 +288,19 @@ async function handleUserApiAuth(request: NextRequest) {
 
     // CSRF protection for state-changing requests
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+      devLog.debug('Checking CSRF protection', { method, pathname })
       const csrfValid = await csrfProtection(request)
       if (!csrfValid) {
+        const duration = Date.now() - startTime
+        devLog.warn('CSRF validation failed', { method, pathname, requestId })
+        devLog.response({
+          method,
+          path: pathname,
+          status: 403,
+          duration,
+          requestId,
+          error: 'CSRF validation failed',
+        })
         return createCSRFErrorResponse()
       }
     }
@@ -195,22 +330,55 @@ async function handleUserApiAuth(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
+      const duration = Date.now() - startTime
+      devLog.auth('auth_check', undefined, false)
+      devLog.response({
+        method,
+        path: pathname,
+        status: 401,
+        duration,
+        requestId,
+        error: 'Unauthorized',
+      })
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    devLog.auth('auth_check', user.id, true)
 
     // Add user info to headers for the endpoint to use
     response.headers.set('x-user-id', user.id)
     response.headers.set('x-user-email', user.email || '')
+    response.headers.set('x-request-id', requestId)
 
     // Add rate limit headers
     response.headers.set('X-RateLimit-Limit', rateLimitResult.total.toString())
     response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
     response.headers.set('X-RateLimit-Reset', rateLimitResult.resetTime.toString())
 
+    // Log successful response
+    const duration = Date.now() - startTime
+    devLog.response({
+      method,
+      path: pathname,
+      status: 200,
+      duration,
+      userId: user.id,
+      requestId,
+    })
+
     return response
 
   } catch (error) {
-    console.error('User API auth error:', error)
+    const duration = Date.now() - startTime
+    devLog.error('User API auth error', error)
+    devLog.response({
+      method,
+      path: pathname,
+      status: 500,
+      duration,
+      requestId,
+      error: error instanceof Error ? error.message : 'Internal server error',
+    })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

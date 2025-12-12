@@ -38,6 +38,7 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
  * - dashboard_theme_admin: Dashboard theme for admin/creator/reviewer mode (always 'default')
  * - dashboard_theme_user: Dashboard theme for student mode (default 'tangerine', can be 'notebook' or 'tangerine')
  * - welcome_message_seen: Whether user has seen the welcome message
+ * - security_notice_dismissed: Whether user has dismissed the security update notice
  *
  * REMOVED LEGACY FIELDS:
  * - theme: Color mode is managed by next-themes library (stored in localStorage as 'pathology-bites-theme')
@@ -49,6 +50,7 @@ export const DEFAULT_UI_SETTINGS = {
   dashboard_theme_admin: 'default',
   dashboard_theme_user: 'tangerine',
   welcome_message_seen: false,
+  security_notice_dismissed: false,
 }
 
 /**

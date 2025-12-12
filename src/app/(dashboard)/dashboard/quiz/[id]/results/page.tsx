@@ -1,7 +1,6 @@
 // src/app/(dashboard)/dashboard/quiz/[id]/results/page.tsx
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
 import { useParams } from "next/navigation"
 import { Button } from "@/shared/components/ui/button"
 import { QuizResultsSummary } from "@/features/quiz/components/quiz-results-summary"
@@ -10,24 +9,16 @@ import { PageErrorBoundary } from "@/shared/components/common"
 import { QuizResult } from "@/features/quiz/types/quiz"
 import { toast } from "sonner"
 import Link from "next/link"
+import { useCachedData } from "@/shared/hooks/use-cached-data"
 
 export default function QuizResultsPage() {
   const params = useParams()
   const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id
 
-  // State for results
-  const [result, setResult] = useState<QuizResult | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  // Fetch results data
-  const fetchResultsData = useCallback(async () => {
-    if (!sessionId) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
+  // Fetch results with caching and deduplication
+  const { data: result, isLoading: loading, error: fetchError } = useCachedData<QuizResult>(
+    `quiz-results-${sessionId}`,
+    async () => {
       const resultsResponse = await fetch(`/api/quiz/sessions/${sessionId}/results`);
 
       if (!resultsResponse.ok) {
@@ -41,26 +32,22 @@ export default function QuizResultsPage() {
         throw new Error('Quiz results not found - quiz may not be completed')
       }
 
-      setResult(resultsData.data);
-    } catch (error) {
-      console.error('Error fetching results:', error)
-
-      if (error instanceof Error) {
-        setError(error.message);
-        toast.error(error.message);
-      } else {
-        const genericError = 'Failed to load quiz results'
-        setError(genericError);
-        toast.error(genericError);
+      return resultsData.data;
+    },
+    {
+      enabled: !!sessionId,
+      ttl: 5 * 60 * 1000, // 5 minutes cache
+      staleTime: 2 * 60 * 1000, // 2 minutes stale time
+      storage: 'memory', // Use memory for quiz results
+      prefix: 'pathology-bites-quiz',
+      onError: (error) => {
+        console.error('Error fetching results:', error)
+        toast.error(error.message)
       }
-    } finally {
-      setLoading(false);
     }
-  }, [sessionId]);
+  )
 
-  useEffect(() => {
-    fetchResultsData()
-  }, [fetchResultsData])
+  const error = fetchError?.message || null
 
   // Loading state
   if (loading) {

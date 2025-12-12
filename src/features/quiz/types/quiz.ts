@@ -24,7 +24,7 @@ export type QuestionType = 'all' | 'unused' | 'needsReview' | 'marked' | 'master
 export type CategorySelection = 'all' | 'ap_only' | 'cp_only' | 'custom'
 
 // Quiz status
-export type QuizStatus = 'not_started' | 'in_progress' | 'completed' | 'paused' | 'abandoned'
+export type QuizStatus = 'not_started' | 'in_progress' | 'completed' | 'abandoned'
 
 // Quiz configuration interface - simplified
 export interface QuizConfig {

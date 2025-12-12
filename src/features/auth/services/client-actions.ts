@@ -5,6 +5,7 @@ import { createClient } from '@/shared/services/client'
 import { useRouter } from 'next/navigation'
 import { useCallback } from 'react'
 import { retryManager, authErrorHandler } from '@/features/auth/utils/error-handling'
+import { apiClient } from '@/shared/utils/api-client'
 
 export function useAuthActions() {
   const router = useRouter()
@@ -27,6 +28,9 @@ export function useAuthActions() {
         // Clear admin-mode cookie to prevent it from persisting across sessions
         document.cookie = 'admin-mode=; path=/; max-age=0'
       }
+
+      // Clear cached CSRF token
+      apiClient.clearToken()
 
       // Force a hard refresh to clear all cached data
       window.location.href = '/login'

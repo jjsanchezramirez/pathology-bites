@@ -49,6 +49,7 @@ import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status';
 import { CompactAnswerOptions } from './compact-answer-options';
 import { AnswerOptionFormData, QuestionImageFormData } from '@/features/questions/types/questions';
+import { apiClient } from '@/shared/utils/api-client';
 
 const createQuestionSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
@@ -546,13 +547,8 @@ export function CreateQuestionDialog({
 
       // Use the comprehensive API endpoint that handles everything in one transaction
       console.log('🔍 Making request to /api/admin/questions-create with data:', questionData);
-      
-      const response = await fetch('/api/admin/questions-create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Ensure cookies are sent
-        body: JSON.stringify(questionData),
-      });
+
+      const response = await apiClient.post('/api/admin/questions-create', questionData);
 
       console.log('📡 Response status:', response.status);
       console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));

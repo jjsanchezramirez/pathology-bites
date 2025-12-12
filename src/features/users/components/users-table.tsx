@@ -52,6 +52,7 @@ import {
 import { format } from 'date-fns'
 import { useUserRole } from '@/shared/hooks/use-user-role'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { apiClient } from '@/shared/utils/api-client'
 
 interface User {
   id: string
@@ -400,14 +401,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
     try {
       console.log('Attempting to delete user:', userId)
 
-      const response = await fetch('/api/admin/users', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ userId })
-      })
+      const response = await apiClient.delete('/api/admin/users', { userId })
 
       const responseData = await response.json()
       console.log('Delete user response:', { status: response.status, data: responseData })

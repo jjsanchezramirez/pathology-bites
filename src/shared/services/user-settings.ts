@@ -62,6 +62,43 @@ function mapQuestionTypeToDatabase(frontendType: QuizSettings['default_question_
 
 class UserSettingsService {
   private baseUrl = '/api/user/settings'
+  private csrfToken: string | null = null
+
+  /**
+   * Get CSRF token for authenticated requests
+   */
+  private async getCSRFToken(): Promise<string> {
+    // Return cached token if available
+    if (this.csrfToken) {
+      return this.csrfToken
+    }
+
+    try {
+      const response = await fetch('/api/public/csrf-token', {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch CSRF token: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (!data.success || !data.token) {
+        throw new Error('Invalid CSRF token response')
+      }
+
+      this.csrfToken = data.token
+      return data.token
+    } catch (error) {
+      console.error('CSRF token fetch error:', error)
+      throw new Error('Failed to get CSRF token')
+    }
+  }
 
   /**
    * Get all user settings
@@ -144,10 +181,14 @@ class UserSettingsService {
       }
     }
 
+    // Get CSRF token for the request
+    const csrfToken = await this.getCSRFToken()
+
     const response = await fetch(this.baseUrl, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
+        'x-csrf-token': csrfToken,
       },
       credentials: 'include',
       body: JSON.stringify({
@@ -250,6 +291,32 @@ class UserSettingsService {
     } catch (error) {
       console.error('Error checking welcome message status:', error)
       // Default to true to avoid showing welcome message on error
+      return true
+    }
+  }
+
+  /**
+   * Mark security notice as dismissed
+   */
+  async markSecurityNoticeDismissed(): Promise<void> {
+    try {
+      await this.updateUISettings({ security_notice_dismissed: true })
+    } catch (error) {
+      console.error('Error marking security notice as dismissed:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Check if user has dismissed the security notice
+   */
+  async hasSeenSecurityNotice(): Promise<boolean> {
+    try {
+      const userSettings = await this.getUserSettings()
+      return userSettings.ui_settings.security_notice_dismissed ?? false
+    } catch (error) {
+      console.error('Error checking security notice status:', error)
+      // Default to true to avoid showing security notice on error
       return true
     }
   }

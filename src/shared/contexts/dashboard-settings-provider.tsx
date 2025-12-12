@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { userSettingsService } from '@/shared/services/user-settings'
-import { createClient } from '@/shared/services/client'
+import { useUserSettings } from '@/shared/hooks/use-user-settings'
 import { getTextZoomConfig, applyTextZoom, getValidZoomLevel } from '@/shared/utils/text-zoom'
 import { useUserRole } from '@/shared/hooks/use-user-role'
 import { getAdminModeFromCookie, getThemeKeyForMode } from '@/shared/utils/admin-mode'
@@ -22,48 +22,44 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
   const { isAdmin } = useUserRole()
   const [textZoom, setTextZoomState] = useState(1.0)
   const [dashboardTheme, setDashboardThemeState] = useState('default')
-  const [isLoading, setIsLoading] = useState(true)
   const config = getTextZoomConfig()
 
-  // Load settings from database on mount (user is authenticated in dashboard)
+  // Use cached user settings hook (eliminates redundant API calls)
+  const { data: settings, isLoading, invalidate } = useUserSettings({
+    refetchOnMount: true,
+    onSuccess: (data) => {
+      console.log('[DashboardSettings] Settings loaded from cache:', data.ui_settings)
+    }
+  })
+
+  // Apply settings when loaded
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        console.log('[DashboardSettings] Loading settings from database...')
-        const settings = await userSettingsService.getUserSettings()
+    if (!settings) return
 
-        console.log('[DashboardSettings] Received:', settings.ui_settings)
+    console.log('[DashboardSettings] Applying settings:', settings.ui_settings)
 
-        // Sync UI settings to localStorage for DashboardThemeContext
-        try {
-          localStorage.setItem('pathology-bites-ui-settings', JSON.stringify(settings.ui_settings))
-          console.log('[DashboardSettings] Synced ui_settings to localStorage')
-        } catch (storageError) {
-          console.warn('[DashboardSettings] Failed to sync to localStorage:', storageError)
-        }
-
-        // Apply text zoom
-        const zoom = settings.ui_settings?.text_zoom ?? config.default
-        const validZoom = getValidZoomLevel(zoom)
-        setTextZoomState(validZoom)
-        applyTextZoom(validZoom)
-
-        // Apply dashboard theme using utility function
-        const adminMode = getAdminModeFromCookie(isAdmin)
-        const themeKey = getThemeKeyForMode(adminMode)
-        const theme = settings.ui_settings?.[themeKey] ?? 'default'
-        setDashboardThemeState(theme)
-
-        console.log('[DashboardSettings] Applied - zoom:', validZoom, 'theme:', theme, 'adminMode:', adminMode)
-      } catch (error) {
-        console.error('[DashboardSettings] Failed to load:', error)
-      } finally {
-        setIsLoading(false)
-      }
+    // Sync UI settings to localStorage for DashboardThemeContext
+    try {
+      localStorage.setItem('pathology-bites-ui-settings', JSON.stringify(settings.ui_settings))
+      console.log('[DashboardSettings] Synced ui_settings to localStorage')
+    } catch (storageError) {
+      console.warn('[DashboardSettings] Failed to sync to localStorage:', storageError)
     }
 
-    loadSettings()
-  }, [config.default, isAdmin])
+    // Apply text zoom
+    const zoom = settings.ui_settings?.text_zoom ?? config.default
+    const validZoom = getValidZoomLevel(zoom)
+    setTextZoomState(validZoom)
+    applyTextZoom(validZoom)
+
+    // Apply dashboard theme using utility function
+    const adminMode = getAdminModeFromCookie(isAdmin)
+    const themeKey = getThemeKeyForMode(adminMode)
+    const theme = settings.ui_settings?.[themeKey] ?? 'default'
+    setDashboardThemeState(theme)
+
+    console.log('[DashboardSettings] Applied - zoom:', validZoom, 'theme:', theme, 'adminMode:', adminMode)
+  }, [settings, config.default, isAdmin])
 
   // Update text zoom
   const setTextZoom = async (newZoom: number) => {
@@ -74,6 +70,8 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
     try {
       await userSettingsService.updateUISettings({ text_zoom: validZoom })
       console.log('[DashboardSettings] Text zoom saved:', validZoom)
+      // Don't invalidate cache immediately - local state is already updated
+      // Cache will be refreshed on next page load
     } catch (error) {
       console.error('[DashboardSettings] Failed to save text zoom:', error)
     }
@@ -89,6 +87,8 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
 
       await userSettingsService.updateUISettings({ [themeKey]: theme })
       console.log('[DashboardSettings] Theme saved:', theme)
+      // Don't invalidate cache immediately - local state is already updated
+      // Cache will be refreshed on next page load
     } catch (error) {
       console.error('[DashboardSettings] Failed to save theme:', error)
     }

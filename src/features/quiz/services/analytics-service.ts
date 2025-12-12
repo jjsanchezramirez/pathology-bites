@@ -10,20 +10,24 @@ export class QuizAnalyticsService {
     this.supabase = authenticatedSupabase
   }
 
-  private getSupabase() {
-    return this.supabase || createClient()
+  private async getSupabase() {
+    if (this.supabase) {
+      return this.supabase
+    }
+    return await createClient()
   }
 
   /**
    * Update analytics for all questions in a completed quiz session
-   * This replaces the per-question trigger approach with a batch update
+   * Uses a SECURITY DEFINER database function to bypass RLS policies
    */
   async updateQuizSessionAnalytics(sessionId: string): Promise<void> {
     try {
       console.log('[Analytics] Starting batch analytics update for session:', sessionId)
 
       // Get all questions from this quiz session
-      const { data: attempts, error: attemptsError } = await this.getSupabase()
+      const supabase = await this.getSupabase()
+      const { data: attempts, error: attemptsError } = await supabase
         .from('quiz_attempts')
         .select('question_id')
         .eq('quiz_session_id', sessionId)
@@ -42,13 +46,16 @@ export class QuizAnalyticsService {
       const questionIds = [...new Set(attempts.map((a: any) => a.question_id))] as string[]
       console.log('[Analytics] Updating analytics for questions:', questionIds)
 
-      // Update analytics for each question
-      const updatePromises = questionIds.map(questionId =>
-        this.updateQuestionAnalytics(questionId)
-      )
+      // Call database function to update analytics (bypasses RLS with SECURITY DEFINER)
+      const { error: updateError } = await supabase.rpc('update_question_analytics_batch', {
+        question_ids: questionIds
+      })
 
-      await Promise.allSettled(updatePromises)
-      console.log('[Analytics] Batch analytics update completed for session:', sessionId)
+      if (updateError) {
+        console.error('[Analytics] Error calling analytics function:', updateError)
+      } else {
+        console.log('[Analytics] Batch analytics update completed for session:', sessionId)
+      }
 
     } catch (error) {
       console.error('[Analytics] Error in batch analytics update:', error)
@@ -56,78 +63,28 @@ export class QuizAnalyticsService {
     }
   }
 
-  /**
-   * Update analytics for a single question
-   */
-  private async updateQuestionAnalytics(questionId: string): Promise<void> {
-    try {
-      // Calculate stats from quiz_attempts
-      const { data: stats, error: statsError } = await this.getSupabase()
-        .from('quiz_attempts')
-        .select('is_correct')
-        .eq('question_id', questionId)
 
-      if (statsError) {
-        console.error('[Analytics] Error fetching question stats:', statsError)
-        return
-      }
-
-      if (!stats || stats.length === 0) {
-        return
-      }
-
-      const totalAttempts = stats.length
-      const correctAttempts = stats.filter((s: any) => s.is_correct).length
-      const successRate = totalAttempts > 0 ? correctAttempts / totalAttempts : 0
-      const difficultyScore = 1.0 - successRate
-
-      // Update or insert analytics record
-      const { error: upsertError } = await this.getSupabase()
-        .from('question_analytics')
-        .upsert({
-          question_id: questionId,
-          total_attempts: totalAttempts,
-          correct_attempts: correctAttempts,
-          success_rate: successRate,
-          difficulty_score: difficultyScore,
-          last_calculated_at: new Date().toISOString()
-        }, {
-          onConflict: 'question_id'
-        })
-
-      if (upsertError) {
-        console.error('[Analytics] Error updating question analytics:', upsertError)
-      } else {
-        console.log('[Analytics] Updated analytics for question:', questionId, {
-          totalAttempts,
-          correctAttempts,
-          successRate: Math.round(successRate * 100) + '%'
-        })
-      }
-
-    } catch (error) {
-      console.error('[Analytics] Error updating question analytics:', error)
-      // Don't throw - individual question analytics failures shouldn't break the batch
-    }
-  }
 
   /**
    * Update analytics for multiple questions (used by admin tools)
+   * Uses a SECURITY DEFINER database function to bypass RLS policies
    */
   async updateMultipleQuestionAnalytics(questionIds: string[]): Promise<void> {
     try {
       console.log('[Analytics] Updating analytics for multiple questions:', questionIds.length)
 
-      const updatePromises = questionIds.map(questionId => 
-        this.updateQuestionAnalytics(questionId)
-      )
+      const supabase = await this.getSupabase()
 
-      const results = await Promise.allSettled(updatePromises)
-      
-      const successful = results.filter(r => r.status === 'fulfilled').length
-      const failed = results.filter(r => r.status === 'rejected').length
+      // Call database function to update analytics (bypasses RLS with SECURITY DEFINER)
+      const { error: updateError } = await supabase.rpc('update_question_analytics_batch', {
+        question_ids: questionIds
+      })
 
-      console.log('[Analytics] Batch update completed:', { successful, failed, total: questionIds.length })
+      if (updateError) {
+        console.error('[Analytics] Error calling analytics function:', updateError)
+      } else {
+        console.log('[Analytics] Batch update completed for', questionIds.length, 'questions')
+      }
 
     } catch (error) {
       console.error('[Analytics] Error in multiple question analytics update:', error)
@@ -141,8 +98,10 @@ export class QuizAnalyticsService {
     try {
       console.log('[Analytics] Starting full analytics recalculation')
 
+      const supabase = await this.getSupabase()
+
       // Get all questions that have attempts
-      const { data: questions, error: questionsError } = await this.getSupabase()
+      const { data: questions, error: questionsError } = await supabase
         .from('quiz_attempts')
         .select('question_id')
 
@@ -159,17 +118,8 @@ export class QuizAnalyticsService {
       // Get unique question IDs
       const questionIds = [...new Set(questions.map((q: any) => q.question_id))] as string[]
 
-      // Process in batches to avoid overwhelming the database
-      const batchSize = 50
-      for (let i = 0; i < questionIds.length; i += batchSize) {
-        const batch = questionIds.slice(i, i + batchSize)
-        await this.updateMultipleQuestionAnalytics(batch)
-        
-        // Small delay between batches
-        if (i + batchSize < questionIds.length) {
-          await new Promise(resolve => setTimeout(resolve, 100))
-        }
-      }
+      // Call database function to update all analytics at once
+      await this.updateMultipleQuestionAnalytics(questionIds)
 
       console.log('[Analytics] Full analytics recalculation completed for', questionIds.length, 'questions')
 
@@ -189,7 +139,8 @@ export class QuizAnalyticsService {
     averageTimePerQuestion: number
   } | null> {
     try {
-      const { data: attempts, error } = await this.getSupabase()
+      const supabase = await this.getSupabase()
+      const { data: attempts, error } = await supabase
         .from('quiz_attempts')
         .select('is_correct, time_spent')
         .eq('quiz_session_id', sessionId)

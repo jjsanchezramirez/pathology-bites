@@ -62,6 +62,7 @@ import {
   type QuizSettings,
   type NotificationSettings
 } from '@/shared/services/user-settings'
+import { useUserSettings } from '@/shared/hooks/use-user-settings'
 
 // Remove local interfaces since we're using the ones from the service
 
@@ -69,6 +70,12 @@ export default function SettingsPage() {
   const { user, isAuthenticated, isLoading } = useAuthStatus()
   const { theme, setTheme } = useTheme()
   const { currentTheme: dashboardTheme, setTheme: setDashboardTheme, availableThemes } = useDashboardTheme()
+
+  // Use cached user settings hook
+  const { data: userSettings, isLoading: settingsLoading } = useUserSettings({
+    enabled: isAuthenticated && !!user
+  })
+
   const [preferences, setPreferences] = useState<NotificationSettings>({
     email_notifications: true,
     quiz_reminders: true,
@@ -82,7 +89,6 @@ export default function SettingsPage() {
     default_category_selection: 'all'
   })
   const [saving, setSaving] = useState(false)
-  const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showResetDialog, setShowResetDialog] = useState(false)
@@ -93,58 +99,21 @@ export default function SettingsPage() {
   const [isExporting, setIsExporting] = useState(false)
   const [deletePassword, setDeletePassword] = useState('')
 
-
-
   useEffect(() => {
     setMounted(true)
   }, [])
 
+  // Apply settings when loaded from cache
   useEffect(() => {
-    if (isAuthenticated && user) {
-      fetchUserPreferences()
-    }
-  }, [isAuthenticated, user])
-
-  const fetchUserPreferences = async () => {
-    try {
-      setLoading(true)
-
-      // Fetch user settings from database
-      const userSettings = await userSettingsService.getUserSettings()
-
+    if (userSettings) {
       setPreferences(userSettings.notification_settings)
       setQuizSettings(userSettings.quiz_settings)
-
-      // Handle text zoom
-      const config = getTextZoomConfig()
-      const zoom = getValidZoomLevel(userSettings.ui_settings.text_zoom || config.default)
-      // Use context to set text zoom (this will sync with header)
-      setTextZoomContext(zoom)
-    } catch (error) {
-      console.error('Error fetching preferences:', error)
-      toast.error('Failed to load preferences')
-
-      // Use defaults if fetch fails
-      setPreferences({
-        email_notifications: true,
-        quiz_reminders: true,
-        progress_updates: true
-      })
-
-      const config = getTextZoomConfig()
-      // Use context to set text zoom (this will sync with header)
-      setTextZoomContext(config.default)
-      setQuizSettings({
-        default_question_count: 10,
-        default_mode: 'tutor',
-        default_timing: 'untimed',
-        default_question_type: 'unused',
-        default_category_selection: 'all'
-      })
-    } finally {
-      setLoading(false)
+      // Note: textZoom is already handled by DashboardSettingsProvider
+      // We just read it from context, we don't set it here to avoid infinite loops
     }
-  }
+  }, [userSettings])
+
+  // fetchUserPreferences is now deprecated - settings are loaded via useUserSettings hook
 
   const handlePreferenceChange = async (key: keyof NotificationSettings, value: boolean) => {
     try {
@@ -154,7 +123,8 @@ export default function SettingsPage() {
 
       // Save to database
       await userSettingsService.updateNotificationSettings(newPreferences)
-      // Removed toast notification for preference changes - UI feedback is immediate
+      // Don't invalidate cache immediately - local state is already updated
+      // Cache will be refreshed on next page load
     } catch (error) {
       console.error('Error updating preference:', error)
       toast.error('Failed to update preference')
@@ -173,7 +143,8 @@ export default function SettingsPage() {
 
       // Save to database
       await userSettingsService.updateQuizSettings(newSettings)
-      // Removed toast notification for quiz setting changes - UI feedback is immediate
+      // Don't invalidate cache immediately - local state is already updated
+      // Cache will be refreshed on next page load
     } catch (error) {
       console.error('Error updating quiz setting:', error)
       toast.error('Failed to update quiz setting')
@@ -271,9 +242,22 @@ export default function SettingsPage() {
     try {
       setIsExporting(true)
 
+      // Get CSRF token
+      const csrfResponse = await fetch('/api/public/csrf-token', {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json' }
+      })
+      const csrfData = await csrfResponse.json()
+      const csrfToken = csrfData.token
+
       const response = await fetch('/api/user/data-export', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'x-csrf-token': csrfToken,
+        },
+        credentials: 'include',
       })
 
       if (!response.ok) {
@@ -337,7 +321,7 @@ export default function SettingsPage() {
     }
   }
 
-  if (isLoading || loading) {
+  if (isLoading || settingsLoading) {
     return (
       <div className="container mx-auto py-8">
         <div className="max-w-4xl mx-auto">
@@ -439,15 +423,16 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your account preferences and settings.
-        </p>
-      </div>
+    <div className="container mx-auto py-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <p className="text-muted-foreground">
+            Manage your account preferences and quiz settings.
+          </p>
+        </div>
 
-      <div className="space-y-6">
+        <div className="space-y-6">
         {/* Appearance Settings */}
         <Card>
           <CardHeader>
@@ -843,9 +828,9 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+        </div>
 
-      {/* Delete Account Dialog */}
+        {/* Delete Account Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={(open) => {
         setShowDeleteDialog(open)
         if (!open) setDeletePassword('')
@@ -964,6 +949,7 @@ export default function SettingsPage() {
           </DialogContent>
         </DialogPortal>
       </Dialog>
+      </div>
     </div>
   )
 }

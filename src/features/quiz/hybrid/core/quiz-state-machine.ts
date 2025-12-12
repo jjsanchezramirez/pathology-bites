@@ -68,9 +68,9 @@ export function quizStateReducer(state: QuizState, action: QuizAction): QuizStat
       };
 
     case 'PAUSE_QUIZ':
+      // Keep status as 'in_progress' - pause state is tracked locally
       return {
         ...state,
-        status: 'paused',
         syncStatus: {
           ...state.syncStatus,
           pendingChanges: true
@@ -78,9 +78,9 @@ export function quizStateReducer(state: QuizState, action: QuizAction): QuizStat
       };
 
     case 'RESUME_QUIZ':
+      // Keep status as 'in_progress' - resume just continues the quiz
       return {
         ...state,
-        status: 'in_progress',
         syncStatus: {
           ...state.syncStatus,
           pendingChanges: true

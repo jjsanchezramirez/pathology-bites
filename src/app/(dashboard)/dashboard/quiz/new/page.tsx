@@ -14,7 +14,9 @@ import { Slider } from "@/shared/components/ui/slider"
 import { Separator } from "@/shared/components/ui/separator"
 import { Input } from "@/shared/components/ui/input"
 import { BookOpen, WifiOff } from "lucide-react"
-import { userSettingsService } from '@/shared/services/user-settings'
+import { useQuizSettings } from '@/shared/hooks/use-user-settings'
+import { useQuizInit } from '@/shared/hooks/use-quiz-init'
+import { useCSRFToken } from '@/features/auth/hooks/use-csrf-token'
 
 import {
   QuizMode,
@@ -56,19 +58,16 @@ export default function NewQuizPage() {
   const [previousQuizTitles, setPreviousQuizTitles] = useState<string[]>([])
   const [loadingTitles, setLoadingTitles] = useState(true)
 
-  // Use cached data for user settings
-  const { data: userSettings } = useCachedData(
-    'user-quiz-settings',
-    async () => {
-      return await userSettingsService.getQuizSettings()
-    },
-    {
-      ttl: 5 * 60 * 1000, // 5 minutes cache
-      staleTime: 2 * 60 * 1000, // 2 minutes stale time
-      storage: 'memory',
-      prefix: 'pathology-bites-user-settings'
-    }
-  )
+  // Use cached quiz settings hook (eliminates redundant API calls)
+  const { data: userSettings } = useQuizSettings()
+
+  // Use batched quiz initialization (combines sessions + options into single API call)
+  const { data: quizInitData, isLoading: quizInitLoading } = useQuizInit({
+    sessionLimit: 100
+  })
+
+  // CSRF token for POST requests
+  const { getToken, addTokenToHeaders } = useCSRFToken()
 
   // Apply user settings when available
   useEffect(() => {
@@ -84,79 +83,28 @@ export default function NewQuizPage() {
     }
   }, [userSettings])
 
-  // Use cached data for quiz titles (limit to recent 100 for title generation)
-  const { data: recentSessions } = useCachedData(
-    'recent-quiz-titles',
-    async () => {
-      const response = await fetch('/api/quiz/sessions?limit=100')
-      if (response.ok) {
-        const data = await response.json()
-        return data.data?.map((session: any) => session.title) || []
-      }
-      return []
-    },
-    {
-      ttl: 5 * 60 * 1000, // 5 minutes cache
-      staleTime: 2 * 60 * 1000, // 2 minutes stale time
-      storage: 'memory',
-      prefix: 'pathology-bites-quiz-titles',
-      onSuccess: (titles) => {
-        setPreviousQuizTitles(titles)
-        setLoadingTitles(false)
-      },
-      onError: () => {
-        setLoadingTitles(false)
-      }
-    }
-  )
-
-  // Update titles when cached data is available
+  // Apply quiz init data when available
   useEffect(() => {
-    if (recentSessions) {
-      setPreviousQuizTitles(recentSessions)
+    if (quizInitData) {
+      // Set quiz options
+      setQuizOptions({
+        categories: quizInitData.options.categories,
+        questionTypeStats: quizInitData.options.questionTypeStats
+      })
+
+      // Set previous quiz titles
+      setPreviousQuizTitles(quizInitData.sessions.titles)
+
+      // Update loading states
+      setLoading(false)
       setLoadingTitles(false)
     }
-  }, [recentSessions])
+  }, [quizInitData])
 
-  // Use cached data for quiz options
-  const { data: quizOptionsData, isLoading } = useCachedData(
-    'quiz-options',
-    async () => {
-      const response = await fetch('/api/quiz/options')
-      if (!response.ok) {
-        throw new Error('Failed to fetch quiz options')
-      }
-      const result = await response.json()
-      return result.data
-    },
-    {
-      ttl: 10 * 60 * 1000, // 10 minutes cache (quiz options don't change often)
-      staleTime: 5 * 60 * 1000, // 5 minutes stale time
-      storage: 'memory',
-      prefix: 'pathology-bites-quiz-options',
-      onSuccess: (data) => {
-        setQuizOptions(data)
-        setLoading(false)
-      },
-      onError: () => {
-        toast.error('Failed to load quiz options')
-        setLoading(false)
-      }
-    }
-  )
-
-  // Update quiz options when cached data is available
+  // Sync loading state with quiz init
   useEffect(() => {
-    if (quizOptionsData) {
-      setQuizOptions(quizOptionsData)
-      setLoading(false)
-    }
-  }, [quizOptionsData])
-
-  // Set loading state based on cached data loading
-  useEffect(() => {
-    setLoading(isLoading)
-  }, [isLoading])
+    setLoading(quizInitLoading)
+  }, [quizInitLoading])
 
   // Auto-adjust question count when available questions change
   useEffect(() => {
@@ -321,11 +269,14 @@ export default function NewQuizPage() {
         timePerQuestion: formData.timing === 'timed' ? QUIZ_TIMING_CONFIG.timed.timePerQuestion : undefined
       }
 
+      // Get CSRF token
+      const csrfToken = await getToken()
+
       const response = await fetch('/api/quiz/sessions', {
         method: 'POST',
-        headers: {
+        headers: addTokenToHeaders({
           'Content-Type': 'application/json',
-        },
+        }, csrfToken),
         body: JSON.stringify(quizPayload),
       })
 

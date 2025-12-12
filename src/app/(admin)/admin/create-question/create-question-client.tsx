@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { MultiStepQuestionForm } from './components/multi-step-question-form'
 import { QuestionFormData } from '@/features/questions/types/questions'
+import { apiClient } from '@/shared/utils/api-client'
 
 export function CreateQuestionClient() {
   const router = useRouter()
@@ -11,14 +12,7 @@ export function CreateQuestionClient() {
   // Handle form submission
   const handleSubmit = async (data: QuestionFormData) => {
     try {
-      const response = await fetch('/api/admin/questions-create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      })
+      const response = await apiClient.post('/api/admin/questions-create', data)
 
       if (!response.ok) {
         const errorData = await response.json()

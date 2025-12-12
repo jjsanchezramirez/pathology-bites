@@ -50,7 +50,7 @@ export function useCachedData<T>(
 
 
 
-  // Fetch data with caching
+  // Fetch data with caching and deduplication
   const fetchData = useCallback(async (force = false) => {
     if (!enabled || fetchingRef.current) return
 
@@ -76,7 +76,12 @@ export function useCachedData<T>(
       setIsLoading(true)
       setError(null)
 
-      const result = await fetcher()
+      // Use deduplication to prevent concurrent requests for the same key
+      const result = await cacheService.dedupe(
+        key,
+        fetcher,
+        { storage, prefix }
+      )
 
       if (!mounted.current) return
 
@@ -107,7 +112,7 @@ export function useCachedData<T>(
       }
       fetchingRef.current = false
     }
-  }, [key, enabled, storage, prefix, ttl, fetcher])
+  }, [key, enabled, storage, prefix, ttl, staleTime, fetcher, onSuccess, onError])
 
   // Create refs for stable function references
   const fetchDataRef = useRef(fetchData)
