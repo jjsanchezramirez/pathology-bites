@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useClientVirtualSlides } from '@/shared/hooks/use-client-virtual-slides'
 import { VIRTUAL_SLIDES_JSON_URL } from '@/shared/config/virtual-slides'
 import { Card, CardContent } from '@/shared/components/ui/card'
@@ -31,6 +32,8 @@ import { Pagination } from './components/pagination'
 import { LoadingSkeleton } from './components/loading-skeleton'
 
 export default function VirtualSlidesPage() {
+  const searchParams = useSearchParams()
+
   // ✅ Use unified search - server-side filtering with proper pagination
   // Client-only mode (always)
   const client = useClientVirtualSlides(50)
@@ -65,6 +68,7 @@ export default function VirtualSlidesPage() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedOrganSystem, setSelectedOrganSystem] = useState('all')
   const [isInitialLoading, setIsInitialLoading] = useState(true)
+  const [urlParamsProcessed, setUrlParamsProcessed] = useState(false)
 
   // Metadata for filters
   const [repositories, setRepositories] = useState<string[]>([])
@@ -75,6 +79,32 @@ export default function VirtualSlidesPage() {
   const [showDiagnoses, setShowDiagnoses] = useState(true)
   const [isRandomMode, setIsRandomMode] = useState(false)
   const [revealedDiagnoses, setRevealedDiagnoses] = useState<Set<string>>(new Set())
+
+  // Process URL parameters on mount
+  useEffect(() => {
+    if (!urlParamsProcessed && !client.isLoading) {
+      const searchQuery = searchParams.get('search')
+      const randomParam = searchParams.get('random')
+
+      if (searchQuery) {
+        setSearchTerm(searchQuery)
+        setDebouncedSearchTerm(searchQuery)
+      }
+
+      if (randomParam === 'true') {
+        setIsRandomMode(true)
+        setShowDiagnoses(false)
+        const seed = Math.floor(Math.random() * 1e9)
+        searchWithFilters({
+          randomMode: true,
+          randomSeed: seed,
+          page: 1
+        })
+      }
+
+      setUrlParamsProcessed(true)
+    }
+  }, [searchParams, urlParamsProcessed, client.isLoading, searchWithFilters])
 
   // Load metadata for filters (client-only when available)
   useEffect(() => {
