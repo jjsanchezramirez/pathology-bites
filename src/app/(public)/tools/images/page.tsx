@@ -1,36 +1,40 @@
 // src/app/(public)/tools/images/page.tsx
 'use client'
 
-import { useState, useCallback, useEffect } from 'react';
-import Image from 'next/image';
-import { Card } from "@/shared/components/ui/card";
-import { Input } from "@/shared/components/ui/input";
-import { Button } from "@/shared/components/ui/button";
-import { Search, Loader2, ImageIcon } from 'lucide-react';
+import { useState, useCallback, useEffect } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { Card } from "@/shared/components/ui/card"
+import { Input } from "@/shared/components/ui/input"
+import { Button } from "@/shared/components/ui/button"
+import { Search, Loader2, ImageIcon } from 'lucide-react'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select";
-import { fetchImages } from '@/features/images/services/images';
-import { ImageData } from '@/features/images/types/images';
-import { PublicHero } from '@/shared/components/common/public-hero';
-import { JoinCommunitySection } from '@/shared/components/common/join-community-section';
+} from "@/shared/components/ui/select"
+import { fetchImages } from '@/features/images/services/images'
+import { ImageData } from '@/features/images/types/images'
+import { PublicHero } from '@/shared/components/common/public-hero'
+import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
+import { ImageViewerModal } from '@/shared/components/ui/image-viewer-modal'
+import { ImageGridSkeleton } from './components/image-grid-skeleton'
 
-type CategoryFilterType = 'all' | 'microscopic' | 'gross';
+type CategoryFilterType = 'all' | 'microscopic' | 'gross'
 
 interface TablePaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  totalItems: number;
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
+  totalItems: number
 }
 
 function TablePagination({ currentPage, totalPages, onPageChange, totalItems }: TablePaginationProps) {
-  const startItem = (currentPage - 1) * 20 + 1;
-  const endItem = Math.min(currentPage * 20, totalItems);
+  const pageSize = 20
+  const startItem = (currentPage - 1) * pageSize + 1
+  const endItem = Math.min(currentPage * pageSize, totalItems)
 
   return (
     <div className="flex items-center justify-between px-2">
@@ -61,35 +65,88 @@ function TablePagination({ currentPage, totalPages, onPageChange, totalItems }: 
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export default function ImagesPage() {
-  const [images, setImages] = useState<ImageData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>('all');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalItems, setTotalItems] = useState(0);
-  const pageSize = 20;
+  const searchParams = useSearchParams()
+  const router = useRouter()
 
-  // Debounce search term to prevent jittery behavior
+  const [images, setImages] = useState<ImageData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>('all')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalItems, setTotalItems] = useState(0)
+  const [selectedImage, setSelectedImage] = useState<ImageData | null>(null)
+  const [urlParamsProcessed, setUrlParamsProcessed] = useState(false)
+
+  const pageSize = 20
+
+  // Process URL parameters on mount
+  useEffect(() => {
+    if (!urlParamsProcessed) {
+      const searchQuery = searchParams.get('search')
+      const categoryQuery = searchParams.get('category') as CategoryFilterType | null
+      const pageQuery = searchParams.get('page')
+
+      if (searchQuery) {
+        setSearchTerm(searchQuery)
+        setDebouncedSearchTerm(searchQuery)
+      }
+
+      if (categoryQuery && ['all', 'microscopic', 'gross'].includes(categoryQuery)) {
+        setCategoryFilter(categoryQuery)
+      }
+
+      if (pageQuery) {
+        const pageNum = parseInt(pageQuery, 10)
+        if (!isNaN(pageNum) && pageNum > 0) {
+          setPage(pageNum)
+        }
+      }
+
+      setUrlParamsProcessed(true)
+    }
+  }, [searchParams, urlParamsProcessed])
+
+  // Update URL when filters change
+  useEffect(() => {
+    if (!urlParamsProcessed) return
+
+    const params = new URLSearchParams()
+    if (debouncedSearchTerm) params.set('search', debouncedSearchTerm)
+    if (categoryFilter !== 'all') params.set('category', categoryFilter)
+    if (page > 1) params.set('page', page.toString())
+
+    const queryString = params.toString()
+    const newUrl = queryString ? `/tools/images?${queryString}` : '/tools/images'
+
+    // Only update if URL actually changed
+    if (window.location.pathname + window.location.search !== newUrl) {
+      router.replace(newUrl, { scroll: false })
+    }
+  }, [debouncedSearchTerm, categoryFilter, page, router, urlParamsProcessed])
+
+  // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+      setDebouncedSearchTerm(searchTerm)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchTerm])
 
   // Reset page when search term or category changes
   useEffect(() => {
-    setPage(1);
-  }, [debouncedSearchTerm, categoryFilter]);
+    if (urlParamsProcessed) {
+      setPage(1)
+    }
+  }, [debouncedSearchTerm, categoryFilter, urlParamsProcessed])
 
   const loadImages = useCallback(async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       const result = await fetchImages({
         page: page - 1, // Convert to 0-based for service
@@ -98,41 +155,38 @@ export default function ImagesPage() {
         category: categoryFilter === 'all' ? undefined : categoryFilter,
         showUnusedOnly: false,
         includeOnlyMicroscopicAndGross: categoryFilter === 'all'
-      });
+      })
 
       if (result.error) {
-        console.error('Failed to load images:', result.error);
-        setImages([]);
-        setTotalItems(0);
-        setTotalPages(0);
+        console.error('Failed to load images:', result.error)
+        setImages([])
+        setTotalItems(0)
+        setTotalPages(0)
       } else {
-        setImages(result.data);
-        setTotalItems(result.total);
-        setTotalPages(Math.ceil(result.total / pageSize));
+        setImages(result.data)
+        setTotalItems(result.total)
+        setTotalPages(Math.ceil(result.total / pageSize))
       }
     } catch (error) {
-      console.error('Error loading images:', error);
-      setImages([]);
-      setTotalItems(0);
-      setTotalPages(0);
+      console.error('Error loading images:', error)
+      setImages([])
+      setTotalItems(0)
+      setTotalPages(0)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [page, pageSize, debouncedSearchTerm, categoryFilter]);
+  }, [page, debouncedSearchTerm, categoryFilter])
 
   useEffect(() => {
-    loadImages();
-  }, [loadImages]);
-
-  // Reset to page 1 when search or filter changes
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, categoryFilter]);
+    if (urlParamsProcessed) {
+      loadImages()
+    }
+  }, [loadImages, urlParamsProcessed])
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    loadImages();
-  };
+    e.preventDefault()
+    // Debounce handles the actual search
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -160,11 +214,8 @@ export default function ImagesPage() {
                         className="pl-10"
                       />
                     </div>
-                    <Button type="submit" disabled={loading}>
-                      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Search'}
-                    </Button>
                   </form>
-                  
+
                   <Select value={categoryFilter} onValueChange={(value: CategoryFilterType) => setCategoryFilter(value)}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Filter by type" />
@@ -177,15 +228,8 @@ export default function ImagesPage() {
                   </Select>
                 </div>
 
-                {/* Loading State */}
-                {loading && (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="text-center">
-                      <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-                      <p className="text-muted-foreground">Loading images...</p>
-                    </div>
-                  </div>
-                )}
+                {/* Loading State with Skeleton */}
+                {loading && <ImageGridSkeleton />}
 
                 {/* Empty State */}
                 {!loading && images.length === 0 && (
@@ -194,7 +238,7 @@ export default function ImagesPage() {
                       <ImageIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                       <h3 className="text-lg font-semibold mb-2">No images found</h3>
                       <p className="text-muted-foreground">
-                        {searchTerm || categoryFilter !== 'all' 
+                        {searchTerm || categoryFilter !== 'all'
                           ? 'Try adjusting your search or filter criteria.'
                           : 'No images are available at the moment.'
                         }
@@ -210,51 +254,16 @@ export default function ImagesPage() {
                       {images.map((image) => (
                         <div key={image.id} className="space-y-2">
                           <div
-                            className="relative cursor-pointer rounded-lg overflow-hidden bg-muted w-full aspect-square"
-                            onClick={() => {
-                              // Create a full-screen image viewer with blurry background like demo question
-                              const overlay = document.createElement('div');
-                              overlay.className = 'fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-8';
-                              overlay.onclick = () => {
-                                document.body.removeChild(overlay);
-                                document.body.style.overflow = 'auto'; // Restore scrolling
-                              };
-
-                              // Prevent body scrolling when modal is open
-                              document.body.style.overflow = 'hidden';
-
-                              // Create image container with rounded corners like demo question
-                              const imageContainer = document.createElement('div');
-                              imageContainer.className = 'relative bg-white/5 rounded-2xl border border-white/10 shadow-2xl overflow-hidden';
-                              imageContainer.onclick = (e) => e.stopPropagation(); // Prevent closing when clicking container
-
-                              const img = document.createElement('img');
-                              img.src = image.url;
-                              img.alt = image.alt_text || image.description || 'Image';
-                              img.className = 'max-w-[90vw] max-h-[90vh] object-contain';
-
-                              imageContainer.appendChild(img);
-                              overlay.appendChild(imageContainer);
-                              document.body.appendChild(overlay);
-
-                              // Add keyboard support
-                              const handleKeyDown = (e: KeyboardEvent) => {
-                                if (e.key === 'Escape') {
-                                  document.body.removeChild(overlay);
-                                  document.body.style.overflow = 'auto';
-                                  document.removeEventListener('keydown', handleKeyDown);
-                                }
-                              };
-                              document.addEventListener('keydown', handleKeyDown);
-                            }}
+                            className="relative cursor-pointer rounded-lg overflow-hidden bg-muted w-full aspect-square group"
+                            onClick={() => setSelectedImage(image)}
                           >
                             <Image
                               src={image.url}
                               alt={image.alt_text || image.description || 'Image'}
-                              className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                              className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
                               fill
                               unoptimized
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                             />
                           </div>
                           {image.description && (
@@ -288,6 +297,16 @@ export default function ImagesPage() {
 
       {/* Join Our Learning Community Section */}
       <JoinCommunitySection />
+
+      {/* Image Viewer Modal */}
+      {selectedImage && (
+        <ImageViewerModal
+          src={selectedImage.url}
+          alt={selectedImage.alt_text || selectedImage.description || 'Image'}
+          description={selectedImage.description || undefined}
+          onClose={() => setSelectedImage(null)}
+        />
+      )}
     </div>
-  );
+  )
 }
