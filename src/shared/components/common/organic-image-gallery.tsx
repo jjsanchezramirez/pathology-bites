@@ -24,9 +24,9 @@ interface DisplayImage {
   opacity: number
 }
 
-const MIN_IMAGES = 3
-const MAX_IMAGES = 5
-const CYCLE_INTERVAL = 8000
+const MIN_IMAGES = 2
+const MAX_IMAGES = 4
+const CYCLE_INTERVAL = 12000  // Increased from 8s to 12s to reduce cycles
 const FADE_DURATION = 2000
 
 export function OrganicImageGallery({ className = '' }: OrganicImageGalleryProps) {
@@ -39,7 +39,7 @@ export function OrganicImageGallery({ className = '' }: OrganicImageGalleryProps
       try {
         const result = await fetchImages({
           page: 0,
-          pageSize: 50, // Fetch more for variety
+          pageSize: 10, // Reduced from 50 to optimize loading
           category: 'microscopic',
           showUnusedOnly: false,
           includeOnlyMicroscopicAndGross: true
@@ -47,38 +47,48 @@ export function OrganicImageGallery({ className = '' }: OrganicImageGalleryProps
         if (!result.error && result.data.length > 0) {
           setImages(result.data)
         }
-      } catch (error) {
+      } catch {
         // Silent fail - images will just not appear
       }
     }
     loadMicroscopicImages()
   }, [])
 
-  // Check if position overlaps with existing positions
-  const hasOverlap = (newPos: DisplayImage['position'], existing: DisplayImage[]): boolean => {
-    return existing.some(img => {
-      const dx = Math.abs(newPos.left - img.position.left)
-      const dy = Math.abs(newPos.top - img.position.top)
-      // Require at least 35% separation in both directions for better spacing
-      return dx < 35 && dy < 35
-    })
+  // Predefined grid positions for organized layout
+  const GRID_POSITIONS: DisplayImage['position'][] = [
+    // Top row
+    { top: 5, left: 10, rotate: -8, scale: 1.0 },
+    { top: 8, left: 55, rotate: 6, scale: 0.95 },
+
+    // Middle row
+    { top: 35, left: 5, rotate: 4, scale: 0.9 },
+    { top: 38, left: 50, rotate: -5, scale: 1.05 },
+
+    // Bottom row
+    { top: 65, left: 15, rotate: -6, scale: 0.95 },
+    { top: 68, left: 60, rotate: 7, scale: 0.9 },
+  ]
+
+  const generatePosition = (index: number): DisplayImage['position'] => {
+    // Use predefined positions in order, with slight randomization
+    const basePosition = GRID_POSITIONS[index % GRID_POSITIONS.length]
+
+    return {
+      top: basePosition.top + (Math.random() - 0.5) * 4, // ±2% variation
+      left: basePosition.left + (Math.random() - 0.5) * 4,
+      rotate: basePosition.rotate + (Math.random() - 0.5) * 4, // ±2° variation
+      scale: basePosition.scale + (Math.random() - 0.5) * 0.1, // ±0.05 variation
+    }
   }
 
-  const generatePosition = (existing: DisplayImage[] = []): DisplayImage['position'] => {
-    let attempts = 0
-    let position: DisplayImage['position']
-
-    do {
-      position = {
-        top: 10 + Math.random() * 70,
-        left: 5 + Math.random() * 60,
-        rotate: -12 + Math.random() * 24,
-        scale: 0.85 + Math.random() * 0.3,
-      }
-      attempts++
-    } while (hasOverlap(position, existing) && attempts < 100) // More attempts for better spacing
-
-    return position
+  // Fisher-Yates shuffle for truly random selection
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
   }
 
   const createDisplayImages = (imageList: ImageData[], excludeIds: string[] = []): DisplayImage[] => {
@@ -90,16 +100,17 @@ export function OrganicImageGallery({ className = '' }: OrganicImageGalleryProps
     // If we don't have enough unique images, use all images
     const pool = available.length >= count ? available : imageList
 
-    const shuffled = [...pool].sort(() => Math.random() - 0.5)
+    // Use Fisher-Yates shuffle for truly random selection
+    const shuffled = shuffleArray(pool)
     const selected = shuffled.slice(0, Math.min(count, pool.length))
 
     const result: DisplayImage[] = []
-    selected.forEach(img => {
+    selected.forEach((img, index) => {
       result.push({
         id: img.id,
         url: img.url,
         alt: img.alt_text || img.description || 'Pathology image',
-        position: generatePosition(result),
+        position: generatePosition(index),
         floatDelay: Math.random() * 4,
         floatDuration: 6 + Math.random() * 4,
         opacity: 0,
@@ -157,6 +168,7 @@ export function OrganicImageGallery({ className = '' }: OrganicImageGalleryProps
       clearInterval(interval)
       timers.forEach(timer => clearTimeout(timer))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [images])
 
   return (

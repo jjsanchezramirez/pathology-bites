@@ -18,7 +18,7 @@ interface PublicStatsResponse {
 
 export const GET = rateLimitedHandler(async function() {
   try {
-    // Check cache first
+    // Check cache first - 24 hour TTL means we only hit DB once per day
     const now = Date.now()
     if (cachedStats && (now - cacheTimestamp) < CACHE_TTL) {
       return NextResponse.json({
@@ -30,41 +30,43 @@ export const GET = rateLimitedHandler(async function() {
 
     const supabase = await createClient()
 
-    // First get expert_generated question set IDs
-    const { data: expertSets, error: setsError } = await supabase
-      .from('question_sets')
-      .select('id')
-      .eq('source_type', 'expert_generated')
-
-    if (setsError) {
-      console.error('Error fetching expert question sets:', setsError)
-    }
-
-    const expertSetIds = expertSets?.map(set => set.id) || []
-
-    // Get count of expert-curated questions
-    const { count: expertQuestionsCount, error: expertError } = await supabase
+    // Simple, optimized queries: count published questions and subcategories
+    const { count: totalQuestionsCount, error: questionsError } = await supabase
       .from('questions')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'published')
-      .in('question_set_id', expertSetIds.length > 0 ? expertSetIds : [''])
 
-    if (expertError) {
-      console.error('Error fetching expert questions count:', expertError)
+    if (questionsError) {
+      console.error('[Public Stats] Error fetching questions count:', questionsError)
+    }
+    console.log('[Public Stats] Published questions count:', totalQuestionsCount)
+
+    // Debug: Let's also fetch some actual categories to see what's there
+    const { data: allCategories, error: allCategoriesError } = await supabase
+      .from('categories')
+      .select('id, name, parent_id, level')
+      .limit(10)
+
+    if (allCategoriesError) {
+      console.error('[Public Stats] Error fetching all categories:', allCategoriesError)
+    } else {
+      console.log('[Public Stats] Sample categories:', allCategories)
+      console.log('[Public Stats] Categories with parent_id:',
+        allCategories?.filter(c => c.parent_id !== null).length)
     }
 
-    // Get count of subcategories (level > 0 or parent_id is not null)
     const { count: categoriesCount, error: categoriesError } = await supabase
       .from('categories')
       .select('id', { count: 'exact', head: true })
-      .or('level.gt.0,parent_id.not.is.null')
+      .not('parent_id', 'is', null)
 
     if (categoriesError) {
-      console.error('Error fetching categories count:', categoriesError)
+      console.error('[Public Stats] Error fetching categories count:', categoriesError)
     }
+    console.log('[Public Stats] Subcategories count (parent_id IS NOT NULL):', categoriesCount)
 
     const stats = {
-      expertQuestions: expertQuestionsCount || 0,
+      expertQuestions: totalQuestionsCount || 0,
       categories: categoriesCount || 0
     }
 
@@ -78,7 +80,7 @@ export const GET = rateLimitedHandler(async function() {
     })
 
   } catch (error) {
-    console.error('Error fetching public stats:', error)
+    console.error('[Public Stats] Error:', error)
 
     // Return fallback data on any error
     return NextResponse.json({
