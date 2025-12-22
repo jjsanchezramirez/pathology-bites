@@ -3,7 +3,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/shared/services/client'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import {
   Table,
   TableBody,

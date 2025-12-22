@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
 import { Sparkles, Loader2, RefreshCw } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { FormState } from '../multi-step-question-form'
 import { getModelById } from '@/shared/config/ai-models'
 import { createClient } from '@/shared/services/client'

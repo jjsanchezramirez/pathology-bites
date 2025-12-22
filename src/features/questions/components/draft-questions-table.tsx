@@ -25,7 +25,7 @@ import { Checkbox } from "@/shared/components/ui/checkbox"
 import { Eye, Search, Filter, Check, X, CheckSquare, FileQuestion, Send } from 'lucide-react'
 import { QuestionPreviewDialog } from './question-preview-dialog'
 import { SubmitForReviewButton } from './submit-for-review-button'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { SetData } from '@/features/questions/types/question-sets'
 
 interface DraftQuestion {

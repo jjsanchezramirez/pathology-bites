@@ -7,7 +7,7 @@ import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { Label } from "@/shared/components/ui/label"
 import { useMaintenanceNotifications } from "@/shared/hooks/use-maintenance-notifications"
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import FloatingCharacter from "@/shared/components/common/dr-albright"
 import { getR2PublicUrl } from "@/shared/services/r2-storage"
 import Link from "next/link"

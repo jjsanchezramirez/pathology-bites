@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { compressImage } from '@/features/images/services/image-upload'
 
 export interface ReuploadResult {

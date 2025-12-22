@@ -1,12 +1,17 @@
 // src/app/api/media/r2/upload-anki-media/route.ts
 /**
  * API endpoint for bulk uploading Anki media files to Cloudflare R2
- * Uploads all files to pathology-bites-images/anki/ directory
+ * Features:
+ * - Aggressive image compression using Sharp
+ * - Automatic resizing for very large images (max 2400px)
+ * - Replaces existing files with same name
+ * - Uploads all files to pathology-bites-images/anki/ directory
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { promises as fs } from 'fs'
 import path from 'path'
+import sharp from 'sharp'
 import { uploadToR2 } from '@/shared/services/r2-storage'
 
 // Supported image file extensions (case-insensitive)
@@ -23,6 +28,33 @@ const CONTENT_TYPE_MAP: Record<string, string> = {
   '.png_m': 'image/png'
 }
 
+// Compression settings - aggressive but maintains quality
+const COMPRESSION_CONFIG = {
+  // Maximum dimensions - resize larger images
+  maxWidth: 2400,
+  maxHeight: 2400,
+
+  // JPEG settings
+  jpeg: {
+    quality: 85,        // High quality, aggressive compression
+    progressive: true,  // Progressive loading
+    mozjpeg: true      // Use mozjpeg for better compression
+  },
+
+  // PNG settings
+  png: {
+    quality: 85,
+    compressionLevel: 9,  // Maximum compression
+    progressive: true
+  },
+
+  // WebP settings (convert large PNGs to WebP for better compression)
+  webp: {
+    quality: 85,
+    effort: 6  // Higher effort = better compression (0-6)
+  }
+}
+
 interface FileInfo {
   filename: string
   size: number
@@ -36,6 +68,8 @@ interface UploadResult {
   url?: string
   error?: string
   size?: number
+  originalSize?: number
+  compressionRatio?: number
   r2Key?: string
 }
 
@@ -48,12 +82,125 @@ interface BulkUploadResponse {
   errors: string[]
   totalSize: number
   uploadedSize: number
+  compressionRatio: number
+}
+
+/**
+ * Compress an image file using Sharp
+ * - Resizes very large images
+ * - Applies aggressive compression while maintaining quality
+ * - Handles different image formats appropriately
+ * - SVG files are passed through without compression
+ */
+async function compressImage(
+  fileBuffer: Buffer,
+  filename: string,
+  ext: string
+): Promise<{ buffer: Buffer; originalSize: number; compressedSize: number }> {
+  const originalSize = fileBuffer.length
+
+  // SVG files - no compression needed, already optimal
+  if (ext === '.svg') {
+    return {
+      buffer: fileBuffer,
+      originalSize,
+      compressedSize: originalSize
+    }
+  }
+
+  // GIF files - preserve animation, light compression only
+  if (ext === '.gif') {
+    const compressed = await sharp(fileBuffer, { animated: true })
+      .gif()
+      .toBuffer()
+    return {
+      buffer: compressed,
+      originalSize,
+      compressedSize: compressed.length
+    }
+  }
+
+  try {
+    // Start with Sharp pipeline
+    let pipeline = sharp(fileBuffer)
+
+    // Get image metadata to check dimensions
+    const metadata = await pipeline.metadata()
+
+    // Resize if image is larger than max dimensions
+    if (
+      metadata.width &&
+      metadata.height &&
+      (metadata.width > COMPRESSION_CONFIG.maxWidth ||
+        metadata.height > COMPRESSION_CONFIG.maxHeight)
+    ) {
+      pipeline = pipeline.resize(COMPRESSION_CONFIG.maxWidth, COMPRESSION_CONFIG.maxHeight, {
+        fit: 'inside',
+        withoutEnlargement: true
+      })
+      console.log(
+        `  Resizing ${filename}: ${metadata.width}x${metadata.height} → max ${COMPRESSION_CONFIG.maxWidth}x${COMPRESSION_CONFIG.maxHeight}`
+      )
+    }
+
+    // Apply format-specific compression
+    let compressed: Buffer
+    if (ext === '.png' || ext === '.png_m') {
+      compressed = await pipeline
+        .png({
+          quality: COMPRESSION_CONFIG.png.quality,
+          compressionLevel: COMPRESSION_CONFIG.png.compressionLevel,
+          progressive: COMPRESSION_CONFIG.png.progressive
+        })
+        .toBuffer()
+    } else if (ext === '.jpg' || ext === '.jpeg' || ext === '.jpglarge') {
+      compressed = await pipeline
+        .jpeg({
+          quality: COMPRESSION_CONFIG.jpeg.quality,
+          progressive: COMPRESSION_CONFIG.jpeg.progressive,
+          mozjpeg: COMPRESSION_CONFIG.jpeg.mozjpeg
+        })
+        .toBuffer()
+    } else {
+      // Unknown format - use JPEG as fallback
+      compressed = await pipeline
+        .jpeg({
+          quality: COMPRESSION_CONFIG.jpeg.quality,
+          progressive: COMPRESSION_CONFIG.jpeg.progressive
+        })
+        .toBuffer()
+    }
+
+    const compressionRatio = compressed.length / originalSize
+    const savings = ((1 - compressionRatio) * 100).toFixed(1)
+
+    if (compressionRatio < 0.9) {
+      // Only log if we achieved >10% compression
+      console.log(
+        `  Compressed ${filename}: ${(originalSize / 1024).toFixed(1)} KB → ${(compressed.length / 1024).toFixed(1)} KB (${savings}% reduction)`
+      )
+    }
+
+    return {
+      buffer: compressed,
+      originalSize,
+      compressedSize: compressed.length
+    }
+  } catch (error) {
+    console.error(`  Failed to compress ${filename}, using original:`, error)
+    // If compression fails, return original
+    return {
+      buffer: fileBuffer,
+      originalSize,
+      compressedSize: originalSize
+    }
+  }
 }
 
 // GET endpoint - Preview files that would be uploaded
 export async function GET(request: NextRequest) {
   try {
-    const mediaDir = path.join(process.cwd(), 'json', 'anki', 'media')
+    const mediaDir = path.join(process.cwd(), 'anki', 'media')
     
     // Check if directory exists
     try {
@@ -112,13 +259,14 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST endpoint - Perform bulk upload
+// POST endpoint - Perform bulk upload with compression
 export async function POST(request: NextRequest) {
   try {
-    const mediaDir = path.join(process.cwd(), 'json', 'anki', 'media')
+    const mediaDir = path.join(process.cwd(), 'anki', 'media')
     const targetBucket = 'pathology-bites-images'
 
-    console.log(`Starting Anki media upload from ${mediaDir} to ${targetBucket}/anki/`)
+    console.log(`Starting Anki media upload with compression from ${mediaDir} to ${targetBucket}/anki/`)
+    console.log(`Compression settings: max ${COMPRESSION_CONFIG.maxWidth}x${COMPRESSION_CONFIG.maxHeight}, JPEG quality ${COMPRESSION_CONFIG.jpeg.quality}, PNG quality ${COMPRESSION_CONFIG.png.quality}`)
 
     // Check if directory exists
     try {
@@ -161,38 +309,52 @@ export async function POST(request: NextRequest) {
       try {
         // Read file
         const fileBuffer = await fs.readFile(filePath)
-        const fileSize = fileBuffer.length
-        totalSize += fileSize
+        const originalSize = fileBuffer.length
+        totalSize += originalSize
 
         // Progress logging
         if (i % 50 === 0 || i < 20) {
           const elapsed = (Date.now() - startTime) / 1000
           const rate = i > 0 ? i / elapsed : 0
           const eta = rate > 0 ? (mediaFiles.length - i) / rate : 0
-          console.log(`Uploading ${i + 1}/${mediaFiles.length}: ${filename} → anki/${filename} (${Math.round(fileSize / 1024)} KB) - ${rate.toFixed(1)} files/sec, ETA: ${Math.round(eta)}s`)
+          console.log(`\nProcessing ${i + 1}/${mediaFiles.length}: ${filename} (${Math.round(originalSize / 1024)} KB) - ${rate.toFixed(1)} files/sec, ETA: ${Math.round(eta)}s`)
         }
 
-        // Upload to R2 with anki/ prefix
-        const uploadResult = await uploadToR2(fileBuffer, r2Key, {
+        // Compress image
+        const { buffer: compressedBuffer, originalSize: origSize, compressedSize } = await compressImage(
+          fileBuffer,
+          filename,
+          ext
+        )
+
+        // Upload compressed file to R2 (replaces existing file with same name)
+        const uploadResult = await uploadToR2(compressedBuffer, r2Key, {
           contentType,
           bucket: targetBucket,
           metadata: {
             source: 'anki-media-upload',
             originalFilename: filename,
+            originalSize: origSize.toString(),
+            compressedSize: compressedSize.toString(),
+            compressionRatio: (compressedSize / origSize).toFixed(4),
             uploadedAt: new Date().toISOString()
           }
         })
+
+        const fileCompressionRatio = compressedSize / origSize
 
         results.push({
           filename,
           success: true,
           url: uploadResult.url,
-          size: fileSize,
+          size: compressedSize,
+          originalSize: origSize,
+          compressionRatio: fileCompressionRatio,
           r2Key: r2Key
         })
 
         uploadedFiles++
-        uploadedSize += fileSize
+        uploadedSize += compressedSize
 
       } catch (error) {
         const errorMsg = `Failed to upload ${filename}: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -209,6 +371,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const overallCompressionRatio = totalSize > 0 ? uploadedSize / totalSize : 1
+    const savingsPercent = ((1 - overallCompressionRatio) * 100).toFixed(1)
+
     const response: BulkUploadResponse = {
       success: uploadedFiles > 0,
       totalFiles: mediaFiles.length,
@@ -217,13 +382,19 @@ export async function POST(request: NextRequest) {
       results,
       errors,
       totalSize,
-      uploadedSize
+      uploadedSize,
+      compressionRatio: overallCompressionRatio
     }
 
     const durationSeconds = (Date.now() - startTime) / 1000
     const avgRate = uploadedFiles / durationSeconds
 
-    console.log(`Anki media upload completed in ${durationSeconds.toFixed(1)}s: ${uploadedFiles}/${mediaFiles.length} files uploaded successfully (${avgRate.toFixed(1)} files/sec)`)
+    console.log(`\n✅ Anki media upload completed in ${durationSeconds.toFixed(1)}s:`)
+    console.log(`   - Files: ${uploadedFiles}/${mediaFiles.length} uploaded successfully`)
+    console.log(`   - Original size: ${(totalSize / 1024 / 1024).toFixed(2)} MB`)
+    console.log(`   - Compressed size: ${(uploadedSize / 1024 / 1024).toFixed(2)} MB`)
+    console.log(`   - Compression: ${savingsPercent}% size reduction`)
+    console.log(`   - Speed: ${avgRate.toFixed(1)} files/sec`)
 
     return NextResponse.json(response, {
       headers: {

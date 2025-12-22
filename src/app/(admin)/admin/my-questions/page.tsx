@@ -22,7 +22,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui
 import {
   Eye,
   Search,
-  Loader2,
   RefreshCw,
   FileQuestion,
   CheckCheck,
@@ -30,8 +29,9 @@ import {
   XCircle,
   Layers
 } from 'lucide-react'
+import { Skeleton } from '@/shared/components/ui/skeleton'
 import { QuestionPreviewDialog } from '@/features/questions/components/question-preview-dialog'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { formatDistanceToNow } from 'date-fns'
 import { QuestionWithDetails, STATUS_CONFIG } from '@/features/questions/types/questions'
 import {
@@ -63,17 +63,6 @@ export default function MyQuestionsPage() {
 
   const isCreator = role === 'creator' || role === 'admin'
   const isReviewer = role === 'reviewer' || role === 'admin'
-
-  // Access control
-  if (!canAccess('questions.view')) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">Access denied.</p>
-        </div>
-      </div>
-    )
-  }
 
   const fetchMyQuestions = useCallback(async () => {
     if (!user) return
@@ -234,12 +223,59 @@ export default function MyQuestionsPage() {
   const underReviewCount = questions.filter(q => q.status === 'pending_review').length
   const rejectedCount = questions.filter(q => q.status === 'rejected').length
 
-  if (loading) {
+  // Access control
+  if (!canAccess('questions.view')) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="text-sm text-muted-foreground mt-2">Loading questions...</p>
+          <p className="text-sm text-muted-foreground">Access denied.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        {/* Page Header Skeleton */}
+        <div>
+          <Skeleton className="h-9 w-56 mb-2" />
+          <Skeleton className="h-5 w-96" />
+        </div>
+
+        {/* Filters Skeleton */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+          <Skeleton className="h-9 w-24" />
+        </div>
+
+        {/* Tabs Skeleton */}
+        <div className="space-y-4">
+          <div className="flex gap-2 border-b">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-28" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-24" />
+          </div>
+
+          {/* Table Skeleton */}
+          <div className="rounded-md border bg-card">
+            <div className="p-4 space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-5 w-20" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     )

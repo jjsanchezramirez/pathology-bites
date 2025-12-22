@@ -5,7 +5,11 @@ import { AuthCard } from '@/features/auth/components/ui/auth-card'
 import { LoginForm } from '@/features/auth/components/forms/login-form'
 
 interface LoginPageProps {
-  searchParams: Promise<{ redirect?: string }>
+  searchParams: Promise<{
+    redirect?: string
+    error?: string
+    message?: string
+  }>
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -30,6 +34,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <LoginForm
           action={login}
           redirect={params.redirect}
+          initialError={params.error}
+          initialMessage={params.message}
           isAdminOnlyMode={isAdminOnlyMode}
         />
       </AuthCard>

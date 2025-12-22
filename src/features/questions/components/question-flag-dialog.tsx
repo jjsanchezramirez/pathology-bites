@@ -21,7 +21,7 @@ import {
 } from '@/shared/components/ui/select'
 import { Textarea } from '@/shared/components/ui/textarea'
 import { Label } from '@/shared/components/ui/label'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { 
   QuestionWithDetails, 
   FlagType, 

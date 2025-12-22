@@ -146,12 +146,30 @@ export async function login(formData: FormData) {
 
     if (error.message === 'Invalid login credentials') {
       console.log('[Auth] Invalid credentials, redirecting to login')
-      redirect(`/login?error=Invalid email or password${redirectParam}`)
+      redirect(`/login?error=${encodeURIComponent('Invalid email or password')}${redirectParam}`)
       return
     }
     if (error.message === 'Email not confirmed') {
       console.log('[Auth] Email not confirmed, redirecting to verify-email')
-      redirect('/verify-email?email=' + encodeURIComponent(data.email))
+      redirect('/verify-email?email=' + encodeURIComponent(email))
+      return
+    }
+    // Handle CAPTCHA errors specifically with user-friendly messages
+    if (error.message?.includes('captcha') || error.code === 'captcha_failed') {
+      console.log('[Auth] CAPTCHA verification failed:', error.message)
+
+      let userMessage = 'Security verification failed. Please try again.'
+
+      // Provide specific guidance based on the error
+      if (error.message?.includes('timeout-or-duplicate')) {
+        userMessage = 'Security verification expired. Please wait a few seconds and try again.'
+      } else if (error.message?.includes('invalid-input-response')) {
+        userMessage = 'Security verification failed. Please refresh the page and try again.'
+      } else if (error.message?.includes('missing-input-response')) {
+        userMessage = 'Please complete the security verification before logging in.'
+      }
+
+      redirect(`/login?error=${encodeURIComponent(userMessage)}${redirectParam}`)
       return
     }
     console.log('[Auth] Other login error, redirecting to login with error')

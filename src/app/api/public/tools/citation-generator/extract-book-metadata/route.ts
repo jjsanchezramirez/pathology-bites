@@ -1,5 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// Server-side cache for ISBN lookups (24 hour TTL)
+const isbnCache = new Map<string, { data: any; timestamp: number }>()
+const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
+
+function cleanExpiredISBNCache() {
+  const now = Date.now()
+  const keysToDelete: string[] = []
+
+  isbnCache.forEach((entry, key) => {
+    if (now - entry.timestamp > CACHE_TTL) {
+      keysToDelete.push(key)
+    }
+  })
+
+  keysToDelete.forEach(key => isbnCache.delete(key))
+
+  // Keep cache size under 500 entries
+  if (isbnCache.size > 500) {
+    const entries = Array.from(isbnCache.entries())
+    entries.sort((a, b) => b[1].timestamp - a[1].timestamp)
+    const toKeep = entries.slice(0, 500)
+    isbnCache.clear()
+    toKeep.forEach(([key, value]) => isbnCache.set(key, value))
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -11,11 +37,21 @@ export async function GET(request: NextRequest) {
     
     // Clean ISBN (remove hyphens and spaces)
     const cleanIsbn = isbn.replace(/[-\s]/g, '')
-    
+
     if (!cleanIsbn || cleanIsbn.length < 10) {
       return NextResponse.json({ error: 'Invalid ISBN format' }, { status: 400 })
     }
-    
+
+    // Check server-side cache first
+    const cached = isbnCache.get(cleanIsbn)
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log(`[ISBN Cache] Hit: ${cleanIsbn}`)
+      return NextResponse.json(cached.data)
+    }
+
+    // Clean expired cache entries periodically
+    cleanExpiredISBNCache()
+
     // Try OpenLibrary first
     try {
       const openLibraryUrl = `https://openlibrary.org/api/books?bibkeys=ISBN:${cleanIsbn}&format=json&jscmd=data`
@@ -46,19 +82,28 @@ export async function GET(request: NextRequest) {
             publisher = book.publishers
           }
 
-          return NextResponse.json({
+          const result = {
             title: book.title || 'Unknown Title',
             authors: book.authors?.map((author: any) => author.name).filter((name: string) => name) || ['Unknown Author'],
             year: extractYearFromDate(book.publish_date),
             publisher: publisher,
             type: 'book'
+          }
+
+          // Cache the successful result
+          isbnCache.set(cleanIsbn, {
+            data: result,
+            timestamp: Date.now()
           })
+          console.log(`[ISBN Cache] Stored: ${cleanIsbn}`)
+
+          return NextResponse.json(result)
         }
       }
     } catch (error) {
       console.error('OpenLibrary API error:', error)
     }
-    
+
     // Fallback to Google Books API
     try {
       const googleBooksUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${cleanIsbn}`
@@ -81,13 +126,22 @@ export async function GET(request: NextRequest) {
             publisher = book.publisher
           }
 
-          return NextResponse.json({
+          const result = {
             title: book.title || 'Unknown Title',
             authors: book.authors || ['Unknown Author'],
             year: extractYearFromDate(book.publishedDate),
             publisher: publisher,
             type: 'book'
+          }
+
+          // Cache the successful result
+          isbnCache.set(cleanIsbn, {
+            data: result,
+            timestamp: Date.now()
           })
+          console.log(`[ISBN Cache] Stored (Google Books): ${cleanIsbn}`)
+
+          return NextResponse.json(result)
         }
       }
     } catch (error) {

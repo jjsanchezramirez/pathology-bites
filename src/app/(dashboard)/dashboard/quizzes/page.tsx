@@ -43,7 +43,7 @@ import {
   Circle,
 } from "lucide-react"
 
-import { toast } from "sonner"
+import { toast } from '@/shared/utils/toast'
 import Link from "next/link"
 import { FeaturePlaceholder } from "@/features/dashboard/components"
 import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags"

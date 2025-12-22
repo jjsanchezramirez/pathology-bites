@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { createClient } from '@/shared/services/client';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { FileProgress, ImageCategory } from '@/features/images/types/images';
 import { compressImage, cleanFileName, formatImageName, getImageDimensions } from '@/features/images/services/image-upload';
 

@@ -151,6 +151,14 @@ expertpath/complete_expertpath_data.json
 *.scraped.json
 
 # ==============================================================================
+# ANKI DECK EXPORTS (PRIVATE)
+# ==============================================================================
+# Anki deck exports - keep originals local, only upload compressed to R2
+# These contain the source data exported from Anki desktop via CrowdAnki
+anki/
+json/anki/
+
+# ==============================================================================
 # SCRIPTS & AUTOMATION OUTPUTS
 # ==============================================================================
 # Script outputs and temporary files

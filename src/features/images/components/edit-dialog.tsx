@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { updateImage } from '@/features/images/services/images';
 import { ImageData, IMAGE_CATEGORIES } from '@/features/images/types/images';
 import { useImageReupload } from '@/features/images/hooks/use-image-reupload';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import {
   Dialog,
   DialogContent,

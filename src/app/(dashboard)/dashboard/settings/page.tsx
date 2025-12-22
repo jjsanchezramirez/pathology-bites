@@ -10,7 +10,7 @@ import { Label } from '@/shared/components/ui/label'
 import { Separator } from '@/shared/components/ui/separator'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import { useTheme } from 'next-themes'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import {
   Moon,
   Sun,

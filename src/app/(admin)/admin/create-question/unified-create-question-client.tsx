@@ -11,7 +11,7 @@ import { EnhancedImportDialog } from '@/features/questions/components/enhanced-i
 import { QuestionForm } from '@/features/questions/components/question-form'
 import { Button } from '@/shared/components/ui/button'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { apiClient } from '@/shared/utils/api-client'
 
 // Manual creation form data type

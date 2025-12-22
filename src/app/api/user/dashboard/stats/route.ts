@@ -112,98 +112,225 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Try to get basic question count (this should work with any database)
-    try {
-      const queryStart = Date.now()
-      const { count: totalQuestions, error: questionsError } = await supabase
+    // OPTIMIZATION: Parallelize all database queries using Promise.all()
+    const queryStart = Date.now()
+
+    const [
+      questionsResult,
+      sessionsResult,
+      attemptsResult,
+      performanceResult,
+      allUsersScoresResult,
+      completedQuizzesResult
+    ] = await Promise.all([
+      // 1. Get total questions count
+      supabase
         .from(TABLE_NAMES.QUESTIONS)
         .select('*', { count: 'exact', head: true })
+        .then(result => ({ data: result.count, error: result.error })),
 
-      const queryDuration = Date.now() - queryStart
-      devLog.database({
-        query: `SELECT COUNT(*) FROM ${TABLE_NAMES.QUESTIONS}`,
-        duration: queryDuration,
-        rows: totalQuestions || 0,
-      })
-
-      if (!questionsError && totalQuestions !== null) {
-        stats.allQuestions = totalQuestions
-        stats.totalQuestions = totalQuestions
-        stats.unused = totalQuestions // Default all to unused for now
-        devLog.info('Questions count retrieved', { totalQuestions, duration: queryDuration })
-      } else {
-        devLog.warn('Could not get questions count', questionsError)
-      }
-    } catch (error) {
-      devLog.error('Questions query failed', error)
-    }
-
-    // Try to get user profile info
-    try {
-      const { data: profile, error: profileError } = await supabase
-        .from(TABLE_NAMES.USERS)
-        .select('*')
-        .eq('id', user.id)
-        .single()
-      
-      if (!profileError && profile) {
-        console.log('Found user profile')
-      }
-    } catch (error) {
-      console.warn('Profile query failed:', error)
-    }
-
-    // Try to get quiz data if tables exist
-    try {
-      const queryStart = Date.now()
-      // Check if quiz_sessions table exists by trying a simple query
-      const { data: sessions, error: sessionsError } = await supabase
+      // 2. Get recent quiz sessions
+      supabase
         .from(TABLE_NAMES.QUIZ_SESSIONS)
         .select('id, score, created_at, status')
         .eq('user_id', user.id)
-        .limit(5)
+        .order('created_at', { ascending: false })
+        .limit(5),
 
-      const queryDuration = Date.now() - queryStart
-      devLog.database({
-        query: `SELECT id, score, created_at, status FROM ${TABLE_NAMES.QUIZ_SESSIONS} WHERE user_id = $1 LIMIT 5`,
-        duration: queryDuration,
-        rows: sessions?.length || 0,
+      // 3. Get quiz attempts to calculate mastered/needs review
+      supabase
+        .from(TABLE_NAMES.QUIZ_ATTEMPTS)
+        .select('question_id, is_correct')
+        .eq('user_id', user.id),
+
+      // 4. Get performance analytics by category
+      supabase
+        .from(TABLE_NAMES.PERFORMANCE_ANALYTICS)
+        .select(`
+          category_id,
+          total_questions,
+          questions_answered,
+          correct_answers,
+          categories!inner(name)
+        `)
+        .eq('user_id', user.id)
+        .gt('questions_answered', 0),
+
+      // 5. Get all users' average scores for percentile calculation
+      supabase
+        .from(TABLE_NAMES.QUIZ_SESSIONS)
+        .select('user_id, score')
+        .eq('status', SESSION_STATUSES[2]) // 'completed'
+        .not('score', 'is', null),
+
+      // 6. Get count of ALL completed quizzes for this user (not just last 5)
+      supabase
+        .from(TABLE_NAMES.QUIZ_SESSIONS)
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('status', SESSION_STATUSES[2]) // 'completed'
+        .then(result => ({ data: result.count, error: result.error }))
+    ])
+
+    const queryDuration = Date.now() - queryStart
+    devLog.info('All queries completed in parallel', { duration: queryDuration })
+
+    // Process total questions
+    if (!questionsResult.error && questionsResult.data !== null) {
+      stats.allQuestions = questionsResult.data
+      stats.totalQuestions = questionsResult.data
+      devLog.info('Questions count retrieved', { totalQuestions: questionsResult.data })
+    }
+
+    // Process count of ALL completed quizzes
+    if (!completedQuizzesResult.error && completedQuizzesResult.data !== null) {
+      stats.performance!.completedQuizzes = completedQuizzesResult.data
+    }
+
+    // Process quiz sessions
+    if (!sessionsResult.error && sessionsResult.data) {
+      const sessions = sessionsResult.data
+      stats.recentQuizzes = sessions.length
+
+      // Calculate basic stats from sessions (only from recent sessions for average)
+      const completedSessions = sessions.filter(s => s.status === SESSION_STATUSES[2]) // 'completed'
+
+      if (completedSessions.length > 0) {
+        const scores = completedSessions.map(s => s.score || 0)
+        stats.averageScore = Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
+        stats.performance!.overallScore = stats.averageScore
+      }
+
+      // Generate recent activity
+      sessions.forEach((session) => {
+        const isCompleted = session.status === SESSION_STATUSES[2] // 'completed'
+        stats.recentActivity.push({
+          id: `session-${session.id}`,
+          type: isCompleted ? 'quiz_completed' : 'quiz_started',
+          title: isCompleted ? 'Completed Quiz' : 'Started Quiz',
+          description: isCompleted
+            ? 'View detailed results'
+            : 'Quiz in progress',
+          timestamp: formatTimeAgo(new Date(session.created_at)),
+          score: session.score || undefined,
+          navigationUrl: isCompleted
+            ? `/dashboard/quiz/${session.id}/results`
+            : `/dashboard/quiz/${session.id}`
+        })
+      })
+    }
+
+    // Process quiz attempts to calculate mastered/needs review/unused
+    if (!attemptsResult.error && attemptsResult.data) {
+      const attempts = attemptsResult.data
+
+      // Group attempts by question_id
+      const questionAttempts = new Map<string, { correct: number; incorrect: number }>()
+
+      attempts.forEach(attempt => {
+        const existing = questionAttempts.get(attempt.question_id) || { correct: 0, incorrect: 0 }
+        if (attempt.is_correct) {
+          existing.correct++
+        } else {
+          existing.incorrect++
+        }
+        questionAttempts.set(attempt.question_id, existing)
       })
 
-      if (!sessionsError && sessions) {
-        devLog.info('Quiz sessions retrieved', { count: sessions.length, duration: queryDuration })
-        stats.recentQuizzes = sessions.length
+      // Calculate mastered (2+ correct answers, no recent incorrect)
+      // Calculate needs review (any incorrect answers)
+      let mastered = 0
+      let needsReview = 0
 
-        // Calculate basic stats from sessions
-        const completedSessions = sessions.filter(s => s.status === SESSION_STATUSES[2]) // 'completed'
-        stats.performance!.completedQuizzes = completedSessions.length
-
-        if (completedSessions.length > 0) {
-          const scores = completedSessions.map(s => s.score || 0)
-          stats.averageScore = Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
-          stats.performance!.overallScore = stats.averageScore
+      questionAttempts.forEach((counts) => {
+        if (counts.correct >= 2 && counts.incorrect === 0) {
+          mastered++
+        } else if (counts.incorrect > 0) {
+          needsReview++
         }
-        
-        // Generate simple recent activity
-        sessions.forEach((session, index) => {
-          const isCompleted = session.status === SESSION_STATUSES[2] // 'completed'
-          stats.recentActivity.push({
-            id: `session-${session.id}`,
-            type: isCompleted ? 'quiz_completed' : 'quiz_started',
-            title: isCompleted ? 'Completed Quiz' : 'Started Quiz',
-            description: isCompleted
-              ? `Scored ${session.score || 0}%`
-              : 'Quiz in progress',
-            timestamp: formatTimeAgo(new Date(session.created_at)),
-            score: session.score || undefined,
-            navigationUrl: isCompleted
-              ? `/dashboard/quiz/${session.id}/results`
-              : `/dashboard/quiz/${session.id}`
+      })
+
+      stats.mastered = mastered
+      stats.needsReview = needsReview
+      stats.completedQuestions = questionAttempts.size
+      stats.unused = Math.max(0, stats.totalQuestions - questionAttempts.size)
+
+      devLog.info('Question progress calculated', { mastered, needsReview, unused: stats.unused })
+    } else {
+      // No attempts yet - all questions are unused
+      stats.unused = stats.totalQuestions
+    }
+
+    // Process performance analytics for subjects
+    if (!performanceResult.error && performanceResult.data) {
+      const analytics = performanceResult.data
+
+      analytics.forEach((item: any) => {
+        const categoryName = item.categories?.name || 'Unknown'
+        const score = item.questions_answered > 0
+          ? Math.round((item.correct_answers / item.questions_answered) * 100)
+          : 0
+
+        // Subjects for improvement: score < 70%
+        if (score < 70 && item.questions_answered >= 3) {
+          stats.performance!.subjectsForImprovement.push({
+            name: categoryName,
+            score,
+            attempts: item.questions_answered
           })
-        })
-      }
-    } catch (error) {
-      console.warn('Quiz sessions query failed (table may not exist):', error)
+        }
+
+        // Mastered subjects: score >= 85%
+        if (score >= 85 && item.questions_answered >= 5) {
+          stats.performance!.subjectsMastered.push({
+            name: categoryName,
+            score,
+            attempts: item.questions_answered
+          })
+        }
+      })
+
+      // Sort by score (lowest first for improvement, highest first for mastered)
+      stats.performance!.subjectsForImprovement.sort((a, b) => a.score - b.score)
+      stats.performance!.subjectsMastered.sort((a, b) => b.score - a.score)
+
+      // Limit to top 5 each
+      stats.performance!.subjectsForImprovement = stats.performance!.subjectsForImprovement.slice(0, 5)
+      stats.performance!.subjectsMastered = stats.performance!.subjectsMastered.slice(0, 5)
+    }
+
+    // Calculate percentile and peer ranking
+    if (!allUsersScoresResult.error && allUsersScoresResult.data && stats.averageScore > 0) {
+      const allScores = allUsersScoresResult.data
+
+      // Calculate average score per user
+      const userScores = new Map<string, number[]>()
+      allScores.forEach(item => {
+        const scores = userScores.get(item.user_id) || []
+        scores.push(item.score)
+        userScores.set(item.user_id, scores)
+      })
+
+      const userAverages = Array.from(userScores.entries()).map(([userId, scores]) => ({
+        userId,
+        avgScore: scores.reduce((sum, s) => sum + s, 0) / scores.length
+      }))
+
+      // Calculate percentile (percentage of users with lower average score)
+      const usersWithLowerScore = userAverages.filter(u => u.avgScore < stats.averageScore).length
+      const percentile = userAverages.length > 1
+        ? Math.round((usersWithLowerScore / userAverages.length) * 100)
+        : 50
+
+      // Calculate peer rank (position when sorted by score, descending)
+      const sortedUsers = userAverages.sort((a, b) => b.avgScore - a.avgScore)
+      const userRank = sortedUsers.findIndex(u => u.userId === user.id) + 1
+
+      stats.performance!.userPercentile = percentile
+      stats.performance!.peerRank = userRank > 0 ? userRank : 50
+      stats.performance!.totalUsers = userAverages.length
+
+      devLog.info('Percentile calculated', { percentile, rank: userRank, totalUsers: userAverages.length })
     }
 
     // If no real activity, add welcome messages

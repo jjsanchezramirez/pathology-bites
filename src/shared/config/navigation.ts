@@ -8,6 +8,7 @@ export interface NavigationItem {
   adminOnly?: boolean
   showToRoles?: string[] // Array of roles that can see this item
   comingSoon?: boolean // Badge to indicate feature is coming soon
+  isNew?: boolean // Badge to indicate feature is new
   showBadge?: boolean // Whether to show a badge count
   badgeKey?: 'revisionQueue' | 'reviewQueue' // Key for fetching badge count
 }
@@ -279,12 +280,13 @@ export const userNavigationItems: NavigationItem[] = [
     icon: "ClipboardList",
   },
   {
-    name: "Digital Slides",
+    name: "Slide-Based Questions",
     href: "/dashboard/wsi-questions",
     icon: "Microscope",
+    isNew: true
   },
   {
-    name: "Ankoma Deck",
+    name: "Ankoma Deck Viewer",
     href: "/dashboard/anki",
     icon: "Library",
   },
@@ -297,6 +299,7 @@ export const userNavigationItems: NavigationItem[] = [
     name: "Learning Modules",
     href: "/dashboard/learning",
     icon: "BookOpen",
+    comingSoon: true
   },
   {
     name: "Progress",
@@ -337,21 +340,20 @@ export function getUserNavigationSections(): NavigationSection[] {
           name: "New Quiz",
           href: "/dashboard/quiz/new",
           icon: "Plus",
-          comingSoon: !ENABLE_QUIZ_FEATURES
         },
         {
           name: "My Quizzes",
           href: "/dashboard/quizzes",
           icon: "ClipboardList",
-          comingSoon: !ENABLE_QUIZ_FEATURES
         },
         {
-          name: "Digital Slides",
+          name: "Slide-Based Questions",
           href: "/dashboard/wsi-questions",
           icon: "Microscope",
+          isNew: true
         },
         {
-          name: "Ankoma Deck",
+          name: "Ankoma Deck Viewer",
           href: "/dashboard/anki",
           icon: "Library",
         },
@@ -359,7 +361,7 @@ export function getUserNavigationSections(): NavigationSection[] {
           name: "Learning Modules",
           href: "/dashboard/learning",
           icon: "BookOpen",
-          comingSoon: !ENABLE_QUIZ_FEATURES
+          comingSoon: true
         }
       ]
     },
@@ -370,13 +372,11 @@ export function getUserNavigationSections(): NavigationSection[] {
           name: "Performance",
           href: "/dashboard/performance",
           icon: "BarChart2",
-          comingSoon: !ENABLE_QUIZ_FEATURES
         },
         {
           name: "Progress",
           href: "/dashboard/progress",
           icon: "TrendingUp",
-          comingSoon: !ENABLE_QUIZ_FEATURES
         }
       ]
     },
@@ -417,16 +417,14 @@ export const userNavigationSections: NavigationSection[] = [
         name: "New Quiz",
         href: "/dashboard/quiz/new",
         icon: "Plus",
-        comingSoon: true
       },
       {
         name: "My Quizzes",
         href: "/dashboard/quizzes",
         icon: "ClipboardList",
-        comingSoon: true
       },
       {
-        name: "Digital Slides",
+        name: "Slide-Based Questions",
         href: "/dashboard/wsi-questions",
         icon: "Microscope",
       },
@@ -450,13 +448,11 @@ export const userNavigationSections: NavigationSection[] = [
         name: "Performance",
         href: "/dashboard/performance",
         icon: "BarChart2",
-        comingSoon: true
       },
       {
         name: "Progress",
         href: "/dashboard/progress",
         icon: "TrendingUp",
-        comingSoon: true
       }
     ]
   },

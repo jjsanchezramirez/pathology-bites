@@ -12,7 +12,7 @@ import {
   Target,
   BarChart3
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { PerformanceAnalytics, FeaturePlaceholder } from '@/features/dashboard/components'
 import { isQuizFeaturesEnabled } from '@/shared/config/feature-flags'
 

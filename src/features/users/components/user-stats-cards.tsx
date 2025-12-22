@@ -12,7 +12,7 @@ import {
   UserCog,
 
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { getFormattedUserStats, UserStatsFormatted } from '@/features/users/services/user-stats';
 
 export interface UserStatsRef {

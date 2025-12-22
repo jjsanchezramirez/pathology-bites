@@ -29,7 +29,7 @@ export function useCachedData<T>(
 ): UseCachedDataResult<T> {
   const {
     enabled = true,
-    refetchOnMount = true,
+    refetchOnMount = false, // Changed default to false to minimize API calls
     refetchOnWindowFocus = false,
     staleTime = 2 * 60 * 1000, // 2 minutes
     ttl = 5 * 60 * 1000, // 5 minutes

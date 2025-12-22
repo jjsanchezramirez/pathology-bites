@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/shared/components/ui/button'
 import { ChevronLeft, ChevronRight, Check, Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { createClient } from '@/shared/services/client'
 
 // Import step components (to be created)

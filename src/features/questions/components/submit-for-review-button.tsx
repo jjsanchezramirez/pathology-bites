@@ -12,7 +12,7 @@ import {
   DialogPortal,
   DialogTitle,
 } from '@/shared/components/ui/dialog'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { Send, AlertCircle } from 'lucide-react'
 import { createClient } from '@/shared/services/client'
 import { apiClient } from '@/shared/utils/api-client'

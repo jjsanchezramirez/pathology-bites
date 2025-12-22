@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { VirtualSlide } from '@/shared/types/virtual-slides'
 import { getRepositoryFromId } from '@/shared/utils/repository'
+import { expandSearchTermClient } from '@/shared/utils/nci-evs-client'
 
 // Module-scope cache so we only fetch once per session
 let cachedSlidesPromise: Promise<VirtualSlide[]> | null = null
@@ -113,38 +114,112 @@ function tokenize(text: string): string[] {
 
 function makeAcr(words: string[]): string { return words.map(w => w[0]).join('') }
 
-function rankSlides(slides: VirtualSlide[], query: string): VirtualSlide[] {
-  const term = (query || '').toLowerCase().trim()
-  if (!term) return slides
-
-  const words = tokenize(term)
+// Helper to rank slides by a single term
+function rankSlidesByTerm(slides: VirtualSlide[], term: string): Map<string, { slide: VirtualSlide; bucketIndex: number }> {
+  const termLower = term.toLowerCase().trim()
+  const words = tokenize(termLower)
   const last = words[words.length - 1]
   const usePrefix = last && last.length >= 4
   const text = (s: VirtualSlide) => (s.diagnosis || '').toLowerCase()
   const acr = words.length >= 2 ? makeAcr(words) : ''
 
-  const b1: VirtualSlide[] = [] // exact equality on diagnosis
-  const b2: VirtualSlide[] = [] // word-boundary phrase
-  const b3: VirtualSlide[] = [] // all tokens as complete words
-  const b4: VirtualSlide[] = [] // acronym
-  const b5: VirtualSlide[] = [] // any token as complete word
-  const b6: VirtualSlide[] = [] // token prefix on last token
-  const b7: VirtualSlide[] = [] // substring fallback
+  const rankedSlides = new Map<string, { slide: VirtualSlide; bucketIndex: number }>()
 
   for (const s of slides) {
     const d = text(s)
     if (!d) continue
 
-    if (d === term) { b1.push(s); continue }
-    if (isCompleteWordMatch(d, term)) { b2.push(s); continue }
-    if (words.length > 0 && words.every(w => isCompleteWordMatch(d, w))) { b3.push(s); continue }
-    if ((acr && acr === makeAcr(tokenize(d))) || (term.length >= 2 && term.length <= 5 && term === makeAcr(tokenize(d)))) { b4.push(s); continue }
-    if (words.some(w => isCompleteWordMatch(d, w))) { b5.push(s); continue }
-    if (usePrefix && tokenize(d).some(w => w.startsWith(last))) { b6.push(s); continue }
-    if (d.includes(term)) { b7.push(s); continue }
+    let bucketIndex = -1
+
+    // Bucket 1: exact equality on diagnosis
+    if (d === termLower) {
+      bucketIndex = 1
+    }
+    // Bucket 2: word-boundary phrase
+    else if (isCompleteWordMatch(d, termLower)) {
+      bucketIndex = 2
+    }
+    // Bucket 3: all tokens as complete words
+    else if (words.length > 0 && words.every(w => isCompleteWordMatch(d, w))) {
+      bucketIndex = 3
+    }
+    // Bucket 4: acronym
+    else if ((acr && acr === makeAcr(tokenize(d))) || (termLower.length >= 2 && termLower.length <= 5 && termLower === makeAcr(tokenize(d)))) {
+      bucketIndex = 4
+    }
+    // Bucket 5: any token as complete word
+    else if (words.some(w => isCompleteWordMatch(d, w))) {
+      bucketIndex = 5
+    }
+    // Bucket 6: token prefix on last token
+    else if (usePrefix && tokenize(d).some(w => w.startsWith(last))) {
+      bucketIndex = 6
+    }
+    // Bucket 7: substring fallback
+    else if (d.includes(termLower)) {
+      bucketIndex = 7
+    }
+
+    if (bucketIndex > 0) {
+      const slideKey = s.id || s.diagnosis || Math.random().toString()
+      const existing = rankedSlides.get(slideKey)
+
+      // Keep the best (lowest) bucket index for each slide
+      if (!existing || bucketIndex < existing.bucketIndex) {
+        rankedSlides.set(slideKey, { slide: s, bucketIndex })
+      }
+    }
   }
 
-  return [...b1, ...b2, ...b3, ...b4, ...b5, ...b6, ...b7]
+  return rankedSlides
+}
+
+// Main ranking function with NCI EVS expansion
+async function rankSlidesWithExpansion(slides: VirtualSlide[], query: string): Promise<{ slides: VirtualSlide[]; expandedTerms: string[] }> {
+  const term = (query || '').toLowerCase().trim()
+  if (!term) return { slides, expandedTerms: [] }
+
+  // Expand search term using NCI EVS (client-side)
+  const expandedTerms = await expandSearchTermClient(term)
+  console.log(`[Virtual Slides] Expanded "${query}" to ${expandedTerms.length} terms:`, expandedTerms)
+
+  // Aggregate rankings across all expanded terms
+  const aggregatedRankings = new Map<string, { slide: VirtualSlide; bucketIndex: number }>()
+
+  for (const searchTerm of expandedTerms) {
+    const termRankings = rankSlidesByTerm(slides, searchTerm)
+
+    for (const [slideKey, { slide, bucketIndex }] of termRankings.entries()) {
+      const existing = aggregatedRankings.get(slideKey)
+
+      // Keep the best (lowest) bucket index
+      if (!existing || bucketIndex < existing.bucketIndex) {
+        aggregatedRankings.set(slideKey, { slide, bucketIndex })
+      }
+    }
+  }
+
+  // Sort by bucket index (best matches first)
+  const sortedSlides = Array.from(aggregatedRankings.values())
+    .sort((a, b) => a.bucketIndex - b.bucketIndex)
+    .map(item => item.slide)
+
+  return {
+    slides: sortedSlides,
+    expandedTerms: expandedTerms.slice(1) // Exclude original term
+  }
+}
+
+// Synchronous fallback (for backwards compatibility)
+function rankSlides(slides: VirtualSlide[], query: string): VirtualSlide[] {
+  const term = (query || '').toLowerCase().trim()
+  if (!term) return slides
+
+  const rankings = rankSlidesByTerm(slides, term)
+
+  return Array.from(rankings.values())
+    .sort((a, b) => a.bucketIndex - b.bucketIndex)
+    .map(item => item.slide)
 }
 
 export interface ClientSearchOptions {
@@ -162,6 +237,7 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
   const [allSlides, setAllSlides] = useState<VirtualSlide[] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [expandedSearchTerms, setExpandedSearchTerms] = useState<string[]>([])
 
   const [options, setOptions] = useState<ClientSearchOptions>({ page: 1, limit: defaultLimit })
 
@@ -202,43 +278,70 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
       .sort()
   }, [allSlides])
 
-  const filteredAndRanked = useMemo(() => {
-    if (!allSlides) return []
-    let list = allSlides
-    // Filters first
-    if (options.repository && options.repository !== 'all') {
-      list = list.filter(s => s.repository === options.repository)
-    }
-    if (options.category && options.category !== 'all') {
-      list = list.filter(s => s.category === options.category)
-    }
-    if (options.subcategory && options.subcategory !== 'all') {
-      list = list.filter(s => s.subcategory === options.subcategory)
+  const [filteredAndRanked, setFilteredAndRanked] = useState<VirtualSlide[]>([])
+
+  // Handle filtering and ranking with async NCI EVS expansion
+  useEffect(() => {
+    if (!allSlides) {
+      setFilteredAndRanked([])
+      return
     }
 
-    // Random mode: shuffle deterministically per page when enabled, ignoring query ranking
-    if (options.randomMode) {
-      const seedBase = options.randomSeed ?? Date.now()
-      const seed = (options.page || 1) * 1337 + seedBase
-      const rng = (n: number) => {
-        const x = Math.sin(seed + n) * 10000
-        return x - Math.floor(x)
+    let mounted = true
+
+    async function processSlides() {
+      let list = allSlides
+      // Filters first
+      if (options.repository && options.repository !== 'all') {
+        list = list.filter(s => s.repository === options.repository)
       }
-      let arr = list.slice()
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(rng(i) * (i + 1))
-        ;[arr[i], arr[j]] = [arr[j], arr[i]]
+      if (options.category && options.category !== 'all') {
+        list = list.filter(s => s.category === options.category)
       }
-      // In random mode, always show a small random sample of 10
-      if (arr.length > 10) arr = arr.slice(0, 10)
-      return arr
+      if (options.subcategory && options.subcategory !== 'all') {
+        list = list.filter(s => s.subcategory === options.subcategory)
+      }
+
+      // Random mode: shuffle deterministically per page when enabled, ignoring query ranking
+      if (options.randomMode) {
+        const seedBase = options.randomSeed ?? Date.now()
+        const seed = (options.page || 1) * 1337 + seedBase
+        const rng = (n: number) => {
+          const x = Math.sin(seed + n) * 10000
+          return x - Math.floor(x)
+        }
+        let arr = list.slice()
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(rng(i) * (i + 1))
+          ;[arr[i], arr[j]] = [arr[j], arr[i]]
+        }
+        // In random mode, always show a small random sample of 10
+        if (arr.length > 10) arr = arr.slice(0, 10)
+        if (mounted) {
+          setFilteredAndRanked(arr)
+          setExpandedSearchTerms([])
+        }
+        return
+      }
+
+      // Ranking with NCI EVS expansion
+      if (options.query && options.query.trim()) {
+        const { slides: rankedSlides, expandedTerms } = await rankSlidesWithExpansion(list, options.query)
+        if (mounted) {
+          setFilteredAndRanked(rankedSlides)
+          setExpandedSearchTerms(expandedTerms)
+        }
+      } else {
+        if (mounted) {
+          setFilteredAndRanked(list)
+          setExpandedSearchTerms([])
+        }
+      }
     }
 
-    // Ranking next
-    if (options.query && options.query.trim()) {
-      list = rankSlides(list, options.query)
-    }
-    return list
+    processSlides()
+
+    return () => { mounted = false }
   }, [allSlides, options])
 
   const total = filteredAndRanked.length
@@ -315,6 +418,9 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
     repositories,
     categories,
     organSystems,
+
+    // NCI EVS expansion
+    expandedSearchTerms,
 
     currentSearchOptions: options
   }

@@ -7,7 +7,7 @@ import { QuizResultsSummary } from "@/features/quiz/components/quiz-results-summ
 import { QuizResultsSkeleton } from "@/features/quiz/components/quiz-results-skeleton"
 import { PageErrorBoundary } from "@/shared/components/common"
 import { QuizResult } from "@/features/quiz/types/quiz"
-import { toast } from "sonner"
+import { toast } from '@/shared/utils/toast'
 import Link from "next/link"
 import { useCachedData } from "@/shared/hooks/use-cached-data"
 

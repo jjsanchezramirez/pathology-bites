@@ -3,6 +3,22 @@
 import { AnkomaDeck, AnkomaNote, AnkomaSection, AnkomaData, AnkiCard } from '../types/anki-card'
 
 /**
+ * Sanitize image filenames in HTML to match R2 storage format
+ * Replaces ALL whitespace characters (including Unicode spaces) with underscores in image src attributes
+ */
+function sanitizeImageSources(html: string): string {
+  if (!html) return html
+
+  // Match all img tags and replace ALL whitespace in src attributes with underscores
+  return html.replace(/<img([^>]*?)src=["']([^"']+)["']([^>]*?)>/gi, (match, before, src, after) => {
+    // Replace ALL whitespace characters with underscores
+    // Includes: regular spaces, non-breaking spaces (U+00A0, U+202F), and other Unicode spaces
+    const sanitizedSrc = src.replace(/[\s\u00A0\u2000-\u200B\u202F\uFEFF]/g, '_')
+    return `<img${before}src="${sanitizedSrc}"${after}>`
+  })
+}
+
+/**
  * Parse ankoma.json structure into organized sections
  */
 export function parseAnkomaData(rawData: AnkomaDeck): AnkomaData {
@@ -98,14 +114,14 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
     const oMask = fields[10] || ''
 
     // Build question/answer HTML replicating the IOE template
-    const questionHtml = `
+    const questionHtml = sanitizeImageSources(`
       <div id="io-header">${header}</div>
       <div id="io-wrapper">
         <div id="io-overlay">${qMask}</div>
         <div id="io-original">${image}</div>
       </div>
       ${footer ? `<div id=\"io-footer\">${footer}</div>` : ''}
-    `.trim()
+    `.trim())
 
     const answerExtras: string[] = []
     if (remarks.trim()) {
@@ -121,7 +137,7 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
       answerExtras.push(`<div class="io-extra-entry"><div class="io-field-descr">Extra 2</div>${extra2}</div>`)
     }
 
-    const answerHtml = `
+    const answerHtml = sanitizeImageSources(`
       <div id="io-header">${header}</div>
       <div id="io-wrapper">
         <div id="io-overlay">${aMask || qMask}</div>
@@ -129,7 +145,7 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
       </div>
       ${footer ? `<div id=\"io-footer\">${footer}</div>` : ''}
       ${answerExtras.length ? `<div id=\"io-extra-wrapper\"><div id=\"io-extra\">${answerExtras.join('')}</div></div>` : ''}
-    `.trim()
+    `.trim())
 
     return {
       id: note.guid || `${deckName}-${index}`,
@@ -170,32 +186,127 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
     }
   }
 
-  // Default (Cloze/Basic) path
-  // Detect CP vs AP to map fields correctly (CP typically uses different field order)
+  // Detect card type UUIDs
   const AP_MODEL_UUID = 'cb0c02c4-e328-11ef-a4df-cf9f22b82781'
   const CP_MODEL_UUID = 'cb0a45d8-e328-11ef-a4df-cf9f22b82781'
+  const AP_MULTIPLE_IMAGES_UUID = '24d0854c-de36-11f0-a3ab-21da8ea55a13' // Cloze-Ankoma-AP - multiple images
 
   const isAPModel = note.note_model_uuid === AP_MODEL_UUID
   const isCPModel = note.note_model_uuid === CP_MODEL_UUID
+  const isAPMultipleImages = note.note_model_uuid === AP_MULTIPLE_IMAGES_UUID
   const tags = note.tags || []
-  const isHemepathTag = tags.some(t => t.startsWith('#ANKOMA::CP::Hemepath'))
-  const isCPTag = tags.some(t => t.startsWith('#ANKOMA::CP::') && !t.startsWith('#ANKOMA::CP::Hemepath'))
 
-  // Treat Hemepath as AP format even if under CP deck/tags
-  const treatAsAP = isAPModel || isHemepathTag || (!isCPModel && (!deckName.startsWith('CP') || deckName.includes('Hemepath')))
-  const isCP = !treatAsAP && (isCPModel || isCPTag || deckName.startsWith('CP'))
+  // Handle "multiple images" card type - displays random image from field[1]
+  if (isAPMultipleImages) {
+    // Field structure for AP multiple images:
+    // [0]=Header, [1]=Text (with multiple <img> tags), [2]=Extra, [3]=Personal Notes, [4]=Textbook, [5]=Citation
+    const header = fields[0] || ''
+    const textWithImages = fields[1] || ''
+    const extra = fields[2] || ''
+    const personalNotes = fields[3] || ''
+    const textbook = fields[4] || ''
+    const citation = fields[5] || ''
 
-  // Debug Hemepath cards specifically
-  if (isHemepathTag || deckName.includes('Hemepath')) {
-    console.log(`🩸 Hemepath card debug:`)
-    console.log('- GUID:', note.guid)
-    console.log('- Deck name:', deckName)
-    console.log('- Tags:', note.tags)
-    console.log('- Note model UUID:', note.note_model_uuid)
-    console.log('- Mapping mode:', treatAsAP ? 'AP (fields[1]=text)' : 'CP (fields[0]=text)')
-    console.log('- Fields count:', fields.length)
-    console.log('- Fields:', fields.map((field, i) => `[${i}]: "${field?.substring(0, 100)}${field?.length > 100 ? '...' : ''}"`))
+    // Extract all image URLs from the text field
+    const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi
+    const imageMatches = Array.from(textWithImages.matchAll(imgRegex))
+    const imageUrls = imageMatches.map(match => match[1])
+
+    // Select a random image for display (will be consistent per card due to note.guid)
+    let selectedImageUrl = ''
+    if (imageUrls.length > 0) {
+      // Use the card's guid to seed the random selection (consistent selection per card)
+      const seed = parseInt(note.guid?.replace(/[^0-9]/g, '') || '0') || index
+      const selectedIndex = seed % imageUrls.length
+      selectedImageUrl = imageUrls[selectedIndex]
+    }
+
+    // Build question HTML with the selected random image
+    const questionHtml = sanitizeImageSources(`
+      ${header ? `<div class="card-header">${header}</div>` : ''}
+      ${selectedImageUrl ? `<div class="card-image"><img src="${selectedImageUrl}" alt="Question image" /></div>` : ''}
+      <div class="card-text">${textWithImages.replace(imgRegex, '')}</div>
+    `.trim())
+
+    // Build answer HTML with all additional fields
+    const answerParts = []
+
+    if (extra.trim()) {
+      answerParts.push(sanitizeImageSources(`<div class="extra-section">${extra}</div>`))
+    }
+
+    if (personalNotes.trim()) {
+      answerParts.push(sanitizeImageSources(`<div class="personal-notes-section"><h4>Personal Notes</h4>${personalNotes}</div>`))
+    }
+
+    if (textbook.trim()) {
+      answerParts.push(sanitizeImageSources(`<div class="textbook-section"><h4>Textbook</h4>${textbook}</div>`))
+    }
+
+    if (citation.trim()) {
+      const citations = citation.split(/(?:<br\s*\/?>){2,}|(?:\n\s*){2,}/)
+        .map(c => c.trim())
+        .filter(c => c.length > 0)
+
+      if (citations.length > 1) {
+        const formattedCitations = citations.map((cite, i) =>
+          i > 0 ? `<div style="margin-top: 4px;">${cite}</div>` : cite
+        ).join('')
+        answerParts.push(sanitizeImageSources(`<div class="citation-section"><h4>Citation</h4>${formattedCitations}</div>`))
+      } else {
+        answerParts.push(sanitizeImageSources(`<div class="citation-section"><h4>Citation</h4>${citation}</div>`))
+      }
+    }
+
+    const answerHtml = answerParts.join('')
+
+    return {
+      id: note.guid || `${deckName}-${index}`,
+      cardId: index + 1,
+      noteId: parseInt(note.guid?.replace(/[^0-9]/g, '') || '0') || index,
+      deckName,
+      modelName: 'Cloze (Multiple Images)',
+      fields: {
+        Header: header,
+        Text: textWithImages,
+        Extra: extra,
+        'Personal Notes': personalNotes,
+        Textbook: textbook,
+        Citation: citation,
+        '__imageUrls': imageUrls, // Store all image URLs for potential UI cycling
+        '__selectedImageUrl': selectedImageUrl // Store the selected random image
+      },
+      tags: [...tags, '#multiple-images'],
+      question: questionHtml,
+      answer: answerHtml,
+      css: '',
+      interval: 1,
+      due: Date.now() + 24 * 60 * 60 * 1000,
+      factor: 2500,
+      reviews: 0,
+      lapses: 0,
+      left: 0,
+      ord: 0,
+      type: 0,
+      queue: 0,
+      mod: Date.now(),
+      usn: 1,
+      reps: 0,
+      ease: 2500
+    }
   }
+
+  // Default (Cloze/Basic) path
+  // Detect CP vs AP to map fields correctly (CP typically uses different field order)
+
+  // Hemepath Neoplastic uses AP format, Hemepath Benign uses CP format
+  const isHemepathNeoplastic = tags.some(t => t.includes('Hemepath-Neoplastic')) || deckName.includes('Neoplastic')
+  const isHemepathBenign = tags.some(t => t.includes('Hemepath-Benign')) || deckName.includes('Benign')
+  const isCPTag = tags.some(t => t.startsWith('#ANKOMA::CP::') && !t.includes('Hemepath-Neoplastic'))
+
+  // Determine format: AP uses fields[1]=Text, CP uses fields[0]=Text
+  const treatAsAP = isAPModel || isHemepathNeoplastic || (!isCPModel && !isHemepathBenign && !deckName.startsWith('CP'))
+  const isCP = !treatAsAP && (isCPModel || isHemepathBenign || isCPTag || deckName.startsWith('CP'))
 
   // For CP vs AP, the field order differs. Map explicitly.
   let header: string
@@ -227,15 +338,15 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
   const answerParts = []
 
   if (extra.trim()) {
-    answerParts.push(`<div class=\"extra-section\">${extra}</div>`)
+    answerParts.push(sanitizeImageSources(`<div class=\"extra-section\">${extra}</div>`))
   }
 
   if (personalNotes.trim()) {
-    answerParts.push(`<div class=\"personal-notes-section\"><h4>Personal Notes</h4>${personalNotes}</div>`)
+    answerParts.push(sanitizeImageSources(`<div class=\"personal-notes-section\"><h4>Personal Notes</h4>${personalNotes}</div>`))
   }
 
   if (textbook.trim()) {
-    answerParts.push(`<div class=\"textbook-section\"><h4>Textbook</h4>${textbook}</div>`)
+    answerParts.push(sanitizeImageSources(`<div class=\"textbook-section\"><h4>Textbook</h4>${textbook}</div>`))
   }
 
   if (citation.trim()) {
@@ -249,10 +360,10 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
       const formattedCitations = citations.map((cite, index) =>
         index > 0 ? `<div style="margin-top: 4px;">${cite}</div>` : cite
       ).join('')
-      answerParts.push(`<div class=\"citation-section\"><h4>Citation</h4>${formattedCitations}</div>`)
+      answerParts.push(sanitizeImageSources(`<div class=\"citation-section\"><h4>Citation</h4>${formattedCitations}</div>`))
     } else {
       // Single citation
-      answerParts.push(`<div class=\"citation-section\"><h4>Citation</h4>${citation}</div>`)
+      answerParts.push(sanitizeImageSources(`<div class=\"citation-section\"><h4>Citation</h4>${citation}</div>`))
     }
   }
 
@@ -272,15 +383,15 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
     deckName,
     modelName,
     fields: {
-      Header: header,
-      Text: text,
-      Extra: extra,
-      'Personal Notes': personalNotes,
-      Textbook: textbook,
-      Citation: citation
+      Header: sanitizeImageSources(header),
+      Text: sanitizeImageSources(text),
+      Extra: sanitizeImageSources(extra),
+      'Personal Notes': sanitizeImageSources(personalNotes),
+      Textbook: sanitizeImageSources(textbook),
+      Citation: sanitizeImageSources(citation)
     },
     tags: note.tags || [],
-    question: text,
+    question: sanitizeImageSources(text),
     answer,
     css: '',
     interval: 1,

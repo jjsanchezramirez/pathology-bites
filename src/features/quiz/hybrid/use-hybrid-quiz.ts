@@ -20,7 +20,7 @@ import { DatabaseSyncManager, SyncResult } from './core/database-sync-manager';
 import { AutoSaveManager } from '../services/auto-save-manager';
 import { AUTO_SAVE_CONFIG, type SyncStatus, type AutoSaveTrigger } from '../config/auto-save-config';
 import { QuizQuestion, QuizAnswer, QuizState, QuizQuestionTransformer } from '../types/quiz-question';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 
 export interface UseHybridQuizOptions {
   sessionId: string;

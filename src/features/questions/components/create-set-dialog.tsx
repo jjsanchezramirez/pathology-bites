@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { useAuth } from '@/features/auth/hooks/use-auth-status'
 import { BlurredDialog } from '@/shared/components/ui/blurred-dialog'
 import { Button } from '@/shared/components/ui/button'

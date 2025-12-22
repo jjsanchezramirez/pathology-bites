@@ -3,7 +3,7 @@
 
 import { createClient } from '@/shared/services/client'
 import { SocialButton } from '@/features/auth/components/ui/social-button'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 
 export function GoogleSignInButton() {
   // Check if we're in admin-only mode

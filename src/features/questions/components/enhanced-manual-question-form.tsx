@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Icons } from '@/shared/components/common/icons';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 
 // Import existing components
 import { CompactAnswerOptions } from './compact-answer-options';

@@ -27,7 +27,7 @@ import {
 } from 'lucide-react'
 import { QuestionPreviewDialog } from './question-preview-dialog'
 import { ReviewActionDialog } from './review-action-dialog'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { formatDistanceToNow } from 'date-fns'
 import { QuestionWithDetails } from '@/features/questions/types/questions'
 

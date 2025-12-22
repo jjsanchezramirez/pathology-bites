@@ -25,7 +25,7 @@ import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
 import { createClient } from '@/shared/services/client';
 import { EditQuestionFormData } from '@/features/questions/hooks/use-edit-question-form';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 
 interface Tag {
   id: string;

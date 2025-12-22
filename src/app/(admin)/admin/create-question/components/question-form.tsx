@@ -10,7 +10,7 @@ import { Checkbox } from '@/shared/components/ui/checkbox'
 import { Badge } from '@/shared/components/ui/badge'
 import { ScrollArea } from '@/shared/components/ui/scroll-area'
 import { Loader2, Brain, FileText } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import {
   getModelProvider,
   ACTIVE_AI_MODELS

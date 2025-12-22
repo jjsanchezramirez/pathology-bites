@@ -14,7 +14,7 @@ import { Badge } from '@/shared/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import { PasswordChangeForm } from '@/features/auth/components/forms/password-change-form'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { User, Shield, Save, RefreshCw, Edit, X } from 'lucide-react'
 
 interface UserProfile {

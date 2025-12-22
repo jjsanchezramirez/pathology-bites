@@ -20,7 +20,7 @@ import { QuizQuestionDisplay } from "@/features/quiz/components/quiz-question-di
 import { QuizSidebar } from "@/features/quiz/components/quiz-sidebar"
 import { UIQuizQuestion } from "@/features/quiz/types/quiz-question"
 import { createClient } from "@/shared/services/client"
-import { toast } from "sonner"
+import { toast } from '@/shared/utils/toast'
 import Link from "next/link"
 
 export default function QuizReviewPage() {

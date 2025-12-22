@@ -34,7 +34,7 @@ import {
 import { QuestionPreviewDialog } from './question-preview-dialog'
 import { QuestionReviewDialog } from './question-review-dialog'
 import { FlagResolutionDialog } from './flag-resolution-dialog'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { STATUS_CONFIG, QuestionWithDetails, QuestionFlagData } from '@/features/questions/types/questions'
 
 // Component to handle search params

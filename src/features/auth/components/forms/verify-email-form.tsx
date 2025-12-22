@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { StatusCard } from '@/features/auth/components/ui/status-card'
 import { FormButton } from '@/features/auth/components/ui/form-button'
 import { Button } from '@/shared/components/ui/button'

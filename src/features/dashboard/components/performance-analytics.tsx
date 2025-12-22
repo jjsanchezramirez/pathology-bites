@@ -196,24 +196,48 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
       )}
 
       {/* Overall Score */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            Overall Score
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-muted-foreground mb-2">
-              Coming Soon
+      {data.completedQuizzes >= 1 ? (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-green-500" />
+              Overall Score
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-green-600 mb-2">
+                {data.overallScore}%
+              </div>
+              <div className="text-sm text-muted-foreground mb-3">
+                Average across all quizzes
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Based on {data.completedQuizzes} completed {data.completedQuizzes === 1 ? 'quiz' : 'quizzes'}
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Overall score tracking will be available as you take more quizzes
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              Overall Score
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-muted-foreground mb-2">
+                Coming Soon
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Complete your first quiz to see your overall score
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Subjects for Improvement */}
       <Card className="md:col-span-2 lg:col-span-1">

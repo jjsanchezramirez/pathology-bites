@@ -22,7 +22,7 @@ import {
 import { Textarea } from '@/shared/components/ui/textarea'
 import { Label } from '@/shared/components/ui/label'
 import { Badge } from '@/shared/components/ui/badge'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { 
   QuestionFlagData,
   FlagResolutionType,

@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/shared/components/ui/alert-dialog'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 
 interface Inquiry {
   id: string

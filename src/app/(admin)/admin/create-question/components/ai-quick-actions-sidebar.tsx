@@ -16,7 +16,7 @@ import {
   BarChart3,
   Zap
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { FormState } from './multi-step-question-form'
 
 interface AIQuickActionsSidebarProps {

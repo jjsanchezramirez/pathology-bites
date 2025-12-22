@@ -29,9 +29,30 @@ const eslintConfig = [...compat.extends("next/core-web-vitals", "next/typescript
     // Disable rules that are too noisy during development
     "@typescript-eslint/no-empty-interface": "off",
     "prefer-const": "warn",
+
+    // Enforce standardized toast imports
+    "no-restricted-imports": ["error", {
+      "paths": [{
+        "name": "sonner",
+        "message": "Please use '@/shared/utils/toast' instead of importing directly from 'sonner'. This ensures consistent duplicate prevention and better toast management."
+      }],
+      "patterns": [{
+        "group": ["**/sonner"],
+        "message": "Please use '@/shared/utils/toast' instead of importing directly from 'sonner'."
+      }]
+    }],
   },
 }, {
-  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts"]
+  ignores: [
+    "node_modules/**",
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    // Allow direct sonner imports only in utility wrapper and UI component
+    "src/shared/utils/toast.ts",
+    "src/shared/components/ui/sonner.tsx"
+  ]
 }];
 
 export default eslintConfig;

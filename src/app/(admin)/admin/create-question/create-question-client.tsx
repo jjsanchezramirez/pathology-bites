@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { MultiStepQuestionForm } from './components/multi-step-question-form'
 import { QuestionFormData } from '@/features/questions/types/questions'
 import { apiClient } from '@/shared/utils/api-client'

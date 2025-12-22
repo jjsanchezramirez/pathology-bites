@@ -665,7 +665,7 @@ export async function PATCH(
           // For minor/major edits, increment appropriate version numbers
           let newVersionMajor = currentQuestion.version_major || 1
           let newVersionMinor = currentQuestion.version_minor || 0
-          let newVersionPatch = 0
+          const newVersionPatch = 0
 
           if (updateType === 'minor') {
             newVersionMinor += 1

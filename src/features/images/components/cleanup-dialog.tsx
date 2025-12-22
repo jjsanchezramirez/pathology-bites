@@ -14,7 +14,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Trash2, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { getOrphanedImages } from '@/features/images/services/image-analytics';
 import { bulkDeleteImages } from '@/features/images/services/images';
 

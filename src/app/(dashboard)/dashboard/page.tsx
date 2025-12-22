@@ -15,9 +15,11 @@ import {
   Calendar,
   Award,
   Clock,
-
+  Microscope,
+  Library,
+  ClipboardList,
 } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from '@/shared/utils/toast'
 import Link from "next/link"
 import { WelcomeMessage, SecurityNotice, PerformanceAnalytics } from "@/features/dashboard/components"
 // import { EnhancedRecentActivity } from "@/features/dashboard/components/enhanced-recent-activity"
@@ -199,7 +201,7 @@ export default function DashboardPage() {
     }
 
     fetchData()
-  }, [user])
+  }, [user?.id])
 
   return (
     <PageErrorBoundary pageName="Dashboard" showHomeButton={false} showBackButton={false}>
@@ -311,13 +313,13 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">All Questions</CardTitle>
+              <CardTitle className="text-sm font-medium">Completed</CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.allQuestions || stats.totalQuestions || 0}</div>
+              <div className="text-2xl font-bold">{stats.completedQuestions || 0}</div>
               <p className="text-xs text-muted-foreground">
-                Total questions available
+                Questions attempted
               </p>
             </CardContent>
           </Card>
@@ -335,49 +337,43 @@ export default function DashboardPage() {
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {stats?.recentActivity && stats.recentActivity.length > 0 ? (
                   stats.recentActivity.map((activity) => {
                     const activityContent = (
-                      <div className={`flex items-start gap-4 rounded-lg border p-4 transition-all duration-200 ${
-                        activity.navigationUrl ? 'hover:bg-muted/30 hover:shadow-sm cursor-pointer' : ''
-                      } bg-card/50`}>
-                        {/* Activity Icons - simplified without colors */}
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center">
-                          {activity.type === 'quiz_completed' && <Award className="h-4 w-4 text-muted-foreground" />}
-                          {activity.type === 'study_streak' && <TrendingUp className="h-4 w-4 text-muted-foreground" />}
-                          {activity.type === 'quiz_started' && <Play className="h-4 w-4 text-muted-foreground" />}
-                          {activity.type === 'performance_milestone' && <Target className="h-4 w-4 text-muted-foreground" />}
+                      <div className={`flex items-center gap-3 rounded-md border p-3 transition-all duration-200 ${
+                        activity.navigationUrl ? 'hover:bg-muted/30 hover:border-muted-foreground/30 cursor-pointer' : ''
+                      }`}>
+                        {/* Activity Icons - compact with color coding */}
+                        <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${
+                          activity.type === 'quiz_completed' ? 'bg-green-100 dark:bg-green-950' :
+                          activity.type === 'quiz_started' ? 'bg-blue-100 dark:bg-blue-950' :
+                          'bg-muted'
+                        }`}>
+                          {activity.type === 'quiz_completed' && <Award className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />}
+                          {activity.type === 'study_streak' && <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />}
+                          {activity.type === 'quiz_started' && <Play className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />}
+                          {activity.type === 'performance_milestone' && <Target className="h-3.5 w-3.5 text-muted-foreground" />}
                           {!['quiz_completed', 'study_streak', 'quiz_started', 'performance_milestone'].includes(activity.type) &&
-                            <BookOpen className="h-4 w-4 text-muted-foreground" />}
+                            <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />}
                         </div>
 
-                        <div className="space-y-1 flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium leading-none truncate">{activity.title}</p>
-                            {activity.timeGroup === 'today' && (
-                              <span className="px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded-md font-medium">Today</span>
-                            )}
-                            {activity.timeGroup === 'yesterday' && (
-                              <span className="px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded-md font-medium">Yesterday</span>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground line-clamp-2">{activity.description}</p>
-                          {activity.metadata?.improvement && (
-                            <p className="text-xs text-foreground/70 font-medium">
-                              {activity.metadata.improvement > 0 ? '↗' : '↘'} {Math.abs(activity.metadata.improvement)}% change
-                            </p>
-                          )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium leading-tight truncate">{activity.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{activity.description}</p>
                         </div>
 
-                        <div className="text-right flex-shrink-0">
-                          <div className="text-xs text-muted-foreground">{activity.timestamp}</div>
-                          {activity.score && (
-                            <div className="text-sm font-medium mt-1">{activity.score}%</div>
+                        <div className="text-right flex-shrink-0 flex items-center gap-2">
+                          {activity.score !== undefined && (
+                            <div className={`text-sm font-semibold px-2 py-0.5 rounded ${
+                              activity.score >= 80 ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400' :
+                              activity.score >= 60 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400' :
+                              'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400'
+                            }`}>
+                              {activity.score}%
+                            </div>
                           )}
-                          {activity.navigationUrl && (
-                            <div className="text-xs text-muted-foreground mt-1 opacity-70">View →</div>
-                          )}
+                          <div className="text-xs text-muted-foreground whitespace-nowrap">{activity.timestamp}</div>
                         </div>
                       </div>
                     )
@@ -411,68 +407,66 @@ export default function DashboardPage() {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button
-                className="w-full justify-between opacity-50 cursor-not-allowed"
-                disabled
-                onClick={() => toast.info('Start New Quiz coming soon!')}
-              >
-                Start New Quiz
-                <Plus className="h-4 w-4" />
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full justify-between opacity-50 cursor-not-allowed"
-                disabled
-                onClick={() => toast.info('View Performance coming soon!')}
-              >
-                View Performance
-                <BarChart3 className="h-4 w-4" />
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full justify-between opacity-50 cursor-not-allowed"
-                disabled
-                onClick={() => toast.info('My Quizzes coming soon!')}
-              >
-                My Quizzes
-                <Clock className="h-4 w-4" />
-              </Button>
-
-              <Link href="/dashboard/wsi-questions" className="block">
-                <Button variant="outline" className="w-full justify-between">
-                  Digital Slides
-                  <BookOpen className="h-4 w-4" />
+              <Link href="/dashboard/quiz/new" className="block">
+                <Button className="w-full justify-between">
+                  Start New Quiz
+                  <Plus className="h-4 w-4" />
                 </Button>
               </Link>
+
+              <Link href="/dashboard/performance" className="block">
+                <Button variant="outline" className="w-full justify-between">
+                  View Performance
+                  <BarChart3 className="h-4 w-4" />
+                </Button>
+              </Link>
+
+              <Link href="/dashboard/quizzes" className="block">
+                <Button variant="outline" className="w-full justify-between">
+                  My Quizzes
+                  <ClipboardList className="h-4 w-4" />
+                </Button>
+              </Link>
+
+              <div className="relative">
+                <Link href="/dashboard/wsi-questions" className="block">
+                  <Button variant="outline" className="w-full justify-between">
+                    Slide-Based Questions
+                    <Microscope className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <span className="absolute -top-2 -right-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                  New
+                </span>
+              </div>
 
               <Link href="/dashboard/anki" className="block">
                 <Button variant="outline" className="w-full justify-between">
-                  Ankoma Deck
-                  <BookOpen className="h-4 w-4" />
+                  Ankoma Deck Viewer
+                  <Library className="h-4 w-4" />
                 </Button>
               </Link>
 
-              <Button
-                variant="outline"
-                className="w-full justify-between opacity-50 cursor-not-allowed"
-                disabled
-                onClick={() => toast.info('Learning Modules feature coming soon!')}
-              >
-                Learning Modules
-                <BookOpen className="h-4 w-4" />
-              </Button>
+              <Link href="/dashboard/progress" className="block">
+                <Button variant="outline" className="w-full justify-between">
+                  My Progress
+                  <TrendingUp className="h-4 w-4" />
+                </Button>
+              </Link>
 
-              <Button
-                variant="outline"
-                className="w-full justify-between opacity-50 cursor-not-allowed"
-                disabled
-                onClick={() => toast.info('Progress feature coming soon!')}
-              >
-                Progress
-                <TrendingUp className="h-4 w-4" />
-              </Button>
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  className="w-full justify-between opacity-50 cursor-not-allowed"
+                  disabled
+                >
+                  Learning Modules
+                  <BookOpen className="h-4 w-4" />
+                </Button>
+                <span className="absolute -top-2 -right-2 text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                  Soon
+                </span>
+              </div>
             </CardContent>
           </Card>
       </div>

@@ -14,7 +14,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Form } from "@/shared/components/ui/form";
 import { Button } from "@/shared/components/ui/button";
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { Loader2 } from 'lucide-react';
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status';
 import { useUserRole } from '@/shared/hooks/use-user-role';

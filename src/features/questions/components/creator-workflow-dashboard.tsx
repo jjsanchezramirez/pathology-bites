@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { createClient } from '@/shared/services/client'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import { useUserRole } from '@/shared/hooks/use-user-role'

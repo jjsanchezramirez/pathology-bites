@@ -7,7 +7,7 @@ import { ChevronDown } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { Label } from "@/shared/components/ui/label"
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import DemoQuestion from "@/shared/components/common/demo-question"
 import { ScrollToTopButton } from "@/shared/components/common/scroll-to-top"
 import { CountdownTimer } from "@/shared/components/common/countdown-timer"

@@ -7,7 +7,7 @@ import { Label } from '@/shared/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { Badge } from '@/shared/components/ui/badge'
 import { Upload, Check, AlertCircle, Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { getCategoryIdFromContent } from '../utils/category-mapping'
 import { TagAutocomplete } from './tag-autocomplete'
 

@@ -7,6 +7,7 @@ import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { Search, Users, Calendar, Download } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { toast } from '@/shared/utils/toast'
 
 interface WaitlistEntry {
   id: string

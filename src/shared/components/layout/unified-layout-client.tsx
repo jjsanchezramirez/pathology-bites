@@ -2,6 +2,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 
 import { useMobile } from '@/shared/hooks/use-mobile'
 import { useQuizMode, useAnkiMode } from '@/shared/hooks/use-quiz-mode'
@@ -25,6 +26,12 @@ export function UnifiedLayoutClient({
   headerConfig
 }: UnifiedLayoutClientProps) {
   const { role, isLoading } = useUserRole()
+  const pathname = usePathname()
+
+  // Check if we're on the anki or anki2 page (which have their own layouts)
+  const isAnkiPage = pathname === '/dashboard/anki'
+  const isAnki2Page = pathname === '/dashboard/anki2'
+  const isFullHeightPage = isAnkiPage || isAnki2Page
 
   // Don't show navigation until we know the user's role (for admin routes)
   // This prevents showing user nav first, then switching to admin nav
@@ -46,6 +53,7 @@ export function UnifiedLayoutClient({
   const [mobileVisible, setMobileVisible] = useState(false) // Mobile: false = hidden, true = visible
   const [preQuizDesktopState, setPreQuizDesktopState] = useState(false) // Store desktop state before quiz/anki mode
   const [isHydrated, setIsHydrated] = useState(false)
+  const [sidebarHovered, setSidebarHovered] = useState(false) // Hover state for collapsed sidebar
   const sidebarRef = useRef<HTMLDivElement>(null)
 
   // Handle hydration
@@ -163,9 +171,14 @@ export function UnifiedLayoutClient({
         </div>
       ) : (
         // Desktop: Always render, no transforms needed
-        <div ref={sidebarRef}>
+        <div
+          ref={sidebarRef}
+          onMouseEnter={() => setSidebarHovered(true)}
+          onMouseLeave={() => setSidebarHovered(false)}
+        >
           <UnifiedSidebar
             isCollapsed={sidebarCollapsed}
+            isHovered={sidebarHovered}
             navigationItems={navigationItems}
             navigationSections={navigationSections}
             isMobileMode={false}
@@ -175,12 +188,12 @@ export function UnifiedLayoutClient({
 
       {/* Main Content Area */}
       <div
-        className={`fixed top-0 right-0 flex flex-col transition-all duration-300 ${
+        className={`fixed top-0 right-0 flex flex-col transition-all duration-300 ease-in-out ${
           isMobile
             ? 'left-0' // Mobile: always full width, sidebar overlays
-            : desktopCollapsed
+            : (desktopCollapsed && !sidebarHovered)
               ? 'left-16' // Desktop collapsed: 64px
-              : 'left-64' // Desktop expanded: 256px
+              : 'left-64' // Desktop expanded or hovered: 256px
         }`}
         style={{
           height: '100svh', // Use small viewport height for mobile browsers (excludes address bar)
@@ -194,10 +207,16 @@ export function UnifiedLayoutClient({
         />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-background">
-          <div className="container mx-auto max-w-7xl p-6 pb-24">
-            {children}
-          </div>
+        <main className={isFullHeightPage ? "flex-1 overflow-hidden bg-background" : "flex-1 overflow-y-auto bg-background"}>
+          {isFullHeightPage ? (
+            // Anki/Anki2 pages: no padding, no scroll
+            <div className="h-full">{children}</div>
+          ) : (
+            // Other pages: default padding with scroll
+            <div className="container mx-auto max-w-7xl p-6 pb-24">
+              {children}
+            </div>
+          )}
         </main>
       </div>
     </div>

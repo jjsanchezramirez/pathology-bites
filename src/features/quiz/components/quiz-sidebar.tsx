@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Button } from "@/shared/components/ui/button"
 import { CheckCircle, XCircle, Circle, Clock, Target } from "lucide-react"
 import { QuizSession } from "@/features/quiz/types/quiz"
+import { cn } from "@/shared/utils/utils"
 
 interface QuizSidebarProps {
   session: QuizSession
@@ -16,6 +17,8 @@ interface QuizSidebarProps {
   }>
   onQuestionSelect?: (index: number) => void
   timeRemaining?: number | null
+  isCollapsed?: boolean
+  isHovered?: boolean
 }
 
 export function QuizSidebar({
@@ -23,7 +26,9 @@ export function QuizSidebar({
   currentQuestionIndex,
   attempts,
   onQuestionSelect,
-  timeRemaining
+  timeRemaining,
+  isCollapsed = false,
+  isHovered = false
 }: QuizSidebarProps) {
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -84,17 +89,29 @@ export function QuizSidebar({
   }
 
   const progress = ((currentQuestionIndex + 1) / session.totalQuestions) * 100
+  const isOpen = !isCollapsed || isHovered
 
   return (
-    <Card className="w-full lg:w-80 sticky top-4 self-start">
+    <Card
+      className={cn(
+        "w-full sticky top-4 self-start transition-all duration-300 ease-in-out",
+        isHovered && "shadow-lg"
+      )}
+    >
       <CardContent className="p-6 space-y-6">
         {/* Quiz Info */}
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <Target className="h-4 w-4" />
-            <h3 className="text-base font-semibold">Quiz Progress</h3>
+            <Target className={cn("h-4 w-4", !isOpen && "mx-auto")} />
+            <h3 className={cn(
+              "text-base font-semibold transition-all duration-300",
+              !isOpen && "opacity-0 -translate-x-96 hidden"
+            )}>Quiz Progress</h3>
           </div>
-          <div className="space-y-4">
+          <div className={cn(
+            "space-y-4 transition-all duration-300",
+            !isOpen && "opacity-0 hidden"
+          )}>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Question {currentQuestionIndex + 1} of {session.totalQuestions}</span>
@@ -120,7 +137,10 @@ export function QuizSidebar({
         </div>
 
         {/* Question Navigation */}
-        <div>
+        <div className={cn(
+          "transition-all duration-300",
+          !isOpen && "opacity-0 hidden"
+        )}>
           <h3 className="text-base font-semibold mb-4">Questions</h3>
           <div className="space-y-1">
             {session.questions.map((question, index) => (

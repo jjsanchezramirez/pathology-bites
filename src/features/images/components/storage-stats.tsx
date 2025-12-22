@@ -5,7 +5,7 @@ import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Loader2, HardDrive, Images, ImageOff, Trash2, Database } from 'lucide-react';
 import { Button } from "@/shared/components/ui/button";
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { getStorageStats, StorageStats } from '@/features/images/services/image-analytics';
 import { formatSize } from '@/features/images/services/image-upload';
 import { CleanupDialog } from './cleanup-dialog';

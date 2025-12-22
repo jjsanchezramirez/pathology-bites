@@ -11,6 +11,8 @@ export interface ExtractedImage {
   src: string
   alt: string
   originalSrc: string
+  width?: string
+  height?: string
 }
 
 export interface ProcessedHtmlContent {
@@ -34,24 +36,32 @@ export function extractImagesFromHtml(html: string, isAnkiContent: boolean = fal
   while ((match = imgRegex.exec(html)) !== null) {
     const imgTag = match[0]
     const imgAttributes = match[1]
-    
+
     // Extract src attribute
     const srcMatch = imgAttributes.match(/src=["']([^"']+)["']/i)
     if (!srcMatch) continue
-    
+
     const originalSrc = srcMatch[1]
     const transformedSrc = transformImagePath(originalSrc, isAnkiContent)
-    
+
     // Extract alt attribute (optional)
     const altMatch = imgAttributes.match(/alt=["']([^"']+)["']/i)
     const alt = altMatch ? altMatch[1] : ''
-    
+
+    // Extract width and height attributes (optional)
+    const widthMatch = imgAttributes.match(/width=["']?([^"'\s>]+)["']?/i)
+    const heightMatch = imgAttributes.match(/height=["']?([^"'\s>]+)["']?/i)
+    const width = widthMatch ? widthMatch[1] : undefined
+    const height = heightMatch ? heightMatch[1] : undefined
+
     images.push({
       src: transformedSrc,
       alt: alt || `Image ${images.length + 1}`,
-      originalSrc
+      originalSrc,
+      width,
+      height
     })
-    
+
     // Remove the img tag from HTML, replace with a placeholder
     cleanHtml = cleanHtml.replace(imgTag, `[IMAGE_${images.length - 1}]`)
   }

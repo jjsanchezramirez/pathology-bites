@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useClientVirtualSlides } from '@/shared/hooks/use-client-virtual-slides'
 import { VIRTUAL_SLIDES_JSON_URL } from '@/shared/config/virtual-slides'
@@ -20,7 +20,8 @@ import {
   Shuffle,
   RefreshCw,
   ArrowLeft,
-  AlertCircle
+  AlertCircle,
+  Info
 } from 'lucide-react'
 import { PublicHero } from '@/shared/components/common/public-hero'
 import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
@@ -31,7 +32,7 @@ import { SlideRowUnified } from './components/slide-row-unified'
 import { Pagination } from './components/pagination'
 import { LoadingSkeleton } from './components/loading-skeleton'
 
-export default function VirtualSlidesPage() {
+function VirtualSlidesContent() {
   const searchParams = useSearchParams()
 
   // ✅ Use unified search - server-side filtering with proper pagination
@@ -48,7 +49,8 @@ export default function VirtualSlidesPage() {
     search,
     searchWithFilters,
     goToPage,
-    totalSlides
+    totalSlides,
+    expandedSearchTerms
   } = {
     slides: client.slides,
     isLoading: client.isLoading,
@@ -59,7 +61,8 @@ export default function VirtualSlidesPage() {
     search: client.search,
     searchWithFilters: client.searchWithFilters,
     goToPage: client.goToPage,
-    totalSlides: client.totalSlides
+    totalSlides: client.totalSlides,
+    expandedSearchTerms: client.expandedSearchTerms
   }
 
   const [searchTerm, setSearchTerm] = useState('')
@@ -374,6 +377,19 @@ export default function VirtualSlidesPage() {
                     )}
                   </Button>
                 </div>
+
+                {/* Expanded Search Terms Display */}
+                {expandedSearchTerms && expandedSearchTerms.length > 0 && (
+                  <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-md border border-muted">
+                    <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                    <div className="flex-1 text-sm">
+                      <span className="text-muted-foreground">Also searching for: </span>
+                      <span className="font-medium">
+                        {expandedSearchTerms.join(', ')}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
                   {/* Filters */}
@@ -665,5 +681,13 @@ export default function VirtualSlidesPage() {
       {/* Join Our Learning Community Section */}
       <JoinCommunitySection />
     </div>
+  )
+}
+
+export default function VirtualSlidesPage() {
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <VirtualSlidesContent />
+    </Suspense>
   )
 }

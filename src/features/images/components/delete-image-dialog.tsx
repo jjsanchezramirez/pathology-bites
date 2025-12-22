@@ -13,7 +13,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Trash2, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { deleteImage } from '@/features/images/services/images';
 import type { ImageData } from '@/features/images/types/images';
 

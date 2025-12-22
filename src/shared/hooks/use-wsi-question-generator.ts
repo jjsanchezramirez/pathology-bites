@@ -17,7 +17,7 @@ interface QuestionData {
 
 interface APIQuestionData {
   stem: string
-  question_options: Array<{
+  options: Array<{
     id: string
     text: string
     is_correct: boolean
@@ -113,7 +113,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
       if (category && category !== 'all') {
         // Filter by category first
-        let categorySlides = finalWSIData.filter(slide =>
+        const categorySlides = finalWSIData.filter(slide =>
           slide.category.toLowerCase().includes(category.toLowerCase())
         )
 
@@ -192,7 +192,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
       const apiQuestion = questionData.question as APIQuestionData
       const questionWithOptions: QuestionData = {
         ...apiQuestion,
-        options: apiQuestion.question_options || []
+        options: apiQuestion.options || []
       }
 
       const generatedQuestion: GeneratedQuestion = {

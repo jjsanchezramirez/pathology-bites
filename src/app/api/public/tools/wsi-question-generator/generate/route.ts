@@ -2,25 +2,29 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getApiKey, getModelProvider } from '@/shared/config/ai-models'
 import { VirtualSlide } from '@/shared/types/virtual-slides'
 
-// WSI Question Generator fallback models - optimized for speed and quality
+// Unified WSI Question Generator - optimized for free token usage (Updated August 2025)
+// Ordered by rate limits and free token availability
 const WSI_FALLBACK_MODELS = [
-  // Tier 1: FASTEST - Prioritize speed for better UX
-  'Llama-3.3-8B-Instruct',                  // 394ms - FASTEST, excellent quality
-  'ministral-8b-2410',                      // 596ms - Fast Mistral model
-  'mistral-small-2501',                     // 790ms - Latest small Mistral
-  'gemini-2.0-flash',                       // 829ms - Good balance
-
-  // Tier 2: BALANCED - Good speed + capability
-  'Llama-4-Scout-17B-16E-Instruct-FP8',     // 1063ms - Latest multimodal + medical reasoning
-  'mistral-medium-2505',                    // 1311ms - Best balance of capability/volume
-
-  // Tier 3: POWERFUL - Slower but high quality
-  'Llama-3.3-70B-Instruct',                 // 1788ms - Proven large model performance
-  'Llama-4-Maverick-17B-128E-Instruct-FP8', // 1917ms - Complex reasoning powerhouse
-
-  // Tier 4: PREMIUM - Highest quality but slowest
-  'gemini-2.5-flash',                       // 3765ms - Best quality (but slow)
-  'gemini-2.5-pro'                          // Premium reasoning (slowest)
+  // Tier 1: BEST Free Limits - Meta LLAMA Models (3,000 RPM + 1M TPM)
+  'Llama-4-Scout-17B-16E-Instruct-FP8',     // 3,000 RPM, 1M TPM - BEST: Latest multimodal + medical reasoning
+  'Llama-4-Maverick-17B-128E-Instruct-FP8', // 3,000 RPM, 1M TPM - Complex reasoning powerhouse
+  'Llama-3.3-70B-Instruct',                 // 3,000 RPM, 1M TPM - Proven large model performance
+  'Llama-3.3-8B-Instruct',                  // 3,000 RPM, 1M TPM - Fast + efficient
+  
+  // Tier 2: High Volume - Mistral Models (500K TPM + 1B monthly tokens)
+  'mistral-medium-2505',                    // 500K TPM, 1B/month - Best balance of capability/volume
+  'mistral-small-2501',                     // 500K TPM, 1B/month - Latest small model
+  'ministral-8b-2410',                      // 500K TPM, 1B/month - Efficient processing
+  'mistral-large-latest',                   // 500K TPM, 1B/month - Most capable Mistral
+  
+  // Tier 3: Google High-Throughput Models (1M TPM but limited daily)
+  'gemini-2.0-flash',                       // 15 RPM, 1M TPM, 200 RPD - Good balance
+  'gemini-2.0-flash-lite',                  // 30 RPM, 1M TPM, 200 RPD - Higher RPM
+  
+  // Tier 4: Google Quality Models (Lower TPM but good for complex tasks)
+  'gemini-2.5-flash-lite',                  // 15 RPM, 250K TPM, 1,000 RPD - Highest daily limit
+  'gemini-2.5-flash',                       // 10 RPM, 250K TPM, 250 RPD - Best quality
+  'gemini-2.5-pro'                          // 5 RPM, 250K TPM, 100 RPD - Premium reasoning
 ]
 
 // Retry configuration for transient errors
@@ -75,24 +79,6 @@ function getRetryDelay(attempt: number): number {
   return Math.min(delay, RETRY_CONFIG.maxDelay)
 }
 
-// Assign balanced option IDs to ensure equal distribution of correct answers across A, B, C, D, E
-function assignBalancedOptionIds(options: QuestionOption[]): QuestionOption[] {
-  // Create a shuffled array of option IDs (A, B, C, D, E) 
-  const optionIds = ['A', 'B', 'C', 'D', 'E'].slice(0, options.length)
-  
-  // Shuffle the option IDs to randomize which position gets which content
-  for (let i = optionIds.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [optionIds[i], optionIds[j]] = [optionIds[j], optionIds[i]]
-  }
-  
-  // Assign the shuffled IDs to the options
-  return options.map((option, index) => ({
-    ...option,
-    id: optionIds[index]
-  }))
-}
-
 // Types
 
 interface QuestionOption {
@@ -108,7 +94,7 @@ interface QuestionData {
   title?: string
   stem?: string
   question?: string
-  question_options: QuestionOption[]
+  options: QuestionOption[]
   references?: string[]
   teaching_point?: string
   explanation?: string
@@ -148,7 +134,7 @@ async function callMetaAPI(prompt: string, model: string, apiKey: string): Promi
         messages: [
           {
             role: 'system',
-            content: 'You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning.'
+            content: 'You are an expert pathologist creating educational multiple-choice questions for medical students and residents. Focus on clinical correlation, diagnosis, and educational value.'
           },
           {
             role: 'user',
@@ -233,7 +219,7 @@ async function callMetaAPI(prompt: string, model: string, apiKey: string): Promi
   
   // If no token usage found, create estimated usage for testing
   if (!tokenUsage && content) {
-    const systemPrompt = 'You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning.'
+    const systemPrompt = 'You are an expert pathologist creating educational multiple-choice questions for medical students and residents. Focus on clinical correlation, diagnosis, and educational value.'
     const totalPromptLength = systemPrompt.length + prompt.length
     const estimatedPromptTokens = Math.ceil(totalPromptLength / 4) // Rough estimate: 4 chars per token
     const estimatedCompletionTokens = Math.ceil(content.length / 4)
@@ -409,7 +395,7 @@ CRITICAL INSTRUCTIONS:
 
 Requirements:
 1. Create a clinically relevant scenario-based question
-2. Include exactly 5 answer choices with one clearly correct answer
+2. Include 5 answer choices with one clearly correct answer
 3. Provide detailed explanations for each choice that include BOTH clinical correlation AND histological features
 4. Ensure the question tests understanding, not just memorization
 5. Use appropriate medical terminology
@@ -426,35 +412,35 @@ Return the response in this exact JSON format:
   "suggested_tags": ["Tag1", "Tag2", "Tag3"],
   "question_references": "Relevant citations",
   "status": "draft",
-  "question_options": [
+  "answer_options": [
     {
-      "text": "Answer choice 1 text",
+      "text": "Answer choice A text",
       "is_correct": false,
-      "explanation": "Clinical and histological explanation - describe why this diagnosis is incorrect based on clinical presentation and microscopic features seen in the slide",
+      "explanation": "Clinical and histological explanation for A - describe why this diagnosis is incorrect based on clinical presentation and microscopic features seen in the slide",
       "order_index": 0
     },
     {
-      "text": "Answer choice 2 text",
-      "is_correct": false,
-      "explanation": "Clinical and histological explanation - describe why this diagnosis is incorrect, mentioning both clinical factors and the histological features that rule it out",
+      "text": "Answer choice B text",
+      "is_correct": true,
+      "explanation": "Clinical and histological explanation for B (correct answer) - explain why this is the correct diagnosis based on the clinical scenario AND the specific histologic features visible in the WSI slide",
       "order_index": 1
     },
     {
-      "text": "Answer choice 3 text (correct answer)",
-      "is_correct": true,
-      "explanation": "Clinical and histological explanation (correct answer) - explain why this is the correct diagnosis based on the clinical scenario AND the specific histologic features visible in the WSI slide",
+      "text": "Answer choice C text",
+      "is_correct": false,
+      "explanation": "Clinical and histological explanation for C - describe why this diagnosis is incorrect, mentioning both clinical factors and the histological features that rule it out",
       "order_index": 2
     },
     {
-      "text": "Answer choice 4 text",
+      "text": "Answer choice D text",
       "is_correct": false,
-      "explanation": "Clinical and histological explanation - explain the clinical and microscopic differences that distinguish this from the correct diagnosis",
+      "explanation": "Clinical and histological explanation for D - explain the clinical and microscopic differences that distinguish this from the correct diagnosis",
       "order_index": 3
     },
     {
-      "text": "Answer choice 5 text",
+      "text": "Answer choice E text",
       "is_correct": false,
-      "explanation": "Clinical and histological explanation - describe the clinical presentation and histologic appearance that would be expected for this diagnosis and how it differs from what is shown",
+      "explanation": "Clinical and histological explanation for E - describe the clinical presentation and histologic appearance that would be expected for this diagnosis and how it differs from what is shown",
       "order_index": 4
     }
   ]
@@ -686,7 +672,7 @@ function parseAndValidateQuestionFast(response: string): QuestionData {
 // Fast question validation - streamlined checks
 function validateAndNormalizeQuestionFast(questionObj: Record<string, unknown>): QuestionData {
   const normalizedQuestion: QuestionData = {
-    question_options: []
+    options: []
   }
 
   // Fast field extraction
@@ -711,18 +697,13 @@ function validateAndNormalizeQuestionFast(questionObj: Record<string, unknown>):
     throw new Error('No question stem found in AI response')
   }
 
-  // Normalize options field - AI models sometimes use different field names despite our prompt
-  // Accept question_options (preferred), answer_options, or options
-  if (!questionObj.question_options && (questionObj.answer_options || questionObj.options)) {
-    questionObj.question_options = questionObj.answer_options || questionObj.options
+  // Fast options processing
+  const optionsArray = questionObj.answer_options || questionObj.options
+  if (!Array.isArray(optionsArray) || optionsArray.length < 4) {
+    throw new Error('Invalid or insufficient answer options in AI response')
   }
 
-  // Validate and process question options
-  if (!Array.isArray(questionObj.question_options) || questionObj.question_options.length < 4) {
-    throw new Error('Invalid or insufficient question options in AI response')
-  }
-
-  normalizedQuestion.question_options = questionObj.question_options.map((opt: unknown, index: number) => {
+  normalizedQuestion.options = optionsArray.map((opt: unknown, index: number) => {
     if (typeof opt === 'object' && opt !== null) {
       const optObj = opt as Record<string, unknown>
       return {
@@ -743,12 +724,12 @@ function validateAndNormalizeQuestionFast(questionObj: Record<string, unknown>):
   })
 
   // Fast correctness validation
-  const correctCount = normalizedQuestion.question_options.filter(opt => opt.is_correct).length
+  const correctCount = normalizedQuestion.options.filter(opt => opt.is_correct).length
   if (correctCount !== 1) {
     throw new Error(`Expected exactly 1 correct answer, found ${correctCount}`)
   }
 
-  console.log(`[Question Gen] Fast validation completed: ${normalizedQuestion.question_options.length} options`)
+  console.log(`[Question Gen] Fast validation completed: ${normalizedQuestion.options.length} options`)
   return normalizedQuestion
 }
 
@@ -853,7 +834,7 @@ function parseAndValidateQuestion(response: string): QuestionData {
     if (parsedQuestion && typeof parsedQuestion === 'object') {
       const questionObj = parsedQuestion as Record<string, unknown>
       const normalizedQuestion: QuestionData = {
-        question_options: []
+        options: []
       }
 
       // Extract all the new fields
@@ -878,10 +859,10 @@ function parseAndValidateQuestion(response: string): QuestionData {
         throw new Error('No question stem found in AI response')
       }
 
-      // Handle question_options array - support multiple field names for backward compatibility
-      const optionsArray = questionObj.question_options || questionObj.answer_options || questionObj.options
+      // Handle answer_options array
+      const optionsArray = questionObj.answer_options || questionObj.options
       if (Array.isArray(optionsArray) && optionsArray.length >= 4) {
-        normalizedQuestion.question_options = optionsArray.map((opt: unknown, index: number) => {
+        normalizedQuestion.options = optionsArray.map((opt: unknown, index: number) => {
           if (typeof opt === 'object' && opt !== null) {
             const optObj = opt as Record<string, unknown>
             return {
@@ -905,12 +886,12 @@ function parseAndValidateQuestion(response: string): QuestionData {
       }
 
       // Validate that we have exactly one correct answer
-      const correctAnswers = normalizedQuestion.question_options.filter(opt => opt.is_correct)
+      const correctAnswers = normalizedQuestion.options.filter(opt => opt.is_correct)
       if (correctAnswers.length !== 1) {
         throw new Error(`Expected exactly 1 correct answer, found ${correctAnswers.length}`)
       }
 
-      console.log(`[Question Gen] Successfully parsed question with ${normalizedQuestion.question_options.length} options`)
+      console.log(`[Question Gen] Successfully parsed question with ${normalizedQuestion.options.length} options`)
       return normalizedQuestion
 
     } else {
@@ -967,15 +948,9 @@ export async function POST(request: NextRequest) {
       const generationTime = Date.now() - startTime
       console.log(`[Question Gen] Question generation completed in ${generationTime}ms`)
 
-      // Assign balanced option IDs to ensure equal distribution of correct answers
-      const balancedOptions = assignBalancedOptionIds(questionResult.questionData.question_options)
-
       const result = {
         success: true,
-        question: {
-          ...questionResult.questionData,
-          question_options: balancedOptions
-        },
+        question: questionResult.questionData,
         metadata: {
           generated_at: new Date().toISOString(),
           generation_time_ms: generationTime,
@@ -987,7 +962,7 @@ export async function POST(request: NextRequest) {
         },
         debug: questionResult.debug
       }
-
+      
       console.log('[Question Gen] Final API response token_usage:', result.metadata.token_usage)
 
       return NextResponse.json(result, {

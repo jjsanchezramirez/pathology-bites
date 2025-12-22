@@ -22,7 +22,7 @@ import {
   AlertCircle,
   Info
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 
 interface AdminVersionUpdateDialogProps {
   questionId: string | null

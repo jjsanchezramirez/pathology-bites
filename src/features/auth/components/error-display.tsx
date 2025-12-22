@@ -37,14 +37,13 @@ export function ErrorDisplay({
 
   const getIcon = () => {
     switch (error.type) {
-      case AuthErrorType.NETWORK_ERROR:
+      case 'NETWORK_ERROR':
         return <Wifi className="h-4 w-4" />
-      case AuthErrorType.SERVER_ERROR:
+      case 'SERVER_ERROR':
         return <Server className="h-4 w-4" />
-      case AuthErrorType.SESSION_EXPIRED:
+      case 'SESSION_EXPIRED':
         return <Clock className="h-4 w-4" />
-      case AuthErrorType.SECURITY_ERROR:
-      case AuthErrorType.CSRF_ERROR:
+      case 'CSRF_ERROR':
         return <Shield className="h-4 w-4" />
       default:
         return <AlertTriangle className="h-4 w-4" />
@@ -66,11 +65,11 @@ export function ErrorDisplay({
 
   const getRetryDelay = () => {
     switch (error.type) {
-      case AuthErrorType.RATE_LIMITED:
+      case 'RATE_LIMITED':
         return 'Please wait 30 seconds before retrying'
-      case AuthErrorType.NETWORK_ERROR:
+      case 'NETWORK_ERROR':
         return 'Retrying in a moment...'
-      case AuthErrorType.SERVER_ERROR:
+      case 'SERVER_ERROR':
         return 'Server may be temporarily unavailable'
       default:
         return null
@@ -139,16 +138,9 @@ export function ErrorDisplay({
               {showTechnicalDetails && (
                 <div className="mt-2 p-2 bg-muted rounded text-xs font-mono">
                   <div><strong>Type:</strong> {error.type}</div>
-                  <div><strong>Severity:</strong> {error.severity}</div>
+                  <div><strong>Severity:</strong> {error.severity || 'medium'}</div>
                   <div><strong>Retryable:</strong> {error.retryable ? 'Yes' : 'No'}</div>
-                  {error.technicalDetails && (
-                    <div className="mt-1">
-                      <strong>Details:</strong>
-                      <pre className="mt-1 text-xs overflow-auto">
-                        {JSON.stringify(error.technicalDetails, null, 2)}
-                      </pre>
-                    </div>
-                  )}
+                  <div><strong>Message:</strong> {error.message}</div>
                 </div>
               )}
             </div>
@@ -164,7 +156,7 @@ export function NetworkErrorDisplay({ onRetry }: { onRetry?: () => void }) {
   return (
     <ErrorDisplay
       error={{
-        type: AuthErrorType.NETWORK_ERROR,
+        type: 'NETWORK_ERROR',
         message: 'Network connection failed',
         retryable: true,
         severity: 'medium',
@@ -179,7 +171,7 @@ export function SessionExpiredDisplay({ onRetry }: { onRetry?: () => void }) {
   return (
     <ErrorDisplay
       error={{
-        type: AuthErrorType.SESSION_EXPIRED,
+        type: 'SESSION_EXPIRED',
         message: 'Session expired',
         retryable: true,
         severity: 'medium',
@@ -194,7 +186,7 @@ export function RateLimitedDisplay({ onRetry }: { onRetry?: () => void }) {
   return (
     <ErrorDisplay
       error={{
-        type: AuthErrorType.RATE_LIMITED,
+        type: 'RATE_LIMITED',
         message: 'Rate limited',
         retryable: true,
         severity: 'low',

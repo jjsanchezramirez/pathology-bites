@@ -1,4 +1,19 @@
 // Rate limiting utility for authentication endpoints
+//
+// TODO: PRODUCTION SCALING CONSIDERATION
+// This implementation uses in-memory storage (Map) which works for:
+// - Development environments
+// - Single-server deployments
+// - Low to moderate traffic
+//
+// For production at scale with serverless/Vercel, consider:
+// - Option A: Vercel KV (Redis) - Best performance, ~$0.25/100K requests after free tier
+// - Option B: Supabase table - Free, slightly slower, already in your stack
+// - Option C: Upstash Redis - Serverless-friendly Redis alternative
+//
+// Current implementation provides basic protection but won't work across
+// multiple serverless function instances. Each instance has its own memory.
+//
 interface RateLimitConfig {
   windowMs: number // Time window in milliseconds
   maxAttempts: number // Maximum attempts per window

@@ -32,7 +32,7 @@ import {
   CATEGORY_SELECTION_CONFIG,
   DEFAULT_QUIZ_CONFIG
 } from "@/features/quiz/types/quiz"
-import { toast } from "sonner"
+import { toast } from '@/shared/utils/toast'
 import { FeaturePlaceholder } from "@/features/dashboard/components"
 import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags"
 
@@ -306,12 +306,13 @@ export default function NewQuizPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
-          <p className="text-muted-foreground">Loading quiz options...</p>
-        </div>
-        <Card>
+      <div className="container mx-auto py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
+            <p className="text-muted-foreground">Loading quiz options...</p>
+          </div>
+          <Card>
           <CardContent className="p-6 space-y-6">
             {/* Quiz Mode Section Skeleton */}
             <div className="space-y-4">
@@ -372,18 +373,21 @@ export default function NewQuizPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     )
   }
 
   if (!quizOptions) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
-          <p className="text-muted-foreground text-red-600">
-            Failed to load quiz options. Please refresh the page.
-          </p>
+      <div className="container mx-auto py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
+            <p className="text-muted-foreground text-red-600">
+              Failed to load quiz options. Please refresh the page.
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -406,21 +410,18 @@ export default function NewQuizPage() {
   }
 
   return (
-    <>
-      <div className="space-y-6">
+    <div className="container mx-auto py-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
+          <p className="text-muted-foreground">
+            Configure your quiz settings and start learning
+          </p>
+        </div>
 
-
-
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
-        <p className="text-muted-foreground">
-          Configure your quiz settings and start learning
-        </p>
-      </div>
-
-      {/* Main Configuration Card */}
-      <Card>
+        {/* Main Configuration Card */}
+        <Card>
         <CardContent className="p-6 space-y-6">
           {/* Quiz Name */}
           <div className="space-y-2">
@@ -650,6 +651,6 @@ export default function NewQuizPage() {
         </CardContent>
       </Card>
       </div>
-    </>
+    </div>
   )
 }

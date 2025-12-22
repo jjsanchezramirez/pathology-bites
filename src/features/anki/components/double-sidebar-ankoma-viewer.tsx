@@ -3,73 +3,34 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
-import { Input } from '@/shared/components/ui/input'
-import { Separator } from '@/shared/components/ui/separator'
-import { ScrollArea } from '@/shared/components/ui/scroll-area'
+import { Skeleton } from '@/shared/components/ui/skeleton'
 import {
   BookOpen,
-  Loader2,
   AlertCircle,
-  Search,
-  ChevronRight,
-  ChevronDown,
   ChevronLeft,
-  ChevronsLeft,
   RotateCcw,
-  Play,
   Shuffle,
-  Folder,
-  FolderOpen,
-  FileText,
-  PanelLeftClose,
-  PanelLeftOpen,
-  X,
-  Menu,
-  Library
+  FileText
 } from 'lucide-react'
 import { InteractiveAnkiViewer } from './interactive-anki-viewer'
-import { AnkomaData, AnkomaSection, AnkomaViewerProps, AnkiCard } from '../types/anki-card'
-import {
-  findSectionById,
-  getAllCardsFromSection,
-  getSectionStats
-} from '../utils/ankoma-parser'
+import { DeckSidebar } from './deck-sidebar'
+import { CategorySidebar } from './category-sidebar'
+import { CombinedMobileSidebar } from './combined-mobile-sidebar'
+import { AnkomaViewerProps, AnkiCard, AnkomaSection } from '../types/anki-card'
 import { useClientAnkoma } from '@/shared/hooks/use-client-ankoma'
 import { cn } from '@/shared/utils'
-import { toast } from 'sonner'
-
-// Funny loading messages for Anki deck loading
-const ANKI_LOADING_MESSAGES = [
-  "Loading the digital flashcard matrix...",
-  "Teaching the system what 'spaced repetition' means...",
-  "Parsing JSON like a pathologist reads slides (but faster)...",
-  "Loading cards from the R2 cloud dimension...",
-  "Convincing Anki cards to reveal their secrets...",
-  "Calibrating the memory palace algorithms...",
-  "Converting study anxiety into productive learning...",
-  "Assembling the army of forgotten medical facts...",
-  "Teaching AI the difference between 'easy' and 'impossible'...",
-  "Channeling the spirit of Hermann Ebbinghaus...",
-  "Importing wisdom from the depths of ankoma.json...",
-  "Transforming procrastination into productive studying...",
-  "Loading cards that will enhance your learning...",
-  "Preparing your daily dose of educational excellence...",
-  "Organizing knowledge into bite-sized chunks...",
-  "Converting medical terminology into learner-friendly format...",
-  "Assembling your personalized knowledge database...",
-  "Preparing cards that make medical school more manageable...",
-  "Shuffling through thousands of digital flashcards...",
-  "Loading from R2 storage with optimized caching..."
-]
 
 interface CategoryData {
   id: string
   name: string
   cards: AnkiCard[]
-  subcategories: string[]
+  subcategories: Array<{
+    name: string
+    cardCount: number
+  }>
 }
 
 interface DeckData {
@@ -94,23 +55,20 @@ export function DoubleSidebarAnkomaViewer({
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isShuffled, setIsShuffled] = useState(false)
-  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(true) // Mobile: hidden, Desktop: shown (set in useEffect)
-  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(true) // Mobile: hidden, Desktop: shown (set in useEffect)
-  const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null)
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
-  // Initialize desktop sidebars as visible on mount
+  // Initialize sidebars based on screen size
   useEffect(() => {
-    const isDesktop = window.innerWidth >= 768 // md breakpoint
-    if (isDesktop) {
-      setLeftSidebarCollapsed(false)
-      setRightSidebarCollapsed(false)
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
     }
-  }, [])
 
-  // Loading message cycling state
-  const [currentLoadingMessage, setCurrentLoadingMessage] = useState('')
-  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
-  const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Pass error to parent component
   useEffect(() => {
@@ -198,16 +156,24 @@ export function DoubleSidebarAnkomaViewer({
       deck.totalCards++
 
       // Add subcategory if exists
-      if (subcategoryName && !category.subcategories.includes(subcategoryName)) {
-        category.subcategories.push(subcategoryName)
+      if (subcategoryName) {
+        const existingSubcat = category.subcategories.find(s => s.name === subcategoryName)
+        if (existingSubcat) {
+          existingSubcat.cardCount++
+        } else {
+          category.subcategories.push({
+            name: subcategoryName,
+            cardCount: 1
+          })
+        }
       }
     }
 
-    // Sort categories alphabetically
+    // Sort categories and subcategories alphabetically
     for (const deck of deckMap.values()) {
       deck.categories.sort((a, b) => a.name.localeCompare(b.name))
       for (const category of deck.categories) {
-        category.subcategories.sort()
+        category.subcategories.sort((a, b) => a.name.localeCompare(b.name))
       }
     }
 
@@ -232,7 +198,8 @@ export function DoubleSidebarAnkomaViewer({
         const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
         if (!ankomaTag) return false
         const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
-        return formatTagName(tagParts[2] || '') === selectedSubcategory
+        const subcatName = tagParts[2] ? formatTagName(tagParts[2]) : null
+        return subcatName === selectedSubcategory
       })
     }
 
@@ -240,39 +207,6 @@ export function DoubleSidebarAnkomaViewer({
   }, [organizedDecks, selectedDeckId, selectedCategoryId, selectedSubcategory, isShuffled, formatTagName])
 
   const currentCard = currentCards[currentCardIndex]
-
-  // Cycle through loading messages while loading
-  useEffect(() => {
-    if (isLoading) {
-      // Set initial message
-      const initialIndex = Math.floor(Math.random() * ANKI_LOADING_MESSAGES.length)
-      setLoadingMessageIndex(initialIndex)
-      setCurrentLoadingMessage(ANKI_LOADING_MESSAGES[initialIndex])
-
-      // Cycle through messages every 3 seconds
-      loadingIntervalRef.current = setInterval(() => {
-        setLoadingMessageIndex(prev => {
-          const nextIndex = (prev + 1) % ANKI_LOADING_MESSAGES.length
-          setCurrentLoadingMessage(ANKI_LOADING_MESSAGES[nextIndex])
-          return nextIndex
-        })
-      }, 3000)
-    } else {
-      // Clear interval when not loading
-      if (loadingIntervalRef.current) {
-        clearInterval(loadingIntervalRef.current)
-        loadingIntervalRef.current = null
-      }
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (loadingIntervalRef.current) {
-        clearInterval(loadingIntervalRef.current)
-        loadingIntervalRef.current = null
-      }
-    }
-  }, [isLoading])
 
   const handleDeckSelect = (deckId: string) => {
     setSelectedDeckId(deckId)
@@ -287,11 +221,6 @@ export function DoubleSidebarAnkomaViewer({
     setSelectedSubcategory(null)
     setCurrentCardIndex(0)
     setIsShuffled(false)
-  }
-
-  const handleCategoryToggle = (categoryId: string) => {
-    // Accordion behavior: only one category can be open at a time
-    setExpandedCategoryId(prev => prev === categoryId ? null : categoryId)
   }
 
   const handleSubcategorySelect = (subcategory: string | null) => {
@@ -322,83 +251,112 @@ export function DoubleSidebarAnkomaViewer({
     setIsShuffled(false)
   }
 
-  const handleToggleBothSidebars = () => {
-    const bothCollapsed = leftSidebarCollapsed && rightSidebarCollapsed
-    setLeftSidebarCollapsed(!bothCollapsed)
-    setRightSidebarCollapsed(!bothCollapsed)
-  }
-
   if (isLoading) {
     return (
-      <div className={cn("w-full h-full flex items-center justify-center", className)}>
-        <Card className="animate-pulse max-w-md mx-4">
-          <CardContent className="flex items-center justify-center py-16">
-            <div className="text-center space-y-4">
-              <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
-              <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-foreground">Loading Debug Anki Viewer</h3>
-                <p className="text-sm text-muted-foreground">
-                  Parsing {totalCards?.toLocaleString() || 'thousands of'} cards from ankoma.json...
-                </p>
-              </div>
+      <div className={cn("w-full h-full flex overflow-hidden", className)}>
+        {/* Desktop: Combined Sidebars Skeleton - Single rectangle */}
+        <Skeleton className="hidden md:block w-80 h-full shrink-0" />
 
-              {/* Funny loading message */}
-              <div className="bg-muted/50 rounded-lg p-4 border">
-                <p className="text-sm text-primary font-medium italic leading-relaxed min-h-[2.5rem] flex items-center justify-center transition-opacity duration-500">
-                  {currentLoadingMessage || "Debugging the digital flashcard matrix..."}
-                </p>
-              </div>
+        {/* Main Content Skeleton */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* Header Skeleton */}
+          <div className="border-b border-border bg-background p-3 md:p-5 shrink-0">
+            <div className="flex items-center justify-between gap-2 md:gap-4">
+              {/* Left: Mobile menu + Title */}
+              <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                {/* Mobile button skeleton */}
+                <Skeleton className="md:hidden h-8 w-28 shrink-0" />
 
-              {/* Loading progress hint */}
-              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                {/* Desktop Title Section Skeleton */}
+                <div className="min-w-0 flex-1 hidden md:block space-y-2">
+                  <Skeleton className="h-3 w-32" />
+                  <Skeleton className="h-4 w-48" />
                 </div>
-                <span>Debug Mode • R2 Storage</span>
+              </div>
+
+              {/* Right: Controls skeleton */}
+              <div className="flex items-center gap-2 shrink-0">
+                <Skeleton className="h-8 w-8 rounded-md" />
+                <Skeleton className="h-8 w-8 rounded-md" />
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* Card Content Skeleton */}
+          <div className="flex-1 overflow-y-auto p-3 md:p-6 bg-muted/20">
+            <div className="w-full h-full flex items-start justify-center pt-8">
+              <Card className="w-full max-w-4xl">
+                <CardContent className="p-6 md:p-8 space-y-6">
+                  {/* Question skeleton */}
+                  <div className="space-y-3">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-5 w-5/6" />
+                  </div>
+
+                  {/* Image skeleton */}
+                  <Skeleton className="w-full h-64 md:h-96 rounded-lg" />
+
+                  {/* Answer section skeleton */}
+                  <div className="space-y-3">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </div>
+
+                  {/* Navigation buttons skeleton */}
+                  <div className="flex items-center justify-between pt-4">
+                    <Skeleton className="h-10 w-24" />
+                    <Skeleton className="h-10 w-32" />
+                    <Skeleton className="h-10 w-24" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className={cn("w-full max-w-4xl mx-auto", className)}>
-        <Card>
-          <CardContent className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Failed to Load Deck</h3>
-              <p className="text-muted-foreground mb-4">{error}</p>
-              <Button onClick={() => window.location.reload()}>
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Reload Page
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className={cn("w-full h-full flex items-center justify-center p-2 md:p-3", className)}>
+        <div className="w-full max-w-[95%] md:max-w-3xl mx-auto">
+          <Card className="w-full">
+            <CardContent className="flex items-center justify-center py-16">
+              <div className="text-center">
+                <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Failed to Load Deck</h3>
+                <p className="text-muted-foreground mb-4">{error}</p>
+                <Button onClick={() => window.location.reload()}>
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reload Page
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
 
   if (!ankomaData) {
     return (
-      <div className={cn("w-full max-w-4xl mx-auto", className)}>
-        <Card>
-          <CardContent className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Data Available</h3>
-              <p className="text-muted-foreground">
-                The Ankoma deck data could not be loaded. Please try refreshing the page.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className={cn("w-full h-full flex items-center justify-center p-2 md:p-3", className)}>
+        <div className="w-full max-w-[95%] md:max-w-3xl mx-auto">
+          <Card className="w-full">
+            <CardContent className="flex items-center justify-center py-16">
+              <div className="text-center">
+                <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Data Available</h3>
+                <p className="text-muted-foreground">
+                  The Ankoma Deck Viewer data could not be loaded. Please try refreshing the page.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
@@ -406,361 +364,103 @@ export function DoubleSidebarAnkomaViewer({
   const selectedDeck = organizedDecks.find(d => d.id === selectedDeckId)
   const selectedCategory = selectedDeck?.categories.find(c => c.id === selectedCategoryId)
 
+  // Prepare data for sidebar components
+  const deckSidebarData = organizedDecks.map(deck => ({
+    id: deck.id,
+    name: deck.name,
+    type: deck.type,
+    totalCards: deck.totalCards,
+    categoryCount: deck.categories.length
+  }))
+
+  const categorySidebarData = selectedDeck?.categories.map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    cardCount: cat.cards.length,
+    subcategories: cat.subcategories
+  })) || []
+
   return (
-    <div className={cn("w-full flex gap-4 p-0 md:p-4", className)}>
-      {/* Mobile: Backdrop overlay */}
-      {!leftSidebarCollapsed && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => setLeftSidebarCollapsed(true)}
+    <div className={cn("h-full flex overflow-hidden", className)}>
+      {/* Mobile: Combined Sidebar */}
+      {isMobile && (
+        <CombinedMobileSidebar
+          decks={deckSidebarData}
+          categories={categorySidebarData}
+          selectedDeckId={selectedDeckId}
+          selectedCategoryId={selectedCategoryId}
+          selectedSubcategory={selectedSubcategory}
+          onDeckSelect={handleDeckSelect}
+          onCategorySelect={handleCategorySelect}
+          onSubcategorySelect={handleSubcategorySelect}
+          deckName={selectedDeck?.name}
+          isOpen={mobileSidebarOpen}
+          onClose={() => setMobileSidebarOpen(false)}
         />
       )}
 
-      {/* Mobile: Sidebar */}
-      <div className={cn(
-        "md:hidden fixed inset-y-0 left-0 z-50 bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-transform duration-300 w-64 flex flex-col",
-        leftSidebarCollapsed ? "-translate-x-full" : "translate-x-0"
-      )}>
-        {/* Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border shrink-0">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
-            <h2 className="font-semibold text-sm">Ankoma</h2>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLeftSidebarCollapsed(true)}
-            className="h-8 w-8 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+      {/* Desktop: Deck Sidebar */}
+      {!isMobile && (
+        <DeckSidebar
+          decks={deckSidebarData}
+          selectedDeckId={selectedDeckId}
+          onDeckSelect={handleDeckSelect}
+        />
+      )}
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto">
-          <div className="p-3">
-            {/* Decks Section */}
-            <div className="mb-6">
-              <h3 className="px-3 mb-2 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
-                Decks
-              </h3>
-              <div className="space-y-1">
-                {organizedDecks.map((deck) => (
-                  <div
-                    key={deck.id}
-                    className={cn(
-                      "flex items-center justify-between px-3 h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors cursor-pointer",
-                      selectedDeckId === deck.id && "bg-sidebar-foreground/20 text-sidebar-foreground"
-                    )}
-                    onClick={() => handleDeckSelect(deck.id)}
-                  >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <Folder className="h-4 w-4 shrink-0" />
-                      <span className="truncate text-sm">{deck.name}</span>
-                    </div>
-                    <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
-                      {deck.totalCards}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Categories Section */}
-            {selectedDeck && (
-              <div>
-                <h3 className="px-3 mb-2 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
-                  {selectedDeck.name}
-                </h3>
-                <div className="space-y-1">
-                  {selectedDeck.categories.map((category) => {
-                    const isExpanded = expandedCategoryId === category.id
-                    const hasSubcategories = category.subcategories && category.subcategories.length > 0
-
-                    return (
-                      <div key={category.id}>
-                        <div
-                          className={cn(
-                            "flex items-center justify-between px-3 h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors cursor-pointer",
-                            selectedCategoryId === category.id && !selectedSubcategory && "bg-sidebar-foreground/20 text-sidebar-foreground"
-                          )}
-                          onClick={() => {
-                            handleCategorySelect(category.id)
-                            if (hasSubcategories) {
-                              handleCategoryToggle(category.id)
-                            }
-                          }}
-                        >
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            {hasSubcategories && (
-                              isExpanded ? (
-                                <ChevronDown className="h-4 w-4 shrink-0" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4 shrink-0" />
-                              )
-                            )}
-                            {!hasSubcategories && <FileText className="h-4 w-4 shrink-0" />}
-                            <span className="truncate text-sm">{category.name}</span>
-                          </div>
-                          <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
-                            {category.cards.length}
-                          </Badge>
-                        </div>
-
-                        {/* Subcategories */}
-                        {hasSubcategories && isExpanded && (
-                          <div className="ml-6 mt-1 space-y-1">
-                            {category.subcategories.map((subcategory) => {
-                              const subcategoryCards = category.cards.filter(card => {
-                                const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
-                                if (!ankomaTag) return false
-                                const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
-                                return formatTagName(tagParts[2] || '') === subcategory
-                              })
-
-                              return (
-                                <div
-                                  key={subcategory}
-                                  className={cn(
-                                    "flex items-center justify-between px-3 h-9 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors cursor-pointer",
-                                    selectedSubcategory === subcategory && "bg-sidebar-foreground/20 text-sidebar-foreground"
-                                  )}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleSubcategorySelect(subcategory)
-                                  }}
-                                >
-                                  <span className="truncate text-sm">{subcategory}</span>
-                                  <Badge variant="secondary" className="text-xs px-1.5 py-0 shrink-0">
-                                    {subcategoryCards.length}
-                                  </Badge>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        </nav>
-      </div>
-
-      {/* Desktop: Left Sidebar - Decks */}
-      <div className={cn(
-        "hidden md:block transition-all duration-300 overflow-hidden flex-shrink-0",
-        leftSidebarCollapsed ? "w-0" : "w-52"
-      )}>
-        {!leftSidebarCollapsed && (
-        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border mt-[72px]">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <BookOpen className="h-4 w-4" />
-              Decks
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0 flex-1 min-h-0 px-3 pb-3">
-            <ScrollArea className="h-auto max-h-[calc(100vh-200px)]">
-              <div className="space-y-1.5">
-                {organizedDecks.map((deck) => (
-                  <div
-                    key={deck.id}
-                    className={cn(
-                      "p-2 rounded-md cursor-pointer transition-colors text-xs",
-                      "hover:bg-muted/50",
-                      selectedDeckId === deck.id && "bg-primary/10 border border-primary/20"
-                    )}
-                    onClick={() => handleDeckSelect(deck.id)}
-                  >
-                    <div className="flex items-center justify-between gap-1">
-                      <span className={cn(
-                        "font-medium truncate",
-                        selectedDeckId === deck.id && "text-primary"
-                      )}>
-                        {deck.name}
-                      </span>
-                      <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0">
-                        {deck.totalCards}
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      {deck.categories.length} cats
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-        )}
-      </div>
-
-      {/* Desktop: Right Sidebar - Categories */}
-      <div className={cn(
-        "hidden md:block transition-all duration-300 overflow-hidden flex-shrink-0",
-        rightSidebarCollapsed ? "w-0" : "w-60"
-      )}>
-        {!rightSidebarCollapsed && (
-        <Card className="h-fit max-h-[calc(100vh-120px)] flex flex-col rounded-lg border mt-[72px]">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">
-              {selectedDeck ? `${selectedDeck.name}` : 'Categories'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0 flex-1 min-h-0 px-3 pb-3">
-            {selectedDeck ? (
-              <ScrollArea className="h-auto max-h-[calc(100vh-200px)]">
-                <div className="space-y-0.5">
-                  {selectedDeck.categories.map((category) => {
-                    const isExpanded = expandedCategoryId === category.id
-                    const hasSubcategories = category.subcategories && category.subcategories.length > 0
-
-                    return (
-                      <div key={category.id}>
-                        <div
-                          className={cn(
-                            "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
-                            "hover:bg-muted/50",
-                            selectedCategoryId === category.id && "bg-primary/10 border border-primary/20"
-                          )}
-                          onClick={() => {
-                            handleCategorySelect(category.id)
-                            if (hasSubcategories) {
-                              handleCategoryToggle(category.id)
-                            }
-                          }}
-                        >
-                          <div className="flex items-center justify-between gap-1">
-                            <div className="flex items-center gap-1 flex-1 min-w-0">
-                              {hasSubcategories && (
-                                isExpanded ? (
-                                  <ChevronDown className="h-3 w-3 flex-shrink-0" />
-                                ) : (
-                                  <ChevronRight className="h-3 w-3 flex-shrink-0" />
-                                )
-                              )}
-                              <span className={cn(
-                                "font-medium truncate",
-                                selectedCategoryId === category.id && "text-primary"
-                              )}>
-                                {category.name}
-                              </span>
-                            </div>
-                            <Badge variant="secondary" className="text-xs flex-shrink-0 px-1.5 py-0">
-                              {category.cards.length}
-                            </Badge>
-                          </div>
-                        </div>
-
-                        {/* Subcategories */}
-                        {hasSubcategories && isExpanded && (
-                          <div className="ml-5 mt-1 space-y-0.5">
-                            {category.subcategories.map((subcategory) => {
-                              const subcategoryCards = category.cards.filter(card => {
-                                const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
-                                if (!ankomaTag) return false
-                                const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
-                                return formatTagName(tagParts[2] || '') === subcategory
-                              })
-
-                              return (
-                                <div
-                                  key={subcategory}
-                                  className={cn(
-                                    "p-1.5 rounded-md cursor-pointer transition-colors text-xs",
-                                    "hover:bg-muted/50",
-                                    selectedSubcategory === subcategory && "bg-primary/10 border border-primary/20"
-                                  )}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleSubcategorySelect(subcategory)
-                                  }}
-                                >
-                                  <div className="flex items-center justify-between gap-1">
-                                    <span className="truncate">{subcategory}</span>
-                                    <Badge variant="secondary" className="text-xs px-1.5 py-0 flex-shrink-0">
-                                      {subcategoryCards.length}
-                                    </Badge>
-                                  </div>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </ScrollArea>
-            ) : (
-              <div className="text-center text-muted-foreground mt-8">
-                Select a deck to view categories
-              </div>
-            )}
-          </CardContent>
-        </Card>
-        )}
-      </div>
+      {/* Desktop: Category Sidebar */}
+      {!isMobile && (
+        <CategorySidebar
+          categories={categorySidebarData}
+          selectedCategoryId={selectedCategoryId}
+          selectedSubcategory={selectedSubcategory}
+          onCategorySelect={handleCategorySelect}
+          onSubcategorySelect={handleSubcategorySelect}
+          deckName={selectedDeck?.name}
+        />
+      )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="border-b bg-background p-2 md:p-3">
-          <div className="flex items-center justify-between gap-1 sm:gap-2">
-            {/* Left: Sidebar toggle */}
-            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-              {/* Mobile: Select Deck button */}
+        <header className="shrink-0 border-b border-border bg-background p-3 md:p-5">
+          <div className="flex items-center justify-between gap-2 md:gap-4">
+            {/* Left: Mobile menu + Title */}
+            <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+              {/* Mobile: Combined sidebar button */}
               <Button
                 variant="default"
                 size="sm"
-                onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
-                className="md:hidden h-8 px-3 gap-1.5"
+                onClick={() => setMobileSidebarOpen(true)}
+                className="md:hidden shrink-0"
               >
-                <ChevronLeft className="h-4 w-4" />
-                <span className="text-sm font-medium">Select Deck</span>
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Select Deck
               </Button>
 
-              {/* Desktop: Single toggle for both */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleToggleBothSidebars}
-                title="Toggle sidebars"
-                className="hidden md:flex items-center gap-2"
-              >
-                {leftSidebarCollapsed && rightSidebarCollapsed ? (
-                  <PanelLeftOpen className="h-4 w-4" />
-                ) : (
-                  <PanelLeftClose className="h-4 w-4" />
-                )}
-                <span className="text-sm">
-                  {leftSidebarCollapsed && rightSidebarCollapsed ? 'Show' : 'Hide'} Sidebar
-                </span>
-              </Button>
-            </div>
-
-            {/* Center: Title - hidden on very small screens when cards are present */}
-            <div className="text-center flex-1 min-w-0 hidden sm:block">
-              <h1 className="text-sm sm:text-base md:text-xl font-semibold truncate">
-                {selectedDeck?.name || 'Ankoma Deck'}
-              </h1>
-              {selectedCategory && (
-                <p className="text-xs md:text-sm text-muted-foreground truncate hidden md:block">
-                  {selectedCategory.name}
-                  {selectedSubcategory && ` → ${selectedSubcategory}`}
-                </p>
-              )}
+              {/* Desktop Title Section */}
+              <div className="min-w-0 flex-1 hidden md:block">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
+                  {selectedCategory ? (
+                    <>
+                      {selectedCategory.name}
+                      {selectedSubcategory && ` → ${selectedSubcategory}`}
+                    </>
+                  ) : (
+                    'ANKOMA VIEWER'
+                  )}
+                </div>
+                <div className="text-[13px] md:text-[14px] font-medium text-foreground truncate">
+                  {selectedDeck?.name || 'Select a deck to begin'}
+                </div>
+              </div>
             </div>
 
             {/* Right: Card info and controls */}
-            <div className="flex items-center gap-1 sm:gap-2 md:gap-3 shrink-0">
+            <div className="flex items-center gap-2 md:gap-3 shrink-0">
               {/* Card Navigation Info - Desktop only */}
               {currentCards.length > 0 && (
-                <div className="hidden md:flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <div className="hidden md:flex items-center gap-2 text-xs md:text-sm">
                   <span className="font-medium whitespace-nowrap">
                     {currentCardIndex + 1}/{currentCards.length}
                   </span>
@@ -780,9 +480,9 @@ export function DoubleSidebarAnkomaViewer({
                   onClick={handleShuffle}
                   disabled={currentCards.length <= 1}
                   title="Shuffle cards"
-                  className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 p-0"
+                  className="h-8 w-8 p-0"
                 >
-                  <Shuffle className="h-3 w-3 md:h-4 md:w-4" />
+                  <Shuffle className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="outline"
@@ -790,29 +490,29 @@ export function DoubleSidebarAnkomaViewer({
                   onClick={handleReset}
                   disabled={currentCards.length === 0}
                   title="Reset to first card"
-                  className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 p-0"
+                  className="h-8 w-8 p-0"
                 >
-                  <RotateCcw className="h-3 w-3 md:h-4 md:w-4" />
+                  <RotateCcw className="h-4 w-4" />
                 </Button>
-                {/* Mobile: Previous button with text */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handlePreviousCard}
                   disabled={currentCardIndex === 0}
                   title="Previous card"
-                  className="md:hidden h-7 px-2 gap-1"
+                  className="h-8 w-8 p-0"
                 >
-                  <ChevronsLeft className="h-3 w-3" />
-                  <span className="text-xs font-medium">Previous</span>
+                  <ChevronLeft className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* Card Content */}
-        <div className="flex-1 p-2 md:p-3">
+        {/* Card Content Area - Scrollable */}
+        <div className="flex-1 overflow-auto">
+          <div className="flex justify-center p-2 md:p-3">
+            <div className="w-full max-w-2xl">
           {currentCard ? (
             <InteractiveAnkiViewer
               card={currentCard}
@@ -822,42 +522,39 @@ export function DoubleSidebarAnkomaViewer({
               totalCards={currentCards.length}
               categoryName={selectedCategory?.name}
               subcategoryName={selectedSubcategory}
-              className="w-full"
             />
           ) : selectedCategory ? (
-            <div className="max-w-[98%] mx-auto">
-              <Card>
-                <CardContent className="flex items-center justify-center h-64">
-                  <div className="text-center">
-                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No Cards Available</h3>
-                    <p className="text-muted-foreground">
-                      {selectedSubcategory
-                        ? `No cards found in "${selectedSubcategory}" subcategory.`
-                        : "This category doesn't contain any cards to study."
-                      }
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <Card className="w-full">
+              <CardContent className="flex items-center justify-center py-16">
+                <div className="text-center">
+                  <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Cards Available</h3>
+                  <p className="text-muted-foreground">
+                    {selectedSubcategory
+                      ? `No cards found in "${selectedSubcategory}" subcategory.`
+                      : "This category doesn't contain any cards to study."
+                    }
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           ) : (
-            <div className="max-w-[98%] mx-auto">
-              <Card>
-                <CardContent className="flex items-center justify-center h-64">
-                  <div className="text-center">
-                    <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Select a Category</h3>
-                    <p className="text-muted-foreground">
-                      Choose a deck and category from the sidebars to start studying.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <Card className="w-full">
+              <CardContent className="flex items-center justify-center py-16">
+                <div className="text-center">
+                  <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Select a Category</h3>
+                  <p className="text-muted-foreground">
+                    Choose a deck and category from the sidebars to start studying.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           )}
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

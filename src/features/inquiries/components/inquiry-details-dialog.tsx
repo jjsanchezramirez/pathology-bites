@@ -16,7 +16,7 @@ import { Separator } from "@/shared/components/ui/separator"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Mail, Building, Calendar, User, Send, MessageSquare } from 'lucide-react'
 import { useState } from 'react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { InquiryStatusBadge } from './inquiry-status-badge'
 
 interface Inquiry {

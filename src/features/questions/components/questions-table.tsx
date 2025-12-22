@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, Flag, ChevronRight, History, GitBranch, Eye, Download, Check, X, Send } from 'lucide-react';
 import {
   Select,

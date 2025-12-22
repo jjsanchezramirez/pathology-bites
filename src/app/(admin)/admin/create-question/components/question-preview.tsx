@@ -11,7 +11,7 @@ import { Badge } from '@/shared/components/ui/badge'
 import { Separator } from '@/shared/components/ui/separator'
 import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group'
 import { Edit, Save, MessageSquare, Brain } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 
 
 interface GeneratedQuestion {

@@ -26,7 +26,7 @@ import { Checkbox } from '@/shared/components/ui/checkbox'
 import { InquiryDetailsDialog } from './inquiry-details-dialog'
 import { InquiryActionsDropdown } from './inquiry-actions-dropdown'
 import { InquiryStatusBadge, getStatusSortOrder } from './inquiry-status-badge'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 
 interface Inquiry {
   id: string

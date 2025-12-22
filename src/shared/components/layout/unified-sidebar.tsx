@@ -26,6 +26,7 @@ import {
   Layers,
   AlertTriangle,
   FileText,
+  Library,
   type LucideIcon
 } from "lucide-react"
 import { cn } from "@/shared/utils"
@@ -55,6 +56,7 @@ const iconMap: Record<string, LucideIcon> = {
   User,
   Brain,
   Microscope,
+  Library,
   FolderOpen,
   Clock,
   Layers,
@@ -64,12 +66,13 @@ const iconMap: Record<string, LucideIcon> = {
 
 interface UnifiedSidebarProps {
   isCollapsed: boolean
+  isHovered?: boolean
   navigationItems?: NavigationItem[]
   navigationSections?: NavigationSection[]
   isMobileMode?: boolean
 }
 
-export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSections, isMobileMode = false }: UnifiedSidebarProps) {
+export function UnifiedSidebar({ isCollapsed, isHovered = false, navigationItems, navigationSections, isMobileMode = false }: UnifiedSidebarProps) {
   const pathname = usePathname()
   const { canAccess, isAdmin, isLoading } = useUserRole()
   const { adminMode, isTransitioning } = useDashboardTheme()
@@ -122,25 +125,24 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
     </div>
   )
 
+  const isOpen = !isCollapsed || isHovered
+
   return (
     <aside
       className={`${
         isMobileMode ? '' : 'fixed left-0 top-0 z-50'
       } ${
-        isCollapsed ? 'w-16' : 'w-64'
-      } bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-300 border-r border-sidebar-border`}
+        isOpen ? 'w-64' : 'w-16'
+      } bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-300 ease-in-out border-r border-sidebar-border`}
       style={{
         height: '100svh', // Use small viewport height for mobile browsers (excludes address bar)
         minHeight: '100vh', // Fallback for browsers that don't support svh
       }}
     >
       {/* Logo Section */}
-      <div className={cn(
-        "h-16 flex items-center border-b border-sidebar-border shrink-0",
-        isCollapsed ? "justify-center px-0" : "pl-[26px] pr-6"
-      )}>
+      <div className="h-16 flex items-center border-b border-sidebar-border shrink-0 pl-[20px] pr-6">
         <Microscope className="h-6 w-6 shrink-0" />
-        {!isCollapsed && (
+        {isOpen && (
           <h1 className="font-bold text-lg ml-3 whitespace-nowrap">Pathology Bites</h1>
         )}
       </div>
@@ -158,14 +160,14 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
             <div className="space-y-6">
               {filteredSections.map((section, sectionIndex) => (
                 <div key={section.title} className={cn(
-                  sectionIndex === 0 && !isCollapsed ? "mt-[4px]" : "" // Move Dashboard down 4px in expanded state
+                  sectionIndex === 0 && isOpen ? "mt-[4px]" : "" // Move Dashboard down 4px in expanded state
                 )}>
                   {/* Section header - always takes space to keep alignment consistent */}
                   <h3 className={cn(
-                    "px-3 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-2",
-                    isCollapsed ? "invisible" : "" // Invisible but takes up exact same space when collapsed
+                    "text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-2",
+                    isOpen ? "px-3" : "text-center"
                   )}>
-                    {section.title}
+                    {isOpen ? section.title : '···'}
                   </h3>
 
                   {/* Section items */}
@@ -180,35 +182,38 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
                           href={item.href}
                           className={cn(
                             "flex items-center h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
-                            isCollapsed ? "justify-center px-0 w-10" : "pl-[8px] pr-3",
+                            isOpen ? "pl-[8px] pr-3" : "justify-center px-0 w-10",
                             isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
                             isLoading && "pointer-events-none opacity-60"
                           )}
-                          title={isCollapsed ? item.name : undefined}
+                          title={!isOpen ? item.name : undefined}
                         >
                           <IconComponent className="h-5 w-5 shrink-0" />
-                          {!isCollapsed && (
+                          {isOpen && (
                             <span className="truncate ml-3">{item.name}</span>
                           )}
-                          {!isCollapsed && item.href === '/admin/inquiries' && pendingInquiriesCount > 0 && (
+                          {isOpen && item.href === '/admin/inquiries' && pendingInquiriesCount > 0 && (
                             <span className="ml-auto text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">
                               {pendingInquiriesCount}
                             </span>
                           )}
-                          {!isCollapsed && item.showBadge && item.badgeKey === 'revisionQueue' && revisionQueueCount > 0 && (
+                          {isOpen && item.showBadge && item.badgeKey === 'revisionQueue' && revisionQueueCount > 0 && (
                             <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
                               {revisionQueueCount}
                             </span>
                           )}
-                          {!isCollapsed && item.showBadge && item.badgeKey === 'reviewQueue' && reviewQueueCount > 0 && (
+                          {isOpen && item.showBadge && item.badgeKey === 'reviewQueue' && reviewQueueCount > 0 && (
                             <span className="ml-auto text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-semibold">
                               {reviewQueueCount}
                             </span>
                           )}
-                          {!isCollapsed && item.comingSoon && (
+                          {isOpen && item.comingSoon && (
                             <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Soon</span>
                           )}
-                          {!isCollapsed && item.adminOnly && !isAdmin && !isLoading && (
+                          {isOpen && item.isNew && (
+                            <span className="ml-auto text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">New</span>
+                          )}
+                          {isOpen && item.adminOnly && !isAdmin && !isLoading && (
                             <span className="ml-auto text-xs text-sidebar-foreground/50">Admin</span>
                           )}
                         </Link>
@@ -231,35 +236,38 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
                     href={item.href}
                     className={cn(
                       "flex items-center h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
-                      isCollapsed ? "justify-center px-0 w-10" : "px-3",
+                      isOpen ? "px-3" : "justify-center px-0 w-10",
                       isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
                       isLoading && "pointer-events-none opacity-60"
                     )}
-                    title={isCollapsed ? item.name : undefined}
+                    title={!isOpen ? item.name : undefined}
                   >
                     <IconComponent className="h-5 w-5 shrink-0" />
-                    {!isCollapsed && (
+                    {isOpen && (
                       <span className="truncate ml-3">{item.name}</span>
                     )}
-                    {!isCollapsed && item.href === '/admin/inquiries' && pendingInquiriesCount > 0 && (
+                    {isOpen && item.href === '/admin/inquiries' && pendingInquiriesCount > 0 && (
                       <span className="ml-auto text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">
                         {pendingInquiriesCount}
                       </span>
                     )}
-                    {!isCollapsed && item.showBadge && item.badgeKey === 'revisionQueue' && revisionQueueCount > 0 && (
+                    {isOpen && item.showBadge && item.badgeKey === 'revisionQueue' && revisionQueueCount > 0 && (
                       <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
                         {revisionQueueCount}
                       </span>
                     )}
-                    {!isCollapsed && item.showBadge && item.badgeKey === 'reviewQueue' && reviewQueueCount > 0 && (
+                    {isOpen && item.showBadge && item.badgeKey === 'reviewQueue' && reviewQueueCount > 0 && (
                       <span className="ml-auto text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-semibold">
                         {reviewQueueCount}
                       </span>
                     )}
-                    {!isCollapsed && item.comingSoon && (
+                    {isOpen && item.comingSoon && (
                       <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Soon</span>
                     )}
-                    {!isCollapsed && item.adminOnly && !isAdmin && !isLoading && (
+                    {isOpen && item.isNew && (
+                      <span className="ml-auto text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">New</span>
+                    )}
+                    {isOpen && item.adminOnly && !isAdmin && !isLoading && (
                       <span className="ml-auto text-xs text-sidebar-foreground/50">Admin</span>
                     )}
                   </Link>
@@ -274,7 +282,7 @@ export function UnifiedSidebar({ isCollapsed, navigationItems, navigationSection
 
       {/* Auth Status at Bottom */}
       <div className="mt-auto border-t border-sidebar-border">
-        <SidebarAuthStatus isCollapsed={isCollapsed} />
+        <SidebarAuthStatus isCollapsed={isOpen ? false : true} />
       </div>
     </aside>
   )

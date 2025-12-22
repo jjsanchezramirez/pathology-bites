@@ -28,7 +28,7 @@ interface UseUserSettingsOptions {
 export function useUserSettings(options: UseUserSettingsOptions = {}) {
   const {
     enabled = true,
-    refetchOnMount = true,
+    refetchOnMount = false, // Changed default to false - cache handles freshness
     onSuccess,
     onError
   } = options

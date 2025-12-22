@@ -108,10 +108,25 @@ export function InteractiveAnkiViewer({
       const image = extracted.images[index]
       if (image && image.src) {
         // Check if it's an arrow or small icon (should stay small)
-        const isSmallIcon = image.alt?.toLowerCase().includes('arrow') ||
-                           image.src?.toLowerCase().includes('arrow') ||
-                           image.alt?.toLowerCase().includes('icon')
+        // Check by keywords in alt/src
+        const hasSmallKeyword = image.alt?.toLowerCase().includes('arrow') ||
+                                image.src?.toLowerCase().includes('arrow') ||
+                                image.alt?.toLowerCase().includes('icon') ||
+                                image.src?.toLowerCase().includes('symbol') ||
+                                image.src?.toLowerCase().includes('emoji')
 
+        // Check by dimensions (if width or height is specified and < 50px)
+        const width = image.width ? parseInt(image.width) : null
+        const height = image.height ? parseInt(image.height) : null
+        const isSmallByDimensions = (width !== null && width < 50) || (height !== null && height < 50)
+
+        // Check for very short filenames (likely icons/arrows like BO.png, BS.png)
+        // Extract filename from src (after last slash)
+        const filename = image.src.split('/').pop() || ''
+        const filenameWithoutExt = filename.replace(/\.[^.]+$/, '') // Remove extension
+        const isShortFilename = filenameWithoutExt.length <= 3 && /\.(png|svg|gif)$/i.test(filename)
+
+        const isSmallIcon = hasSmallKeyword || isSmallByDimensions || isShortFilename
         const className = isSmallIcon ? 'inline-image-small' : 'inline-image'
         return `<img src="${image.src}" alt="${image.alt || 'Image'}" class="${className}" loading="lazy" />`
       }
@@ -133,10 +148,25 @@ export function InteractiveAnkiViewer({
       const image = extracted.images[index]
       if (image && image.src) {
         // Check if it's an arrow or small icon (should stay small)
-        const isSmallIcon = image.alt?.toLowerCase().includes('arrow') ||
-                           image.src?.toLowerCase().includes('arrow') ||
-                           image.alt?.toLowerCase().includes('icon')
+        // Check by keywords in alt/src
+        const hasSmallKeyword = image.alt?.toLowerCase().includes('arrow') ||
+                                image.src?.toLowerCase().includes('arrow') ||
+                                image.alt?.toLowerCase().includes('icon') ||
+                                image.src?.toLowerCase().includes('symbol') ||
+                                image.src?.toLowerCase().includes('emoji')
 
+        // Check by dimensions (if width or height is specified and < 50px)
+        const width = image.width ? parseInt(image.width) : null
+        const height = image.height ? parseInt(image.height) : null
+        const isSmallByDimensions = (width !== null && width < 50) || (height !== null && height < 50)
+
+        // Check for very short filenames (likely icons/arrows like BO.png, BS.png)
+        // Extract filename from src (after last slash)
+        const filename = image.src.split('/').pop() || ''
+        const filenameWithoutExt = filename.replace(/\.[^.]+$/, '') // Remove extension
+        const isShortFilename = filenameWithoutExt.length <= 3 && /\.(png|svg|gif)$/i.test(filename)
+
+        const isSmallIcon = hasSmallKeyword || isSmallByDimensions || isShortFilename
         const className = isSmallIcon ? 'inline-image-small' : 'inline-image'
         return `<img src="${image.src}" alt="${image.alt || 'Image'}" class="${className}" loading="lazy" />`
       }
@@ -305,7 +335,7 @@ export function InteractiveAnkiViewer({
   const revealedCount = revealedClozes.size
 
   return (
-    <div className={cn("w-full max-w-[99%] md:max-w-4xl mx-auto mb-2 md:mb-4 pb-2 md:pb-4", className)}>
+    <div className={cn("max-w-[95%] md:max-w-3xl mx-auto mb-2 md:mb-4 pb-2 md:pb-4", className)}>
       <style jsx>{`
         .inline-image {
           max-width: 100%;
@@ -341,7 +371,7 @@ export function InteractiveAnkiViewer({
         </div>
       )}
 
-      <Card className="w-full">
+      <Card className="w-full shadow-none">
         <CardHeader className="pb-2 px-4 md:px-6 border-b">
           <div className="flex items-center justify-between gap-2">
             <div className="text-xs md:text-sm text-muted-foreground font-mono">
@@ -560,6 +590,15 @@ export function InteractiveAnkiViewer({
           display: block !important;
           margin: 0.5rem auto !important;
           object-fit: contain !important;
+        }
+
+        /* Ensure small icons stay inline */
+        .prose .inline-image-small {
+          max-width: 2rem !important;
+          height: auto !important;
+          display: inline !important;
+          margin: 0 0.25rem !important;
+          vertical-align: middle !important;
         }
 
         /* Support inline SVG overlays and IMG-wrapped SVG overlays */

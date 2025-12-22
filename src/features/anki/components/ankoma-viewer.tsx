@@ -34,7 +34,7 @@ import {
 import { useClientAnkoma } from '@/shared/hooks/use-client-ankoma'
 import { useImagePreloader } from '../hooks/use-image-preloader'
 import { cn } from '@/shared/utils'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 
 // Funny loading messages for Anki deck loading
 const ANKI_LOADING_MESSAGES = [
@@ -332,7 +332,7 @@ export function AnkomaViewer({
               <div>
                 <h1 className="text-xl font-semibold flex items-center gap-2">
                   <BookOpen className="h-5 w-5" />
-                  Ankoma Deck
+                  Ankoma Deck Viewer
                 </h1>
                 {currentSection && (
                   <p className="text-sm text-muted-foreground">

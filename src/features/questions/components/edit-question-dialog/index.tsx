@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Loader2, Brain, MessageSquare, Send } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { QuestionWithDetails, TagData } from '@/features/questions/types/questions';
 import { useEditQuestionForm, EditQuestionFormData } from '@/features/questions/hooks/use-edit-question-form';
 import { createClient } from '@/shared/services/client';

@@ -8,7 +8,7 @@ import { Label } from "@/shared/components/ui/label"
 import { Input } from "@/shared/components/ui/input"
 import { Textarea } from "@/shared/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group"
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { Icons } from "@/shared/components/common/icons"
 import { submitContactForm } from '@/app/api/public/contact/contact'
 

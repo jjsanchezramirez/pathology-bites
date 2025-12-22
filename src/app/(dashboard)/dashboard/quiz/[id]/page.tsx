@@ -6,7 +6,7 @@ import { useParams, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Button } from "@/shared/components/ui/button"
-import { Play, Pause } from "lucide-react"
+import { Play, Pause, PanelLeftOpen, PanelLeftClose } from "lucide-react"
 import { QuizSidebar } from "@/features/quiz/components/quiz-sidebar"
 import { QuestionFlagDialog } from "@/features/questions/components/question-flag-dialog"
 import { QuizHeader } from "@/features/quiz/components/quiz-header"
@@ -14,12 +14,13 @@ import { QuizQuestionDisplay } from "@/features/quiz/components/quiz-question-di
 import { QuizNavigation } from "@/features/quiz/components/quiz-navigation"
 import { PageErrorBoundary, FeatureErrorBoundary } from "@/shared/components/common"
 import { QuizResult } from "@/features/quiz/types/quiz"
-import { toast } from "sonner"
+import { toast } from '@/shared/utils/toast'
 import { useState, useEffect, useCallback } from "react"
 import { useHybridQuiz, HybridPresets } from "@/features/quiz/hybrid"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { useCSRFToken } from "@/features/auth/hooks/use-csrf-token"
+import { cn } from "@/shared/utils/utils"
 
 export default function QuizSessionPage() {
   const params = useParams()
@@ -39,6 +40,10 @@ export default function QuizSessionPage() {
   // Exit confirmation dialog state
   const [showExitDialog, setShowExitDialog] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+
+  // Sidebar collapse state
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarHovered, setSidebarHovered] = useState(false)
 
   // CSRF token for POST requests
   const { getToken } = useCSRFToken()
@@ -409,20 +414,52 @@ export default function QuizSessionPage() {
         <div className="min-h-screen bg-background/0 relative">
           <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-4 py-6">
             {/* Sidebar */}
-            <div className="lg:flex-shrink-0 order-2 lg:order-1">
-              <FeatureErrorBoundary featureName="Quiz Review Sidebar">
-                <QuizSidebar
-                  session={reviewModeSession as any}
-                  currentQuestionIndex={currentReviewIndex}
-                  attempts={reviewAttempts}
-                  onQuestionSelect={(index) => setCurrentReviewIndex(index)}
-                  timeRemaining={null}
-                />
-              </FeatureErrorBoundary>
+            <div
+              className={cn(
+                "transition-all duration-300 ease-in-out flex-shrink-0 order-2 lg:order-1",
+                sidebarCollapsed && !sidebarHovered ? "w-full lg:w-16" : "w-full lg:w-80"
+              )}
+            >
+              <div
+                onMouseEnter={() => setSidebarHovered(true)}
+                onMouseLeave={() => setSidebarHovered(false)}
+                className="h-full"
+              >
+                <FeatureErrorBoundary featureName="Quiz Review Sidebar">
+                  <QuizSidebar
+                    session={reviewModeSession as any}
+                    currentQuestionIndex={currentReviewIndex}
+                    attempts={reviewAttempts}
+                    onQuestionSelect={(index) => setCurrentReviewIndex(index)}
+                    timeRemaining={null}
+                    isCollapsed={sidebarCollapsed}
+                    isHovered={sidebarHovered}
+                  />
+                </FeatureErrorBoundary>
+              </div>
             </div>
 
             {/* Main Content */}
             <div className="flex-1 space-y-6 order-1 lg:order-2">
+              {/* Sidebar Toggle Button */}
+              <div className="hidden lg:flex justify-start">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  className="gap-2"
+                >
+                  {sidebarCollapsed ? (
+                    <PanelLeftOpen className="h-4 w-4" />
+                  ) : (
+                    <PanelLeftClose className="h-4 w-4" />
+                  )}
+                  <span className="text-sm">
+                    {sidebarCollapsed ? 'Show' : 'Hide'} Sidebar
+                  </span>
+                </Button>
+              </div>
+
               {/* Header */}
               <FeatureErrorBoundary featureName="Quiz Review Header">
                 <div className="flex items-center justify-between">
@@ -560,52 +597,84 @@ export default function QuizSessionPage() {
 
       <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-4 py-6">
         {/* Sidebar */}
-        <div className="lg:flex-shrink-0 order-2 lg:order-1">
-          <FeatureErrorBoundary featureName="Quiz Sidebar">
-            <QuizSidebar
-            session={{
-              id: sessionId || '',
-              title: 'Quiz Session',
-              questions: allQuestions,
-              currentQuestionIndex: hybridState.currentQuestion - 1,
-              totalQuestions: hybridState.totalQuestions,
-              status: hybridState.status,
-              userId: '',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              config: { 
-                mode: 'tutor',
-                timing: 'untimed', 
-                showExplanations: true,
-                questionCount: hybridState.totalQuestions,
-                questionType: 'all',
-                categorySelection: 'all',
-                selectedCategories: [],
-                shuffleQuestions: false,
-                shuffleAnswers: false,
-                showProgress: true
-              }
-            }}
-            currentQuestionIndex={hybridState.currentQuestion - 1}
-            attempts={allQuestions.map(question => {
-              const answer = hybridActions.getAnswerForQuestion(question.id);
-              return {
-                questionId: question.id,
-                selectedAnswerId: answer?.selectedOptionId || null,
-                isCorrect: answer?.isCorrect || false,
-                timeSpent: answer?.timeSpent || 0
-              };
-            })}
-            onQuestionSelect={(index) => {
-              hybridActions.navigateToQuestion(index);
-            }}
-            timeRemaining={null}
-          />
-          </FeatureErrorBoundary>
+        <div
+          className={cn(
+            "transition-all duration-300 ease-in-out flex-shrink-0 order-2 lg:order-1",
+            sidebarCollapsed && !sidebarHovered ? "w-full lg:w-16" : "w-full lg:w-80"
+          )}
+        >
+          <div
+            onMouseEnter={() => setSidebarHovered(true)}
+            onMouseLeave={() => setSidebarHovered(false)}
+            className="h-full"
+          >
+            <FeatureErrorBoundary featureName="Quiz Sidebar">
+              <QuizSidebar
+              session={{
+                id: sessionId || '',
+                title: 'Quiz Session',
+                questions: allQuestions,
+                currentQuestionIndex: hybridState.currentQuestion - 1,
+                totalQuestions: hybridState.totalQuestions,
+                status: hybridState.status,
+                userId: '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                config: {
+                  mode: 'tutor',
+                  timing: 'untimed',
+                  showExplanations: true,
+                  questionCount: hybridState.totalQuestions,
+                  questionType: 'all',
+                  categorySelection: 'all',
+                  selectedCategories: [],
+                  shuffleQuestions: false,
+                  shuffleAnswers: false,
+                  showProgress: true
+                }
+              }}
+              currentQuestionIndex={hybridState.currentQuestion - 1}
+              attempts={allQuestions.map(question => {
+                const answer = hybridActions.getAnswerForQuestion(question.id);
+                return {
+                  questionId: question.id,
+                  selectedAnswerId: answer?.selectedOptionId || null,
+                  isCorrect: answer?.isCorrect || false,
+                  timeSpent: answer?.timeSpent || 0
+                };
+              })}
+              onQuestionSelect={(index) => {
+                hybridActions.navigateToQuestion(index);
+              }}
+              timeRemaining={null}
+              isCollapsed={sidebarCollapsed}
+              isHovered={sidebarHovered}
+            />
+            </FeatureErrorBoundary>
+          </div>
         </div>
 
         {/* Main Content */}
         <div className="flex-1 space-y-6 order-1 lg:order-2">
+          {/* Sidebar Toggle Button */}
+          <div className="hidden lg:flex justify-start">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="gap-2"
+            >
+              {sidebarCollapsed ? (
+                <PanelLeftOpen className="h-4 w-4" />
+              ) : (
+                <PanelLeftClose className="h-4 w-4" />
+              )}
+              <span className="text-sm">
+                {sidebarCollapsed ? 'Show' : 'Hide'} Sidebar
+              </span>
+            </Button>
+          </div>
+
           {/* Header */}
           <FeatureErrorBoundary featureName="Quiz Header">
             <QuizHeader

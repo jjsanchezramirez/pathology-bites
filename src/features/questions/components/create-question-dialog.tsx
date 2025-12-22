@@ -42,7 +42,7 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { Loader2, Plus, X } from 'lucide-react';
 import { useQuestions } from '@/features/questions/hooks/use-questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';

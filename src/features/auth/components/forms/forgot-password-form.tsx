@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { toast } from "sonner"
+import { toast } from '@/shared/utils/toast'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { AuthCard } from "@/features/auth/components/ui/auth-card"
 import { FormField } from "@/features/auth/components/ui/form-field"
@@ -127,11 +127,17 @@ export function ForgotPasswordForm({
               onSuccess={(token) => setCaptchaToken(token)}
               onError={() => {
                 setCaptchaToken(null)
-                toast.error("CAPTCHA verification failed. Please try again.")
+                toast.error("Security verification failed. Please wait a few seconds and it will reload automatically.", {
+                  id: `captcha-error-${Date.now()}`,
+                  duration: 6000
+                })
               }}
               onExpire={() => {
                 setCaptchaToken(null)
-                toast.error("CAPTCHA expired. Please verify again.")
+                toast.warning("Security verification expired. Please verify again.", {
+                  id: `captcha-expired-${Date.now()}`,
+                  duration: 5000
+                })
               }}
             />
           </div>

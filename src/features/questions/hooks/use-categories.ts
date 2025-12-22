@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/shared/services/client';
 import { CategoryData } from '@/features/questions/types/questions';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { TABLE_NAMES } from '@/shared/constants/database-types';
 
 export interface UseCategoriesReturn {

@@ -216,8 +216,8 @@ export function QuizIntegration({
                   <div className="max-h-64 overflow-y-auto space-y-2">
                     {loading ? (
                       <div className="text-center py-8">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-                        <p className="text-gray-600 mt-2 text-sm">Loading quizzes...</p>
+                        {/* TODO: Replace with proper skeleton component when learning modules feature is implemented */}
+                        <p className="text-gray-600 text-sm">Loading quizzes...</p>
                       </div>
                     ) : quizSessions.length === 0 ? (
                       <div className="text-center py-8 text-gray-500">

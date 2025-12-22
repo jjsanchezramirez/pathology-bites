@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, memo } from 'react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import {
   Table,
   TableBody,

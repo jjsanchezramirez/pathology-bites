@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import { Shield, ShieldCheck, ShieldAlert } from 'lucide-react'
 

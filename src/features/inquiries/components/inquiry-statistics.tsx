@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/shared/services/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { MessageSquare, CheckCircle, Clock, HelpCircle } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { INQUIRY_TYPES } from '../types/inquiries'
 
 interface InquiryStats {

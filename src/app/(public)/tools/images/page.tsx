@@ -1,7 +1,7 @@
 // src/app/(public)/tools/images/page.tsx
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo, memo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Card } from "@/shared/components/ui/card"
@@ -31,7 +31,7 @@ interface TablePaginationProps {
   totalItems: number
 }
 
-function TablePagination({ currentPage, totalPages, onPageChange, totalItems }: TablePaginationProps) {
+const TablePagination = memo(function TablePagination({ currentPage, totalPages, onPageChange, totalItems }: TablePaginationProps) {
   const pageSize = 20
   const startItem = (currentPage - 1) * pageSize + 1
   const endItem = Math.min(currentPage * pageSize, totalItems)
@@ -66,9 +66,9 @@ function TablePagination({ currentPage, totalPages, onPageChange, totalItems }: 
       </div>
     </div>
   )
-}
+})
 
-export default function ImagesPage() {
+function ImagesPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -82,6 +82,13 @@ export default function ImagesPage() {
   const [totalItems, setTotalItems] = useState(0)
   const [selectedImage, setSelectedImage] = useState<ImageData | null>(null)
   const [urlParamsProcessed, setUrlParamsProcessed] = useState(false)
+
+  // Use refs instead of state to avoid triggering re-renders
+  const cachedCountRef = useRef<number | null>(null)
+  const previousFiltersRef = useRef<{search: string, category: CategoryFilterType}>({
+    search: '',
+    category: 'all'
+  })
 
   const pageSize = 20
 
@@ -130,63 +137,94 @@ export default function ImagesPage() {
     }
   }, [debouncedSearchTerm, categoryFilter, page, router, urlParamsProcessed])
 
-  // Debounce search term
+  // Debounce search term - increased to 500ms to reduce Supabase queries
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm)
-    }, 300)
+    }, 500)
     return () => clearTimeout(timer)
   }, [searchTerm])
 
-  // Reset page when search term or category changes
+  // Reset page when search term or category changes (but not when page changes)
   useEffect(() => {
     if (urlParamsProcessed) {
       setPage(1)
     }
-  }, [debouncedSearchTerm, categoryFilter, urlParamsProcessed])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchTerm, categoryFilter])
 
-  const loadImages = useCallback(async () => {
-    setLoading(true)
-    try {
-      const result = await fetchImages({
-        page: page - 1, // Convert to 0-based for service
-        pageSize,
-        searchTerm: debouncedSearchTerm,
-        category: categoryFilter === 'all' ? undefined : categoryFilter,
-        showUnusedOnly: false,
-        includeOnlyMicroscopicAndGross: categoryFilter === 'all'
-      })
+  // Load images when page, search, or category changes
+  useEffect(() => {
+    if (!urlParamsProcessed) return
 
-      if (result.error) {
-        console.error('Failed to load images:', result.error)
+    const loadImages = async () => {
+      setLoading(true)
+      try {
+        // Check if filters changed (search or category) using refs
+        const filtersChanged =
+          previousFiltersRef.current.search !== debouncedSearchTerm ||
+          previousFiltersRef.current.category !== categoryFilter
+
+        // Only fetch count if filters changed
+        const skipCount = !filtersChanged && cachedCountRef.current !== null
+
+        const result = await fetchImages({
+          page: page - 1, // Convert to 0-based for service
+          pageSize,
+          searchTerm: debouncedSearchTerm,
+          category: categoryFilter === 'all' ? undefined : categoryFilter,
+          showUnusedOnly: false,
+          includeOnlyMicroscopicAndGross: categoryFilter === 'all',
+          skipCount
+        })
+
+        if (result.error) {
+          console.error('Failed to load images:', result.error)
+          setImages([])
+          setTotalItems(0)
+          setTotalPages(0)
+          cachedCountRef.current = null
+        } else {
+          // Use cached count if available, otherwise use fresh count
+          const total = result.total !== null ? result.total : (cachedCountRef.current || 0)
+
+          // Batch state updates to reduce re-renders
+          setImages(result.data)
+          setTotalItems(total)
+          setTotalPages(Math.ceil(total / pageSize))
+
+          // Cache the count if we got a fresh one (using ref to avoid re-render)
+          if (result.total !== null) {
+            cachedCountRef.current = result.total
+            previousFiltersRef.current = {
+              search: debouncedSearchTerm,
+              category: categoryFilter
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading images:', error)
         setImages([])
         setTotalItems(0)
         setTotalPages(0)
-      } else {
-        setImages(result.data)
-        setTotalItems(result.total)
-        setTotalPages(Math.ceil(result.total / pageSize))
+        cachedCountRef.current = null
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Error loading images:', error)
-      setImages([])
-      setTotalItems(0)
-      setTotalPages(0)
-    } finally {
-      setLoading(false)
     }
-  }, [page, debouncedSearchTerm, categoryFilter])
 
-  useEffect(() => {
-    if (urlParamsProcessed) {
-      loadImages()
-    }
-  }, [loadImages, urlParamsProcessed])
+    loadImages()
+    // Removed cachedCount and previousFilters from dependencies to prevent circular updates
+  }, [page, debouncedSearchTerm, categoryFilter, urlParamsProcessed])
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault()
     // Debounce handles the actual search
-  }
+  }, [])
+
+  const handlePageChange = useCallback((newPage: number) => {
+    setPage(newPage)
+  }, [])
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -280,7 +318,7 @@ export default function ImagesPage() {
                       <TablePagination
                         currentPage={page}
                         totalPages={totalPages}
-                        onPageChange={setPage}
+                        onPageChange={handlePageChange}
                         totalItems={totalItems}
                       />
                     )}
@@ -308,5 +346,13 @@ export default function ImagesPage() {
         />
       )}
     </div>
+  )
+}
+
+export default function ImagesPage() {
+  return (
+    <Suspense fallback={<ImageGridSkeleton />}>
+      <ImagesPageContent />
+    </Suspense>
   )
 }

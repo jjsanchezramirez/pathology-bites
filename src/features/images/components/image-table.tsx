@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 import { Search, Loader2, Upload, MoreVertical, Edit, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
 import {
   Select,
@@ -187,6 +187,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
   const [imageStats, setImageStats] = useState<ImageUsageStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>('all');
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -198,6 +199,14 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
   const [imageToDelete, setImageToDelete] = useState<ImageData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Debounce search term - 500ms to reduce Supabase queries
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   const loadImages = useCallback(async () => {
     console.log('loadImages function called');
     setLoading(true);
@@ -208,7 +217,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
         fetchImages({
           page,
           pageSize: PAGE_SIZE,
-          searchTerm: searchTerm || undefined,
+          searchTerm: debouncedSearchTerm || undefined,
           category: categoryFilter === 'all' || categoryFilter === 'unused' ? undefined : categoryFilter,
           showUnusedOnly: categoryFilter === 'unused',
         }),
@@ -230,7 +239,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, categoryFilter, page]);
+  }, [debouncedSearchTerm, categoryFilter, page]);
 
   useEffect(() => {
     loadImages();

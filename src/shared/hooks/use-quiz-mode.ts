@@ -13,9 +13,14 @@ export function useQuizMode() {
   const pathname = usePathname()
 
   const isInQuizMode = useMemo(() => {
-    // Check if we're in any quiz-related page
-    // This includes: /dashboard/quiz/new, /dashboard/quiz/tutor, /dashboard/quiz/[id], etc.
-    return pathname ? pathname.startsWith('/dashboard/quiz/') : false
+    if (!pathname) return false
+
+    // Exclude /dashboard/quiz/new from quiz mode (sidebar should not collapse)
+    if (pathname === '/dashboard/quiz/new') return false
+
+    // Check if we're in any other quiz-related page
+    // This includes: /dashboard/quiz/tutor, /dashboard/quiz/[id], etc.
+    return pathname.startsWith('/dashboard/quiz/')
   }, [pathname])
 
   return {

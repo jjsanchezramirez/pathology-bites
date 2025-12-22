@@ -86,7 +86,7 @@ export function usePendingQuestionsCount() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [user])
+  }, [user?.id])
 
   return { ...counts, loading }
 }

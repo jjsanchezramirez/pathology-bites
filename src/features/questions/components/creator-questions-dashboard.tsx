@@ -39,7 +39,7 @@ import { QuestionPreviewDialog } from './question-preview-dialog'
 import { SubmitForReviewDialog } from './submit-for-review-dialog'
 import { ReassignReviewerDialog } from './reassign-reviewer-dialog'
 import { QUESTION_STATUSES, getQuestionStatusLabel } from '@/shared/constants/database-types'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { STATUS_CONFIG, QuestionWithDetails } from '@/features/questions/types/questions'
 
 interface CreatorQuestion extends QuestionWithDetails {

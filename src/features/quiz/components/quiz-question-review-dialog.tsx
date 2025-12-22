@@ -13,7 +13,7 @@ import { Separator } from '@/shared/components/ui/separator'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Check, X, Clock, Users, BookOpen } from 'lucide-react'
 import { createClient } from '@/shared/services/client'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { UIQuizQuestion } from '@/features/quiz/types/quiz-question'
 
 interface QuestionDetail {

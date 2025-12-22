@@ -3,6 +3,56 @@ import { createClient } from '@/shared/services/client';
 import type { ImageData } from '@/features/images/types/images';
 import { apiClient } from '@/shared/utils/api-client';
 
+// Aggressive client-side cache to reduce Supabase queries
+interface CacheEntry {
+  data: ImageData[];
+  total: number;
+  timestamp: number;
+}
+
+const imageQueryCache = new Map<string, CacheEntry>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
+function getCacheKey(params: {
+  page: number;
+  pageSize: number;
+  searchTerm?: string;
+  category?: string;
+  showUnusedOnly?: boolean;
+  includeOnlyMicroscopicAndGross?: boolean;
+}): string {
+  return JSON.stringify({
+    page: params.page,
+    pageSize: params.pageSize,
+    search: params.searchTerm || '',
+    category: params.category || '',
+    unused: params.showUnusedOnly || false,
+    microGross: params.includeOnlyMicroscopicAndGross || false
+  });
+}
+
+function cleanExpiredCache() {
+  const now = Date.now();
+  const keysToDelete: string[] = [];
+
+  imageQueryCache.forEach((entry, key) => {
+    if (now - entry.timestamp > CACHE_TTL) {
+      keysToDelete.push(key);
+    }
+  });
+
+  keysToDelete.forEach(key => imageQueryCache.delete(key));
+
+  // Keep cache size under 100 entries
+  if (imageQueryCache.size > 100) {
+    const entries = Array.from(imageQueryCache.entries());
+    entries.sort((a, b) => b[1].timestamp - a[1].timestamp);
+    const toKeep = entries.slice(0, 100);
+    imageQueryCache.clear();
+    toKeep.forEach(([key, value]) => imageQueryCache.set(key, value));
+  }
+}
+
 
 export async function deleteImage(imagePath: string | null, imageId: string) {
   try {
@@ -94,8 +144,28 @@ export async function fetchImages(params: {
   category?: string;
   showUnusedOnly?: boolean;
   includeOnlyMicroscopicAndGross?: boolean;
+  skipCount?: boolean; // New param to skip count query on pagination
 }) {
-  const { page, pageSize, searchTerm, category, showUnusedOnly, includeOnlyMicroscopicAndGross } = params;
+  const { page, pageSize, searchTerm, category, showUnusedOnly, includeOnlyMicroscopicAndGross, skipCount } = params;
+
+  // Check cache first
+  const cacheKey = getCacheKey(params);
+  const now = Date.now();
+  const cachedEntry = imageQueryCache.get(cacheKey);
+
+  if (cachedEntry && (now - cachedEntry.timestamp) < CACHE_TTL) {
+    console.log('[Images] Cache hit:', cacheKey.substring(0, 100));
+    return {
+      data: cachedEntry.data,
+      total: cachedEntry.total,
+      error: null,
+      cached: true
+    };
+  }
+
+  // Clean expired cache entries periodically
+  cleanExpiredCache();
+
   const supabase = createClient(); // Remove <Database>
 
   try {
@@ -156,14 +226,65 @@ export async function fetchImages(params: {
       };
     }
 
-    // For now, return a simple count based on the data length
-    // This is a temporary fix to avoid the count query issues
     const images = dataResult.data || [];
-    const estimatedTotal = images.length;
 
-    // If we got a full page, there might be more data
-    const hasMoreData = estimatedTotal === pageSize;
-    const total = hasMoreData ? (page + 1) * pageSize + 1 : (page * pageSize) + estimatedTotal;
+    // Skip count query if requested (for pagination)
+    if (skipCount) {
+      return {
+        data: images,
+        total: null, // Caller should use cached count
+        error: null
+      };
+    }
+
+    // Build count query with same filters (only when filters change)
+    let countQuery = supabase
+      .from(tableName)
+      .select('*', { count: 'exact', head: true });
+
+    // Apply same filters as data query
+    if (!showUnusedOnly) {
+      countQuery = countQuery.neq('category', 'external');
+    }
+
+    if (includeOnlyMicroscopicAndGross && !showUnusedOnly) {
+      countQuery = countQuery.in('category', ['microscopic', 'gross']);
+    }
+
+    if (searchTerm && searchTerm.trim()) {
+      const cleanSearchTerm = searchTerm.trim();
+      countQuery = countQuery.or(`alt_text.ilike.%${cleanSearchTerm}%,description.ilike.%${cleanSearchTerm}%,source_ref.ilike.%${cleanSearchTerm}%`);
+    }
+
+    if (category && category !== 'all' && !showUnusedOnly) {
+      countQuery = countQuery.eq('category', category);
+    }
+
+    // Execute count query
+    const countResult = await countQuery;
+
+    if (countResult.error) {
+      console.error('Count query error:', countResult.error);
+      // Fall back to estimation if count fails
+      const hasMoreData = images.length === pageSize;
+      const total = hasMoreData ? (page + 1) * pageSize + 1 : (page * pageSize) + images.length;
+
+      return {
+        data: images,
+        total: total,
+        error: null
+      };
+    }
+
+    const total = countResult.count || 0;
+
+    // Cache the successful result
+    imageQueryCache.set(cacheKey, {
+      data: images,
+      total: total,
+      timestamp: Date.now()
+    });
+    console.log('[Images] Cached result:', cacheKey.substring(0, 100));
 
     return {
       data: images,

@@ -23,7 +23,7 @@ import {
 } from "@/shared/components/ui/select"
 import { Eye, Search, Filter, ExternalLink, AlertTriangle } from 'lucide-react'
 import { QuestionReportDetailsDialog } from './question-report-details-dialog'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import Link from 'next/link'
 
 interface QuestionReport {

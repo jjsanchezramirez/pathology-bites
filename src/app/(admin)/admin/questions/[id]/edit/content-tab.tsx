@@ -16,7 +16,7 @@ import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { RefreshCw, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 
 import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { EditQuestionFormData } from '@/features/questions/hooks/use-edit-question-form';

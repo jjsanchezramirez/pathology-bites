@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/shared/services/client'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { BlurredDialog } from '@/shared/components/ui/blurred-dialog'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'

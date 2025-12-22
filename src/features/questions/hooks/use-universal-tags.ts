@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/shared/services/client';
 import { TagData } from '@/features/questions/types/questions';
-import { toast } from 'sonner';
+import { toast } from '@/shared/utils/toast';
 
 export interface UseUniversalTagsReturn {
   recentTags: TagData[];

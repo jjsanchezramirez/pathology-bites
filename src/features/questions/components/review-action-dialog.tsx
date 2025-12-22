@@ -13,7 +13,7 @@ import { Button } from "@/shared/components/ui/button"
 import { Label } from "@/shared/components/ui/label"
 import { Textarea } from "@/shared/components/ui/textarea"
 import { Loader2, CheckCircle, XCircle, AlertCircle, MessageSquare } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { createClient } from '@/shared/services/client'
 

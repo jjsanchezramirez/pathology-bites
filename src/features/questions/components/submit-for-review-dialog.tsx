@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select"
 import { Loader2, UserCheck } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 
 interface Reviewer {
   id: string

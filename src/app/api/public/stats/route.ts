@@ -21,6 +21,7 @@ export const GET = rateLimitedHandler(async function() {
     // Check cache first - 24 hour TTL means we only hit DB once per day
     const now = Date.now()
     if (cachedStats && (now - cacheTimestamp) < CACHE_TTL) {
+      console.log('[Public Stats] Returning cached data')
       return NextResponse.json({
         success: true,
         data: cachedStats,
@@ -28,9 +29,10 @@ export const GET = rateLimitedHandler(async function() {
       })
     }
 
+    console.log('[Public Stats] Cache miss, fetching from database...')
     const supabase = await createClient()
 
-    // Simple, optimized queries: count published questions and subcategories
+    // Fetch published questions count from database
     const { count: totalQuestionsCount, error: questionsError } = await supabase
       .from('questions')
       .select('id', { count: 'exact', head: true })
@@ -39,31 +41,11 @@ export const GET = rateLimitedHandler(async function() {
     if (questionsError) {
       console.error('[Public Stats] Error fetching questions count:', questionsError)
     }
-    console.log('[Public Stats] Published questions count:', totalQuestionsCount)
 
-    // Debug: Let's also fetch some actual categories to see what's there
-    const { data: allCategories, error: allCategoriesError } = await supabase
-      .from('categories')
-      .select('id, name, parent_id, level')
-      .limit(10)
+    // Hardcoded categories count for now
+    const categoriesCount = 25
 
-    if (allCategoriesError) {
-      console.error('[Public Stats] Error fetching all categories:', allCategoriesError)
-    } else {
-      console.log('[Public Stats] Sample categories:', allCategories)
-      console.log('[Public Stats] Categories with parent_id:',
-        allCategories?.filter(c => c.parent_id !== null).length)
-    }
-
-    const { count: categoriesCount, error: categoriesError } = await supabase
-      .from('categories')
-      .select('id', { count: 'exact', head: true })
-      .not('parent_id', 'is', null)
-
-    if (categoriesError) {
-      console.error('[Public Stats] Error fetching categories count:', categoriesError)
-    }
-    console.log('[Public Stats] Subcategories count (parent_id IS NOT NULL):', categoriesCount)
+    console.log(`[Public Stats] Published questions: ${totalQuestionsCount}, Categories: ${categoriesCount}`)
 
     const stats = {
       expertQuestions: totalQuestionsCount || 0,

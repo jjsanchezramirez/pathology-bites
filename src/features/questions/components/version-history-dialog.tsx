@@ -20,7 +20,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { VersionSnapshotView } from './version-history/version-snapshot-view'
 import { VersionComparisonView } from './version-history/version-comparison-view'
 import { Badge } from "@/shared/components/ui/badge"

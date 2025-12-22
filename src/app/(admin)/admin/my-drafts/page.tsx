@@ -24,14 +24,14 @@ import {
   Search,
   Edit3,
   Send,
-  Loader2,
   RefreshCw,
   FileText
 } from 'lucide-react'
+import { Skeleton } from '@/shared/components/ui/skeleton'
 import { QuestionPreviewDialog } from '@/features/questions/components/question-preview-dialog'
 import { SubmitForReviewDialog } from '@/features/questions/components/submit-for-review-dialog'
 import { BulkSubmitDialog } from '@/features/questions/components/bulk-submit-dialog'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { formatDistanceToNow } from 'date-fns'
 import { QuestionWithDetails } from '@/features/questions/types/questions'
 import {
@@ -62,17 +62,6 @@ export default function MyDraftsPage() {
   const { user } = useAuthStatus()
   const { canAccess } = useUserRole()
   const supabase = createClient()
-
-  // Access control - only creators and admins can access
-  if (!canAccess('questions.create')) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">Access denied. Creator privileges required.</p>
-        </div>
-      </div>
-    )
-  }
 
   const fetchDraftQuestions = useCallback(async () => {
     if (!user) return
@@ -265,12 +254,71 @@ export default function MyDraftsPage() {
 
   const allSelected = filteredQuestions.length > 0 && selectedQuestions.size === filteredQuestions.length
 
-  if (loading) {
+  // Access control - only creators and admins can access
+  if (!canAccess('questions.create')) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="text-sm text-muted-foreground mt-2">Loading drafts...</p>
+          <p className="text-sm text-muted-foreground">Access denied. Creator privileges required.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        {/* Page Header Skeleton */}
+        <div>
+          <Skeleton className="h-9 w-48 mb-2" />
+          <Skeleton className="h-5 w-80" />
+        </div>
+
+        {/* Stats Card Skeleton */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-4" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-8 w-16 mb-1" />
+            <Skeleton className="h-3 w-72" />
+          </CardContent>
+        </Card>
+
+        {/* Filters and Actions Skeleton */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-32" />
+          </div>
+        </div>
+
+        {/* Table Skeleton */}
+        <div className="rounded-md border bg-card">
+          <div className="p-4 space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-start gap-4">
+                <Skeleton className="h-5 w-5 mt-1" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-5 w-20" />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-8 w-24" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     )

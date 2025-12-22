@@ -19,7 +19,7 @@ import {
 } from '@/shared/components/ui/select'
 import { Label } from '@/shared/components/ui/label'
 import { Badge } from '@/shared/components/ui/badge'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { createClient } from '@/shared/services/client'
 import { Send, Users, Clock, Loader2 } from 'lucide-react'
 

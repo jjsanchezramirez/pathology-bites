@@ -25,8 +25,8 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
   const config = getTextZoomConfig()
 
   // Use cached user settings hook (eliminates redundant API calls)
+  // Note: refetchOnMount removed - cache handles freshness with 5-min TTL and 2-min stale time
   const { data: settings, isLoading, invalidate } = useUserSettings({
-    refetchOnMount: true,
     onSuccess: (data) => {
       console.log('[DashboardSettings] Settings loaded from cache:', data.ui_settings)
     }

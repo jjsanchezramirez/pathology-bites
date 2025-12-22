@@ -65,6 +65,9 @@ export interface UnifiedSearchMetadata {
 
 /**
  * Enhanced medical abbreviation mappings
+ * NOTE: Expansions should NOT include hyphens - normalization handles that
+ * Example: "dlbcl" expands to "diffuse large b cell lymphoma" (no hyphen)
+ * This matches both "B-Cell" and "B Cell" after normalization
  */
 const MEDICAL_ABBREVIATIONS: { [key: string]: string } = {
   // Hematology/Oncology
@@ -72,7 +75,7 @@ const MEDICAL_ABBREVIATIONS: { [key: string]: string } = {
   'aml': 'acute myeloid leukemia',
   'all': 'acute lymphoblastic leukemia',
   'cml': 'chronic myeloid leukemia',
-  'dlbcl': 'diffuse large b cell lymphoma',
+  'dlbcl': 'diffuse large b cell lymphoma',  // No hyphen - normalization handles "B-Cell"
   'fl': 'follicular lymphoma',
   'hl': 'hodgkin lymphoma',
   'nhl': 'non hodgkin lymphoma',
@@ -516,6 +519,18 @@ function isGenericTerm(term: string): boolean {
 }
 
 /**
+ * Normalize text for precise matching by removing punctuation inconsistencies
+ * Example: "B-Cell" → "b cell", "T-cell" → "t cell"
+ */
+function normalizeForMatching(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')  // Replace hyphens, apostrophes, punctuation with spaces
+    .replace(/\s+/g, ' ')           // Collapse multiple spaces
+    .trim()
+}
+
+/**
  * Calculate unified content match score with medical intelligence
  */
 export function calculateUnifiedMatchScore(
@@ -533,6 +548,10 @@ export function calculateUnifiedMatchScore(
   const lessonLower = lessonName.toLowerCase()
   const contentLower = contentText.toLowerCase()
 
+  // Normalized versions for precise matching (fixes "B-Cell" vs "B Cell" issues)
+  const topicNormalized = normalizeForMatching(topicName)
+  const lessonNormalized = normalizeForMatching(lessonName)
+
   const matchDetails: SearchResult['matchDetails'] = {
     exactMatches: [],
     medicalTermMatches: [],
@@ -546,20 +565,23 @@ export function calculateUnifiedMatchScore(
 
   // 1. PERFECT AND EXACT MATCHES (Highest Priority: 50,000-500,000 points)
   for (const phrase of medicalTerms.exactPhrases) {
-    // Perfect topic name match (case insensitive)
-    if (topicLower === phrase || topicLower.replace(/\s+/g, ' ').trim() === phrase.replace(/\s+/g, ' ').trim()) {
+    const phraseNormalized = normalizeForMatching(phrase)
+
+    // Perfect topic name match (using normalized comparison to handle punctuation)
+    if (topicNormalized === phraseNormalized || topicLower === phrase) {
       totalScore += 1000000 // Much higher for perfect matches
       matchDetails.exactMatches.push(`PERFECT: ${phrase}`)
       if (options.logDetailedScoring) {
-        console.log(`🏆 PERFECT TOPIC MATCH: "${phrase}" → +500,000`)
+        console.log(`🏆 PERFECT TOPIC MATCH: "${phrase}" → +1,000,000`)
       }
       // Don't early return - let it accumulate more score
     }
 
     // Exact phrase contained in topic name (but not perfect match)
-    else if (topicLower.includes(phrase) && phrase.length >= 6) {
-      // Check for word boundary matches vs substring matches
-      const isWordBoundaryMatch = new RegExp(`\\b${phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(topicLower)
+    // Use both normalized and original to catch both "b-cell" and "b cell" variants
+    else if ((topicNormalized.includes(phraseNormalized) || topicLower.includes(phrase)) && phrase.length >= 6) {
+      // Check for word boundary matches vs substring matches (use normalized version)
+      const isWordBoundaryMatch = new RegExp(`\\b${phraseNormalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(topicNormalized)
 
       if (isWordBoundaryMatch) {
         // Higher bonus for word boundary matches
@@ -582,9 +604,9 @@ export function calculateUnifiedMatchScore(
       }
     }
 
-    // Exact phrase in lesson name
-    else if (lessonLower.includes(phrase) && phrase.length >= 6) {
-      const isWordBoundaryMatch = new RegExp(`\\b${phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(lessonLower)
+    // Exact phrase in lesson name (use normalized comparison)
+    else if ((lessonNormalized.includes(phraseNormalized) || lessonLower.includes(phrase)) && phrase.length >= 6) {
+      const isWordBoundaryMatch = new RegExp(`\\b${phraseNormalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(lessonNormalized)
 
       if (isWordBoundaryMatch) {
         const bonus = phrase.length >= 15 ? 125000 :

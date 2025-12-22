@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/shared/services/client'
 import { User, Session } from '@supabase/supabase-js'
 import { sessionSecurity } from '@/features/auth/utils/session-security'
-import { authErrorHandler, retryManager, AuthError, handleAuthConflict, isAuthConflictError } from '@/features/auth/utils/error-handling'
+import { categorizeAuthError, AuthError, handleAuthConflict, isAuthConflictError } from '@/features/auth/utils/error-handling'
 import { realtimeService } from '@/shared/services/realtime-service'
 
 export function useAuthStatus() {
@@ -58,7 +58,7 @@ export function useAuthStatus() {
           if (process.env.NODE_ENV === 'development') {
             console.debug('Session error:', sessionError)
           }
-          const authError = authErrorHandler.categorizeError(sessionError)
+          const authError = categorizeAuthError(sessionError)
           setError(authError)
           setSession(null)
           setUser(null)
@@ -103,7 +103,7 @@ export function useAuthStatus() {
                   console.debug('High-risk session detected:', validation.changes)
                 }
 
-                const securityError = authErrorHandler.categorizeError(
+                const securityError = categorizeAuthError(
                   new Error('Session security validation failed - please sign in again')
                 )
                 setError(securityError)
@@ -130,7 +130,7 @@ export function useAuthStatus() {
         if (process.env.NODE_ENV === 'development') {
           console.debug('Auth initialization error:', err)
         }
-        const authError = authErrorHandler.categorizeError(err)
+        const authError = categorizeAuthError(err)
         setError(authError)
         setSession(null)
         setUser(null)
@@ -223,32 +223,23 @@ export function useAuthStatus() {
 
   const refreshAuth = async () => {
     try {
-      await retryManager.executeWithRetry(
-        async () => {
-          setIsLoading(true)
-          setError(null)
+      setIsLoading(true)
+      setError(null)
 
-          const { data: { session }, error } = await supabase.auth.refreshSession()
+      const { data: { session }, error } = await supabase.auth.refreshSession()
 
-          if (error) {
-            throw error
-          }
+      if (error) {
+        throw error
+      }
 
-          setSession(session)
-          setUser(session?.user ?? null)
-          setIsAuthenticated(!!(session?.user))
-        },
-        {
-          maxRetries: 3,
-          baseDelay: 1000,
-          operationId: 'refresh-auth'
-        }
-      )
+      setSession(session)
+      setUser(session?.user ?? null)
+      setIsAuthenticated(!!(session?.user))
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {
         console.debug('Refresh session error:', err)
       }
-      const authError = authErrorHandler.categorizeError(err)
+      const authError = categorizeAuthError(err)
       setError(authError)
 
       // Handle CSRF errors and auth conflicts by redirecting to login

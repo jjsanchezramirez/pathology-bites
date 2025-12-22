@@ -10,7 +10,7 @@ import { Switch } from "@/shared/components/ui/switch"
 import { Separator } from "@/shared/components/ui/separator"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select"
-import { toast } from "sonner"
+import { toast } from '@/shared/utils/toast'
 import { Save, RefreshCw, User, ClipboardList, LayoutDashboard, Bell, RotateCcw } from "lucide-react"
 
 interface SettingsData {

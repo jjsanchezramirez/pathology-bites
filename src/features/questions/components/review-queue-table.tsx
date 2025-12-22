@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { createClient } from '@/shared/services/client'
 import { 
   QuestionWithReviewDetails, 

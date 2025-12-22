@@ -6,8 +6,8 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
-import { toast } from "sonner"
+import { useSearchParams, useRouter } from "next/navigation"
+import { toast } from '@/shared/utils/toast'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { FormField } from "@/features/auth/components/ui/form-field"
 import { FormButton } from "@/features/auth/components/ui/form-button"
@@ -28,36 +28,62 @@ type LoginFormData = z.infer<typeof formSchema>
 interface LoginFormProps {
   action: (formData: FormData) => Promise<void>
   redirect?: string
+  initialError?: string
+  initialMessage?: string
   isAdminOnlyMode?: boolean
 }
 
 export function LoginForm({
   action,
   redirect,
+  initialError,
+  initialMessage,
   isAdminOnlyMode = false
 }: LoginFormProps) {
   const [loading, setLoading] = useState(false)
+  const [failedAttempts, setFailedAttempts] = useState(0)
   const { getToken, addTokenToFormData } = useCSRFToken()
   const { captchaToken, setCaptchaToken } = useTurnstile()
   const turnstileRef = useRef<TurnstileInstance | null>(null)
-  const searchParams = useSearchParams()
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY
+  const router = useRouter()
 
-  // Show error/message toasts from URL params
+  // Show error/message toasts from props (passed from server component)
   useEffect(() => {
-    const error = searchParams.get('error')
-    const message = searchParams.get('message')
+    console.log('[LoginForm] useEffect triggered - initialError:', initialError, 'initialMessage:', initialMessage)
 
-    if (error) {
-      toast.error(error)
+    if (initialError) {
+      // Use a unique ID based on the error message to prevent deduplication issues
+      const errorId = `login-error-${Date.now()}`
+      console.log('[LoginForm] Showing error toast with ID:', errorId, 'Message:', initialError)
+
+      const toastResult = toast.error(initialError, { id: errorId, duration: 8000 })
+      console.log('[LoginForm] Toast result:', toastResult)
+
+      // Track failed attempts for rate limit warning
+      if (initialError.includes('Invalid email or password') || initialError.includes('login credentials')) {
+        setFailedAttempts(prev => prev + 1)
+      }
+
       // Reset CAPTCHA when there's an error
       turnstileRef.current?.reset()
       setCaptchaToken(null)
+
+      // Clear the error from URL to prevent re-showing on refresh
+      // Use replace to avoid adding to history
+      router.replace('/login', { scroll: false })
     }
-    if (message) {
-      toast.info(message)
+    if (initialMessage) {
+      const messageId = `login-message-${Date.now()}`
+      console.log('[LoginForm] Showing info toast with ID:', messageId, 'Message:', initialMessage)
+
+      const toastResult = toast.info(initialMessage, { id: messageId, duration: 8000 })
+      console.log('[LoginForm] Toast result:', toastResult)
+
+      // Clear the message from URL
+      router.replace('/login', { scroll: false })
     }
-  }, [searchParams, setCaptchaToken])
+  }, [initialError, initialMessage, setCaptchaToken, router])
 
   // Initialize form with useForm hook
   const {
@@ -148,19 +174,42 @@ export function LoginForm({
           {...register("password")}
         />
 
+        {/* Rate limit warning */}
+        {failedAttempts >= 5 && failedAttempts < 10 && (
+          <div className="rounded-md bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900/50 p-3">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <strong>Warning:</strong> {10 - failedAttempts} login attempt{10 - failedAttempts !== 1 ? 's' : ''} remaining before temporary lockout.
+            </p>
+          </div>
+        )}
+
         {siteKey && (
           <div className="flex justify-center">
             <Turnstile
               ref={turnstileRef}
               siteKey={siteKey}
-              onSuccess={(token) => setCaptchaToken(token)}
+              onSuccess={(token) => {
+                setCaptchaToken(token)
+                console.log('[LoginForm] CAPTCHA verification successful')
+              }}
               onError={() => {
                 setCaptchaToken(null)
-                toast.error("CAPTCHA verification failed. Please try again.")
+                console.log('[LoginForm] CAPTCHA verification error')
+                // Only show CAPTCHA error if not already showing a login error
+                if (!initialError) {
+                  toast.error("Security verification failed. Please wait a few seconds and it will reload automatically.", {
+                    id: `captcha-error-${Date.now()}`,
+                    duration: 6000
+                  })
+                }
               }}
               onExpire={() => {
                 setCaptchaToken(null)
-                toast.error("CAPTCHA expired. Please verify again.")
+                console.log('[LoginForm] CAPTCHA verification expired')
+                toast.warning("Security verification expired. Please verify again.", {
+                  id: `captcha-expired-${Date.now()}`,
+                  duration: 5000
+                })
               }}
             />
           </div>

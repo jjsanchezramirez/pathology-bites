@@ -21,7 +21,7 @@ import {
   TableRow,
 } from '@/shared/components/ui/table'
 import { Loader2, History, User, Calendar, FileText } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 import { QuestionVersionHistory as QuestionVersionHistoryType, UpdateType } from '@/features/questions/types/questions'
 
 interface QuestionVersionHistoryProps {

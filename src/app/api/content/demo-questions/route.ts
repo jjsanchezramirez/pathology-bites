@@ -2,6 +2,16 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+// Server-side cache for demo questions with 24-hour TTL
+const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
+interface CachedDemoQuestion {
+  data: ProcessedQuestion
+  timestamp: number
+}
+const demoQuestionsCache = new Map<number, CachedDemoQuestion>()
+let cachedQuestionsList: { id: string; question_id: string; display_order: number }[] | null = null
+let questionsListTimestamp: number = 0
+
 // Define interfaces for Supabase response data
 interface ImageData {
   id: string;
@@ -222,55 +232,74 @@ export async function GET(request: Request) {
         );
       }
     }
-    // If no ID is provided, return a random demo question
+    // If no ID is provided, return a sequential demo question with caching
     else {
-      // Get current index from query parameter or default to 0
+      const now = Date.now()
       const currentIndex = parseInt(url.searchParams.get('index') || '0');
 
-      // Get all active demo questions ordered by display_order
-      const { data: demoQuestions, error: demoError } = await supabase
-        .from('demo_questions')
-        .select('id, question_id, display_order')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
+      // Check if we have a cached version of the questions list
+      if (!cachedQuestionsList || (now - questionsListTimestamp) >= CACHE_TTL) {
+        console.log('[Demo Questions] Cache miss for questions list, fetching from database...')
+        const { data: demoQuestions, error: demoError } = await supabase
+          .from('demo_questions')
+          .select('id, question_id, display_order')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
 
-      if (demoError || !demoQuestions || demoQuestions.length === 0) {
-        console.error('Error fetching demo questions:', demoError);
-        return NextResponse.json(
-          { error: 'No demo questions available. Please add questions to the demo_questions table.' },
-          { status: 404 }
-        );
+        if (demoError || !demoQuestions || demoQuestions.length === 0) {
+          console.error('[Demo Questions] Error fetching demo questions:', demoError);
+          return NextResponse.json(
+            { error: 'No demo questions available. Please add questions to the demo_questions table.' },
+            { status: 404 }
+          );
+        }
+
+        console.log(`[Demo Questions] Loaded ${demoQuestions.length} demo questions`)
+        cachedQuestionsList = demoQuestions
+        questionsListTimestamp = now
       }
 
-      // Use sequential ordering instead of random selection
+      const demoQuestions = cachedQuestionsList!
       const selectedIndex = currentIndex % demoQuestions.length;
-      const selectedDemo = demoQuestions[selectedIndex];
-
-      // Include next index in response for client to track
       const nextIndex = (selectedIndex + 1) % demoQuestions.length;
 
-      // Consolidated query to fetch all question data in parallel
+      // Check if we have a cached version of this question
+      const cachedQuestion = demoQuestionsCache.get(selectedIndex)
+      if (cachedQuestion && (now - cachedQuestion.timestamp) < CACHE_TTL) {
+        console.log(`[Demo Questions] Returning cached question index ${selectedIndex}`)
+        // Return cached question with updated metadata
+        return NextResponse.json({
+          ...cachedQuestion.data,
+          _metadata: {
+            currentIndex: selectedIndex,
+            nextIndex: nextIndex,
+            totalQuestions: demoQuestions.length,
+            cached: true
+          }
+        }, { status: 200 });
+      }
+
+      console.log(`[Demo Questions] Cache miss for question index ${selectedIndex}, fetching from database...`)
+
+      const selectedDemo = demoQuestions[selectedIndex];
+
+      // Fetch fresh question data
       const [
         { data: questionData, error: questionError },
         { data: answerOptions, error: optionsError },
-        { data: questionImagesWithDetails, error: imagesError }
+        { data: questionImagesWithDetails }
       ] = await Promise.all([
-        // Get question data
         supabase
           .from('questions')
           .select('id, title, stem, teaching_point, question_references, status, difficulty')
           .eq('id', selectedDemo.question_id)
           .eq('status', 'published')
           .single(),
-
-        // Get answer options
         supabase
           .from('question_options')
           .select('id, text, is_correct, explanation')
           .eq('question_id', selectedDemo.question_id)
           .order('order_index'),
-
-        // Get question images with image details in one query
         supabase
           .from('question_images')
           .select(`
@@ -305,7 +334,6 @@ export async function GET(request: Request) {
       }
 
       try {
-        // Process the question data to match expected format
         const stemImages = questionImagesWithDetails
           ?.filter((qi: any) => qi.question_section === 'stem')
           ?.sort((a: any, b: any) => a.order_index - b.order_index)
@@ -320,11 +348,11 @@ export async function GET(request: Request) {
 
         const explanationImageData = questionImagesWithDetails
           ?.find((qi: any) => qi.question_section === 'explanation');
-        const explanationImageDetail = Array.isArray(explanationImageData?.images) 
-          ? explanationImageData?.images[0] 
+        const explanationImageDetail = Array.isArray(explanationImageData?.images)
+          ? explanationImageData?.images[0]
           : explanationImageData?.images;
 
-        const processedQuestion = {
+        const processedQuestion: ProcessedQuestion = {
           id: questionData.id,
           title: questionData.title,
           body: questionData.stem,
@@ -347,16 +375,23 @@ export async function GET(request: Request) {
             url: explanationImageDetail.url || '',
             caption: explanationImageDetail.description || '',
             alt: explanationImageDetail.alt_text || 'Comparative image'
-          } : null,
-          // Include metadata for sequential ordering
+          } : null
+        };
+
+        // Cache the processed question
+        demoQuestionsCache.set(selectedIndex, {
+          data: processedQuestion,
+          timestamp: now
+        })
+
+        return NextResponse.json({
+          ...processedQuestion,
           _metadata: {
             currentIndex: selectedIndex,
             nextIndex: nextIndex,
             totalQuestions: demoQuestions.length
           }
-        };
-
-        return NextResponse.json(processedQuestion, { status: 200 });
+        }, { status: 200 });
       } catch (processingError) {
         console.error('Error processing question data:', processingError);
         return NextResponse.json(

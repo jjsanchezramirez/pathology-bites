@@ -59,6 +59,46 @@
 
 
 @layer utilities {
+  /* Vertical writing mode for sidebar collapsed state */
+  .writing-mode-vertical-rl {
+    writing-mode: vertical-rl;
+  }
+
+  /* Custom scrollbar styles for Ankoma sidebars */
+  .ankoma-scrollbar-dark::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .ankoma-scrollbar-dark::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .ankoma-scrollbar-dark::-webkit-scrollbar-thumb {
+    background: hsl(var(--sidebar-foreground) / 0.2);
+    border-radius: 3px;
+  }
+
+  .ankoma-scrollbar-dark::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--sidebar-foreground) / 0.3);
+  }
+
+  .ankoma-scrollbar-light::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .ankoma-scrollbar-light::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .ankoma-scrollbar-light::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.4);
+    border-radius: 3px;
+  }
+
+  .ankoma-scrollbar-light::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.6);
+  }
+
   /* Grid pattern for the coming soon page */
   .bg-grid-pattern {
     background-image:

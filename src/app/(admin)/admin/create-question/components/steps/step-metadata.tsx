@@ -9,7 +9,7 @@ import { Brain, Loader2, Sparkles } from 'lucide-react'
 import { FormState } from '../multi-step-question-form'
 import { TagAutocomplete } from '../tag-autocomplete'
 import { createClient } from '@/shared/services/client'
-import { toast } from 'sonner'
+import { toast } from '@/shared/utils/toast'
 
 interface StepMetadataProps {
   formState: FormState
