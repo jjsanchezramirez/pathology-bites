@@ -31,8 +31,9 @@ interface DeckData {
 
 export default function Anki2Page() {
   const { ankomaData, isLoading, error } = useClientAnkoma()
-  const [leftSidebarExpanded, setLeftSidebarExpanded] = useState(false)
-  const [rightSidebarExpanded, setRightSidebarExpanded] = useState(false)
+  const [leftSidebarExpanded, setLeftSidebarExpanded] = useState(true) // Start expanded
+  const [rightSidebarExpanded, setRightSidebarExpanded] = useState(false) // Start collapsed
+  const [hoverEnabled, setHoverEnabled] = useState(true) // Track if hover is enabled
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null)
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null)
@@ -149,6 +150,13 @@ export default function Anki2Page() {
     setSelectedSubcategory(null)
     setCurrentCardIndex(0)
     setIsShuffled(false)
+    // When deck is selected, collapse DECKS and expand CATEGORIES
+    // Temporarily disable hover to prevent interference
+    setHoverEnabled(false)
+    setLeftSidebarExpanded(false)
+    setRightSidebarExpanded(true)
+    // Re-enable hover after a short delay
+    setTimeout(() => setHoverEnabled(true), 300)
   }
 
   const handleCategoryClick = (categoryId: string, hasSubcategories: boolean) => {
@@ -210,13 +218,13 @@ export default function Anki2Page() {
       <aside
         className={cn(
           "h-full shrink-0 bg-secondary border-r border-border transition-all duration-300 ease-in-out overflow-hidden",
-          leftSidebarExpanded ? "w-[200px]" : "w-16"
+          leftSidebarExpanded ? "w-[240px]" : "w-16"
         )}
-        onMouseEnter={() => setLeftSidebarExpanded(true)}
-        onMouseLeave={() => setLeftSidebarExpanded(false)}
+        onMouseEnter={() => hoverEnabled && setLeftSidebarExpanded(true)}
+        onMouseLeave={() => hoverEnabled && setLeftSidebarExpanded(false)}
       >
         {leftSidebarExpanded ? (
-          <div className="h-full w-full flex flex-col min-w-[200px]">
+          <div className="h-full w-full flex flex-col min-w-[240px]">
             <div className="p-5 border-b border-border shrink-0">
               <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
                 DECKS
@@ -293,8 +301,8 @@ export default function Anki2Page() {
           "h-full shrink-0 bg-card border-r border-border transition-all duration-300 ease-in-out overflow-hidden",
           rightSidebarExpanded ? "w-[300px]" : "w-16"
         )}
-        onMouseEnter={() => setRightSidebarExpanded(true)}
-        onMouseLeave={() => setRightSidebarExpanded(false)}
+        onMouseEnter={() => hoverEnabled && setRightSidebarExpanded(true)}
+        onMouseLeave={() => hoverEnabled && setRightSidebarExpanded(false)}
       >
         {rightSidebarExpanded ? (
           <div className="h-full w-full flex flex-col min-w-[300px]">
