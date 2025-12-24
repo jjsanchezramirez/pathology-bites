@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { cn } from '@/shared/utils'
 import { useClientAnkoma } from '@/shared/hooks/use-client-ankoma'
-import { BookOpen, Layers, ChevronRight, Shuffle, RotateCcw, ChevronLeft, FileText } from 'lucide-react'
+import { BookOpen, Layers, ChevronRight, Shuffle, RotateCcw, ChevronLeft, FileText, Info, ExternalLink } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
 import { Card, CardContent } from '@/shared/components/ui/card'
@@ -40,16 +40,156 @@ export default function AnkiPage() {
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isShuffled, setIsShuffled] = useState(false)
   const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
 
-  // Format tag names
-  const formatTagName = (tagName: string): string => {
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
+    }
+    checkMobile()
+  }, [])
+
+  // Cards to ignore by ID (excluded from all views)
+  const IGNORED_CARD_IDS = new Set([
+    'e;+G?PkVD5',
+  ])
+
+  // Normalization rules for category/subcategory names
+  // These are applied AFTER basic formatting (camelCase split, hyphen to space, etc.) but BEFORE sentence case
+  const NAME_NORMALIZATIONS: Record<string, string> = {
+    // AP -> Immunohistochemistry: Combine muscle variants (SmoothMuscle -> Smooth Muscle, SkeletalMuscle -> Skeletal Muscle)
+    'Smooth Muscle': 'Muscle',
+    'Skeletal Muscle': 'Muscle',
+    // AP -> Immunohistochemistry: Fix typo (Myfibroblastic stays as Myfibroblastic)
+    'Myfibroblastic': 'Myofibroblastic',
+    // AP -> Endocrine: Combine parathyroid variants (ParathyroidAdenoma -> Parathyroid Adenoma)
+    'Parathyroid Adenoma': 'Parathyroid',
+    // AP -> ForensicPathology: Combine natural deaths (NaturalDeathsAP -> Natural Deaths AP)
+    'Natural Deaths AP': 'Natural Deaths',
+    // AP -> Pediatrics
+    'Ewing': 'Ewing Sarcoma',
+    'Gaucher': 'Gaucher Disease',
+    // CP -> MolecularPathology (7.1-7.2 -> 7.1 7.2 after hyphen to space)
+    '7.1 7.2': 'Molecular Biology & Techniques',
+    '7.3': 'Non-Neoplastic Molecular Pathology',
+    '7.4': 'Neoplastic Molecular Pathology',
+    // CP -> MedicalDirectorship
+    'CLIA88': 'CLIA 88',
+    'Professional Component Billing': 'Billing',
+    'Laboratory Test Panels': 'Billing',
+    'Billing Regulations': 'Billing',
+    'Quality Assurance': 'Quality Control',
+    'Quality Management': 'Quality Control',
+    'Quality Improvement': 'Quality Control',
+    'Statistical Quality Control': 'Quality Control',
+    'Medicare & Medicaid': 'Medicare & Medicaid',  // After 'and' -> '&' replacement
+    // CP -> Immunology (handle various PascalCase split results)
+    'B Cells': 'B Cells',  // BCells -> B Cells
+    'T Cells': 'T Cells',  // TCells -> T Cells
+    'NK cells': 'NK Cells',  // NKcells -> NK cells (with new regex)
+    'HLA Testing': 'HLA Testing',  // HLATesting -> HLA Testing
+    'A PCs': 'Antigen Processing Cells',  // APCs -> A PCs (with new regex)
+    // CP -> Chemistry (QuickCompendium -> Quick Compendium, Pre-analytical -> Pre analytical)
+    'Quick Compendium': 'General Principles',
+    'Pre analytical': 'General Principles',
+    'Miscellaneous': 'General Principles',
+    'proteins': 'Protein Analysis',  // lowercase in tag
+    // CP -> TransfusionMedicine (PassengerLymphocyteSyndrome -> Passenger Lymphocyte Syndrome)
+    'Special Circumstances': 'General Principles',
+    'Extras': 'General Principles',
+    'Passenger Lymphocyte Syndrome': 'General Principles',
+    // CP -> Hemepath-Benign (misc, Methods, #Peripheral-blood-smears -> Peripheral blood smears)
+    'misc': 'General Principles',  // lowercase in tag
+    'Methods': 'General Principles',
+    'Peripheral blood smears': 'Peripheral Blood Smears',
+  }
+
+  // Parent-specific normalization rules (raw parent category name::formatted child name BEFORE sentence case)
+  const PARENT_SPECIFIC_NORMALIZATIONS: Record<string, string> = {
+    // Chemistry subcategories - proteins is lowercase in tag, stays lowercase after basic formatting
+    'Chemistry::proteins': 'Protein Analysis',
+    'Chemistry::Quick Compendium': 'General Principles',
+    'Chemistry::Pre analytical': 'General Principles',
+    'Chemistry::Miscellaneous': 'General Principles',
+    // TransfusionMedicine subcategories
+    'TransfusionMedicine::Quick Compendium': 'General Principles',
+    'TransfusionMedicine::Special Circumstances': 'General Principles',
+    'TransfusionMedicine::Extras': 'General Principles',
+    'TransfusionMedicine::Passenger Lymphocyte Syndrome': 'General Principles',
+    // Hemepath-Benign subcategories
+    'Hemepath-Benign::misc': 'General Principles',
+    'Hemepath-Benign::Methods': 'General Principles',
+  }
+
+  // Microbiology subcategories that are valid - everything else goes to General Principles
+  const MICROBIOLOGY_VALID_SUBCATEGORIES = ['Bacteriology', 'Mycology', 'Parasitology', 'Virology', 'General Principles']
+
+  // Category merges (source -> target) - applied AFTER formatting
+  const CATEGORY_MERGES: Record<string, string> = {
+    // BenignHeme -> "Benign Heme" after formatting, merge into Hemepath Benign
+    'Benign Heme': 'Hemepath Benign',
+    // Hemepath-Benign -> "Hemepath Benign" after formatting (stays as is)
+    // Hemepath -> "Hemepath" - user wants it renamed to "Hemepath Neoplastic"
+    'Hemepath': 'Hemepath Neoplastic',
+    // AP::Pulmonary should be under AP::Thoracic (Pulmonary is a subcategory of Thoracic)
+    'Pulmonary': 'Thoracic',
+  }
+
+  // Format tag names with normalization
+  const formatTagName = (tagName: string, parentCategory?: string): string => {
     if (!tagName) return tagName
-    return tagName
+
+    // Basic formatting: add spaces, fix ampersands
+    let formatted = tagName
+      // First, add spaces around 'and' when it's embedded (e.g., PenisandScrotum -> Penis and Scrotum)
+      .replace(/([a-z])(and)([A-Z])/g, '$1 $2 $3')
+      // Handle camelCase: lowercase followed by uppercase (e.g., SmoothMuscle -> Smooth Muscle)
       .replace(/([a-z])([A-Z])/g, '$1 $2')
+      // Handle PascalCase at word boundaries: single uppercase followed by lowercase (e.g., BCells -> B Cells)
+      .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
       .replace(/&/g, ' & ')
       .replace(/[_-]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
+
+    // Remove leading # if present
+    if (formatted.startsWith('#')) {
+      formatted = formatted.substring(1).trim()
+    }
+
+    // Check parent-specific normalizations first
+    if (parentCategory) {
+      const parentKey = `${parentCategory}::${formatted}`
+      if (PARENT_SPECIFIC_NORMALIZATIONS[parentKey]) {
+        return PARENT_SPECIFIC_NORMALIZATIONS[parentKey]
+      }
+    }
+
+    // Apply direct name normalizations
+    if (NAME_NORMALIZATIONS[formatted]) {
+      formatted = NAME_NORMALIZATIONS[formatted]
+    }
+
+    // Apply category merges
+    if (CATEGORY_MERGES[formatted]) {
+      formatted = CATEGORY_MERGES[formatted]
+    }
+
+    // Special handling for Microbiology subcategories
+    if (parentCategory === 'Microbiology' && !MICROBIOLOGY_VALID_SUBCATEGORIES.includes(formatted)) {
+      formatted = 'General Principles'
+    }
+
+    // Replace 'and' with '&' (case insensitive, whole word)
+    formatted = formatted.replace(/\band\b/gi, '&')
+
+    // Ensure sentence case (first letter uppercase)
+    if (formatted.length > 0) {
+      formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1)
+    }
+
+    return formatted
   }
 
   // Organize data by decks and categories
@@ -70,6 +210,9 @@ export default function AnkiPage() {
     const allCards = getAllCards(ankomaData.sections)
 
     for (const card of allCards) {
+      // Skip ignored cards
+      if (IGNORED_CARD_IDS.has(card.id)) continue
+
       const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
       if (!ankomaTag) continue
 
@@ -77,8 +220,10 @@ export default function AnkiPage() {
       if (tagParts.length < 2) continue
 
       const deckType = tagParts[0] as 'AP' | 'CP'
-      const categoryName = formatTagName(tagParts[1])
-      const subcategoryName = tagParts[2] ? formatTagName(tagParts[2]) : null
+      const rawCategoryName = tagParts[1]
+      const categoryName = formatTagName(rawCategoryName)
+      // Pass the raw category name for parent-specific normalization
+      const subcategoryName = tagParts[2] ? formatTagName(tagParts[2], rawCategoryName) : null
 
       const deckId = deckType
       const categoryId = `${deckType}::${categoryName}`
@@ -133,7 +278,8 @@ export default function AnkiPage() {
         const ankomaTag = card.tags.find(tag => tag.startsWith('#ANKOMA::'))
         if (!ankomaTag) return false
         const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
-        const subcatName = tagParts[2] ? formatTagName(tagParts[2]) : null
+        const rawCategoryName = tagParts[1]
+        const subcatName = tagParts[2] ? formatTagName(tagParts[2], rawCategoryName) : null
         return subcatName === selectedSubcategory
       })
       return isShuffled ? [...subcatCards].sort(() => Math.random() - 0.5) : subcatCards
@@ -209,8 +355,8 @@ export default function AnkiPage() {
     id: cat.id,
     name: cat.name,
     cardCount: cat.cards.length,
-    subcategories: cat.subcategories
-  })) || []
+    subcategories: [...cat.subcategories].sort((a, b) => a.name.localeCompare(b.name))
+  })).sort((a, b) => a.name.localeCompare(b.name)) || []
 
   return (
     <div className="h-full flex overflow-hidden">
@@ -480,16 +626,44 @@ export default function AnkiPage() {
         {/* Card Content Area - Scrollable */}
         <div className="flex-1 overflow-auto">
           <div className="flex justify-center p-2 md:p-3">
-            <div className="w-full max-w-2xl">
+            <div className="w-full max-w-2xl space-y-3">
               {currentCard ? (
-                <InteractiveAnkiViewer
-                  card={currentCard}
-                  onNext={currentCardIndex < currentCards.length - 1 ? handleNextCard : undefined}
-                  currentIndex={currentCardIndex}
-                  totalCards={currentCards.length}
-                  categoryName={selectedCategory?.name}
-                  subcategoryName={selectedSubcategory}
-                />
+                <>
+                  <InteractiveAnkiViewer
+                    card={currentCard}
+                    onNext={currentCardIndex < currentCards.length - 1 ? handleNextCard : undefined}
+                    onPrevious={currentCardIndex > 0 ? handlePreviousCard : undefined}
+                    currentIndex={currentCardIndex}
+                    totalCards={currentCards.length}
+                    categoryName={selectedCategory?.name}
+                    subcategoryName={selectedSubcategory}
+                  />
+
+                  {/* Anki Sync Warning */}
+                  <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                    <div className="flex items-start gap-2 text-xs sm:text-sm text-amber-800 dark:text-amber-200">
+                      <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                      <p>
+                        This is a read-only viewer for educational review. For spaced repetition and progress tracking, use the{' '}
+                        <a
+                          href={isMobile
+                            ? /iPad|iPhone|iPod/.test(navigator.userAgent)
+                              ? "https://apps.apple.com/us/app/ankimobile-flashcards/id373493387"
+                              : "https://play.google.com/store/apps/details?id=com.ichi2.anki"
+                            : "https://apps.ankiweb.net/"
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-amber-900 dark:text-amber-100 hover:underline font-medium inline-flex items-center gap-1"
+                        >
+                          official Anki app
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                        .
+                      </p>
+                    </div>
+                  </div>
+                </>
               ) : selectedCategory ? (
                 <Card className="w-full">
                   <CardContent className="flex items-center justify-center py-16">

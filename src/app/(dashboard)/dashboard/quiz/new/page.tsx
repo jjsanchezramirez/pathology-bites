@@ -2,18 +2,10 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { useCachedData } from '@/shared/hooks/use-cached-data'
 import { useZeroApiNetworkStatus } from '@/shared/hooks/use-zero-api-network-status'
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/shared/components/ui/card"
-import { Skeleton } from "@/shared/components/ui/skeleton"
-import { Button } from "@/shared/components/ui/button"
-import { Label } from "@/shared/components/ui/label"
-import { Badge } from "@/shared/components/ui/badge"
-import { Slider } from "@/shared/components/ui/slider"
 import { Separator } from "@/shared/components/ui/separator"
-import { Input } from "@/shared/components/ui/input"
-import { BookOpen, WifiOff } from "lucide-react"
 import { useQuizSettings } from '@/shared/hooks/use-user-settings'
 import { useQuizInit } from '@/shared/hooks/use-quiz-init'
 import { useCSRFToken } from '@/features/auth/hooks/use-csrf-token'
@@ -28,13 +20,20 @@ import {
   QuestionTypeStats,
   QUIZ_MODE_CONFIG,
   QUIZ_TIMING_CONFIG,
-  QUESTION_TYPE_CONFIG,
-  CATEGORY_SELECTION_CONFIG,
   DEFAULT_QUIZ_CONFIG
 } from "@/features/quiz/types/quiz"
 import { toast } from '@/shared/utils/toast'
 import { FeaturePlaceholder } from "@/features/dashboard/components"
 import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags"
+import {
+  NewQuizLoading,
+  QuizNameInput,
+  QuestionCountSelector,
+  ModeTimingSelector,
+  QuestionTypeSelector,
+  CategorySelector,
+  StartQuizButton
+} from "@/features/quiz/components"
 
 interface QuizOptionsData {
   categories: CategoryWithStats[]
@@ -96,15 +95,18 @@ export default function NewQuizPage() {
       setPreviousQuizTitles(quizInitData.sessions.titles)
 
       // Update loading states
-      setLoading(false)
       setLoadingTitles(false)
     }
   }, [quizInitData])
 
-  // Sync loading state with quiz init
+  // Sync loading state with quiz init - only set loading to false when data is available
   useEffect(() => {
-    setLoading(quizInitLoading)
-  }, [quizInitLoading])
+    if (!quizInitLoading && quizInitData) {
+      setLoading(false)
+    } else if (quizInitLoading) {
+      setLoading(true)
+    }
+  }, [quizInitLoading, quizInitData])
 
   // Auto-adjust question count when available questions change
   useEffect(() => {
@@ -305,77 +307,7 @@ export default function NewQuizPage() {
   }
 
   if (loading) {
-    return (
-      <div className="container mx-auto py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
-            <p className="text-muted-foreground">Loading quiz options...</p>
-          </div>
-          <Card>
-          <CardContent className="p-6 space-y-6">
-            {/* Quiz Mode Section Skeleton */}
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-24" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Array.from({ length: 2 }).map((_, i) => (
-                  <div key={i} className="p-4 border rounded-lg space-y-2">
-                    <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-4 w-full" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Question Settings Skeleton */}
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-32" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              </div>
-            </div>
-
-            {/* Question Type and Category Selection Skeleton */}
-            <div className="space-y-6">
-              {/* Question Type Skeleton */}
-              <div className="space-y-4">
-                <Skeleton className="h-4 w-24" />
-                <div className="grid grid-cols-1 gap-2">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <Skeleton key={i} className="h-12 w-full" />
-                  ))}
-                </div>
-              </div>
-
-              {/* Categories Skeleton */}
-              <div className="space-y-4">
-                <Skeleton className="h-4 w-20" />
-                <div className="grid grid-cols-1 gap-2">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <Skeleton key={i} className="h-10 w-full" />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Start Button Skeleton */}
-            <div className="space-y-3">
-              <div className="flex justify-center">
-                <Skeleton className="h-16 w-full" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        </div>
-      </div>
-    )
+    return <NewQuizLoading />
   }
 
   if (!quizOptions) {
@@ -424,230 +356,69 @@ export default function NewQuizPage() {
         <Card>
         <CardContent className="p-6 space-y-6">
           {/* Quiz Name */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Quiz Name</Label>
-            <Input
-              placeholder={loadingTitles ? "Loading..." : (formData && previousQuizTitles ? generateQuizTitle() : "New Quiz")}
-              value={formData.title || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-            />
-            <p className="text-xs text-muted-foreground">
-              {loadingTitles
-                ? "Loading previous quiz names..."
-                : `Leave blank to auto-generate: "${formData && previousQuizTitles ? generateQuizTitle() : "New Quiz"}"`
-              }
-            </p>
-          </div>
+          <QuizNameInput
+            value={formData.title || ''}
+            placeholder={formData && previousQuizTitles ? generateQuizTitle() : "New Quiz"}
+            loadingTitles={loadingTitles}
+            onChange={(value) => setFormData(prev => ({ ...prev, title: value }))}
+          />
 
           <Separator />
 
           {/* Question Count */}
-          <div className="space-y-4">
-            <div>
-              <Label className="text-sm font-medium">Number of Questions</Label>
-              <p className="text-xs text-muted-foreground">Choose how many questions for your quiz</p>
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              {questionCountOptions.map((count) => {
-                const isSelected = effectiveFormData.questionCount === count
-                const isDisabled = count > availableQuestions
-
-                return (
-                  <Button
-                    key={count}
-                    variant={isSelected ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setFormData(prev => ({ ...prev, questionCount: count }))}
-                    disabled={isDisabled}
-                  >
-                    {count}
-                  </Button>
-                )
-              })}
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Custom: {effectiveFormData.questionCount}</span>
-                <span className="text-muted-foreground">Max: {availableQuestions}</span>
-              </div>
-              <Slider
-                value={[effectiveFormData.questionCount]}
-                onValueChange={([value]) => setFormData(prev => ({ ...prev, questionCount: value }))}
-                max={Math.min(50, availableQuestions)}
-                min={1}
-                step={1}
-                className="w-full"
-              />
-            </div>
-          </div>
+          <QuestionCountSelector
+            questionCount={effectiveFormData.questionCount}
+            availableQuestions={availableQuestions}
+            questionCountOptions={questionCountOptions}
+            onChange={(count) => setFormData(prev => ({ ...prev, questionCount: count }))}
+          />
 
           <Separator />
 
           {/* Learning Mode & Timing */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Mode</Label>
-              <div className="grid grid-cols-1 gap-2">
-                {Object.entries(QUIZ_MODE_CONFIG).map(([key, config]) => (
-                  <Button
-                    key={key}
-                    variant={formData.mode === key ? "default" : "outline"}
-                    onClick={() => setFormData(prev => ({ ...prev, mode: key as QuizMode }))}
-                  >
-                    {config.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Timing</Label>
-              <div className="grid grid-cols-1 gap-2">
-                {Object.entries(QUIZ_TIMING_CONFIG).map(([key, config]) => (
-                  <Button
-                    key={key}
-                    variant={formData.timing === key ? "default" : "outline"}
-                    onClick={() => setFormData(prev => ({ ...prev, timing: key as QuizTiming }))}
-                  >
-                    {config.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
+          <ModeTimingSelector
+            mode={formData.mode}
+            timing={formData.timing}
+            onModeChange={(mode) => setFormData(prev => ({ ...prev, mode }))}
+            onTimingChange={(timing) => setFormData(prev => ({ ...prev, timing }))}
+          />
 
           <Separator />
 
           {/* Question Type and Categories - Vertical Layout */}
           <div className="space-y-6">
             {/* Question Type */}
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium">Question Type</Label>
-              </div>
-              <div className="grid grid-cols-1 gap-2">
-                {Object.entries(QUESTION_TYPE_CONFIG).map(([key, config]) => {
-                  const count = quizOptions ? (
-                    formData.categorySelection === 'all' ? quizOptions.questionTypeStats.all[key as QuestionType] :
-                    formData.categorySelection === 'ap_only' ? quizOptions.questionTypeStats.ap_only[key as QuestionType] :
-                    formData.categorySelection === 'cp_only' ? quizOptions.questionTypeStats.cp_only[key as QuestionType] :
-                    formData.selectedCategories.reduce((total, categoryId) => {
-                      const category = quizOptions.categories.find(c => c.id === categoryId)
-                      return total + (category?.questionStats[key as QuestionType] || 0)
-                    }, 0)
-                  ) : 0
-
-                  return (
-                    <Button
-                      key={key}
-                      variant={formData.questionType === key ? "default" : "outline"}
-                      className="h-auto p-3 justify-between"
-                      onClick={() => handleQuestionTypeChange(key as QuestionType)}
-                    >
-                      <div className="text-left">
-                        <div className="font-medium text-sm">{config.label}</div>
-                      </div>
-                      <Badge variant="secondary" className="text-xs">{count}</Badge>
-                    </Button>
-                  )
-                })}
-              </div>
-            </div>
+            <QuestionTypeSelector
+              questionType={formData.questionType}
+              categorySelection={formData.categorySelection}
+              selectedCategories={formData.selectedCategories}
+              categories={quizOptions.categories}
+              questionTypeStats={quizOptions.questionTypeStats}
+              onChange={handleQuestionTypeChange}
+            />
 
             {/* Categories */}
-            <div className="space-y-4">
-              <Label className="text-sm font-medium">Categories</Label>
-              <div className="grid grid-cols-1 gap-2">
-                {Object.entries(CATEGORY_SELECTION_CONFIG).map(([key, config]) => {
-                  const stats = quizOptions?.questionTypeStats[key as keyof typeof quizOptions.questionTypeStats]
-                  const count = stats ? stats[formData.questionType] : 0
-
-                  return (
-                    <Button
-                      key={key}
-                      variant={formData.categorySelection === key ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handleCategorySelectionChange(key as CategorySelection)}
-                      disabled={key !== 'custom' && count === 0}
-                    >
-                      <div className="text-center">
-                        <div className="font-medium text-xs">
-                          {key === 'custom' ? config.label : `${config.label} (${count})`}
-                        </div>
-                      </div>
-                    </Button>
-                  )
-                })}
-              </div>
-
-              {/* Custom Category Selection - Always visible when custom is selected */}
-              {formData.categorySelection === 'custom' && quizOptions && (
-                <div className="space-y-3 border-t pt-3 mt-3">
-                  <Label className="text-sm font-medium">Select Specific Categories</Label>
-                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                    {quizOptions.categories.map((category) => {
-                      const count = category.questionStats[formData.questionType]
-                      if (count === 0) return null
-
-                      const isSelected = formData.selectedCategories.includes(category.id)
-
-                      return (
-                        <Badge
-                          key={category.id}
-                          variant={isSelected ? "default" : "outline"}
-                          className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1 px-2 py-1"
-                          onClick={() => handleCategoryToggle(category.id)}
-                        >
-                          <span className="text-xs">{category.shortName}</span>
-                          <span className="text-xs opacity-70">({count})</span>
-                        </Badge>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
+            <CategorySelector
+              categorySelection={formData.categorySelection}
+              selectedCategories={formData.selectedCategories}
+              questionType={formData.questionType}
+              categories={quizOptions.categories}
+              questionTypeStats={quizOptions.questionTypeStats}
+              onCategorySelectionChange={handleCategorySelectionChange}
+              onCategoryToggle={handleCategoryToggle}
+            />
           </div>
 
           <Separator />
 
           {/* Start Button */}
-          <div className="space-y-3">
-            <div className="flex justify-center">
-              <Button
-                onClick={handleSubmit}
-                size="lg"
-                className="w-full h-16 text-lg font-semibold"
-                disabled={creating || !validateQuizConfig().isValid}
-              >
-                {creating ? (
-                  <>
-                    <div className="h-5 w-5 mr-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Creating...
-                  </>
-                ) : !isOnline ? (
-                  <>
-                    <WifiOff className="h-5 w-5 mr-3" />
-                    No Connection
-                  </>
-                ) : (
-                  <>
-                    <BookOpen className="h-5 w-5 mr-3" />
-                    Start Quiz
-                  </>
-                )}
-              </Button>
-            </div>
-
-            {/* Show helpful message when button is disabled */}
-            {!creating && !validateQuizConfig().isValid && (
-              <p className="text-sm text-muted-foreground text-center">
-                {validateQuizConfig().error}
-              </p>
-            )}
-
-
-          </div>
+          <StartQuizButton
+            creating={creating}
+            isOnline={isOnline}
+            isValid={validateQuizConfig().isValid}
+            validationError={validateQuizConfig().error}
+            onClick={handleSubmit}
+          />
         </CardContent>
       </Card>
       </div>

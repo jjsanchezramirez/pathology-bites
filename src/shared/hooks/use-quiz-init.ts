@@ -61,6 +61,7 @@ export function useQuizInit(options: UseQuizInitOptions = {}) {
     },
     {
       enabled,
+      refetchOnMount: true, // Always fetch on mount if no valid cache
       ttl: 5 * 60 * 1000, // 5 minutes cache
       staleTime: 2 * 60 * 1000, // 2 minutes stale time
       storage: 'localStorage', // Persist across sessions

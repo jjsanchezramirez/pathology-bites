@@ -138,23 +138,28 @@ export async function GET(request: NextRequest) {
         .limit(5),
 
       // 3. Get quiz attempts to calculate mastered/needs review
+      // NOTE: Must join through quiz_sessions since quiz_attempts doesn't have user_id
       supabase
-        .from(TABLE_NAMES.QUIZ_ATTEMPTS)
-        .select('question_id, is_correct')
-        .eq('user_id', user.id),
-
-      // 4. Get performance analytics by category
-      supabase
-        .from(TABLE_NAMES.PERFORMANCE_ANALYTICS)
+        .from(TABLE_NAMES.QUIZ_SESSIONS)
         .select(`
-          category_id,
-          total_questions,
-          questions_answered,
-          correct_answers,
-          categories!inner(name)
+          id,
+          quiz_attempts!inner(question_id, is_correct)
         `)
         .eq('user_id', user.id)
-        .gt('questions_answered', 0),
+        .then(result => {
+          // Flatten the nested quiz_attempts into a simple array
+          const attempts = result.data?.flatMap(session =>
+            session.quiz_attempts || []
+          ) || []
+          return { data: attempts, error: result.error }
+        }),
+
+      // 4. Get performance analytics by category from materialized view
+      supabase
+        .from('mv_user_category_stats')
+        .select('*')
+        .eq('user_id', user.id)
+        .gt('total_attempts', 0),
 
       // 5. Get all users' average scores for percentile calculation
       supabase
@@ -262,30 +267,42 @@ export async function GET(request: NextRequest) {
     }
 
     // Process performance analytics for subjects
-    if (!performanceResult.error && performanceResult.data) {
+    // NOTE: Materialized view may be empty, so calculate directly from attempts as fallback
+    if (!performanceResult.error && performanceResult.data && performanceResult.data.length > 0) {
       const analytics = performanceResult.data
 
+      // Get category names for the category IDs
+      const categoryIds = analytics.map((item: any) => item.category_id)
+      const { data: categories } = await supabase
+        .from('categories')
+        .select('id, name')
+        .in('id', categoryIds)
+
+      const categoryMap = new Map(
+        categories?.map((cat: any) => [cat.id, cat.name]) || []
+      )
+
       analytics.forEach((item: any) => {
-        const categoryName = item.categories?.name || 'Unknown'
-        const score = item.questions_answered > 0
-          ? Math.round((item.correct_answers / item.questions_answered) * 100)
+        const categoryName = categoryMap.get(item.category_id) || 'Unknown'
+        const score = item.total_attempts > 0
+          ? Math.round((item.correct_attempts / item.total_attempts) * 100)
           : 0
 
         // Subjects for improvement: score < 70%
-        if (score < 70 && item.questions_answered >= 3) {
+        if (score < 70 && item.total_attempts >= 3) {
           stats.performance!.subjectsForImprovement.push({
             name: categoryName,
             score,
-            attempts: item.questions_answered
+            attempts: item.total_attempts
           })
         }
 
         // Mastered subjects: score >= 85%
-        if (score >= 85 && item.questions_answered >= 5) {
+        if (score >= 85 && item.total_attempts >= 5) {
           stats.performance!.subjectsMastered.push({
             name: categoryName,
             score,
-            attempts: item.questions_answered
+            attempts: item.total_attempts
           })
         }
       })
@@ -297,6 +314,84 @@ export async function GET(request: NextRequest) {
       // Limit to top 5 each
       stats.performance!.subjectsForImprovement = stats.performance!.subjectsForImprovement.slice(0, 5)
       stats.performance!.subjectsMastered = stats.performance!.subjectsMastered.slice(0, 5)
+    } else {
+      // Fallback: Calculate category performance directly from quiz_attempts
+      devLog.info('Materialized view empty, calculating category stats directly')
+
+      if (!attemptsResult.error && attemptsResult.data && attemptsResult.data.length > 0) {
+        const attempts = attemptsResult.data
+
+        // Get all unique question IDs from attempts
+        const questionIds = Array.from(new Set(attempts.map((a: any) => a.question_id)))
+        const { data: questions } = await supabase
+          .from(TABLE_NAMES.QUESTIONS)
+          .select('id, category_id')
+          .in('id', questionIds)
+
+        // Group attempts by category
+        const categoryStats = new Map<string, { total: number; correct: number }>()
+
+        attempts.forEach((attempt: any) => {
+          const question = questions?.find((q: any) => q.id === attempt.question_id)
+          if (!question?.category_id) return
+
+          const stats = categoryStats.get(question.category_id) || { total: 0, correct: 0 }
+          stats.total++
+          if (attempt.is_correct) stats.correct++
+          categoryStats.set(question.category_id, stats)
+        })
+
+        // Get category names
+        const categoryIds = Array.from(categoryStats.keys())
+        const { data: categories } = await supabase
+          .from('categories')
+          .select('id, name')
+          .in('id', categoryIds)
+
+        const categoryMap = new Map(
+          categories?.map((cat: any) => [cat.id, cat.name]) || []
+        )
+
+        // Calculate subject lists
+        categoryStats.forEach((catStats, categoryId) => {
+          const categoryName = categoryMap.get(categoryId) || 'Unknown'
+          const score = catStats.total > 0
+            ? Math.round((catStats.correct / catStats.total) * 100)
+            : 0
+
+          // Subjects for improvement: score < 70%
+          if (score < 70 && catStats.total >= 3) {
+            stats.performance!.subjectsForImprovement.push({
+              name: categoryName,
+              score,
+              attempts: catStats.total
+            })
+          }
+
+          // Mastered subjects: score >= 85%
+          if (score >= 85 && catStats.total >= 5) {
+            stats.performance!.subjectsMastered.push({
+              name: categoryName,
+              score,
+              attempts: catStats.total
+            })
+          }
+        })
+
+        // Sort by score (lowest first for improvement, highest first for mastered)
+        stats.performance!.subjectsForImprovement.sort((a, b) => a.score - b.score)
+        stats.performance!.subjectsMastered.sort((a, b) => b.score - a.score)
+
+        // Limit to top 5 each
+        stats.performance!.subjectsForImprovement = stats.performance!.subjectsForImprovement.slice(0, 5)
+        stats.performance!.subjectsMastered = stats.performance!.subjectsMastered.slice(0, 5)
+
+        devLog.info('Category stats calculated directly', {
+          categoriesAnalyzed: categoryStats.size,
+          needsImprovement: stats.performance!.subjectsForImprovement.length,
+          mastered: stats.performance!.subjectsMastered.length
+        })
+      }
     }
 
     // Calculate percentile and peer ranking

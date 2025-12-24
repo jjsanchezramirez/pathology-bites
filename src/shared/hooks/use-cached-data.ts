@@ -138,14 +138,31 @@ export function useCachedData<T>(
   useEffect(() => {
     mounted.current = true
 
-    if (enabled && refetchOnMount) {
-      fetchDataRef.current()
+    if (enabled) {
+      // Always try to load from cache or fetch on mount
+      const cached = cacheService.get<{ data: T; timestamp: number }>(key, { storage, prefix })
+      if (cached) {
+        // Use cached data immediately
+        setData(cached.data)
+        setLastFetch(cached.timestamp)
+        const isStaleData = Date.now() - cached.timestamp > staleTime
+        setIsStale(isStaleData)
+        setError(null)
+
+        // If refetchOnMount is true and data is stale, refetch in background
+        if (refetchOnMount && isStaleData) {
+          fetchDataRef.current()
+        }
+      } else if (refetchOnMount) {
+        // No cached data, fetch if refetchOnMount is true
+        fetchDataRef.current()
+      }
     }
 
     return () => {
       mounted.current = false
     }
-  }, [enabled, refetchOnMount])
+  }, [enabled, refetchOnMount, key, storage, prefix, staleTime])
 
   // Window focus refetch
   useEffect(() => {

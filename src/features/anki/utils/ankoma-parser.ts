@@ -1,6 +1,7 @@
 // src/features/anki/utils/ankoma-parser.ts
 
 import { AnkomaDeck, AnkomaNote, AnkomaSection, AnkomaData, AnkiCard } from '../types/anki-card'
+import { transformAnkiMediaUrl } from '@/shared/utils/r2-url-transformer'
 
 /**
  * Sanitize image filenames in HTML to match R2 storage format
@@ -19,6 +20,214 @@ function sanitizeImageSources(html: string): string {
 }
 
 /**
+ * Transform image URL to R2 and sanitize whitespace in filename
+ */
+function transformToR2Url(imagePath: string): string {
+  if (!imagePath) return imagePath
+  // First sanitize whitespace in filename, then transform to R2 URL
+  const sanitizedPath = imagePath.replace(/[\s\u00A0\u2000-\u200B\u202F\uFEFF]/g, '_')
+  return transformAnkiMediaUrl(sanitizedPath)
+}
+
+/**
+ * Category/Subcategory normalization rules
+ * Maps original names to normalized names for consistency
+ */
+const NAME_NORMALIZATIONS: Record<string, string> = {
+  // AP -> Immunohistochemistry: Combine muscle variants
+  'Muscle': 'Muscle',
+  'Smooth Muscle': 'Muscle',
+  'Skeletal Muscle': 'Muscle',
+  // AP -> Immunohistochemistry: Fix typo
+  'Myfibroblastic': 'Myofibroblastic',
+  // AP -> Endocrine: Combine parathyroid variants
+  'Parathyroid Adenoma': 'Parathyroid',
+  // AP -> Forensics: Fix parsing error
+  'Natural Deaths#ANKOMA': 'Natural Deaths',
+  // AP -> Genitourinary: Fix parsing errors
+  'Penisand Scrotum': 'Penis & Scrotum',
+  'Urothelial Tractand Bladder': 'Urothelial Tract & Bladder',
+  // CP -> Molecular Pathology
+  '7.1 7.2': 'Molecular Biology & Techniques',
+  '7.3': 'Non-Neoplastic Molecular Pathology',
+  '7.4': 'Neoplastic Molecular Pathology',
+  // CP -> Medical Directorship
+  'CLIA88': 'CLIA',
+  'Professional Component Billing': 'Billing',
+  'Laboratory Test Panels': 'Billing',
+  'Billing Regulations': 'Billing',
+  'Quality Assurance': 'Quality Control',
+  'Quality Management': 'Quality Control',
+  'Quality Improvement': 'Quality Control',
+  'Statistical Quality Control': 'Quality Control',
+  'Medicareand Medicaid': 'Medicare & Medicaid',
+  // CP -> Immunology
+  'BCells': 'B Cells',
+  'TCells': 'T Cells',
+  'NKCells': 'NK Cells',
+  'HLATesting': 'HLA Testing',
+  'APCs': 'Antigen Processing Cells',
+  'COmplement': 'Complement System',
+  // CP -> Chemistry
+  '#techniques': 'Techniques',
+  'proteins': 'Protein Analysis',
+  'Quick Compendium': 'General Principles',
+  'preanalytical': 'General Principles',
+  'miscellaneous': 'General Principles',
+  // CP -> Transfusion Medicine
+  'QUick Compendium': 'General Principles',
+  'Special Circumstances': 'General Principles',
+  'Extras': 'General Principles',
+  'Passenger Lymphocytes Syndrome': 'General Principles',
+  // CP -> Hemepath Benign
+  '#Peripheral Blood Smears': 'Peripheral Blood Smears',
+  'Methods & misc': 'General Principles',
+}
+
+/**
+ * Parent-specific normalization rules
+ * Key format: "parent::child" where parent is the immediate parent category
+ */
+const PARENT_SPECIFIC_NORMALIZATIONS: Record<string, string> = {
+  // These are context-specific to avoid false positives
+  'Chemistry::proteins': 'Protein Analysis',
+  'Chemistry::Quick Compendium': 'General Principles',
+  'Chemistry::preanalytical': 'General Principles',
+  'Chemistry::miscellaneous': 'General Principles',
+  'Transfusion Medicine::Quick Compendium': 'General Principles',
+  'Transfusion Medicine::QUick Compendium': 'General Principles',
+  'Transfusion Medicine::Special Circumstances': 'General Principles',
+  'Transfusion Medicine::Extras': 'General Principles',
+  'Transfusion Medicine::Passenger Lymphocytes Syndrome': 'General Principles',
+  'Hemepath Benign::Methods & misc': 'General Principles',
+}
+
+/**
+ * Category merge rules - categories that should be combined
+ * Key is the source category path, value is the target category path
+ */
+const CATEGORY_MERGES: Record<string, string> = {
+  // AP -> Pulmonary combine with AP -> Thoracic -> Pulmonary
+  'AP::Pulmonary': 'AP::Thoracic::Pulmonary',
+  // CP -> Benign Heme combine with CP -> Hemepath Benign
+  'CP::Benign Heme': 'CP::Hemepath Benign',
+  // CP -> Hemepath change to CP -> Hemepath Neoplastic
+  'CP::Hemepath': 'CP::Hemepath Neoplastic',
+}
+
+/**
+ * Microbiology subcategories that are valid - everything else goes to General Principles
+ */
+const MICROBIOLOGY_VALID_SUBCATEGORIES = ['Bacteriology', 'Mycology', 'Parasitology', 'Virology', 'General Principles']
+
+/**
+ * Normalize a category/subcategory name
+ */
+function normalizeName(name: string, parentPath: string[] = []): string {
+  const originalName = name.trim()
+  let normalized = originalName
+
+  // Check direct name normalizations FIRST (before any modifications)
+  // This handles cases like '#techniques', '#Peripheral Blood Smears', etc.
+  if (NAME_NORMALIZATIONS[originalName]) {
+    return NAME_NORMALIZATIONS[originalName]
+  }
+
+  // Check parent-specific normalizations with original name
+  if (parentPath.length > 0) {
+    const parent = parentPath[parentPath.length - 1]
+    const parentKey = `${parent}::${originalName}`
+    if (PARENT_SPECIFIC_NORMALIZATIONS[parentKey]) {
+      return PARENT_SPECIFIC_NORMALIZATIONS[parentKey]
+    }
+  }
+
+  // Remove leading # characters
+  if (normalized.startsWith('#')) {
+    normalized = normalized.substring(1).trim()
+  }
+
+  // Check normalizations again after stripping #
+  if (NAME_NORMALIZATIONS[normalized]) {
+    normalized = NAME_NORMALIZATIONS[normalized]
+  }
+
+  // Check parent-specific normalizations with stripped name
+  if (parentPath.length > 0) {
+    const parent = parentPath[parentPath.length - 1]
+    const parentKey = `${parent}::${normalized}`
+    if (PARENT_SPECIFIC_NORMALIZATIONS[parentKey]) {
+      normalized = PARENT_SPECIFIC_NORMALIZATIONS[parentKey]
+    }
+  }
+
+  // Fix parsing errors (missing spaces before 'and')
+  normalized = normalized.replace(/(\w)and(\s)/g, '$1 And$2')
+  normalized = normalized.replace(/(\w)and$/g, '$1 And')
+
+  // Replace 'and' with '&' (case insensitive, whole word)
+  normalized = normalized.replace(/\band\b/gi, '&')
+
+  // Ensure sentence case (capitalize first letter, rest as-is for proper nouns)
+  if (normalized.length > 0) {
+    normalized = normalized.charAt(0).toUpperCase() + normalized.slice(1)
+  }
+
+  // Special handling for Microbiology subcategories
+  if (parentPath.some(p => p.includes('Microbiology'))) {
+    if (!MICROBIOLOGY_VALID_SUBCATEGORIES.includes(normalized)) {
+      normalized = 'General Principles'
+    }
+  }
+
+  return normalized
+}
+
+/**
+ * Check if a category path should be merged into another
+ */
+function getMergeTarget(path: string[]): string[] | null {
+  const pathStr = path.join('::')
+  for (const [source, target] of Object.entries(CATEGORY_MERGES)) {
+    if (pathStr === source || pathStr.startsWith(source + '::')) {
+      const targetParts = target.split('::')
+      if (pathStr.startsWith(source + '::')) {
+        // Preserve subcategories under the merged path
+        const remainder = pathStr.substring(source.length + 2)
+        return [...targetParts, ...remainder.split('::')]
+      }
+      return targetParts
+    }
+  }
+  return null
+}
+
+/**
+ * Merge subsections with the same normalized name
+ */
+function mergeSubsections(subsections: AnkomaSection[]): AnkomaSection[] {
+  const merged = new Map<string, AnkomaSection>()
+
+  for (const section of subsections) {
+    const existing = merged.get(section.name)
+    if (existing) {
+      // Merge cards and subsections
+      existing.cards.push(...section.cards)
+      existing.cardCount += section.cardCount
+      existing.subsections.push(...section.subsections)
+      // Recursively merge the combined subsections
+      existing.subsections = mergeSubsections(existing.subsections)
+    } else {
+      // Recursively merge this section's subsections first
+      const mergedSection = { ...section, subsections: mergeSubsections(section.subsections) }
+      merged.set(section.name, mergedSection)
+    }
+  }
+
+  return Array.from(merged.values())
+}
+
+/**
  * Parse ankoma.json structure into organized sections
  */
 export function parseAnkomaData(rawData: AnkomaDeck): AnkomaData {
@@ -26,28 +235,39 @@ export function parseAnkomaData(rawData: AnkomaDeck): AnkomaData {
   let totalCards = 0
 
   function processDeck(deck: AnkomaDeck, path: string[] = []): AnkomaSection[] {
-    const currentPath = [...path, deck.name]
+    // Normalize the deck name
+    const normalizedName = normalizeName(deck.name, path)
+    const currentPath = [...path, normalizedName]
+
+    // Check if this path should be merged into another
+    const mergeTarget = getMergeTarget(currentPath)
+    const effectivePath = mergeTarget || currentPath
+    const effectiveName = effectivePath[effectivePath.length - 1]
+
     const processedSections: AnkomaSection[] = []
 
     // Convert notes to cards
-    const cards = deck.notes?.map((note, index) => convertNoteToCard(note, deck.name, index)) || []
+    const cards = deck.notes?.map((note, index) => convertNoteToCard(note, effectiveName, index)) || []
     totalCards += cards.length
 
     // Process subsections (children)
-    const subsections: AnkomaSection[] = []
+    let subsections: AnkomaSection[] = []
     if (deck.children && deck.children.length > 0) {
       for (const child of deck.children) {
-        const childSections = processDeck(child, currentPath)
+        const childSections = processDeck(child, effectivePath)
         subsections.push(...childSections)
       }
     }
 
+    // Merge subsections with the same normalized name
+    subsections = mergeSubsections(subsections)
+
     // Create section if it has cards or meaningful subsections
     if (cards.length > 0 || subsections.length > 0) {
       const section: AnkomaSection = {
-        id: generateSectionId(currentPath),
-        name: deck.name,
-        path: currentPath,
+        id: generateSectionId(effectivePath),
+        name: effectiveName,
+        path: effectivePath,
         cardCount: cards.length,
         cards,
         subsections
@@ -59,15 +279,19 @@ export function parseAnkomaData(rawData: AnkomaDeck): AnkomaData {
   }
 
   // Process the root deck
+  let processedSections: AnkomaSection[] = []
   if (rawData.children) {
     for (const child of rawData.children) {
       const childSections = processDeck(child)
-      sections.push(...childSections)
+      processedSections.push(...childSections)
     }
   }
 
+  // Final merge pass for top-level sections
+  processedSections = mergeSubsections(processedSections)
+
   return {
-    sections,
+    sections: processedSections,
     totalCards,
     lastLoaded: new Date()
   }
@@ -196,21 +420,29 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
   const isAPMultipleImages = note.note_model_uuid === AP_MULTIPLE_IMAGES_UUID
   const tags = note.tags || []
 
-  // Handle "multiple images" card type - displays random image from field[1]
+  // Handle "multiple images" card type - displays ONE random image from Images field
   if (isAPMultipleImages) {
-    // Field structure for AP multiple images:
-    // [0]=Header, [1]=Text (with multiple <img> tags), [2]=Extra, [3]=Personal Notes, [4]=Textbook, [5]=Citation
+    // Field structure for AP multiple images (Ankoma-AP Multiple Images):
+    // [0]=Header (e.g., "Peripheral Blood smear")
+    // [1]=Text (cloze text, e.g., "cell: {{c1::lymphocyte}}")
+    // [2]=Images (multiple <img> tags - one shown randomly on front)
+    // [3]=Extra (explanation - shown on back)
+    // [4]=Personal Notes (optional)
+    // [5]=Textbook (optional)
+    // [6]=Citation (optional)
     const header = fields[0] || ''
-    const textWithImages = fields[1] || ''
-    const extra = fields[2] || ''
-    const personalNotes = fields[3] || ''
-    const textbook = fields[4] || ''
-    const citation = fields[5] || ''
+    const text = fields[1] || ''
+    const imagesField = fields[2] || ''
+    const extra = fields[3] || ''
+    const personalNotes = fields[4] || ''
+    const textbook = fields[5] || ''
+    const citation = fields[6] || ''
 
-    // Extract all image URLs from the text field
+    // Extract all image URLs from the Images field and transform to R2 URLs
     const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi
-    const imageMatches = Array.from(textWithImages.matchAll(imgRegex))
-    const imageUrls = imageMatches.map(match => match[1])
+    const imageMatches = Array.from(imagesField.matchAll(imgRegex))
+    // Transform each image URL to use R2 storage
+    const imageUrls = imageMatches.map(match => transformToR2Url(match[1]))
 
     // Select a random image for display (will be consistent per card due to note.guid)
     let selectedImageUrl = ''
@@ -221,11 +453,12 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
       selectedImageUrl = imageUrls[selectedIndex]
     }
 
-    // Build question HTML with the selected random image
+    // Build question HTML: Header + Text (with cloze) + ONE random image from Images field
+    // Note: selectedImageUrl is already transformed to R2 URL
     const questionHtml = sanitizeImageSources(`
       ${header ? `<div class="card-header">${header}</div>` : ''}
+      <div class="card-text">${text}</div>
       ${selectedImageUrl ? `<div class="card-image"><img src="${selectedImageUrl}" alt="Question image" /></div>` : ''}
-      <div class="card-text">${textWithImages.replace(imgRegex, '')}</div>
     `.trim())
 
     // Build answer HTML with all additional fields
@@ -268,7 +501,8 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
       modelName: 'Cloze (Multiple Images)',
       fields: {
         Header: header,
-        Text: textWithImages,
+        Text: text,
+        Images: imagesField,
         Extra: extra,
         'Personal Notes': personalNotes,
         Textbook: textbook,
@@ -304,9 +538,14 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
   const isHemepathBenign = tags.some(t => t.includes('Hemepath-Benign')) || deckName.includes('Benign')
   const isCPTag = tags.some(t => t.startsWith('#ANKOMA::CP::') && !t.includes('Hemepath-Neoplastic'))
 
+  // Check deck path for CP indicators
+  const deckPathHasCP = deckName.toLowerCase().includes('- cp') ||
+                        deckName.toLowerCase().includes('cp -') ||
+                        deckName.toLowerCase().includes('clinical pathology')
+
   // Determine format: AP uses fields[1]=Text, CP uses fields[0]=Text
-  const treatAsAP = isAPModel || isHemepathNeoplastic || (!isCPModel && !isHemepathBenign && !deckName.startsWith('CP'))
-  const isCP = !treatAsAP && (isCPModel || isHemepathBenign || isCPTag || deckName.startsWith('CP'))
+  const treatAsAP = isAPModel || isHemepathNeoplastic || (!isCPModel && !isHemepathBenign && !isCPTag && !deckPathHasCP)
+  const isCP = !treatAsAP && (isCPModel || isHemepathBenign || isCPTag || deckPathHasCP)
 
   // For CP vs AP, the field order differs. Map explicitly.
   let header: string
@@ -316,7 +555,19 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
   let textbook: string
   let citation: string
 
-  if (isCP) {
+  // Heuristic: If fields[0] is empty but fields[1] has content, it's likely AP format
+  // If fields[0] has content with clozes, it's likely CP format
+  const field0HasClozes = (fields[0] || '').includes('{{c')
+  const field1HasClozes = (fields[1] || '').includes('{{c')
+  const field0IsEmpty = !(fields[0] || '').trim()
+  const field1IsEmpty = !(fields[1] || '').trim()
+
+  // Smart detection: if field[0] is empty and field[1] has content, use AP format
+  // If field[0] has clozes and field[1] is empty or doesn't have clozes, use CP format
+  const useAPFormat = treatAsAP || (field0IsEmpty && !field1IsEmpty) || (!field0HasClozes && field1HasClozes)
+  const useCPFormat = isCP || (field0HasClozes && !field1HasClozes) || (!field0IsEmpty && field1IsEmpty && !useAPFormat)
+
+  if (useCPFormat && !useAPFormat) {
     // CP cards: [0]=Text, [1]=Extra, [2]=Personal Notes, [3]=Citation (sometimes [5])
     header = ''
     text = fields[0] || ''

@@ -59,6 +59,7 @@ export function useOptimizedQuizOptions() {
       return response.json()
     },
     {
+      refetchOnMount: true, // Always fetch on mount if no valid cache
       ttl: 5 * 60 * 1000, // 5 minutes cache
       staleTime: 2 * 60 * 1000, // 2 minutes stale time
       storage: 'localStorage', // Persist across sessions
@@ -118,6 +119,7 @@ export function useOptimizedQuestion(questionId: string) {
       return response.json()
     },
     {
+      refetchOnMount: true, // Always fetch on mount if no valid cache
       ttl: 30 * 60 * 1000, // 30 minutes cache (questions don't change often)
       staleTime: 15 * 60 * 1000, // 15 minutes stale time
       storage: 'localStorage',

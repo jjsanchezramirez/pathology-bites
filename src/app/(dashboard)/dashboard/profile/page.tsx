@@ -4,18 +4,11 @@
 import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/shared/services/client'
-import { Button } from '@/shared/components/ui/button'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Skeleton } from '@/shared/components/ui/skeleton'
-import { Separator } from '@/shared/components/ui/separator'
-import { Badge } from '@/shared/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
+import { Card, CardContent } from '@/shared/components/ui/card'
 import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
 import { PasswordChangeForm } from '@/features/auth/components/forms/password-change-form'
+import { ProfileLoading, ProfileInformationCard, AccountDetailsCard } from '@/features/profile/components'
 import { toast } from '@/shared/utils/toast'
-import { User, Shield, Save, RefreshCw, Edit, X } from 'lucide-react'
 
 interface UserProfile {
   id: string
@@ -140,78 +133,8 @@ function ProfilePageContent() {
     setIsEditMode(false)
   }
 
-
-
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-      case 'creator':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-      case 'reviewer':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-    }
-  }
-
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-      case 'suspended':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-    }
-  }
-
   if (isLoading || profileLoading) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-64" />
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Profile Information Skeleton */}
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-4 w-56" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              ))}
-              <div className="flex gap-2 pt-4">
-                <Skeleton className="h-10 w-20" />
-                <Skeleton className="h-10 w-16" />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Account Details Skeleton */}
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-32" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
+    return <ProfileLoading />
   }
 
   if (!isAuthenticated || !user || !userProfile) {
@@ -229,173 +152,33 @@ function ProfilePageContent() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">My Profile</h1>
-        <p className="text-muted-foreground">
-          Manage your account information and preferences.
-        </p>
-      </div>
+    <div className="container mx-auto py-8">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">My Profile</h1>
+          <p className="text-muted-foreground">
+            Manage your account information and preferences.
+          </p>
+        </div>
 
-      <div className="space-y-6">
+        <div className="space-y-6">
         {/* Profile Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Profile Information
-            </CardTitle>
-            <CardDescription>
-              Update your personal information.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <div className="flex-1 grid gap-2">
-                <Label htmlFor="first_name">First Name</Label>
-                <Input
-                  id="first_name"
-                  value={formData.first_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
-                  placeholder="Enter your first name"
-                  disabled={!isEditMode}
-                  className={!isEditMode ? "bg-muted" : ""}
-                />
-              </div>
-              <div className="flex-1 grid gap-2">
-                <Label htmlFor="last_name">Last Name</Label>
-                <Input
-                  id="last_name"
-                  value={formData.last_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
-                  placeholder="Enter your last name"
-                  disabled={!isEditMode}
-                  className={!isEditMode ? "bg-muted" : ""}
-                />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="institution">Institution</Label>
-              <Input
-                id="institution"
-                value={formData.institution}
-                onChange={(e) => setFormData(prev => ({ ...prev, institution: e.target.value }))}
-                placeholder="Enter your institution"
-                disabled={!isEditMode}
-                className={!isEditMode ? "bg-muted" : ""}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="user_type">User Type</Label>
-              <Select
-                value={formData.user_type}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, user_type: value }))}
-                disabled={!isEditMode}
-              >
-                <SelectTrigger className={!isEditMode ? "bg-muted" : ""}>
-                  <SelectValue placeholder="Select your user type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="resident">Resident</SelectItem>
-                  <SelectItem value="fellow">Fellow</SelectItem>
-                  <SelectItem value="attending">Attending/Faculty</SelectItem>
-                  <SelectItem value="researcher">Researcher</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                value={formData.email}
-                disabled
-                className="bg-muted"
-              />
-            </div>
-            {!isEditMode ? (
-              <Button onClick={handleEdit} className="w-full">
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Profile
-              </Button>
-            ) : (
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleCancel}
-                  variant="outline"
-                  className="flex-1"
-                  disabled={saving}
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="flex-1"
-                >
-                  {saving ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save Changes
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <ProfileInformationCard
+          formData={formData}
+          isEditMode={isEditMode}
+          saving={saving}
+          onFormDataChange={(data) => setFormData(prev => ({ ...prev, ...data }))}
+          onEdit={handleEdit}
+          onCancel={handleCancel}
+          onSave={handleSave}
+        />
 
         {/* Account Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Account Details
-            </CardTitle>
-            <CardDescription>
-              View your account status and role information.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Role</span>
-                <Badge className={getRoleBadgeColor(userProfile.role)}>
-                  {userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1)}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Status</span>
-                <Badge className={getStatusBadgeColor(userProfile.status)}>
-                  {userProfile.status.charAt(0).toUpperCase() + userProfile.status.slice(1)}
-                </Badge>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">User ID</span>
-                <span className="text-xs font-mono text-muted-foreground">
-                  {userProfile.id}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Last Updated</span>
-                <span className="text-sm text-muted-foreground">
-                  {new Date(userProfile.updated_at).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <AccountDetailsCard userProfile={userProfile} />
 
         {/* Password Change */}
         <PasswordChangeForm />
+        </div>
       </div>
     </div>
   )

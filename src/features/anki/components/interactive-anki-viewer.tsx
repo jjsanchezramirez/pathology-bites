@@ -3,30 +3,21 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import Image from 'next/image'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
-import { Badge } from '@/shared/components/ui/badge'
 import { Separator } from '@/shared/components/ui/separator'
 import {
   ChevronLeft,
   ChevronRight,
-  ChevronsLeft,
-  RotateCcw,
-  Clock,
-  Hash,
-  BookOpen,
-  Eye,
-  ExternalLink
+  Eye
 } from 'lucide-react'
 import { AnkiCard, AnkiCardViewerProps } from '@/features/anki/types/anki-card'
-import { 
-  processInteractiveClozes, 
-  extractClozes, 
-  hasInteractiveClozes,
-  InteractiveCloze
+import {
+  processInteractiveClozes,
+  extractClozes,
+  hasInteractiveClozes
 } from '@/features/anki/utils/interactive-cloze-processor'
-import { extractImagesFromHtml, sanitizeHtmlForSafeRendering, replaceImagePlaceholders } from '@/shared/utils/html-image-extractor'
+import { extractImagesFromHtml, replaceImagePlaceholders } from '@/shared/utils/html-image-extractor'
 import { cn } from '@/shared/utils'
 
 interface InteractiveAnkiViewerProps extends Omit<AnkiCardViewerProps, 'showAnswer' | 'onAnswerToggle'> {
@@ -38,22 +29,6 @@ interface InteractiveAnkiViewerProps extends Omit<AnkiCardViewerProps, 'showAnsw
   totalCards?: number
   categoryName?: string
   subcategoryName?: string
-}
-
-// Function to format tag names by splitting on uppercase letters and symbols
-const formatTagName = (tagName: string): string => {
-  if (!tagName) return tagName
-  
-  return tagName
-    // Split on uppercase letters (add space before them)
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    // Replace & with ' & ' (with spaces)
-    .replace(/&/g, ' & ')
-    // Replace other symbols with spaces
-    .replace(/[_-]/g, ' ')
-    // Clean up multiple spaces
-    .replace(/\s+/g, ' ')
-    .trim()
 }
 
 export function InteractiveAnkiViewer({
@@ -68,6 +43,7 @@ export function InteractiveAnkiViewer({
 }: InteractiveAnkiViewerProps) {
   const [revealedClozes, setRevealedClozes] = useState<Set<number>>(new Set())
   const [showAnswer, setShowAnswer] = useState(false)
+  const [imageOcclusionRevealed, setImageOcclusionRevealed] = useState(false)
 
   // Check if this is an image occlusion card (strict check; do NOT infer from presence of <img>)
   const isImageOcclusion = card.modelName === 'Image Occlusion Enhanced+' ||
@@ -75,13 +51,17 @@ export function InteractiveAnkiViewer({
                           card.modelName.includes('Image Occlusion Enhanced') ||
                           card.tags.some(tag => tag.toLowerCase().includes('image-occlusion'))
 
+  // Check if this is a multiple images card (handled specially by the parser)
+  const isMultipleImagesCard = card.modelName === 'Cloze (Multiple Images)' ||
+                               card.tags.some(tag => tag === '#multiple-images')
+
   // Check if the card has clozes (only for non-image occlusion cards)
   const questionHasClozes = !isImageOcclusion && hasInteractiveClozes(card.question)
   const answerHasClozes = !isImageOcclusion && hasInteractiveClozes(card.answer)
   const hasClozes = questionHasClozes || answerHasClozes
 
-  // Check if this is a basic front/back card (no clozes, no image occlusion)
-  const isBasicCard = !hasClozes && !isImageOcclusion
+  // Check if this is a basic front/back card (no clozes, no image occlusion, no multiple images)
+  const isBasicCard = !hasClozes && !isImageOcclusion && !isMultipleImagesCard
 
   // Extract clozes for reference
   const questionClozes = useMemo(() => 
@@ -97,10 +77,20 @@ export function InteractiveAnkiViewer({
   useEffect(() => {
     setRevealedClozes(new Set())
     setShowAnswer(false)
+    setImageOcclusionRevealed(false)
   }, [card.id])
 
   // Extract images from question and answer HTML
-  const { questionImages, processedQuestionHtml } = useMemo(() => {
+  // For multiple images cards (already processed by parser), skip complex extraction
+  const { processedQuestionHtml, hasMultipleImages } = useMemo(() => {
+    // Multiple images cards are already processed by the parser - use as-is
+    if (isMultipleImagesCard) {
+      return {
+        processedQuestionHtml: card.question,
+        hasMultipleImages: true
+      }
+    }
+
     const extracted = extractImagesFromHtml(card.question, true)
 
     // Replace [IMAGE_#] placeholders with actual inline image tags
@@ -108,39 +98,34 @@ export function InteractiveAnkiViewer({
       const image = extracted.images[index]
       if (image && image.src) {
         // Check if it's an arrow or small icon (should stay small)
-        // Check by keywords in alt/src
         const hasSmallKeyword = image.alt?.toLowerCase().includes('arrow') ||
                                 image.src?.toLowerCase().includes('arrow') ||
                                 image.alt?.toLowerCase().includes('icon') ||
                                 image.src?.toLowerCase().includes('symbol') ||
                                 image.src?.toLowerCase().includes('emoji')
 
-        // Check by dimensions (if width or height is specified and < 50px)
         const width = image.width ? parseInt(image.width) : null
         const height = image.height ? parseInt(image.height) : null
         const isSmallByDimensions = (width !== null && width < 50) || (height !== null && height < 50)
 
-        // Check for very short filenames (likely icons/arrows like BO.png, BS.png)
-        // Extract filename from src (after last slash)
         const filename = image.src.split('/').pop() || ''
-        const filenameWithoutExt = filename.replace(/\.[^.]+$/, '') // Remove extension
+        const filenameWithoutExt = filename.replace(/\.[^.]+$/, '')
         const isShortFilename = filenameWithoutExt.length <= 3 && /\.(png|svg|gif)$/i.test(filename)
 
         const isSmallIcon = hasSmallKeyword || isSmallByDimensions || isShortFilename
         const className = isSmallIcon ? 'inline-image-small' : 'inline-image'
         return `<img src="${image.src}" alt="${image.alt || 'Image'}" class="${className}" loading="lazy" />`
       }
-      // Show placeholder text if image is missing
       return `<span class="text-muted-foreground text-sm italic">[Image ${index + 1} not available]</span>`
     })
 
     return {
-      questionImages: extracted.images,
-      processedQuestionHtml: htmlWithImages
+      processedQuestionHtml: htmlWithImages,
+      hasMultipleImages: false
     }
-  }, [card.question])
+  }, [card.question, isMultipleImagesCard])
 
-  const { answerImages, processedAnswerHtml } = useMemo(() => {
+  const { processedAnswerHtml } = useMemo(() => {
     const extracted = extractImagesFromHtml(card.answer, true)
 
     // Replace [IMAGE_#] placeholders with actual inline image tags
@@ -175,7 +160,6 @@ export function InteractiveAnkiViewer({
     })
 
     return {
-      answerImages: extracted.images,
       processedAnswerHtml: htmlWithImages
     }
   }, [card.answer])
@@ -225,15 +209,35 @@ export function InteractiveAnkiViewer({
 
   // Toggle answer visibility
   const toggleAnswer = useCallback(() => {
-    setShowAnswer(prev => !prev)
-  }, [])
+    if (isImageOcclusion) {
+      // For image occlusion, toggle the occlusion overlay
+      setImageOcclusionRevealed(prev => !prev)
+    } else {
+      setShowAnswer(prev => !prev)
+    }
+  }, [isImageOcclusion])
 
   // For Basic cards, only show the back if there is more than a citation
   const basicHasNonCitationAnswer = useMemo(() => {
     const ans = card.answer || ''
     if (!ans.trim()) return false
-    // Consider Extra/Personal Notes/Textbook as meaningful; Citation-only should not block progression
-    return ans.includes('extra-section') || ans.includes('personal-notes-section') || ans.includes('textbook-section')
+
+    // Remove HTML tags and check if there's actual content
+    const textContent = ans.replace(/<[^>]*>/g, '').trim()
+    if (!textContent) return false
+
+    // Check for meaningful sections (Extra/Personal Notes/Textbook)
+    const hasMeaningfulSections = ans.includes('extra-section') ||
+                                  ans.includes('personal-notes-section') ||
+                                  ans.includes('textbook-section')
+
+    // Check if answer has substantial text content (more than just a citation)
+    const hasSubstantialContent = textContent.length > 50
+
+    // Check if answer has images
+    const hasImages = ans.includes('<img') || ans.includes('[IMAGE_')
+
+    return hasMeaningfulSections || hasSubstantialContent || hasImages
   }, [card.answer])
 
   // Keyboard controls
@@ -257,11 +261,22 @@ export function InteractiveAnkiViewer({
               .find(index => !revealedClozes.has(index))
             if (nextClozeIndex !== undefined) {
               handleClozeClick(nextClozeIndex)
+              // For multiple images cards, also reveal the answer when revealing cloze
+              // This makes it a 2-step flow: reveal cloze+answer → next card
+              if (hasMultipleImages) {
+                setShowAnswer(true)
+              }
             } else {
               onNext?.()
             }
-          } else if ((isImageOcclusion || isBasicCard) && !showAnswer && card.answer && card.answer.trim()) {
-            if (isBasicCard && !basicHasNonCitationAnswer) {
+          } else if (isImageOcclusion && !imageOcclusionRevealed) {
+            // For image occlusion, toggle the overlay
+            toggleAnswer()
+          } else if (hasMultipleImages && !showAnswer) {
+            // For multiple images without clozes, reveal all images and answer
+            setShowAnswer(true)
+          } else if (isBasicCard && !showAnswer && card.answer && card.answer.trim()) {
+            if (!basicHasNonCitationAnswer) {
               onNext?.()
             } else {
               toggleAnswer()
@@ -296,6 +311,8 @@ export function InteractiveAnkiViewer({
     answerClozes,
     revealedClozes,
     isImageOcclusion,
+    imageOcclusionRevealed,
+    hasMultipleImages,
     isBasicCard,
     basicHasNonCitationAnswer,
     showAnswer,
@@ -321,18 +338,6 @@ export function InteractiveAnkiViewer({
       return
     }
   }, [handleClozeClick])
-
-  // Reveal all clozes
-  const revealAllClozes = useCallback(() => {
-    const allIndices = new Set([
-      ...questionClozes.map(c => c.index),
-      ...answerClozes.map(c => c.index)
-    ])
-    setRevealedClozes(allIndices)
-  }, [questionClozes, answerClozes])
-
-  const totalClozes = questionClozes.length + answerClozes.length
-  const revealedCount = revealedClozes.size
 
   return (
     <div className={cn("max-w-[95%] md:max-w-3xl mx-auto mb-2 md:mb-4 pb-2 md:pb-4", className)}>
@@ -393,7 +398,8 @@ export function InteractiveAnkiViewer({
               <div
                 className={cn(
                   "text-foreground leading-relaxed",
-                  isImageOcclusion ? "io-wrapper" : "cursor-pointer"
+                  isImageOcclusion ? "io-wrapper" : "cursor-pointer",
+                  isImageOcclusion && imageOcclusionRevealed ? "io-revealed" : ""
                 )}
                 dangerouslySetInnerHTML={{ __html: clozeProcessedQuestion.html }}
                 onClick={isImageOcclusion ? () => toggleAnswer() : handleContentClick}
@@ -403,35 +409,61 @@ export function InteractiveAnkiViewer({
 
 
           {/* Answer section - show when conditions met */}
-          {(hasAnyClozes ? allClozesRevealed : showAnswer) && card.answer && card.answer.trim() && (
+          {(hasAnyClozes ? allClozesRevealed : (showAnswer || imageOcclusionRevealed)) && card.answer && card.answer.trim() && (
             <>
-              <Separator />
-              <div className="space-y-3">
-                {/* Answer content - let ankoma parser CSS classes handle styling */}
-                <div className="prose prose-sm max-w-none">
-                  <div
-                    className={cn(
-                      "text-foreground leading-relaxed",
-                      isImageOcclusion ? "io-wrapper" : "cursor-pointer"
-                    )}
-                    dangerouslySetInnerHTML={{
-                      __html: clozeProcessedAnswer.html
-                        .replace(/\[IMAGE_\d+\]/gi, '') // Remove any remaining image placeholders
-                        .trim()
-                    }}
-                    onClick={isImageOcclusion ? () => toggleAnswer() : handleContentClick}
-                  />
-                </div>
-              </div>
+              {/* For image occlusion, only show extra info (remarks, sources, etc.) - not the image again */}
+              {isImageOcclusion ? (
+                (() => {
+                  // Extract only the extra wrapper content (remarks, sources, etc.)
+                  const extraMatch = card.answer.match(/<div id="io-extra-wrapper">([\s\S]*?)<\/div>\s*$/)
+                  const extraContent = extraMatch ? extraMatch[1] : ''
+
+                  if (extraContent.trim()) {
+                    return (
+                      <>
+                        <Separator />
+                        <div className="space-y-3">
+                          <div className="prose prose-sm max-w-none">
+                            <div
+                              className="text-foreground leading-relaxed"
+                              dangerouslySetInnerHTML={{ __html: extraContent }}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )
+                  }
+                  return null
+                })()
+              ) : (
+                <>
+                  <Separator />
+                  <div className="space-y-3">
+                    {/* Answer content - let ankoma parser CSS classes handle styling */}
+                    <div className="prose prose-sm max-w-none">
+                      <div
+                        className="text-foreground leading-relaxed cursor-pointer"
+                        dangerouslySetInnerHTML={{
+                          __html: clozeProcessedAnswer.html
+                            .replace(/\[IMAGE_\d+\]/gi, '') // Remove any remaining image placeholders
+                            .trim()
+                        }}
+                        onClick={handleContentClick}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           )}
 
           {/* Navigation Controls - Mobile only */}
-          <div className="md:hidden pt-3">
-            {/* Single button: Reveal Next or Next Card */}
-            {(!isImageOcclusion && hasAnyClozes && !allClozesRevealed) ||
-             ((isImageOcclusion || isBasicCard) && !showAnswer && card.answer && card.answer.trim() &&
-              (isBasicCard ? basicHasNonCitationAnswer : true)) ? (
+          <div className="md:hidden pt-3 space-y-2">
+            {/* Reveal button when needed */}
+            {((!isImageOcclusion && hasAnyClozes && !allClozesRevealed) ||
+             (isImageOcclusion && !imageOcclusionRevealed) ||
+             (hasMultipleImages && !showAnswer) ||
+             (isBasicCard && !showAnswer && card.answer && card.answer.trim() && basicHasNonCitationAnswer)) && (
               <Button
                 variant="default"
                 onClick={() => {
@@ -441,27 +473,46 @@ export function InteractiveAnkiViewer({
                       .find(idx => !revealedClozes.has(idx))
                     if (nextClozeIndex !== undefined) {
                       handleClozeClick(nextClozeIndex)
+                      // For multiple images cards, also reveal the answer when revealing cloze
+                      if (hasMultipleImages) {
+                        setShowAnswer(true)
+                      }
                     }
-                  } else if ((isImageOcclusion || isBasicCard) && !showAnswer) {
+                  } else if (isImageOcclusion && !imageOcclusionRevealed) {
+                    toggleAnswer()
+                  } else if (hasMultipleImages && !showAnswer) {
+                    setShowAnswer(true)
+                  } else if (isBasicCard && !showAnswer) {
                     toggleAnswer()
                   }
                 }}
                 className="w-full"
               >
                 <Eye className="h-4 w-4 mr-2" />
-                Reveal Next
+                Reveal
               </Button>
-            ) : (
+            )}
+            {/* Navigation buttons - always visible */}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={onPrevious}
+                disabled={!onPrevious}
+                className="flex-1"
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Previous
+              </Button>
               <Button
                 variant="default"
                 onClick={onNext}
                 disabled={!onNext}
-                className="w-full"
+                className="flex-1"
               >
-                Next Card
+                Next
                 <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
-            )}
+            </div>
           </div>
 
           {/* Instructions - Desktop only */}
@@ -615,13 +666,48 @@ export function InteractiveAnkiViewer({
           pointer-events: none;
         }
 
-        .io-wrapper .io-overlay {
-          fill: #000;
-          opacity: 0.8;
+        /* Default state for overlays - fully opaque (not see-through) with smooth transition */
+        .io-wrapper .io-overlay,
+        .io-wrapper svg rect[fill],
+        .io-wrapper svg path[fill],
+        .io-wrapper svg polygon[fill],
+        .io-wrapper #io-overlay,
+        .io-wrapper #io-overlay *,
+        .io-wrapper svg rect,
+        .io-wrapper svg path,
+        .io-wrapper svg polygon,
+        .io-wrapper svg circle,
+        .io-wrapper svg ellipse {
+          opacity: 1 !important;
+          visibility: visible !important;
+          transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
         }
 
-        .io-wrapper .io-overlay.revealed {
-          opacity: 0;
+        /* When io-revealed class is on the wrapper, hide all overlays smoothly */
+        .io-revealed .io-overlay,
+        .io-revealed svg rect[fill],
+        .io-revealed svg path[fill],
+        .io-revealed svg polygon[fill],
+        .io-revealed #io-overlay,
+        .io-revealed #io-overlay *,
+        .io-revealed #io-overlay svg,
+        .io-revealed #io-overlay img,
+        .io-revealed svg rect,
+        .io-revealed svg path,
+        .io-revealed svg polygon,
+        .io-revealed svg circle,
+        .io-revealed svg ellipse {
+          opacity: 0 !important;
+          visibility: hidden !important;
+        }
+
+        /* Ensure the original image stays visible */
+        .io-wrapper #io-original,
+        .io-wrapper #io-original *,
+        .io-revealed #io-original,
+        .io-revealed #io-original * {
+          opacity: 1 !important;
+          visibility: visible !important;
         }
 
         .io-header {

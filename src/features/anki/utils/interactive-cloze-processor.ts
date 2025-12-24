@@ -1,7 +1,14 @@
 // src/features/anki/utils/interactive-cloze-processor.ts
 import { ClozeMatch, ProcessedCloze } from '../types/anki-card'
 
-const CLOZE_REGEX = /\{\{c(\d+)::([^:}]+)(?:::([^}]+))?\}\}/g
+// Regex to match Anki cloze format: {{c1::content}} or {{c1::content::hint}}
+// Content can contain single colons (e.g., {{c1::2:1}} for ratios like AST:ALT)
+// The pattern matches:
+// - {{c followed by a number
+// - :: (delimiter after cloze number)
+// - Content: everything up to either }}  or ::hint}}
+// We use a greedy match for content but with negative lookahead to stop at ::hint}}
+const CLOZE_REGEX = /\{\{c(\d+)::(.+?)(?:::([^}]+))?\}\}/g
 
 export interface InteractiveCloze extends ClozeMatch {
   id: string

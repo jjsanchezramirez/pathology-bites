@@ -289,11 +289,17 @@ export const userNavigationItems: NavigationItem[] = [
     name: "Ankoma Deck Viewer",
     href: "/dashboard/anki",
     icon: "Library",
+    isNew: true
   },
   {
     name: "Performance",
     href: "/dashboard/performance",
     icon: "BarChart2",
+  },
+  {
+    name: "Achievements",
+    href: "/dashboard/achievements",
+    icon: "Trophy",
   },
   {
     name: "Learning Modules",
@@ -302,9 +308,10 @@ export const userNavigationItems: NavigationItem[] = [
     comingSoon: true
   },
   {
-    name: "Progress",
+    name: "My Progress",
     href: "/dashboard/progress",
     icon: "TrendingUp",
+    comingSoon: true
   },
   {
     name: "Profile",
@@ -356,6 +363,7 @@ export function getUserNavigationSections(): NavigationSection[] {
           name: "Ankoma Deck Viewer",
           href: "/dashboard/anki",
           icon: "Library",
+          isNew: true
         },
         {
           name: "Learning Modules",
@@ -374,9 +382,15 @@ export function getUserNavigationSections(): NavigationSection[] {
           icon: "BarChart2",
         },
         {
-          name: "Progress",
+          name: "Achievements",
+          href: "/dashboard/achievements",
+          icon: "Trophy",
+        },
+        {
+          name: "My Progress",
           href: "/dashboard/progress",
           icon: "TrendingUp",
+          comingSoon: true
         }
       ]
     },
@@ -448,6 +462,11 @@ export const userNavigationSections: NavigationSection[] = [
         name: "Performance",
         href: "/dashboard/performance",
         icon: "BarChart2",
+      },
+      {
+        name: "Achievements",
+        href: "/dashboard/achievements",
+        icon: "Trophy",
       },
       {
         name: "Progress",

@@ -1,6 +1,5 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { CheckCircle, XCircle, Circle, Clock, Target } from "lucide-react"
 import { QuizSession } from "@/features/quiz/types/quiz"
@@ -17,8 +16,7 @@ interface QuizSidebarProps {
   }>
   onQuestionSelect?: (index: number) => void
   timeRemaining?: number | null
-  isCollapsed?: boolean
-  isHovered?: boolean
+  isExpanded?: boolean
 }
 
 export function QuizSidebar({
@@ -27,8 +25,7 @@ export function QuizSidebar({
   attempts,
   onQuestionSelect,
   timeRemaining,
-  isCollapsed = false,
-  isHovered = false
+  isExpanded = true
 }: QuizSidebarProps) {
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -51,13 +48,13 @@ export function QuizSidebar({
     const isCurrent = questionIndex === currentQuestionIndex
 
     if (status === 'correct') {
-      return <CheckCircle className="h-4 w-4 text-green-500" />
+      return <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
     } else if (status === 'incorrect') {
-      return <XCircle className="h-4 w-4 text-red-500" />
+      return <XCircle className="h-4 w-4 text-red-500 shrink-0" />
     } else if (isCurrent) {
-      return <Circle className="h-4 w-4 text-blue-500 fill-blue-500" />
+      return <Circle className="h-4 w-4 text-blue-500 fill-blue-500 shrink-0" />
     } else {
-      return <Circle className="h-4 w-4 text-gray-400" />
+      return <Circle className="h-4 w-4 text-gray-400 shrink-0" />
     }
   }
 
@@ -65,19 +62,15 @@ export function QuizSidebar({
     const status = getQuestionStatus(questionIndex)
     const isCurrent = questionIndex === currentQuestionIndex
 
-    let baseClass = "w-full justify-start text-left p-2 h-auto"
-
     if (isCurrent) {
-      baseClass += " bg-blue-50 border-blue-200 text-blue-900"
+      return "bg-primary text-primary-foreground"
     } else if (status === 'correct') {
-      baseClass += " bg-green-50 border-green-200 text-green-900"
+      return "bg-green-50 dark:bg-green-950/30 hover:bg-green-100 dark:hover:bg-green-950/50"
     } else if (status === 'incorrect') {
-      baseClass += " bg-red-50 border-red-200 text-red-900"
+      return "bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-950/50"
     } else {
-      baseClass += " bg-gray-50 border-gray-200 text-gray-700"
+      return "bg-transparent hover:bg-muted"
     }
-
-    return baseClass
   }
 
   const getQuestionSnippet = (question: any) => {
@@ -89,84 +82,98 @@ export function QuizSidebar({
   }
 
   const progress = ((currentQuestionIndex + 1) / session.totalQuestions) * 100
-  const isOpen = !isCollapsed || isHovered
 
   return (
-    <Card
-      className={cn(
-        "w-full sticky top-4 self-start transition-all duration-300 ease-in-out",
-        isHovered && "shadow-lg"
-      )}
-    >
-      <CardContent className="p-6 space-y-6">
-        {/* Quiz Info */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Target className={cn("h-4 w-4", !isOpen && "mx-auto")} />
-            <h3 className={cn(
-              "text-base font-semibold transition-all duration-300",
-              !isOpen && "opacity-0 -translate-x-96 hidden"
-            )}>Quiz Progress</h3>
+    <>
+      {isExpanded ? (
+        <div className="h-full w-full flex flex-col min-w-[280px]">
+          {/* Header */}
+          <div className="p-5 border-b border-border shrink-0">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
+              QUIZ PROGRESS
+            </div>
+            <div className="text-[13px] text-muted-foreground">
+              Question {currentQuestionIndex + 1} of {session.totalQuestions}
+            </div>
           </div>
-          <div className={cn(
-            "space-y-4 transition-all duration-300",
-            !isOpen && "opacity-0 hidden"
-          )}>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Question {currentQuestionIndex + 1} of {session.totalQuestions}</span>
-                <span>{Math.round(progress)}%</span>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-3">
+            <div className="space-y-4 mb-6">
+              {/* Progress Bar */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Progress</span>
+                  <span className="font-medium">{Math.round(progress)}%</span>
+                </div>
+                <div className="w-full bg-secondary rounded-full h-2">
+                  <div
+                    className="bg-primary h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
+
+              {/* Time Remaining */}
+              {timeRemaining !== null && timeRemaining !== undefined && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className={cn(
+                    "font-mono",
+                    timeRemaining <= 10 ? 'text-destructive font-semibold' : 'text-foreground'
+                  )}>
+                    {formatTime(timeRemaining)}
+                  </span>
+                </div>
+              )}
             </div>
 
-            {timeRemaining !== null && timeRemaining !== undefined && (
-              <div className="flex items-center gap-2 text-sm">
-                <Clock className="h-4 w-4" />
-                <span className={`font-mono ${timeRemaining <= 10 ? 'text-red-500' : ''}`}>
-                  {formatTime(timeRemaining)}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Question Navigation */}
-        <div className={cn(
-          "transition-all duration-300",
-          !isOpen && "opacity-0 hidden"
-        )}>
-          <h3 className="text-base font-semibold mb-4">Questions</h3>
-          <div className="space-y-1">
-            {session.questions.map((question, index) => (
-              <Button
-                key={question.id}
-                variant="outline"
-                className={getQuestionButtonClass(index)}
-                onClick={() => onQuestionSelect?.(index)}
-                disabled={index > currentQuestionIndex} // Only allow going back or staying on current
-              >
-                <div className="flex items-center gap-2 w-full">
+            {/* Question List */}
+            <div className="space-y-1">
+              {session.questions.map((question, index) => (
+                <button
+                  key={question.id}
+                  onClick={() => onQuestionSelect?.(index)}
+                  disabled={index > currentQuestionIndex}
+                  className={cn(
+                    "w-full px-3 py-2.5 rounded-lg transition-colors flex items-center text-left cursor-pointer gap-2",
+                    getQuestionButtonClass(index),
+                    index > currentQuestionIndex && "opacity-50 cursor-not-allowed"
+                  )}
+                >
                   {getStatusIcon(index)}
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm">
+                    <div className={cn(
+                      "font-medium text-[14px]",
+                      currentQuestionIndex === index ? "text-primary-foreground" : "text-foreground"
+                    )}>
                       Q{index + 1}
                     </div>
-                    <div className="text-xs text-muted-foreground truncate">
+                    <div className={cn(
+                      "text-[12px] truncate",
+                      currentQuestionIndex === index ? "text-primary-foreground/80" : "text-muted-foreground"
+                    )}>
                       {getQuestionSnippet(question)}
                     </div>
                   </div>
-                </div>
-              </Button>
-            ))}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      ) : (
+        <div className="h-full w-full flex flex-col items-center pt-5 px-2 gap-6">
+          <Target className="h-5 w-5 text-muted-foreground shrink-0" />
+          <div className="flex flex-col items-center gap-4">
+            <div className="writing-mode-vertical-rl rotate-180 text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground">
+              QUIZ
+            </div>
+            <div className="writing-mode-vertical-rl rotate-180 text-[13px] text-muted-foreground">
+              {currentQuestionIndex + 1}/{session.totalQuestions}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }

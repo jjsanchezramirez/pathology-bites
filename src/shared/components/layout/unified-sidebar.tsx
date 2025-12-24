@@ -27,6 +27,7 @@ import {
   AlertTriangle,
   FileText,
   Library,
+  Trophy,
   type LucideIcon
 } from "lucide-react"
 import { cn } from "@/shared/utils"
@@ -62,6 +63,7 @@ const iconMap: Record<string, LucideIcon> = {
   Layers,
   AlertTriangle,
   FileText,
+  Trophy,
 }
 
 interface UnifiedSidebarProps {
@@ -184,7 +186,8 @@ export function UnifiedSidebar({ isCollapsed, isHovered = false, navigationItems
                             "flex items-center h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
                             isOpen ? "pl-[8px] pr-3" : "justify-center px-0 w-10",
                             isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
-                            isLoading && "pointer-events-none opacity-60"
+                            isLoading && "pointer-events-none opacity-60",
+                            item.comingSoon && "opacity-60"
                           )}
                           title={!isOpen ? item.name : undefined}
                         >
@@ -238,7 +241,8 @@ export function UnifiedSidebar({ isCollapsed, isHovered = false, navigationItems
                       "flex items-center h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
                       isOpen ? "px-3" : "justify-center px-0 w-10",
                       isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
-                      isLoading && "pointer-events-none opacity-60"
+                      isLoading && "pointer-events-none opacity-60",
+                      item.comingSoon && "opacity-60"
                     )}
                     title={!isOpen ? item.name : undefined}
                   >
