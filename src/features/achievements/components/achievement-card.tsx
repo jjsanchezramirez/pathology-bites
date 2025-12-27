@@ -2,46 +2,50 @@
 
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Progress } from '@/shared/components/ui/progress'
-import { LucideIcon } from 'lucide-react'
-import { cn } from '@/shared/utils'
+import { AchievementLottie } from './achievement-lottie'
+
+type AnimationType = 'badge' | 'medal' | 'star_badge' | 'star_medal' | 'crown' | 'trophy_large'
 
 interface AchievementCardProps {
-  icon: LucideIcon
+  animationType: AnimationType
   title: string
   description: string
   isUnlocked: boolean
   progress?: number
   maxProgress?: number
-  iconColor?: string
+  category?: 'quiz' | 'perfect' | 'streak' | 'speed' | 'accuracy' | 'differential'
+  showProgress?: boolean
 }
 
 export function AchievementCard({
-  icon: Icon,
+  animationType,
   title,
   description,
   isUnlocked,
   progress = 0,
   maxProgress = 100,
-  iconColor = 'text-primary'
+  category,
+  showProgress
 }: AchievementCardProps) {
   const progressPercentage = maxProgress > 0 ? (progress / maxProgress) * 100 : 0
+
+  // Determine if we should show progress
+  // Speed and Accuracy are binary (you either did it or didn't), so no progress shown
+  // Differential, Quiz, Perfect, and Streak show progress
+  const shouldShowProgress = showProgress !== undefined
+    ? showProgress
+    : category !== 'speed' && category !== 'accuracy'
 
   return (
     <Card className="text-center">
       <CardContent className="pt-6 pb-4 px-4">
-        {/* Badge Icon */}
+        {/* Lottie Animation */}
         <div className="mb-4 flex justify-center">
-          <div className={cn(
-            "rounded-full p-6 transition-all",
-            isUnlocked
-              ? "bg-primary/10"
-              : "bg-muted grayscale opacity-60"
-          )}>
-            <Icon className={cn(
-              "h-12 w-12",
-              isUnlocked ? iconColor : "text-muted-foreground"
-            )} />
-          </div>
+          <AchievementLottie
+            animationType={animationType}
+            isUnlocked={isUnlocked}
+            className="w-24 h-24"
+          />
         </div>
 
         {/* Title */}
@@ -52,16 +56,25 @@ export function AchievementCard({
           {description}
         </p>
 
-        {/* Progress */}
-        <div className="space-y-2">
-          <Progress
-            value={progressPercentage}
-            className="h-2"
-          />
+        {/* Progress - only show for certain categories */}
+        {shouldShowProgress && (
+          <div className="space-y-2">
+            <Progress
+              value={progressPercentage}
+              className="h-2"
+            />
+            <p className="text-xs text-muted-foreground">
+              {progress}/{maxProgress}
+            </p>
+          </div>
+        )}
+
+        {/* For speed and accuracy, show locked/unlocked status instead */}
+        {!shouldShowProgress && !isUnlocked && (
           <p className="text-xs text-muted-foreground">
-            {progress}/{maxProgress}
+            Locked
           </p>
-        </div>
+        )}
       </CardContent>
     </Card>
   )

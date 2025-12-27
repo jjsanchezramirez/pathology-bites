@@ -6,13 +6,13 @@ import { useParams, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Button } from "@/shared/components/ui/button"
-import { Play, Pause, PanelLeftOpen, PanelLeftClose } from "lucide-react"
+import { Play, Pause, PanelLeftOpen, PanelLeftClose, Clock } from "lucide-react"
 import { QuizSidebar } from "@/features/quiz/components/quiz-sidebar"
 import { QuestionFlagDialog } from "@/features/questions/components/question-flag-dialog"
 import { QuizHeader } from "@/features/quiz/components/quiz-header"
 import { QuizQuestionDisplay } from "@/features/quiz/components/quiz-question-display"
 import { QuizNavigation } from "@/features/quiz/components/quiz-navigation"
-import { PageErrorBoundary, FeatureErrorBoundary } from "@/shared/components/common"
+import { FeatureErrorBoundary } from "@/shared/components/common"
 import { QuizResult } from "@/features/quiz/types/quiz"
 import { toast } from '@/shared/utils/toast'
 import { useState, useEffect, useCallback } from "react"
@@ -41,9 +41,8 @@ export default function QuizSessionPage() {
   const [showExitDialog, setShowExitDialog] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
 
-  // Sidebar collapse state
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [sidebarHovered, setSidebarHovered] = useState(false)
+  // Mobile sidebar state
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   // CSRF token for POST requests
   const { getToken } = useCSRFToken()
@@ -248,64 +247,66 @@ export default function QuizSessionPage() {
   // Early returns for loading and error states
   if (reviewLoading || (!isReviewMode && hybridState.isLoading)) {
     return (
-      <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-4 py-6">
-        {/* Sidebar Skeleton */}
-        <div className="lg:flex-shrink-0 order-2 lg:order-1">
-          <Card className="w-full lg:w-80">
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-5 gap-2">
-                {Array.from({ length: 10 }).map((_, i) => (
-                  <Skeleton key={i} className="h-8 w-8" />
-                ))}
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-6 w-16" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content Skeleton */}
-        <div className="flex-1 order-1 lg:order-2">
-          <div className="space-y-6">
-            {/* Header Skeleton */}
-            <div className="flex items-center justify-between">
-              <div>
-                <Skeleton className="h-8 w-64 mb-2" />
-                <Skeleton className="h-4 w-48" />
-              </div>
-              <div className="flex gap-2">
-                <Skeleton className="h-10 w-20" />
-                <Skeleton className="h-10 w-16" />
-              </div>
-            </div>
-
-            {/* Question Card Skeleton */}
-            <Card>
+      <div className="h-full flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 max-w-md">
+          {/* Sidebar Skeleton */}
+          <div className="lg:flex-shrink-0 order-2 lg:order-1">
+            <Card className="w-full lg:w-80">
               <CardHeader>
-                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-6 w-32" />
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </div>
-                <div className="space-y-3">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <Skeleton key={i} className="h-12 w-full" />
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-5 gap-2">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <Skeleton key={i} className="h-8 w-8" />
                   ))}
                 </div>
-                <div className="flex justify-between">
-                  <Skeleton className="h-10 w-20" />
-                  <Skeleton className="h-10 w-16" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-6 w-16" />
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Main Content Skeleton */}
+          <div className="flex-1 order-1 lg:order-2">
+            <div className="space-y-6">
+              {/* Header Skeleton */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <Skeleton className="h-8 w-64 mb-2" />
+                  <Skeleton className="h-4 w-48" />
+                </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-10 w-20" />
+                  <Skeleton className="h-10 w-16" />
+                </div>
+              </div>
+
+              {/* Question Card Skeleton */}
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-48" />
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                  <div className="space-y-3">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <Skeleton key={i} className="h-12 w-full" />
+                    ))}
+                  </div>
+                  <div className="flex justify-between">
+                    <Skeleton className="h-10 w-20" />
+                    <Skeleton className="h-10 w-16" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
@@ -315,21 +316,25 @@ export default function QuizSessionPage() {
   // Consistent error handling for all modes
   if (!isReviewMode && !hybridState.isInitialized) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="text-center py-12">
-          <h1 className="text-2xl font-bold text-red-600">Quiz Session Not Found</h1>
-          <p className="text-muted-foreground mt-2">
-            The quiz session you're looking for doesn't exist or has been deleted.
-          </p>
-          <div className="flex justify-center gap-2 mt-4">
-            <Button onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
-            <Link href="/dashboard">
-              <Button variant="outline">Back to Dashboard</Button>
-            </Link>
-          </div>
-        </div>
+      <div className="h-full flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardHeader>
+            <CardTitle className="text-red-600">Quiz Session Not Found</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              The quiz session you're looking for doesn't exist or has been deleted.
+            </p>
+            <div className="flex gap-2">
+              <Button onClick={() => window.location.reload()} className="flex-1">
+                Try Again
+              </Button>
+              <Link href="/dashboard" className="flex-1">
+                <Button variant="outline" className="w-full">Back to Dashboard</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -338,31 +343,36 @@ export default function QuizSessionPage() {
   if (isReviewMode) {
     if (reviewLoading) {
       return (
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="text-center py-12">
-            <h1 className="text-2xl font-bold">Loading Quiz Review...</h1>
+        <div className="h-full flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold">Loading Quiz Review...</h2>
           </div>
         </div>
       )
     }
-    
+
     if (!reviewResult || !reviewSession) {
       return (
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-red-600">Quiz Review Not Available</h1>
-            <p className="text-muted-foreground mt-2">
-              {reviewError || 'Could not load quiz session or results data for review.'}
-            </p>
-            <div className="flex justify-center gap-2 mt-4">
-              <Button onClick={() => fetchReviewData()}>
-                Try Again
-              </Button>
-              <Link href="/dashboard">
-                <Button variant="outline">Back to Dashboard</Button>
-              </Link>
-            </div>
-          </div>
+        <div className="h-full flex items-center justify-center">
+          <Card className="max-w-md w-full mx-4">
+            <CardHeader>
+              <CardTitle className="text-red-600">Quiz Review Not Available</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                {reviewError || 'Could not load quiz session or results data for review.'}
+              </p>
+              <div className="flex gap-2">
+                <Button onClick={() => fetchReviewData()} className="flex-1">
+                  Try Again
+                </Button>
+                <Link href="/dashboard" className="flex-1">
+                  <Button variant="outline" className="w-full">Back to Dashboard</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )
     }
@@ -377,13 +387,17 @@ export default function QuizSessionPage() {
     
     if (!currentReviewQuestion || !currentReviewResult) {
       return (
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-red-600">No questions to review</h1>
-            <Link href={`/dashboard/quiz/${sessionId}/results`}>
-              <Button className="mt-4">Back to Results</Button>
-            </Link>
-          </div>
+        <div className="h-full flex items-center justify-center">
+          <Card className="max-w-md w-full mx-4">
+            <CardHeader>
+              <CardTitle className="text-red-600">No questions to review</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Link href={`/dashboard/quiz/${sessionId}/results`}>
+                <Button className="w-full">Back to Results</Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       )
     }
@@ -410,114 +424,125 @@ export default function QuizSessionPage() {
     }))
 
     return (
-      <PageErrorBoundary pageName="Quiz Review" showHomeButton={true} showBackButton={true}>
-        <div className="min-h-screen bg-background/0 relative">
-          <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-4 py-6">
-            {/* Sidebar */}
+      <div className="h-full flex overflow-hidden">
+          {/* Mobile Backdrop */}
+          {mobileSidebarOpen && (
             <div
-              className={cn(
-                "transition-all duration-300 ease-in-out flex-shrink-0 order-2 lg:order-1",
-                sidebarCollapsed && !sidebarHovered ? "w-full lg:w-16" : "w-full lg:w-80"
-              )}
-            >
-              <div
-                onMouseEnter={() => setSidebarHovered(true)}
-                onMouseLeave={() => setSidebarHovered(false)}
-                className="h-full"
-              >
-                <FeatureErrorBoundary featureName="Quiz Review Sidebar">
-                  <QuizSidebar
-                    session={reviewModeSession as any}
-                    currentQuestionIndex={currentReviewIndex}
-                    attempts={reviewAttempts}
-                    onQuestionSelect={(index) => setCurrentReviewIndex(index)}
-                    timeRemaining={null}
-                    isCollapsed={sidebarCollapsed}
-                    isHovered={sidebarHovered}
-                  />
-                </FeatureErrorBoundary>
-              </div>
-            </div>
+              className="fixed inset-0 bg-black/30 z-40 md:hidden"
+              onClick={() => setMobileSidebarOpen(false)}
+            />
+          )}
 
-            {/* Main Content */}
-            <div className="flex-1 space-y-6 order-1 lg:order-2">
-              {/* Sidebar Toggle Button */}
-              <div className="hidden lg:flex justify-start">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                  className="gap-2"
-                >
-                  {sidebarCollapsed ? (
-                    <PanelLeftOpen className="h-4 w-4" />
-                  ) : (
-                    <PanelLeftClose className="h-4 w-4" />
-                  )}
-                  <span className="text-sm">
-                    {sidebarCollapsed ? 'Show' : 'Hide'} Sidebar
-                  </span>
-                </Button>
-              </div>
+          {/* Sidebar */}
+          <aside
+            className={cn(
+              "h-full shrink-0 bg-secondary border-r border-border overflow-hidden z-50 w-[280px]",
+              // Desktop: relative positioning, always visible
+              "md:relative md:translate-x-0",
+              // Mobile: fixed positioning, slide animation
+              "fixed left-0 top-0 transition-transform duration-300 ease-in-out",
+              mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+            )}
+          >
+            <FeatureErrorBoundary featureName="Quiz Review Sidebar">
+              <QuizSidebar
+                session={reviewModeSession as any}
+                currentQuestionIndex={currentReviewIndex}
+                attempts={reviewAttempts}
+                onQuestionSelect={(index) => {
+                  setCurrentReviewIndex(index)
+                  setMobileSidebarOpen(false)
+                }}
+                timeRemaining={null}
+              />
+            </FeatureErrorBoundary>
+          </aside>
 
-              {/* Header */}
-              <FeatureErrorBoundary featureName="Quiz Review Header">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-2xl font-bold">Quiz Review</h1>
-                    <p className="text-muted-foreground">
+          {/* Main Content */}
+          <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
+            {/* Header - Fixed at top */}
+            <header className="shrink-0 border-b border-border bg-background p-3 md:p-5">
+              <div className="flex items-center justify-between gap-2 md:gap-4">
+                <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                  {/* Mobile Menu Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                    className="md:hidden"
+                  >
+                    <PanelLeftOpen className="h-4 w-4 mr-2" />
+                    Quiz Navigation
+                  </Button>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
+                      QUIZ REVIEW
+                    </div>
+                    <div className="text-[13px] md:text-[14px] font-medium text-foreground truncate">
                       Question {currentReviewIndex + 1} of {reviewResult.questionDetails.length}
-                    </p>
+                    </div>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
                   <Link href={`/dashboard/quiz/${sessionId}/results`}>
-                    <Button variant="outline">
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Back to Results
+                    <Button variant="outline" size="sm">
+                      <ArrowLeft className="h-4 w-4 mr-2 hidden sm:block" />
+                      <span className="hidden sm:inline">Back to Results</span>
+                      <ArrowLeft className="h-4 w-4 sm:hidden" />
                     </Button>
                   </Link>
                 </div>
-              </FeatureErrorBoundary>
+              </div>
+            </header>
 
-              {/* Question Display */}
-              <FeatureErrorBoundary featureName="Quiz Review Question Display">
-                <QuizQuestionDisplay
-                  question={currentReviewQuestion as any}
-                  selectedAnswerId={currentReviewResult.selectedAnswerId}
-                  showExplanation={true}
-                  onAnswerSelect={() => {}} // No-op in review mode
-                />
-              </FeatureErrorBoundary>
+            {/* Card Content Area - Scrollable */}
+            <div className="flex-1 overflow-auto">
+              <div className="flex justify-center p-2 md:p-3">
+                <div className="w-full max-w-2xl space-y-3">
 
-              {/* Navigation */}
-              <FeatureErrorBoundary featureName="Quiz Review Navigation">
-                <div className="flex justify-between items-center pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={handlePreviousReview}
-                    disabled={currentReviewIndex === 0}
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Previous
-                  </Button>
-                  
-                  <div className="text-sm text-muted-foreground">
-                    {currentReviewIndex + 1} / {reviewResult.questionDetails.length}
-                  </div>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={handleNextReview}
-                    disabled={currentReviewIndex === reviewResult.questionDetails.length - 1}
-                  >
-                    Next
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
+                  {/* Question Display */}
+                  <FeatureErrorBoundary featureName="Quiz Review Question Display">
+                    <QuizQuestionDisplay
+                      question={currentReviewQuestion as any}
+                      selectedAnswerId={currentReviewResult.selectedAnswerId}
+                      showExplanation={true}
+                      onAnswerSelect={() => {}} // No-op in review mode
+                    />
+                  </FeatureErrorBoundary>
+
+                  {/* Navigation */}
+                  <FeatureErrorBoundary featureName="Quiz Review Navigation">
+                    <div className="flex justify-between items-center pt-4">
+                      <Button
+                        variant="outline"
+                        onClick={handlePreviousReview}
+                        disabled={currentReviewIndex === 0}
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Previous
+                      </Button>
+
+                      <div className="text-sm text-muted-foreground">
+                        {currentReviewIndex + 1} / {reviewResult.questionDetails.length}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        onClick={handleNextReview}
+                        disabled={currentReviewIndex === reviewResult.questionDetails.length - 1}
+                      >
+                        Next
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </div>
+                  </FeatureErrorBoundary>
                 </div>
-              </FeatureErrorBoundary>
+              </div>
             </div>
-          </div>
+          </main>
         </div>
-      </PageErrorBoundary>
     )
   }
 
@@ -527,24 +552,21 @@ export default function QuizSessionPage() {
 
   if (!hybridState.isInitialized || !currentQuestion) {
     return (
-      <PageErrorBoundary pageName="Quiz Session" showHomeButton={true} showBackButton={true}>
-        <div className="min-h-screen bg-background/0 relative flex items-center justify-center">
-          <Card className="w-96 p-6 text-center">
-            <CardHeader>
-              <CardTitle>Session Not Found</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>The quiz session could not be loaded.</p>
-            </CardContent>
-          </Card>
-        </div>
-      </PageErrorBoundary>
+      <div className="h-full flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardHeader>
+            <CardTitle>Session Not Found</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>The quiz session could not be loaded.</p>
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
   return (
-    <PageErrorBoundary pageName="Quiz Session" showHomeButton={true} showBackButton={true}>
-      <div className="min-h-screen bg-background/0 relative">
+    <>
       {/* Pause Overlay */}
       {(isReviewMode ? legacyIsPaused : isPaused) && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -595,22 +617,29 @@ export default function QuizSessionPage() {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-4 py-6">
+      <div className="h-full flex overflow-hidden">
+        {/* Mobile Backdrop */}
+        {mobileSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/30 z-40 md:hidden"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
-        <div
+        <aside
           className={cn(
-            "transition-all duration-300 ease-in-out flex-shrink-0 order-2 lg:order-1",
-            sidebarCollapsed && !sidebarHovered ? "w-full lg:w-16" : "w-full lg:w-80"
+            "h-full shrink-0 bg-secondary border-r border-border overflow-hidden z-50 w-[280px]",
+            // Desktop: relative positioning, always visible
+            "md:relative md:translate-x-0",
+            // Mobile: fixed positioning, slide animation
+            "fixed left-0 top-0 transition-transform duration-300 ease-in-out",
+            mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           )}
         >
-          <div
-            onMouseEnter={() => setSidebarHovered(true)}
-            onMouseLeave={() => setSidebarHovered(false)}
-            className="h-full"
-          >
-            <FeatureErrorBoundary featureName="Quiz Sidebar">
-              <QuizSidebar
-              session={{
+          <FeatureErrorBoundary featureName="Quiz Sidebar">
+            <QuizSidebar
+            session={{
                 id: sessionId || '',
                 title: 'Quiz Session',
                 questions: allQuestions,
@@ -645,60 +674,96 @@ export default function QuizSessionPage() {
               })}
               onQuestionSelect={(index) => {
                 hybridActions.navigateToQuestion(index);
+                setMobileSidebarOpen(false);
               }}
               timeRemaining={null}
-              isCollapsed={sidebarCollapsed}
-              isHovered={sidebarHovered}
             />
-            </FeatureErrorBoundary>
-          </div>
-        </div>
+          </FeatureErrorBoundary>
+        </aside>
 
         {/* Main Content */}
-        <div className="flex-1 space-y-6 order-1 lg:order-2">
-          {/* Sidebar Toggle Button */}
-          <div className="hidden lg:flex justify-start">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="gap-2"
-            >
-              {sidebarCollapsed ? (
-                <PanelLeftOpen className="h-4 w-4" />
-              ) : (
-                <PanelLeftClose className="h-4 w-4" />
-              )}
-              <span className="text-sm">
-                {sidebarCollapsed ? 'Show' : 'Hide'} Sidebar
-              </span>
-            </Button>
-          </div>
+        <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
+          {/* Header - Fixed at top */}
+          <header className="shrink-0 border-b border-border bg-background p-3 md:p-5">
+            <div className="flex items-center justify-between gap-2 md:gap-4">
+              <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                {/* Mobile Menu Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                  className="md:hidden"
+                >
+                  <PanelLeftOpen className="h-4 w-4 mr-2" />
+                  Quiz Navigation
+                </Button>
 
-          {/* Header */}
-          <FeatureErrorBoundary featureName="Quiz Header">
-            <QuizHeader
-            title="Quiz Session"
-            currentQuestionIndex={hybridState.currentQuestion - 1}
-            totalQuestions={hybridState.totalQuestions}
-            globalTimeRemaining={hybridState.timeRemaining}
-            timing={hybridActions.getQuizConfig?.()?.timing || 'untimed'}
-            status={hybridState.status as any}
-            isPaused={isPaused}
-            onPauseQuiz={!isReviewMode ? () => {
-              setIsPaused(true);
-              hybridActions.pauseQuiz();
-            } : () => {}}
-            onResumeQuiz={!isReviewMode ? () => {
-              setIsPaused(false);
-              hybridActions.resumeQuiz();
-            } : () => {}}
-            onSaveAndExit={!isReviewMode ? () => setShowExitDialog(true) : undefined}
-            onFlagQuestion={() => setLegacyFlagDialogOpen(true)}
-            syncStatus={hybridState.syncStatus}
-            lastSyncTime={hybridState.lastSyncTime}
-          />
-          </FeatureErrorBoundary>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
+                    QUIZ SESSION
+                  </div>
+                  <div className="text-[13px] md:text-[14px] font-medium text-foreground truncate">
+                    Question {hybridState.currentQuestion} of {hybridState.totalQuestions}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                {hybridState.timeRemaining !== null && (
+                  <div className="hidden md:flex items-center gap-2 text-xs md:text-sm">
+                    <Clock className="h-4 w-4" />
+                    <span className="font-mono font-medium">
+                      {formatTime(hybridState.timeRemaining)}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-1">
+                  {!isPaused ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setIsPaused(true);
+                        hybridActions.pauseQuiz();
+                      }}
+                      title="Pause quiz"
+                      className="h-8 w-8 p-0"
+                    >
+                      <Pause className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setIsPaused(false);
+                        hybridActions.resumeQuiz();
+                      }}
+                      title="Resume quiz"
+                      className="h-8 w-8 p-0"
+                    >
+                      <Play className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowExitDialog(true)}
+                    title="Save and exit"
+                    className="h-8 px-3 hidden md:flex"
+                  >
+                    Save & Exit
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* Card Content Area - Scrollable */}
+          <div className="flex-1 overflow-auto">
+            <div className="flex justify-center p-2 md:p-3">
+              <div className="w-full max-w-2xl space-y-3">
 
           {/* Start Quiz Overlay */}
           {hybridState.status === 'not_started' && (
@@ -781,8 +846,10 @@ export default function QuizSessionPage() {
             />
             </FeatureErrorBoundary>
           )}
-
-        </div>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
 
       {/* Question Flag Dialog */}
@@ -794,7 +861,6 @@ export default function QuizSessionPage() {
           toast.success('Question flagged successfully')
         }}
       />
-      </div>
-    </PageErrorBoundary>
+    </>
   )
 }

@@ -21,7 +21,9 @@ import { QuizSidebar } from "@/features/quiz/components/quiz-sidebar"
 import { UIQuizQuestion } from "@/features/quiz/types/quiz-question"
 import { createClient } from "@/shared/services/client"
 import { toast } from '@/shared/utils/toast'
+import { cn } from "@/shared/utils"
 import Link from "next/link"
+import { PanelLeftOpen } from "lucide-react"
 
 export default function QuizReviewPage() {
   const params = useParams()
@@ -30,6 +32,7 @@ export default function QuizReviewPage() {
   const [fullQuestions, setFullQuestions] = useState<UIQuizQuestion[]>([])
   const [loading, setLoading] = useState(true)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id
 
@@ -87,12 +90,7 @@ export default function QuizReviewPage() {
   }, [params?.id, sessionId])
 
   const formatTime = (timeValue: number) => {
-    // Handle legacy data that might be in milliseconds
-    // If the value is unreasonably large (> 3600 seconds = 1 hour), assume it's in milliseconds
-    let seconds = timeValue
-    if (timeValue > 3600) {
-      seconds = Math.round(timeValue / 1000)
-    }
+    const seconds = timeValue
 
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
@@ -108,6 +106,17 @@ export default function QuizReviewPage() {
   }
 
   if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold">Loading Quiz Review...</h2>
+        </div>
+      </div>
+    )
+  }
+
+  if (false) {
     return (
       <div className="min-h-screen bg-background/0 relative">
         <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-4 py-6">
@@ -160,21 +169,25 @@ export default function QuizReviewPage() {
 
   if (!result) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="text-center py-12">
-          <h1 className="text-2xl font-bold text-red-600">Quiz Results Not Available</h1>
-          <p className="text-muted-foreground mt-2">
-            The quiz results you're looking for don't exist or couldn't be loaded.
-          </p>
-          <div className="flex justify-center gap-2 mt-4">
-            <Button onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
-            <Link href="/dashboard">
-              <Button variant="outline">Back to Dashboard</Button>
-            </Link>
-          </div>
-        </div>
+      <div className="h-full flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardHeader>
+            <CardTitle className="text-red-600">Quiz Results Not Available</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              The quiz results you're looking for don't exist or couldn't be loaded.
+            </p>
+            <div className="flex gap-2">
+              <Button onClick={() => window.location.reload()} className="flex-1">
+                Try Again
+              </Button>
+              <Link href="/dashboard" className="flex-1">
+                <Button variant="outline" className="w-full">Back to Dashboard</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -215,36 +228,81 @@ export default function QuizReviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background/0 relative">
-      <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto px-4 py-6">
-        {/* Sidebar */}
-        <div className="lg:flex-shrink-0 order-2 lg:order-1">
-          <QuizSidebar
-            session={reviewSession as any}
-            currentQuestionIndex={currentQuestionIndex}
-            attempts={attempts}
-            onQuestionSelect={(index) => setCurrentQuestionIndex(index)}
-            timeRemaining={null}
-          />
-        </div>
+    <div className="h-full flex overflow-hidden">
+      {/* Mobile Backdrop */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-40 md:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
 
-        {/* Main Content */}
-        <div className="flex-1 space-y-6 order-1 lg:order-2">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">Quiz Review</h1>
-              <p className="text-muted-foreground">
-                Question {currentQuestionIndex + 1} of {fullQuestions.length}
-              </p>
-            </div>
-            <Link href={`/dashboard/quiz/${sessionId}/results`}>
-              <Button variant="outline">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Results
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "h-full shrink-0 bg-secondary border-r border-border overflow-hidden z-50 w-[280px]",
+          // Desktop: relative positioning, always visible
+          "md:relative md:translate-x-0",
+          // Mobile: fixed positioning, slide animation
+          "fixed left-0 top-0 transition-transform duration-300 ease-in-out",
+          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        )}
+      >
+        <QuizSidebar
+          session={reviewSession as any}
+          currentQuestionIndex={currentQuestionIndex}
+          attempts={attempts}
+          onQuestionSelect={(index) => {
+            setCurrentQuestionIndex(index)
+            setMobileSidebarOpen(false)
+          }}
+          timeRemaining={null}
+        />
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
+        {/* Header - Fixed at top */}
+        <header className="shrink-0 border-b border-border bg-background p-3 md:p-5">
+          <div className="flex items-center justify-between gap-2 md:gap-4">
+            <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+              {/* Mobile Menu Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                className="md:hidden"
+              >
+                <PanelLeftOpen className="h-4 w-4 mr-2" />
+                Quiz Navigation
               </Button>
-            </Link>
+
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
+                  QUIZ REVIEW
+                </div>
+                <div className="text-[13px] md:text-[14px] font-medium text-foreground truncate">
+                  Question {currentQuestionIndex + 1} of {fullQuestions.length}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href={`/dashboard/quiz/${sessionId}/results`}>
+                <Button variant="outline" size="sm">
+                  <ArrowLeft className="h-4 w-4 mr-2 hidden sm:block" />
+                  <span className="hidden sm:inline">Back to Results</span>
+                  <ArrowLeft className="h-4 w-4 sm:hidden" />
+                </Button>
+              </Link>
+            </div>
           </div>
+        </header>
+
+        {/* Card Content Area - Scrollable */}
+        <div className="flex-1 overflow-auto">
+          <div className="flex justify-center p-2 md:p-3">
+            <div className="w-full max-w-2xl space-y-3">
 
           {/* Question Metadata Card */}
           {currentResult && (
@@ -319,8 +377,10 @@ export default function QuizReviewPage() {
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

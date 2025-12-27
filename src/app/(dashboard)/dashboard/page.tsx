@@ -19,6 +19,7 @@ import { userSettingsService } from "@/shared/services/user-settings"
 import { useUserSettings } from "@/shared/hooks/use-user-settings"
 import { RecentActivity } from "@/features/dashboard/services/service"
 import { PageErrorBoundary, FeatureErrorBoundary } from "@/shared/components/common"
+import { useUnifiedData } from "@/shared/hooks/use-unified-data"
 
 interface DashboardStats {
   // New meaningful categories
@@ -61,8 +62,12 @@ interface DashboardStats {
 
 export default function DashboardPage() {
   const { user } = useAuthStatus()
+  const { data: unifiedData, isLoading: unifiedLoading } = useUnifiedData()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Combine unified loading state with local loading
+  const isLoading = unifiedLoading || loading
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false)
   const [showSecurityNotice, setShowSecurityNotice] = useState(false)
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false)
@@ -82,23 +87,24 @@ export default function DashboardPage() {
 
     const fetchData = async () => {
       try {
-        // Fetch dashboard stats
-        const statsResponse = await fetch('/api/user/dashboard/stats')
-        if (!statsResponse.ok) {
-          throw new Error(`Failed to fetch dashboard stats: ${statsResponse.status}`)
+        // Wait for unified data to load
+        if (!unifiedData) return
+
+        // Use unified API data directly (all data is now in one call!)
+        const mergedStats = {
+          ...unifiedData.dashboard,
+          performance: {
+            userPercentile: unifiedData.summary.userPercentile,
+            peerRank: unifiedData.summary.peerRank,
+            totalUsers: unifiedData.summary.totalUsers,
+            completedQuizzes: unifiedData.summary.completedQuizzes,
+            subjectsForImprovement: unifiedData.subjects.needsImprovement,
+            subjectsMastered: unifiedData.subjects.mastered,
+            overallScore: unifiedData.summary.overallScore
+          }
         }
 
-        // Check if response is JSON
-        const contentType = statsResponse.headers.get('content-type')
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('Dashboard API returned non-JSON response')
-        }
-
-        const statsResult = await statsResponse.json()
-        if (!statsResult.success) {
-          throw new Error(statsResult.error || 'Dashboard API returned error')
-        }
-        setStats(statsResult.data)
+        setStats(mergedStats)
 
         // Check if user has seen welcome message (use cached settings if available)
         const hasSeenWelcome = userSettings?.ui_settings?.welcome_message_seen ??
@@ -111,18 +117,18 @@ export default function DashboardPage() {
         setShowSecurityNotice(!securityNoticeDismissed)
 
         // Determine user status based on activity
-        const isFirstTime = !hasSeenWelcome && (statsResult.data.recentQuizzes === 0 || statsResult.data.completedQuestions === 0)
+        const isFirstTime = !hasSeenWelcome && (mergedStats.recentQuizzes === 0 || mergedStats.completedQuestions === 0)
         setIsFirstTimeUser(isFirstTime)
 
         // Check if user is returning after 7+ days (based on recent activity)
-        const hasRecentActivity = statsResult.data.recentActivity && statsResult.data.recentActivity.length > 0
+        const hasRecentActivity = mergedStats.recentActivity && mergedStats.recentActivity.length > 0
         if (hasRecentActivity && !isFirstTime) {
           // If they have activity but the most recent is more than 7 days old
           const sevenDaysAgo = new Date()
           sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
           // This is a simplified check - in a real implementation you'd parse the timestamp
-          setIsReturningUser(!hasRecentActivity || statsResult.data.recentQuizzes === 0)
+          setIsReturningUser(!hasRecentActivity || mergedStats.recentQuizzes === 0)
         }
       } catch (error) {
 
@@ -144,7 +150,7 @@ export default function DashboardPage() {
     }
 
     fetchData()
-  }, [user?.id])
+  }, [user?.id, unifiedData])
 
   return (
     <PageErrorBoundary pageName="Dashboard" showHomeButton={false} showBackButton={false}>

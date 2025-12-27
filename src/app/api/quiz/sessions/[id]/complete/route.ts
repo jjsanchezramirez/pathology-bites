@@ -4,6 +4,7 @@ import { createClient } from '@/shared/services/server'
 import { quizAnalyticsService } from '@/features/quiz/services/analytics-service'
 import { quizService } from '@/features/quiz/services/quiz-service'
 import { ActivityGenerator } from '@/shared/services/activity-generator'
+import { awardAchievements } from '@/features/achievements/services/achievement-service.server'
 
 export async function POST(
   request: NextRequest,
@@ -88,9 +89,23 @@ export async function POST(
       console.error('Failed to create activity for quiz completion:', activityError)
     }
 
+    // Check and award achievements
+    let newAchievements = []
+    try {
+      console.log('[Quiz Complete] Checking for new achievements...')
+      newAchievements = await awardAchievements(user.id)
+      if (newAchievements.length > 0) {
+        console.log(`✅ Awarded ${newAchievements.length} new achievement(s):`, newAchievements.map(a => a.title))
+      }
+    } catch (achievementError) {
+      // Don't fail the quiz completion if achievement check fails
+      console.error('Failed to check/award achievements:', achievementError)
+    }
+
     return NextResponse.json({
       success: true,
-      data: result
+      data: result,
+      newAchievements
     })
 
   } catch (error) {

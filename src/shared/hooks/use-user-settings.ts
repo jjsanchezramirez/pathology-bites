@@ -1,7 +1,7 @@
 // src/shared/hooks/use-user-settings.ts
-// Cached hook for user settings with localStorage persistence
+// Cached hook for user settings with SWR
 
-import { useCachedData } from './use-cached-data'
+import useSWR from 'swr'
 import { userSettingsService, type UserSettings } from '@/shared/services/user-settings'
 
 interface UseUserSettingsOptions {
@@ -12,43 +12,56 @@ interface UseUserSettingsOptions {
 }
 
 /**
- * Hook for user settings with intelligent caching
- * 
+ * Hook for user settings with SWR caching
+ *
  * Features:
- * - localStorage persistence across sessions
- * - Automatic stale-while-revalidate
- * - Eliminates redundant API calls
- * - 5 minute cache, 2 minute stale time
- * 
+ * - Automatic request deduplication (no redundant calls!)
+ * - 30-minute cache (consistent with unified API)
+ * - Revalidate on window focus
+ * - Shared across all components
+ *
  * Usage:
  * ```tsx
- * const { data: settings, isLoading, refetch, invalidate } = useUserSettings()
+ * const { data: settings, isLoading, mutate } = useUserSettings()
  * ```
  */
 export function useUserSettings(options: UseUserSettingsOptions = {}) {
   const {
     enabled = true,
-    refetchOnMount = false, // Changed default to false - cache handles freshness
     onSuccess,
     onError
   } = options
 
-  return useCachedData<UserSettings>(
-    'user-settings',
+  const { data, error, isLoading, mutate } = useSWR<UserSettings>(
+    enabled ? '/api/user/settings' : null,
     async () => {
-      return await userSettingsService.getUserSettings()
+      const result = await userSettingsService.getUserSettings()
+      if (onSuccess) onSuccess(result)
+      return result
     },
     {
-      enabled,
-      refetchOnMount,
-      ttl: 5 * 60 * 1000, // 5 minutes cache
-      staleTime: 2 * 60 * 1000, // 2 minutes stale time
-      storage: 'localStorage', // Persist across sessions
-      prefix: 'pathology-bites-settings',
-      onSuccess,
-      onError
+      // 30-minute cache (consistent with unified API)
+      dedupingInterval: 30 * 60 * 1000,
+      // Revalidate on focus
+      revalidateOnFocus: true,
+      // Don't revalidate on reconnect
+      revalidateOnReconnect: false,
+      // Keep previous data
+      keepPreviousData: true,
+      // Error handling
+      onError,
+      errorRetryCount: 1,
+      errorRetryInterval: 10000,
     }
   )
+
+  return {
+    data,
+    isLoading,
+    error,
+    refetch: mutate,
+    invalidate: mutate,
+  }
 }
 
 /**

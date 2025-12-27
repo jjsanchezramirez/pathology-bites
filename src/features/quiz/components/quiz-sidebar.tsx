@@ -16,7 +16,6 @@ interface QuizSidebarProps {
   }>
   onQuestionSelect?: (index: number) => void
   timeRemaining?: number | null
-  isExpanded?: boolean
 }
 
 export function QuizSidebar({
@@ -24,8 +23,7 @@ export function QuizSidebar({
   currentQuestionIndex,
   attempts,
   onQuestionSelect,
-  timeRemaining,
-  isExpanded = true
+  timeRemaining
 }: QuizSidebarProps) {
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -84,21 +82,19 @@ export function QuizSidebar({
   const progress = ((currentQuestionIndex + 1) / session.totalQuestions) * 100
 
   return (
-    <>
-      {isExpanded ? (
-        <div className="h-full w-full flex flex-col min-w-[280px]">
-          {/* Header */}
-          <div className="p-5 border-b border-border shrink-0">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
-              QUIZ PROGRESS
-            </div>
-            <div className="text-[13px] text-muted-foreground">
-              Question {currentQuestionIndex + 1} of {session.totalQuestions}
-            </div>
-          </div>
+    <div className="h-full w-full flex flex-col min-w-[280px]">
+      {/* Header */}
+      <div className="p-5 border-b border-border shrink-0">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
+          QUIZ PROGRESS
+        </div>
+        <div className="text-[13px] text-muted-foreground">
+          Question {currentQuestionIndex + 1} of {session.totalQuestions}
+        </div>
+      </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-3">
+          <div className="flex-1 overflow-y-auto p-3 ankoma-scrollbar-light dark:ankoma-scrollbar-dark">
             <div className="space-y-4 mb-6">
               {/* Progress Bar */}
               <div className="space-y-2">
@@ -136,7 +132,7 @@ export function QuizSidebar({
                   onClick={() => onQuestionSelect?.(index)}
                   disabled={index > currentQuestionIndex}
                   className={cn(
-                    "w-full px-3 py-2.5 rounded-lg transition-colors flex items-center text-left cursor-pointer gap-2",
+                    "w-full px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out flex items-center text-left cursor-pointer gap-2",
                     getQuestionButtonClass(index),
                     index > currentQuestionIndex && "opacity-50 cursor-not-allowed"
                   )}
@@ -161,19 +157,5 @@ export function QuizSidebar({
             </div>
           </div>
         </div>
-      ) : (
-        <div className="h-full w-full flex flex-col items-center pt-5 px-2 gap-6">
-          <Target className="h-5 w-5 text-muted-foreground shrink-0" />
-          <div className="flex flex-col items-center gap-4">
-            <div className="writing-mode-vertical-rl rotate-180 text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground">
-              QUIZ
-            </div>
-            <div className="writing-mode-vertical-rl rotate-180 text-[13px] text-muted-foreground">
-              {currentQuestionIndex + 1}/{session.totalQuestions}
-            </div>
-          </div>
-        </div>
-      )}
-    </>
   )
 }

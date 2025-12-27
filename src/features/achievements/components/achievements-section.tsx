@@ -22,17 +22,17 @@ export function AchievementsSection({ category }: AchievementsSectionProps) {
       </div>
 
       {/* Achievement Cards Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
         {category.achievements.map((achievement) => (
           <AchievementCard
             key={achievement.id}
-            icon={achievement.icon}
+            animationType={achievement.animationType}
             title={achievement.title}
             description={achievement.description}
             isUnlocked={achievement.isUnlocked}
             progress={achievement.progress}
             maxProgress={achievement.requirement}
-            iconColor={achievement.iconColor}
+            category={achievement.category}
           />
         ))}
       </div>

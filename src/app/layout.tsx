@@ -1,6 +1,6 @@
 // src/app/layout.tsx
 import { ConditionalThemeProvider } from '@/shared/components/common/conditional-theme-provider'
-import { Toaster as SonnerToaster } from "@/shared/components/ui/sonner"
+import { Toaster as SonnerToaster } from "sonner"
 import { ConnectionStatus } from "@/shared/components/common/connection-status"
 import { CookieConsentBanner } from "@/shared/components/common/cookie-consent-banner"
 

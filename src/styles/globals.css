@@ -19,8 +19,8 @@
     border-color: var(--color-gray-200, currentcolor);
   }
 
-  /* Smooth page transitions for dashboard mode switching */
-  main {
+  /* Smooth page transitions for dashboard mode switching - but NOT on anki page */
+  main:not(.anki-main) {
     animation: fadeInUp 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -35,8 +35,8 @@
     }
   }
 
-  /* Smooth header transitions */
-  header {
+  /* Smooth header transitions - but NOT on anki page */
+  header:not(.anki-header) {
     animation: fadeIn 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 

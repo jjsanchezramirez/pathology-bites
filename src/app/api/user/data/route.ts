@@ -1,8 +1,10 @@
 // Unified Performance API - Single endpoint for all performance data
-// Consolidates: timeline, category-details, activity-heatmap, and dashboard stats
+// Consolidates: timeline, category-details, activity-heatmap, dashboard stats, and achievements
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { ACHIEVEMENT_DEFINITIONS, checkAchievements, type UserStats } from '@/features/achievements/services/achievement-checker'
+import type { Achievement } from '@/features/achievements/types/achievement'
 
 interface UnifiedPerformanceResponse {
   success: boolean
@@ -72,6 +74,42 @@ interface UnifiedPerformanceResponse {
         totalQuizzes: number
         daysWithActivity: number
       }
+    }
+
+    // Achievements data
+    achievements: {
+      stats: UserStats
+      unlocked: Array<{
+        id: string
+        group_key: string
+        created_at: string
+      }>
+      progress: Array<Achievement>
+    }
+
+    // Dashboard-specific data
+    dashboard: {
+      allQuestions: number
+      needsReview: number
+      mastered: number
+      unused: number
+      totalQuestions: number
+      completedQuestions: number
+      averageScore: number
+      studyStreak: number
+      recentQuizzes: number
+      weeklyGoal: number
+      currentWeekProgress: number
+      recentActivity: Array<{
+        id: string
+        type: string
+        title: string
+        description: string
+        timestamp: string
+        timeGroup?: string
+        score?: number
+        navigationUrl?: string
+      }>
     }
   }
 }
@@ -443,6 +481,191 @@ export async function GET() {
       }
     }
 
+    // ===== ACHIEVEMENTS CALCULATION =====
+    // Calculate achievement stats (reusing data already fetched)
+
+    // Perfect scores (already have completedSessions)
+    const perfectScores = completedSessions.filter(s => s.score === 100).length
+
+    // Recent accuracy (last 10 quizzes) - using completedSessions
+    const last10Quizzes = completedSessions
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 10)
+
+    const recentAccuracy = last10Quizzes.length > 0
+      ? last10Quizzes.reduce((sum, s) => sum + (s.score || 0), 0) / last10Quizzes.length
+      : 0
+
+    // Unique subjects (already have categoryDetails)
+    const uniqueSubjects = categoryDetails.length
+    const totalCategories = categoryDetails.length // Total categories user has interacted with
+
+    // Speed records - check perfect score quizzes with time limits
+    let speedRecords5min = 0
+    let speedRecords2min = 0
+    let speedRecords25in5min = 0
+    let speedRecords25in2min = 0
+
+    const perfectQuizzes = completedSessions.filter(s => s.score === 100)
+    perfectQuizzes.forEach(quiz => {
+      const totalQuestions = (quiz.quiz_attempts as any[])?.length || 0
+      const totalTime = quiz.total_time_spent || 0
+
+      if (totalQuestions >= 10) {
+        if (totalTime <= 300) speedRecords5min = 1
+        if (totalTime <= 120) speedRecords2min = 1
+      }
+
+      if (totalQuestions >= 25) {
+        if (totalTime <= 300) speedRecords25in5min = 1
+        if (totalTime <= 120) speedRecords25in2min = 1
+      }
+    })
+
+    // Build UserStats object
+    const achievementStats: UserStats = {
+      totalQuizzes: completedSessions.length,
+      perfectScores,
+      currentStreak,
+      longestStreak,
+      speedRecords5min,
+      speedRecords2min,
+      speedRecords25in5min,
+      speedRecords25in2min,
+      recentAccuracy,
+      uniqueSubjects,
+      totalCategories
+    }
+
+    // Get unlocked achievements from database
+    const { data: unlockedAchievements } = await supabase
+      .from('user_achievements')
+      .select('id, group_key, created_at')
+      .eq('user_id', user.id)
+      .eq('type', 'achievement')
+      .order('created_at', { ascending: false })
+
+    const unlockedIds = new Set((unlockedAchievements || []).map(a => a.group_key))
+
+    // Calculate progress for all achievements
+    const achievementProgress: Achievement[] = ACHIEVEMENT_DEFINITIONS.map(def => {
+      const isUnlocked = unlockedIds.has(def.id)
+      const userAchievement = unlockedAchievements?.find(a => a.group_key === def.id)
+
+      let progress = 0
+      let requirement = def.requirement
+
+      switch (def.category) {
+        case 'quiz':
+          progress = Math.min(achievementStats.totalQuizzes, def.requirement)
+          break
+        case 'perfect':
+          progress = Math.min(achievementStats.perfectScores, def.requirement)
+          break
+        case 'streak':
+          progress = Math.min(achievementStats.currentStreak, def.requirement)
+          break
+        case 'differential':
+          if (def.id === 'differential-all' && achievementStats.totalCategories) {
+            requirement = achievementStats.totalCategories
+            progress = achievementStats.uniqueSubjects
+          } else {
+            progress = Math.min(achievementStats.uniqueSubjects, def.requirement)
+          }
+          break
+        // Speed and accuracy are binary, no progress shown
+      }
+
+      return {
+        id: def.id,
+        title: def.title,
+        description: def.description,
+        animationType: def.animationType,
+        category: def.category,
+        requirement,
+        isUnlocked,
+        progress,
+        unlockedDate: userAchievement?.created_at
+      }
+    })
+
+    // ===== DASHBOARD DATA CALCULATION =====
+    // Calculate dashboard-specific stats
+
+    // Get total questions count
+    const { count: allQuestionsCount } = await supabase
+      .from('questions')
+      .select('*', { count: 'exact', head: true })
+
+    // Calculate mastered/needs review from attempts
+    const questionAttempts = new Map<string, { correct: number; incorrect: number }>()
+
+    allAttempts.forEach((attempt: any) => {
+      const existing = questionAttempts.get(attempt.question_id) || { correct: 0, incorrect: 0 }
+      if (attempt.is_correct) {
+        existing.correct++
+      } else {
+        existing.incorrect++
+      }
+      questionAttempts.set(attempt.question_id, existing)
+    })
+
+    // Mastered: 2+ correct, no incorrect
+    // Needs review: any incorrect
+    let masteredCount = 0
+    let needsReviewCount = 0
+
+    questionAttempts.forEach((counts) => {
+      if (counts.correct >= 2 && counts.incorrect === 0) {
+        masteredCount++
+      } else if (counts.incorrect > 0) {
+        needsReviewCount++
+      }
+    })
+
+    const completedQuestionsCount = questionAttempts.size
+    const unusedCount = Math.max(0, (allQuestionsCount || 0) - completedQuestionsCount)
+
+    // Recent activity from sessions
+    const recentActivity: Array<{
+      id: string
+      type: string
+      title: string
+      description: string
+      timestamp: string
+      timeGroup?: string
+      score?: number
+      navigationUrl?: string
+    }> = []
+
+    completedSessions.slice(0, 5).forEach((session: any) => {
+      const isCompleted = session.status === 'completed'
+      recentActivity.push({
+        id: `session-${session.id}`,
+        type: isCompleted ? 'quiz_completed' : 'quiz_started',
+        title: isCompleted ? 'Completed Quiz' : 'Started Quiz',
+        description: isCompleted ? 'View detailed results' : 'Continue where you left off',
+        timestamp: session.completed_at || session.created_at,
+        score: session.score,
+        navigationUrl: isCompleted ? `/dashboard/quiz/${session.id}/results` : `/dashboard/quiz/${session.id}`
+      })
+    })
+
+    // If no activity, add welcome message
+    if (recentActivity.length === 0) {
+      recentActivity.push({
+        id: 'welcome-1',
+        type: 'welcome',
+        title: 'Start Your First Quiz',
+        description: 'Take a quick starter quiz to see how we track your progress.',
+        timestamp: new Date().toISOString()
+      })
+    }
+
+    // Weekly goal progress (simple calculation)
+    const weeklyGoal = 50
+    const currentWeekProgress = completedSessions.length // Simplified
+
     const response: UnifiedPerformanceResponse = {
       success: true,
       data: {
@@ -472,6 +695,25 @@ export async function GET() {
             totalQuizzes,
             daysWithActivity
           }
+        },
+        achievements: {
+          stats: achievementStats,
+          unlocked: unlockedAchievements || [],
+          progress: achievementProgress
+        },
+        dashboard: {
+          allQuestions: allQuestionsCount || 0,
+          needsReview: needsReviewCount,
+          mastered: masteredCount,
+          unused: unusedCount,
+          totalQuestions: allQuestionsCount || 0,
+          completedQuestions: completedQuestionsCount,
+          averageScore: overallScore,
+          studyStreak: currentStreak,
+          recentQuizzes: completedSessions.length,
+          weeklyGoal,
+          currentWeekProgress,
+          recentActivity
         }
       }
     }

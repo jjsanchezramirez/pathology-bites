@@ -28,10 +28,12 @@ export function UnifiedLayoutClient({
   const { role, isLoading } = useUserRole()
   const pathname = usePathname()
 
-  // Check if we're on the anki or anki2 page (which have their own layouts)
+  // Check if we're on pages that have their own full-height layouts
   const isAnkiPage = pathname === '/dashboard/anki'
   const isAnki2Page = pathname === '/dashboard/anki2'
-  const isFullHeightPage = isAnkiPage || isAnki2Page
+  const isQuizTestPage = pathname === '/dashboard/quiz-test'
+  const isQuizPage = pathname?.startsWith('/dashboard/quiz/') || false
+  const isFullHeightPage = isAnkiPage || isAnki2Page || isQuizTestPage || isQuizPage
 
   // Don't show navigation until we know the user's role (for admin routes)
   // This prevents showing user nav first, then switching to admin nav

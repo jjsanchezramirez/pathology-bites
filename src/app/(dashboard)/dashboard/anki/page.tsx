@@ -389,7 +389,7 @@ export default function AnkiPage() {
                         key={deck.id}
                         onClick={() => handleDeckSelect(deck.id)}
                         className={cn(
-                          "w-full px-3 py-2.5 rounded-lg transition-colors flex flex-col text-left cursor-pointer gap-1",
+                          "w-full px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out flex flex-col text-left cursor-pointer gap-1",
                           isActive ? "bg-primary text-primary-foreground" : "bg-transparent hover:bg-muted"
                         )}
                       >
@@ -472,13 +472,13 @@ export default function AnkiPage() {
                         <button
                           onClick={() => handleCategoryClick(category.id, hasSubcategories)}
                           className={cn(
-                            "w-full px-3 py-2.5 rounded-lg transition-colors flex items-center text-left cursor-pointer gap-2 hover:bg-muted"
+                            "w-full px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out flex items-center text-left cursor-pointer gap-2 hover:bg-muted"
                           )}
                         >
                           {hasSubcategories && (
                             <ChevronRight
                               className={cn(
-                                "w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200",
+                                "w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 ease-in-out",
                                 isCategoryExpanded && "rotate-90"
                               )}
                             />
@@ -493,7 +493,7 @@ export default function AnkiPage() {
                         </button>
 
                         {hasSubcategories && isCategoryExpanded && (
-                          <div className="ml-6 mt-1 space-y-0.5">
+                          <div className="ml-6 mt-1 space-y-0.5 animate-in slide-in-from-top-1 duration-200">
                             {category.subcategories.map((subcategory) => {
                               const isSubActive = selectedSubcategory === subcategory.name
                               return (
@@ -501,7 +501,7 @@ export default function AnkiPage() {
                                   key={subcategory.name}
                                   onClick={() => handleSubcategoryClick(subcategory.name)}
                                   className={cn(
-                                    "w-full py-2 px-3 rounded-lg transition-colors flex items-center justify-between cursor-pointer text-left",
+                                    "w-full py-2 px-3 rounded-lg transition-all duration-200 ease-in-out flex items-center justify-between cursor-pointer text-left",
                                     isSubActive ? "bg-primary text-primary-foreground" : "bg-transparent hover:bg-muted"
                                   )}
                                 >
@@ -551,9 +551,9 @@ export default function AnkiPage() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
+      <main className="anki-main flex-1 min-w-0 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="shrink-0 border-b border-border bg-background p-3 md:p-5">
+        <header className="anki-header shrink-0 border-b border-border bg-background p-3 md:p-5">
           <div className="flex items-center justify-between gap-2 md:gap-4">
             <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
               <div className="min-w-0 flex-1">

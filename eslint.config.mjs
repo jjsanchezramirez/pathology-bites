@@ -49,9 +49,10 @@ const eslintConfig = [...compat.extends("next/core-web-vitals", "next/typescript
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Allow direct sonner imports only in utility wrapper and UI component
+    // Allow direct sonner imports only in utility wrapper, UI component, and root layout
     "src/shared/utils/toast.ts",
-    "src/shared/components/ui/sonner.tsx"
+    "src/shared/components/ui/sonner.tsx",
+    "src/app/layout.tsx"
   ]
 }];
 

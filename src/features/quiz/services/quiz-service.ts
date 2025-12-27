@@ -601,13 +601,8 @@ export class QuizService {
       const score = Math.round((correctAnswers / totalQuestions) * 100)
 
       // Calculate total time spent from individual attempts (more accurate than session.totalTimeSpent)
-      // Handle legacy data that might be in milliseconds or zero values
       const totalTimeSpent = attempts?.reduce((sum: number, a: any) => {
-        let timeSpent = a.time_spent || 0
-        // If the value is unreasonably large (> 3600 seconds = 1 hour), assume it's in milliseconds
-        if (timeSpent > 3600) {
-          timeSpent = Math.round(timeSpent / 1000)
-        }
+        const timeSpent = a.time_spent || 0
         return sum + timeSpent
       }, 0) || 0
       const averageTimePerQuestion = totalQuestions > 0 ? Math.round(totalTimeSpent / totalQuestions) : 0
@@ -689,11 +684,7 @@ export class QuizService {
       const questionDetails = session.questions.map(question => {
         const attempt = attempts?.find((a: any) => a.question_id === question.id)
 
-        // Handle time conversion (might be in milliseconds)
-        let timeSpent = attempt?.time_spent || 0
-        if (timeSpent > 3600) {
-          timeSpent = Math.round(timeSpent / 1000)
-        }
+        const timeSpent = attempt?.time_spent || 0
 
         return {
           id: question.id,
@@ -802,13 +793,9 @@ export class QuizService {
       const correctAnswers = attempts?.filter((a: any) => a.is_correct).length || 0
       const totalQuestions = session.totalQuestions
       const score = Math.round((correctAnswers / totalQuestions) * 100)
-      // Calculate total time spent with legacy data handling
+      // Calculate total time spent
       const totalTimeSpent = attempts?.reduce((sum: number, a: any) => {
-        let timeSpent = a.time_spent || 0
-        // If the value is unreasonably large (> 3600 seconds = 1 hour), assume it's in milliseconds
-        if (timeSpent > 3600) {
-          timeSpent = Math.round(timeSpent / 1000)
-        }
+        const timeSpent = a.time_spent || 0
         return sum + timeSpent
       }, 0) || 0
       const averageTimePerQuestion = Math.round(totalTimeSpent / totalQuestions)

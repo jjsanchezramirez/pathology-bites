@@ -1,13 +1,12 @@
 // src/features/achievements/types/achievement.ts
 
-import { LucideIcon } from 'lucide-react'
+export type AnimationType = 'badge' | 'medal' | 'star_badge' | 'star_medal' | 'crown' | 'trophy_large'
 
 export interface Achievement {
   id: string
   title: string
   description: string
-  icon: LucideIcon
-  iconColor: string
+  animationType: AnimationType
   category: 'quiz' | 'perfect' | 'streak' | 'speed' | 'accuracy'
   requirement: number
   isUnlocked: boolean

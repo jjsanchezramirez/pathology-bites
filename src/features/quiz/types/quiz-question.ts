@@ -58,7 +58,7 @@ export interface QuizAnswer {
   selectedOptionId: string;
   isCorrect: boolean;
   timestamp: number;
-  timeSpent: number; // milliseconds
+  timeSpent: number; // seconds
 }
 
 // Quiz state interface

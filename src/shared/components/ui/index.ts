@@ -23,7 +23,7 @@ export * from './select'
 export * from './separator'
 export * from './skeleton'
 export * from './slider'
-export { Toaster as SonnerToaster } from './sonner'
+// Note: SonnerToaster is imported directly in layout.tsx to avoid linting issues
 export * from './standard-dialog'
 export * from './switch'
 export * from './table'

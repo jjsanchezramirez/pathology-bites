@@ -11,6 +11,7 @@ import {
   ActivityHeatmap
 } from '@/features/performance/components/interactive-chart-demos'
 import { isQuizFeaturesEnabled } from '@/shared/config/feature-flags'
+import { useUnifiedData } from '@/shared/hooks/use-unified-data'
 
 interface DashboardStats {
   performance?: {
@@ -80,58 +81,25 @@ interface UnifiedPerformanceData {
 
 export default function PerformancePage() {
   const featuresEnabled = isQuizFeaturesEnabled()
+  const { data: unifiedData, isLoading } = useUnifiedData()
   const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [performanceData, setPerformanceData] = useState<UnifiedPerformanceData | null>(null)
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!featuresEnabled) return
+    if (!featuresEnabled || !unifiedData) return
 
-    const fetchPerformanceData = async () => {
-      try {
-        // Fetch ALL performance data from single unified API endpoint
-        const response = await fetch('/api/user/performance/all')
-
-        if (!response.ok) {
-          const errorText = await response.text()
-          console.error('Performance API error:', errorText)
-          throw new Error(`Performance API failed: ${response.status}`)
-        }
-
-        const result = await response.json()
-
-        if (!result.success) {
-          throw new Error('Performance API returned unsuccessful response')
-        }
-
-        console.log('Unified performance data loaded:', result.data)
-
-        // Store the full performance data
-        setPerformanceData(result.data)
-
-        // Transform unified API response to match component expectations
-        setStats({
-          performance: {
-            userPercentile: result.data.summary.userPercentile,
-            peerRank: result.data.summary.peerRank,
-            totalUsers: result.data.summary.totalUsers,
-            completedQuizzes: result.data.summary.completedQuizzes,
-            subjectsForImprovement: result.data.subjects.needsImprovement,
-            subjectsMastered: result.data.subjects.mastered,
-            overallScore: result.data.summary.overallScore
-          }
-        })
-
-      } catch (error) {
-        console.error('Error fetching performance data:', error)
-        toast.error('Failed to load performance data')
-      } finally {
-        setLoading(false)
+    // Transform unified API response to match component expectations
+    setStats({
+      performance: {
+        userPercentile: unifiedData.summary.userPercentile,
+        peerRank: unifiedData.summary.peerRank,
+        totalUsers: unifiedData.summary.totalUsers,
+        completedQuizzes: unifiedData.summary.completedQuizzes,
+        subjectsForImprovement: unifiedData.subjects.needsImprovement,
+        subjectsMastered: unifiedData.subjects.mastered,
+        overallScore: unifiedData.summary.overallScore
       }
-    }
-
-    fetchPerformanceData()
-  }, [featuresEnabled])
+    })
+  }, [featuresEnabled, unifiedData])
 
   // Show placeholder if features are disabled
   if (!featuresEnabled) {
@@ -144,7 +112,7 @@ export default function PerformancePage() {
     )
   }
 
-  if (loading) {
+  if (isLoading) {
     return <PerformanceLoading />
   }
 
@@ -176,26 +144,26 @@ export default function PerformancePage() {
       {/* Interactive Charts - All data from single API call */}
       <div className="grid gap-6 lg:grid-cols-2">
         <PerformanceTimelineChart
-          data={performanceData?.timeline || []}
-          loading={loading}
+          data={unifiedData?.timeline || []}
+          loading={isLoading}
         />
         <CategoryRadarChart
-          data={performanceData?.categories.map(cat => ({
+          data={unifiedData?.categories.map(cat => ({
             category_name: cat.category_name,
             accuracy: cat.accuracy
           })) || []}
-          loading={loading}
+          loading={isLoading}
         />
       </div>
 
       <ActivityHeatmap
-        data={performanceData?.heatmap.data || []}
-        stats={performanceData?.heatmap.stats || null}
-        loading={loading}
+        data={unifiedData?.heatmap.data || []}
+        stats={unifiedData?.heatmap.stats || null}
+        loading={isLoading}
       />
 
       {/* Detailed Category Breakdown */}
-      <CategoryPerformanceCard categoryDetails={performanceData?.categories || []} />
+      <CategoryPerformanceCard categoryDetails={unifiedData?.categories || []} />
     </div>
   )
 }

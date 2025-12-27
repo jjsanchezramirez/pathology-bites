@@ -32,13 +32,7 @@ export function QuizResultsSummary({
       return '0:00'
     }
 
-    // Handle legacy data that might be in milliseconds
-    // If the value is unreasonably large (> 3600 seconds = 1 hour), assume it's in milliseconds
-    let seconds = timeValue
-    if (timeValue > 3600) {
-      seconds = Math.round(timeValue / 1000)
-    }
-
+    const seconds = timeValue
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`
