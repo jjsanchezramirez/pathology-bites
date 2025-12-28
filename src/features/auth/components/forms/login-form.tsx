@@ -49,19 +49,8 @@ export function LoginForm({
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY
   const router = useRouter()
 
-  // Client-side auth check - redirect if already logged in
-  const { isAuthenticated, isLoading: authLoading, role } = useAuth({ minimal: true })
-
-  // Redirect authenticated users to their dashboard
-  useEffect(() => {
-    if (!authLoading && isAuthenticated && role) {
-      const redirectPath = redirect ||
-        (role === 'admin' || role === 'creator' || role === 'reviewer'
-          ? '/admin/dashboard'
-          : '/dashboard')
-      router.replace(redirectPath)
-    }
-  }, [isAuthenticated, authLoading, role, redirect, router])
+  // Note: Removed automatic redirect for authenticated users to prevent race condition.
+  // The server action handles the redirect after successful login.
 
   // Show error/message toasts from props (passed from server component)
   useEffect(() => {
@@ -203,28 +192,26 @@ export function LoginForm({
             <Turnstile
               ref={turnstileRef}
               siteKey={siteKey}
+              options={{
+                theme: 'auto',
+                size: 'normal',
+                retry: 'auto',
+                'retry-interval': 8000,
+              }}
               onSuccess={(token) => {
                 setCaptchaToken(token)
                 console.log('[LoginForm] CAPTCHA verification successful')
               }}
-              onError={() => {
+              onError={(error) => {
                 setCaptchaToken(null)
-                console.log('[LoginForm] CAPTCHA verification error')
-                // Only show CAPTCHA error if not already showing a login error
-                if (!initialError) {
-                  toast.error("Security verification failed. Please wait a few seconds and it will reload automatically.", {
-                    id: `captcha-error-${Date.now()}`,
-                    duration: 6000
-                  })
-                }
+                console.log('[LoginForm] CAPTCHA verification error:', error)
+                // Don't show toast on error - Turnstile will auto-retry
+                // The widget reloads automatically, so no need to alarm the user
               }}
               onExpire={() => {
                 setCaptchaToken(null)
                 console.log('[LoginForm] CAPTCHA verification expired')
-                toast.warning("Security verification expired. Please verify again.", {
-                  id: `captcha-expired-${Date.now()}`,
-                  duration: 5000
-                })
+                // Don't show toast on expire - it will auto-reload
               }}
             />
           </div>

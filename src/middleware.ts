@@ -1,11 +1,35 @@
 // middleware.ts
-// MINIMAL MIDDLEWARE: Only handles Supabase session refresh (cookie management)
-// No auth checks - all auth logic is client-side to minimize edge requests
+// OPTIMIZED: Only runs on admin routes and protected API routes
+// Client-side handles /dashboard auth to save edge function invocations
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+
+  // Define which routes need protection
+  const isAdminRoute = pathname.startsWith('/admin')
+  const isDashboardRoute = pathname.startsWith('/dashboard')
+  const isApiRoute = pathname.startsWith('/api/')
+  const isPublicApi = pathname.startsWith('/api/public/') || pathname.startsWith('/api/auth/')
+
+  // Public routes that don't need auth
+  const publicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/']
+  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))
+
+  // Skip middleware for public routes and public APIs
+  if (isPublicRoute || (isApiRoute && isPublicApi)) {
+    return NextResponse.next()
+  }
+
+  // Protect dashboard, admin, and private API routes
+  const needsAuth = isDashboardRoute || isAdminRoute || (isApiRoute && !isPublicApi)
+
+  if (!needsAuth) {
+    return NextResponse.next()
+  }
+
   // Create response
   let response = NextResponse.next({
     request: {
@@ -13,7 +37,7 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  // Create Supabase client for session management only
+  // Create Supabase client
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -35,13 +59,40 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // This triggers session refresh if needed (updates cookies)
-  // No auth checks - just session management
+  // Get user session
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Add user ID to request headers for API routes
-  // This allows API routes to access the user ID without additional auth calls
-  if (user && request.nextUrl.pathname.startsWith('/api/')) {
+  // DASHBOARD ROUTES: Basic authentication required
+  if (isDashboardRoute) {
+    if (!user) {
+      const redirectUrl = new URL('/login', request.url)
+      redirectUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(redirectUrl)
+    }
+  }
+
+  // ADMIN ROUTES: Strict server-side authorization (authentication + role check)
+  if (isAdminRoute) {
+    if (!user) {
+      const redirectUrl = new URL('/login', request.url)
+      redirectUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(redirectUrl)
+    }
+
+    const role = user.app_metadata?.role || user.user_metadata?.role
+    const isAuthorized = role === 'admin' || role === 'creator' || role === 'reviewer'
+
+    if (!isAuthorized) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+  }
+
+  // API ROUTES: Add user ID to headers if authenticated
+  if (isApiRoute && !isPublicApi) {
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-user-id', user.id)
 

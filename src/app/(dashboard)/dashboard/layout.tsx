@@ -4,7 +4,6 @@
 import { UnifiedLayoutClient } from "@/shared/components/layout/unified-layout-client"
 import { DashboardSettingsProvider } from "@/shared/contexts/dashboard-settings-provider"
 import { DashboardThemeProvider } from "@/shared/contexts/dashboard-theme-context"
-import { AuthGuard } from "@/shared/components/auth/auth-guard"
 
 export default function DashboardLayoutWrapper({
   children,
@@ -12,20 +11,18 @@ export default function DashboardLayoutWrapper({
   children: React.ReactNode
 }) {
   return (
-    <AuthGuard>
-      <DashboardSettingsProvider>
-        <DashboardThemeProvider>
-          <UnifiedLayoutClient
-            userType="user"
-            headerConfig={{
-              showNotifications: true,
-              showFontSize: true,
-            }}
-          >
-            {children}
-          </UnifiedLayoutClient>
-        </DashboardThemeProvider>
-      </DashboardSettingsProvider>
-    </AuthGuard>
+    <DashboardSettingsProvider>
+      <DashboardThemeProvider>
+        <UnifiedLayoutClient
+          userType="user"
+          headerConfig={{
+            showNotifications: true,
+            showFontSize: true,
+          }}
+        >
+          {children}
+        </UnifiedLayoutClient>
+      </DashboardThemeProvider>
+    </DashboardSettingsProvider>
   )
 }

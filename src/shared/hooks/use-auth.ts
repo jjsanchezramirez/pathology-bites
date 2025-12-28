@@ -94,17 +94,22 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
           const parsed = JSON.parse(cached)
           // Only use cache if it has a user (valid session)
           if (parsed.user && parsed.session) {
-            return {
+            const cachedState = {
               ...parsed,
-              isLoading: true // Still loading to verify session
+              isLoading: false, // Cache is ready, no need to show loading
+              error: null
             }
+            console.log('[useAuth] Restored from cache:', { isAuthenticated: cachedState.isAuthenticated, role: cachedState.role })
+            return cachedState
           }
         }
       } catch (e) {
         // Ignore parse errors
+        console.error('[useAuth] Failed to parse cached auth:', e)
       }
     }
 
+    console.log('[useAuth] No cache found, starting with unauthenticated state')
     return {
       user: null,
       session: null,
@@ -151,7 +156,8 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
     }
   }
 
-  // Hydration
+  // Hydration - set to true immediately since we initialize from sessionStorage synchronously
+  // The initial useState already handles sessionStorage restoration
   useEffect(() => {
     setIsHydrated(true)
   }, [])

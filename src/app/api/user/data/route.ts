@@ -276,7 +276,7 @@ export async function GET(request: NextRequest) {
         : 50
 
       const sortedUsers = userAverages.sort((a, b) => b.avgScore - a.avgScore)
-      const userRank = sortedUsers.findIndex(u => u.userId === user.id) + 1
+      const userRank = sortedUsers.findIndex(u => u.userId === userId) + 1
       peerRank = userRank > 0 ? userRank : 50
       totalUsers = userAverages.length
     }
