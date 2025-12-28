@@ -75,7 +75,8 @@ async function searchNCIEVS(term: string): Promise<string[]> {
     const expansions = new Set<string>()
     const abbreviations = new Set<string>()
 
-    for (const result of results.slice(0, 5)) {
+    // Only use top 2 concepts to reduce duplicate searches
+    for (const result of results.slice(0, 2)) {
       const normalizedName = normalize(result.name)
       if (normalizedName !== normalize(term)) {
         expansions.add(normalizedName)
@@ -85,12 +86,14 @@ async function searchNCIEVS(term: string): Promise<string[]> {
         for (const syn of result.synonyms) {
           const normalizedSyn = normalize(syn.name)
 
+          // Prioritize abbreviations (AB)
           if (syn.termType === 'AB') {
             if (normalizedSyn !== normalize(term)) {
               abbreviations.add(normalizedSyn)
             }
           } else {
-            if (normalizedSyn !== normalize(term) && expansions.size < 15) {
+            // Limit regular synonyms to 3 per concept (down from 15)
+            if (normalizedSyn !== normalize(term) && expansions.size < 3) {
               expansions.add(normalizedSyn)
             }
           }
@@ -98,7 +101,8 @@ async function searchNCIEVS(term: string): Promise<string[]> {
       }
     }
 
-    const allExpansions = [...Array.from(abbreviations), ...Array.from(expansions)].slice(0, 10)
+    // Reduce from 10 to 5 total expansion terms
+    const allExpansions = [...Array.from(abbreviations), ...Array.from(expansions)].slice(0, 5)
     console.log(`[NCI EVS Proxy] Found ${allExpansions.length} expansions`)
     return allExpansions
 

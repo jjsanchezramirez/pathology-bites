@@ -36,8 +36,8 @@ function VirtualSlidesContent() {
   const searchParams = useSearchParams()
 
   // ✅ Use unified search - server-side filtering with proper pagination
-  // Client-only mode (always) - reduced to 5 results for faster experience
-  const client = useClientVirtualSlides(5)
+  // Client-only mode (always)
+  const client = useClientVirtualSlides(50)
 
   const {
     slides,
