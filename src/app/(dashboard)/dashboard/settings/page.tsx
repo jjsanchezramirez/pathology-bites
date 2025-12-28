@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/shared/components/ui/card'
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 import { useTheme } from 'next-themes'
 import { toast } from '@/shared/utils/toast'
 import { getTextZoomConfig, getValidZoomLevel } from '@/shared/utils/text-zoom'
@@ -28,7 +28,7 @@ import {
 } from '@/features/settings/components'
 
 export default function SettingsPage() {
-  const { user, isAuthenticated, isLoading } = useAuthStatus()
+  const { user, isAuthenticated, isLoading } = useAuth({ minimal: true })
   const { theme, setTheme } = useTheme()
   const { currentTheme: dashboardTheme, setTheme: setDashboardTheme, availableThemes } = useDashboardTheme()
 

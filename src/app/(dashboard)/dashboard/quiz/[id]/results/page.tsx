@@ -15,6 +15,8 @@ export default function QuizResultsPage() {
   const params = useParams()
   const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id
 
+  console.log('[Results Page] sessionId:', sessionId)
+
   // Fetch results with caching and deduplication
   const { data: result, isLoading: loading, error: fetchError } = useCachedData<QuizResult>(
     `quiz-results-${sessionId}`,
@@ -36,9 +38,9 @@ export default function QuizResultsPage() {
     },
     {
       enabled: !!sessionId,
-      ttl: 5 * 60 * 1000, // 5 minutes cache
-      staleTime: 2 * 60 * 1000, // 2 minutes stale time
-      storage: 'memory', // Use memory for quiz results
+      ttl: 7 * 24 * 60 * 60 * 1000, // 7 days cache (results immutable, needed for review)
+      staleTime: 7 * 24 * 60 * 60 * 1000, // 7 days stale time
+      storage: 'localStorage', // Use localStorage for persistence - results are cached from completion
       prefix: 'pathology-bites-quiz',
       onError: (error) => {
         console.error('Error fetching results:', error)
@@ -49,22 +51,34 @@ export default function QuizResultsPage() {
 
   const error = fetchError?.message || null
 
+  console.log('[Results Page] State:', {
+    loading,
+    hasResult: !!result,
+    error,
+    resultScore: result?.score,
+    resultCorrect: result?.correctAnswers,
+    resultTotal: result?.totalQuestions,
+    newAchievements: result?.newAchievements?.length,
+    hasQuestionDetails: !!result?.questionDetails,
+    questionDetailsLength: result?.questionDetails?.length,
+    hasCategoryBreakdown: !!result?.categoryBreakdown,
+    categoryBreakdownLength: result?.categoryBreakdown?.length
+  })
+
   // Loading state
   if (loading) {
     return (
-      <PageErrorBoundary pageName="Quiz Results" showHomeButton={true} showBackButton={true}>
-        <div className="min-h-screen bg-background/0 relative py-6">
-          <QuizResultsSkeleton />
-        </div>
-      </PageErrorBoundary>
+      <div className="container mx-auto py-8">
+        <QuizResultsSkeleton />
+      </div>
     )
   }
 
-  // Error state
+  // Error state - keep within dashboard layout
   if (error || !result) {
     return (
-      <PageErrorBoundary pageName="Quiz Results" showHomeButton={true} showBackButton={true}>
-        <div className="max-w-4xl mx-auto space-y-6 py-6">
+      <div className="container mx-auto py-8">
+        <div className="max-w-2xl mx-auto space-y-6">
           <div className="text-center py-12">
             <h1 className="text-2xl font-bold text-destructive">Quiz Results Not Available</h1>
             <p className="text-muted-foreground mt-2">
@@ -80,14 +94,14 @@ export default function QuizResultsPage() {
             </div>
           </div>
         </div>
-      </PageErrorBoundary>
+      </div>
     )
   }
 
   // Results display
   return (
-    <PageErrorBoundary pageName="Quiz Results" showHomeButton={true} showBackButton={true}>
-      <div className="min-h-screen bg-background/0 relative py-6">
+    <div className="container mx-auto py-8 px-4">
+      <div className="max-w-5xl mx-auto">
         <QuizResultsSummary
           result={result}
           sessionId={sessionId || ''}
@@ -100,6 +114,6 @@ export default function QuizResultsPage() {
           }}
         />
       </div>
-    </PageErrorBoundary>
+    </div>
   )
 }

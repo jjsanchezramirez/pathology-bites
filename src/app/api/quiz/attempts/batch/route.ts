@@ -1,3 +1,4 @@
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 // src/app/api/quiz/attempts/batch/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
@@ -19,8 +20,8 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (session.user_id !== user.id) {
+    if (session.user_id !== userId) {
       return NextResponse.json(
         { error: 'Forbidden - You can only submit answers to your own quiz sessions' },
         { status: 403 }

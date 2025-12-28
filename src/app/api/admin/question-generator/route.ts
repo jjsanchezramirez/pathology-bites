@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { getApiKey, getModelProvider } from '@/shared/config/ai-models'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 // Question generation schema for structured output
 const QUESTION_SCHEMA = {
@@ -280,8 +281,8 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -289,7 +290,7 @@ export async function POST(request: NextRequest) {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (userError || !userData || !['admin', 'creator'].includes(userData.role)) {
@@ -382,7 +383,7 @@ ${JSON.stringify(QUESTION_SCHEMA, null, 2)}`
       tag_ids: [],
       metadata: {
         exported_at: new Date().toISOString(),
-        exported_by: user.id,
+        exported_by: userId,
         source_content: {
           category: context.category,
           subject: context.subject,

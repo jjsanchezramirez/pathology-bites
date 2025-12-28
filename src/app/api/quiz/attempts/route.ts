@@ -1,3 +1,4 @@
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 // src/app/api/quiz/attempts/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
@@ -14,12 +15,12 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user: authenticatedUser }, error: authError } = await supabase.auth.getUser()
-    if (authError || !authenticatedUser) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    user = authenticatedUser
+    user = { id: userId }
 
     // Parse request body
     const requestBody = await request.json()
@@ -53,8 +54,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (session.user_id !== user.id) {
-      console.error('[API] /api/quiz/attempts - Unauthorized access attempt:', { sessionUserId: session.user_id, requestUserId: user.id })
+    if (session.user_id !== userId) {
+      console.error('[API] /api/quiz/attempts - Unauthorized access attempt:', { sessionUserId: session.user_id, requestUserId: userId })
       return NextResponse.json(
         { error: 'Forbidden - You can only submit answers to your own quiz sessions' },
         { status: 403 }
@@ -283,8 +284,8 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -313,7 +314,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    if (session.user_id !== user.id) {
+    if (session.user_id !== userId) {
       return NextResponse.json(
         { error: 'Forbidden - You can only access your own quiz attempts' },
         { status: 403 }

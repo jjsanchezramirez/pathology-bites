@@ -23,7 +23,7 @@ import {
 import { getCategoryDisplayName } from '@/features/questions/utils/display-helpers'
 import { createClient } from '@/shared/services/client'
 import { useUserRole } from '@/shared/hooks/use-user-role'
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 import { shouldShowDeleteButton } from '@/features/questions/utils/deletion-helpers'
 
 interface QuestionRowProps {
@@ -57,7 +57,7 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
 
   const supabase = createClient()
   const { role } = useUserRole()
-  const { user } = useAuthStatus()
+  const { user } = useAuth({ minimal: true })
 
   // Check if user can delete this question
   const canDelete = shouldShowDeleteButton(question, role, user?.id || null)

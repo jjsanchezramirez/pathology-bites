@@ -1,6 +1,7 @@
 import { createClient } from '@/shared/services/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { NotificationTriggers } from '@/shared/services/notification-triggers'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 /**
  * POST /api/questions/:id/approve
@@ -19,8 +20,8 @@ export async function POST(
     const { id: questionId } = await params
 
     // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -53,11 +54,11 @@ export async function POST(
     const { data: userProfile } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     const isAdmin = userProfile?.role === 'admin'
-    const isAssignedReviewer = question.reviewer_id === user.id
+    const isAssignedReviewer = question.reviewer_id === userId
 
     if (!isAdmin && !isAssignedReviewer) {
       return NextResponse.json(
@@ -73,7 +74,7 @@ export async function POST(
         status: 'published',
         published_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        updated_by: user.id,
+        updated_by: userId,
       })
       .eq('id', questionId)
       .select()
@@ -92,7 +93,7 @@ export async function POST(
       .from('question_reviews')
       .insert({
         question_id: questionId,
-        reviewer_id: user.id,
+        reviewer_id: userId,
         action: 'approved',
         feedback: null,
       })
@@ -109,7 +110,7 @@ export async function POST(
         updatedQuestion.created_by,
         questionId,
         updatedQuestion.title,
-        user.id
+        userId
       )
     } catch (error) {
       console.error('Error sending approval notification:', error)

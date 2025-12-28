@@ -18,7 +18,7 @@ import {
 } from '@/shared/components/ui/table'
 import { toast } from '@/shared/utils/toast'
 import { createClient } from '@/shared/services/client'
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 import { useUserRole } from '@/shared/hooks/use-user-role'
 import { SubmitForReviewDialog } from './submit-for-review-dialog'
 import { QuestionPreviewDialog } from './question-preview-dialog'
@@ -67,7 +67,7 @@ interface WorkflowStats {
 export function CreatorWorkflowDashboard() {
   const router = useRouter()
   const supabase = createClient()
-  const { user } = useAuthStatus()
+  const { user } = useAuth({ minimal: true })
   const { role } = useUserRole()
 
   const [questions, setQuestions] = useState<WorkflowQuestion[]>([])

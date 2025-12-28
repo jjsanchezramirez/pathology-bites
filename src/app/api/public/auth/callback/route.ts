@@ -173,6 +173,20 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
         }
       }
 
+      // OPTIMIZATION: Store role in user_metadata to avoid database lookups
+      // This allows middleware to read role from JWT without hitting database
+      if (userData?.role) {
+        try {
+          await supabase.auth.updateUser({
+            data: { role: userData.role }
+          })
+          console.log('[Auth Callback] Updated user_metadata with role:', userData.role)
+        } catch (metadataError) {
+          console.error('[Auth Callback] Failed to update user_metadata:', metadataError)
+          // Non-critical error, continue with redirect
+        }
+      }
+
       // Redirect based on user role - consistent with middleware logic
       const redirectUrl = (userData?.role === 'admin' || userData?.role === 'creator' || userData?.role === 'reviewer')
         ? `${origin}/admin/dashboard`

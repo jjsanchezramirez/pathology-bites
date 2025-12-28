@@ -1,3 +1,4 @@
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 // src/app/api/admin/test-notifications/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
@@ -8,9 +9,8 @@ export async function POST() {
     const supabase = await createClient()
     
     // Check if user is authenticated and is admin
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -18,7 +18,7 @@ export async function POST() {
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
       .select('role')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single()
 
     if (profileError || profile?.role !== 'admin') {

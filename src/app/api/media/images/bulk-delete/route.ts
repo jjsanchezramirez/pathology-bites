@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { bulkDeleteFromR2, extractR2KeyFromUrl } from '@/shared/services/r2-storage'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient()
 
     // Verify user is authenticated admin
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    if (userError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json(
         { error: 'You must be logged in to delete images' },
         { status: 401 }
@@ -18,7 +19,7 @@ export async function DELETE(request: NextRequest) {
     const { data: userData, error: roleError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (roleError || !userData || userData.role !== 'admin') {

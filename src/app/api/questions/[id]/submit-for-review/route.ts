@@ -1,6 +1,7 @@
 import { createClient } from '@/shared/services/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { NotificationTriggers } from '@/shared/services/notification-triggers'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 /**
  * POST /api/questions/:id/submit-for-review
@@ -20,8 +21,8 @@ export async function POST(
     const { id: questionId } = await params
 
     // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized. Please sign in and try again.' },
         { status: 401 }
@@ -113,11 +114,11 @@ export async function POST(
     const { data: userProfile } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     const isAdmin = userProfile?.role === 'admin'
-    const isCreator = question.created_by === user.id
+    const isCreator = question.created_by === userId
 
     if (!isAdmin && !isCreator) {
       return NextResponse.json(
@@ -135,7 +136,7 @@ export async function POST(
         reviewer_id: reviewer_id,
         reviewer_feedback: null, // Clear old feedback
         updated_at: new Date().toISOString(),
-        updated_by: user.id,
+        updated_by: userId,
       })
       .eq('id', questionId)
       .select()
@@ -156,7 +157,7 @@ export async function POST(
           .from('question_reviews')
           .insert({
             question_id: questionId,
-            reviewer_id: user.id, // Creator is the "reviewer" of their own changes
+            reviewer_id: userId, // Creator is the "reviewer" of their own changes
             action: 'resubmitted',
             feedback: null,
             changes_made: {
@@ -184,7 +185,7 @@ export async function POST(
         reviewer_id,
         questionId,
         updatedQuestion.title,
-        user.id
+        userId
       )
     } catch (error) {
       console.error('Error sending submission notification:', error)

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { deleteUser, deleteUserFromAuth } from '@/shared/services/user-deletion'
+import { requireAdmin } from '@/shared/middleware/api-auth'
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
@@ -19,11 +20,9 @@ function createAdminClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey)
 }
 
-export async function GET(request: NextRequest) {
+export const GET = requireAdmin(async (request) => {
   try {
     const supabase = await createClient()
-
-    // Auth is now handled by middleware
 
     // Parse query parameters
     const { searchParams } = new URL(request.url)
@@ -97,13 +96,11 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = requireAdmin(async (request) => {
   try {
     const supabase = await createClient()
-
-    // Auth is now handled by middleware
 
     const body = await request.json()
     const { userId, updates } = body
@@ -153,14 +150,14 @@ export async function PATCH(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = requireAdmin(async (request) => {
   try {
     const supabase = await createClient()
 
-    // Auth is now handled by middleware
-    const { data: { user } } = await supabase.auth.getUser() // Still need user ID for self-deletion check
+    // Get current admin user ID for self-deletion check
+    const currentUserId = request.auth.userId
 
     const body = await request.json()
     const { userId } = body
@@ -176,7 +173,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Prevent admin from deleting themselves
-    if (userId === user.id) {
+    if (userId === currentUserId) {
       return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 })
     }
 
@@ -263,4 +260,4 @@ export async function DELETE(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})

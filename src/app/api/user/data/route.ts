@@ -1,8 +1,9 @@
 // Unified Performance API - Single endpoint for all performance data
 // Consolidates: timeline, category-details, activity-heatmap, dashboard stats, and achievements
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 import { ACHIEVEMENT_DEFINITIONS, checkAchievements, type UserStats } from '@/features/achievements/services/achievement-checker'
 import type { Achievement } from '@/features/achievements/types/achievement'
 
@@ -111,17 +112,40 @@ interface UnifiedPerformanceResponse {
         navigationUrl?: string
       }>
     }
+
+    // Quiz initialization data (for /dashboard/quiz/new page)
+    quizInit: {
+      sessionTitles: string[]
+      categories: Array<{
+        id: string
+        name: string
+        shortName: string
+        parent: 'AP' | 'CP'
+        questionStats: {
+          all: number
+          unused: number
+          needsReview: number
+          marked: number
+          mastered: number
+        }
+      }>
+      questionTypeStats: {
+        all: { all: number; unused: number; needsReview: number; marked: number; mastered: number }
+        ap_only: { all: number; unused: number; needsReview: number; marked: number; mastered: number }
+        cp_only: { all: number; unused: number; needsReview: number; marked: number; mastered: number }
+      }
+    }
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    // Get user ID from headers (set by middleware)
+    const userId = getUserIdFromHeaders(request)
 
-    if (authError || !user) {
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -138,6 +162,7 @@ export async function GET() {
         .from('quiz_sessions')
         .select(`
           id,
+          title,
           created_at,
           completed_at,
           score,
@@ -149,7 +174,7 @@ export async function GET() {
             attempted_at
           )
         `)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false }),
 
       // Get all users' scores for percentile calculation
@@ -199,13 +224,15 @@ export async function GET() {
       Array.from(questionCategoryMap.values()).filter(Boolean) as string[]
     )]
 
-    const { data: categories } = await supabase
+    // Fetch ALL categories (for quiz init data), not just ones user has attempted
+    const { data: allCategories } = await supabase
       .from('categories')
-      .select('id, name')
-      .in('id', categoryIds)
+      .select('id, name, short_form, parent_id, level')
+      .order('name')
+      .limit(100)
 
     const categoryMap = new Map(
-      categories?.map((cat: any) => [cat.id, cat.name]) || []
+      allCategories?.map((cat: any) => [cat.id, cat.name]) || []
     )
 
     // Calculate completed sessions
@@ -507,9 +534,11 @@ export async function GET() {
     let speedRecords25in2min = 0
 
     const perfectQuizzes = completedSessions.filter(s => s.score === 100)
-    perfectQuizzes.forEach(quiz => {
-      const totalQuestions = (quiz.quiz_attempts as any[])?.length || 0
-      const totalTime = quiz.total_time_spent || 0
+    perfectQuizzes.forEach((quiz: any) => {
+      const attempts = quiz.quiz_attempts as any[]
+      const totalQuestions = attempts?.length || 0
+      // Calculate total time from quiz attempts
+      const totalTime = attempts?.reduce((sum: number, attempt: any) => sum + (attempt.time_spent || 0), 0) || 0
 
       if (totalQuestions >= 10) {
         if (totalTime <= 300) speedRecords5min = 1
@@ -541,7 +570,7 @@ export async function GET() {
     const { data: unlockedAchievements } = await supabase
       .from('user_achievements')
       .select('id, group_key, created_at')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('type', 'achievement')
       .order('created_at', { ascending: false })
 
@@ -666,6 +695,111 @@ export async function GET() {
     const weeklyGoal = 50
     const currentWeekProgress = completedSessions.length // Simplified
 
+    // ===== QUIZ INITIALIZATION DATA =====
+    // Build quiz init data (for /dashboard/quiz/new page)
+
+    // Helper function to extract short name
+    const extractShortName = (name: string): string => {
+      const match = name.match(/\(([^)]+)\)/)
+      return match ? match[1] : name.split(' ').map(word => word[0]).join('').toUpperCase()
+    }
+
+    // Extract session titles (last 100 sessions)
+    // Sessions data already includes title field from the initial query
+    const sessionTitles = sessions.slice(0, 100).map((s: any) => s.title)
+
+    // Process categories for quiz init
+    const subcategories = allCategories?.filter((cat: any) => cat.level === 2) || []
+    const parentCategories = allCategories?.filter((cat: any) => cat.level === 1) || []
+
+    // Create parent lookup
+    const parentLookup = new Map<string, string>()
+    for (const parent of parentCategories) {
+      parentLookup.set(parent.id, parent.name)
+    }
+
+    // Get category IDs for stats calculation
+    const allCategoryIds = subcategories.map((cat: any) => cat.id)
+
+    // Fetch user stats for ALL categories using optimized database function
+    const { data: allUserStatsData } = await supabase
+      .rpc('get_user_category_stats', {
+        p_user_id: userId,
+        p_category_ids: allCategoryIds
+      })
+
+    // Create stats lookup map
+    const allStatsMap = new Map<string, any>()
+    for (const stat of (allUserStatsData || [])) {
+      const categoryId = typeof stat.category_id === 'string' ? stat.category_id : String(stat.category_id)
+      allStatsMap.set(categoryId, {
+        all: stat.all_count,
+        unused: stat.unused_count,
+        needsReview: stat.incorrect_count, // Rename to match QuestionTypeStats interface
+        marked: stat.marked_count,
+        mastered: stat.correct_count // Rename to match QuestionTypeStats interface
+      })
+    }
+
+    // Build categories with user stats for quiz init
+    const categoriesForQuizInit = subcategories.map((category: any) => {
+      const stats = allStatsMap.get(category.id) || {
+        all: 0,
+        unused: 0,
+        needsReview: 0,
+        marked: 0,
+        mastered: 0
+      }
+
+      // Determine parent type
+      const parentName = parentLookup.get(category.parent_id || '')
+      const parent = parentName === 'Anatomic Pathology' ? 'AP' :
+                    parentName === 'Clinical Pathology' ? 'CP' : 'AP'
+
+      return {
+        id: category.id,
+        name: category.name,
+        shortName: category.short_form || extractShortName(category.name),
+        parent: parent as 'AP' | 'CP',
+        questionStats: stats
+      }
+    })
+
+    // Calculate overall statistics for quiz init
+    const overallQuizStats = categoriesForQuizInit.reduce((acc, cat) => ({
+      all: acc.all + cat.questionStats.all,
+      unused: acc.unused + cat.questionStats.unused,
+      needsReview: acc.needsReview + cat.questionStats.needsReview,
+      marked: acc.marked + cat.questionStats.marked,
+      mastered: acc.mastered + cat.questionStats.mastered
+    }), { all: 0, unused: 0, needsReview: 0, marked: 0, mastered: 0 })
+
+    const apQuizStats = categoriesForQuizInit
+      .filter(cat => cat.parent === 'AP')
+      .reduce((acc, cat) => ({
+        all: acc.all + cat.questionStats.all,
+        unused: acc.unused + cat.questionStats.unused,
+        needsReview: acc.needsReview + cat.questionStats.needsReview,
+        marked: acc.marked + cat.questionStats.marked,
+        mastered: acc.mastered + cat.questionStats.mastered
+      }), { all: 0, unused: 0, needsReview: 0, marked: 0, mastered: 0 })
+
+    const cpQuizStats = categoriesForQuizInit
+      .filter(cat => cat.parent === 'CP')
+      .reduce((acc, cat) => ({
+        all: acc.all + cat.questionStats.all,
+        unused: acc.unused + cat.questionStats.unused,
+        needsReview: acc.needsReview + cat.questionStats.needsReview,
+        marked: acc.marked + cat.questionStats.marked,
+        mastered: acc.mastered + cat.questionStats.mastered
+      }), { all: 0, unused: 0, needsReview: 0, marked: 0, mastered: 0 })
+
+    const questionTypeStats = {
+      all: overallQuizStats,
+      ap_only: apQuizStats,
+      cp_only: cpQuizStats
+    }
+
     const response: UnifiedPerformanceResponse = {
       success: true,
       data: {
@@ -714,6 +848,11 @@ export async function GET() {
           weeklyGoal,
           currentWeekProgress,
           recentActivity
+        },
+        quizInit: {
+          sessionTitles,
+          categories: categoriesForQuizInit,
+          questionTypeStats
         }
       }
     }

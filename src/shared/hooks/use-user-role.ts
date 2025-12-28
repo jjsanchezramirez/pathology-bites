@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useSimpleAuth } from '@/shared/hooks/use-simple-auth'
+import { useAuth } from '@/shared/hooks/use-auth'
 import { createClient } from '@/shared/services/client'
 import { TABLE_NAMES, USER_ROLES, UserRole as DatabaseUserRole } from '@/shared/constants/database-types'
 
@@ -56,7 +56,7 @@ const FEATURE_PERMISSIONS: Record<string, UserRole[]> = {
 } as const
 
 export function useUserRole(): UserRoleData {
-  const { user, isLoading: authLoading } = useSimpleAuth()
+  const { user, role: authRole, isLoading: authLoading } = useAuth({ minimal: true })
   const [role, setRole] = useState<UserRole>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -65,67 +65,12 @@ export function useUserRole(): UserRoleData {
   const previousUserIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    async function fetchUserRole() {
-      if (!user) {
-        console.log('[useUserRole] No user, clearing role')
-        setRole(null)
-        setIsLoading(false)
-        previousUserIdRef.current = null
-        return
-      }
-
-      // Only fetch if the user ID has actually changed
-      if (previousUserIdRef.current === user.id) {
-        // User object reference changed but ID is the same - no need to re-fetch
-        console.log('[useUserRole] User ID unchanged, skipping fetch:', user.id)
-        return
-      }
-
-      console.log('[useUserRole] 🔄 User ID changed, fetching role for:', user.id)
-      previousUserIdRef.current = user.id
-
-      try {
-        setIsLoading(true)
-        setError(null)
-
-        // First try to get role from user metadata
-        const metadataRole = user.user_metadata?.role || user.app_metadata?.role
-        if (metadataRole && ['admin', 'creator', 'reviewer', 'user'].includes(metadataRole)) {
-          setRole(metadataRole as UserRole)
-          setIsLoading(false)
-          return
-        }
-
-        // Fallback to database query
-        const supabase = createClient()
-        const { data, error: dbError } = await supabase
-          .from(TABLE_NAMES.USERS)
-          .select('role')
-          .eq('id', user.id)
-          .maybeSingle() // Use maybeSingle instead of single to handle no results gracefully
-
-        if (dbError) {
-          setError(dbError.message)
-          setRole('user') // Default fallback
-        } else if (data) {
-          setRole((data.role as UserRole) || 'user')
-        } else {
-          // User not found in database - this shouldn't happen normally
-          // Default to 'user' role
-          setRole('user')
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
-        setRole('user') // Default fallback
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
+    // Use role from useAuth hook directly (it's already fetched from JWT/database)
     if (!authLoading) {
-      fetchUserRole()
+      setRole(authRole as UserRole)
+      setIsLoading(false)
     }
-  }, [user, authLoading])
+  }, [authRole, authLoading])
 
   const canAccess = (feature: string): boolean => {
     if (!role) return false

@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/shared/services/client'
 import { Card, CardContent } from '@/shared/components/ui/card'
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 import { PasswordChangeForm } from '@/features/auth/components/forms/password-change-form'
 import { ProfileLoading, ProfileInformationCard, AccountDetailsCard } from '@/features/profile/components'
 import { toast } from '@/shared/utils/toast'
@@ -22,7 +22,7 @@ interface UserProfile {
 }
 
 function ProfilePageContent() {
-  const { user, isAuthenticated, isLoading } = useAuthStatus()
+  const { user, isAuthenticated, isLoading } = useAuth({ minimal: true })
   const searchParams = useSearchParams()
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)

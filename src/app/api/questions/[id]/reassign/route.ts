@@ -1,5 +1,6 @@
 import { createClient } from '@/shared/services/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 /**
  * POST /api/questions/:id/reassign
@@ -18,8 +19,8 @@ export async function POST(
     const { id: questionId } = await params
 
     // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -86,11 +87,11 @@ export async function POST(
     const { data: userProfile } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     const isAdmin = userProfile?.role === 'admin'
-    const isCreator = question.created_by === user.id
+    const isCreator = question.created_by === userId
 
     if (!isAdmin && !isCreator) {
       return NextResponse.json(
@@ -105,7 +106,7 @@ export async function POST(
       .update({
         reviewer_id: reviewer_id,
         updated_at: new Date().toISOString(),
-        updated_by: user.id,
+        updated_by: userId,
       })
       .eq('id', questionId)
       .select()

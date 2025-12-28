@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/shared/services/server';
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 // Hard-coded flag threshold - questions are removed from circulation after this many flags
 const FLAG_THRESHOLD = 1;
@@ -9,8 +10,8 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
       .from('question_flags')
       .select('id')
       .eq('question_id', question_id)
-      .eq('flagged_by', user.id)
+      .eq('flagged_by', userId)
       .eq('status', 'pending')
       .single();
 
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       .from('question_flags')
       .insert({
         question_id,
-        flagged_by: user.id,
+        flagged_by: userId,
         flag_type,
         description: description ? description.trim() : null,
         status: 'open'
@@ -130,7 +131,7 @@ export async function POST(request: NextRequest) {
           .from('question_reviews')
           .insert({
             question_id,
-            reviewer_id: user.id,
+            reviewer_id: userId,
             action: 'flagged',
             feedback: `Question flagged by user (${flagCount} flag${flagCount > 1 ? 's' : ''}): ${flag_type}. ${description || ''}`.trim()
           });
@@ -164,8 +165,8 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -173,7 +174,7 @@ export async function GET(request: NextRequest) {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single();
 
     if (userError) {
@@ -196,7 +197,7 @@ export async function GET(request: NextRequest) {
 
     // If user is not admin or reviewer, only show their own flags
     if (!['admin', 'reviewer'].includes(userData?.role)) {
-      query = query.eq('flagged_by', user.id);
+      query = query.eq('flagged_by', userId);
     }
 
     if (questionId) {
@@ -227,8 +228,8 @@ export async function PATCH(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -236,7 +237,7 @@ export async function PATCH(request: NextRequest) {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single();
 
     if (userError || !['admin', 'reviewer'].includes(userData?.role)) {
@@ -264,7 +265,7 @@ export async function PATCH(request: NextRequest) {
     };
 
     if (status === 'closed') {
-      updateData.resolved_by = user.id;
+      updateData.resolved_by = userId;
       updateData.resolved_at = new Date().toISOString();
       updateData.resolution_notes = resolution_notes || null;
       // Determine resolution type based on whether notes indicate a fix

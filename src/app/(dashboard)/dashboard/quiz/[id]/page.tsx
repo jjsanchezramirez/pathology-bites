@@ -32,7 +32,9 @@ export default function QuizSessionPage() {
   const [reviewResult, setReviewResult] = useState<QuizResult | null>(null)
   const [reviewSession, setReviewSession] = useState<any>(null)
   const [reviewLoading, setReviewLoading] = useState(isReviewMode)
+  const [reviewError, setReviewError] = useState<string | null>(null)
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0)
+  const [showExplanations, setShowExplanations] = useState<{[key: string]: boolean}>({})
 
   // Local pause state (not stored in database)
   const [isPaused, setIsPaused] = useState(false)
@@ -568,7 +570,7 @@ export default function QuizSessionPage() {
   return (
     <>
       {/* Pause Overlay */}
-      {(isReviewMode ? legacyIsPaused : isPaused) && (
+      {isPaused && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
           <Card className="w-96 p-6 text-center">
             <CardHeader>
@@ -581,10 +583,10 @@ export default function QuizSessionPage() {
               <p className="text-muted-foreground">
                 Your quiz is paused. {hybridState.timeRemaining !== null ? `Time remaining: ${formatTime(hybridState.timeRemaining)}` : ''}
               </p>
-              <Button onClick={!isReviewMode ? () => {
+              <Button onClick={() => {
                 setIsPaused(false);
                 hybridActions.resumeQuiz();
-              } : () => {}} className="w-full">
+              }} className="w-full">
                 <Play className="h-4 w-4 mr-2" />
                 Resume Quiz
               </Button>
@@ -780,7 +782,7 @@ export default function QuizSessionPage() {
                       <p>📊 Current API calls: {hybridState.metrics.totalApiCalls} | Response time: {hybridState.realtimeStats.latency}ms</p>
                     </div>
                   </div>
-                  <Button onClick={!isReviewMode ? hybridActions.startQuiz : () => {}} className="w-full max-w-xs">
+                  <Button onClick={hybridActions.startQuiz} className="w-full max-w-xs">
                     Start Quiz
                   </Button>
                 </div>
@@ -791,21 +793,21 @@ export default function QuizSessionPage() {
 
 
           {/* Question Display */}
-          {hybridState.status !== 'paused' && hybridState.status !== 'not_started' && (
+          {!isPaused && hybridState.status !== 'not_started' && (
             <FeatureErrorBoundary featureName="Quiz Question Display">
               <QuizQuestionDisplay
               question={currentQuestion as any}
-              selectedAnswerId={hybridActions.getAnswerForQuestion(currentQuestion.id)?.selectedOptionId || (isReviewMode ? legacySelectedAnswerId : null)}
+              selectedAnswerId={hybridActions.getAnswerForQuestion(currentQuestion.id)?.selectedOptionId || null}
               showExplanation={hybridActions.getAnswerForQuestion(currentQuestion.id) ? true : false} // Only show explanations after answer is submitted
-              onAnswerSelect={!isReviewMode ? (answerId: string) => {
+              onAnswerSelect={(answerId: string) => {
                 hybridActions.submitAnswer(currentQuestion.id, answerId);
-              } : () => {}}
+              }}
             />
             </FeatureErrorBoundary>
           )}
 
           {/* Navigation */}
-          {hybridState.status !== 'paused' && hybridState.status !== 'not_started' && (
+          {!isPaused && hybridState.status !== 'not_started' && (
             <FeatureErrorBoundary featureName="Quiz Navigation">
               <QuizNavigation
               currentQuestionIndex={hybridState.currentQuestion - 1}
@@ -813,10 +815,10 @@ export default function QuizSessionPage() {
               selectedAnswerId={hybridActions.getAnswerForQuestion(currentQuestion.id)?.selectedOptionId || null}
               showExplanation={hybridActions.getAnswerForQuestion(currentQuestion.id) ? true : false}
               timing="untimed"
-              onPreviousQuestion={!isReviewMode ? () => {
+              onPreviousQuestion={() => {
                 hybridActions.previousQuestion();
-              } : () => {}}
-              onNextQuestion={!isReviewMode ? async () => {
+              }}
+              onNextQuestion={async () => {
                 const isLastQuestion = hybridState.currentQuestion === hybridState.totalQuestions;
                 if (isLastQuestion) {
                   // Prevent multiple completion attempts
@@ -825,7 +827,7 @@ export default function QuizSessionPage() {
                     window.location.href = `/dashboard/quiz/${sessionId}/results`;
                     return;
                   }
-                  
+
                   // Complete the quiz
                   const result = await hybridActions.completeQuiz();
                   if (result.success) {
@@ -837,10 +839,10 @@ export default function QuizSessionPage() {
                 } else {
                   hybridActions.nextQuestion();
                 }
-              } : () => {}}
-              onSubmitAnswer={!isReviewMode ? () => {
+              }}
+              onSubmitAnswer={() => {
                 // Answer is already submitted in onAnswerSelect
-              } : () => {}}
+              }}
               canGoBack={hybridState.currentQuestion > 1}
               isSubmitting={false}
             />

@@ -1,0 +1,54 @@
+juansanchez@Juans-MacBook-Air pathology-bites % npm run dev
+
+> pathology-bites@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.4.8
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.107:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · serverActions
+
+ ✓ Starting...
+ ✓ Ready in 4.2s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 535ms (176 modules)
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 10.2s (2186 modules)
+ GET /dashboard 200 in 11636ms
+ ○ Compiling /api/user/init ...
+ ✓ Compiled /api/user/init in 5.4s (2268 modules)
+ GET /api/user/settings 401 in 5924ms
+ GET /dashboard 200 in 183ms
+[UserInit API] Error fetching user data: {
+  code: 'PGRST202',
+  details: 'Searched for the function public.get_user_performance_data with parameter user_id_param or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.',
+  hint: null,
+  message: 'Could not find the function public.get_user_performance_data(user_id_param) in the schema cache'
+}
+ GET /api/user/init 200 in 6511ms
+ GET /api/user/settings 401 in 218ms
+[UserInit API] Error fetching user data: {
+  code: 'PGRST202',
+  details: 'Searched for the function public.get_user_performance_data with parameter user_id_param or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.',
+  hint: null,
+  message: 'Could not find the function public.get_user_performance_data(user_id_param) in the schema cache'
+}
+ GET /api/user/init 200 in 460ms
+ GET /api/user/data 200 in 7690ms
+ GET /api/user/settings 401 in 21ms
+ GET /api/user/settings 401 in 26ms
+
+Error: Unauthorized
+    at UserSettingsService.getUserSettings (webpack-internal:///(app-pages-browser)/./src/shared/services/user-settings.ts:99:27)
+    at async UserSettingsService.hasSeenWelcomeMessage (webpack-internal:///(app-pages-browser)/./src/shared/services/user-settings.ts:236:34)
+    at async DashboardPage.useEffect.fetchData (webpack-internal:///(app-pages-browser)/./src/app/(dashboard)/dashboard/page.tsx:77:48)
+
+    Error: Unauthorized
+    at UserSettingsService.getUserSettings (webpack-internal:///(app-pages-browser)/./src/shared/services/user-settings.ts:99:27)
+    at async UserSettingsService.hasSeenSecurityNotice (webpack-internal:///(app-pages-browser)/./src/shared/services/user-settings.ts:261:34)
+    at async DashboardPage.useEffect.fetchData (webpack-internal:///(app-pages-browser)/./src/app/(dashboard)/dashboard/page.tsx:80:57)
+
+    react-dom-client.development.js:25581 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+swr-cache-provider.tsx:82 

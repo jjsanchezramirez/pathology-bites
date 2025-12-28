@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { notificationsService } from '@/shared/services/service'
 import { NotificationWithSource, PaginatedNotifications } from '@/shared/types/notifications'
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 
 export function useNotifications(page: number = 1, limit: number = 20) {
   const [notifications, setNotifications] = useState<NotificationWithSource[]>([])
@@ -14,7 +14,7 @@ export function useNotifications(page: number = 1, limit: number = 20) {
   const [total, setTotal] = useState(0)
   const [hasMore, setHasMore] = useState(false)
 
-  const { user, isAuthenticated } = useAuthStatus()
+  const { user, isAuthenticated } = useAuth({ minimal: true })
 
   const loadNotifications = useCallback(async () => {
     if (!isAuthenticated || !user) {

@@ -95,6 +95,11 @@ export class DatabaseSyncManager {
   /**
    * API Call #1: Fetch initial quiz data
    * This is the only "read" operation in the hybrid system
+   *
+   * OPTIMIZED: Uses localStorage cache to eliminate API calls for:
+   * - Quiz resumption (paused quizzes)
+   * - Page refreshes during active quiz
+   * - Review mode (uses cached quiz data + results)
    */
   async fetchQuizData(sessionId: string): Promise<{
     questions: any[];
@@ -104,6 +109,16 @@ export class DatabaseSyncManager {
     totalTimeLimit?: number | null;
   }> {
     try {
+      // OPTIMIZATION: Check localStorage cache first
+      const cacheKey = `quiz-session-${sessionId}`;
+      const cachedData = this.getFromCache(cacheKey);
+
+      if (cachedData) {
+        console.log('[Hybrid] Using cached quiz session data - 0 API calls');
+        return cachedData;
+      }
+
+      console.log('[Hybrid] No cache found, fetching from server');
       const response = await fetch(`${this.options.apiBaseUrl}/sessions/${sessionId}`, {
         method: 'GET',
         headers: {
@@ -135,16 +150,85 @@ export class DatabaseSyncManager {
         ...data.config
       };
 
-      return {
+      const result = {
         questions: transformedQuestions,
         config: transformedConfig,
         existingAnswers: data.answers || [],
         timeRemaining: data.timeRemaining ?? null,
         totalTimeLimit: data.totalTimeLimit ?? null
       };
+
+      // OPTIMIZATION: Cache the result for future use
+      this.saveToCache(cacheKey, result);
+
+      return result;
     } catch (error) {
       console.error('Failed to fetch quiz data:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Get data from localStorage cache
+   * Compatible with CacheEntry format from cache-service.ts
+   */
+  private getFromCache(key: string): any | null {
+    try {
+      if (typeof window === 'undefined') return null;
+
+      const cached = localStorage.getItem(key);
+      if (!cached) return null;
+
+      const parsed = JSON.parse(cached);
+
+      // Check if cache is still valid using TTL from entry
+      const ttl = parsed.ttl || (7 * 24 * 60 * 60 * 1000); // Default 7 days if not set
+      const now = Date.now();
+      if (parsed.timestamp && (now - parsed.timestamp) < ttl) {
+        return parsed.data;
+      }
+
+      // Cache expired, remove it
+      localStorage.removeItem(key);
+      return null;
+    } catch (error) {
+      console.warn('Failed to read from cache:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Save data to localStorage cache
+   * Uses CacheEntry format compatible with cache-service.ts
+   * Default 7-day TTL for quiz sessions (needed for review, ~10-20KB per quiz)
+   */
+  private saveToCache(key: string, data: any, ttl: number = 7 * 24 * 60 * 60 * 1000): void {
+    try {
+      if (typeof window === 'undefined') return;
+
+      const cacheData = {
+        data,
+        timestamp: Date.now(),
+        ttl, // Default 24 hours
+        key
+      };
+
+      localStorage.setItem(key, JSON.stringify(cacheData));
+    } catch (error) {
+      console.warn('Failed to save to cache:', error);
+    }
+  }
+
+  /**
+   * Clear quiz session cache (call after completion or deletion)
+   */
+  clearSessionCache(sessionId: string): void {
+    try {
+      if (typeof window === 'undefined') return;
+      localStorage.removeItem(`quiz-session-${sessionId}`);
+      localStorage.removeItem(`quiz-results-${sessionId}`);
+    } catch (error) {
+      console.warn('Failed to clear cache:', error);
     }
   }
 
@@ -204,33 +288,10 @@ export class DatabaseSyncManager {
       // Get CSRF token
       const csrfToken = await this.options.csrfTokenGetter();
 
-      // Submit answers in batch if there are any
-      if (progressData.answers.length > 0) {
-        const batchResponse = await fetch(`${this.options.apiBaseUrl}/attempts/batch`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-csrf-token': csrfToken,
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            sessionId: progressData.sessionId,
-            answers: progressData.answers.map(answer => ({
-              questionId: answer.questionId,
-              selectedAnswerId: answer.selectedOptionId,
-              timeSpent: answer.timeSpent,
-              timestamp: answer.timestamp
-            }))
-          })
-        });
+      // OPTIMIZATION: Single API call - PATCH endpoint now accepts answers!
+      // This combines what used to be 2 calls (batch + PATCH) into 1
+      console.log('[Hybrid] Saving progress with single API call (answers + progress)');
 
-        if (!batchResponse.ok) {
-          const errorText = await batchResponse.text();
-          throw new Error(`Failed to save answers: ${errorText}`);
-        }
-      }
-
-      // Update session progress (not completion)
       const updateResponse = await fetch(`${this.options.apiBaseUrl}/sessions/${progressData.sessionId}`, {
         method: 'PATCH',
         headers: {
@@ -242,7 +303,14 @@ export class DatabaseSyncManager {
           status: 'in_progress', // Ensure status is set to in_progress
           currentQuestionIndex: progressData.currentQuestionIndex,
           timeRemaining: progressData.timeRemaining,
-          totalTimeSpent: progressData.totalTimeSpent
+          totalTimeSpent: progressData.totalTimeSpent,
+          // OPTIMIZATION: Include answers in the same request!
+          answers: progressData.answers.map(answer => ({
+            questionId: answer.questionId,
+            selectedAnswerId: answer.selectedOptionId,
+            timeSpent: answer.timeSpent,
+            timestamp: answer.timestamp
+          }))
         })
       });
 
@@ -308,9 +376,9 @@ export class DatabaseSyncManager {
         // Get CSRF token for POST requests
         const csrfToken = await this.options.csrfTokenGetter();
 
-        // Step 1: Submit all answers in batch
-        const batchAnswerPayload = {
-          sessionId: syncData.sessionId,
+        // OPTIMIZATION: Single API call - complete endpoint now accepts answers!
+        // This combines what used to be 2 calls (batch + complete) into 1
+        const completePayload = {
           answers: syncData.answers.map(answer => ({
             questionId: answer.questionId,
             selectedAnswerId: answer.selectedOptionId,
@@ -319,33 +387,8 @@ export class DatabaseSyncManager {
           }))
         };
 
-        const batchResponse = await fetch(`${this.options.apiBaseUrl}/attempts/batch`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-csrf-token': csrfToken,
-          },
-          credentials: 'include', // Include cookies for authentication
-          body: JSON.stringify(batchAnswerPayload)
-        });
+        console.log('[Hybrid] Completing quiz with single API call (answers + completion)');
 
-        if (!batchResponse.ok) {
-          const errorText = await batchResponse.text();
-
-          // Check if the error is because quiz is already completed - this is not really an error
-          if (errorText.includes('Quiz session is already completed') ||
-              errorText.includes('already completed')) {
-            return {
-              success: true,
-              timestamp: Date.now(),
-              serverResponse: { message: 'Quiz was already completed' }
-            };
-          }
-
-          throw new Error(`Batch answer submission failed: ${batchResponse.statusText} - ${errorText}`);
-        }
-
-        // Step 2: Complete the quiz
         const completeResponse = await fetch(`${this.options.apiBaseUrl}/sessions/${syncData.sessionId}/complete`, {
           method: 'POST',
           headers: {
@@ -353,6 +396,7 @@ export class DatabaseSyncManager {
             'x-csrf-token': csrfToken,
           },
           credentials: 'include', // Include cookies for authentication
+          body: JSON.stringify(completePayload)
         });
 
         if (!completeResponse.ok) {
@@ -372,7 +416,61 @@ export class DatabaseSyncManager {
         }
 
         const serverResponse = await completeResponse.json();
-        
+
+        console.log('='.repeat(80));
+        console.log('🎯 [HYBRID SYNC MANAGER] QUIZ COMPLETION RESPONSE:');
+        console.log('='.repeat(80));
+        console.log('[Hybrid] Complete response:', {
+          success: serverResponse.success,
+          hasData: !!serverResponse.data,
+          hasNewAchievements: !!serverResponse.newAchievements,
+          dataKeys: serverResponse.data ? Object.keys(serverResponse.data).slice(0, 5) : []
+        });
+        console.log('='.repeat(80));
+
+        // OPTIMIZATION: Cache the quiz results for results page using same format as useCachedData
+        // This eliminates the need for a separate API call to /results
+        if (serverResponse.success && serverResponse.data) {
+          try {
+            const resultsKey = `pathology-bites-quiz:quiz-results-${syncData.sessionId}`;
+
+            // Merge newAchievements into data for display
+            const resultsWithAchievements = {
+              ...serverResponse.data,
+              newAchievements: serverResponse.newAchievements || []
+            };
+
+            const cacheEntry = {
+              data: resultsWithAchievements,
+              timestamp: Date.now(),
+              ttl: 7 * 24 * 60 * 60 * 1000, // 7 days (results immutable, needed for review)
+              key: resultsKey
+            };
+
+            console.log('💾 [HYBRID CACHE] Caching results:', {
+              key: resultsKey,
+              hasData: !!cacheEntry.data,
+              dataKeys: Object.keys(cacheEntry.data).slice(0, 5),
+              cacheEntryStructure: Object.keys(cacheEntry)
+            });
+
+            localStorage.setItem(resultsKey, JSON.stringify(cacheEntry));
+
+            // Verify it was saved
+            const verification = localStorage.getItem(resultsKey);
+            console.log('✅ [HYBRID CACHE] SAVED TO LOCALSTORAGE:', {
+              saved: !!verification,
+              size: verification?.length,
+              canParse: !!JSON.parse(verification || '{}')
+            });
+            console.log('[Hybrid] Cached quiz results with achievements for results page - saves 1 API call');
+          } catch (error) {
+            console.warn('Failed to cache results:', error);
+          }
+        } else {
+          console.warn('[Hybrid] NOT caching - no data in response:', { serverResponse });
+        }
+
         return {
           success: true,
           timestamp: Date.now(),

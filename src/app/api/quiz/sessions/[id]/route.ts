@@ -1,3 +1,4 @@
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 // src/app/api/quiz/sessions/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
@@ -12,8 +13,8 @@ export async function GET(
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -28,7 +29,7 @@ export async function GET(
     }
 
     // Check if user owns this quiz session
-    if (quizSession.userId !== user.id) {
+    if (quizSession.userId !== userId) {
       return NextResponse.json(
         { error: 'Forbidden - You can only access your own quiz sessions' },
         { status: 403 }
@@ -49,6 +50,13 @@ export async function GET(
   }
 }
 
+interface BatchAnswerSubmission {
+  questionId: string
+  selectedAnswerId: string
+  timeSpent: number
+  timestamp: number
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -58,13 +66,20 @@ export async function PATCH(
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Parse request body
-    const updates = await request.json()
+    const updates: {
+      action?: string
+      timeRemaining?: number
+      currentQuestionIndex?: number
+      totalTimeSpent?: number
+      status?: string
+      answers?: BatchAnswerSubmission[]
+    } = await request.json()
 
     // Get existing quiz session to verify ownership
     const existingSession = await quizService.getQuizSession(id, supabase)
@@ -75,23 +90,67 @@ export async function PATCH(
       )
     }
 
-    if (existingSession.userId !== user.id) {
+    if (existingSession.userId !== userId) {
       return NextResponse.json(
         { error: 'Forbidden - You can only update your own quiz sessions' },
         { status: 403 }
       )
     }
 
+    // OPTIMIZATION: Submit answers if provided (eliminates separate batch call!)
+    if (updates.answers && updates.answers.length > 0) {
+      console.log(`[Quiz PATCH] Submitting ${updates.answers.length} answers during progress update`)
+
+      const attemptData = updates.answers.map(answer => ({
+        quiz_session_id: id,
+        question_id: answer.questionId,
+        selected_answer_id: answer.selectedAnswerId,
+        time_spent: answer.timeSpent || 0,
+        attempted_at: new Date(answer.timestamp).toISOString()
+      }))
+
+      // Check for existing attempts to prevent duplicates
+      const questionIds = updates.answers.map(a => a.questionId)
+      const { data: existingAttempts } = await supabase
+        .from('quiz_attempts')
+        .select('question_id')
+        .eq('quiz_session_id', id)
+        .in('question_id', questionIds)
+
+      // Filter out questions that already have attempts
+      const existingQuestionIds = new Set(existingAttempts?.map(a => a.question_id) || [])
+      const newAttemptData = attemptData.filter(attempt =>
+        !existingQuestionIds.has(attempt.question_id)
+      )
+
+      // Insert new attempts
+      if (newAttemptData.length > 0) {
+        const { error: insertError } = await supabase
+          .from('quiz_attempts')
+          .insert(newAttemptData)
+
+        if (insertError) {
+          console.error('[Quiz PATCH] Error inserting answers:', insertError)
+          // Don't fail the update - continue with progress save
+        } else {
+          console.log(`[Quiz PATCH] Inserted ${newAttemptData.length} answers`)
+        }
+      }
+    }
+
+    // Remove answers from updates object before passing to service
+    const { answers, ...sessionUpdates } = updates
+
     // Handle special actions
-    if (updates.action === 'start') {
+    if (sessionUpdates.action === 'start') {
       await quizService.startQuizSession(id, supabase)
-    } else if (updates.action === 'pause') {
-      await quizService.pauseQuizSession(id, updates.timeRemaining || 0, supabase)
-    } else if (updates.action === 'resume') {
+    } else if (sessionUpdates.action === 'pause') {
+      await quizService.pauseQuizSession(id, sessionUpdates.timeRemaining || 0, supabase)
+    } else if (sessionUpdates.action === 'resume') {
       await quizService.resumeQuizSession(id, supabase)
     } else {
       // Regular update
-      await quizService.updateQuizSession(id, updates, supabase)
+      await quizService.updateQuizSession(id, sessionUpdates, supabase)
     }
 
     return NextResponse.json({
@@ -117,8 +176,8 @@ export async function DELETE(
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -136,7 +195,7 @@ export async function DELETE(
       )
     }
 
-    if (session.user_id !== user.id) {
+    if (session.user_id !== userId) {
       return NextResponse.json(
         { error: 'Forbidden - You can only delete your own quiz sessions' },
         { status: 403 }

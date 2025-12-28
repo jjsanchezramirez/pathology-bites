@@ -1,3 +1,4 @@
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 // src/app/api/public/security/events/route.ts
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -9,9 +10,8 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     
     // Get the current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const { error: insertError } = await supabase
       .from('security_events')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         event_type: event.type,
         severity: event.severity,
         timestamp: new Date(event.timestamp).toISOString(),
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     // For high-severity events, you might want to trigger additional actions
     if (event.severity === 'high') {
       // Example: Send notification to admin, trigger additional security measures, etc.
-      console.warn(`High-severity security event for user ${user.id}:`, event)
+      console.warn(`High-severity security event for user ${userId}:`, event)
       
       // You could add additional logic here:
       // - Send email notifications

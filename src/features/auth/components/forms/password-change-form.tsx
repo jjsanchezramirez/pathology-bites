@@ -6,7 +6,7 @@ import { toast } from '@/shared/utils/toast'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { RefreshCw, Mail, Key } from 'lucide-react'
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 
 interface PasswordChangeFormProps {
   className?: string
@@ -16,7 +16,7 @@ interface PasswordChangeFormProps {
 export function PasswordChangeForm({ className, onSuccess }: PasswordChangeFormProps) {
   const [loading, setLoading] = useState(false)
   const [lastResetTime, setLastResetTime] = useState<Date | null>(null)
-  const { user } = useAuthStatus()
+  const { user } = useAuth({ minimal: true })
 
   const canRequestReset = () => {
     if (!lastResetTime) return true

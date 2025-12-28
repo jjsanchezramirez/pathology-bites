@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { AlertTriangle } from 'lucide-react';
 import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useUserRole } from '@/shared/hooks/use-user-role';
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status';
+import { useAuth } from '@/shared/hooks/use-auth';
 import { canDeleteQuestion } from '@/features/questions/utils/deletion-helpers';
 
 interface DeleteQuestionDialogProps {
@@ -36,7 +36,7 @@ export function DeleteQuestionDialog({
 }: DeleteQuestionDialogProps) {
   const [isDeleting, setIsDeleting] = React.useState(false);
   const { role } = useUserRole();
-  const { user } = useAuthStatus();
+  const { user } = useAuth({ minimal: true });
 
   // Check if deletion is allowed
   const deletionCheck = canDeleteQuestion(question, role, user?.id || null);

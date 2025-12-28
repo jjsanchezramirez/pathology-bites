@@ -3,6 +3,7 @@ import { ConditionalThemeProvider } from '@/shared/components/common/conditional
 import { Toaster as SonnerToaster } from "sonner"
 import { ConnectionStatus } from "@/shared/components/common/connection-status"
 import { CookieConsentBanner } from "@/shared/components/common/cookie-consent-banner"
+import { SWRCacheProvider } from '@/shared/providers/swr-cache-provider'
 
 import { cn } from '@/shared/utils'
 import "@/styles/globals.css"
@@ -149,17 +150,19 @@ export default async function RootLayout({
         />
 
         <AnalyticsProvider>
-          <ConditionalThemeProvider attribute="class" defaultTheme="system">
-            <div className="relative flex min-h-screen flex-col">
-              <AuthProvider>
-                <div>{children}</div>
-              </AuthProvider>
-            </div>
-            <SonnerToaster />
-            <ConnectionStatus />
-            <CookieConsentBanner />
-            {/* Cache clear button temporarily removed due to SSR error */}
-          </ConditionalThemeProvider>
+          <SWRCacheProvider>
+            <ConditionalThemeProvider attribute="class" defaultTheme="system">
+              <div className="relative flex min-h-screen flex-col">
+                <AuthProvider>
+                  <div>{children}</div>
+                </AuthProvider>
+              </div>
+              <SonnerToaster />
+              <ConnectionStatus />
+              <CookieConsentBanner />
+              {/* Cache clear button temporarily removed due to SSR error */}
+            </ConditionalThemeProvider>
+          </SWRCacheProvider>
         </AnalyticsProvider>
       </body>
     </html>

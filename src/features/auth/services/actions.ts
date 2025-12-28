@@ -191,27 +191,44 @@ export async function login(formData: FormData) {
     redirect(redirectPath)
   }
 
-  // Check user role for redirect
-  let userRole = 'user' // default
+  // Get role from JWT first (fastest), fallback to database
+  let userRole = authData.user.app_metadata?.role || authData.user.user_metadata?.role || 'user'
 
-  try {
-    const { data: userData, error: roleError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', authData.user.id)
-      .maybeSingle()
+  // If role not in JWT, fetch from database and update JWT
+  if (!authData.user.app_metadata?.role) {
+    try {
+      const { data: userData, error: roleError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', authData.user.id)
+        .maybeSingle()
 
-    console.log('[Auth] User role data:', userData)
+      console.log('[Auth] User role data:', userData)
 
-    if (roleError) {
-      console.error('[Auth] Role check error:', roleError)
-    } else {
-      userRole = userData?.role || 'user'
+      if (roleError) {
+        console.error('[Auth] Role check error:', roleError)
+      } else if (userData) {
+        userRole = userData.role || 'user'
+
+        // Store role in app_metadata (requires admin API)
+        // For now, store in user_metadata which is accessible from JWT
+        try {
+          await supabase.auth.updateUser({
+            data: { role: userRole }
+          })
+          console.log('[Auth] Updated user_metadata with role:', userRole)
+        } catch (metadataError) {
+          console.error('[Auth] Failed to update user_metadata:', metadataError)
+          // Non-critical error, continue with login
+        }
+      }
+    } catch (error) {
+      console.error('[Auth] Database error during role check:', error)
     }
-  } catch (error) {
-    console.error('[Auth] Database error during role check:', error)
+  } else {
+    console.log('[Auth] Role retrieved from JWT:', userRole)
   }
-  
+
   // Redirect based on role
   if (userRole === 'admin' || userRole === 'creator' || userRole === 'reviewer') {
     console.log('[Auth] Redirecting to admin dashboard for role:', userRole)

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { deleteFromR2, extractR2KeyFromUrl } from '@/shared/services/r2-storage'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 export async function DELETE(request: NextRequest) {
   console.log('🗑️ DELETE /api/media/images/delete called');
@@ -15,18 +16,16 @@ export async function DELETE(request: NextRequest) {
     console.log('✅ Supabase client created');
 
     // Verify user is authenticated admin
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    const userId = getUserIdFromHeaders(request)
     console.log('👤 Auth check:', {
-      hasUser: !!user,
-      userError: userError?.message,
-      userId: user?.id,
-      userEmail: user?.email
+      hasUser: !!userId,
+      userId: userId
     });
 
-    if (userError || !user) {
+    if (!userId) {
       console.log('❌ Authentication failed');
       return NextResponse.json(
-        { error: 'You must be logged in to delete images', details: userError?.message },
+        { error: 'You must be logged in to delete images' },
         { status: 401 }
       )
     }
@@ -34,7 +33,7 @@ export async function DELETE(request: NextRequest) {
     const { data: userData, error: roleError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     console.log('🔐 Role check:', { userData, roleError: roleError?.message });

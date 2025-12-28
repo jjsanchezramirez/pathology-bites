@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
 import { CircularProgress } from "@/shared/components/ui/circular-progress"
-import { Clock, Target, TrendingUp, RotateCcw, Eye } from "lucide-react"
+import { Clock, Target, TrendingUp, RotateCcw, Eye, Trophy } from "lucide-react"
 import { QuizResult } from "@/features/quiz/types/quiz"
+import { AchievementLottie } from "@/features/achievements/components/achievement-lottie"
 import Link from "next/link"
 import { useEffect } from "react"
 import confetti from "canvas-confetti"
@@ -55,39 +56,84 @@ export function QuizResultsSummary({
 
   const performance = getPerformanceMessage(percentage)
   const tier = getPerformanceTier(percentage)
-
-  // Exponential confetti system
-  const triggerConfetti = (score: number) => {
-    if (score < 50) return // No confetti for very low scores
-
-    // Exponential scaling: each 10 points significantly increases intensity
-    const baseIntensity = Math.max(0, (score - 50) / 10) // 0 at 50%, 1 at 60%, 2 at 70%, etc.
-    const exponentialIntensity = Math.pow(baseIntensity, 1.5) // Exponential growth
-
-    const particleCount = Math.round(20 + (exponentialIntensity * 40)) // 20-200+ particles
-    const spread = Math.round(40 + (exponentialIntensity * 20)) // 40-80+ spread
-
-    confetti({
-      particleCount,
-      spread,
-      origin: { y: 0.6 },
-      colors: ['#16a34a', '#22d3ee', '#f59e0b', '#ec4899']
-    })
-  }
+  const hasNewAchievements = (result.newAchievements?.length ?? 0) > 0
 
   // Auto-trigger confetti for scores 50% and above
   useEffect(() => {
-    if (percentage >= 50) {
-      const timer = setTimeout(() => {
-        triggerConfetti(percentage)
-      }, 1500) // Delay to let animations start
+    if (percentage < 50) return // No confetti for very low scores
 
-      return () => clearTimeout(timer)
-    }
-  }, [percentage])
+    const timer = setTimeout(() => {
+      // Exponential scaling: each 10 points significantly increases intensity
+      const baseIntensity = Math.max(0, (percentage - 50) / 10) // 0 at 50%, 1 at 60%, 2 at 70%, etc.
+      const exponentialIntensity = Math.pow(baseIntensity, 1.5) // Exponential growth
+
+      // Achievement multiplier - MASSIVE boost for unlocking achievements!
+      const achievementMultiplier = hasNewAchievements ? 2.5 : 1
+
+      const particleCount = Math.round((20 + (exponentialIntensity * 40)) * achievementMultiplier) // 20-500+ particles
+      const spread = Math.round((40 + (exponentialIntensity * 20)) * (hasNewAchievements ? 1.5 : 1)) // Wider spread for achievements
+
+      console.log('[Confetti] Triggering with', { percentage, hasNewAchievements, particleCount, spread })
+
+      // Single big burst
+      confetti({
+        particleCount,
+        spread,
+        origin: { y: 0.6 },
+        colors: hasNewAchievements
+          ? ['#fbbf24', '#f59e0b', '#d97706', '#b45309', '#92400e'] // Gold colors for achievements
+          : ['#16a34a', '#22d3ee', '#f59e0b', '#ec4899']
+      })
+
+      // Extra bursts for achievements
+      if (hasNewAchievements) {
+        setTimeout(() => {
+          confetti({
+            particleCount: 50,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0, y: 0.6 },
+            colors: ['#fbbf24', '#f59e0b']
+          })
+        }, 200)
+
+        setTimeout(() => {
+          confetti({
+            particleCount: 50,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1, y: 0.6 },
+            colors: ['#fbbf24', '#f59e0b']
+          })
+        }, 400)
+      }
+    }, 1500) // Delay to let animations start
+
+    return () => clearTimeout(timer)
+  }, [percentage, hasNewAchievements]) // Only depend on primitive values
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
+      {/* Debug: Manual confetti trigger button (remove after testing) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="flex justify-center">
+          <Button
+            onClick={() => {
+              console.log('[Confetti] Manual trigger')
+              confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+              })
+            }}
+            variant="outline"
+            size="sm"
+          >
+            Test Confetti
+          </Button>
+        </div>
+      )}
+
       {/* Header with Text Animations */}
       <div className="text-center space-y-2">
         <h1 className={`text-3xl font-bold ${performance.color}`}>
@@ -145,6 +191,46 @@ export function QuizResultsSummary({
           </div>
         </CardContent>
       </Card>
+
+      {/* New Achievements Section */}
+      {result.newAchievements && result.newAchievements.length > 0 && (
+        <Card className="border-2 border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
+              <Trophy className="h-6 w-6" />
+              New Achievements Unlocked!
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {result.newAchievements.map((achievement) => (
+                <Card key={achievement.id} className="bg-white dark:bg-gray-800">
+                  <CardContent className="pt-6 pb-4 px-4 text-center">
+                    {/* Lottie Animation */}
+                    <div className="mb-4 flex justify-center">
+                      <AchievementLottie
+                        animationType={achievement.animationType}
+                        isUnlocked={true}
+                        className="w-24 h-24"
+                      />
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="font-semibold mb-2 text-yellow-700 dark:text-yellow-400">
+                      {achievement.title}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-sm text-muted-foreground">
+                      {achievement.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

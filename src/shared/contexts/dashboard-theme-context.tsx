@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { dashboardThemes, getThemeById, getDefaultTheme, type DashboardTheme } from '@/shared/config/dashboard-themes'
 import { useUserRole } from '@/shared/hooks/use-user-role'
+import { useUserSettings } from '@/shared/hooks/use-user-settings'
 import {
   type AdminMode,
   getAdminModeFromCookie,
@@ -36,6 +37,9 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
   const [adminMode, setAdminModeState] = useState<AdminMode>(() => getAdminModeFromCookie(isAdmin))
   const [isLoading, setIsLoading] = useState(true)
   const [isTransitioning, setIsTransitioning] = useState(false)
+
+  // Use SWR cache instead of redundant localStorage
+  const { data: settings } = useUserSettings()
 
   // Get available themes based on admin mode
   const getAvailableThemes = (mode: AdminMode): DashboardTheme[] => {
@@ -84,63 +88,53 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
     }
   }, [])
 
-  // Load theme and admin mode from localStorage on mount (no API calls!)
+  // Load theme from SWR cache (no API calls, no redundant localStorage!)
   useEffect(() => {
     try {
-      console.log('[DashboardTheme] Loading theme from localStorage...')
+      console.log('[DashboardTheme] Loading theme from SWR cache...')
 
       // Get admin mode using utility function
       const defaultMode = getAdminModeFromCookie(isAdmin)
       console.log('[DashboardTheme] Admin mode:', defaultMode, 'isAdmin:', isAdmin)
       setAdminModeState(defaultMode)
 
-      // Load theme based on admin mode from localStorage
+      // Load theme based on admin mode from SWR cache
       const availableThemes = getAvailableThemes(defaultMode)
       let themeToSet: DashboardTheme
 
-      // Load from localStorage (synced by SettingsSyncProvider)
-      const uiSettingsStr = localStorage.getItem('pathology-bites-ui-settings')
-      console.log('[DashboardTheme] localStorage value:', uiSettingsStr)
+      if (settings?.ui_settings) {
+        const themeKey = getThemeKeyForMode(defaultMode)
+        const themeId = settings.ui_settings[themeKey]
 
-      if (uiSettingsStr) {
-        try {
-          const uiSettings = JSON.parse(uiSettingsStr)
-          const themeKey = getThemeKeyForMode(defaultMode)
-          const themeId = uiSettings[themeKey]
+        console.log(`[DashboardTheme] Mode: ${defaultMode}, Theme:`, themeId)
 
-          console.log(`[DashboardTheme] Mode: ${defaultMode}, Theme:`, themeId)
-
-          if (themeId) {
-            const theme = getThemeById(themeId)
-            if (theme && availableThemes.some(t => t.id === theme.id)) {
-              themeToSet = theme
-              console.log('[DashboardTheme] Loaded from localStorage:', themeToSet.id)
-            } else {
-              themeToSet = getDefaultThemeForMode(defaultMode)
-              console.log('[DashboardTheme] Theme not available, using default:', themeToSet.id)
-            }
+        if (themeId) {
+          const theme = getThemeById(themeId)
+          if (theme && availableThemes.some(t => t.id === theme.id)) {
+            themeToSet = theme
+            console.log('[DashboardTheme] Loaded from SWR cache:', themeToSet.id)
           } else {
             themeToSet = getDefaultThemeForMode(defaultMode)
-            console.log('[DashboardTheme] No theme preference, using default:', themeToSet.id)
+            console.log('[DashboardTheme] Theme not available, using default:', themeToSet.id)
           }
-        } catch (parseError) {
-          console.warn('[DashboardTheme] Failed to parse ui_settings:', parseError)
+        } else {
           themeToSet = getDefaultThemeForMode(defaultMode)
+          console.log('[DashboardTheme] No theme preference, using default:', themeToSet.id)
         }
       } else {
         themeToSet = getDefaultThemeForMode(defaultMode)
-        console.log('[DashboardTheme] No ui_settings in localStorage, using default:', themeToSet.id)
+        console.log('[DashboardTheme] No settings in SWR cache, using default:', themeToSet.id)
       }
 
       console.log('[DashboardTheme] Applying theme:', themeToSet.id)
       setCurrentTheme(themeToSet)
+      setIsLoading(false)
     } catch (error) {
       console.warn('[DashboardTheme] Failed to load dashboard settings:', error)
       setCurrentTheme(getDefaultTheme())
-    } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [settings, isAdmin])
 
   // Watch for admin mode changes via cookie
   useEffect(() => {

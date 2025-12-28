@@ -2,22 +2,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { awardAchievements } from '@/features/achievements/services/achievement-service.server'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
-async function checkAndAwardAchievements() {
+async function checkAndAwardAchievements(request: NextRequest) {
   const supabase = await createClient()
 
   // Get authenticated user
-  const {
-    data: { user },
-    error: authError
-  } = await supabase.auth.getUser()
-
-  if (authError || !user) {
+  const userId = getUserIdFromHeaders(request)
+  if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   // Check and award achievements
-  const newAchievements = await awardAchievements(user.id)
+  const newAchievements = await awardAchievements(userId)
 
   return NextResponse.json({
     success: true,
@@ -33,7 +30,7 @@ async function checkAndAwardAchievements() {
  */
 export async function GET(request: NextRequest) {
   try {
-    return await checkAndAwardAchievements()
+    return await checkAndAwardAchievements(request)
   } catch (error) {
     console.error('Unexpected error in check achievements API (GET):', error)
     const errorMessage = error instanceof Error ? error.message : 'Internal server error'
@@ -50,7 +47,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    return await checkAndAwardAchievements()
+    return await checkAndAwardAchievements(request)
   } catch (error) {
     console.error('Unexpected error in check achievements API (POST):', error)
     const errorMessage = error instanceof Error ? error.message : 'Internal server error'

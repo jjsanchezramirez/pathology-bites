@@ -15,19 +15,19 @@ import { Search } from 'lucide-react'
 
 interface QuizFiltersProps {
   searchTerm: string
-  selectedFilters: string[]
+  selectedFilter: string
   sortBy: string
   onSearchChange: (value: string) => void
-  onFiltersChange: (filters: string[]) => void
+  onFilterChange: (filter: string) => void
   onSortChange: (sort: string) => void
 }
 
 export function QuizFilters({
   searchTerm,
-  selectedFilters,
+  selectedFilter,
   sortBy,
   onSearchChange,
-  onFiltersChange,
+  onFilterChange,
   onSortChange
 }: QuizFiltersProps) {
   return (
@@ -47,25 +47,10 @@ export function QuizFilters({
             </div>
           </div>
 
-          {/* Combined Filters Dropdown */}
-          <Select
-            value={selectedFilters.length === 0 ? "all" : selectedFilters.join(",")}
-            onValueChange={(value) => {
-              if (value === "all") {
-                onFiltersChange([])
-              } else {
-                // Toggle filter
-                const filter = value
-                onFiltersChange(
-                  selectedFilters.includes(filter)
-                    ? selectedFilters.filter(f => f !== filter)
-                    : [...selectedFilters, filter]
-                )
-              }
-            }}
-          >
+          {/* Filter Dropdown */}
+          <Select value={selectedFilter} onValueChange={onFilterChange}>
             <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder={selectedFilters.length === 0 ? "All Filters" : `${selectedFilters.length} filters`} />
+              <SelectValue placeholder="All Filters" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Filters</SelectItem>
@@ -97,30 +82,6 @@ export function QuizFilters({
             </SelectContent>
           </Select>
         </div>
-
-        {/* Active Filters Display */}
-        {selectedFilters.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-3">
-            {selectedFilters.map(filter => (
-              <Badge
-                key={filter}
-                variant="secondary"
-                className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
-                onClick={() => onFiltersChange(selectedFilters.filter(f => f !== filter))}
-              >
-                {filter} ×
-              </Badge>
-            ))}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onFiltersChange([])}
-              className="h-6 px-2 text-xs"
-            >
-              Clear all
-            </Button>
-          </div>
-        )}
       </CardContent>
     </Card>
   )

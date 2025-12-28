@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 export async function GET(
   request: NextRequest,
@@ -9,8 +10,8 @@ export async function GET(
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -18,7 +19,7 @@ export async function GET(
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (userError || !['admin', 'creator', 'reviewer'].includes(userData?.role)) {

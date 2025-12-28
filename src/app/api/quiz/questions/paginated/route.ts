@@ -1,3 +1,4 @@
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 // src/app/api/quiz/questions/paginated/route.ts
 /**
  * Paginated questions API endpoint for optimized data loading
@@ -22,8 +23,8 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -137,8 +138,8 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -164,7 +165,7 @@ export async function POST(request: NextRequest) {
       case 'mark_favorite':
         // Add to favorites (with conflict handling)
         const favoriteInserts = questionIds.map(questionId => ({
-          user_id: user.id,
+          user_id: userId,
           question_id: questionId
         }))
         
@@ -178,7 +179,7 @@ export async function POST(request: NextRequest) {
         result = await supabase
           .from('user_favorites')
           .delete()
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .in('question_id', questionIds)
         break
 

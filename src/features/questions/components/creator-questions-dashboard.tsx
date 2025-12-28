@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/shared/services/client'
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 import {
   Table,
   TableBody,
@@ -63,7 +63,7 @@ export function CreatorQuestionsDashboard() {
   const [reassignOpen, setReassignOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('all')
 
-  const { user } = useAuthStatus()
+  const { user } = useAuth({ minimal: true })
   const supabase = createClient()
 
   const fetchMyQuestions = useCallback(async () => {

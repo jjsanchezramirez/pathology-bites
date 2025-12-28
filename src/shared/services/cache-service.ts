@@ -47,7 +47,7 @@ class CacheService {
       prefix = this.defaultPrefix
     } = options
 
-    const fullKey = `${prefix}:${key}`
+    const fullKey = prefix ? `${prefix}:${key}` : key
     const entry: CacheEntry<T> = {
       data,
       timestamp: Date.now(),
@@ -93,7 +93,7 @@ class CacheService {
       prefix = this.defaultPrefix
     } = options
 
-    const fullKey = `${prefix}:${key}`
+    const fullKey = prefix ? `${prefix}:${key}` : key
     let entry: CacheEntry<T> | null = null
 
     switch (storage) {
@@ -143,7 +143,7 @@ class CacheService {
       prefix = this.defaultPrefix
     } = options
 
-    const fullKey = `${prefix}:${key}`
+    const fullKey = prefix ? `${prefix}:${key}` : key
 
     switch (storage) {
       case 'memory':
@@ -237,7 +237,7 @@ class CacheService {
       prefix = this.defaultPrefix
     } = options
 
-    const fullKey = `${prefix}:${key}`
+    const fullKey = prefix ? `${prefix}:${key}` : key
 
     // If there's already a pending request for this key, return it
     if (this.pendingRequests.has(fullKey)) {

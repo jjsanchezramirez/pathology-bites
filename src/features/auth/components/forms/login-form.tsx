@@ -15,6 +15,7 @@ import { GoogleSignInButton } from "@/features/auth/components/google-sign-in-bu
 import { AuthDivider } from "@/features/auth/components/ui/auth-divider"
 import { useCSRFToken } from '@/features/auth/hooks/use-csrf-token'
 import { useTurnstile } from '@/features/auth/hooks/use-turnstile'
+import { useAuth } from '@/shared/hooks/use-auth'
 
 // Form schema definition
 const formSchema = z.object({
@@ -47,6 +48,20 @@ export function LoginForm({
   const turnstileRef = useRef<TurnstileInstance | null>(null)
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY
   const router = useRouter()
+
+  // Client-side auth check - redirect if already logged in
+  const { isAuthenticated, isLoading: authLoading, role } = useAuth({ minimal: true })
+
+  // Redirect authenticated users to their dashboard
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && role) {
+      const redirectPath = redirect ||
+        (role === 'admin' || role === 'creator' || role === 'reviewer'
+          ? '/admin/dashboard'
+          : '/dashboard')
+      router.replace(redirectPath)
+    }
+  }, [isAuthenticated, authLoading, role, redirect, router])
 
   // Show error/message toasts from props (passed from server component)
   useEffect(() => {

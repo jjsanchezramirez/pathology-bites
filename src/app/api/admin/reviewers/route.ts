@@ -1,5 +1,6 @@
 import { createClient } from '@/shared/services/server'
 import { NextResponse } from 'next/server'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 /**
  * GET /api/admin/reviewers
@@ -12,8 +13,8 @@ export async function GET() {
     const supabase = await createClient()
 
     // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

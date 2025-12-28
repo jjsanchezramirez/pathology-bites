@@ -4,7 +4,7 @@
 import { useState } from 'react'
 
 import { toast } from '@/shared/utils/toast'
-import { useAuth } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 import { BlurredDialog } from '@/shared/components/ui/blurred-dialog'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -45,7 +45,7 @@ export function CreateSetDialog({ open, onOpenChange, onSuccess }: CreateSetDial
   const [isActive, setIsActive] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
 
-  const { user } = useAuth()
+  const { user } = useAuth({ minimal: true })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

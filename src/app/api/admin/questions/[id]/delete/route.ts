@@ -1,5 +1,6 @@
 import { createClient } from '@/shared/services/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 /**
  * DELETE /api/admin/questions/:id/delete
@@ -21,8 +22,8 @@ export async function DELETE(
     console.log(`Question ID to delete: ${questionId}`);
 
     // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -33,7 +34,7 @@ export async function DELETE(
     const { data: userProfile, error: profileError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (profileError || !userProfile) {
@@ -81,7 +82,7 @@ export async function DELETE(
 
     // Check ownership permissions
     const isAdmin = userProfile.role === 'admin'
-    const isOwner = question.created_by === user.id
+    const isOwner = question.created_by === userId
 
     if (!isAdmin && !isOwner) {
       return NextResponse.json(

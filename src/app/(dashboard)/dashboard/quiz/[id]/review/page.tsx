@@ -24,6 +24,7 @@ import { toast } from '@/shared/utils/toast'
 import { cn } from "@/shared/utils"
 import Link from "next/link"
 import { PanelLeftOpen } from "lucide-react"
+import { cacheService } from '@/shared/services/cache-service'
 
 export default function QuizReviewPage() {
   const params = useParams()
@@ -36,48 +37,98 @@ export default function QuizReviewPage() {
 
   const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id
 
-  // Fetch quiz results and full question data on component mount
+  // Fetch quiz results and full question data from cache
+  // OPTIMIZED: Uses cached session data (no API calls) and cached results (no API calls)
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        // Fetch quiz results from API
-        const response = await fetch(`/api/quiz/sessions/${params?.id}/results`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch quiz results')
+        // OPTIMIZATION: Try to load from cached quiz session first (eliminates ALL API calls!)
+        const sessionCacheKey = `quiz-session-${params?.id}`;
+
+        // Debug: Check what's actually in localStorage
+        const rawLocalStorage = typeof window !== 'undefined' ? localStorage.getItem(sessionCacheKey) : null;
+        console.log('[Review] Raw localStorage check:', {
+          key: sessionCacheKey,
+          exists: !!rawLocalStorage,
+          size: rawLocalStorage?.length,
+          preview: rawLocalStorage?.substring(0, 100)
+        });
+
+        const sessionCached = cacheService.get<{ questions: UIQuizQuestion[]; config: any; existingAnswers?: any[] }>(
+          sessionCacheKey,
+          { storage: 'localStorage', prefix: '' } // No prefix, sync manager uses raw key
+        );
+
+        console.log('[Review] Session cache check after cacheService.get:', {
+          hasCache: !!sessionCached,
+          hasQuestions: !!sessionCached?.questions,
+          questionCount: sessionCached?.questions?.length,
+          cacheKeys: sessionCached ? Object.keys(sessionCached) : [],
+          cacheType: typeof sessionCached,
+          sessionIdParam: params?.id
+        });
+
+        let sessionQuestions: UIQuizQuestion[] | null = null;
+
+        if (sessionCached?.questions) {
+          sessionQuestions = sessionCached.questions;
+          console.log('[Review] Using cached session questions - 0 API calls + 0 DB queries');
         }
-        const data = await response.json()
-        setResult(data.data)
 
-        // Fetch full question data with options, images, etc.
-        if (data.data?.questionDetails) {
-          const supabase = createClient()
-          const questionIds = data.data.questionDetails.map((q: any) => q.id)
+        // OPTIMIZATION: Load results from cache (already cached by completion endpoint)
+        const resultsCached = cacheService.get<QuizResult>(
+          `quiz-results-${params?.id}`,
+          { storage: 'localStorage', prefix: 'pathology-bites-quiz' }
+        );
 
-          const { data: questions, error } = await supabase
-            .from('questions')
-            .select(`
-              id,
-              title,
-              stem,
-              teaching_point,
-              question_references,
-              question_options(*),
-              question_images(*, image:images(*))
-            `)
-            .in('id', questionIds)
+        console.log('[Review] Results cache check:', {
+          hasCache: !!resultsCached,
+          hasQuestionDetails: !!resultsCached?.questionDetails,
+          questionDetailsCount: resultsCached?.questionDetails?.length
+        });
 
-          if (error) {
-            console.error('Error fetching full question data:', error)
-            toast.error('Failed to load question details')
-          } else if (questions) {
-            // Order questions to match the quiz order
-            const questionMap = new Map(questions?.map((q: any) => [q.id, q]) || [])
-            const orderedQuestions = questionIds.map(id => questionMap.get(id)).filter(Boolean) as UIQuizQuestion[]
-            setFullQuestions(orderedQuestions)
+        if (!resultsCached) {
+          // Fallback: fetch from API if not cached (shouldn't happen normally)
+          console.log('[Review] No cached results, fetching from API');
+          const response = await fetch(`/api/quiz/sessions/${params?.id}/results`)
+          if (!response.ok) {
+            throw new Error('Failed to fetch quiz results')
+          }
+          const data = await response.json()
+          setResult(data.data)
+        } else {
+          setResult(resultsCached);
+          console.log('[Review] Using cached results - 0 API calls');
+        }
+
+        // Use cached session questions if available
+        if (sessionQuestions) {
+          setFullQuestions(sessionQuestions);
+          console.log('[Review] Using cached session questions - 0 API calls');
+        } else {
+          // Fallback: Fetch from API if session cache expired
+          // This happens when cache TTL (7 days) has passed
+          console.log('[Review] Session cache expired, fetching from API');
+          try {
+            const sessionResponse = await fetch(`/api/quiz/sessions/${params?.id}`)
+            if (!sessionResponse.ok) {
+              throw new Error('Failed to fetch quiz session')
+            }
+            const sessionData = await sessionResponse.json()
+            if (sessionData.success && sessionData.data?.questions) {
+              setFullQuestions(sessionData.data.questions);
+              console.log('[Review] Fetched session questions from API - 1 API call');
+            } else {
+              throw new Error('No questions in session data')
+            }
+          } catch (sessionError) {
+            console.error('[Review] Failed to fetch session:', sessionError);
+            toast.error('Failed to load quiz questions. Please try again.');
           }
         }
-      } catch {
-        toast.error('Failed to load quiz results')
+      } catch (error) {
+        console.error('[Review] Error loading review data:', error);
+        toast.error('Failed to load quiz review')
         setResult(null)
       } finally {
         setLoading(false)

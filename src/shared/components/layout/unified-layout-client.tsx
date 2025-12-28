@@ -32,8 +32,11 @@ export function UnifiedLayoutClient({
   const isAnkiPage = pathname === '/dashboard/anki'
   const isAnki2Page = pathname === '/dashboard/anki2'
   const isQuizTestPage = pathname === '/dashboard/quiz-test'
-  const isQuizPage = pathname?.startsWith('/dashboard/quiz/') || false
-  const isFullHeightPage = isAnkiPage || isAnki2Page || isQuizTestPage || isQuizPage
+  // Only quiz active session and review pages need full-height layout (they have their own scrolling areas)
+  // Results page needs standard scrollable layout
+  const isQuizActivePage = pathname?.match(/^\/dashboard\/quiz\/[^/]+$/) // Active quiz: /quiz/[id]
+  const isQuizReviewPage = pathname?.includes('/review') // Review page: /quiz/[id]/review
+  const isFullHeightPage = isAnkiPage || isAnki2Page || isQuizTestPage || isQuizActivePage || isQuizReviewPage
 
   // Don't show navigation until we know the user's role (for admin routes)
   // This prevents showing user nav first, then switching to admin nav
@@ -127,17 +130,7 @@ export function UnifiedLayoutClient({
   }
 
   // Determine final sidebar properties
-  const sidebarHidden = isMobile ? !mobileVisible : false // Desktop always visible
   const sidebarCollapsed = isMobile ? false : desktopCollapsed // Mobile always expanded when visible
-
-  // Don't render until hydrated to prevent layout shift
-  if (!isHydrated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
 
   return (
     <div

@@ -1,6 +1,7 @@
 // src/app/api/user/favorites/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 // GET /api/user/favorites - Get user's favorite questions
 export async function GET(request: NextRequest) {
@@ -8,8 +9,8 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
           )
         )
       `)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
     // Filter by category if specified
@@ -76,8 +77,8 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
     const { data: favorite, error } = await supabase
       .from('user_favorites')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         question_id
       })
       .select()
@@ -137,8 +138,8 @@ export async function DELETE(request: NextRequest) {
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -152,7 +153,7 @@ export async function DELETE(request: NextRequest) {
     const { error } = await supabase
       .from('user_favorites')
       .delete()
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('question_id', question_id)
 
     if (error) {

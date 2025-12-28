@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { z } from 'zod'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 const passwordResetSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -134,8 +135,8 @@ export async function PATCH(request: NextRequest) {
     const supabase = await createClient()
 
     // Check if user is authenticated (should have valid reset token)
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Invalid or expired reset token' }, { status: 401 })
     }
 
@@ -164,10 +165,10 @@ export async function PATCH(request: NextRequest) {
     await supabase
       .from('audit_logs')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         action: 'password_updated',
         table_name: 'users',
-        record_id: user.id,
+        record_id: userId,
         metadata: {
           timestamp: new Date().toISOString(),
           method: 'password_reset'

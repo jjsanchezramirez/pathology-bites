@@ -1,7 +1,8 @@
 // src/features/users/components/users-table.tsx
 'use client'
 
-import { useState, useCallback, useEffect, memo } from 'react'
+import { useState, useCallback, useEffect, memo, useMemo } from 'react'
+import useSWR from 'swr'
 import { toast } from '@/shared/utils/toast'
 import {
   Table,
@@ -51,7 +52,7 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { useUserRole } from '@/shared/hooks/use-user-role'
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 import { apiClient } from '@/shared/utils/api-client'
 
 interface User {
@@ -192,14 +193,10 @@ interface UsersTableProps {
 }
 
 export function UsersTable({ onUserChange }: UsersTableProps = {}) {
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [page, setPage] = useState(0)
-  const [totalPages, setTotalPages] = useState(0)
-  const [totalUsers, setTotalUsers] = useState(0)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [showRoleDialog, setShowRoleDialog] = useState(false)
   const [showStatusDialog, setShowStatusDialog] = useState(false)
@@ -210,8 +207,60 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
   const [pendingStatus, setPendingStatus] = useState<string>('')
   const [pendingType, setPendingType] = useState<string>('')
 
-  const { user: currentUser } = useAuthStatus()
+  const { user: currentUser } = useAuth({ minimal: true })
   const { isAdmin } = useUserRole()
+
+  // Debug: Track component lifecycle
+  useEffect(() => {
+    const instanceId = Math.random().toString(36).substring(7)
+    console.log(`[UsersTable] 🟢 Mounted (${instanceId})`)
+    return () => {
+      console.log(`[UsersTable] 🔴 Unmounted (${instanceId})`)
+    }
+  }, [])
+
+  // Build API URL with query params
+  const apiUrl = useMemo(() => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      pageSize: PAGE_SIZE.toString(),
+      ...(searchTerm && { search: searchTerm }),
+      ...(roleFilter !== 'all' && { role: roleFilter }),
+      ...(statusFilter !== 'all' && { status: statusFilter })
+    })
+    const url = `/api/admin/users?${params.toString()}`
+    console.log('[UsersTable] API URL:', url)
+    return url
+  }, [page, searchTerm, roleFilter, statusFilter])
+
+  // Use SWR for data fetching with caching and deduplication
+  const { data, error, isLoading, mutate } = useSWR(
+    apiUrl,
+    async (url) => {
+      console.log('[UsersTable] 🌐 Fetching:', url)
+      const response = await fetch(url)
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to load users')
+      }
+      const result = await response.json()
+      console.log('[UsersTable] ✅ Fetched:', url, '→', result.users?.length, 'users')
+      return result
+    },
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 2000, // Prevent duplicate requests within 2 seconds
+      revalidateOnReconnect: false,
+      onError: (err) => {
+        console.error('[UsersTable] ❌ Error loading users:', err)
+        toast.error(err instanceof Error ? err.message : 'Failed to load users')
+      }
+    }
+  )
+
+  const users = data?.users || []
+  const totalUsers = data?.totalUsers || 0
+  const totalPages = data?.totalPages || 0
 
   // Helper functions for safety checks
   const canModifyUser = (targetUser: User) => {
@@ -251,42 +300,6 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
     setShowDeleteDialog(true)
   }, [])
 
-  const loadUsers = useCallback(async () => {
-    setLoading(true)
-    try {
-      // Use the admin API endpoint instead of direct Supabase queries
-      const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: PAGE_SIZE.toString(),
-        ...(searchTerm && { search: searchTerm }),
-        ...(roleFilter !== 'all' && { role: roleFilter }),
-        ...(statusFilter !== 'all' && { status: statusFilter })
-      })
-
-      const response = await fetch(`/api/admin/users?${params}`)
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to load users')
-      }
-
-      const data = await response.json()
-
-      setUsers(data.users || [])
-      setTotalUsers(data.totalUsers || 0)
-      setTotalPages(data.totalPages || 0)
-    } catch (error) {
-      console.error('Error loading users:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to load users')
-    } finally {
-      setLoading(false)
-    }
-  }, [searchTerm, roleFilter, statusFilter, page])
-
-  useEffect(() => {
-    loadUsers()
-  }, [loadUsers])
-
   const handleSearch = useCallback((value: string) => {
     setSearchTerm(value)
     setPage(0)
@@ -313,7 +326,8 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
 
       toast.success('User role updated successfully')
 
-      await loadUsers()
+      // Revalidate SWR cache
+      await mutate()
       onUserChange?.()
     } catch (error) {
       console.error('Error updating role:', error)
@@ -346,7 +360,8 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
 
       toast.success('User status updated successfully')
 
-      await loadUsers()
+      // Revalidate SWR cache
+      await mutate()
       onUserChange?.()
     } catch (error) {
       console.error('Error updating status:', error)
@@ -379,7 +394,8 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
 
       toast.success('User type updated successfully')
 
-      await loadUsers()
+      // Revalidate SWR cache
+      await mutate()
       onUserChange?.()
     } catch (error) {
       console.error('Error updating type:', error)
@@ -415,8 +431,8 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
       toast.success(responseData.message || 'User deleted successfully')
       console.log('User deleted successfully:', userId)
 
-      // Reload the users list
-      await loadUsers()
+      // Revalidate SWR cache
+      await mutate()
       onUserChange?.()
 
     } catch (error) {
@@ -486,10 +502,10 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
           <Button
             variant="outline"
             size="icon"
-            onClick={loadUsers}
-            disabled={loading}
+            onClick={() => mutate()}
+            disabled={isLoading}
           >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
@@ -508,7 +524,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading ? (
+            {isLoading ? (
               <TableRow>
                 <TableCell colSpan={isAdmin ? 6 : 5} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />

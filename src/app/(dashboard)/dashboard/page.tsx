@@ -14,9 +14,8 @@ import {
   StudentQuickActions,
   StudentQuickActionsLoading
 } from "@/features/dashboard/components"
-import { useAuthStatus } from "@/features/auth/hooks/use-auth-status"
+import { useAuth } from "@/shared/hooks/use-auth"
 import { userSettingsService } from "@/shared/services/user-settings"
-import { useUserSettings } from "@/shared/hooks/use-user-settings"
 import { RecentActivity } from "@/features/dashboard/services/service"
 import { PageErrorBoundary, FeatureErrorBoundary } from "@/shared/components/common"
 import { useUnifiedData } from "@/shared/hooks/use-unified-data"
@@ -61,7 +60,7 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
-  const { user } = useAuthStatus()
+  const { user } = useAuth({ loadUserData: true })
   const { data: unifiedData, isLoading: unifiedLoading } = useUnifiedData()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -73,10 +72,14 @@ export default function DashboardPage() {
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false)
   const [isReturningUser, setIsReturningUser] = useState(false)
 
-  // Use cached user settings (eliminates redundant API call)
-  const { data: userSettings } = useUserSettings({
-    enabled: !!user
-  })
+  // Debug: Track component lifecycle
+  useEffect(() => {
+    const instanceId = Math.random().toString(36).substring(7)
+    console.log(`[Dashboard] 🟢 Mounted (${instanceId})`)
+    return () => {
+      console.log(`[Dashboard] 🔴 Unmounted (${instanceId})`)
+    }
+  }, [])
 
   // Fetch dashboard stats and check welcome message status on component mount
   useEffect(() => {
@@ -106,14 +109,12 @@ export default function DashboardPage() {
 
         setStats(mergedStats)
 
-        // Check if user has seen welcome message (use cached settings if available)
-        const hasSeenWelcome = userSettings?.ui_settings?.welcome_message_seen ??
-                               await userSettingsService.hasSeenWelcomeMessage()
+        // Check if user has seen welcome message
+        const hasSeenWelcome = await userSettingsService.hasSeenWelcomeMessage()
         setShowWelcomeMessage(!hasSeenWelcome)
 
-        // Check if security notice has been dismissed (use cached settings if available)
-        const securityNoticeDismissed = userSettings?.ui_settings?.security_notice_dismissed ??
-                                        await userSettingsService.hasSeenSecurityNotice()
+        // Check if security notice has been dismissed
+        const securityNoticeDismissed = await userSettingsService.hasSeenSecurityNotice()
         setShowSecurityNotice(!securityNoticeDismissed)
 
         // Determine user status based on activity

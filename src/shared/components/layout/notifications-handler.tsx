@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger
 } from "@/shared/components/ui/dropdown-menu"
 
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 import { useNotifications } from '@/shared/hooks/use-notifications'
 import { NotificationWithSource } from '@/shared/types/notifications'
 
@@ -34,7 +34,7 @@ export function NotificationsHandler() {
   const [page, setPage] = useState(1)
   const limit = 20
 
-  const { isHydrated, isAuthenticated, user } = useAuthStatus()
+  const { isHydrated, isAuthenticated, user } = useAuth({ minimal: true })
 
   const {
     notifications,

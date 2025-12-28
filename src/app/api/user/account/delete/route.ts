@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { deleteUser, deleteUserFromAuth } from '@/shared/services/user-deletion'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
@@ -16,9 +17,15 @@ export async function DELETE(request: NextRequest) {
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Get user email for password verification
+    const { data: { user }, error: userFetchError } = await supabase.auth.getUser()
+    if (userFetchError || !user) {
+      return NextResponse.json({ error: 'Failed to fetch user data' }, { status: 500 })
     }
 
     const body = await request.json()
@@ -42,7 +49,7 @@ export async function DELETE(request: NextRequest) {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('id, email, first_name, last_name, role, user_type')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (userError) {
@@ -58,10 +65,10 @@ export async function DELETE(request: NextRequest) {
     await supabase
       .from('audit_logs')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         action: 'account_deletion',
         table_name: 'users',
-        record_id: user.id,
+        record_id: userId,
         old_values: userData,
         new_values: null,
         metadata: {
@@ -87,15 +94,15 @@ export async function DELETE(request: NextRequest) {
       const adminClient = createAdminClient()
 
       // Delete user data from public.users and related tables
-      const result = await deleteUser(adminClient, supabase, user.id, userData.role as any)
+      const result = await deleteUser(adminClient, supabase, userId, userData.role as any)
 
       // Delete user from auth system ONLY for hard deletes
       // For soft deletes, preserve auth record so user can log back in and be restored
       if (result.deletionType === 'hard_delete') {
-        await deleteUserFromAuth(adminClient, user.id)
+        await deleteUserFromAuth(adminClient, userId)
       }
 
-      console.log('User account deleted successfully:', { userId: user.id, email: user.email, deletionType })
+      console.log('User account deleted successfully:', { userId: userId, email: user.email, deletionType })
     } catch (deletionError) {
       console.error('Error deleting user account:', deletionError)
       return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 })

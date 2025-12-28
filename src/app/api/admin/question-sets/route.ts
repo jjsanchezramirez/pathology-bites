@@ -1,3 +1,4 @@
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 // src/app/api/admin/question-sets/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
@@ -96,8 +97,8 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (userError || !['admin', 'creator', 'reviewer'].includes(userData?.role)) {
@@ -132,7 +133,7 @@ export async function POST(request: NextRequest) {
         description: description?.trim() || null,
         source_type: sourceType,
         is_active: isActive !== false, // Default to true
-        created_by: user.id,
+        created_by: userId,
         source_details: {} // Empty object for now
       })
       .select()
@@ -161,8 +162,8 @@ export async function PATCH(request: NextRequest) {
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -171,7 +172,7 @@ export async function PATCH(request: NextRequest) {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (userError || !['admin', 'creator', 'reviewer'].includes(userData?.role)) {
@@ -213,8 +214,8 @@ export async function DELETE(request: NextRequest) {
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -223,7 +224,7 @@ export async function DELETE(request: NextRequest) {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (userError || !['admin', 'creator', 'reviewer'].includes(userData?.role)) {

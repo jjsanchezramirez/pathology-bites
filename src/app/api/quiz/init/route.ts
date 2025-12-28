@@ -1,3 +1,4 @@
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 // src/app/api/quiz/init/route.ts
 // Batched endpoint for quiz page initialization
 // Combines sessions + options into single request to reduce API calls
@@ -15,8 +16,8 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
 
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       console.error('[Quiz Init] Authentication error:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
       supabase
         .from('quiz_sessions')
         .select('title')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(sessionLimit),
 
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
     // Fetch user stats using optimized database function
     const { data: userStatsData, error: statsError } = await supabase
       .rpc('get_user_category_stats', {
-        p_user_id: user.id,
+        p_user_id: userId,
         p_category_ids: categoryIds
       })
 

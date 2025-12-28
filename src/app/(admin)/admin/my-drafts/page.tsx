@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/shared/services/client'
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 import { useUserRole } from '@/shared/hooks/use-user-role'
 import {
   Table,
@@ -59,7 +59,7 @@ export default function MyDraftsPage() {
   const [bulkSubmitDialogOpen, setBulkSubmitDialogOpen] = useState(false)
   const [selectedQuestions, setSelectedQuestions] = useState<Set<string>>(new Set())
 
-  const { user } = useAuthStatus()
+  const { user } = useAuth({ minimal: true })
   const { canAccess } = useUserRole()
   const supabase = createClient()
 

@@ -38,7 +38,7 @@ import { QuestionPreviewDialog } from './question-preview-dialog'
 import { FlagResolutionDialog } from './flag-resolution-dialog'
 import { toast } from '@/shared/utils/toast'
 import { FLAG_TYPE_CONFIG, QuestionWithDetails, QuestionFlagData } from '@/features/questions/types/questions'
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 
 interface FlaggedQuestion extends QuestionWithDetails {
   flag_count: number
@@ -75,7 +75,7 @@ export function FlaggedQuestionsTable() {
   const [selectedFlags, setSelectedFlags] = useState<QuestionFlagData[]>([])
   const [selectedQuestionTitle, setSelectedQuestionTitle] = useState('')
 
-  const { user } = useAuthStatus()
+  const { user } = useAuth({ minimal: true })
   const supabase = createClient()
 
   useEffect(() => {

@@ -1,12 +1,11 @@
 // src/app/api/admin/tags/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { requireContentRole } from '@/shared/middleware/api-auth'
 
-export async function GET(request: NextRequest) {
+export const GET = requireContentRole(async (request) => {
   try {
     const supabase = await createClient()
-
-    // Auth is now handled by middleware - user info available in headers
 
     // Get query parameters
     const { searchParams } = new URL(request.url)
@@ -89,29 +88,11 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = requireContentRole(async (request) => {
   try {
     const supabase = await createClient()
-
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (userError || !['admin', 'creator', 'reviewer'].includes(userData?.role)) {
-      return NextResponse.json({ error: 'Forbidden - Admin, Creator, or Reviewer access required' }, { status: 403 })
-    }
 
     const body = await request.json()
     const { name } = body
@@ -143,29 +124,11 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = requireContentRole(async (request) => {
   try {
     const supabase = await createClient()
-
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (userError || !['admin', 'creator', 'reviewer'].includes(userData?.role)) {
-      return NextResponse.json({ error: 'Forbidden - Admin, Creator, or Reviewer access required' }, { status: 403 })
-    }
 
     const body = await request.json()
     const { tagId, name } = body
@@ -198,29 +161,11 @@ export async function PATCH(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = requireContentRole(async (request) => {
   try {
     const supabase = await createClient()
-
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (userError || !['admin', 'creator', 'reviewer'].includes(userData?.role)) {
-      return NextResponse.json({ error: 'Forbidden - Admin, Creator, or Reviewer access required' }, { status: 403 })
-    }
 
     const body = await request.json()
     const { tagId } = body
@@ -258,4 +203,4 @@ export async function DELETE(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})

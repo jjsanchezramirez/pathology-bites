@@ -46,7 +46,7 @@ import { toast } from '@/shared/utils/toast';
 import { Loader2, Plus, X } from 'lucide-react';
 import { useQuestions } from '@/features/questions/hooks/use-questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status';
+import { useAuth } from '@/shared/hooks/use-auth';
 import { CompactAnswerOptions } from './compact-answer-options';
 import { AnswerOptionFormData, QuestionImageFormData } from '@/features/questions/types/questions';
 import { apiClient } from '@/shared/utils/api-client';
@@ -328,7 +328,7 @@ export function CreateQuestionDialog({
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [availableCategories, setAvailableCategories] = useState<any[]>([]);
   const { questionSets } = useQuestionSets();
-  const { user } = useAuthStatus();
+  const { user } = useAuth({ minimal: true });
 
   // Filter tags based on search
   const filteredTags = availableTags.filter(tag =>

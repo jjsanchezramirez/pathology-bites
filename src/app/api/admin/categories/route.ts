@@ -1,3 +1,4 @@
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 // src/app/api/admin/categories/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
@@ -12,15 +13,15 @@ export async function GET(request: NextRequest) {
     
     // Fallback to manual auth check if headers are missing (for backward compatibility)
     if (!userId || !userRole) {
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
-      if (authError || !user) {
+      const userId = getUserIdFromHeaders(request)
+    if (!userId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
 
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('role')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single()
 
       if (userError || !['admin', 'creator', 'reviewer'].includes(userData?.role)) {

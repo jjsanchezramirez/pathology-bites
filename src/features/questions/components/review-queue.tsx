@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/shared/services/client'
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 import {
   Table,
   TableBody,
@@ -44,7 +44,7 @@ export function ReviewQueue() {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [reviewAction, setReviewAction] = useState<'approve' | 'reject' | null>(null)
 
-  const { user } = useAuthStatus()
+  const { user } = useAuth({ minimal: true })
   const supabase = createClient()
 
   const fetchReviewQueue = useCallback(async () => {

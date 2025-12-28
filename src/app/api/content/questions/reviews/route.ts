@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/shared/services/server';
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single();
 
     if (userError || !['admin', 'reviewer'].includes(userData?.role)) {
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
       .from('question_reviews')
       .insert({
         question_id,
-        reviewer_id: user.id,
+        reviewer_id: userId,
         action,
         feedback: feedback || null,
         changes_made: changes_made || null
@@ -110,8 +111,8 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -119,7 +120,7 @@ export async function GET(request: NextRequest) {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single();
 
     if (userError || !['admin', 'reviewer'].includes(userData?.role)) {

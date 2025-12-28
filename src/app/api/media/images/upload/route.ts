@@ -3,6 +3,7 @@ import { createClient } from '@/shared/services/server'
 import { uploadToR2, generateImageStoragePath, deleteFromR2 } from '@/shared/services/r2-storage'
 import { formatImageName } from '@/features/images/services/image-upload'
 import { getImageDimensionsFromFile } from '@/shared/utils/server-image-utils'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 export async function POST(request: NextRequest) {
   let uploadedStoragePath: string | null = null
@@ -11,8 +12,8 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Verify user is authenticated admin
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    if (userError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json(
         { error: 'Authentication required. Please log in to upload images.' },
         { status: 401 }
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
     const { data: userData, error: roleError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (roleError || !userData || userData.role !== 'admin') {
@@ -141,7 +142,7 @@ export async function POST(request: NextRequest) {
         metadata: {
           originalName: file.name,
           category,
-          uploadedBy: user.id,
+          uploadedBy: userId,
           uploadedAt: new Date().toISOString()
         }
       })
@@ -168,7 +169,7 @@ export async function POST(request: NextRequest) {
         width: dimensions.width,
         height: dimensions.height,
         source_ref: sourceRef?.trim() || null,
-        created_by: user.id
+        created_by: userId
       })
       .select()
       .single()

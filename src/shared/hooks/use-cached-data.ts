@@ -40,7 +40,7 @@ export function useCachedData<T>(
   } = options
 
   const [data, setData] = useState<T | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(enabled) // Always start as loading to avoid hydration mismatch
   const [error, setError] = useState<Error | null>(null)
   const [isStale, setIsStale] = useState(false)
   const [lastFetch, setLastFetch] = useState<number>(0)
@@ -56,11 +56,12 @@ export function useCachedData<T>(
 
     // Try to get from cache first
     if (!force) {
-      const cached = cacheService.get<{ data: T; timestamp: number }>(key, { storage, prefix })
+      // NOTE: cacheService.get() returns the data directly, not wrapped in {data, timestamp}
+      const cached = cacheService.get<T>(key, { storage, prefix })
       if (cached) {
-        setData(cached.data)
-        setLastFetch(cached.timestamp)
-        const isStaleData = Date.now() - cached.timestamp > staleTime
+        setData(cached)
+        setLastFetch(Date.now()) // Use current time since we don't have the original timestamp
+        const isStaleData = false // Consider cache hit as fresh data
         setIsStale(isStaleData)
         setError(null)
 
@@ -87,10 +88,10 @@ export function useCachedData<T>(
 
       const timestamp = Date.now()
 
-      // Cache the result
+      // Cache the result - cacheService.set() will wrap it with {data, timestamp, ttl, key}
       cacheService.set(
         key,
-        { data: result, timestamp },
+        result,  // Pass data directly, not wrapped
         { ttl, storage, prefix }
       )
 
@@ -140,21 +141,39 @@ export function useCachedData<T>(
 
     if (enabled) {
       // Always try to load from cache or fetch on mount
-      const cached = cacheService.get<{ data: T; timestamp: number }>(key, { storage, prefix })
+      // NOTE: cacheService.get() returns the data directly, not wrapped in {data, timestamp}
+      const cached = cacheService.get<T>(key, { storage, prefix })
+
+      console.log('='.repeat(80));
+      console.log('🔍 [USE CACHED DATA] CHECKING FOR CACHE:');
+      console.log('='.repeat(80));
+      console.log('[useCachedData] Mount:', { key, hasCached: !!cached, storage, prefix });
+
       if (cached) {
         // Use cached data immediately
-        setData(cached.data)
-        setLastFetch(cached.timestamp)
-        const isStaleData = Date.now() - cached.timestamp > staleTime
+        console.log('✅ [CACHE HIT] Found cached data for:', key);
+        console.log('[useCachedData] Cached data structure:', {
+          dataType: typeof cached,
+          hasData: !!cached,
+          keys: cached ? Object.keys(cached).slice(0, 5) : [],
+          rawCached: cached
+        });
+        console.log('='.repeat(80));
+        setData(cached)
+        setLastFetch(Date.now()) // Use current time since we don't have the original timestamp
+        const isStaleData = false // Consider cache hit as fresh data
         setIsStale(isStaleData)
         setError(null)
+        setIsLoading(false) // Stop loading since we have cached data
 
         // If refetchOnMount is true and data is stale, refetch in background
         if (refetchOnMount && isStaleData) {
           fetchDataRef.current()
         }
-      } else if (refetchOnMount) {
-        // No cached data, fetch if refetchOnMount is true
+      } else {
+        // No cached data, always fetch on initial mount
+        console.log('❌ [CACHE MISS] No cache found, fetching:', key);
+        console.log('='.repeat(80));
         fetchDataRef.current()
       }
     }

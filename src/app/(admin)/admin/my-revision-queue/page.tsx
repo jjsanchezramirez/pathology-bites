@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/shared/services/client'
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 import { useUserRole } from '@/shared/hooks/use-user-role'
 import {
   Table,
@@ -50,7 +50,7 @@ export default function MyRevisionQueuePage() {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [expandedFeedback, setExpandedFeedback] = useState<Set<string>>(new Set())
 
-  const { user } = useAuthStatus()
+  const { user } = useAuth({ minimal: true })
   const { role, canAccess } = useUserRole()
   const supabase = createClient()
 

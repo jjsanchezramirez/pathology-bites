@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/shared/components/ui/card"
 import { Separator } from "@/shared/components/ui/separator"
 import { useQuizSettings } from '@/shared/hooks/use-user-settings'
-import { useQuizInit } from '@/shared/hooks/use-quiz-init'
+import { useUnifiedData } from '@/shared/hooks/use-unified-data'
 import { useCSRFToken } from '@/features/auth/hooks/use-csrf-token'
 
 import {
@@ -60,10 +60,8 @@ export default function NewQuizPage() {
   // Use cached quiz settings hook (eliminates redundant API calls)
   const { data: userSettings } = useQuizSettings()
 
-  // Use batched quiz initialization (combines sessions + options into single API call)
-  const { data: quizInitData, isLoading: quizInitLoading } = useQuizInit({
-    sessionLimit: 100
-  })
+  // Use unified data hook (eliminates separate quiz init API call!)
+  const { data: unifiedData, isLoading: unifiedLoading } = useUnifiedData()
 
   // CSRF token for POST requests
   const { getToken, addTokenToHeaders } = useCSRFToken()
@@ -82,31 +80,31 @@ export default function NewQuizPage() {
     }
   }, [userSettings])
 
-  // Apply quiz init data when available
+  // Apply quiz init data from unified data when available
   useEffect(() => {
-    if (quizInitData) {
-      // Set quiz options
+    if (unifiedData?.quizInit) {
+      // Set quiz options from unified data
       setQuizOptions({
-        categories: quizInitData.options.categories,
-        questionTypeStats: quizInitData.options.questionTypeStats
+        categories: unifiedData.quizInit.categories,
+        questionTypeStats: unifiedData.quizInit.questionTypeStats
       })
 
-      // Set previous quiz titles
-      setPreviousQuizTitles(quizInitData.sessions.titles)
+      // Set previous quiz titles from unified data
+      setPreviousQuizTitles(unifiedData.quizInit.sessionTitles)
 
       // Update loading states
       setLoadingTitles(false)
     }
-  }, [quizInitData])
+  }, [unifiedData])
 
-  // Sync loading state with quiz init - only set loading to false when data is available
+  // Sync loading state with unified data - only set loading to false when data is available
   useEffect(() => {
-    if (!quizInitLoading && quizInitData) {
+    if (!unifiedLoading && unifiedData?.quizInit) {
       setLoading(false)
-    } else if (quizInitLoading) {
+    } else if (unifiedLoading) {
       setLoading(true)
     }
-  }, [quizInitLoading, quizInitData])
+  }, [unifiedLoading, unifiedData])
 
   // Auto-adjust question count when available questions change
   useEffect(() => {
@@ -313,7 +311,7 @@ export default function NewQuizPage() {
   if (!quizOptions) {
     return (
       <div className="container mx-auto py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
             <p className="text-muted-foreground text-red-600">
@@ -342,8 +340,8 @@ export default function NewQuizPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="container mx-auto py-8 px-4">
+      <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>

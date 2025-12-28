@@ -212,7 +212,7 @@ export function createInitialQuizState(): QuizState {
     },
     syncStatus: {
       pendingChanges: false,
-      isOnline: navigator?.onLine ?? true
+      isOnline: typeof navigator !== 'undefined' ? (navigator?.onLine ?? true) : true
     }
   };
 }

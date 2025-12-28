@@ -64,6 +64,7 @@ export class OfflineQueueManager {
    */
   getQueue(): OfflineQueueItem[] {
     try {
+      if (typeof window === 'undefined') return []; // SSR guard
       const stored = localStorage.getItem(OfflineQueueManager.QUEUE_KEY);
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
@@ -77,6 +78,7 @@ export class OfflineQueueManager {
    */
   private saveQueue(queue: OfflineQueueItem[]): void {
     try {
+      if (typeof window === 'undefined') return; // SSR guard
       localStorage.setItem(OfflineQueueManager.QUEUE_KEY, JSON.stringify(queue));
     } catch (error) {
       console.error('Failed to save offline queue:', error);

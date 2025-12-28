@@ -1,3 +1,4 @@
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 // src/app/api/quiz/sessions/[id]/complete/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
@@ -5,6 +6,13 @@ import { quizAnalyticsService } from '@/features/quiz/services/analytics-service
 import { quizService } from '@/features/quiz/services/quiz-service'
 import { ActivityGenerator } from '@/shared/services/activity-generator'
 import { awardAchievements } from '@/features/achievements/services/achievement-service.server'
+
+interface BatchAnswerSubmission {
+  questionId: string
+  selectedAnswerId: string
+  timeSpent: number
+  timestamp: number
+}
 
 export async function POST(
   request: NextRequest,
@@ -15,9 +23,20 @@ export async function POST(
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // OPTIMIZATION: Parse request body for optional answers
+    let requestBody: { answers?: BatchAnswerSubmission[] } = {}
+    try {
+      const text = await request.text()
+      if (text) {
+        requestBody = JSON.parse(text)
+      }
+    } catch (e) {
+      // Empty body is fine - means no final answers to submit
     }
 
     // Verify user owns the quiz session
@@ -34,7 +53,7 @@ export async function POST(
       )
     }
 
-    if (session.user_id !== user.id) {
+    if (session.user_id !== userId) {
       return NextResponse.json(
         { error: 'Forbidden - You can only complete your own quiz sessions' },
         { status: 403 }
@@ -51,6 +70,47 @@ export async function POST(
         data: existingResults,
         message: 'Quiz was already completed'
       })
+    }
+
+    // OPTIMIZATION: Submit final answers if provided (eliminates separate batch call!)
+    if (requestBody.answers && requestBody.answers.length > 0) {
+      console.log(`[Quiz Complete] Submitting ${requestBody.answers.length} final answers`)
+
+      const attemptData = requestBody.answers.map(answer => ({
+        quiz_session_id: id,
+        question_id: answer.questionId,
+        selected_answer_id: answer.selectedAnswerId,
+        time_spent: answer.timeSpent || 0,
+        attempted_at: new Date(answer.timestamp).toISOString()
+      }))
+
+      // Check for existing attempts to prevent duplicates
+      const questionIds = requestBody.answers.map(a => a.questionId)
+      const { data: existingAttempts } = await supabase
+        .from('quiz_attempts')
+        .select('question_id')
+        .eq('quiz_session_id', id)
+        .in('question_id', questionIds)
+
+      // Filter out questions that already have attempts
+      const existingQuestionIds = new Set(existingAttempts?.map(a => a.question_id) || [])
+      const newAttemptData = attemptData.filter(attempt =>
+        !existingQuestionIds.has(attempt.question_id)
+      )
+
+      // Insert new attempts
+      if (newAttemptData.length > 0) {
+        const { error: insertError } = await supabase
+          .from('quiz_attempts')
+          .insert(newAttemptData)
+
+        if (insertError) {
+          console.error('[Quiz Complete] Error inserting final answers:', insertError)
+          // Don't fail completion - answers may have been submitted already
+        } else {
+          console.log(`[Quiz Complete] Inserted ${newAttemptData.length} final answers`)
+        }
+      }
     }
 
     // Complete the quiz using the service
@@ -82,7 +142,7 @@ export async function POST(
         timeSpent: result.totalTimeSpent || 0
       })
 
-      await ActivityGenerator.createActivity(user.id, activityData)
+      await ActivityGenerator.createActivity(userId, activityData)
       console.log('✅ Activity created for quiz completion:', id)
     } catch (activityError) {
       // Don't fail the quiz completion if activity creation fails
@@ -93,7 +153,7 @@ export async function POST(
     let newAchievements = []
     try {
       console.log('[Quiz Complete] Checking for new achievements...')
-      newAchievements = await awardAchievements(user.id)
+      newAchievements = await awardAchievements(userId)
       if (newAchievements.length > 0) {
         console.log(`✅ Awarded ${newAchievements.length} new achievement(s):`, newAchievements.map(a => a.title))
       }

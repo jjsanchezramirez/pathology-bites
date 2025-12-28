@@ -38,14 +38,6 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
 
     console.log('[DashboardSettings] Applying settings:', settings.ui_settings)
 
-    // Sync UI settings to localStorage for DashboardThemeContext
-    try {
-      localStorage.setItem('pathology-bites-ui-settings', JSON.stringify(settings.ui_settings))
-      console.log('[DashboardSettings] Synced ui_settings to localStorage')
-    } catch (storageError) {
-      console.warn('[DashboardSettings] Failed to sync to localStorage:', storageError)
-    }
-
     // Apply text zoom
     const zoom = settings.ui_settings?.text_zoom ?? config.default
     const validZoom = getValidZoomLevel(zoom)

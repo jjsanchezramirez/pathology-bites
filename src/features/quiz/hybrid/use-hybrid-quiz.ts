@@ -21,6 +21,7 @@ import { AutoSaveManager } from '../services/auto-save-manager';
 import { AUTO_SAVE_CONFIG, type SyncStatus, type AutoSaveTrigger } from '../config/auto-save-config';
 import { QuizQuestion, QuizAnswer, QuizState, QuizQuestionTransformer } from '../types/quiz-question';
 import { toast } from '@/shared/utils/toast';
+import { onQuizComplete } from '@/shared/utils/cache-helpers';
 
 export interface UseHybridQuizOptions {
   sessionId: string;
@@ -224,6 +225,26 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       return;
     }
 
+    // OPTIMIZATION: Check if quiz is already completed in localStorage FIRST
+    // This avoids unnecessary API calls for completed quizzes
+    if (typeof window !== 'undefined') {
+      try {
+        const localStateKey = `quiz-state-${sessionId}`;
+        const savedState = localStorage.getItem(localStateKey);
+        if (savedState) {
+          const parsed = JSON.parse(savedState);
+          if (parsed.status === 'completed') {
+            console.log('[Hybrid] Quiz already completed (found in localStorage), redirecting to results');
+            onError?.('Quiz session is already completed');
+            return;
+          }
+        }
+      } catch (error) {
+        console.warn('[Hybrid] Failed to check localStorage for completion status:', error);
+        // Continue with normal initialization if localStorage check fails
+      }
+    }
+
     try {
       isInitializingRef.current = true;
       const startTime = Date.now();
@@ -346,6 +367,13 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         if (result.serverResponse?.message?.includes('already completed')) {
           console.log('[Hybrid] Quiz was already completed on server, sync treated as success');
         }
+
+        // Invalidate unified data cache to update dashboard stats, achievements, etc.
+        // This runs in background, doesn't block navigation
+        onQuizComplete().catch(err => {
+          console.warn('[Hybrid] Failed to invalidate cache after quiz completion:', err);
+          // Non-critical error, don't throw
+        });
       } else {
         stateActions.markSyncFailed();
       }

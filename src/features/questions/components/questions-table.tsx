@@ -28,7 +28,7 @@ import { Checkbox } from "@/shared/components/ui/checkbox";
 import { useQuestions } from '@/features/questions/hooks/use-questions';
 import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status';
+import { useAuth } from '@/shared/hooks/use-auth';
 import { useUserRole } from '@/shared/hooks/use-user-role';
 import { shouldShowDeleteButton } from '@/features/questions/utils/deletion-helpers';
 import { ComponentErrorBoundary } from '@/shared/components/common';
@@ -344,7 +344,7 @@ function RowActions({
   onCopyJson?: (question: QuestionWithDetails) => void;
 }) {
   const { isAdmin, role } = useUserRole();
-  const { user } = useAuthStatus();
+  const { user } = useAuth({ minimal: true });
 
   // Check if user can edit this question
   const canEdit = question.status !== 'approved' || isAdmin;

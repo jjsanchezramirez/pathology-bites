@@ -1,3 +1,4 @@
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 // Optimized Quiz Options API for Scale
 // This version uses materialized views and denormalized data for better performance
 
@@ -232,16 +233,16 @@ export async function GET() {
     const supabase = await createClient()
 
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       console.error('Quiz options API - Authentication error:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
 
     // Check cache with version validation
-    const cacheKey = `quiz-options-${user.id}`
-    const userVersion = await getUserCacheVersion(supabase, user.id)
+    const cacheKey = `quiz-options-${userId}`
+    const userVersion = await getUserCacheVersion(supabase, userId)
     const cached = cache.get(cacheKey)
     
     if (cached && 
@@ -301,7 +302,7 @@ export async function GET() {
 
     // Get optimized user statistics
     const categoryIds = subcategories.map(cat => cat.id)
-    const userStats = await getOptimizedUserStats(supabase, user.id, categoryIds)
+    const userStats = await getOptimizedUserStats(supabase, userId, categoryIds)
 
     // Build final categories with stats
     const categoriesWithStats = subcategories.map((category) => {

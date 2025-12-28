@@ -7,7 +7,7 @@ export interface Achievement {
   title: string
   description: string
   animationType: AnimationType
-  category: 'quiz' | 'perfect' | 'streak' | 'speed' | 'accuracy'
+  category: 'quiz' | 'perfect' | 'streak' | 'speed' | 'accuracy' | 'differential'
   requirement: number
   isUnlocked: boolean
   progress: number

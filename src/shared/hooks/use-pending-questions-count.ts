@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/shared/services/client'
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status'
+import { useAuth } from '@/shared/hooks/use-auth'
 
 interface PendingCounts {
   revisionQueueCount: number // rejected questions for creators
@@ -18,7 +18,7 @@ export function usePendingQuestionsCount() {
     draftsCount: 0
   })
   const [loading, setLoading] = useState(true)
-  const { user } = useAuthStatus()
+  const { user } = useAuth({ minimal: true })
 
   useEffect(() => {
     async function fetchCounts() {

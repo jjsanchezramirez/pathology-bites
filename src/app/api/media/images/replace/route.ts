@@ -3,6 +3,7 @@ import { createClient } from '@/shared/services/server'
 import { uploadToR2, deleteFromR2 } from '@/shared/services/r2-storage'
 import { formatImageName } from '@/features/images/services/image-upload'
 import { getImageDimensionsFromFile } from '@/shared/utils/server-image-utils'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 export async function POST(request: NextRequest) {
   console.log('🔄 Image replace API called');
@@ -11,9 +12,8 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Verify user is authenticated admin
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-
-    if (userError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json(
         { error: 'You must be logged in to replace images' },
         { status: 401 }
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     const { data: userData, error: roleError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (roleError || !userData || userData.role !== 'admin') {
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         originalName: file.name,
         category: existingImage.category,
-        replacedBy: user.id,
+        replacedBy: userId,
         replacedAt: new Date().toISOString(),
         previousFileType: existingImage.file_type
       }

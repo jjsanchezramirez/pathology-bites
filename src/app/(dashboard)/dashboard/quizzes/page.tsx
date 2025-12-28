@@ -22,13 +22,27 @@ import {
 
 export default function QuizzesPage() {
   const featuresEnabled = isQuizFeaturesEnabled()
+
+  // Show placeholder if features are disabled - check BEFORE any hooks
+  if (!featuresEnabled) {
+    return (
+      <FeaturePlaceholder
+        title="My Quizzes"
+        description="Your complete quiz history and detailed review tools are being finalized. Soon you'll be able to review all your past quizzes, track your performance over time, and revisit questions to reinforce your learning."
+        status="almost-ready"
+      />
+    )
+  }
+
   const [quizzes, setQuizzes] = useState<QuizSessionListItem[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedFilters, setSelectedFilters] = useState<string[]>([])
+  const [selectedFilter, setSelectedFilter] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("date-desc")
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [selectedQuiz, setSelectedQuiz] = useState<QuizSessionListItem | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 20
 
   // Optimized quiz fetching with caching (fetch all, filter client-side)
   const { data: quizzesData, isLoading, error, invalidate } = useCachedData(
@@ -99,29 +113,25 @@ export default function QuizzesPage() {
     }
   }
 
-  // Filter quizzes based on search and selected filters
+  // Filter quizzes based on search and selected filter
   const filteredQuizzes = quizzes.filter(quiz => {
     // Search filter
     const matchesSearch = quiz.title.toLowerCase().includes(searchTerm.toLowerCase())
 
-    // Multi-select filters
-    if (selectedFilters.length === 0) {
+    // Single filter
+    if (selectedFilter === 'all') {
       return matchesSearch
     }
 
-    const matchesFilter = selectedFilters.some(filter => {
-      // Status filters
-      if (filter === quiz.status) return true
-      // Mode filters
-      if (filter === quiz.mode) return true
-      // Timing filters
-      if (filter === 'timed' && quiz.isTimedMode) return true
-      if (filter === 'untimed' && !quiz.isTimedMode) return true
+    // Status filters
+    if (selectedFilter === quiz.status) return matchesSearch
+    // Mode filters
+    if (selectedFilter === quiz.mode) return matchesSearch
+    // Timing filters
+    if (selectedFilter === 'timed' && quiz.isTimedMode) return matchesSearch
+    if (selectedFilter === 'untimed' && !quiz.isTimedMode) return matchesSearch
 
-      return false
-    })
-
-    return matchesSearch && matchesFilter
+    return false
   })
 
   // Sort quizzes
@@ -145,6 +155,17 @@ export default function QuizzesPage() {
     }
   })
 
+  // Pagination
+  const totalPages = Math.ceil(sortedQuizzes.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedQuizzes = sortedQuizzes.slice(startIndex, endIndex)
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, selectedFilter, sortBy])
+
   // Calculate statistics
   const stats = {
     total: quizzes.length,
@@ -165,17 +186,6 @@ export default function QuizzesPage() {
     if (seconds < 60) return `${seconds}s`
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m`
     return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`
-  }
-
-  // Show placeholder if features are disabled
-  if (!featuresEnabled) {
-    return (
-      <FeaturePlaceholder
-        title="My Quizzes"
-        description="Your complete quiz history and detailed review tools are being finalized. Soon you'll be able to review all your past quizzes, track your performance over time, and revisit questions to reinforce your learning."
-        status="almost-ready"
-      />
-    )
   }
 
   const formatDate = (dateString: string) => {
@@ -226,26 +236,90 @@ export default function QuizzesPage() {
       {/* Search and Filters */}
       <QuizFilters
         searchTerm={searchTerm}
-        selectedFilters={selectedFilters}
+        selectedFilter={selectedFilter}
         sortBy={sortBy}
         onSearchChange={setSearchTerm}
-        onFiltersChange={setSelectedFilters}
+        onFilterChange={setSelectedFilter}
         onSortChange={setSortBy}
       />
 
       {/* Quiz List */}
       <div className="space-y-4">
         {sortedQuizzes.length === 0 ? (
-          <QuizEmptyState hasFilters={searchTerm !== '' || selectedFilters.length > 0} />
+          <QuizEmptyState hasFilters={searchTerm !== '' || selectedFilter !== 'all'} />
         ) : (
-          sortedQuizzes.map((quiz) => (
-            <QuizCard
-              key={quiz.id}
-              quiz={quiz}
-              onDelete={handleDeleteClick}
-              formatDate={formatDate}
-            />
-          ))
+          <>
+            {paginatedQuizzes.map((quiz) => (
+              <QuizCard
+                key={quiz.id}
+                quiz={quiz}
+                onDelete={handleDeleteClick}
+                formatDate={formatDate}
+              />
+            ))}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4">
+                <div className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1}-{Math.min(endIndex, sortedQuizzes.length)} of {sortedQuizzes.length} quizzes
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                      // Show first page, last page, current page, and pages around current
+                      const showPage =
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+
+                      // Show ellipsis
+                      const showEllipsisBefore = page === currentPage - 2 && currentPage > 3
+                      const showEllipsisAfter = page === currentPage + 2 && currentPage < totalPages - 2
+
+                      if (showEllipsisBefore || showEllipsisAfter) {
+                        return (
+                          <span key={page} className="px-2 text-muted-foreground">
+                            ...
+                          </span>
+                        )
+                      }
+
+                      if (!showPage) return null
+
+                      return (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {page}
+                        </Button>
+                      )
+                    })}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

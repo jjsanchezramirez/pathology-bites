@@ -1,14 +1,15 @@
 // src/app/api/user/data-export/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
 
     // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
     const { data: userProfile, error: profileError } = await supabase
       .from('users')
       .select('*')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (profileError) {
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     const { data: userSettingsData, error: settingsError } = await supabase
       .from('user_settings')
       .select('settings')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single()
 
     const userSettings = userSettingsData?.settings
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
     const { data: quizSessions, error: sessionsError } = await supabase
       .from('quiz_sessions')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
     if (sessionsError) {
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
         *,
         questions(title, category_id)
       `)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
     if (favoritesError) {
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
         *,
         questions(title, category_id)
       `)
-      .eq('flagged_by', user.id)
+      .eq('flagged_by', userId)
       .order('created_at', { ascending: false })
 
     if (flagsError) {
@@ -99,7 +100,7 @@ export async function POST(request: NextRequest) {
         *,
         questions(title, category_id)
       `)
-      .eq('reported_by', user.id)
+      .eq('reported_by', userId)
       .order('created_at', { ascending: false })
 
     if (reportsError) {
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest) {
     const userData = {
       export_info: {
         generated_at: new Date().toISOString(),
-        user_id: user.id,
+        user_id: userId,
         export_type: 'complete_user_data'
       },
       profile: userProfile,
@@ -139,10 +140,10 @@ export async function POST(request: NextRequest) {
     await supabase
       .from('audit_logs')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         action: 'data_export',
         table_name: 'users',
-        record_id: user.id,
+        record_id: userId,
         metadata: {
           export_timestamp: new Date().toISOString(),
           data_types_exported: [

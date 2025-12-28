@@ -16,7 +16,7 @@ import { Form } from "@/shared/components/ui/form";
 import { Button } from "@/shared/components/ui/button";
 import { toast } from '@/shared/utils/toast';
 import { Loader2 } from 'lucide-react';
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status';
+import { useAuth } from '@/shared/hooks/use-auth';
 import { useUserRole } from '@/shared/hooks/use-user-role';
 import { QuestionWithDetails, QuestionOptionFormData, QuestionImageFormData } from '@/features/questions/types/questions';
 
@@ -81,7 +81,7 @@ export function QuestionFormDialog({
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
   // Hooks
-  const { user } = useAuthStatus();
+  const { user } = useAuth({ minimal: true });
   const { isAdmin } = useUserRole();
 
   // Form

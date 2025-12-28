@@ -1,6 +1,7 @@
 // src/app/api/user/achievements/unlock/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 interface UnlockAchievementRequest {
   achievementId: string
@@ -17,12 +18,8 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Get authenticated user
-    const {
-      data: { user },
-      error: authError
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -40,7 +37,7 @@ export async function POST(request: NextRequest) {
     const { data: existing } = await supabase
       .from('user_achievements')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('group_key', body.achievementId)
       .single()
 
@@ -55,7 +52,7 @@ export async function POST(request: NextRequest) {
     const { data: achievement, error: insertError } = await supabase
       .from('user_achievements')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         type: 'achievement',
         title: body.title,
         description: body.description,

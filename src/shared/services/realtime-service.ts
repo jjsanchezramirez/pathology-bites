@@ -2,6 +2,7 @@
 // Centralized realtime subscription service to reduce duplicate subscriptions
 
 import { createClient } from '@/shared/services/client'
+import { isPublicRoute } from '@/shared/utils/route-helpers'
 import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js'
 
 type AuthListener = (event: AuthChangeEvent, session: Session | null) => void
@@ -29,12 +30,7 @@ class RealtimeService {
   private constructor() {
     // Only initialize auth subscription if not on a public page
     if (typeof window !== 'undefined') {
-      const isPublicPage = window.location.pathname.startsWith('/tools/') ||
-                          window.location.pathname === '/' ||
-                          window.location.pathname.startsWith('/login') ||
-                          window.location.pathname.startsWith('/signup')
-
-      if (!isPublicPage) {
+      if (!isPublicRoute(window.location.pathname)) {
         this.initializeAuthSubscription()
       }
     } else {
@@ -75,16 +71,9 @@ class RealtimeService {
 
   public addAuthListener(listener: AuthListener): () => void {
     // Check if we're on a public page and should skip auth
-    if (typeof window !== 'undefined') {
-      const isPublicPage = window.location.pathname.startsWith('/tools/') ||
-                          window.location.pathname === '/' ||
-                          window.location.pathname.startsWith('/login') ||
-                          window.location.pathname.startsWith('/signup')
-
-      if (isPublicPage) {
-        // Return no-op cleanup function
-        return () => {}
-      }
+    if (typeof window !== 'undefined' && isPublicRoute(window.location.pathname)) {
+      // Return no-op cleanup function
+      return () => {}
     }
 
     // Initialize auth subscription if deferred

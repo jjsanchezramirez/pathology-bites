@@ -27,7 +27,7 @@ import { Textarea } from '@/shared/components/ui/textarea';
 import { Loader2, FileText, AlertCircle, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { useQuestions } from '@/features/questions/hooks/use-questions';
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status';
+import { useAuth } from '@/shared/hooks/use-auth';
 
 // JSON schema for question import
 const answerOptionSchema = z.object({
@@ -137,7 +137,7 @@ export function ImportQuestionDialog({ open, onOpenChange, onSave }: ImportQuest
   const [showAdvancedExample, setShowAdvancedExample] = useState(false);
 
   const { createQuestion } = useQuestions();
-  const { user } = useAuthStatus();
+  const { user } = useAuth({ minimal: true });
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),

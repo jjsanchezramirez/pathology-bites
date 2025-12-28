@@ -116,6 +116,13 @@ export interface QuizResult {
   }>
   attempts: QuizAttempt[]
   completedAt: string
+  newAchievements?: Array<{
+    id: string
+    title: string
+    description: string
+    animationType: 'badge' | 'medal' | 'star_badge' | 'star_medal' | 'crown' | 'trophy_large'
+    category: 'quiz' | 'perfect' | 'streak' | 'speed' | 'accuracy' | 'differential'
+  }>
 }
 
 // Quiz creation form data - simplified

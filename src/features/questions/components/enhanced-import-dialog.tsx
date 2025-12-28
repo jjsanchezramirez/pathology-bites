@@ -38,7 +38,7 @@ import {
   Download
 } from 'lucide-react';
 import { useQuestions } from '@/features/questions/hooks/use-questions';
-import { useAuthStatus } from '@/features/auth/hooks/use-auth-status';
+import { useAuth } from '@/shared/hooks/use-auth';
 
 // Enhanced schema that supports external image URLs
 const questionOptionSchema = z.object({
@@ -122,7 +122,7 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
   const [isDragging, setIsDragging] = useState(false);
 
   const { createQuestion } = useQuestions();
-  const { user } = useAuthStatus();
+  const { user } = useAuth({ minimal: true });
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),

@@ -1,6 +1,7 @@
 // src/app/api/dashboard/activities/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
+import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 // Simple activity types - keeping it focused
 const ACTIVITY_TYPES = {
@@ -41,10 +42,10 @@ function getGroupTitle(groupKey: string): string {
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
-    
+
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -55,7 +56,7 @@ export async function GET(request: NextRequest) {
     const { data: activities, error } = await supabase
       .from('user_activities')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -117,9 +118,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+
+    const userId = getUserIdFromHeaders(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -142,7 +143,7 @@ export async function POST(request: NextRequest) {
     const { data: activity, error } = await supabase
       .from('user_activities')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         type,
         title,
         description,

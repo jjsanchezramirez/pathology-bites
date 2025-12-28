@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSimpleAuth } from '@/shared/hooks/use-simple-auth'
+import { useAuth } from '@/shared/hooks/use-auth'
 
 interface AuthGuardProps {
   children: React.ReactNode
@@ -13,33 +13,33 @@ interface AuthGuardProps {
 /**
  * Client-side authentication guard that redirects unauthenticated users to login.
  * This provides defense-in-depth alongside server-side middleware protection.
- * 
+ *
  * Use this in layout components to protect entire sections of the app.
  */
 export function AuthGuard({ children, redirectTo = '/login' }: AuthGuardProps) {
-  const { isAuthenticated, isLoading } = useSimpleAuth()
+  const { isAuthenticated, isLoading, isHydrated } = useAuth({ minimal: true })
   const router = useRouter()
-  const [isHydrated, setIsHydrated] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
-  // Fix hydration mismatch by ensuring client has mounted
+  // Track component mount state
   useEffect(() => {
-    setIsHydrated(true)
+    setMounted(true)
   }, [])
 
   useEffect(() => {
     // Only redirect if we're done loading and user is not authenticated
-    if (isHydrated && !isLoading && !isAuthenticated) {
+    if (mounted && isHydrated && !isLoading && !isAuthenticated) {
       // Get current path for redirect after login
       const currentPath = window.location.pathname
       const redirectUrl = `${redirectTo}?redirect=${encodeURIComponent(currentPath)}`
-      
+
       // Use router.replace to avoid adding to history
       router.replace(redirectUrl)
     }
-  }, [isAuthenticated, isLoading, redirectTo, router, isHydrated])
+  }, [isAuthenticated, isLoading, redirectTo, router, isHydrated, mounted])
 
   // Prevent hydration mismatch by not rendering anything during SSR
-  if (!isHydrated) {
+  if (!mounted || !isHydrated) {
     return null
   }
 

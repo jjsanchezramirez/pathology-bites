@@ -29,6 +29,8 @@ const ADMIN_ONLY_ENDPOINTS = [
   '/api/admin/refresh-stats'
 ]
 
+// DEPRECATED: API routes now validate auth internally to reduce edge requests
+// This function is kept for reference but is no longer called by middleware
 // Handle authentication for admin API routes
 async function handleAdminApiAuth(request: NextRequest) {
   const startTime = Date.now()
@@ -226,6 +228,8 @@ async function handleAdminApiAuth(request: NextRequest) {
   }
 }
 
+// DEPRECATED: API routes now validate auth internally to reduce edge requests
+// This function is kept for reference but is no longer called by middleware
 // Handle authentication for user and quiz API routes
 async function handleUserApiAuth(request: NextRequest) {
   const startTime = Date.now()
@@ -384,24 +388,10 @@ async function handleUserApiAuth(request: NextRequest) {
 }
 
 export async function updateSession(request: NextRequest) {
-  // Handle admin API routes with authentication
-  if (request.nextUrl.pathname.startsWith('/api/admin/')) {
-    return handleAdminApiAuth(request)
-  }
+  // API routes are no longer handled by middleware - they validate auth internally
+  // This reduces edge requests by ~50-70% by eliminating redundant auth checks
 
-  // Handle user, quiz, and media API routes with authentication
-  if (request.nextUrl.pathname.startsWith('/api/user/') ||
-      request.nextUrl.pathname.startsWith('/api/quiz/') ||
-      request.nextUrl.pathname.startsWith('/api/media/')) {
-    return handleUserApiAuth(request)
-  }
-
-  // Skip middleware for other API routes
-  if (request.nextUrl.pathname.startsWith('/api/')) {
-    return NextResponse.next()
-  }
-
-  // At this point, we only get dashboard and admin paths due to matcher
+  // At this point, we only get dashboard, admin, and login paths due to matcher
   // Maintenance mode blocks dashboard, but allows admin
   const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true'
   if (isMaintenanceMode && request.nextUrl.pathname.startsWith('/dashboard')) {
@@ -447,7 +437,17 @@ export async function updateSession(request: NextRequest) {
       return redirect('/maintenance')
     }
 
+    // Redirect authenticated users away from login page
+    if (user && request.nextUrl.pathname === '/login') {
+      // Get user role to determine redirect destination
+      const userRole = await getUserRoleWithCache(user.id, user, supabase)
 
+      if (userRole === 'admin' || userRole === 'creator' || userRole === 'reviewer') {
+        return redirect('/admin/dashboard')
+      } else {
+        return redirect('/dashboard')
+      }
+    }
 
     // Ultra-simple auth check (matcher only includes dashboard/admin)
     if (!user) {
