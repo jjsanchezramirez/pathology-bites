@@ -56,7 +56,7 @@ export function PublicStatsSection({ className = "", variant = 'landing' }: Publ
           <div className="text-center group">
             <div className="relative">
               <div className="text-5xl md:text-6xl font-bold text-primary mb-2 group-hover:scale-110 transition-transform duration-300">
-                {statsLoading ? '...' : stats.expertQuestions.toLocaleString()}
+                {statsLoading ? '...' : `${stats.expertQuestions}+`}
               </div>
               <div className="absolute -inset-4 bg-primary/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>

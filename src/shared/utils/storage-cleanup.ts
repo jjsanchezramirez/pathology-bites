@@ -11,6 +11,7 @@ const QUIZ_STATE_PREFIX = 'quiz-state-'
 const QUIZ_RESULTS_PREFIX = 'pathology-bites-quiz:quiz-results-'
 const LEGACY_QUIZ_PREFIX = 'quiz_'
 const LEGACY_UI_SETTINGS_KEY = 'pathology-bites-ui-settings' // Deprecated - now in SWR cache
+const LEGACY_PUBLIC_STATS_KEY = 'pathology-bites-public-stats' // Deprecated - stats now hardcoded
 
 // Keep quiz sessions for 7 days
 const QUIZ_SESSION_MAX_AGE = 7 * 24 * 60 * 60 * 1000
@@ -198,6 +199,11 @@ export function cleanupLegacyQuizData(): number {
 
     // Remove deprecated ui-settings key (now in SWR cache)
     if (key === LEGACY_UI_SETTINGS_KEY) {
+      keysToRemove.push(key)
+    }
+
+    // Remove deprecated public-stats key (stats now hardcoded)
+    if (key === LEGACY_PUBLIC_STATS_KEY) {
       keysToRemove.push(key)
     }
   }
