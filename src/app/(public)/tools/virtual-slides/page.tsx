@@ -36,8 +36,8 @@ function VirtualSlidesContent() {
   const searchParams = useSearchParams()
 
   // ✅ Use unified search - server-side filtering with proper pagination
-  // Client-only mode (always)
-  const client = useClientVirtualSlides(50)
+  // Client-only mode (always) - reduced to 5 results for faster experience
+  const client = useClientVirtualSlides(5)
 
   const {
     slides,
@@ -67,6 +67,7 @@ function VirtualSlidesContent() {
 
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+  const [shouldUseNCI, setShouldUseNCI] = useState(false) // Track if NCI expansion should be used
   const [selectedRepository, setSelectedRepository] = useState('all')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedOrganSystem, setSelectedOrganSystem] = useState('all')
@@ -133,11 +134,16 @@ function VirtualSlidesContent() {
   }, [client.isLoading])
 
   // Debounce search term to reduce jittery updates
+  // After 500ms of no typing, enable NCI expansion for better results
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm)
-    }, 300) // 300ms delay
-    return () => clearTimeout(timer)
+      setShouldUseNCI(true) // Enable NCI after user stops typing
+    }, 500) // 500ms delay - only call NCI when user pauses
+    return () => {
+      clearTimeout(timer)
+      setShouldUseNCI(false) // Disable NCI while actively typing
+    }
   }, [searchTerm])
 
   // Console-only notice of dataset URL after initial load completes
@@ -157,9 +163,10 @@ function VirtualSlidesContent() {
       category: selectedCategory !== 'all' ? selectedCategory : undefined,
       subcategory: selectedOrganSystem !== 'all' ? selectedOrganSystem : undefined,
       randomMode: isRandomMode,
+      useNCIExpansion: shouldUseNCI, // Only use NCI after debounce settles
       page: 1 // Reset to first page when filters change
     })
-  }, [debouncedSearchTerm, selectedRepository, selectedCategory, selectedOrganSystem, isRandomMode, searchWithFilters])
+  }, [debouncedSearchTerm, selectedRepository, selectedCategory, selectedOrganSystem, isRandomMode, shouldUseNCI, searchWithFilters])
 
   // Use slides directly from API (server-side filtering, no client-side filtering needed)
   const displaySlides = slides
@@ -336,6 +343,23 @@ function VirtualSlidesContent() {
                         setIsRandomMode(false)
                       }
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        // On Enter: immediately search with NCI expansion
+                        e.preventDefault()
+                        setDebouncedSearchTerm(searchTerm)
+                        setShouldUseNCI(true)
+                        searchWithFilters({
+                          query: searchTerm || undefined,
+                          repository: selectedRepository !== 'all' ? selectedRepository : undefined,
+                          category: selectedCategory !== 'all' ? selectedCategory : undefined,
+                          subcategory: selectedOrganSystem !== 'all' ? selectedOrganSystem : undefined,
+                          randomMode: isRandomMode,
+                          useNCIExpansion: true, // Force NCI on Enter
+                          page: 1
+                        })
+                      }
+                    }}
                     className="flex-1"
                   />
 
@@ -363,7 +387,20 @@ function VirtualSlidesContent() {
                   )}
 
                   <Button
-                    onClick={() => search(searchTerm)}
+                    onClick={() => {
+                      // On Search button click: immediately search with NCI expansion
+                      setDebouncedSearchTerm(searchTerm)
+                      setShouldUseNCI(true)
+                      searchWithFilters({
+                        query: searchTerm || undefined,
+                        repository: selectedRepository !== 'all' ? selectedRepository : undefined,
+                        category: selectedCategory !== 'all' ? selectedCategory : undefined,
+                        subcategory: selectedOrganSystem !== 'all' ? selectedOrganSystem : undefined,
+                        randomMode: isRandomMode,
+                        useNCIExpansion: true, // Force NCI on Search button click
+                        page: 1
+                      })
+                    }}
                     disabled={isLoading}
                     className="px-6 w-full sm:w-auto"
                   >

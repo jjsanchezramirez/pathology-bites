@@ -175,13 +175,19 @@ function rankSlidesByTerm(slides: VirtualSlide[], term: string): Map<string, { s
 }
 
 // Main ranking function with NCI EVS expansion
-async function rankSlidesWithExpansion(slides: VirtualSlide[], query: string): Promise<{ slides: VirtualSlide[]; expandedTerms: string[] }> {
+async function rankSlidesWithExpansion(slides: VirtualSlide[], query: string, useNCIExpansion: boolean = true): Promise<{ slides: VirtualSlide[]; expandedTerms: string[] }> {
   const term = (query || '').toLowerCase().trim()
   if (!term) return { slides, expandedTerms: [] }
 
-  // Expand search term using NCI EVS (client-side)
-  const expandedTerms = await expandSearchTermClient(term)
-  console.log(`[Virtual Slides] Expanded "${query}" to ${expandedTerms.length} terms:`, expandedTerms)
+  // Only use NCI EVS expansion if explicitly requested (on Enter key or after debounce settling)
+  let expandedTerms: string[]
+  if (useNCIExpansion) {
+    expandedTerms = await expandSearchTermClient(term)
+    console.log(`[Virtual Slides] Expanded "${query}" to ${expandedTerms.length} terms:`, expandedTerms)
+  } else {
+    // Fast local search without NCI expansion
+    expandedTerms = [term]
+  }
 
   // Aggregate rankings across all expanded terms
   const aggregatedRankings = new Map<string, { slide: VirtualSlide; bucketIndex: number }>()
@@ -206,7 +212,7 @@ async function rankSlidesWithExpansion(slides: VirtualSlide[], query: string): P
 
   return {
     slides: sortedSlides,
-    expandedTerms: expandedTerms.slice(1) // Exclude original term
+    expandedTerms: useNCIExpansion ? expandedTerms.slice(1) : [] // Exclude original term, or empty if no expansion
   }
 }
 
@@ -231,6 +237,7 @@ export interface ClientSearchOptions {
   randomSeed?: number
   page?: number
   limit?: number
+  useNCIExpansion?: boolean // Control whether to use NCI EVS expansion
 }
 
 export function useClientVirtualSlides(defaultLimit: number = 20) {
@@ -324,9 +331,10 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
         return
       }
 
-      // Ranking with NCI EVS expansion
+      // Ranking with optional NCI EVS expansion
       if (options.query && options.query.trim()) {
-        const { slides: rankedSlides, expandedTerms } = await rankSlidesWithExpansion(list, options.query)
+        const useNCI = options.useNCIExpansion !== undefined ? options.useNCIExpansion : true
+        const { slides: rankedSlides, expandedTerms } = await rankSlidesWithExpansion(list, options.query, useNCI)
         if (mounted) {
           setFilteredAndRanked(rankedSlides)
           setExpandedSearchTerms(expandedTerms)
@@ -370,6 +378,9 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
       // random mode + seed
       if (Object.prototype.hasOwnProperty.call(opts, 'randomMode')) next.randomMode = opts.randomMode ?? false
       if (Object.prototype.hasOwnProperty.call(opts, 'randomSeed')) next.randomSeed = opts.randomSeed
+
+      // NCI expansion control
+      if (Object.prototype.hasOwnProperty.call(opts, 'useNCIExpansion')) next.useNCIExpansion = opts.useNCIExpansion
 
       // Defaults
       if (next.limit == null) next.limit = prev.limit ?? defaultLimit
