@@ -12,7 +12,9 @@ export async function middleware(request: NextRequest) {
   const isAdminRoute = pathname.startsWith('/admin')
   const isDashboardRoute = pathname.startsWith('/dashboard')
   const isApiRoute = pathname.startsWith('/api/')
-  const isPublicApi = pathname.startsWith('/api/public/') || pathname.startsWith('/api/auth/')
+  const isPublicApi = pathname.startsWith('/api/public/') ||
+                      pathname.startsWith('/api/auth/') ||
+                      pathname.startsWith('/api/content/')
 
   // Public routes that don't need auth
   const publicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/']
