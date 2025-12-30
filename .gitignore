@@ -161,15 +161,11 @@ json/anki/
 # ==============================================================================
 # PROJECT DIRECTORIES (PRIVATE)
 # ==============================================================================
-# Documentation, scripts, and tests - keep local
-docs/
-scripts/
-test/
+# Development-only files (docs, scripts, etc.) - keep local
+dev-only/
 
 # ==============================================================================
-# SCRIPTS & AUTOMATION OUTPUTS
+# EXPERIMENTAL & WIP CODE
 # ==============================================================================
-# Script outputs and temporary files
-scripts/output/
-scripts/temp/
-*.script.log
+# Experimental features not yet part of main app
+src/experimental/

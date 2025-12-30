@@ -30,12 +30,12 @@ temp
 # Local data/assets not needed in deploy
 expertpath/
 expertpath/complete_expertpath_data.json
-scripts/local/
 
-# Documentation, scripts, and tests - not needed for deployment
-docs/
-scripts/
-test/
+# Development-only files - not needed for deployment
+dev-only/
+
+# Experimental features - not production-ready
+src/experimental/
 
 # Anki source data
 anki/
