@@ -1,5 +1,0 @@
-{
-  "depcheck": {
-    "ignoreMatches": ["autoprefixer", "postcss", "tailwindcss"]
-  }
-}
