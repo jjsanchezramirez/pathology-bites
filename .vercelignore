@@ -32,10 +32,13 @@ expertpath/
 expertpath/complete_expertpath_data.json
 
 # Development-only files - not needed for deployment
-dev-only/
+dev/
 
-# Experimental features - not production-ready
-src/experimental/
+# Console output logs
+console.log
+
+# Work-in-progress features - not production-ready
+src/wip/
 
 # Anki source data
 anki/
