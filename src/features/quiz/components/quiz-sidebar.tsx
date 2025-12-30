@@ -16,6 +16,7 @@ interface QuizSidebarProps {
   }>
   onQuestionSelect?: (index: number) => void
   timeRemaining?: number | null
+  isReviewMode?: boolean
 }
 
 export function QuizSidebar({
@@ -23,7 +24,8 @@ export function QuizSidebar({
   currentQuestionIndex,
   attempts,
   onQuestionSelect,
-  timeRemaining
+  timeRemaining,
+  isReviewMode = false
 }: QuizSidebarProps) {
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -45,14 +47,24 @@ export function QuizSidebar({
     const status = getQuestionStatus(questionIndex)
     const isCurrent = questionIndex === currentQuestionIndex
 
+    // When selected, icon should match text color (primary-foreground)
+    if (isCurrent) {
+      if (status === 'correct') {
+        return <CheckCircle className="h-4 w-4 text-primary-foreground shrink-0" />
+      } else if (status === 'incorrect') {
+        return <XCircle className="h-4 w-4 text-primary-foreground shrink-0" />
+      } else {
+        return <Circle className="h-4 w-4 text-primary-foreground fill-primary-foreground shrink-0" />
+      }
+    }
+
+    // When not selected, use theme colors
     if (status === 'correct') {
-      return <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+      return <CheckCircle className="h-4 w-4 text-blue-500 shrink-0" />
     } else if (status === 'incorrect') {
-      return <XCircle className="h-4 w-4 text-red-500 shrink-0" />
-    } else if (isCurrent) {
-      return <Circle className="h-4 w-4 text-blue-500 fill-blue-500 shrink-0" />
+      return <XCircle className="h-4 w-4 text-destructive shrink-0" />
     } else {
-      return <Circle className="h-4 w-4 text-gray-400 shrink-0" />
+      return <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
     }
   }
 
@@ -61,13 +73,14 @@ export function QuizSidebar({
     const isCurrent = questionIndex === currentQuestionIndex
 
     if (isCurrent) {
-      return "bg-primary text-primary-foreground"
+      return "bg-primary text-primary-foreground border border-primary"
     } else if (status === 'correct') {
-      return "bg-green-50 dark:bg-green-950/30 hover:bg-green-100 dark:hover:bg-green-950/50"
+      // Use blue color for correct answers
+      return "bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30"
     } else if (status === 'incorrect') {
-      return "bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-950/50"
+      return "bg-destructive/10 text-destructive-foreground hover:bg-destructive/20 border border-destructive/50"
     } else {
-      return "bg-transparent hover:bg-muted"
+      return "bg-transparent hover:bg-muted border border-border"
     }
   }
 
@@ -126,17 +139,22 @@ export function QuizSidebar({
 
             {/* Question List */}
             <div className="space-y-1">
-              {session.questions.map((question, index) => (
-                <button
-                  key={question.id}
-                  onClick={() => onQuestionSelect?.(index)}
-                  disabled={index > currentQuestionIndex}
-                  className={cn(
-                    "w-full px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out flex items-center text-left cursor-pointer gap-2",
-                    getQuestionButtonClass(index),
-                    index > currentQuestionIndex && "opacity-50 cursor-not-allowed"
-                  )}
-                >
+              {session.questions.map((question, index) => {
+                // In review mode, allow clicking any question
+                // In quiz mode, only allow clicking current or previous questions
+                const isDisabled = !isReviewMode && index > currentQuestionIndex
+
+                return (
+                  <button
+                    key={question.id}
+                    onClick={() => onQuestionSelect?.(index)}
+                    disabled={isDisabled}
+                    className={cn(
+                      "w-full px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out flex items-center text-left cursor-pointer gap-2",
+                      getQuestionButtonClass(index),
+                      isDisabled && "opacity-50 cursor-not-allowed"
+                    )}
+                  >
                   {getStatusIcon(index)}
                   <div className="flex-1 min-w-0">
                     <div className={cn(
@@ -153,7 +171,8 @@ export function QuizSidebar({
                     </div>
                   </div>
                 </button>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>

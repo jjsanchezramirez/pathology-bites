@@ -106,7 +106,7 @@ export default function QuizResultsPage() {
           result={result}
           sessionId={sessionId || ''}
           onReviewQuestions={() => {
-            window.location.href = `/dashboard/quiz/${sessionId}/review`
+            window.location.href = `/dashboard/quiz/${sessionId}?review=true`
           }}
           onRetakeMissed={() => {
             // TODO: Implement retake missed questions functionality

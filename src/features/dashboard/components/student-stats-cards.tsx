@@ -19,10 +19,10 @@ export function StudentStatsCards({ stats }: StudentStatsCardsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Needs Review</CardTitle>
-          <BookOpen className="h-4 w-4 text-red-500" />
+          <BookOpen className="h-4 w-4 text-[hsl(var(--chart-5))]" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-red-600">{stats.needsReview || 0}</div>
+          <div className="text-2xl font-bold text-[hsl(var(--chart-5))]">{stats.needsReview || 0}</div>
           <p className="text-xs text-muted-foreground">
             Questions to practice more
           </p>
@@ -32,10 +32,10 @@ export function StudentStatsCards({ stats }: StudentStatsCardsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Mastered</CardTitle>
-          <Target className="h-4 w-4 text-green-500" />
+          <Target className="h-4 w-4 text-[hsl(var(--chart-1))]" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-600">{stats.mastered || 0}</div>
+          <div className="text-2xl font-bold text-[hsl(var(--chart-1))]">{stats.mastered || 0}</div>
           <p className="text-xs text-muted-foreground">
             Questions answered correctly
           </p>
@@ -45,10 +45,10 @@ export function StudentStatsCards({ stats }: StudentStatsCardsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Unused</CardTitle>
-          <TrendingUp className="h-4 w-4 text-blue-500" />
+          <TrendingUp className="h-4 w-4 text-[hsl(var(--chart-2))]" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-blue-600">{stats.unused || 0}</div>
+          <div className="text-2xl font-bold text-[hsl(var(--chart-2))]">{stats.unused || 0}</div>
           <p className="text-xs text-muted-foreground">
             Questions to explore
           </p>
@@ -58,10 +58,10 @@ export function StudentStatsCards({ stats }: StudentStatsCardsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Completed</CardTitle>
-          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <Calendar className="h-4 w-4 text-[hsl(var(--chart-3))]" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.completedQuestions || 0}</div>
+          <div className="text-2xl font-bold text-[hsl(var(--chart-3))]">{stats.completedQuestions || 0}</div>
           <p className="text-xs text-muted-foreground">
             Questions attempted
           </p>

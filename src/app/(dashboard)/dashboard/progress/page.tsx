@@ -1,25 +1,17 @@
 // src/app/(dashboard)/dashboard/progress/page.tsx
 "use client"
 
-import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Button } from '@/shared/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { useLottieAnimation } from '@/shared/hooks/use-lottie-animation'
 
 // Dynamically import Lottie to avoid SSR issues
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
 
 export default function ProgressPage() {
-  const [animationData, setAnimationData] = useState(null)
-
-  useEffect(() => {
-    // Fetch the Lottie animation from R2
-    fetch('https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/animations/under_construction.json')
-      .then(response => response.json())
-      .then(data => setAnimationData(data))
-      .catch(err => console.error('Error loading animation:', err))
-  }, [])
+  const { animationData } = useLottieAnimation('under_construction')
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">

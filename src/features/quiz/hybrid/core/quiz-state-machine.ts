@@ -15,8 +15,8 @@ import { QuizQuestion, QuizAnswer, QuizState } from '../../types/quiz-question';
 
 // QuizState is now imported from the standardized types
 
-export type QuizAction = 
-  | { type: 'INITIALIZE'; payload: { sessionId: string; questions: QuizQuestion[]; config: QuizState['config'] } }
+export type QuizAction =
+  | { type: 'INITIALIZE'; payload: { sessionId: string; questions: QuizQuestion[]; config: QuizState['config']; status?: string } }
   | { type: 'START_QUIZ' }
   | { type: 'PAUSE_QUIZ' }
   | { type: 'RESUME_QUIZ' }
@@ -34,13 +34,18 @@ export type QuizAction =
 export function quizStateReducer(state: QuizState, action: QuizAction): QuizState {
   switch (action.type) {
     case 'INITIALIZE':
+      // Use server-provided status if available, otherwise default to 'not_started'
+      // This ensures we properly handle completed quizzes when user navigates back
+      const initialStatus = (action.payload.status as QuizState['status']) || 'not_started';
+      console.log('[State Machine] INITIALIZE action - received status:', action.payload.status, 'using:', initialStatus);
+
       return {
         ...state,
         sessionId: action.payload.sessionId,
         questions: action.payload.questions,
         totalQuestions: action.payload.questions.length,
         config: action.payload.config,
-        status: 'not_started',
+        status: initialStatus,
         currentQuestionIndex: 0,
         answers: new Map(),
         progress: {

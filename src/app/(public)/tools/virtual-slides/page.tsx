@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { useClientVirtualSlides } from '@/shared/hooks/use-client-virtual-slides'
+import { useClientVirtualSlidesEnhanced } from '@/shared/hooks/use-client-virtual-slides-enhanced'
 import { VIRTUAL_SLIDES_JSON_URL } from '@/shared/config/virtual-slides'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
@@ -35,9 +35,8 @@ import { LoadingSkeleton } from './components/loading-skeleton'
 function VirtualSlidesContent() {
   const searchParams = useSearchParams()
 
-  // ✅ Use unified search - server-side filtering with proper pagination
-  // Client-only mode (always)
-  const client = useClientVirtualSlides(50)
+  // ✅ Use enhanced search with organ-aware ranking and smart NCI fallback
+  const client = useClientVirtualSlidesEnhanced(50)
 
   const {
     slides,
@@ -65,14 +64,16 @@ function VirtualSlidesContent() {
     expandedSearchTerms: client.expandedSearchTerms
   }
 
-  const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
-  const [shouldUseNCI, setShouldUseNCI] = useState(false) // Track if NCI expansion should be used
   const [selectedRepository, setSelectedRepository] = useState('all')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedOrganSystem, setSelectedOrganSystem] = useState('all')
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [urlParamsProcessed, setUrlParamsProcessed] = useState(false)
+
+  // Use ref for search input to avoid re-renders on every keystroke
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Metadata for filters
   const [repositories, setRepositories] = useState<string[]>([])
@@ -91,7 +92,9 @@ function VirtualSlidesContent() {
       const randomParam = searchParams.get('random')
 
       if (searchQuery) {
-        setSearchTerm(searchQuery)
+        if (searchInputRef.current) {
+          searchInputRef.current.value = searchQuery
+        }
         setDebouncedSearchTerm(searchQuery)
       }
 
@@ -133,18 +136,18 @@ function VirtualSlidesContent() {
     if (!client.isLoading) setIsInitialLoading(false)
   }, [client.isLoading])
 
-  // Debounce search term to reduce jittery updates
-  // After 500ms of no typing, enable NCI expansion for better results
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm)
-      setShouldUseNCI(true) // Enable NCI after user stops typing
-    }, 500) // 500ms delay - only call NCI when user pauses
-    return () => {
-      clearTimeout(timer)
-      setShouldUseNCI(false) // Disable NCI while actively typing
+  // Debounced search handler - only updates state after user stops typing
+  const handleSearchInput = useCallback((value: string) => {
+    // Clear existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
     }
-  }, [searchTerm])
+
+    // Set new timer - only update state after 300ms of no typing
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearchTerm(value)
+    }, 300)
+  }, [])
 
   // Console-only notice of dataset URL after initial load completes
   useEffect(() => {
@@ -153,20 +156,18 @@ function VirtualSlidesContent() {
     }
   }, [isInitialLoading])
 
-  // Automatic search when any filter changes
+  // Automatic search when debounced term or filters change
   useEffect(() => {
-    if (debouncedSearchTerm !== searchTerm) return // Only search when debounce is complete
-
     searchWithFilters({
       query: debouncedSearchTerm || undefined,
       repository: selectedRepository !== 'all' ? selectedRepository : undefined,
       category: selectedCategory !== 'all' ? selectedCategory : undefined,
       subcategory: selectedOrganSystem !== 'all' ? selectedOrganSystem : undefined,
       randomMode: isRandomMode,
-      useNCIExpansion: shouldUseNCI, // Only use NCI after debounce settles
       page: 1 // Reset to first page when filters change
     })
-  }, [debouncedSearchTerm, selectedRepository, selectedCategory, selectedOrganSystem, isRandomMode, shouldUseNCI, searchWithFilters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchTerm, selectedRepository, selectedCategory, selectedOrganSystem, isRandomMode])
 
   // Use slides directly from API (server-side filtering, no client-side filtering needed)
   const displaySlides = slides
@@ -174,7 +175,12 @@ function VirtualSlidesContent() {
   // Simplified handlers for unified search
   const clearFilters = async () => {
     // Reset local UI state
-    setSearchTerm('')
+    if (searchInputRef.current) {
+      searchInputRef.current.value = ''
+    }
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
     setSelectedRepository('all')
     setSelectedCategory('all')
     setSelectedOrganSystem('all')
@@ -182,6 +188,7 @@ function VirtualSlidesContent() {
     setRevealedDiagnoses(new Set())
 
     // Immediately reset search options (avoid waiting for debounce/effects)
+    setDebouncedSearchTerm('')
     await searchWithFilters({
       query: '',
       repository: undefined,
@@ -215,7 +222,13 @@ function VirtualSlidesContent() {
     if (!isRandomMode) {
       // Entering random mode: clear query and reset filters to broaden results
       setIsRandomMode(true)
-      setSearchTerm('')
+      if (searchInputRef.current) {
+        searchInputRef.current.value = ''
+      }
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+      setDebouncedSearchTerm('')
       setSelectedRepository('all')
       setSelectedCategory('all')
       setSelectedOrganSystem('all')
@@ -329,15 +342,16 @@ function VirtualSlidesContent() {
                 </Label>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Input
+                    ref={searchInputRef}
                     id="search-input"
                     placeholder={isRandomMode
                       ? "Start typing to exit random mode and search..."
                       : "Search by diagnosis, patient info, repository, category, or organ system..."
                     }
-                    value={searchTerm}
+                    defaultValue=""
                     onChange={(e) => {
                       const val = e.target.value
-                      setSearchTerm(val)
+                      handleSearchInput(val)
                       // Any editing exits random mode so clearing search restores full list
                       if (isRandomMode) {
                         setIsRandomMode(false)
@@ -345,17 +359,19 @@ function VirtualSlidesContent() {
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        // On Enter: immediately search with NCI expansion
+                        // On Enter: immediately search with current value
                         e.preventDefault()
-                        setDebouncedSearchTerm(searchTerm)
-                        setShouldUseNCI(true)
+                        const currentValue = searchInputRef.current?.value || ''
+                        if (debounceTimerRef.current) {
+                          clearTimeout(debounceTimerRef.current)
+                        }
+                        setDebouncedSearchTerm(currentValue)
                         searchWithFilters({
-                          query: searchTerm || undefined,
+                          query: currentValue || undefined,
                           repository: selectedRepository !== 'all' ? selectedRepository : undefined,
                           category: selectedCategory !== 'all' ? selectedCategory : undefined,
                           subcategory: selectedOrganSystem !== 'all' ? selectedOrganSystem : undefined,
                           randomMode: isRandomMode,
-                          useNCIExpansion: true, // Force NCI on Enter
                           page: 1
                         })
                       }
@@ -388,16 +404,18 @@ function VirtualSlidesContent() {
 
                   <Button
                     onClick={() => {
-                      // On Search button click: immediately search with NCI expansion
-                      setDebouncedSearchTerm(searchTerm)
-                      setShouldUseNCI(true)
+                      // On Search button click: immediately search with current input value
+                      const currentValue = searchInputRef.current?.value || ''
+                      if (debounceTimerRef.current) {
+                        clearTimeout(debounceTimerRef.current)
+                      }
+                      setDebouncedSearchTerm(currentValue)
                       searchWithFilters({
-                        query: searchTerm || undefined,
+                        query: currentValue || undefined,
                         repository: selectedRepository !== 'all' ? selectedRepository : undefined,
                         category: selectedCategory !== 'all' ? selectedCategory : undefined,
                         subcategory: selectedOrganSystem !== 'all' ? selectedOrganSystem : undefined,
                         randomMode: isRandomMode,
-                        useNCIExpansion: true, // Force NCI on Search button click
                         page: 1
                       })
                     }}

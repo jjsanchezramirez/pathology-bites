@@ -225,32 +225,22 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       return;
     }
 
-    // OPTIMIZATION: Check if quiz is already completed in localStorage FIRST
-    // This avoids unnecessary API calls for completed quizzes
-    if (typeof window !== 'undefined') {
-      try {
-        const localStateKey = `quiz-state-${sessionId}`;
-        const savedState = localStorage.getItem(localStateKey);
-        if (savedState) {
-          const parsed = JSON.parse(savedState);
-          if (parsed.status === 'completed') {
-            console.log('[Hybrid] Quiz already completed (found in localStorage), redirecting to results');
-            onError?.('Quiz session is already completed');
-            return;
-          }
-        }
-      } catch (error) {
-        console.warn('[Hybrid] Failed to check localStorage for completion status:', error);
-        // Continue with normal initialization if localStorage check fails
-      }
-    }
-
     try {
       isInitializingRef.current = true;
       const startTime = Date.now();
 
       // API Call #1: Fetch quiz data
-      const { questions, config, existingAnswers, timeRemaining: savedTimeRemaining, totalTimeLimit: savedTotalTimeLimit } = await syncManager.current!.fetchQuizData(sessionId);
+      const { questions, config, status, existingAnswers, timeRemaining: savedTimeRemaining, totalTimeLimit: savedTotalTimeLimit } = await syncManager.current!.fetchQuizData(sessionId);
+
+      console.log('[Hybrid] Fetched quiz data - status:', status);
+
+      // EARLY EXIT: If quiz is already completed, trigger redirect immediately
+      if (status === 'completed') {
+        console.log('[Hybrid] Quiz already completed - triggering early redirect');
+        onError?.('Quiz session is already completed');
+        isInitializingRef.current = false;
+        return;
+      }
 
       // Track API call metrics
       const responseTime = Date.now() - startTime;
@@ -259,7 +249,8 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       metricsRef.current.responseCount += 1;
 
       // Initialize state machine with fetched data
-      stateActions.initializeQuiz(questions, config);
+      console.log('[Hybrid] Initializing quiz with status:', status);
+      stateActions.initializeQuiz(questions, config, status);
 
       // Initialize timer for timed quizzes
       if (config.timing === 'timed') {
@@ -330,9 +321,12 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       // Complete the quiz first
       stateActions.completeQuiz();
 
-      // Clear local storage on successful completion
+      // Clear local storage and session cache on successful completion
+      // This ensures that if user navigates back, fresh data with 'completed' status will be fetched
       try {
         localStorage.removeItem(`quiz_${sessionId}`);
+        syncManager.current?.clearSessionCache(sessionId);
+        console.log('[Hybrid] Cleared quiz cache after completion');
       } catch (error) {
         console.warn('Failed to clear quiz data after completion:', error);
       }

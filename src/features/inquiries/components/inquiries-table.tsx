@@ -61,12 +61,11 @@ export function InquiriesTable({ onInquiriesChange }: InquiriesTableProps) {
 
   const handleInquiriesChange = () => {
     // Trigger a refresh of all tabs by incrementing the refresh trigger
-    setRefreshTrigger(prev => {
-      const newTrigger = prev + 1
-      // Pass the new trigger value to parent so statistics also update
-      onInquiriesChange?.(newTrigger)
-      return newTrigger
-    })
+    const newTrigger = refreshTrigger + 1
+    setRefreshTrigger(newTrigger)
+    // Pass the new trigger value to parent so statistics also update
+    // Call this after state update to avoid setState-in-render warning
+    onInquiriesChange?.(newTrigger)
   }
 
   return (

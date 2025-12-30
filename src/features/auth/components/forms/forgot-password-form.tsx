@@ -124,20 +124,25 @@ export function ForgotPasswordForm({
             <Turnstile
               ref={turnstileRef}
               siteKey={siteKey}
-              onSuccess={(token) => setCaptchaToken(token)}
-              onError={() => {
+              options={{
+                theme: 'auto',
+                size: 'normal',
+                retry: 'auto',
+                'retry-interval': 8000,
+              }}
+              onSuccess={(token) => {
+                setCaptchaToken(token)
+                console.log('[ForgotPasswordForm] CAPTCHA verification successful')
+              }}
+              onError={(error) => {
                 setCaptchaToken(null)
-                toast.error("Security verification failed. Please wait a few seconds and it will reload automatically.", {
-                  id: `captcha-error-${Date.now()}`,
-                  duration: 6000
-                })
+                console.log('[ForgotPasswordForm] CAPTCHA verification error:', error)
+                // Don't show toast on error - Turnstile will auto-retry
               }}
               onExpire={() => {
                 setCaptchaToken(null)
-                toast.warning("Security verification expired. Please verify again.", {
-                  id: `captcha-expired-${Date.now()}`,
-                  duration: 5000
-                })
+                console.log('[ForgotPasswordForm] CAPTCHA verification expired')
+                // Don't show toast on expire - it will auto-reload
               }}
             />
           </div>

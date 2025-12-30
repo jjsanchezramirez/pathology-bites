@@ -25,13 +25,13 @@ export function QuizStatsCards({ stats, formatTimeSpent }: QuizStatsCardsProps) 
       <Card>
         <CardContent className="p-4">
           <div className="text-sm text-muted-foreground">Completed</div>
-          <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
+          <div className="text-2xl font-bold text-primary">{stats.completed}</div>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="p-4">
           <div className="text-sm text-muted-foreground">In Progress</div>
-          <div className="text-2xl font-bold text-blue-600">{stats.inProgress}</div>
+          <div className="text-2xl font-bold text-secondary-foreground">{stats.inProgress}</div>
         </CardContent>
       </Card>
       <Card>

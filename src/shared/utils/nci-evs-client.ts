@@ -7,8 +7,8 @@
  * 3. Fall back to API proxy for rare terms (Vercel invocation)
  */
 
-// URL to pre-computed expansion map on R2
-const PRECOMPUTED_EXPANSIONS_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/nci-evs-expansions.json'
+// URL to pre-computed expansion map (uploaded to virtual-slides directory)
+const PRECOMPUTED_EXPANSIONS_URL = '/virtual-slides/nci-evs-expansions.json'
 
 // Pre-computed expansions (loaded once from R2)
 let precomputedExpansions: Record<string, { expansions: string[] }> | null = null

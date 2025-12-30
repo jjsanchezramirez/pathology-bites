@@ -25,7 +25,7 @@ export interface UseQuizStateMachineOptions {
 
 export interface QuizStateMachineActions {
   // Quiz Control
-  initializeQuiz: (questions: QuizQuestion[], config?: Partial<QuizState['config']>) => void;
+  initializeQuiz: (questions: QuizQuestion[], config?: Partial<QuizState['config']>, status?: string) => void;
   startQuiz: () => void;
   pauseQuiz: () => void;
   resumeQuiz: () => void;
@@ -92,6 +92,13 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
   useEffect(() => {
     if (enableLocalStorage && typeof window !== 'undefined') {
       try {
+        // Don't save to localStorage if quiz is completed (will be cleared anyway)
+        if (state.status === 'completed') {
+          console.log('[State Machine] Quiz completed - clearing localStorage instead of saving');
+          localStorage.removeItem(localStorageKey);
+          return;
+        }
+
         const stateToSave = {
           ...state,
           // Convert Map to array for JSON serialization
@@ -133,7 +140,7 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
 
   // Actions object
   const actions: QuizStateMachineActions = {
-    initializeQuiz: useCallback((questions: QuizQuestion[], config?: Partial<QuizState['config']>) => {
+    initializeQuiz: useCallback((questions: QuizQuestion[], config?: Partial<QuizState['config']>, status?: string) => {
       const fullConfig = {
         mode: 'tutor' as const,
         timing: 'untimed' as const,
@@ -141,13 +148,14 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
         allowReview: true,
         ...config
       };
-      
+
       dispatch({
         type: 'INITIALIZE',
         payload: {
           sessionId,
           questions,
-          config: fullConfig
+          config: fullConfig,
+          status
         }
       });
     }, [sessionId]),

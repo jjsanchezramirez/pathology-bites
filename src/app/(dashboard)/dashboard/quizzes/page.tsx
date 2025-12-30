@@ -255,6 +255,7 @@ export default function QuizzesPage() {
                 quiz={quiz}
                 onDelete={handleDeleteClick}
                 formatDate={formatDate}
+                formatTimeSpent={formatTimeSpent}
               />
             ))}
 

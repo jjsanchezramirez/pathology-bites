@@ -617,20 +617,26 @@ function extractJSON(text: string): any {
 
         try {
           return JSON.parse(sanitizeJSONString(fixedJson))
-        } catch {
+        } catch (sanitizeError) {
           try {
             return JSON.parse(fixedJson)
-          } catch {
-            console.error('[Admin AI] All JSON parsing strategies failed. Original response:', text.substring(0, 500))
-            throw new Error('JSON parsing failed: Parse error')
+          } catch (finalError) {
+            console.error('[Admin AI] All JSON parsing strategies failed.')
+            console.error('[Admin AI] Response preview (first 1000 chars):', text.substring(0, 1000))
+            console.error('[Admin AI] Response preview (last 500 chars):', text.substring(Math.max(0, text.length - 500)))
+
+            // Provide more helpful error message
+            const errorMsg = `AI model returned invalid JSON. Try: (1) Use a different model like Gemini 2.5 Flash or LLAMA 3.3 70B, (2) Simplify instructions, or (3) Try again (responses vary). Error: ${finalError instanceof Error ? finalError.message : 'Parse error'}`
+            throw new Error(errorMsg)
           }
         }
       }
     }
   }
 
-  console.error('[Admin AI] Failed to extract JSON. Response preview:', text.substring(0, 1000))
-  throw new Error('No JSON found in AI response')
+  console.error('[Admin AI] Failed to extract JSON. Response preview (first 1000 chars):', text.substring(0, 1000))
+  console.error('[Admin AI] Response preview (last 500 chars):', text.substring(Math.max(0, text.length - 500)))
+  throw new Error('No JSON found in AI response. The model may have returned plain text instead of JSON. Try using a different AI model (e.g., Gemini 2.5 Flash or LLAMA 3.3 70B) or simplify your instructions.')
 }
 
 export async function POST(request: NextRequest) {
@@ -702,8 +708,14 @@ export async function POST(request: NextRequest) {
     console.log(`[Admin AI] Raw AI response (${mode} mode):`, aiResponse.content.substring(0, 500) + '...')
 
     // Parse the AI response
-    const questionData = extractJSON(aiResponse.content)
-    console.log(`[Admin AI] Extracted JSON (${mode} mode):`, JSON.stringify(questionData, null, 2))
+    let questionData
+    try {
+      questionData = extractJSON(aiResponse.content)
+      console.log(`[Admin AI] Extracted JSON (${mode} mode):`, JSON.stringify(questionData, null, 2))
+    } catch (parseError) {
+      console.error(`[Admin AI] JSON extraction failed for model ${selectedModel} (${provider})`)
+      throw parseError
+    }
 
     // Normalize options field - AI models sometimes use different field names despite our prompt
     // Accept question_options (preferred), answer_options, or options, then normalize to question_options

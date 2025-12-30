@@ -7,9 +7,11 @@ import { CircularProgress } from "@/shared/components/ui/circular-progress"
 import { Clock, Target, TrendingUp, RotateCcw, Eye, Trophy } from "lucide-react"
 import { QuizResult } from "@/features/quiz/types/quiz"
 import { AchievementLottie } from "@/features/achievements/components/achievement-lottie"
+import { AchievementCelebrationModal } from "@/features/achievements/components/achievement-celebration-modal"
 import Link from "next/link"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import confetti from "canvas-confetti"
+import { getCategoryByName, getCategoryStyle } from "@/shared/constants/categories"
 
 interface QuizResultsSummaryProps {
   result: QuizResult
@@ -18,14 +20,16 @@ interface QuizResultsSummaryProps {
   onReviewQuestions?: () => void
 }
 
-export function QuizResultsSummary({ 
-  result, 
-  sessionId, 
-  onRetakeMissed, 
-  onReviewQuestions 
+export function QuizResultsSummary({
+  result,
+  sessionId,
+  onRetakeMissed,
+  onReviewQuestions
 }: QuizResultsSummaryProps) {
   const percentage = Math.round((result.correctAnswers / result.totalQuestions) * 100)
   const incorrectCount = result.totalQuestions - result.correctAnswers
+  const [showCelebrationModal, setShowCelebrationModal] = useState(false)
+  const [celebrationShown, setCelebrationShown] = useState(false)
   
   const formatTime = (timeValue: number): string => {
     // Handle invalid input (but allow 0)
@@ -58,89 +62,80 @@ export function QuizResultsSummary({
   const tier = getPerformanceTier(percentage)
   const hasNewAchievements = (result.newAchievements?.length ?? 0) > 0
 
-  // Auto-trigger confetti for scores 50% and above
+  // Mock achievements for testing
+  const mockAchievements = [
+    {
+      id: 'mock-1',
+      title: 'Speed Demon',
+      description: 'Complete a quiz with 10+ questions, 100% score, in under 5 minutes',
+      category: 'Speed',
+      animationType: 'trophy_large' as const
+    },
+    {
+      id: 'mock-2',
+      title: 'Perfect Score',
+      description: 'Achieve 100% on any quiz',
+      category: 'Accuracy',
+      animationType: 'star_medal' as const
+    }
+  ]
+
+  // Show celebration modal for new achievements
   useEffect(() => {
-    if (percentage < 50) return // No confetti for very low scores
+    if (hasNewAchievements && !celebrationShown) {
+      setShowCelebrationModal(true)
+      setCelebrationShown(true)
+    }
+  }, [hasNewAchievements, celebrationShown])
+
+  // Auto-trigger confetti scaled to quiz score (only after celebration modal is closed)
+  useEffect(() => {
+    // Don't trigger confetti if celebration modal is showing
+    if (showCelebrationModal) return
+    if (percentage < 50) return // No confetti for scores below 50%
 
     const timer = setTimeout(() => {
-      // Exponential scaling: each 10 points significantly increases intensity
-      const baseIntensity = Math.max(0, (percentage - 50) / 10) // 0 at 50%, 1 at 60%, 2 at 70%, etc.
-      const exponentialIntensity = Math.pow(baseIntensity, 1.5) // Exponential growth
+      // Scale confetti intensity based on score
+      // 50% = 50 particles, 60% = 70, 70% = 90, 80% = 120, 90% = 150, 100% = 200
+      const particleCount = Math.round(50 + (percentage - 50) * 3)
+      const spread = 60 + (percentage - 50) // 60° at 50%, up to 110° at 100%
 
-      // Achievement multiplier - MASSIVE boost for unlocking achievements!
-      const achievementMultiplier = hasNewAchievements ? 2.5 : 1
+      console.log('[Confetti] Score-based confetti:', { percentage, particleCount, spread })
 
-      const particleCount = Math.round((20 + (exponentialIntensity * 40)) * achievementMultiplier) // 20-500+ particles
-      const spread = Math.round((40 + (exponentialIntensity * 20)) * (hasNewAchievements ? 1.5 : 1)) // Wider spread for achievements
-
-      console.log('[Confetti] Triggering with', { percentage, hasNewAchievements, particleCount, spread })
-
-      // Single big burst
+      // Standard confetti colors (no custom colors - uses default colorful confetti)
       confetti({
         particleCount,
         spread,
-        origin: { y: 0.6 },
-        colors: hasNewAchievements
-          ? ['#fbbf24', '#f59e0b', '#d97706', '#b45309', '#92400e'] // Gold colors for achievements
-          : ['#16a34a', '#22d3ee', '#f59e0b', '#ec4899']
+        origin: { x: 0.5, y: 0.6 },
+        startVelocity: 30,
+        zIndex: 9999,
       })
-
-      // Extra bursts for achievements
-      if (hasNewAchievements) {
-        setTimeout(() => {
-          confetti({
-            particleCount: 50,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0, y: 0.6 },
-            colors: ['#fbbf24', '#f59e0b']
-          })
-        }, 200)
-
-        setTimeout(() => {
-          confetti({
-            particleCount: 50,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1, y: 0.6 },
-            colors: ['#fbbf24', '#f59e0b']
-          })
-        }, 400)
-      }
     }, 1500) // Delay to let animations start
 
     return () => clearTimeout(timer)
-  }, [percentage, hasNewAchievements]) // Only depend on primitive values
+  }, [percentage, showCelebrationModal])
 
   return (
     <div className="w-full space-y-6">
-      {/* Debug: Manual confetti trigger button (remove after testing) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="flex justify-center">
-          <Button
-            onClick={() => {
-              console.log('[Confetti] Manual trigger')
-              confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 }
-              })
-            }}
-            variant="outline"
-            size="sm"
-          >
-            Test Confetti
-          </Button>
-        </div>
-      )}
+      {/* Achievement Celebration Modal */}
+      <AchievementCelebrationModal
+        achievements={
+          // Use mock achievements in development if no real achievements
+          process.env.NODE_ENV === 'development' && showCelebrationModal && !hasNewAchievements
+            ? mockAchievements
+            : (result.newAchievements || [])
+        }
+        open={showCelebrationModal}
+        onClose={() => setShowCelebrationModal(false)}
+      />
 
       {/* Header with Text Animations */}
       <div className="text-center space-y-2">
-        <h1 className={`text-3xl font-bold ${performance.color}`}>
+        <h1 className="text-3xl font-bold text-primary">
           {tier === 'good' ? (
             // Good Performance (≥60%): Letter drop animation
             <span className="inline-block">
-              {"Quiz Complete!".split('').map((letter, index) => (
+              {"Nice Work!".split('').map((letter, index) => (
                 <span
                   key={`${percentage}-${index}`}
                   className="inline-block animate-letter-drop"
@@ -159,14 +154,14 @@ export function QuizResultsSummary({
               key={`tremble-${percentage}`}
               className="animate-tremble inline-block"
             >
-              Quiz Complete!
+              Keep Practicing!
             </span>
           ) : (
             // Low Performance (50-59%): Static text
-            "Quiz Complete!"
+            "Keep Going!"
           )}
         </h1>
-        <p className={`text-lg ${performance.color}`}>{performance.message}</p>
+        <p className="text-lg text-foreground">{performance.message}</p>
       </div>
 
       {/* Main Score Display */}
@@ -237,9 +232,9 @@ export function QuizResultsSummary({
         <Card>
           <CardContent className="p-4 text-center">
             <div className="flex justify-center mb-2">
-              <Target className="h-6 w-6 text-green-600" />
+              <Target className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
-            <div className="text-2xl font-bold text-green-600">{result.correctAnswers}</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{result.correctAnswers}</div>
             <div className="text-sm text-muted-foreground">Correct</div>
           </CardContent>
         </Card>
@@ -247,9 +242,9 @@ export function QuizResultsSummary({
         <Card>
           <CardContent className="p-4 text-center">
             <div className="flex justify-center mb-2">
-              <Target className="h-6 w-6 text-red-600" />
+              <Target className="h-6 w-6 text-red-600 dark:text-red-400" />
             </div>
-            <div className="text-2xl font-bold text-red-600">{incorrectCount}</div>
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{incorrectCount}</div>
             <div className="text-sm text-muted-foreground">Incorrect</div>
           </CardContent>
         </Card>
@@ -257,9 +252,9 @@ export function QuizResultsSummary({
         <Card>
           <CardContent className="p-4 text-center">
             <div className="flex justify-center mb-2">
-              <Clock className="h-6 w-6 text-blue-600" />
+              <Clock className="h-6 w-6 text-primary" />
             </div>
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-primary">
               {formatTime(result.totalTimeSpent)}
             </div>
             <div className="text-sm text-muted-foreground">Total Time</div>
@@ -269,9 +264,9 @@ export function QuizResultsSummary({
         <Card>
           <CardContent className="p-4 text-center">
             <div className="flex justify-center mb-2">
-              <TrendingUp className="h-6 w-6 text-purple-600" />
+              <TrendingUp className="h-6 w-6 text-primary" />
             </div>
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-2xl font-bold text-primary">
               {formatTime(result.averageTimePerQuestion)}
             </div>
             <div className="text-sm text-muted-foreground">Average per Question</div>
@@ -289,13 +284,13 @@ export function QuizResultsSummary({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b text-sm text-muted-foreground">
-                    <th className="text-left py-3 px-3 font-medium">Category</th>
-                    <th className="text-center py-3 px-3 font-medium">Correct</th>
-                    <th className="text-center py-3 px-3 font-medium">Incorrect</th>
-                    <th className="text-center py-3 px-3 font-medium">Total</th>
-                    <th className="text-center py-3 px-3 font-medium">Avg Time</th>
-                    <th className="text-right py-3 px-3 font-medium hidden md:table-cell">Score</th>
+                  <tr className="border-b text-xs text-muted-foreground">
+                    <th className="text-left py-2 px-2 font-medium">Category</th>
+                    <th className="text-center py-2 px-2 font-medium">✓</th>
+                    <th className="text-center py-2 px-2 font-medium">✗</th>
+                    <th className="text-center py-2 px-2 font-medium hidden sm:table-cell">Total</th>
+                    <th className="text-center py-2 px-2 font-medium hidden md:table-cell">Time</th>
+                    <th className="text-right py-2 px-2 font-medium">Score</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -368,54 +363,35 @@ export function QuizResultsSummary({
 
                     return (
                       <tr key={category.categoryId}>
-                        <td className="py-4 px-3">
-                          {/* Desktop: Full name */}
+                        <td className="py-2 px-2">
                           <Badge
                             variant="outline"
-                            className={`hidden md:inline-flex ${getCategoryBadgeClass(category)}`}
-                            style={category.categoryColor ? getCustomColorStyle(category.categoryColor) : undefined}
-                          >
-                            {category.categoryName}
-                          </Badge>
-                          {/* Mobile: Short form */}
-                          <Badge
-                            variant="outline"
-                            className={`md:hidden ${getCategoryBadgeClass(category)}`}
+                            className={`text-xs ${getCategoryBadgeClass(category)}`}
                             style={category.categoryColor ? getCustomColorStyle(category.categoryColor) : undefined}
                           >
                             {category.categoryShortForm || category.categoryName}
                           </Badge>
                         </td>
-                        <td className="py-4 px-3 text-center">
-                          <span className={`font-semibold text-base ${category.correct > 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
+                        <td className="py-2 px-2 text-center">
+                          <span className={`font-semibold text-sm ${category.correct > 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
                             {category.correct}
                           </span>
                         </td>
-                        <td className="py-4 px-3 text-center">
-                          <span className={`font-semibold text-base ${incorrect > 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'}`}>
+                        <td className="py-2 px-2 text-center">
+                          <span className={`font-semibold text-sm ${incorrect > 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'}`}>
                             {incorrect}
                           </span>
                         </td>
-                        <td className="py-4 px-3 text-center font-semibold text-base">
+                        <td className="py-2 px-2 text-center font-semibold text-sm hidden sm:table-cell">
                           {category.total}
                         </td>
-                        <td className="py-4 px-3 text-center text-sm text-muted-foreground">
+                        <td className="py-2 px-2 text-center text-xs text-muted-foreground hidden md:table-cell">
                           {formatTime(category.averageTime)}
                         </td>
-                        <td className="py-4 px-3 text-right hidden md:table-cell">
-                          <div className="flex items-center justify-end gap-3">
-                            <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                              <div
-                                className={`h-2 rounded-full transition-all duration-1000 ${
-                                  categoryPercentage >= 70 ? 'bg-green-500' : categoryPercentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
-                                }`}
-                                style={{ width: `${categoryPercentage}%` }}
-                              />
-                            </div>
-                            <span className="text-sm font-semibold w-12">
-                              {categoryPercentage}%
-                            </span>
-                          </div>
+                        <td className="py-2 px-2 text-right">
+                          <span className="text-sm font-semibold">
+                            {categoryPercentage}%
+                          </span>
                         </td>
                       </tr>
                     )
@@ -436,54 +412,66 @@ export function QuizResultsSummary({
           <CardContent>
             <div className="space-y-3">
               {result.questionDetails.map((question, index) => {
-                // Get category badge styling
-                const getCategoryBadgeClass = (categoryName: string) => {
-                  if (categoryName.includes('Hematopathology')) return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
-                  if (categoryName.includes('Clinical')) return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800'
-                  if (categoryName.includes('Dermatopathology')) return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800'
-                  return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800'
-                }
-
+                const category = getCategoryByName(question.category)
+                const categoryShort = category?.shortForm || question.category
+                const categoryStyle = category ? getCategoryStyle(category.color) : null
                 const successRatePercentage = Math.round(question.successRate)
 
                 return (
-                  <div key={question.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-4 rounded-lg border gap-3">
-                    <div className="flex items-start md:items-center gap-3 flex-1 min-w-0">
-                      <div className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-full bg-muted text-sm font-semibold">
-                        Q{index + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm line-clamp-2 md:line-clamp-1 mb-2">
+                  <div key={question.id} className="flex items-start sm:items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border">
+                    {/* Question number */}
+                    <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 rounded-full bg-muted text-xs font-semibold">
+                      {index + 1}
+                    </div>
+
+                    {/* Question details */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="font-medium text-xs sm:text-sm line-clamp-1 flex-1">
                           {question.title || `Question ${index + 1}`}
                         </div>
-                        <div className="flex flex-col gap-1.5">
-                          <Badge variant="outline" className={`text-xs w-fit ${getCategoryBadgeClass(question.category)}`}>
-                            {question.category}
-                          </Badge>
-                          <div className="text-xs text-muted-foreground">
-                            {successRatePercentage}% of users answered correctly
-                          </div>
-                        </div>
+                        {/* Result badge - moved to top right on mobile */}
+                        <Badge
+                          variant={question.isCorrect ? "default" : "destructive"}
+                          className="flex-shrink-0 text-xs sm:hidden"
+                        >
+                          {question.isCorrect ? '✓' : '✗'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-xs">
+                        <Badge
+                          variant="outline"
+                          className="border [&]:dark:brightness-50"
+                          style={categoryStyle?.light}
+                        >
+                          {categoryShort}
+                        </Badge>
+                        <span className="text-muted-foreground hidden sm:inline">
+                          {successRatePercentage}% of users got this correct
+                        </span>
+                        <span className="text-muted-foreground sm:hidden">
+                          {successRatePercentage}% got this correct
+                        </span>
+                        <span className="text-muted-foreground">
+                          • {formatTime(question.timeSpent)}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between md:justify-end gap-3 md:flex-shrink-0">
-                      <div className="text-sm text-muted-foreground">
-                        {formatTime(question.timeSpent)}
-                      </div>
-                      <Badge variant={question.isCorrect ? "default" : "destructive"} className="flex-shrink-0">
-                        {question.isCorrect ? (
-                          <>
-                            <Target className="h-3 w-3 mr-1" />
-                            Correct
-                          </>
-                        ) : (
-                          <>
-                            <Target className="h-3 w-3 mr-1" />
-                            Incorrect
-                          </>
-                        )}
-                      </Badge>
-                    </div>
+
+                    {/* Result badge - desktop only */}
+                    <Badge variant={question.isCorrect ? "default" : "destructive"} className="hidden sm:flex flex-shrink-0">
+                      {question.isCorrect ? (
+                        <>
+                          <Target className="h-3 w-3 mr-1" />
+                          Correct
+                        </>
+                      ) : (
+                        <>
+                          <Target className="h-3 w-3 mr-1" />
+                          Incorrect
+                        </>
+                      )}
+                    </Badge>
                   </div>
                 )
               })}
@@ -493,25 +481,23 @@ export function QuizResultsSummary({
       )}
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+      <div className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto w-full sm:justify-center">
         {incorrectCount > 0 && onRetakeMissed && (
-          <Button onClick={onRetakeMissed} className="flex items-center gap-2">
+          <Button onClick={onRetakeMissed} className="flex items-center gap-2 w-full sm:w-auto sm:min-w-[200px]">
             <RotateCcw className="h-4 w-4" />
             Retake Missed Questions
           </Button>
         )}
-        
-        <Button 
-          variant="outline" 
+
+        <Button
           onClick={onReviewQuestions}
-          className="flex items-center gap-2"
+          className="w-full sm:w-auto sm:min-w-[200px]"
         >
-          <Eye className="h-4 w-4" />
           Review Questions
         </Button>
 
-        <Link href="/dashboard">
-          <Button variant="outline">Back to Dashboard</Button>
+        <Link href="/dashboard" className="w-full sm:w-auto">
+          <Button variant="outline" className="w-full sm:w-auto sm:min-w-[200px]">Back to Dashboard</Button>
         </Link>
       </div>
     </div>

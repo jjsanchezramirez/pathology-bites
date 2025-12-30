@@ -19,6 +19,9 @@ import { dataManager } from '@/shared/utils/client-data-manager'
 // Import the canonical VirtualSlide interface
 import { VirtualSlide } from '@/shared/types/virtual-slides'
 
+// Import AI models configuration
+import { ACTIVE_AI_MODELS } from '@/shared/config/ai-models'
+
 // Client-side WSI interface (from client utilities)
 interface ClientVirtualSlide {
   id: string
@@ -117,19 +120,10 @@ const EMBEDDABLE_REPOSITORIES = [
   'MGH Pathology'
 ]
 
-// WSI Question Generator fallback model names for display
-const WSI_FALLBACK_MODEL_NAMES = [
-  'Gemini 2.0 Flash',       // gemini-2.0-flash
-  'Gemini 2.0 Flash Lite',  // gemini-2.0-flash-lite
-  'Gemini 2.5 Flash Lite',  // gemini-2.5-flash-lite
-  'LLAMA 3.3 8B',           // Llama-3.3-8B-Instruct
-  'LLAMA 4 Maverick',       // Llama-4-Maverick-17B-128E-Instruct-FP8
-  'Mistral Small 3.1',      // mistral-small-2503
-  'Ministral 8B',           // ministral-8b-2410
-  'Gemini 1.5 Flash 8B',    // gemini-1.5-flash-8b
-  'Mistral Small 3.2',      // mistral-small-2506
-  'Ministral 3B',           // ministral-8b-2410
-]
+// WSI Question Generator fallback model names for display - from centralized config
+const WSI_FALLBACK_MODEL_NAMES = ACTIVE_AI_MODELS
+  .filter(model => model.available)
+  .map(model => model.name)
 
 // Funny loading messages for question generation
 const LOADING_MESSAGES = [

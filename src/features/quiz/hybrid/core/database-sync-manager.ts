@@ -104,6 +104,7 @@ export class DatabaseSyncManager {
   async fetchQuizData(sessionId: string): Promise<{
     questions: any[];
     config: any;
+    status?: string;
     existingAnswers?: QuizAnswer[];
     timeRemaining?: number | null;
     totalTimeLimit?: number | null;
@@ -153,6 +154,7 @@ export class DatabaseSyncManager {
       const result = {
         questions: transformedQuestions,
         config: transformedConfig,
+        status: data.status,
         existingAnswers: data.answers || [],
         timeRemaining: data.timeRemaining ?? null,
         totalTimeLimit: data.totalTimeLimit ?? null

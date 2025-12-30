@@ -91,6 +91,7 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
   // Load educational content data when file is selected
   useEffect(() => {
     if (selectedFile) {
+      let aborted = false
       const loadContentData = async () => {
         try {
           setLoading(true)
@@ -105,31 +106,52 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
             cache: 'force-cache', // Aggressive browser caching for static educational content
           })
 
+          // Check if aborted before processing response
+          if (aborted) return
+
           if (!response.ok) {
-            throw new Error(`Failed to load educational content`)
+            throw new Error(`Failed to load educational content (HTTP ${response.status})`)
           }
 
           const data = await response.json()
+
+          // Check if aborted before setting state
+          if (aborted) return
+
           setContentData(data)
           setSelectedLesson('')
           setSelectedTopic('')
 
         } catch (error) {
+          // Don't show error if request was aborted
+          if (aborted) return
+
           console.error('Error loading educational content data:', error)
-          toast.error('Failed to load educational content. Please try again.')
+
+          // More specific error messages based on error type
+          if (error instanceof TypeError && error.message === 'Failed to fetch') {
+            toast.error('Network error: Please check your internet connection and try again.')
+          } else if (error instanceof Error) {
+            toast.error(`Failed to load educational content: ${error.message}`)
+          } else {
+            toast.error('Failed to load educational content. Please try again.')
+          }
+
           setContentData(null)
           setSelectedLesson('')
           setSelectedTopic('')
         } finally {
-          setLoading(false)
+          if (!aborted) {
+            setLoading(false)
+          }
         }
       }
 
       loadContentData()
 
-      // Cleanup function to abort request if component unmounts
+      // Cleanup function to abort request if component unmounts or selectedFile changes
       return () => {
-        // Cleanup if needed
+        aborted = true
       }
     } else {
       // Reset state when no file is selected

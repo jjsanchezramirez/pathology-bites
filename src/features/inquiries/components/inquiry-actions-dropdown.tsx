@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
 } from '@/shared/components/ui/alert-dialog'
 import { toast } from '@/shared/utils/toast'
+import { useNotificationRefresh } from '@/shared/contexts/notification-refresh-context'
 
 interface Inquiry {
   id: string
@@ -50,6 +51,7 @@ export function InquiryActionsDropdown({
 }: InquiryActionsDropdownProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+  const { refreshNotifications } = useNotificationRefresh()
 
   const handleMarkAsResolved = async () => {
     if (inquiry.status === 'resolved') {
@@ -74,6 +76,7 @@ export function InquiryActionsDropdown({
 
       toast.success('Inquiry marked as resolved')
       onStatusUpdate(inquiry.id, 'resolved')
+      refreshNotifications()
     } catch (error) {
       console.error('Error updating status:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to update status')
@@ -95,6 +98,7 @@ export function InquiryActionsDropdown({
 
       toast.success('Inquiry deleted successfully')
       onDelete(inquiry.id)
+      refreshNotifications()
     } catch (error) {
       console.error('Error deleting inquiry:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to delete inquiry')

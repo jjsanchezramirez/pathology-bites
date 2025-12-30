@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Button } from "@/shared/components/ui/button"
-import { BookOpen, Target, TrendingUp, Play, Award } from "lucide-react"
+import { BookOpen, Target, TrendingUp, Play, Award, Trophy } from "lucide-react"
 import Link from "next/link"
 import { RecentActivity } from "@/features/dashboard/services/service"
 
@@ -25,17 +25,14 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
                 <div className={`flex items-center gap-3 rounded-md border p-3 transition-all duration-200 ${
                   activity.navigationUrl ? 'hover:bg-muted/30 hover:border-muted-foreground/30 cursor-pointer' : ''
                 }`}>
-                  {/* Activity Icons - compact with color coding */}
-                  <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${
-                    activity.type === 'quiz_completed' ? 'bg-green-100 dark:bg-green-950' :
-                    activity.type === 'quiz_started' ? 'bg-blue-100 dark:bg-blue-950' :
-                    'bg-muted'
-                  }`}>
-                    {activity.type === 'quiz_completed' && <Award className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />}
+                  {/* Activity Icons - compact with color coding using theme colors */}
+                  <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center bg-muted">
+                    {activity.type === 'quiz_completed' && <Award className="h-3.5 w-3.5 text-[hsl(var(--chart-1))]" />}
                     {activity.type === 'study_streak' && <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />}
-                    {activity.type === 'quiz_started' && <Play className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />}
+                    {activity.type === 'quiz_started' && <Play className="h-3.5 w-3.5 text-[hsl(var(--chart-2))]" />}
+                    {activity.type === 'achievement_unlocked' && <Trophy className="h-3.5 w-3.5 text-[hsl(var(--chart-4))]" />}
                     {activity.type === 'performance_milestone' && <Target className="h-3.5 w-3.5 text-muted-foreground" />}
-                    {!['quiz_completed', 'study_streak', 'quiz_started', 'performance_milestone'].includes(activity.type) &&
+                    {!['quiz_completed', 'study_streak', 'quiz_started', 'achievement_unlocked', 'performance_milestone'].includes(activity.type) &&
                       <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />}
                   </div>
 
@@ -47,9 +44,9 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
                   <div className="text-right flex-shrink-0 flex items-center gap-2">
                     {activity.score !== undefined && (
                       <div className={`text-sm font-semibold px-2 py-0.5 rounded ${
-                        activity.score >= 80 ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400' :
-                        activity.score >= 60 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400' :
-                        'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400'
+                        activity.score >= 80 ? 'text-[hsl(var(--chart-1))]' :
+                        activity.score >= 60 ? 'text-[hsl(var(--chart-4))]' :
+                        'text-[hsl(var(--chart-5))]'
                       }`}>
                         {activity.score}%
                       </div>

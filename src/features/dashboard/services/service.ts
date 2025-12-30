@@ -19,7 +19,7 @@ export interface DashboardStats {
 
 export interface RecentActivity {
   id: string
-  type: 'question' | 'user' | 'inquiry' | 'image' | 'quiz_completed' | 'quiz_started' | 'study_streak' | 'performance_milestone'
+  type: 'question' | 'user' | 'inquiry' | 'image' | 'quiz_completed' | 'quiz_started' | 'study_streak' | 'performance_milestone' | 'achievement_unlocked'
   title: string
   description: string
   timestamp: string

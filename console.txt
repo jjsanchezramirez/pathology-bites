@@ -1,54 +1,121 @@
-juansanchez@Juans-MacBook-Air pathology-bites % npm run dev
-
-> pathology-bites@0.1.0 dev
-> next dev
-
-   ▲ Next.js 15.4.8
-   - Local:        http://localhost:3000
-   - Network:      http://192.168.0.107:3000
-   - Environments: .env.local
-   - Experiments (use with caution):
-     · serverActions
-
- ✓ Starting...
- ✓ Ready in 4.2s
- ○ Compiling /middleware ...
- ✓ Compiled /middleware in 535ms (176 modules)
- ○ Compiling /dashboard ...
- ✓ Compiled /dashboard in 10.2s (2186 modules)
- GET /dashboard 200 in 11636ms
- ○ Compiling /api/user/init ...
- ✓ Compiled /api/user/init in 5.4s (2268 modules)
- GET /api/user/settings 401 in 5924ms
- GET /dashboard 200 in 183ms
-[UserInit API] Error fetching user data: {
-  code: 'PGRST202',
-  details: 'Searched for the function public.get_user_performance_data with parameter user_id_param or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.',
-  hint: null,
-  message: 'Could not find the function public.get_user_performance_data(user_id_param) in the schema cache'
-}
- GET /api/user/init 200 in 6511ms
- GET /api/user/settings 401 in 218ms
-[UserInit API] Error fetching user data: {
-  code: 'PGRST202',
-  details: 'Searched for the function public.get_user_performance_data with parameter user_id_param or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.',
-  hint: null,
-  message: 'Could not find the function public.get_user_performance_data(user_id_param) in the schema cache'
-}
- GET /api/user/init 200 in 460ms
- GET /api/user/data 200 in 7690ms
- GET /api/user/settings 401 in 21ms
- GET /api/user/settings 401 in 26ms
-
-Error: Unauthorized
-    at UserSettingsService.getUserSettings (webpack-internal:///(app-pages-browser)/./src/shared/services/user-settings.ts:99:27)
-    at async UserSettingsService.hasSeenWelcomeMessage (webpack-internal:///(app-pages-browser)/./src/shared/services/user-settings.ts:236:34)
-    at async DashboardPage.useEffect.fetchData (webpack-internal:///(app-pages-browser)/./src/app/(dashboard)/dashboard/page.tsx:77:48)
-
-    Error: Unauthorized
-    at UserSettingsService.getUserSettings (webpack-internal:///(app-pages-browser)/./src/shared/services/user-settings.ts:99:27)
-    at async UserSettingsService.hasSeenSecurityNotice (webpack-internal:///(app-pages-browser)/./src/shared/services/user-settings.ts:261:34)
-    at async DashboardPage.useEffect.fetchData (webpack-internal:///(app-pages-browser)/./src/app/(dashboard)/dashboard/page.tsx:80:57)
-
-    react-dom-client.development.js:25581 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-swr-cache-provider.tsx:82 
+{data: {,…}, timestamp: 1766986266088, ttl: 604800000,…}
+data
+: 
+{,…}
+config
+: 
+{mode: "tutor", timing: "untimed", showExplanations: true, allowReview: true, questionType: "all",…}
+existingAnswers
+: 
+[]
+questions
+: 
+[{id: "b90baf99-0cd2-4a36-9765-707b496ce365",…}, {id: "d6ba3d4a-7e8e-4a7e-af1e-85d9288cced8",…},…]
+0
+: 
+{id: "b90baf99-0cd2-4a36-9765-707b496ce365",…}
+difficulty
+: 
+"easy"
+explanation
+: 
+"Schistocytes can be miscounted as platelets in impedance-based methods, leading to falsely elevated platelet counts, especially in conditions like thrombotic thrombocytopenic purpura (TTP). Platelets are distinguished from erythrocytes based on size. Schistocytes, which are fragmented red blood cells, can be similar in size to platelets and thus can be miscounted as platelets. This is particularly relevant in conditions like TTP, where schistocytes are prevalent. This miscounting can lead to a falsely elevated platelet count, masking the true thrombocytopenia."
+id
+: 
+"b90baf99-0cd2-4a36-9765-707b496ce365"
+metadata
+: 
+{images: [], tags: [],…}
+images
+: 
+[]
+originalData
+: 
+{id: "b90baf99-0cd2-4a36-9765-707b496ce365", title: "Platelet Counting Methods",…}
+tags
+: 
+[]
+question_options
+: 
+[{id: "2240d244-551d-4684-9c74-1830473587d9", text: "", is_correct: true, explanation: null},…]
+text
+: 
+"A 45-year-old female presents with a history of sudden onset of fever, confusion, and microangiopathic hemolytic anemia. Her laboratory results show a platelet count of 150,000/μL, which seems inconsistent with her clinical presentation. The laboratory technician notes that the automated cell counter used an impedance-based method for the platelet count.\n\nWhich of the following is the most likely reason for the discrepancy between the patient's clinical presentation and the reported platelet count?"
+1
+: 
+{id: "d6ba3d4a-7e8e-4a7e-af1e-85d9288cced8",…}
+difficulty
+: 
+"easy"
+explanation
+: 
+"The correct answer is Papillary Fibroelastoma. Microscopic images show avascular papillary fronds with elastic fibers and endothelial lining. Common mistakes include confusing it with cardiac myxoma (which has myxoma cells), Lambl's excrescences (which are smaller and simpler), or vegetations (which lack elastic fibers)."
+id
+: 
+"d6ba3d4a-7e8e-4a7e-af1e-85d9288cced8"
+metadata
+: 
+{,…}
+images
+: 
+[{image: {id: "74de8d93-db61-49c2-a7f3-6d9e3ff4f052",…}, order_index: 0, question_section: "stem"},…]
+0
+: 
+{image: {id: "74de8d93-db61-49c2-a7f3-6d9e3ff4f052",…}, order_index: 0, question_section: "stem"}
+1
+: 
+{image: {id: "adceab4d-5d64-481d-b0f0-842cf16aef80",…}, order_index: 1, question_section: "stem"}
+originalData
+: 
+{id: "d6ba3d4a-7e8e-4a7e-af1e-85d9288cced8", title: "Papillary Fibroelastoma",…}
+tags
+: 
+[]
+question_options
+: 
+[{id: "dc66f685-f05e-47a0-9c02-d9a952920102", text: "Cardiac Myxoma",…},…]
+text
+: 
+"A 62-year-old male presents with transient ischemic attacks (TIAs). An echocardiogram reveals a mobile, pedunculated mass attached to the aortic valve. The mass is surgically excised, and histologic images are shown below. Which of the following is the most likely diagnosis?"
+2
+: 
+{id: "e9674f5b-2dab-41dd-a934-4e98d1f5d356",…}
+3
+: 
+{id: "13cb097e-05ed-469b-93f9-adc932f8997f",…}
+4
+: 
+{id: "9024108c-4a58-41a2-9be2-c79b186f10b9",…}
+5
+: 
+{id: "5f66dc13-f400-4e0a-b9e3-4d4bc1e176a3",…}
+6
+: 
+{id: "fecba53c-7ecf-45ac-b2cb-1a7a9509e27c",…}
+7
+: 
+{id: "a04ba223-0b3b-4629-8a6b-d8914e41d17d",…}
+8
+: 
+{id: "11c93903-5d86-4071-b7b1-7af5d7b41944",…}
+9
+: 
+{id: "44fa801d-dfe8-43d0-a410-b49841c8d9db",…}
+status
+: 
+"completed"
+timeRemaining
+: 
+null
+totalTimeLimit
+: 
+null
+key
+: 
+"quiz-session-c24e159d-de51-48b1-a605-45279b4a0dc9"
+timestamp
+: 
+1766986266088
+ttl
+: 
+604800000

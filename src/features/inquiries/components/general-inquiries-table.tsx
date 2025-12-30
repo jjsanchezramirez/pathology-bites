@@ -27,6 +27,7 @@ import { InquiryDetailsDialog } from './inquiry-details-dialog'
 import { InquiryActionsDropdown } from './inquiry-actions-dropdown'
 import { InquiryStatusBadge, getStatusSortOrder } from './inquiry-status-badge'
 import { toast } from '@/shared/utils/toast'
+import { useNotificationRefresh } from '@/shared/contexts/notification-refresh-context'
 
 interface Inquiry {
   id: string
@@ -58,6 +59,7 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
   const [bulkDeleting, setBulkDeleting] = useState(false)
 
   const supabase = createClient()
+  const { refreshNotifications } = useNotificationRefresh()
 
   useEffect(() => {
     fetchInquiries()
@@ -196,6 +198,7 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
       setInquiries(prev => prev.filter(inquiry => !selectedInquiries.includes(inquiry.id)))
       setSelectedInquiries([])
       onInquiriesChange?.()
+      refreshNotifications()
     } catch (error) {
       console.error('Error deleting inquiries:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to delete inquiries')

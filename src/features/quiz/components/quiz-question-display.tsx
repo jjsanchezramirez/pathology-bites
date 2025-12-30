@@ -22,7 +22,6 @@ export function QuizQuestionDisplay({
   onAnswerSelect
 }: QuizQuestionDisplayProps) {
 
-
   // Use question_options (the correct field for quiz display)
   const answerOptions = question.question_options || []
 

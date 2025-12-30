@@ -3,19 +3,20 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { VirtualSlide } from '@/shared/types/virtual-slides'
 import { getRepositoryFromId } from '@/shared/utils/repository'
+import { expandSearchTermClient } from '@/shared/utils/nci-evs-client'
+import { extractOrganTerms, getOrganBoostScore, type OrganTerm } from '@/shared/utils/organ-terms'
+import { MEDICAL_ACRONYMS, COMMON_MEDICAL_TERMS } from '@/shared/utils/medical-acronyms'
 
 // Module-scope cache so we only fetch once per session
 let cachedSlidesPromise: Promise<VirtualSlide[]> | null = null
 
 // Minimal client-entry type coming from CDN JSON
-// Note: repository omitted (derived), title omitted (same as diagnosis)
 interface ClientEntry {
   id: string
   diagnosis: string
   category: string
   subcategory: string
   acr?: string
-  // Optional additional fields for UI rendering
   patient_info?: string
   age?: string | null
   gender?: string | null
@@ -74,12 +75,10 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
         ? 'Timed out fetching virtual slides. Please check your network and try again.'
         : (e?.message || 'Failed to fetch virtual slides dataset.')
 
-      // In production, do NOT fall back to Vercel proxy to avoid bandwidth/invocations.
       if (process.env.NODE_ENV === 'production') {
         console.error('[VirtualSlides] R2 fetch failed in production. Check R2 CORS and network.', e)
         throw new Error(msg)
       }
-      // In development, fallback to local proxy to ease testing when R2 CORS is not configured.
       console.warn('[VirtualSlides] R2 fetch failed in dev, falling back to /api/public/data/virtual-slides')
       return await fetchWithTimeout('/api/public/data/virtual-slides', { cache: 'force-cache', timeoutMs: 8000 })
     }
@@ -89,7 +88,6 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
     .then(async (res) => {
       if (!res.ok) throw new Error(`Failed to fetch client slides: ${res.status}`)
       const json = await res.json()
-      // Support both array and wrapped formats
       const entries: ClientEntry[] = Array.isArray(json) ? json : (json.data ?? [])
       return entries.map(normalizeToVirtualSlide)
     })
@@ -113,8 +111,40 @@ function tokenize(text: string): string[] {
 
 function makeAcr(words: string[]): string { return words.map(w => w[0]).join('') }
 
-// Helper to rank slides by a single term
-function rankSlidesByTerm(slides: VirtualSlide[], term: string): Map<string, { slide: VirtualSlide; bucketIndex: number }> {
+// Expand medical acronyms in a query
+// e.g., "papillary rcc" → ["papillary rcc", "papillary renal cell carcinoma"]
+// e.g., "renal aml" → ["renal aml", "renal angiomyolipoma", "renal acute myeloid leukemia"]
+function expandMedicalAcronyms(query: string): string[] {
+  const terms = [query] // Always include original query
+  const words = query.toLowerCase().split(/\s+/)
+
+  // Check each word for acronym expansion
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i]
+    const expansion = MEDICAL_ACRONYMS[word]
+
+    if (expansion) {
+      // Handle both single expansions and multiple expansions (array)
+      const expansions = Array.isArray(expansion) ? expansion : [expansion]
+
+      for (const exp of expansions) {
+        // Create expanded version by replacing the acronym
+        const expandedWords = [...words]
+        expandedWords[i] = exp
+        terms.push(expandedWords.join(' '))
+      }
+    }
+  }
+
+  return terms
+}
+
+// Helper to rank slides by a single term with optional organ context
+function rankSlidesByTerm(
+  slides: VirtualSlide[],
+  term: string,
+  organContext?: OrganTerm[]
+): Map<string, { slide: VirtualSlide; bucketIndex: number; organBoost: number }> {
   const termLower = term.toLowerCase().trim()
   const words = tokenize(termLower)
   const last = words[words.length - 1]
@@ -122,7 +152,14 @@ function rankSlidesByTerm(slides: VirtualSlide[], term: string): Map<string, { s
   const text = (s: VirtualSlide) => (s.diagnosis || '').toLowerCase()
   const acr = words.length >= 2 ? makeAcr(words) : ''
 
-  const rankedSlides = new Map<string, { slide: VirtualSlide; bucketIndex: number }>()
+  // For multi-word queries, find the longest word that's NOT a common medical term
+  // e.g., "renal angiomyolipoma" → "angiomyolipoma" (specific)
+  // but "renal cell carcinoma" → none ("carcinoma" is blacklisted)
+  const specificWord = words.length > 1
+    ? words.filter(w => !COMMON_MEDICAL_TERMS.has(w)).sort((a, b) => b.length - a.length)[0]
+    : ''
+
+  const rankedSlides = new Map<string, { slide: VirtualSlide; bucketIndex: number; organBoost: number }>()
 
   for (const s of slides) {
     const d = text(s)
@@ -134,38 +171,46 @@ function rankSlidesByTerm(slides: VirtualSlide[], term: string): Map<string, { s
     if (d === termLower) {
       bucketIndex = 1
     }
-    // Bucket 2: word-boundary phrase
+    // Bucket 2: exact phrase with word boundaries (highest priority for multi-word)
+    // e.g., "renal cell carcinoma" finds "clear cell renal cell carcinoma" but NOT "spindle cell carcinoma"
     else if (isCompleteWordMatch(d, termLower)) {
       bucketIndex = 2
     }
-    // Bucket 3: all tokens as complete words
-    else if (words.length > 0 && words.every(w => isCompleteWordMatch(d, w))) {
+    // Bucket 3: specific (non-common) word for multi-word queries
+    // e.g., "renal angiomyolipoma" → matches "angiomyolipoma" alone (not in blacklist)
+    // but "renal cell carcinoma" → does NOT match any single word ("carcinoma" is blacklisted)
+    else if (specificWord && specificWord.length >= 5 && isCompleteWordMatch(d, specificWord)) {
       bucketIndex = 3
     }
-    // Bucket 4: acronym
+    // Bucket 4: acronym match
     else if ((acr && acr === makeAcr(tokenize(d))) || (termLower.length >= 2 && termLower.length <= 5 && termLower === makeAcr(tokenize(d)))) {
       bucketIndex = 4
     }
-    // Bucket 5: any token as complete word
-    else if (words.some(w => isCompleteWordMatch(d, w))) {
-      bucketIndex = 5
+    // Bucket 5 & 6: ONLY for single-word queries
+    else if (words.length === 1) {
+      const singleWord = words[0]
+      // Bucket 5: single word match (≥4 chars)
+      if (singleWord.length >= 4 && isCompleteWordMatch(d, singleWord)) {
+        bucketIndex = 5
+      }
+      // Bucket 6: prefix match on single word
+      else if (usePrefix && tokenize(d).some(w => w.startsWith(singleWord))) {
+        bucketIndex = 6
+      }
     }
-    // Bucket 6: token prefix on last token
-    else if (usePrefix && tokenize(d).some(w => w.startsWith(last))) {
-      bucketIndex = 6
-    }
-    // Bucket 7: substring fallback
-    else if (d.includes(termLower)) {
-      bucketIndex = 7
-    }
+    // Bucket 7+: REMOVED for multi-word queries - too much noise
 
-    if (bucketIndex > 0) {
+    if (bucketIndex >= 0) {
       const slideKey = s.id || s.diagnosis || Math.random().toString()
+
+      // Calculate organ context boost
+      const organBoost = organContext ? getOrganBoostScore(s, organContext) : 1.0
+
       const existing = rankedSlides.get(slideKey)
 
-      // Keep the best (lowest) bucket index for each slide
-      if (!existing || bucketIndex < existing.bucketIndex) {
-        rankedSlides.set(slideKey, { slide: s, bucketIndex })
+      // Keep the best (lowest) bucket index for each slide, with organ boost
+      if (!existing || bucketIndex < existing.bucketIndex || (bucketIndex === existing.bucketIndex && organBoost > existing.organBoost)) {
+        rankedSlides.set(slideKey, { slide: s, bucketIndex, organBoost })
       }
     }
   }
@@ -173,16 +218,104 @@ function rankSlidesByTerm(slides: VirtualSlide[], term: string): Map<string, { s
   return rankedSlides
 }
 
-// Simple ranking function (no expansion)
-function rankSlides(slides: VirtualSlide[], query: string): VirtualSlide[] {
+// Search mode types
+export type SearchMode = 'standard' | 'nci-fallback'
+
+// Minimum score threshold to consider a result "good quality"
+const GOOD_RESULT_THRESHOLD = 2 // Bucket 2 or better (exact phrase matches)
+const MIN_GOOD_RESULTS = 5 // Minimum number of good results before considering NCI fallback
+
+// Main ranking function with optional NCI fallback
+async function rankSlidesWithExpansion(
+  slides: VirtualSlide[],
+  query: string,
+  searchMode: SearchMode = 'standard'
+): Promise<{ slides: VirtualSlide[]; expandedTerms: string[]; method?: string; confidence?: number }> {
   const term = (query || '').toLowerCase().trim()
-  if (!term) return slides
+  if (!term) return { slides, expandedTerms: [] }
 
-  const rankings = rankSlidesByTerm(slides, term)
+  // Step 1: Expand medical acronyms (e.g., "papillary rcc" → ["papillary rcc", "papillary renal cell carcinoma"])
+  const expandedQueries = expandMedicalAcronyms(term)
 
-  return Array.from(rankings.values())
-    .sort((a, b) => a.bucketIndex - b.bucketIndex)
+  // Extract organ/anatomical context from original query
+  const { organs } = extractOrganTerms(query)
+
+  // Step 2: Search across all expanded queries and aggregate results
+  const aggregatedRankings = new Map<string, { slide: VirtualSlide; bucketIndex: number; organBoost: number }>()
+
+  for (const searchTerm of expandedQueries) {
+    const termRankings = rankSlidesByTerm(slides, searchTerm, organs.length > 0 ? organs : undefined)
+
+    for (const [slideKey, { slide, bucketIndex, organBoost }] of termRankings.entries()) {
+      const existing = aggregatedRankings.get(slideKey)
+
+      // Keep the best (lowest) bucket index across all expansions
+      if (!existing || bucketIndex < existing.bucketIndex || (bucketIndex === existing.bucketIndex && organBoost > existing.organBoost)) {
+        aggregatedRankings.set(slideKey, { slide, bucketIndex, organBoost })
+      }
+    }
+  }
+
+  const standardRankings = aggregatedRankings
+
+  // Count good quality results (bucket 3 or better)
+  const goodResults = Array.from(standardRankings.values()).filter(
+    ({ bucketIndex }) => bucketIndex <= GOOD_RESULT_THRESHOLD
+  )
+
+  // Step 2: If we have enough good results, return them
+  if (goodResults.length >= MIN_GOOD_RESULTS || searchMode === 'standard') {
+    const sortedSlides = Array.from(standardRankings.values())
+      .sort((a, b) => {
+        if (a.bucketIndex !== b.bucketIndex) {
+          return a.bucketIndex - b.bucketIndex
+        }
+        return b.organBoost - a.organBoost
+      })
+      .map(item => item.slide)
+
+    return {
+      slides: sortedSlides,
+      expandedTerms: [],
+      method: 'standard'
+    }
+  }
+
+  // Step 3: Fall back to NCI expansion for better results
+  const nciExpandedTerms = await expandSearchTermClient(term)
+
+  // Aggregate NCI rankings across all expanded terms with organ context
+  const nciRankings = new Map<string, { slide: VirtualSlide; bucketIndex: number; organBoost: number }>()
+
+  for (const searchTermItem of nciExpandedTerms) {
+    const termRankings = rankSlidesByTerm(slides, searchTermItem, organs.length > 0 ? organs : undefined)
+
+    for (const [slideKey, { slide, bucketIndex, organBoost }] of termRankings.entries()) {
+      const existing = nciRankings.get(slideKey)
+
+      // Keep the best (lowest) bucket index, or same bucket with higher organ boost
+      if (!existing || bucketIndex < existing.bucketIndex || (bucketIndex === existing.bucketIndex && organBoost > existing.organBoost)) {
+        nciRankings.set(slideKey, { slide, bucketIndex, organBoost })
+      }
+    }
+  }
+
+  // Sort by bucket index (best matches first), then by organ boost (highest first)
+  const sortedSlides = Array.from(nciRankings.values())
+    .sort((a, b) => {
+      if (a.bucketIndex !== b.bucketIndex) {
+        return a.bucketIndex - b.bucketIndex
+      }
+      // Within same bucket, prioritize organ matches
+      return b.organBoost - a.organBoost
+    })
     .map(item => item.slide)
+
+  return {
+    slides: sortedSlides,
+    expandedTerms: nciExpandedTerms.slice(1), // Exclude original term
+    method: 'nci-fallback'
+  }
 }
 
 export interface ClientSearchOptions {
@@ -194,16 +327,18 @@ export interface ClientSearchOptions {
   randomSeed?: number
   page?: number
   limit?: number
-  searchMode?: 'standard' | 'nci-fallback' // Control search strategy
+  searchMode?: SearchMode // Control search strategy (standard or nci-fallback)
 }
 
-export function useClientVirtualSlides(defaultLimit: number = 20) {
+export function useClientVirtualSlidesEnhanced(defaultLimit: number = 20) {
   const [allSlides, setAllSlides] = useState<VirtualSlide[] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [expandedSearchTerms, setExpandedSearchTerms] = useState<string[]>([])
+  const [searchMethod, setSearchMethod] = useState<string | undefined>()
+  const [searchConfidence, setSearchConfidence] = useState<number | undefined>()
 
-  const [options, setOptions] = useState<ClientSearchOptions>({ page: 1, limit: defaultLimit })
+  const [options, setOptions] = useState<ClientSearchOptions>({ page: 1, limit: defaultLimit, searchMode: 'standard' })
 
   useEffect(() => {
     let mounted = true
@@ -244,7 +379,7 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
 
   const [filteredAndRanked, setFilteredAndRanked] = useState<VirtualSlide[]>([])
 
-  // Handle filtering and ranking with async NCI EVS expansion
+  // Handle filtering and ranking with configurable search mode
   useEffect(() => {
     if (!allSlides) {
       setFilteredAndRanked([])
@@ -266,7 +401,7 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
         list = list.filter(s => s.subcategory === options.subcategory)
       }
 
-      // Random mode: shuffle deterministically per page when enabled, ignoring query ranking
+      // Random mode
       if (options.randomMode) {
         const seedBase = options.randomSeed ?? Date.now()
         const seed = (options.page || 1) * 1337 + seedBase
@@ -279,7 +414,6 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
           const j = Math.floor(rng(i) * (i + 1))
           ;[arr[i], arr[j]] = [arr[j], arr[i]]
         }
-        // In random mode, always show a small random sample of 10
         if (arr.length > 10) arr = arr.slice(0, 10)
         if (mounted) {
           setFilteredAndRanked(arr)
@@ -288,17 +422,22 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
         return
       }
 
-      // Ranking search
+      // Search with configurable mode
       if (options.query && options.query.trim()) {
-        const rankedSlides = rankSlides(list, options.query)
+        const mode = options.searchMode || 'standard'
+        const { slides: rankedSlides, expandedTerms, method, confidence } = await rankSlidesWithExpansion(list, options.query, mode)
         if (mounted) {
           setFilteredAndRanked(rankedSlides)
-          setExpandedSearchTerms([])
+          setExpandedSearchTerms(expandedTerms)
+          setSearchMethod(method)
+          setSearchConfidence(confidence)
         }
       } else {
         if (mounted) {
           setFilteredAndRanked(list)
           setExpandedSearchTerms([])
+          setSearchMethod(undefined)
+          setSearchConfidence(undefined)
         }
       }
     }
@@ -320,28 +459,25 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
   const searchWithFilters = useCallback(async (opts: ClientSearchOptions) => {
     setOptions(prev => {
       const next = { ...prev } as any
-      // page and limit: apply if provided, else keep existing (default at init)
       if (Object.prototype.hasOwnProperty.call(opts, 'page')) next.page = opts.page
       else if (!prev.page) next.page = 1
       if (Object.prototype.hasOwnProperty.call(opts, 'limit')) next.limit = opts.limit ?? prev.limit ?? defaultLimit
 
-      // query and filters: apply even if undefined to allow clearing
       if (Object.prototype.hasOwnProperty.call(opts, 'query')) next.query = opts.query
       if (Object.prototype.hasOwnProperty.call(opts, 'repository')) next.repository = opts.repository
       if (Object.prototype.hasOwnProperty.call(opts, 'category')) next.category = opts.category
       if (Object.prototype.hasOwnProperty.call(opts, 'subcategory')) next.subcategory = opts.subcategory
 
-      // random mode + seed
       if (Object.prototype.hasOwnProperty.call(opts, 'randomMode')) next.randomMode = opts.randomMode ?? false
       if (Object.prototype.hasOwnProperty.call(opts, 'randomSeed')) next.randomSeed = opts.randomSeed
 
-      // search mode control
-      if (Object.prototype.hasOwnProperty.call(opts, 'searchMode')) next.searchMode = opts.searchMode
+      if (Object.prototype.hasOwnProperty.call(opts, 'searchMode')) {
+        next.searchMode = opts.searchMode
+      }
 
-      // Defaults
       if (next.limit == null) next.limit = prev.limit ?? defaultLimit
       if (next.page == null) next.page = 1
-      if (next.searchMode == null) next.searchMode = 'nci-fallback'
+      if (next.searchMode == null) next.searchMode = 'standard' // Default to standard mode for speed
       return next
     })
   }, [defaultLimit])
@@ -387,10 +523,11 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
     categories,
     organSystems,
 
-    // NCI EVS expansion
+    // Search expansion info
     expandedSearchTerms,
+    searchMethod,
+    searchConfidence,
 
     currentSearchOptions: options
   }
 }
-

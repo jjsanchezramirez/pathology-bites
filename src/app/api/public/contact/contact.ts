@@ -13,7 +13,7 @@ const formSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   organization: z.string().optional(),
   email: z.string().email('Invalid email address'),
-  inquiry: z.string().min(10, 'Inquiry must be at least 10 characters')
+  inquiry: z.string().min(50, 'Inquiry must be at least 50 characters')
 })
 
 export type ContactFormData = z.infer<typeof formSchema>

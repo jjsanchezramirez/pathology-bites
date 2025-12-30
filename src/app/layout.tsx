@@ -10,6 +10,7 @@ import "@/styles/globals.css"
 import { AuthProvider } from '@/features/auth/components/auth-provider'
 import { AnalyticsProvider } from '@/shared/components/analytics/analytics-provider'
 import { OrganizationSchema, WebsiteSchema } from '@/shared/components/seo/structured-data'
+import { NotificationRefreshProvider } from '@/shared/contexts/notification-refresh-context'
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://pathologybites.com'),
@@ -152,15 +153,17 @@ export default async function RootLayout({
         <AnalyticsProvider>
           <SWRCacheProvider>
             <ConditionalThemeProvider attribute="class" defaultTheme="system">
-              <div className="relative flex min-h-screen flex-col">
-                <AuthProvider>
-                  <div>{children}</div>
-                </AuthProvider>
-              </div>
-              <SonnerToaster />
-              <ConnectionStatus />
-              <CookieConsentBanner />
-              {/* Cache clear button temporarily removed due to SSR error */}
+              <NotificationRefreshProvider>
+                <div className="relative flex min-h-screen flex-col">
+                  <AuthProvider>
+                    <div>{children}</div>
+                  </AuthProvider>
+                </div>
+                <SonnerToaster />
+                <ConnectionStatus />
+                <CookieConsentBanner />
+                {/* Cache clear button temporarily removed due to SSR error */}
+              </NotificationRefreshProvider>
             </ConditionalThemeProvider>
           </SWRCacheProvider>
         </AnalyticsProvider>

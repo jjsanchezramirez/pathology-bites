@@ -126,7 +126,7 @@ export default function QuizSessionPage() {
         sessionResponse.json(),
         resultsResponse.json()
       ])
-      
+
       // Validate session and results data
       if (!sessionData?.success || !sessionData?.data) {
         throw new Error('Quiz session not found or invalid')
@@ -140,7 +140,7 @@ export default function QuizSessionPage() {
       if (!resultsData.data.questionDetails || resultsData.data.questionDetails.length === 0) {
         throw new Error('No question data available for review')
       }
-      
+
       setReviewSession(sessionData.data)
       setReviewResult(resultsData.data)
       
@@ -179,10 +179,22 @@ export default function QuizSessionPage() {
   // Auto-start quiz in tutor mode when initialized
   useEffect(() => {
     if (!isReviewMode && hybridState.isInitialized && hybridState.status === 'not_started') {
-      console.log('Auto-starting quiz in tutor mode');
+      console.log('[Quiz Page] Auto-starting quiz in tutor mode');
       hybridActions.startQuiz();
     }
   }, [isReviewMode, hybridState.isInitialized, hybridState.status, hybridActions])
+
+  // Redirect to results if quiz is already completed (e.g., user hit back button)
+  useEffect(() => {
+    console.log('[Quiz Page] Checking redirect - isReviewMode:', isReviewMode, 'isInitialized:', hybridState.isInitialized, 'status:', hybridState.status);
+    if (!isReviewMode && hybridState.isInitialized && hybridState.status === 'completed') {
+      console.log('[Quiz Page] Quiz already completed, redirecting to results');
+      toast.info('Quiz is already completed');
+      setTimeout(() => {
+        window.location.href = `/dashboard/quiz/${sessionId}/results`;
+      }, 500);
+    }
+  }, [isReviewMode, hybridState.isInitialized, hybridState.status, sessionId])
 
   // Helper function for time formatting
   const formatTime = (seconds: number) => {
@@ -381,7 +393,7 @@ export default function QuizSessionPage() {
 
     const currentReviewQuestion = reviewSession.questions?.[currentReviewIndex]
     const currentReviewResult = reviewResult.questionDetails?.[currentReviewIndex]
-    
+
     // Check for missing data
     if (!currentReviewQuestion || !currentReviewResult) {
       // Data validation will be handled below
@@ -456,6 +468,7 @@ export default function QuizSessionPage() {
                   setMobileSidebarOpen(false)
                 }}
                 timeRemaining={null}
+                isReviewMode={true}
               />
             </FeatureErrorBoundary>
           </aside>

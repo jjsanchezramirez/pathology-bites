@@ -38,23 +38,14 @@ export function CircularProgress({
   const circumference = radius * 2 * Math.PI
   const strokeDashoffset = circumference - (animatedValue / 100) * circumference
 
-  // 3-tier color system - Fixed colors based on final score, not animated value
-  const getStrokeColor = (score: number): string => {
-    if (score < 60) return "hsl(0 84.2% 45%)" // Red for low performance (<60%)
-    if (score < 80) return "hsl(45 93% 47%)" // Yellow/amber for medium performance (60-79%)
-    return "hsl(142 76% 36%)" // Green for high performance (≥80%)
-  }
-
-  const strokeColor = getStrokeColor(value) // Use final value, not animated value
-
   return (
-    <div 
+    <div
       className={`relative inline-flex items-center justify-center ${className}`}
       style={{ width: size, height: size }}
     >
-      <svg 
-        width={size} 
-        height={size} 
+      <svg
+        width={size}
+        height={size}
         className="transform -rotate-90"
       >
         {/* Background circle */}
@@ -62,7 +53,7 @@ export function CircularProgress({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="hsl(var(--muted))"
+          className="stroke-muted"
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -71,23 +62,20 @@ export function CircularProgress({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={strokeColor}
+          className="stroke-primary"
           strokeWidth={strokeWidth}
           fill="none"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
           style={{
-            transition: `stroke-dashoffset ${animationDuration}ms ease-out, stroke ${animationDuration}ms ease-out`
+            transition: `stroke-dashoffset ${animationDuration}ms ease-out`
           }}
         />
       </svg>
       {showValue && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <span
-            className="text-2xl font-bold"
-            style={{ color: strokeColor }}
-          >
+          <span className="text-2xl font-bold text-primary">
             {Math.round(animatedValue)}%
           </span>
         </div>

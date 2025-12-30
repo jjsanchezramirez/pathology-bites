@@ -97,6 +97,22 @@ export async function PATCH(
       )
     }
 
+    // SAFEGUARD: Prevent updating completed quizzes
+    // This prevents accidental status changes if user navigates back after completion
+    if (existingSession.status === 'completed') {
+      // Allow answer submissions (they'll be deduplicated), but don't update session
+      if (updates.answers && updates.answers.length > 0) {
+        console.log('[Quiz PATCH] Quiz already completed - accepting answers but not updating session')
+        // Continue to answer submission below, but skip session update
+      } else {
+        console.log('[Quiz PATCH] Attempted to update completed quiz - blocking update')
+        return NextResponse.json({
+          success: true,
+          message: 'Quiz is already completed - no updates allowed'
+        })
+      }
+    }
+
     // OPTIMIZATION: Submit answers if provided (eliminates separate batch call!)
     if (updates.answers && updates.answers.length > 0) {
       console.log(`[Quiz PATCH] Submitting ${updates.answers.length} answers during progress update`)
@@ -136,10 +152,26 @@ export async function PATCH(
           console.log(`[Quiz PATCH] Inserted ${newAttemptData.length} answers`)
         }
       }
+
+      // If quiz was already completed and we just submitted answers, return success
+      if (existingSession.status === 'completed') {
+        return NextResponse.json({
+          success: true,
+          message: 'Answers recorded (quiz already completed)'
+        })
+      }
     }
 
     // Remove answers from updates object before passing to service
     const { answers, ...sessionUpdates } = updates
+
+    // Skip session updates if quiz is already completed
+    if (existingSession.status === 'completed') {
+      return NextResponse.json({
+        success: true,
+        message: 'Quiz is already completed - no updates allowed'
+      })
+    }
 
     // Handle special actions
     if (sessionUpdates.action === 'start') {

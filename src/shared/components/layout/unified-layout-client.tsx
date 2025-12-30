@@ -9,7 +9,7 @@ import { useQuizMode, useAnkiMode } from '@/shared/hooks/use-quiz-mode'
 import { UnifiedSidebar } from './unified-sidebar'
 import { UnifiedHeader, HeaderConfig } from './unified-header'
 import { getNavigationConfig } from '@/shared/config/navigation'
-import { useUserRole } from '@/shared/hooks/use-user-role'
+// import { useUserRole } from '@/shared/hooks/use-user-role' // Commented out - middleware already validates role server-side
 
 interface UnifiedLayoutClientProps {
   children: React.ReactNode
@@ -25,7 +25,7 @@ export function UnifiedLayoutClient({
   userType,
   headerConfig
 }: UnifiedLayoutClientProps) {
-  const { role, isLoading } = useUserRole()
+  // const { role, isLoading } = useUserRole() // Commented out - middleware already validates role server-side
   const pathname = usePathname()
 
   // Check if we're on pages that have their own full-height layouts
@@ -38,15 +38,13 @@ export function UnifiedLayoutClient({
   const isQuizReviewPage = pathname?.includes('/review') // Review page: /quiz/[id]/review
   const isFullHeightPage = isAnkiPage || isAnki2Page || isQuizTestPage || isQuizActivePage || isQuizReviewPage
 
-  // Don't show navigation until we know the user's role (for admin routes)
-  // This prevents showing user nav first, then switching to admin nav
-  const shouldShowNavigation = userType === 'user' || (userType === 'admin' && !isLoading && role)
-  
-  // Get navigation items based on user type and role
-  const navigationConfig = shouldShowNavigation ? getNavigationConfig(
-    userType === 'admin' ? (role || 'user') : 'user'
-  ) : { items: [], sections: [] }
-  
+  // Get navigation items based on user type
+  // Middleware already validated role server-side, so we can trust userType prop
+  // For admin routes, we use 'admin' role for navigation config
+  const navigationConfig = getNavigationConfig(
+    userType === 'admin' ? 'admin' : 'user'
+  )
+
   const navigationItems = navigationConfig.items
   const navigationSections = navigationConfig.sections
   const { isInQuizMode } = useQuizMode()

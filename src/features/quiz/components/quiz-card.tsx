@@ -19,6 +19,7 @@ import {
   Star,
   CheckCircle2,
   Circle,
+  Clock,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -50,15 +51,37 @@ interface QuizCardProps {
   quiz: QuizSessionListItem
   onDelete: (quiz: QuizSessionListItem) => void
   formatDate: (dateString: string) => string
+  formatTimeSpent?: (seconds: number) => string
 }
 
-export function QuizCard({ quiz, onDelete, formatDate }: QuizCardProps) {
+const formatShortDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return 'Invalid'
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    })
+  } catch {
+    return 'Invalid'
+  }
+}
+
+export function QuizCard({ quiz, onDelete, formatDate, formatTimeSpent }: QuizCardProps) {
+  // Default time formatter if not provided
+  const defaultFormatTimeSpent = (seconds: number) => {
+    if (seconds < 60) return `${seconds}s`
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`
+    return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`
+  }
+
+  const timeFormatter = formatTimeSpent || defaultFormatTimeSpent
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge variant="default" className="bg-green-100 text-green-800">Completed</Badge>
+        return <Badge variant="default">Completed</Badge>
       case 'in_progress':
-        return <Badge variant="secondary" className="bg-blue-100 text-blue-800">In Progress</Badge>
+        return <Badge variant="secondary">In Progress</Badge>
       case 'not_started':
         return <Badge variant="destructive">Not Started</Badge>
       default:
@@ -117,11 +140,11 @@ export function QuizCard({ quiz, onDelete, formatDate }: QuizCardProps) {
 
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-6">
+      <CardContent className="p-4">
         {/* Desktop Layout */}
         <div className="hidden md:flex items-center justify-between">
           {/* Left side content */}
-          <div className="flex-1 space-y-3">
+          <div className="flex-1 space-y-2">
             {/* Top left: Quiz title and status */}
             <div className="flex items-center gap-3">
               <h3 className="text-lg font-semibold">{quiz.title}</h3>
@@ -129,7 +152,7 @@ export function QuizCard({ quiz, onDelete, formatDate }: QuizCardProps) {
             </div>
 
             {/* Bottom left: All metadata in one row */}
-            <div className="flex items-center gap-6 text-sm text-muted-foreground flex-wrap">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
               <div className="flex items-center gap-1">
                 <Hash className="h-4 w-4" />
                 <span>
@@ -166,6 +189,13 @@ export function QuizCard({ quiz, onDelete, formatDate }: QuizCardProps) {
                 {getQuestionTypeIcon(quiz)}
                 <span>{getQuestionTypeDisplay(quiz)}</span>
               </div>
+
+              {quiz.totalTimeSpent !== undefined && quiz.totalTimeSpent !== null && quiz.totalTimeSpent > 0 && (
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  <span>{timeFormatter(quiz.totalTimeSpent)}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -173,54 +203,43 @@ export function QuizCard({ quiz, onDelete, formatDate }: QuizCardProps) {
           <div className="flex items-center gap-2 ml-4">
             {quiz.status === 'in_progress' && (
               <Link href={`/dashboard/quiz/${quiz.id}`}>
-                <Button size="sm">
-                  <Play className="h-4 w-4 mr-2" />
+                <Button size="sm" className="w-[180px]">
                   Continue
                 </Button>
               </Link>
             )}
             {quiz.status === 'completed' && (
-              <Link href={`/dashboard/quiz/${quiz.id}/review`}>
-                <Button size="sm" variant="outline">
-                  <Eye className="h-4 w-4 mr-2" />
-                  Review
-                </Button>
-              </Link>
+              <>
+                <Link href={`/dashboard/quiz/${quiz.id}/results`}>
+                  <Button size="sm" className="w-[85px]">
+                    Results
+                  </Button>
+                </Link>
+                <Link href={`/dashboard/quiz/${quiz.id}?review=true`}>
+                  <Button size="sm" variant="outline" className="w-[85px]">
+                    Review
+                  </Button>
+                </Link>
+              </>
             )}
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onDelete(quiz)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
           </div>
         </div>
 
         {/* Mobile Layout */}
-        <div className="md:hidden space-y-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold mb-2">{quiz.title}</h3>
-              {getStatusBadge(quiz.status)}
-            </div>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onDelete(quiz)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+        <div className="md:hidden space-y-2">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="text-base font-semibold truncate flex-1">{quiz.title}</h3>
+            {getStatusBadge(quiz.status)}
           </div>
 
-          <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
             <div className="flex items-center gap-1">
-              <Hash className="h-4 w-4" />
+              <Hash className="h-3.5 w-3.5" />
               <span>{quiz.totalQuestions} Qs</span>
             </div>
             {quiz.score !== undefined && quiz.score !== null && (
               <div className="flex items-center gap-1">
-                <Trophy className="h-4 w-4" />
+                <Trophy className="h-3.5 w-3.5" />
                 <span>{Math.round(quiz.score)}%</span>
               </div>
             )}
@@ -232,28 +251,38 @@ export function QuizCard({ quiz, onDelete, formatDate }: QuizCardProps) {
               {getTimingIcon(quiz)}
               <span>{quiz.isTimedMode ? 'Timed' : 'Untimed'}</span>
             </div>
-          </div>
-
-          <div className="text-xs text-muted-foreground">
-            <Calendar className="h-3 w-3 inline mr-1" />
-            {formatDate(quiz.createdAt)}
+            {quiz.totalTimeSpent !== undefined && quiz.totalTimeSpent !== null && quiz.totalTimeSpent > 0 && (
+              <div className="flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5" />
+                <span>{timeFormatter(quiz.totalTimeSpent)}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>{formatShortDate(quiz.createdAt)}</span>
+            </div>
           </div>
 
           {quiz.status === 'in_progress' && (
             <Link href={`/dashboard/quiz/${quiz.id}`}>
               <Button size="sm" className="w-full">
-                <Play className="h-4 w-4 mr-2" />
-                Continue Quiz
+                Continue
               </Button>
             </Link>
           )}
           {quiz.status === 'completed' && (
-            <Link href={`/dashboard/quiz/${quiz.id}/review`}>
-              <Button size="sm" variant="outline" className="w-full">
-                <Eye className="h-4 w-4 mr-2" />
-                Review Answers
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link href={`/dashboard/quiz/${quiz.id}/results`} className="flex-1">
+                <Button size="sm" className="w-full">
+                  Results
+                </Button>
+              </Link>
+              <Link href={`/dashboard/quiz/${quiz.id}?review=true`} className="flex-1">
+                <Button size="sm" variant="outline" className="w-full">
+                  Review
+                </Button>
+              </Link>
+            </div>
           )}
         </div>
       </CardContent>

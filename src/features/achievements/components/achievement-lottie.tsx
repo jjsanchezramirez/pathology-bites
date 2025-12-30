@@ -1,9 +1,9 @@
 // src/features/achievements/components/achievement-lottie.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { cn } from '@/shared/utils'
+import { useLottieAnimation } from '@/shared/hooks/use-lottie-animation'
 
 // Dynamically import Lottie to avoid SSR issues
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
@@ -21,22 +21,9 @@ export function AchievementLottie({
   isUnlocked,
   className
 }: AchievementLottieProps) {
-  const [animationData, setAnimationData] = useState(null)
+  const { animationData, isLoading } = useLottieAnimation(animationType)
 
-  useEffect(() => {
-    // Fetch the Lottie animation from R2
-    fetch(`https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/animations/${animationType}.json`)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Failed to load animation: ${response.status}`)
-        }
-        return response.json()
-      })
-      .then(data => setAnimationData(data))
-      .catch(err => console.error('Error loading animation:', err))
-  }, [animationType])
-
-  if (!animationData) {
+  if (isLoading || !animationData) {
     // Loading placeholder
     return (
       <div className={cn(

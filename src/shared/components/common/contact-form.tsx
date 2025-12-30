@@ -210,7 +210,7 @@ export function ContactForm() {
             <div className="space-y-2">
               <Label htmlFor="inquiry">
                 Your inquiry
-                <span className="text-sm text-muted-foreground ml-2">(Minimum 10 characters)</span>
+                <span className="text-sm text-muted-foreground ml-2">(Minimum 50 characters)</span>
               </Label>
               <Textarea
                 id="inquiry"

@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
-import { ACHIEVEMENT_DEFINITIONS, checkAchievements, type UserStats } from '@/features/achievements/services/achievement-checker'
+import { ACHIEVEMENT_DEFINITIONS, type UserStats } from '@/features/achievements/services/achievement-checker'
 import type { Achievement } from '@/features/achievements/types/achievement'
 
 interface UnifiedPerformanceResponse {
@@ -167,6 +167,8 @@ export async function GET(request: NextRequest) {
           completed_at,
           score,
           status,
+          total_questions,
+          total_time_spent,
           quiz_attempts!inner(
             question_id,
             is_correct,
@@ -535,19 +537,19 @@ export async function GET(request: NextRequest) {
 
     const perfectQuizzes = completedSessions.filter(s => s.score === 100)
     perfectQuizzes.forEach((quiz: any) => {
-      const attempts = quiz.quiz_attempts as any[]
-      const totalQuestions = attempts?.length || 0
-      // Calculate total time from quiz attempts
-      const totalTime = attempts?.reduce((sum: number, attempt: any) => sum + (attempt.time_spent || 0), 0) || 0
+      // Use total_questions and total_time_spent from the session (more reliable)
+      const totalQuestions = quiz.total_questions || 0
+      const totalTime = quiz.total_time_spent || 0
 
+      // Count each qualifying quiz (not just set to 1)
       if (totalQuestions >= 10) {
-        if (totalTime <= 300) speedRecords5min = 1
-        if (totalTime <= 120) speedRecords2min = 1
+        if (totalTime <= 300) speedRecords5min++ // 5 minutes = 300 seconds
+        if (totalTime <= 120) speedRecords2min++ // 2 minutes = 120 seconds
       }
 
       if (totalQuestions >= 25) {
-        if (totalTime <= 300) speedRecords25in5min = 1
-        if (totalTime <= 120) speedRecords25in2min = 1
+        if (totalTime <= 300) speedRecords25in5min++ // 5 minutes = 300 seconds
+        if (totalTime <= 120) speedRecords25in2min++ // 2 minutes = 120 seconds
       }
     })
 
@@ -594,6 +596,22 @@ export async function GET(request: NextRequest) {
         case 'streak':
           progress = Math.min(achievementStats.currentStreak, def.requirement)
           break
+        case 'speed':
+          // Show progress for speed achievements
+          if (def.id === 'speed-10in5') {
+            progress = Math.min(achievementStats.speedRecords5min, def.requirement)
+          } else if (def.id === 'speed-10in2') {
+            progress = Math.min(achievementStats.speedRecords2min, def.requirement)
+          } else if (def.id === 'speed-25in5') {
+            progress = Math.min(achievementStats.speedRecords25in5min, def.requirement)
+          } else if (def.id === 'speed-25in2') {
+            progress = Math.min(achievementStats.speedRecords25in2min, def.requirement)
+          }
+          break
+        case 'accuracy':
+          // Show current accuracy as progress
+          progress = Math.min(achievementStats.recentAccuracy, def.requirement)
+          break
         case 'differential':
           if (def.id === 'differential-all' && achievementStats.totalCategories) {
             requirement = achievementStats.totalCategories
@@ -602,7 +620,6 @@ export async function GET(request: NextRequest) {
             progress = Math.min(achievementStats.uniqueSubjects, def.requirement)
           }
           break
-        // Speed and accuracy are binary, no progress shown
       }
 
       return {
@@ -667,7 +684,8 @@ export async function GET(request: NextRequest) {
       navigationUrl?: string
     }> = []
 
-    completedSessions.slice(0, 5).forEach((session: any) => {
+    // Add completed quiz sessions
+    completedSessions.forEach((session: any) => {
       const isCompleted = session.status === 'completed'
       recentActivity.push({
         id: `session-${session.id}`,
@@ -680,9 +698,42 @@ export async function GET(request: NextRequest) {
       })
     })
 
-    // If no activity, add welcome message
-    if (recentActivity.length === 0) {
+    // Add pending quizzes (in-progress sessions)
+    const pendingSessions = sessions.filter(s => s.status === 'in_progress')
+    pendingSessions.forEach((session: any) => {
       recentActivity.push({
+        id: `pending-${session.id}`,
+        type: 'quiz_started',
+        title: 'Quiz In Progress',
+        description: session.title || 'Continue where you left off',
+        timestamp: session.created_at,
+        navigationUrl: `/dashboard/quiz/${session.id}`
+      })
+    })
+
+    // Add recently unlocked achievements
+    const recentAchievements = (unlockedAchievements || []).slice(0, 10)
+    recentAchievements.forEach((achievement: any) => {
+      const achievementDef = ACHIEVEMENT_DEFINITIONS.find(def => def.id === achievement.group_key)
+      if (achievementDef) {
+        recentActivity.push({
+          id: `achievement-${achievement.id}`,
+          type: 'achievement_unlocked',
+          title: `Achievement Unlocked: ${achievementDef.title}`,
+          description: achievementDef.description,
+          timestamp: achievement.created_at,
+          navigationUrl: '/dashboard/progress#achievements'
+        })
+      }
+    })
+
+    // Sort all activities by timestamp (most recent first) and limit to 10
+    recentActivity.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    const limitedActivity = recentActivity.slice(0, 10)
+
+    // If no activity, add welcome message
+    if (limitedActivity.length === 0) {
+      limitedActivity.push({
         id: 'welcome-1',
         type: 'welcome',
         title: 'Start Your First Quiz',
@@ -847,7 +898,7 @@ export async function GET(request: NextRequest) {
           recentQuizzes: completedSessions.length,
           weeklyGoal,
           currentWeekProgress,
-          recentActivity
+          recentActivity: limitedActivity
         },
         quizInit: {
           sessionTitles,

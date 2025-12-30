@@ -1,7 +1,7 @@
 // src/components/admin/notifications-handler.tsx
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Bell,
   Loader2,
@@ -29,6 +29,7 @@ import {
 import { useAuth } from '@/shared/hooks/use-auth'
 import { useNotifications } from '@/shared/hooks/use-notifications'
 import { NotificationWithSource } from '@/shared/types/notifications'
+import { useNotificationRefresh } from '@/shared/contexts/notification-refresh-context'
 
 export function NotificationsHandler() {
   const [page, setPage] = useState(1)
@@ -43,8 +44,16 @@ export function NotificationsHandler() {
     total,
     hasMore,
     markAsRead: markNotificationAsRead,
-    markAllAsRead: markAllNotificationsAsRead
+    markAllAsRead: markAllNotificationsAsRead,
+    refresh
   } = useNotifications(page, limit)
+
+  const { registerRefreshHandler } = useNotificationRefresh()
+
+  // Register the refresh handler so other components can trigger it
+  useEffect(() => {
+    registerRefreshHandler(refresh)
+  }, [refresh, registerRefreshHandler])
 
   // Mark notification as read with error handling
   const markAsRead = async (notification: NotificationWithSource) => {

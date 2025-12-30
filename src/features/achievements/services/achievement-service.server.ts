@@ -149,23 +149,23 @@ export async function getUserStats(userId: string): Promise<UserStats> {
       const totalQuestions = quiz.total_questions
       const totalTime = quiz.total_time_spent || 0
 
-      // Check for 10 questions in 5 min or 2 min
+      // Count each qualifying quiz (not just set to 1)
       if (totalQuestions >= 10) {
-        if (totalTime <= 300) { // 5 minutes
-          speedRecords5min = 1
+        if (totalTime <= 300) { // 5 minutes = 300 seconds
+          speedRecords5min++
         }
-        if (totalTime <= 120) { // 2 minutes
-          speedRecords2min = 1
+        if (totalTime <= 120) { // 2 minutes = 120 seconds
+          speedRecords2min++
         }
       }
 
       // Check for 25 questions in 5 min or 2 min
       if (totalQuestions >= 25) {
-        if (totalTime <= 300) { // 5 minutes
-          speedRecords25in5min = 1
+        if (totalTime <= 300) { // 5 minutes = 300 seconds
+          speedRecords25in5min++
         }
-        if (totalTime <= 120) { // 2 minutes
-          speedRecords25in2min = 1
+        if (totalTime <= 120) { // 2 minutes = 120 seconds
+          speedRecords25in2min++
         }
       }
     })
