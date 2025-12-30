@@ -32,3 +32,12 @@ expertpath/
 expertpath/complete_expertpath_data.json
 scripts/local/
 
+# Documentation, scripts, and tests - not needed for deployment
+docs/
+scripts/
+test/
+
+# Anki source data
+anki/
+json/anki/
+
