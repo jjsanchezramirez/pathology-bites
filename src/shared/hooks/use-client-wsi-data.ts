@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { VirtualSlide } from '@/shared/types/virtual-slides'
+import { toast } from '@/shared/utils/toast'
 
 // Module-scope cache so we only fetch once per session
 let cachedWSIPromise: Promise<VirtualSlide[]> | null = null
@@ -154,9 +155,22 @@ export function useClientWSIData(): UseClientWSIDataResult {
         .catch(err => {
           if (mounted) {
             console.error('[WSI Data] ❌ Cache error:', err)
-            setError(err.message || 'Failed to load WSI data')
+            const errorMessage = err.message || 'Failed to load WSI data';
+            setError(errorMessage)
             setWSIData(null)
             setIsLoading(false)
+
+            // Detect network errors (laptop sleep/wake, offline, etc.)
+            const isNetworkError = err instanceof TypeError &&
+                                  (err.message?.includes('fetch') || err.message?.includes('network'));
+
+            if (isNetworkError) {
+              toast.error('Network connection interrupted. Please refresh the page.');
+            } else if (err.message?.includes('Timed out') || err.name === 'AbortError') {
+              toast.error('Request timed out. Please check your network connection.');
+            } else {
+              toast.error(errorMessage);
+            }
           }
         })
     } else {
@@ -175,9 +189,22 @@ export function useClientWSIData(): UseClientWSIDataResult {
         .catch(err => {
           if (mounted) {
             console.error('[WSI Data] ❌ Fresh load error:', err)
-            setError(err.message || 'Failed to load WSI data')
+            const errorMessage = err.message || 'Failed to load WSI data';
+            setError(errorMessage)
             setWSIData(null)
             setIsLoading(false)
+
+            // Detect network errors (laptop sleep/wake, offline, etc.)
+            const isNetworkError = err instanceof TypeError &&
+                                  (err.message?.includes('fetch') || err.message?.includes('network'));
+
+            if (isNetworkError) {
+              toast.error('Network connection interrupted. Please refresh the page.');
+            } else if (err.message?.includes('Timed out') || err.name === 'AbortError') {
+              toast.error('Request timed out. Please check your network connection.');
+            } else {
+              toast.error(errorMessage);
+            }
           }
         })
     }

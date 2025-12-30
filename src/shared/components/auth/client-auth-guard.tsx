@@ -30,8 +30,9 @@ export function ClientAuthGuard({ children, redirectTo = '/login' }: ClientAuthG
       return
     }
 
-    // CRITICAL: Wait one render cycle after isLoading becomes false
-    // This ensures the auth state has fully settled from sessionStorage
+    // Wait one render cycle after isLoading becomes false
+    // NOTE: This may be unnecessary since sessionStorage is read synchronously,
+    // but keeping it as defensive programming to ensure auth state has fully settled
     if (!hasCheckedRef.current) {
       hasCheckedRef.current = true
       return

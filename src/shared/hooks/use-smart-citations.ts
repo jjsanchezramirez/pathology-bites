@@ -6,6 +6,7 @@
 
 import { useState, useCallback } from 'react'
 import { CitationData } from '@/shared/utils/citation-extractor'
+import { toast } from '@/shared/utils/toast'
 
 interface CitationCache {
   [key: string]: {
@@ -207,6 +208,17 @@ export function useSmartCitations(): UseSmartCitationsResult {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate citation'
       setError(errorMessage)
+
+      // Show toast notification for errors
+      const isNetworkError = err instanceof TypeError &&
+                            (err.message?.includes('fetch') || err.message?.includes('network'));
+
+      if (isNetworkError) {
+        toast.error('Network connection interrupted. Please refresh the page.');
+      } else {
+        toast.error(errorMessage);
+      }
+
       throw err
     } finally {
       setIsLoading(false)

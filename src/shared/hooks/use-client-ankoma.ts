@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { AnkomaData, AnkomaDeck } from '@/features/anki/types/anki-card'
 import { parseAnkomaData } from '@/features/anki/utils/ankoma-parser'
 import { ANKOMA_JSON_URL } from '@/shared/config/ankoma'
+import { toast } from '@/shared/utils/toast'
 
 // Module-scope cache so we only fetch once per session
 let cachedAnkomaPromise: Promise<AnkomaData> | null = null
@@ -58,7 +59,24 @@ export function useClientAnkoma() {
     setIsLoading(true)
     loadClientAnkoma()
       .then(data => { if (mounted) setAnkomaData(data) })
-      .catch(err => { if (mounted) setError(err.message || 'Failed to load Ankoma data') })
+      .catch(err => {
+        if (mounted) {
+          const errorMessage = err.message || 'Failed to load Ankoma data';
+          setError(errorMessage);
+
+          // Detect network errors (laptop sleep/wake, offline, etc.)
+          const isNetworkError = err instanceof TypeError &&
+                                (err.message?.includes('fetch') || err.message?.includes('network'));
+
+          if (isNetworkError) {
+            toast.error('Network connection interrupted. Please refresh the page.');
+          } else if (err.message?.includes('Timed out')) {
+            toast.error('Request timed out. Please check your network connection.');
+          } else {
+            toast.error(errorMessage);
+          }
+        }
+      })
       .finally(() => { if (mounted) setIsLoading(false) })
     return () => { mounted = false }
   }, [])

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { CELL_QUIZ_IMAGES_URL, CELL_QUIZ_REFERENCES_URL } from '@/shared/config/cell-quiz'
 import { transformCellQuizData } from '@/shared/utils/r2-url-transformer'
+import { toast } from '@/shared/utils/toast'
 
 // Module-scope cache so we only fetch once per session
 let cachedImagesPromise: Promise<any> | null = null
@@ -177,7 +178,20 @@ export function useClientCellQuiz(): UseCellQuizResult {
       } catch (err: any) {
         console.error('❌ Failed to load cell quiz data:', err)
         if (mounted) {
-          setError(err.message || 'Failed to load cell quiz data')
+          const errorMessage = err.message || 'Failed to load cell quiz data';
+          setError(errorMessage)
+
+          // Detect network errors (laptop sleep/wake, offline, etc.)
+          const isNetworkError = err instanceof TypeError &&
+                                (err.message?.includes('fetch') || err.message?.includes('network'));
+
+          if (isNetworkError) {
+            toast.error('Network connection interrupted. Please refresh the page.');
+          } else if (err.message?.includes('Timed out') || err.name === 'AbortError') {
+            toast.error('Request timed out. Please check your network connection.');
+          } else {
+            toast.error(errorMessage);
+          }
         }
       } finally {
         if (mounted) {

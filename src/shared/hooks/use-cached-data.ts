@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { cacheService, type CacheOptions } from '@/shared/services/cache-service'
+import { toast } from '@/shared/utils/toast'
 
 interface UseCachedDataOptions<T> extends CacheOptions {
   enabled?: boolean
@@ -106,6 +107,19 @@ export function useCachedData<T>(
       const error = err instanceof Error ? err : new Error('Fetch failed')
       setError(error)
       onError?.(error)
+
+      // Show toast notification for errors
+      const isNetworkError = err instanceof TypeError &&
+                            (err.message?.includes('fetch') || err.message?.includes('network'));
+
+      if (isNetworkError) {
+        toast.error('Network connection interrupted. Please refresh the page.');
+      } else {
+        // Only show generic error toast if no custom onError handler
+        if (!onError) {
+          toast.error('Failed to load data. Please try again.');
+        }
+      }
 
     } finally {
       if (mounted.current) {

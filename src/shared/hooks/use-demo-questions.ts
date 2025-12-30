@@ -1,5 +1,6 @@
 // src/hooks/use-demo-questions.ts
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { toast } from '@/shared/utils/toast';
 
 export interface Option {
   id: string;
@@ -137,8 +138,19 @@ export function useDemoQuestions() {
 
       throw new Error('Failed to load question');
     } catch (err) {
-      setError('Failed to load question');
+      const errorMessage = 'Failed to load question';
+      setError(errorMessage);
       setLoading(false);
+
+      // Detect network errors (laptop sleep/wake, offline, etc.)
+      const isNetworkError = err instanceof TypeError &&
+                            (err.message?.includes('fetch') || err.message?.includes('network'));
+
+      if (isNetworkError) {
+        toast.error('Network connection interrupted. Please refresh the page.');
+      } else {
+        toast.error(errorMessage);
+      }
     }
   }, []);
 

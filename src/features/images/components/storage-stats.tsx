@@ -33,26 +33,56 @@ export const StorageStatsCards = forwardRef<StorageStatsRef>((props, ref) => {
       setLoading(true);
 
       // Load both image stats and R2 storage stats in parallel
-      const [imageStatsData, r2StatsResponse] = await Promise.all([
+      // Handle errors gracefully for each request
+      const [imageStatsResult, r2StatsResult] = await Promise.allSettled([
         getStorageStats(),
         fetch('/api/admin/r2-storage-stats')
       ]);
 
-      setStats(imageStatsData);
+      // Handle image stats (required)
+      if (imageStatsResult.status === 'fulfilled') {
+        setStats(imageStatsResult.value);
+      } else {
+        console.error('Failed to load image stats:', imageStatsResult.reason);
+        // Check if it's a network error (laptop sleep/wake)
+        const isNetworkError = imageStatsResult.reason?.message?.includes('fetch') ||
+                              imageStatsResult.reason?.name === 'TypeError';
 
-      if (r2StatsResponse.ok) {
-        const r2Data = await r2StatsResponse.json();
-        if (r2Data.success) {
-          setR2Stats(r2Data.data);
+        if (isNetworkError) {
+          toast.error('Network connection interrupted. Please refresh the page.');
         } else {
-          console.warn('R2 stats API returned error:', r2Data.error);
+          toast.error('Failed to load storage statistics');
+        }
+        return; // Don't continue if image stats fail
+      }
+
+      // Handle R2 stats (optional - can fail gracefully)
+      if (r2StatsResult.status === 'fulfilled') {
+        const r2StatsResponse = r2StatsResult.value;
+        if (r2StatsResponse.ok) {
+          const r2Data = await r2StatsResponse.json();
+          if (r2Data.success) {
+            setR2Stats(r2Data.data);
+          } else {
+            console.warn('R2 stats API returned error:', r2Data.error);
+          }
+        } else {
+          console.warn('Failed to fetch R2 stats:', r2StatsResponse.status);
         }
       } else {
-        console.warn('Failed to fetch R2 stats:', r2StatsResponse.status);
+        // R2 stats failed - not critical, just log it
+        console.warn('R2 stats request failed:', r2StatsResult.reason);
+        // Don't show toast for R2 stats failure - we have fallback values
       }
     } catch (error) {
       console.error('Failed to load storage stats:', error);
-      toast.error('Failed to load storage statistics');
+      const isNetworkError = error instanceof TypeError && error.message.includes('fetch');
+
+      if (isNetworkError) {
+        toast.error('Network connection interrupted. Please refresh the page.');
+      } else {
+        toast.error('Failed to load storage statistics');
+      }
     } finally {
       setLoading(false);
     }
