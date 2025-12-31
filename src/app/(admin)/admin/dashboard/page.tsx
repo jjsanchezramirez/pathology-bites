@@ -96,12 +96,12 @@ export default function AdminDashboardPage() {
       ) : (
         <>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-3xl font-bold tracking-tight" suppressHydrationWarning>
               {adminMode === 'creator' ? 'Creator Dashboard' :
                adminMode === 'reviewer' ? 'Reviewer Dashboard' :
                adminMode === 'user' ? 'Student Dashboard' : 'Admin Dashboard'}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground" suppressHydrationWarning>
               {adminMode === 'creator' ? 'Question creation and content management.' :
                adminMode === 'reviewer' ? 'Review queue and question approval.' :
                adminMode === 'user' ? 'Learning progress and quiz performance.' :

@@ -31,10 +31,10 @@ interface DashboardThemeProviderProps {
 }
 
 export function DashboardThemeProvider({ children }: DashboardThemeProviderProps) {
-  const { isAdmin } = useUserRole()
+  const { isAdmin, role } = useUserRole()
 
   const [currentTheme, setCurrentTheme] = useState<DashboardTheme>(getDefaultTheme())
-  const [adminMode, setAdminModeState] = useState<AdminMode>(() => getAdminModeFromCookie(isAdmin))
+  const [adminMode, setAdminModeState] = useState<AdminMode>(() => getAdminModeFromCookie(isAdmin, role))
   const [isLoading, setIsLoading] = useState(true)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
@@ -94,8 +94,8 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
       console.log('[DashboardTheme] Loading theme from SWR cache...')
 
       // Get admin mode using utility function
-      const defaultMode = getAdminModeFromCookie(isAdmin)
-      console.log('[DashboardTheme] Admin mode:', defaultMode, 'isAdmin:', isAdmin)
+      const defaultMode = getAdminModeFromCookie(isAdmin, role)
+      console.log('[DashboardTheme] Admin mode:', defaultMode, 'isAdmin:', isAdmin, 'role:', role)
       setAdminModeState(defaultMode)
 
       // Load theme based on admin mode from SWR cache
@@ -134,12 +134,12 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
       setCurrentTheme(getDefaultTheme())
       setIsLoading(false)
     }
-  }, [settings, isAdmin])
+  }, [settings, isAdmin, role])
 
   // Watch for admin mode changes via cookie
   useEffect(() => {
     const handleCookieChange = () => {
-      const newMode = getAdminModeFromCookie(isAdmin)
+      const newMode = getAdminModeFromCookie(isAdmin, role)
 
       if (newMode !== adminMode) {
         setAdminModeState(newMode)
@@ -184,7 +184,7 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
     // Poll for cookie changes every 100ms (simple approach)
     const interval = setInterval(handleCookieChange, 100)
     return () => clearInterval(interval)
-  }, [adminMode, isAdmin])
+  }, [adminMode, isAdmin, role])
 
   // Watch for localStorage changes (when DashboardSettingsProvider syncs settings)
   useEffect(() => {

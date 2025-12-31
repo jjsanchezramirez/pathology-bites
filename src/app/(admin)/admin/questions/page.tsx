@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/shared/components/ui/card"
+import { AccessDenied, AccessDeniedPresets } from '@/shared/components/common/access-denied'
 
 export default function QuestionsPage() {
   const { role, isLoading } = useUserRole()
@@ -31,13 +32,7 @@ export default function QuestionsPage() {
 
   // All admin roles can access the question database
   if (!role || !['admin', 'creator', 'reviewer'].includes(role)) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">Access denied. Admin privileges required.</p>
-        </div>
-      </div>
-    )
+    return <AccessDenied {...AccessDeniedPresets.creatorOrAbove} />
   }
   // Get role-specific content based on adminMode
   const getPageContent = () => {

@@ -41,6 +41,8 @@ export interface CategoryData {
   description?: string;
   parent_id?: string;
   level: number;
+  color?: string | null;
+  short_form?: string | null;
   created_at: string;
 }
 

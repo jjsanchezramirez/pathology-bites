@@ -34,6 +34,7 @@ import { BulkSubmitDialog } from '@/features/questions/components/bulk-submit-di
 import { toast } from '@/shared/utils/toast'
 import { formatDistanceToNow } from 'date-fns'
 import { QuestionWithDetails } from '@/features/questions/types/questions'
+import { AccessDenied, AccessDeniedPresets } from '@/shared/components/common/access-denied'
 import {
   Select,
   SelectContent,
@@ -256,13 +257,7 @@ export default function MyDraftsPage() {
 
   // Access control - only creators and admins can access
   if (!canAccess('questions.create')) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">Access denied. Creator privileges required.</p>
-        </div>
-      </div>
-    )
+    return <AccessDenied {...AccessDeniedPresets.creatorOnly} />
   }
 
   if (loading) {

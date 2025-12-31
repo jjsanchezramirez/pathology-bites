@@ -45,8 +45,6 @@ import { STATUS_CONFIG, QuestionWithDetails } from '@/features/questions/types/q
 interface CreatorQuestion extends QuestionWithDetails {
   question_set_name?: string
   reviewer_feedback?: string | null
-  rejected_at?: string | null
-  rejected_by?: string | null
   published_at?: string | null
   review_count: number
 }

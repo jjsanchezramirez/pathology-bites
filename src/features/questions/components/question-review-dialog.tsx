@@ -76,6 +76,14 @@ export function QuestionReviewDialog({
 
         if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
           console.error('Error fetching resubmission notes:', error)
+
+          // Detect network errors
+          const isNetworkError = error instanceof TypeError &&
+                                (error.message?.includes('fetch') || error.message?.includes('network'))
+
+          if (isNetworkError) {
+            toast.error('Network connection interrupted while loading change notes.')
+          }
         } else if (resubmissionInfo?.changes_made?.resubmission_notes) {
           setResubmissionNotes(resubmissionInfo.changes_made.resubmission_notes)
         } else {
@@ -83,6 +91,15 @@ export function QuestionReviewDialog({
         }
       } catch (error) {
         console.error('Unexpected error fetching resubmission notes:', error)
+
+        // Detect network errors
+        const isNetworkError = error instanceof TypeError &&
+                              (error.message?.includes('fetch') || error.message?.includes('network'))
+
+        if (isNetworkError) {
+          toast.error('Network connection interrupted while loading change notes.')
+        }
+
         setResubmissionNotes(null)
       } finally {
         setLoadingResubmissionNotes(false)

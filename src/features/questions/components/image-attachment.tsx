@@ -4,12 +4,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
-import { Search, X, Plus, Image as ImageIcon, GripVertical } from 'lucide-react';
+import { Search, X, Plus, Image as ImageIcon } from 'lucide-react';
 import { fetchImages } from '@/features/images/services/images';
 import { ImageData } from '@/features/images/types/images';
 import { ImagePreview } from '@/features/images/components/image-preview';
 import { QuestionImageFormData } from '@/features/questions/types/questions';
+import Image from 'next/image';
 
 interface ImageAttachmentProps {
   selectedImages: QuestionImageFormData[];
@@ -235,36 +235,47 @@ export function ImageAttachment({
               <p className="text-xs">Try adjusting your search or category filter</p>
             </div>
           ) : (
-            <div className="grid grid-cols-4 md:grid-cols-6 gap-3 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-5 gap-2 max-h-96 overflow-y-auto pr-2">
               {availableImages.map((image) => {
                 const isSelected = selectedImageIds.includes(image.id);
+                const selectedIndex = selectedImages.findIndex(img => img.image_id === image.id);
+                const orderNumber = selectedIndex >= 0 ? selectedIndex + 1 : null;
 
                 return (
-                  <div
-                    key={image.id}
-                    className={`relative cursor-pointer rounded border-2 transition-all ${
-                      isSelected
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                    onClick={() => !isSelected && handleAddImage(image.id)}
-                    title={image.alt_text || ''}
-                  >
-                    <ImagePreview
-                      src={image.url}
-                      alt={image.alt_text || ''}
-                      size="sm"
-                      className="aspect-square w-full rounded"
-                    />
-                    {isSelected && (
-                      <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                        ✓
+                  <div key={image.id} className="relative group">
+                    <div
+                      className={`aspect-square overflow-hidden rounded border-2 transition-all relative ${
+                        isSelected
+                          ? 'border-primary ring-2 ring-primary/20'
+                          : 'border-border hover:border-primary/50'
+                      } ${!isSelected ? 'cursor-pointer' : ''}`}
+                      onClick={() => !isSelected && handleAddImage(image.id)}
+                    >
+                      <Image
+                        src={image.url}
+                        alt={image.alt_text || ''}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
+                      {isSelected && orderNumber && (
+                        <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-white z-20 pointer-events-none">
+                          {orderNumber}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Hover Preview */}
+                    <div className="hidden group-hover:block fixed z-[100] pointer-events-none">
+                      <div className="absolute left-full ml-4 top-0 w-64 h-64 rounded-lg shadow-2xl border-2 border-white overflow-hidden bg-white">
+                        <Image
+                          src={image.url}
+                          alt={image.alt_text || ''}
+                          fill
+                          unoptimized
+                          className="object-contain"
+                        />
                       </div>
-                    )}
-                    <div className="mt-1">
-                      <p className="text-xs text-muted-foreground truncate" title={image.alt_text || ''}>
-                        {image.alt_text || 'No description'}
-                      </p>
                     </div>
                   </div>
                 );

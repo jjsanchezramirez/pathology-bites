@@ -64,6 +64,8 @@ export function SystemStatus() {
             lastUpdated: new Date(data.lastUpdated)
           })
         } else {
+          console.warn(`System status API returned ${response.status}, falling back to direct check`)
+
           // If API fails, fall back to direct check
           const startTime = performance.now()
           const { data, error } = await supabase
@@ -93,6 +95,16 @@ export function SystemStatus() {
 
       } catch (error) {
         console.error('System health check failed:', error)
+
+        // Detect network errors (laptop sleep/wake, offline, etc.)
+        const isNetworkError = error instanceof TypeError &&
+                              (error.message?.includes('fetch') || error.message?.includes('network'))
+
+        if (isNetworkError) {
+          console.warn('Network connection interrupted during system health check')
+        }
+
+        // Set error state but don't show toast (this is background polling)
         setMetrics({
           vercelStatus: 'operational',
           supabaseStatus: 'error',

@@ -232,40 +232,38 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                           const canSelect = !isAlreadyAdded && (selectedImageIds.length < maxImages - images.length || isSelected)
 
                           return (
-                            <div
-                              key={image.id}
-                              className={`relative cursor-pointer rounded-lg border-2 transition-all h-fit ${
-                                isAlreadyAdded
-                                  ? 'border-muted bg-muted/50 opacity-50 cursor-not-allowed'
-                                  : isSelected
-                                    ? 'border-primary bg-primary/10'
-                                    : canSelect
-                                      ? 'border-border hover:border-primary/50'
-                                      : 'border-muted opacity-50 cursor-not-allowed'
-                              }`}
-                              onClick={() => canSelect && handleImageToggle(image.id)}
-                              title={isAlreadyAdded ? 'Already added to this section' : image.alt_text || ''}
-                            >
-                              <div className="aspect-square overflow-hidden rounded-lg relative w-40 h-40">
+                            <div key={image.id} className="relative group">
+                              <div
+                                className={`aspect-square overflow-hidden rounded border-2 transition-all relative ${
+                                  isAlreadyAdded
+                                    ? 'border-muted bg-muted/50 opacity-50 cursor-not-allowed'
+                                    : isSelected
+                                      ? 'border-primary ring-2 ring-primary/20'
+                                      : canSelect
+                                        ? 'border-border hover:border-primary/50 cursor-pointer'
+                                        : 'border-muted opacity-50 cursor-not-allowed'
+                                }`}
+                                onClick={() => canSelect && handleImageToggle(image.id)}
+                                title={isAlreadyAdded ? 'Already added to this section' : image.alt_text || ''}
+                              >
                                 <Image
                                   src={image.url}
                                   alt={image.alt_text || ''}
                                   fill
                                   className="object-cover"
-                                  sizes="160px"
                                   unoptimized
                                 />
+                                {isSelected && (
+                                  <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-white z-20 pointer-events-none">
+                                    ✓
+                                  </div>
+                                )}
+                                {isAlreadyAdded && (
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
+                                    <span className="text-white text-sm font-medium">Added</span>
+                                  </div>
+                                )}
                               </div>
-                              {isSelected && (
-                                <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm">
-                                  ✓
-                                </div>
-                              )}
-                              {isAlreadyAdded && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
-                                  <span className="text-white text-sm font-medium">Added</span>
-                                </div>
-                              )}
                             </div>
                           )
                         })

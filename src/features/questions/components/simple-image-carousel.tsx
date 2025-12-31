@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache'
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useMobile } from "@/shared/hooks/use-mobile"
+import { SilentErrorBoundary } from "@/shared/components/error-boundaries/silent-error-boundary"
 
 interface ImageProps {
   url: string
@@ -17,41 +18,37 @@ interface SimpleImageCarouselProps {
   className?: string
 }
 
-export function SimpleImageCarousel({ images, className = '' }: SimpleImageCarouselProps) {
+// Internal component that can throw errors
+function SimpleImageCarouselInternal({ images, className = '' }: SimpleImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const isMobile = useMobile()
-  
+
   // Get the current image for hook usage
   const currentImage = images && images.length > 0 ? images[currentIndex] : null
   const handleImageLoad = useImageCacheHandler(currentImage?.url || '')
 
-  const hasMultiple = images && images.length > 1
+  // Reset to first image when images array changes (e.g., new question)
+  useEffect(() => {
+    setCurrentIndex(0)
+  }, [images])
 
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
+  if (!images || images.length === 0) return null
+
+  const hasMultiple = images.length > 1
+
+  const nextImage = () => {
+    setCurrentIndex((prev) => (prev + 1) % images.length)
   }
 
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
-  }
-
-  if (!images || images.length === 0) {
-    return (
-      <div className={`relative ${className}`}>
-        <div className="relative rounded-lg overflow-hidden bg-muted" style={{ aspectRatio: '16/10' }}>
-          <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
-            No image available
-          </div>
-        </div>
-      </div>
-    )
+  const prevImage = () => {
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
   }
 
   return (
     <div className={`relative ${className}`}>
       {/* Main image */}
       <div
-        className="relative rounded-lg overflow-hidden bg-muted group"
+        className="relative rounded-lg overflow-hidden bg-muted group cursor-default"
         style={{ aspectRatio: '16/10' }}
       >
         {currentImage?.url ? (
@@ -81,11 +78,16 @@ export function SimpleImageCarousel({ images, className = '' }: SimpleImageCarou
               }`}
             >
               <button
-                onClick={goToPrevious}
-                className="p-2 text-white hover:text-white/80 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  prevImage()
+                }}
+                className={`p-2 hover:bg-black/10 rounded-full transition-all duration-200 ${
+                  isMobile ? 'p-3' : 'p-2'
+                }`}
                 aria-label="Previous image"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft size={16} className="text-white" />
               </button>
             </div>
             <div
@@ -96,48 +98,56 @@ export function SimpleImageCarousel({ images, className = '' }: SimpleImageCarou
               }`}
             >
               <button
-                onClick={goToNext}
-                className="p-2 text-white hover:text-white/80 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  nextImage()
+                }}
+                className={`p-2 hover:bg-black/10 rounded-full transition-all duration-200 ${
+                  isMobile ? 'p-3' : 'p-2'
+                }`}
                 aria-label="Next image"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight size={16} className="text-white" />
               </button>
             </div>
           </>
         )}
       </div>
 
-      {/* Image indicators */}
+      {/* Dots positioned on top of image */}
       {hasMultiple && (
-        <div className="flex justify-center mt-2 gap-1">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/20 backdrop-blur-sm rounded-full px-3 py-2">
           {images.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all duration-200 ${
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
                 index === currentIndex
-                  ? 'bg-primary'
-                  : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                  ? 'bg-white scale-125'
+                  : 'bg-white/60 hover:bg-white/80 hover:scale-110'
               }`}
-              aria-label={`Go to image ${index + 1}`}
+              aria-label={`View image ${index + 1}`}
             />
           ))}
         </div>
       )}
-
-      {/* Caption */}
-      {currentImage?.caption && (
-        <div className="mt-2 text-xs text-muted-foreground text-center">
-          {currentImage.caption}
-        </div>
-      )}
-
-      {/* Image counter */}
-      {hasMultiple && (
-        <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded">
-          {currentIndex + 1} / {images.length}
-        </div>
-      )}
     </div>
+  )
+}
+
+// Exported component with error boundary
+export function SimpleImageCarousel({ images, className = '' }: SimpleImageCarouselProps) {
+  return (
+    <SilentErrorBoundary
+      maxRetries={2}
+      retryDelay={1000}
+      fallbackMessage="Image gallery temporarily unavailable"
+      showErrorDetails={process.env.NODE_ENV === 'development'}
+      onError={(error, retryCount) => {
+        console.warn(`SimpleImageCarousel error (attempt ${retryCount + 1}):`, error.message)
+      }}
+    >
+      <SimpleImageCarouselInternal images={images} className={className} />
+    </SilentErrorBoundary>
   )
 }

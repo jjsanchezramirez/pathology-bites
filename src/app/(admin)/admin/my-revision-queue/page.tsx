@@ -1,11 +1,10 @@
 // src/app/(admin)/admin/my-revision-queue/page.tsx
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/shared/services/client'
-import { useAuth } from '@/shared/hooks/use-auth'
 import { useUserRole } from '@/shared/hooks/use-user-role'
+import { useMyRevisionQueue } from '@/features/questions/hooks'
 import {
   Table,
   TableBody,
@@ -30,139 +29,23 @@ import {
 } from 'lucide-react'
 import { Skeleton } from '@/shared/components/ui/skeleton'
 import { QuestionPreviewDialog } from '@/features/questions/components/question-preview-dialog'
-import { toast } from '@/shared/utils/toast'
 import { formatDistanceToNow } from 'date-fns'
-import { QuestionWithDetails } from '@/features/questions/types/questions'
-
-interface RejectedQuestion extends QuestionWithDetails {
-  creator_name?: string
-  resubmission_notes?: string | null
-  resubmission_date?: string | null
-}
+import { AccessDenied, AccessDeniedPresets } from '@/shared/components/common/access-denied'
 
 export default function MyRevisionQueuePage() {
   const router = useRouter()
-  const [questions, setQuestions] = useState<RejectedQuestion[]>([])
-  const [filteredQuestions, setFilteredQuestions] = useState<RejectedQuestion[]>([])
-  const [loading, setLoading] = useState(true)
+  const { canAccess } = useUserRole()
+
+  // Use SWR hook for data fetching
+  const { questions, isLoading, refresh } = useMyRevisionQueue()
+
+  const [filteredQuestions, setFilteredQuestions] = useState(questions)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedQuestion, setSelectedQuestion] = useState<RejectedQuestion | null>(null)
+  const [selectedQuestion, setSelectedQuestion] = useState<typeof questions[0] | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
-  const [expandedFeedback, setExpandedFeedback] = useState<Set<string>>(new Set())
+  const [collapsedFeedback, setCollapsedFeedback] = useState<Set<string>>(new Set())
 
-  const { user } = useAuth({ minimal: true })
-  const { role, canAccess } = useUserRole()
-  const supabase = createClient()
-
-  const fetchRejectedQuestions = useCallback(async () => {
-    if (!user) return
-
-    try {
-      setLoading(true)
-
-      // Fetch rejected questions created by current user
-      const { data, error } = await supabase
-        .from('questions')
-        .select(`
-          id,
-          title,
-          stem,
-          difficulty,
-          teaching_point,
-          question_references,
-          status,
-          question_set_id,
-          category_id,
-          created_by,
-          reviewer_id,
-          reviewer_feedback,
-          rejected_at,
-          created_at,
-          updated_at,
-          question_sets(id, name),
-          question_options(id, text, is_correct, explanation, order_index),
-          question_images(
-            question_section,
-            order_index,
-            images(id, url, alt_text, description)
-          ),
-          categories(*),
-          created_by_user:users!questions_created_by_fkey(
-            first_name,
-            last_name
-          ),
-          updated_by_user:users!questions_updated_by_fkey(
-            first_name,
-            last_name
-          ),
-          reviewer_user:users!questions_reviewer_id_fkey(
-            first_name,
-            last_name
-          )
-        `)
-        .eq('created_by', user.id)
-        .eq('status', 'rejected')
-        .order('rejected_at', { ascending: false }) // Most recently rejected first
-
-      if (error) {
-        console.error('Error fetching rejected questions:', error)
-        const errorMessage = error.message || 'Unknown error occurred'
-        toast.error(`Failed to load revision queue: ${errorMessage}`)
-        return
-      }
-
-      // Fetch resubmission notes
-      const questionIds = (data || []).map(q => q.id)
-      let questionsWithResubmissionNotes = data || []
-
-      if (questionIds.length > 0) {
-        try {
-          const { data: resubmissionData, error: resubmissionError } = await supabase
-            .from('question_reviews')
-            .select('question_id, changes_made, created_at')
-            .in('question_id', questionIds)
-            .eq('action', 'resubmitted')
-            .order('created_at', { ascending: false })
-
-          if (!resubmissionError && resubmissionData) {
-            const resubmissionMap = new Map()
-            resubmissionData.forEach(review => {
-              if (!resubmissionMap.has(review.question_id) && review.changes_made?.resubmission_notes) {
-                resubmissionMap.set(review.question_id, {
-                  notes: review.changes_made.resubmission_notes,
-                  date: review.created_at
-                })
-              }
-            })
-
-            questionsWithResubmissionNotes = (data || []).map(question => {
-              const resubmissionInfo = resubmissionMap.get(question.id)
-              return {
-                ...question,
-                resubmission_notes: resubmissionInfo?.notes || null,
-                resubmission_date: resubmissionInfo?.date || null
-              }
-            })
-          }
-        } catch (error) {
-          console.error('Error fetching resubmission notes:', error)
-        }
-      }
-
-      setQuestions(questionsWithResubmissionNotes)
-      setFilteredQuestions(questionsWithResubmissionNotes)
-    } catch (error) {
-      console.error('Unexpected error fetching rejected questions:', error)
-      toast.error('Failed to load revision queue')
-    } finally {
-      setLoading(false)
-    }
-  }, [user, supabase])
-
-  useEffect(() => {
-    fetchRejectedQuestions()
-  }, [fetchRejectedQuestions])
-
+  // Update filtered questions when questions or searchTerm changes
   useEffect(() => {
     if (searchTerm) {
       const filtered = questions.filter(q =>
@@ -175,7 +58,7 @@ export default function MyRevisionQueuePage() {
     }
   }, [searchTerm, questions])
 
-  const handlePreview = (question: RejectedQuestion) => {
+  const handlePreview = (question: typeof questions[0]) => {
     setSelectedQuestion(question)
     setPreviewOpen(true)
   }
@@ -184,28 +67,33 @@ export default function MyRevisionQueuePage() {
     router.push(`/admin/questions/${questionId}/edit`)
   }
 
-  const toggleFeedbackExpansion = (questionId: string) => {
-    const newExpanded = new Set(expandedFeedback)
-    if (newExpanded.has(questionId)) {
-      newExpanded.delete(questionId)
+  const toggleFeedback = (questionId: string) => {
+    const newCollapsed = new Set(collapsedFeedback)
+    if (newCollapsed.has(questionId)) {
+      newCollapsed.delete(questionId)
     } else {
-      newExpanded.add(questionId)
+      newCollapsed.add(questionId)
     }
-    setExpandedFeedback(newExpanded)
+    setCollapsedFeedback(newCollapsed)
+  }
+
+  // Get age indicator badge based on time since rejection
+  const getAgeIndicator = (updatedAt: string) => {
+    const daysOld = Math.floor((Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24))
+    if (daysOld > 7) {
+      return <Badge variant="destructive" className="ml-2">Urgent</Badge>
+    } else if (daysOld > 3) {
+      return <Badge variant="secondary" className="ml-2">Aging</Badge>
+    }
+    return null
   }
 
   // Access control - only creators and admins can access
   if (!canAccess('questions.create')) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">Access denied. Creator privileges required.</p>
-        </div>
-      </div>
-    )
+    return <AccessDenied {...AccessDeniedPresets.creatorOnly} />
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
         {/* Page Header Skeleton */}
@@ -289,10 +177,10 @@ export default function MyRevisionQueuePage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={fetchRejectedQuestions}
-          disabled={loading}
+          onClick={() => refresh()}
+          disabled={isLoading}
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>
@@ -304,17 +192,16 @@ export default function MyRevisionQueuePage() {
             <TableRow>
               <TableHead>Question</TableHead>
               <TableHead>Rejected</TableHead>
-              <TableHead>Difficulty</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredQuestions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
+                <TableCell colSpan={3} className="h-24 text-center">
                   <div className="text-center py-6">
-                    <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-green-500" />
-                    <h3 className="text-lg font-medium mb-2">All caught up! 🎉</h3>
+                    <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No results</h3>
                     <p className="text-muted-foreground">
                       {searchTerm ? 'No questions found matching your search' : 'You have no questions needing revision. Great work!'}
                     </p>
@@ -323,75 +210,74 @@ export default function MyRevisionQueuePage() {
               </TableRow>
             ) : (
               filteredQuestions.map((question) => {
-                const isExpanded = expandedFeedback.has(question.id)
+                const isCollapsed = collapsedFeedback.has(question.id)
 
                 return (
-                  <>
-                    <TableRow key={question.id}>
+                  <React.Fragment key={question.id}>
+                    <TableRow>
                       <TableCell>
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="h-2 w-2 bg-amber-500 rounded-full flex-shrink-0" title="Needs attention" />
-                            <div className="font-medium">{question.title}</div>
-                          </div>
-                          <div className="text-sm text-muted-foreground line-clamp-2">
-                            {question.stem}
-                          </div>
-                          <div className="flex flex-wrap gap-2 items-center">
-                            {question.question_sets && (
-                              <Badge variant="outline" className="text-xs">
-                                {question.question_sets.name}
-                              </Badge>
-                            )}
-                            {/* Reviewer Feedback Badge */}
-                            {question.reviewer_feedback && (
-                              <Badge
-                                variant="outline"
-                                className="text-xs bg-amber-100 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-400 cursor-pointer hover:bg-amber-200 dark:hover:bg-amber-950/50 transition-colors max-w-xs"
-                                onClick={() => toggleFeedbackExpansion(question.id)}
+                        <div className="space-y-3">
+                          {/* Question Title with Chevron and Age Tag */}
+                          <div className="flex items-start gap-2">
+                            {question.reviewer_feedback ? (
+                              <button
+                                onClick={() => toggleFeedback(question.id)}
+                                className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 mt-0.5"
+                                aria-label={isCollapsed ? "Expand feedback" : "Collapse feedback"}
                               >
-                                <MessageSquare className="h-3 w-3 mr-1 flex-shrink-0" />
-                                <span className="truncate">
-                                  {question.reviewer_feedback.length > 50
-                                    ? `${question.reviewer_feedback.substring(0, 50)}...`
-                                    : question.reviewer_feedback}
-                                </span>
-                                {isExpanded ? (
-                                  <ChevronDown className="h-3 w-3 ml-1 flex-shrink-0" />
+                                {isCollapsed ? (
+                                  <ChevronRight className="h-4 w-4" />
                                 ) : (
-                                  <ChevronRight className="h-3 w-3 ml-1 flex-shrink-0" />
+                                  <ChevronDown className="h-4 w-4" />
                                 )}
-                              </Badge>
+                              </button>
+                            ) : (
+                              <div className="w-6 flex-shrink-0" />
                             )}
+                            <div className="font-medium flex items-center flex-1">
+                              {question.title}
+                              {getAgeIndicator(question.updated_at)}
+                            </div>
                           </div>
+
+                          {/* Question Stem */}
+                          <div className="flex gap-2">
+                            <div className="w-6 flex-shrink-0" />
+                            <div className="text-sm text-muted-foreground line-clamp-2 flex-1">
+                              {question.stem}
+                            </div>
+                          </div>
+
                           {/* Resubmission Notes */}
                           {question.resubmission_notes && (
-                            <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md">
-                              <div className="flex items-center gap-1 mb-1">
-                                <MessageSquare className="h-3 w-3 text-blue-600" />
-                                <span className="text-xs font-medium text-blue-900 dark:text-blue-100">
-                                  Previous Changes Made
-                                </span>
+                            <div className="flex gap-2">
+                              <div className="w-6 flex-shrink-0" />
+                              <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 dark:border-blue-600 rounded-md flex-1">
+                                <div className="flex items-start gap-2">
+                                  <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                  <div className="flex-1 min-w-0">
+                                    <span className="text-xs font-medium text-blue-900 dark:text-blue-100 block mb-1">
+                                      Previous Changes Made
+                                    </span>
+                                    <p className="text-xs text-blue-800 dark:text-blue-300">
+                                      {question.resubmission_notes}
+                                    </p>
+                                    {question.resubmission_date && (
+                                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                        {formatDistanceToNow(new Date(question.resubmission_date))} ago
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                              <p className="text-xs text-blue-800 dark:text-blue-300 line-clamp-2">
-                                {question.resubmission_notes}
-                              </p>
-                              {question.resubmission_date && (
-                                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                  {formatDistanceToNow(new Date(question.resubmission_date))} ago
-                                </p>
-                              )}
                             </div>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm text-muted-foreground">
-                          {question.rejected_at ? formatDistanceToNow(new Date(question.rejected_at), { addSuffix: true }) : 'N/A'}
+                          {question.updated_at ? formatDistanceToNow(new Date(question.updated_at), { addSuffix: true }) : 'N/A'}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{question.difficulty}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -414,28 +300,19 @@ export default function MyRevisionQueuePage() {
                       </TableCell>
                     </TableRow>
 
-                    {/* Expandable Feedback Row */}
-                    {question.reviewer_feedback && isExpanded && (
-                      <TableRow key={`${question.id}-feedback`} className="bg-amber-50/50 dark:bg-amber-950/20 border-l-4 border-amber-500 dark:border-amber-600">
-                        <TableCell colSpan={4} className="p-0">
-                          <div className="p-4 space-y-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <MessageSquare className="h-4 w-4 text-amber-600 dark:text-amber-500" />
-                                <span className="font-medium text-amber-900 dark:text-amber-200">
-                                  Reviewer Feedback
-                                </span>
-                              </div>
-                              <button
-                                onClick={() => toggleFeedbackExpansion(question.id)}
-                                className="text-xs text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-200 flex items-center gap-1"
-                              >
-                                <ChevronDown className="h-3 w-3" />
-                                Collapse
-                              </button>
+                    {/* Reviewer Feedback Row - Expanded by Default */}
+                    {question.reviewer_feedback && !isCollapsed && (
+                      <TableRow className="bg-muted/50 border-t">
+                        <TableCell colSpan={3} className="py-6 pl-6 pr-6">
+                          <div className="flex items-start gap-2">
+                            <div className="w-6 flex-shrink-0 flex justify-center">
+                              <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
                             </div>
-                            <div className="pl-6">
-                              <p className="text-sm text-amber-900 dark:text-amber-200 leading-relaxed">
+                            <div className="flex-1">
+                              <h4 className="text-sm font-semibold mb-2">
+                                Reviewer Feedback
+                              </h4>
+                              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                                 {question.reviewer_feedback}
                               </p>
                             </div>
@@ -443,7 +320,7 @@ export default function MyRevisionQueuePage() {
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
+                  </React.Fragment>
                 )
               })
             )}

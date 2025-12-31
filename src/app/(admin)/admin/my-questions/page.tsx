@@ -34,6 +34,7 @@ import { QuestionPreviewDialog } from '@/features/questions/components/question-
 import { toast } from '@/shared/utils/toast'
 import { formatDistanceToNow } from 'date-fns'
 import { QuestionWithDetails, STATUS_CONFIG } from '@/features/questions/types/questions'
+import { AccessDenied, AccessDeniedPresets } from '@/shared/components/common/access-denied'
 import {
   Select,
   SelectContent,
@@ -225,13 +226,7 @@ export default function MyQuestionsPage() {
 
   // Access control
   if (!canAccess('questions.view')) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">Access denied.</p>
-        </div>
-      </div>
-    )
+    return <AccessDenied {...AccessDeniedPresets.creatorOrAbove} />
   }
 
   if (loading) {

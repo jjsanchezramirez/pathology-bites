@@ -16,50 +16,88 @@ interface StepProgressBarProps {
 }
 
 export function StepProgressBar({ steps, currentStep, onStepClick, mode = 'create' }: StepProgressBarProps) {
+  // Calculate line positions
+  // Each step takes up (100 / numSteps)% of width
+  // Circle centers are at the middle of each step's space
+  const stepPercentage = 100 / steps.length
+  const lineStart = stepPercentage / 2 // Center of first step
+  const lineEnd = 100 - (stepPercentage / 2) // Center of last step
+  const lineWidth = lineEnd - lineStart
+
+  // Progress line width as percentage of total line
+  const progressPercentage = (currentStep - 1) / (steps.length - 1)
+
   return (
-    <div className="flex justify-center py-8">
-      <div className="flex items-center gap-0">
+    <div className="w-full max-w-3xl min-w-[320px] mx-auto px-4 py-8">
+      <div className="relative flex justify-between items-start">
+
+        {/* Background connecting line */}
+        <div
+          className="absolute top-5 h-0.5 bg-muted-foreground/20"
+          style={{
+            left: `${lineStart}%`,
+            width: `${lineWidth}%`,
+          }}
+        />
+
+        {/* Progress line */}
+        <div
+          className="absolute top-5 h-0.5 bg-primary transition-all duration-500"
+          style={{
+            left: `${lineStart}%`,
+            width: `${lineWidth * progressPercentage}%`,
+          }}
+        />
+
+        {/* Steps */}
         {steps.map((step, index) => {
           const isCompleted = step.id < currentStep
           const isCurrent = step.id === currentStep
-          const isLast = index === steps.length - 1
 
           return (
-            <div key={step.id} className="flex items-center gap-0">
+            <div
+              key={step.id}
+              className="flex flex-col items-center flex-1"
+            >
               {/* Circle */}
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 flex-shrink-0 font-medium ${
-                  isCompleted
-                    ? 'bg-primary border-primary text-white'
-                    : isCurrent
-                    ? 'bg-white border-primary text-primary'
-                    : 'bg-white border-muted-foreground/30 text-muted-foreground'
-                } ${
-                  mode === 'edit' && !isCompleted ? 'cursor-pointer hover:scale-110 hover:shadow-lg' : ''
-                }`}
+              <button
                 onClick={() => mode === 'edit' && onStepClick?.(step.id)}
+                disabled={mode !== 'edit'}
+                className={`
+                  relative z-10 w-10 h-10 rounded-full flex items-center justify-center
+                  text-sm font-medium transition-all duration-300
+                  ${isCurrent
+                    ? 'bg-white border-2 border-primary text-primary'
+                    : isCompleted
+                      ? 'bg-primary border-2 border-primary text-white'
+                      : 'bg-white text-muted-foreground border-2 border-muted-foreground/30'
+                  }
+                  ${mode === 'edit' ? 'cursor-pointer' : 'cursor-default'}
+                `}
               >
                 {isCompleted ? (
-                  <Check className="h-5 w-5 stroke-[3]" />
+                  <Check className="w-5 h-5 stroke-[3]" />
                 ) : (
-                  <span className="text-sm">{step.id}</span>
+                  <span>{step.id}</span>
                 )}
-              </div>
+              </button>
 
-              {/* Connecting Line - Only if not last step */}
-              {!isLast && (
-                <div className="relative h-1 w-20">
-                  {/* Thin gray line - background */}
-                  <div className="absolute inset-0 bg-muted-foreground/20" />
-                  {/* Accent color line - animated on top */}
-                  <div
-                    className="absolute inset-0 bg-primary transition-all duration-700 ease-in-out"
-                    style={{
-                      width: isCompleted ? '100%' : '0%'
-                    }}
-                  />
+              {/* Text */}
+              <button
+                onClick={() => mode === 'edit' && onStepClick?.(step.id)}
+                disabled={mode !== 'edit'}
+                className="mt-3 text-center"
+              >
+                <div className={`
+                  text-sm font-medium transition-colors whitespace-nowrap
+                  ${isCurrent ? 'text-primary' : isCompleted ? 'text-foreground' : 'text-muted-foreground'}
+                `}>
+                  {step.name}
                 </div>
-              )}
+                <div className="text-xs text-muted-foreground/70 mt-0.5 hidden sm:block whitespace-nowrap">
+                  {step.description}
+                </div>
+              </button>
             </div>
           )
         })}

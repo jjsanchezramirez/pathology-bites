@@ -8,7 +8,7 @@ import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
  * Get list of available reviewers (users with admin or reviewer role)
  * Optionally includes workload (number of pending questions assigned)
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = await createClient()
 

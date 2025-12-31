@@ -10,7 +10,7 @@ export interface NavigationItem {
   comingSoon?: boolean // Badge to indicate feature is coming soon
   isNew?: boolean // Badge to indicate feature is new
   showBadge?: boolean // Whether to show a badge count
-  badgeKey?: 'revisionQueue' | 'reviewQueue' // Key for fetching badge count
+  badgeKey?: 'revisionQueue' | 'reviewQueue' | 'drafts' // Key for fetching badge count
 }
 
 export interface NavigationSection {
@@ -168,7 +168,9 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/my-drafts",
         icon: "FileText",
         requiredPermission: "questions.create",
-        showToRoles: ["admin", "creator"]
+        showToRoles: ["admin", "creator"],
+        showBadge: true,
+        badgeKey: "drafts"
       },
       {
         name: "My Review Queue",

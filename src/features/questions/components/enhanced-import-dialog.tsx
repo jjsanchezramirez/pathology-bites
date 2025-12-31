@@ -65,7 +65,7 @@ const importQuestionSchema = z.object({
   stem: z.string().min(10, 'Question stem must be at least 10 characters').max(2000, 'Question stem too long'),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   teaching_point: z.string().min(10, 'Teaching point must be at least 10 characters').max(1000, 'Teaching point too long'),
-  question_references: z.string().max(500, 'References too long').optional(),
+  question_references: z.string().max(1000, 'References too long (max 1000 characters)').optional(),
   status: z.enum(['draft', 'approved']).default('draft'),
   question_set_id: z.string().uuid('Invalid question set ID').optional().nullable(),
   question_options: z.array(answerOptionSchema).min(2, 'At least 2 question options required').max(10, 'Maximum 10 question options allowed'),

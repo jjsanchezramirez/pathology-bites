@@ -237,40 +237,38 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
           }}
           className="space-y-6"
         >
-          <Card className="overflow-hidden">
-            {/* Tab Navigation */}
-            <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+          {/* Tab Navigation */}
+          <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-            {/* Tab Content */}
-            <div className="p-6">
-              {activeTab === 'content' && (
-                <ContentTab
-                  form={form}
-                  question={question}
-                  onUnsavedChanges={handleUnsavedChanges}
-                  answerOptions={answerOptions}
-                  onAnswerOptionsChange={setAnswerOptions}
-                />
-              )}
-              {activeTab === 'images' && (
-                <ImagesTab
-                  question={question}
-                  onUnsavedChanges={handleUnsavedChanges}
-                  questionImages={questionImages}
-                  onQuestionImagesChange={setQuestionImages}
-                />
-              )}
-              {activeTab === 'metadata' && (
-                <MetadataTab
-                  form={form}
-                  question={question}
-                  onUnsavedChanges={handleUnsavedChanges}
-                  selectedTagIds={selectedTagIds}
-                  onTagsChange={setSelectedTagIds}
-                />
-              )}
-            </div>
-          </Card>
+          {/* Tab Content */}
+          <div>
+            {activeTab === 'content' && (
+              <ContentTab
+                form={form}
+                question={question}
+                onUnsavedChanges={handleUnsavedChanges}
+                answerOptions={answerOptions}
+                onAnswerOptionsChange={setAnswerOptions}
+              />
+            )}
+            {activeTab === 'images' && (
+              <ImagesTab
+                question={question}
+                onUnsavedChanges={handleUnsavedChanges}
+                questionImages={questionImages}
+                onQuestionImagesChange={setQuestionImages}
+              />
+            )}
+            {activeTab === 'metadata' && (
+              <MetadataTab
+                form={form}
+                question={question}
+                onUnsavedChanges={handleUnsavedChanges}
+                selectedTagIds={selectedTagIds}
+                onTagsChange={setSelectedTagIds}
+              />
+            )}
+          </div>
 
           {/* Edit Type Selection for Published Questions */}
           {question.status === 'published' && (

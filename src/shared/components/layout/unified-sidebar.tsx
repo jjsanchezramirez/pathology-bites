@@ -79,7 +79,7 @@ export function UnifiedSidebar({ isCollapsed, isHovered = false, navigationItems
   const { canAccess, isAdmin, isLoading } = useUserRole()
   const { adminMode, isTransitioning } = useDashboardTheme()
   const { count: pendingInquiriesCount } = usePendingInquiriesCount()
-  const { revisionQueueCount, reviewQueueCount } = usePendingQuestionsCount()
+  const { revisionQueueCount, reviewQueueCount, draftsCount } = usePendingQuestionsCount()
 
   // Always show navigation immediately, but filter based on loading state and admin mode
   const filteredNavigation = navigationItems ? filterNavigationItems(
@@ -205,8 +205,13 @@ export function UnifiedSidebar({ isCollapsed, isHovered = false, navigationItems
                               {revisionQueueCount}
                             </span>
                           )}
+                          {isOpen && item.showBadge && item.badgeKey === 'drafts' && draftsCount > 0 && (
+                            <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                              {draftsCount}
+                            </span>
+                          )}
                           {isOpen && item.showBadge && item.badgeKey === 'reviewQueue' && reviewQueueCount > 0 && (
-                            <span className="ml-auto text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                            <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
                               {reviewQueueCount}
                             </span>
                           )}
@@ -260,8 +265,13 @@ export function UnifiedSidebar({ isCollapsed, isHovered = false, navigationItems
                         {revisionQueueCount}
                       </span>
                     )}
+                    {isOpen && item.showBadge && item.badgeKey === 'drafts' && draftsCount > 0 && (
+                      <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                        {draftsCount}
+                      </span>
+                    )}
                     {isOpen && item.showBadge && item.badgeKey === 'reviewQueue' && reviewQueueCount > 0 && (
-                      <span className="ml-auto text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                      <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
                         {reviewQueueCount}
                       </span>
                     )}

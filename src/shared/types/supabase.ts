@@ -634,10 +634,7 @@ export interface Database {
           category_id: string | null
           reviewer_id: string | null
           reviewer_feedback: string | null
-          rejected_at: string | null
-          rejected_by: string | null
           published_at: string | null
-          resubmission_notes: string | null
           created_at: string
           updated_at: string
         }
@@ -659,10 +656,7 @@ export interface Database {
           category_id?: string | null
           reviewer_id?: string | null
           reviewer_feedback?: string | null
-          rejected_at?: string | null
-          rejected_by?: string | null
           published_at?: string | null
-          resubmission_notes?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -684,10 +678,7 @@ export interface Database {
           category_id?: string | null
           reviewer_id?: string | null
           reviewer_feedback?: string | null
-          rejected_at?: string | null
-          rejected_by?: string | null
           published_at?: string | null
-          resubmission_notes?: string | null
           created_at?: string
           updated_at?: string
         }

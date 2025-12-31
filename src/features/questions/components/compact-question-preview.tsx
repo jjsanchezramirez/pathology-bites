@@ -5,6 +5,7 @@ import { Badge } from "@/shared/components/ui/badge"
 import { Check } from "lucide-react"
 import { QuestionWithDetails } from '@/features/questions/types/questions'
 import { SimpleImageCarousel } from './simple-image-carousel'
+import { getCategoryColor } from '@/features/questions/utils/category-colors'
 
 interface CompactQuestionPreviewProps {
   question: QuestionWithDetails | null
@@ -161,23 +162,32 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
             </div>
           )}
 
-          {/* Question Metadata - Single horizontal line */}
-          <div className="pt-3 border-t">
+          {/* Question Metadata */}
+          <div className="pt-3 border-t space-y-2">
+            {/* Badges row */}
             <div className="flex items-center gap-2 flex-wrap text-xs">
               {/* Category with color */}
-              {question.categories && (
-                <Badge
-                  variant="outline"
-                  className="text-xs"
-                  style={{
-                    backgroundColor: question.categories.color ? `${question.categories.color}15` : undefined,
-                    borderColor: question.categories.color || undefined,
-                    color: question.categories.color || undefined
-                  }}
-                >
-                  {question.categories.name}
-                </Badge>
-              )}
+              {question.categories && (() => {
+                const categoryColor = getCategoryColor({
+                  color: question.categories.color ?? undefined,
+                  short_form: question.categories.short_form ?? undefined,
+                  parent_short_form: undefined
+                })
+
+                return (
+                  <Badge
+                    variant="outline"
+                    className="text-xs"
+                    style={{
+                      backgroundColor: `${categoryColor}15`,
+                      borderColor: categoryColor,
+                      color: categoryColor
+                    }}
+                  >
+                    {question.categories.name}
+                  </Badge>
+                )
+              })()}
 
               {/* Set */}
               {question.question_sets && (
@@ -190,32 +200,35 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
               {question.version && (
                 <span className="text-muted-foreground">v{question.version}</span>
               )}
+            </div>
 
+            {/* Attribution row */}
+            <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
               {/* Created */}
               {question.created_at && (
-                <span className="text-muted-foreground">
-                  Created {new Date(question.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                  {question.created_by_user && (
-                    <> by {question.created_by_user.first_name} {question.created_by_user.last_name}</>
-                  )}
+                <span>
+                  Created{question.created_by_user && <> by {question.created_by_user.first_name} {question.created_by_user.last_name}</>} on {new Date(question.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
               )}
 
               {/* Last Modified */}
               {question.updated_at && question.updated_at !== question.created_at && (
-                <span className="text-muted-foreground">
-                  Modified {new Date(question.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                  {question.updated_by_user && (
-                    <> by {question.updated_by_user.first_name} {question.updated_by_user.last_name}</>
-                  )}
-                </span>
+                <>
+                  <span>•</span>
+                  <span>
+                    Modified{question.updated_by_user && <> by {question.updated_by_user.first_name} {question.updated_by_user.last_name}</>} on {new Date(question.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </>
               )}
 
               {/* Reviewer */}
               {question.reviewer_user && (
-                <span className="text-muted-foreground">
-                  Reviewed by {question.reviewer_user.first_name} {question.reviewer_user.last_name}
-                </span>
+                <>
+                  <span>•</span>
+                  <span>
+                    Last reviewed by {question.reviewer_user.first_name} {question.reviewer_user.last_name}
+                  </span>
+                </>
               )}
             </div>
           </div>

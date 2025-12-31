@@ -5,11 +5,11 @@ import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 /**
  * POST /api/questions/:id/reject
- * 
+ *
  * Reject a question with feedback (reviewer action)
  * - Changes status from pending_review → rejected
  * - Requires feedback in request body
- * - Sets rejected_at, rejected_by, reviewer_feedback
+ * - Sets reviewer_feedback, updated_at, updated_by
  * - Only assigned reviewer or admin can reject
  */
 export async function POST(

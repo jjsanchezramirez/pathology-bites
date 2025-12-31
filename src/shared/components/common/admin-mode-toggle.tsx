@@ -10,7 +10,7 @@ import { useDashboardTheme } from '@/shared/contexts/dashboard-theme-context'
 import { useRouter } from 'next/navigation'
 
 export function AdminModeToggle() {
-  const { isAdmin, isCreator, isReviewer } = useUserRole()
+  const { isAdmin, isCreator, isReviewer, role } = useUserRole()
   const { adminMode, setAdminMode, isTransitioning, setTransitioning } = useDashboardTheme()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -18,32 +18,36 @@ export function AdminModeToggle() {
   // Only show for admin, creator, or reviewer users - ALL HOOKS MUST BE CALLED BEFORE THIS
   if (!isAdmin && !isCreator && !isReviewer) return null
 
-  const switchToMode = async (newMode: 'admin' | 'creator' | 'reviewer' | 'user') => {
-    if (newMode === adminMode) return // Already in this mode
+  // Determine if currently in admin-type mode
+  const isInAdminMode = adminMode === 'admin' || adminMode === 'creator' || adminMode === 'reviewer'
+  const isInStudentMode = adminMode === 'user'
+
+  const switchToMode = async (newMode: 'admin' | 'user') => {
+    // Map 'admin' to actual role
+    const targetMode = newMode === 'admin'
+      ? (role as 'admin' | 'creator' | 'reviewer')
+      : 'user'
+
+    if (targetMode === adminMode) return // Already in this mode
 
     try {
-      // Start global transition state immediately
-      setTransitioning(true)
       setIsLoading(true)
+      setTransitioning(true)
 
       // Update admin mode first (this will also handle theme switching)
-      setAdminMode(newMode)
+      setAdminMode(targetMode)
 
-      // Small delay to allow theme to apply
-      await new Promise(resolve => setTimeout(resolve, 150))
-
-      // Navigate to appropriate dashboard
-      if (newMode === 'admin' || newMode === 'creator' || newMode === 'reviewer') {
+      // Navigate to appropriate dashboard immediately
+      if (newMode === 'admin') {
         router.push('/admin/dashboard')
       } else {
         router.push('/dashboard')
       }
 
-      // Clear loading states after navigation with longer delay for content to load
-      setTimeout(() => {
-        setIsLoading(false)
-        setTransitioning(false)
-      }, 800)
+      // Clear loading states immediately after navigation starts
+      // The navigation itself will trigger re-renders with proper content
+      setIsLoading(false)
+      setTransitioning(false)
     } catch (error) {
       console.error('Error switching mode:', error)
       setIsLoading(false)
@@ -51,63 +55,52 @@ export function AdminModeToggle() {
     }
   }
 
-  // Get available modes based on user role
-  const getAvailableModes = () => {
-    const modes = []
-
-    if (isAdmin) {
-      modes.push({ key: 'admin', label: 'Admin', icon: Shield })
-    }
-    if (isAdmin || isCreator) {
-      modes.push({ key: 'creator', label: 'Creator', icon: PenTool })
-    }
-    if (isAdmin || isReviewer) {
-      modes.push({ key: 'reviewer', label: 'Reviewer', icon: Eye })
-    }
-
-    // Everyone can view as student
-    modes.push({ key: 'user', label: 'Student', icon: User })
-
-    return modes
+  // Get role label based on actual user role
+  const getRoleLabel = () => {
+    if (isAdmin) return 'Admin'
+    if (isCreator) return 'Creator'
+    if (isReviewer) return 'Reviewer'
+    return 'Student'
   }
 
-  const availableModes = getAvailableModes()
-
-  // Show skeleton loading state while switching modes
-  if (isLoading || isTransitioning) {
-    return (
-      <div className="flex items-center bg-muted/20 rounded-lg p-1 gap-0.5">
-        {Array.from({ length: availableModes.length }).map((_, index) => (
-          <div key={index} className="flex items-center h-7 px-3 gap-1.5">
-            <Skeleton className="h-3 w-3 rounded-sm" />
-            <Skeleton className="h-3 w-12" />
-          </div>
-        ))}
-      </div>
-    )
+  // Get role icon based on actual user role
+  const getRoleIcon = () => {
+    if (isAdmin) return Shield
+    if (isCreator) return PenTool
+    if (isReviewer) return Eye
+    return User
   }
+
+  const modes = [
+    { key: 'admin', label: getRoleLabel(), icon: getRoleIcon() },
+    { key: 'user', label: 'Student', icon: User }
+  ]
 
   return (
     <div className="flex items-center bg-muted/20 rounded-lg p-1 gap-0.5">
-      {availableModes.map(({ key, label, icon: Icon }) => (
-        <Button
-          key={key}
-          variant={adminMode === key ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => switchToMode(key as any)}
-          disabled={isLoading || isTransitioning}
-          className={`
-            h-7 px-3 text-xs font-medium transition-all duration-200 
-            ${adminMode === key 
-              ? 'bg-background shadow-sm text-foreground' 
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
-            }
-          `}
-        >
-          <Icon className="h-3 w-3 mr-1.5" />
-          {label}
-        </Button>
-      ))}
+      {modes.map(({ key, label, icon: Icon }) => {
+        const isActive = key === 'admin' ? isInAdminMode : isInStudentMode
+
+        return (
+          <Button
+            key={key}
+            variant={isActive ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => switchToMode(key as 'admin' | 'user')}
+            disabled={isLoading || isTransitioning}
+            className={`
+              h-7 px-3 text-xs font-medium transition-all duration-200
+              ${isActive
+                ? 'bg-background shadow-sm text-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+              }
+            `}
+          >
+            <Icon className="h-3 w-3 mr-1.5" />
+            {label}
+          </Button>
+        )
+      })}
     </div>
   )
 }

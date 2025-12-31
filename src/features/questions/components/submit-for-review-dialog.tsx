@@ -67,13 +67,26 @@ export function SubmitForReviewDialog({
     try {
       const response = await fetch('/api/admin/reviewers')
       if (!response.ok) {
-        throw new Error('Failed to fetch reviewers')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `Failed to fetch reviewers: ${response.status}`)
       }
       const data = await response.json()
       setReviewers(data.reviewers || [])
     } catch (error) {
       console.error('Error fetching reviewers:', error)
-      toast.error('Failed to load reviewers')
+
+      // Detect network errors (laptop sleep/wake, offline, etc.)
+      const isNetworkError = error instanceof TypeError &&
+                            (error.message?.includes('fetch') || error.message?.includes('network'))
+
+      if (isNetworkError) {
+        toast.error('Network connection interrupted. Please refresh and try again.')
+      } else if (error.message?.includes('Timed out')) {
+        toast.error('Request timed out. Please check your network connection.')
+      } else {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load reviewers'
+        toast.error(errorMessage)
+      }
     } finally {
       setLoading(false)
     }

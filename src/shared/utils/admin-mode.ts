@@ -14,18 +14,25 @@ const ADMIN_MODE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
 
 /**
  * Get admin mode from cookie with fallback logic
- * 
+ *
  * @param isAdmin - Whether the user has admin/creator/reviewer role
+ * @param userRole - The user's actual role (admin, creator, reviewer, or user)
  * @returns The current admin mode
- * 
+ *
  * Logic:
  * 1. If cookie exists, use it
- * 2. If no cookie and user is not admin, default to 'user' mode
- * 3. If no cookie and user is admin, default to 'admin' mode
+ * 2. If no cookie and user has admin-type role, default to their actual role (admin/creator/reviewer)
+ * 3. If no cookie and user is regular user, default to 'user' mode
+ *
+ * Note: The default is ALWAYS admin-type role for admin/creator/reviewer users
  */
-export function getAdminModeFromCookie(isAdmin: boolean = false): AdminMode {
+export function getAdminModeFromCookie(
+  isAdmin: boolean = false,
+  userRole?: 'admin' | 'creator' | 'reviewer' | 'user'
+): AdminMode {
   if (typeof document === 'undefined') {
-    return isAdmin ? 'admin' : 'user'
+    // Server-side: use role-based default
+    return userRole || (isAdmin ? 'admin' : 'user')
   }
 
   const adminModeCookie = document.cookie
@@ -38,7 +45,12 @@ export function getAdminModeFromCookie(isAdmin: boolean = false): AdminMode {
     return adminModeCookie
   }
 
-  // If no cookie, use role-based default
+  // If no cookie, default to actual role for admin-type users, 'user' for regular users
+  // This ensures admin/creator/reviewer users start in their admin-type role by default
+  if (userRole && (userRole === 'admin' || userRole === 'creator' || userRole === 'reviewer')) {
+    return userRole
+  }
+
   return isAdmin ? 'admin' : 'user'
 }
 
