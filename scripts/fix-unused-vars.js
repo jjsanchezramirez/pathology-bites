@@ -71,15 +71,18 @@ for (const [filePath, fixes] of filesToFix) {
   for (const fix of fixes) {
     const lineIndex = fix.line - 1;
     const line = lines[lineIndex];
-    
+
     // Extract variable name from message
     const match = fix.message.match(/'([^']+)' is (defined|assigned)/);
     if (!match) continue;
-    
+
     const varName = match[1];
-    
-    // Skip if already prefixed with underscore
-    if (varName.startsWith('_')) continue;
+
+    // Skip if already prefixed with underscore and still unused - these need manual review
+    if (varName.startsWith('_')) {
+      console.log(`  ⚠ Skipping ${varName} (already prefixed, needs manual review)`);
+      continue;
+    }
     
     // Pattern 1: Unused function parameter - prefix with underscore
     if (line.includes(`(`) && line.includes(varName)) {
