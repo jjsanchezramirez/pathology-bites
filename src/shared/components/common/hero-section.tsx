@@ -58,7 +58,8 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
                     className="bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent"
                     style={{
                       backgroundSize: showShimmer ? "200% auto" : "100% auto",
-                      animation: showShimmer ? "shimmer 2s linear" : "none",
+                      animation: showShimmer ? "shimmer 2s linear forwards" : "none",
+                      animationIterationCount: showShimmer ? "1" : "0",
                     }}
                   >
                     by residents, for residents
