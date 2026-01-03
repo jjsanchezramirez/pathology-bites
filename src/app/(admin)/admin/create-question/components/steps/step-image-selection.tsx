@@ -1,7 +1,5 @@
 'use client'
 
-import { Alert, AlertDescription } from '@/shared/components/ui/alert'
-import { Info } from 'lucide-react'
 import { FormState } from '../multi-step-question-form'
 import { ImageAttachmentsTab } from '../image-attachments-tab'
 

@@ -23,17 +23,7 @@ import {
 export default function QuizzesPage() {
   const featuresEnabled = isQuizFeaturesEnabled()
 
-  // Show placeholder if features are disabled - check BEFORE any hooks
-  if (!featuresEnabled) {
-    return (
-      <FeaturePlaceholder
-        title="My Quizzes"
-        description="Your complete quiz history and detailed review tools are being finalized. Soon you'll be able to review all your past quizzes, track your performance over time, and revisit questions to reinforce your learning."
-        status="almost-ready"
-      />
-    )
-  }
-
+  // All hooks must be called before any conditional returns
   const [quizzes, setQuizzes] = useState<QuizSessionListItem[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedFilter, setSelectedFilter] = useState<string>("all")
@@ -77,6 +67,22 @@ export default function QuizzesPage() {
       toast.error('Failed to load quizzes')
     }
   }, [quizzesData, error])
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, selectedFilter, sortBy])
+
+  // Show placeholder if features are disabled - check AFTER all hooks
+  if (!featuresEnabled) {
+    return (
+      <FeaturePlaceholder
+        title="My Quizzes"
+        description="Your complete quiz history and detailed review tools are being finalized. Soon you'll be able to review all your past quizzes, track your performance over time, and revisit questions to reinforce your learning."
+        status="almost-ready"
+      />
+    )
+  }
 
   const handleDeleteClick = (quiz: QuizSessionListItem) => {
     setSelectedQuiz(quiz)
@@ -160,11 +166,6 @@ export default function QuizzesPage() {
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const paginatedQuizzes = sortedQuizzes.slice(startIndex, endIndex)
-
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [searchTerm, selectedFilter, sortBy])
 
   // Calculate statistics
   const stats = {

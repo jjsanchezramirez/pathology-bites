@@ -18,7 +18,7 @@ export function calculateAchievements(stats: UserStats): Achievement[] {
   return BADGE_DEFINITIONS.map(badge => {
     let unlocked = false
     let progress = 0
-    let total = badge.requirement.value
+    const total = badge.requirement.value
 
     switch (badge.requirement.type) {
       case 'quiz_count':

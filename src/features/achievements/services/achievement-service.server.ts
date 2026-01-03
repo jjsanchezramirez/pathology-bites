@@ -92,7 +92,7 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     const today = new Date()
     const todayStr = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())).toISOString().split('T')[0]
 
-    let checkDate = new Date(todayStr)
+    const checkDate = new Date(todayStr)
     currentStreak = 0
 
     while (true) {

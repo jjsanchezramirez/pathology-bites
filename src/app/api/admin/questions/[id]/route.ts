@@ -379,12 +379,12 @@ export async function PATCH(
       // Update the main question data - only include valid question table fields
       // For published questions with minor/major edits, change status to pending_review
       let statusToSet = questionData.status
-      let reviewerToSet = currentQuestion.reviewer_id
+      const reviewerToSet = currentQuestion.reviewer_id
       if (currentQuestion.status === 'published' && !isPatchEdit && updateType && ['minor', 'major'].includes(updateType)) {
         statusToSet = 'pending_review'
         // Keep the existing reviewer if there is one, otherwise this will need to be assigned by an admin
         // The constraint requires a reviewer, so we keep the current one to avoid constraint violation
-        console.log(`PATCH - Changing status from published to pending_review for ${updateType} edit`)
+        console.log(`PATCH - Changing status from published to pending_review for ${updateType} edit, keeping reviewer: ${reviewerToSet}`)
       }
 
       const validQuestionFields = {

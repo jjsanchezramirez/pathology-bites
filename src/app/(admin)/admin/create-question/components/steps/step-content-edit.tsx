@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Input } from '@/shared/components/ui/input'
 import { Textarea } from '@/shared/components/ui/textarea'
 import { Label } from '@/shared/components/ui/label'
@@ -11,27 +11,11 @@ import { Sparkles, Loader2, RefreshCw } from 'lucide-react'
 import { toast } from '@/shared/utils/toast'
 import { FormState } from '../multi-step-question-form'
 import { getModelById } from '@/shared/config/ai-models'
-import { createClient } from '@/shared/services/client'
 
 interface StepContentEditProps {
   formState: FormState
   updateFormState: (updates: Partial<FormState>) => void
   questionSetAIModel?: string | null // AI model from the question set
-}
-
-interface Category {
-  id: string
-  name: string
-}
-
-interface QuestionSet {
-  id: string
-  name: string
-}
-
-interface Tag {
-  id: string
-  name: string
 }
 
 export function StepContentEdit({ formState, updateFormState, questionSetAIModel }: StepContentEditProps) {
