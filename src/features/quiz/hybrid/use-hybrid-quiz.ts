@@ -19,7 +19,7 @@ import { useQuizStateMachine } from './hooks/use-quiz-state-machine';
 import { DatabaseSyncManager, SyncResult } from './core/database-sync-manager';
 import { AutoSaveManager } from '../services/auto-save-manager';
 import { AUTO_SAVE_CONFIG, SyncStatus, type } from '../config/auto-save-config';
-import { QuizAnswer, QuizState, QuizQuestionTransformer } from '../types/quiz-question';
+import { QuizAnswer, QuizState, QuizQuestionTransformer, UIQuizQuestion } from '../types/quiz-question';
 import { toast } from '@/shared/utils/toast';
 import { onQuizComplete } from '@/shared/utils/cache-helpers';
 
@@ -97,8 +97,8 @@ export interface HybridQuizActions {
   navigateToQuestion: (index: number) => boolean;
 
   // Data Access
-  getCurrentQuestion: () => any | null; // UI-compatible question format
-  getQuestions: () => unknown[]; // UI-compatible question format
+  getCurrentQuestion: () => UIQuizQuestion | null; // UI-compatible question format
+  getQuestions: () => UIQuizQuestion[]; // UI-compatible question format
   getAnswerForQuestion: (questionId: string) => QuizAnswer | null;
   getQuizConfig: () => QuizState['config'] | null;
 

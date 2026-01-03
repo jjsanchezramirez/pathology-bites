@@ -1,6 +1,11 @@
 // src/features/questions/utils/display-helpers.ts
 
-export function getCategoryPathString(category: unknown, categoryPaths: Map<number, any>): string {
+interface CategoryNode {
+  name: string
+  parent_id?: number | null
+}
+
+export function getCategoryPathString(category: unknown, categoryPaths: Map<number, CategoryNode>): string {
   const path = [];
   let current = category;
   

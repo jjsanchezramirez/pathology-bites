@@ -7,6 +7,15 @@ import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 import { ACHIEVEMENT_DEFINITIONS, type UserStats } from '@/features/achievements/services/achievement-checker'
 import type { Achievement } from '@/features/achievements/types/achievement'
 
+interface UserCategoryStats {
+  category_id: string
+  all_count: number
+  unused_count: number
+  incorrect_count: number
+  marked_count: number
+  correct_count: number
+}
+
 interface UnifiedPerformanceResponse {
   success: boolean
   data: {
@@ -780,7 +789,7 @@ export async function GET(request: NextRequest) {
       })
 
     // Create stats lookup map
-    const allStatsMap = new Map<string, any>()
+    const allStatsMap = new Map<string, Omit<UserCategoryStats, 'category_id'>>()
     for (const stat of (allUserStatsData || [])) {
       const categoryId = typeof stat.category_id === 'string' ? stat.category_id : String(stat.category_id)
       allStatsMap.set(categoryId, {

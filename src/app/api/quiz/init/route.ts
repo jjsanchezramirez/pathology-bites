@@ -6,6 +6,15 @@ import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 
+interface UserCategoryStats {
+  category_id: string
+  all_count: number
+  unused_count: number
+  incorrect_count: number
+  marked_count: number
+  correct_count: number
+}
+
 export async function GET(request: NextRequest) {
   const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
@@ -85,7 +94,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Create stats lookup map (category_id is UUID, convert to string for lookup)
-    const statsMap = new Map<string, any>()
+    const statsMap = new Map<string, Omit<UserCategoryStats, 'category_id'>>()
     for (const stat of (userStatsData || [])) {
       const categoryId = typeof stat.category_id === 'string' ? stat.category_id : String(stat.category_id)
       statsMap.set(categoryId, {
