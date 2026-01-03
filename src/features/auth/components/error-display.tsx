@@ -218,7 +218,7 @@ export function useErrorDisplay() {
     try {
       await operation()
       dismissError()
-    } catch (_error) {
+    } catch {
       // Error will be handled by the operation itself
     } finally {
       setIsRetrying(false)

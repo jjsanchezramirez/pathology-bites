@@ -203,7 +203,7 @@ class UserSettingsService {
       try {
         responseText = await response.text()
         error = responseText ? JSON.parse(responseText) : {}
-      } catch (_e) {
+      } catch {
         error = { error: 'Failed to parse error response', rawResponse: responseText }
       }
       console.error('[UserSettings] Update failed:', {

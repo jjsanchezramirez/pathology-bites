@@ -70,7 +70,7 @@ class ClientDashboardService {
         draftQuestions: 0,
         flaggedQuestions: 0
       }
-    } catch (_error) {
+    } catch {
       // Return default stats on error
       return {
         totalQuestions: 0,

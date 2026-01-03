@@ -63,7 +63,7 @@ class CacheService {
         if (typeof window !== 'undefined') {
           try {
             localStorage.setItem(fullKey, JSON.stringify(entry))
-          } catch (_error) {
+          } catch {
             // Fallback to memory cache
             this.memoryCache.set(fullKey, entry)
           }
@@ -73,7 +73,7 @@ class CacheService {
         if (typeof window !== 'undefined') {
           try {
             sessionStorage.setItem(fullKey, JSON.stringify(entry))
-          } catch (_error) {
+          } catch {
             // Fallback to memory cache
             this.memoryCache.set(fullKey, entry)
           }
@@ -105,7 +105,7 @@ class CacheService {
           try {
             const stored = localStorage.getItem(fullKey)
             entry = stored ? JSON.parse(stored) : null
-          } catch (_error) {
+          } catch {
             return null
           }
         }
@@ -115,7 +115,7 @@ class CacheService {
           try {
             const stored = sessionStorage.getItem(fullKey)
             entry = stored ? JSON.parse(stored) : null
-          } catch (_error) {
+          } catch {
             return null
           }
         }

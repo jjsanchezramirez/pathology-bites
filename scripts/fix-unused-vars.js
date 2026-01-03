@@ -19,7 +19,7 @@ try {
     stdio: 'inherit',
     cwd: process.cwd()
   });
-} catch (_error) {
+} catch {
   // ESLint exits with error code when there are warnings, but still generates the file
 }
 
@@ -153,7 +153,7 @@ console.log('\nRunning build to verify...');
 try {
   execSync('npm run build', { stdio: 'inherit' });
   console.log('\n✅ Build successful! All fixes are valid.');
-} catch (_error) {
+} catch {
   console.error('\n❌ Build failed. Please review the changes.');
   process.exit(1);
 }

@@ -58,7 +58,7 @@ export class NotificationTriggers {
           }
         }
       }
-    } catch (_error) {
+    } catch {
     }
   }
 
@@ -76,7 +76,7 @@ export class NotificationTriggers {
       setTimeout(async () => {
         await this.checkDailyQuizReminder(userId)
       }, 2 * 60 * 60 * 1000) // 2 hours after login
-    } catch (_error) {
+    } catch {
     }
   }
 
@@ -106,7 +106,7 @@ export class NotificationTriggers {
           achieved_value: goalData.currentValue
         }
       )
-    } catch (_error) {
+    } catch {
     }
   }
 
@@ -141,7 +141,7 @@ export class NotificationTriggers {
           }
         )
       }
-    } catch (_error) {
+    } catch {
     }
   }
 
@@ -278,7 +278,7 @@ export class NotificationTriggers {
           }
         )
       }
-    } catch (_error) {
+    } catch {
     }
   }
 
@@ -298,7 +298,7 @@ export class NotificationTriggers {
         'warning',
         'all'
       )
-    } catch (_error) {
+    } catch {
     }
   }
 
@@ -317,7 +317,7 @@ export class NotificationTriggers {
         'info',
         targetAudience
       )
-    } catch (_error) {
+    } catch {
     }
   }
 

@@ -60,7 +60,7 @@ class RealtimeService {
         this.authListeners.forEach(listener => {
           try {
             listener(event, session)
-          } catch (_error) {
+          } catch {
           }
         })
       }
@@ -155,7 +155,7 @@ class RealtimeService {
         listeners.forEach(listener => {
           try {
             listener(payload)
-          } catch (_error) {
+          } catch {
           }
         })
       }

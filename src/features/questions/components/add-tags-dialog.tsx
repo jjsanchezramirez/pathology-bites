@@ -73,7 +73,7 @@ export function AddTagsDialog({
       setNewTagName('');
       setShowCreateInput(false);
       setSearchTerm('');
-    } catch (_error) {
+    } catch {
       // Error handled in hook
     }
   };

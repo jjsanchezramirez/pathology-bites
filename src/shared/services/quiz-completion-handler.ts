@@ -263,7 +263,7 @@ export class QuizCompletionHandler {
         if (upsertError) {
         }
       }
-    } catch (_error) {
+    } catch {
     }
   }
 }

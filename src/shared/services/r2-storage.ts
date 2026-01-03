@@ -312,7 +312,7 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
 
     // For private buckets, return a placeholder that indicates signed URL needed
     return `[PRIVATE:${bucketName}]${key}`
-  } catch (_error) {
+  } catch {
     // Fallback for client-side or when env vars are not available
     const bucketName = bucket || 'pathology-bites-images'
 

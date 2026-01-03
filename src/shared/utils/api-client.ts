@@ -129,7 +129,7 @@ class APIClient {
             credentials: options.credentials || 'include',
           })
         }
-      } catch (_e) {
+      } catch {
         // If we can't parse the error or it's not a CSRF error, return the original response
         return response
       }

@@ -55,7 +55,7 @@ export function SimpleTagsSelector({
       try {
         const newTag = await createTag(tagName);
         onTagsChange([...selectedTagIds, newTag.id]);
-      } catch (_error) {
+      } catch {
         // Error handled in hook
       }
     }

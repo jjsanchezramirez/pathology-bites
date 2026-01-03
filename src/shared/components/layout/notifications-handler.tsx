@@ -59,7 +59,7 @@ export function NotificationsHandler() {
   const markAsRead = async (notification: NotificationWithSource) => {
     try {
       await markNotificationAsRead(notification.id)
-    } catch (_error) {
+    } catch {
       toast.error("Failed to mark notification as read.")
     }
   }
@@ -68,7 +68,7 @@ export function NotificationsHandler() {
   const markAllAsRead = async () => {
     try {
       await markAllNotificationsAsRead()
-    } catch (_error) {
+    } catch {
       toast.error("Failed to mark all notifications as read.")
     }
   }

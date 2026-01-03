@@ -112,7 +112,7 @@ export function UniversalTagSelector({
     try {
       const newTag = await createTag(tagName.trim());
       handleTagSelect(newTag);
-    } catch (_error) {
+    } catch {
       // Error handled in hook
     }
   };

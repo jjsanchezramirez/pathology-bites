@@ -89,7 +89,7 @@ export function SettingsForm() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000))
       toast.success("Settings saved successfully")
-    } catch (_error) {
+    } catch {
       toast.error("Failed to save settings")
     } finally {
       setIsLoading(false)

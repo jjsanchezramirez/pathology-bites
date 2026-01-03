@@ -494,13 +494,13 @@ export async function updateSession(request: NextRequest) {
             return redirect('/admin/dashboard')
           }
         }
-      } catch (_error) {
+      } catch {
         // Silent error handling
       }
     }
 
     return supabaseResponse
-  } catch (_error) {
+  } catch {
     // Silent error handling - just allow request to proceed
     return NextResponse.next()
   }
@@ -554,7 +554,7 @@ async function getUserRoleWithCache(userId: string, user: any, supabase: any): P
     roleCache.set(userId, { role: dbRole, timestamp: Date.now() })
 
     return dbRole
-  } catch (_error) {
+  } catch {
     return 'user' // Default fallback
   } finally {
     // Remove from processing set

@@ -63,7 +63,7 @@ export function useUniversalTags(): UseUniversalTagsReturn {
       }
 
       return data || [];
-    } catch (_err) {
+    } catch {
       return [];
     }
   }, [supabase, recentTags]);

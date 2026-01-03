@@ -338,7 +338,7 @@ export class AIService {
               const jsonStr = text.substring(firstBrace, i + 1)
               try {
                 return JSON.parse(jsonStr)
-              } catch (_e) {
+              } catch {
                 break
               }
             }
@@ -353,7 +353,7 @@ export class AIService {
     if (codeBlockMatch) {
       try {
         return JSON.parse(codeBlockMatch[1])
-      } catch (_e) {
+      } catch {
         // Continue to next strategy
       }
     }

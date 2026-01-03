@@ -40,12 +40,12 @@ export class NotificationJobs {
               )
             }
           }
-        } catch (_error) {
+        } catch {
           // Continue with other users
         }
       }
 
-    } catch (_error) {
+    } catch {
     }
   }
 
@@ -74,11 +74,11 @@ export class NotificationJobs {
               "It's time for your weekly review! Check your progress and identify areas that need more attention."
             )
           }
-        } catch (_error) {
+        } catch {
         }
       }
 
-    } catch (_error) {
+    } catch {
     }
   }
 
@@ -98,11 +98,11 @@ export class NotificationJobs {
       for (const user of users || []) {
         try {
           await this.checkUserMilestones(user.user_id)
-        } catch (_error) {
+        } catch {
         }
       }
 
-    } catch (_error) {
+    } catch {
     }
   }
 
@@ -130,7 +130,7 @@ export class NotificationJobs {
           }
         }
       }
-    } catch (_error) {
+    } catch {
     }
   }
 
@@ -188,7 +188,7 @@ export class NotificationJobs {
         loginStreak: 0, // Would calculate from actual data
         categoryStats: [] // Would calculate from actual data
       }
-    } catch (_error) {
+    } catch {
       return null
     }
   }
@@ -216,7 +216,7 @@ export class NotificationJobs {
         return
       }
 
-    } catch (_error) {
+    } catch {
     }
   }
 }

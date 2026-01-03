@@ -17,7 +17,7 @@ try {
     stdio: 'inherit',
     cwd: process.cwd()
   });
-} catch (_error) {
+} catch {
   // ESLint exits with error code when there are warnings
 }
 
@@ -152,7 +152,7 @@ if (totalFixed > 0) {
   try {
     execSync('npm run build', { stdio: 'inherit' });
     console.log('\n✅ Build successful!');
-  } catch (_error) {
+  } catch {
     console.error('\n❌ Build failed. Please review the changes.');
     process.exit(1);
   }

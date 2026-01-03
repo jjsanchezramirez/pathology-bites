@@ -644,7 +644,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
               if (data.lastSaved && data.lastSaved < oneWeekAgo) {
                 localStorage.removeItem(key);
               }
-            } catch (_error) {
+            } catch {
               // Remove corrupted entries
               localStorage.removeItem(key);
             }
