@@ -8,7 +8,7 @@ const ABPATH_API_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/ab-p
 let cachedABPathPromise: Promise<any> | null = null
 
 interface UseClientABPathResult {
-  data: any | null
+  data: unknown | null
   isLoading: boolean
   error: string | null
 }
@@ -41,7 +41,7 @@ async function loadABPathContentSpecs(): Promise<any> {
 
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       return res
-    } catch (e: any) {
+    } catch (e) {
       const msg = e?.name === 'AbortError'
         ? 'Timed out fetching ABPath content specifications. Please check your network and try again.'
         : (e?.message || 'Failed to fetch ABPath content specifications.')
@@ -124,7 +124,7 @@ export function useClientABPath(): UseClientABPathResult {
             dataSize: abpathData ? `${(JSON.stringify(abpathData).length / 1024).toFixed(1)}KB` : '0KB'
           })
         }
-      } catch (err: any) {
+      } catch (err) {
         console.warn('⚠️ ABPath content specs load issue (using fallback):', err)
         if (mounted) {
           // Don't set error state since we have fallback data

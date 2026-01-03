@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     // Create question options
     if (questionData.question_options && questionData.question_options.length > 0) {
-      const answerOptions = questionData.question_options.map((option: any, index: number) => ({
+      const answerOptions = questionData.question_options.map((option: unknown, index: number) => ({
         question_id: question.id,
         text: option.text,
         is_correct: option.is_correct ?? false,
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
 
     // Handle question images if provided
     if (questionData.question_images && questionData.question_images.length > 0) {
-      const questionImages = questionData.question_images.map((img: any) => ({
+      const questionImages = questionData.question_images.map((img: unknown) => ({
         question_id: question.id,
         image_id: img.image_id, // This should be set after image upload
         question_section: img.question_section,

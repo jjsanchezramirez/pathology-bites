@@ -13,7 +13,7 @@ export interface SecurityEvent {
   type: 'fingerprint_mismatch' | 'session_expired' | 'session_invalid' | 'concurrent_session'
   severity: 'low' | 'medium' | 'high'
   timestamp: number
-  details: Record<string, any>
+  details: Record<string, unknown>
   userAgent?: string
 }
 
@@ -173,7 +173,7 @@ class SessionSecurity {
   /**
    * Validate session structure and expiration
    */
-  validateSession(session: any): { isValid: boolean; reason?: string } {
+  validateSession(session: unknown): { isValid: boolean; reason?: string } {
     // Check session structure
     if (!session) {
       return { isValid: false, reason: 'Session is null or undefined' }

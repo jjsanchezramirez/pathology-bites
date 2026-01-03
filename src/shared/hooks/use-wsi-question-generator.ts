@@ -31,15 +31,15 @@ interface GeneratedQuestion {
   id: string
   wsi: VirtualSlide
   question: QuestionData
-  context: any | null
+  context: unknown | null
   metadata: {
     generated_at: string
     model: string
     generation_time_ms: number
-    image_verification?: any
-    token_usage?: any
+    image_verification?: unknown
+    token_usage?: unknown
   }
-  debug?: any
+  debug?: unknown
 }
 
 interface UseWSIQuestionGeneratorReturn {
@@ -228,7 +228,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
 
   // Main generation function with model fallback
-  const generateQuestionWithFallback = useCallback(async (wsi: any, modelIndex: number): Promise<any> => {
+  const generateQuestionWithFallback = useCallback(async (wsi: unknown, modelIndex: number): Promise<any> => {
     console.log(`[WSI Generator] Attempting generation with model index: ${modelIndex}`)
 
     const baseUrl = typeof window !== 'undefined'

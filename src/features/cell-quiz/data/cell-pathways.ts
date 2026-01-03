@@ -138,7 +138,7 @@ export const CELL_RELATIONSHIPS = generateCellRelationships();
  * @param cellData The cell data object containing look_alikes
  * @returns Array of 4 options: [correct, look_alike1, look_alike2, pathway_related/unrelated]
  */
-export function generateLookAlikeOptions(correctCellType: string, cellData: any): string[] {
+export function generateLookAlikeOptions(correctCellType: string, cellData: unknown): string[] {
   const cellInfo = cellData[correctCellType];
   const options: string[] = [correctCellType];
 

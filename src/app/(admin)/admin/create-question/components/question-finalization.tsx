@@ -40,7 +40,7 @@ interface GeneratedQuestion {
     caption: string
   }>
   tag_ids?: string[]
-  metadata?: any
+  metadata?: unknown
 }
 
 interface ImageAttachment {
@@ -84,7 +84,7 @@ interface QuestionSet {
   name: string
   description: string | null
   source_type: string
-  source_details: any // QuestionSetSourceDetails
+  source_details: unknown // QuestionSetSourceDetails
   is_active: boolean
   created_by: string | null
   created_at: string
@@ -102,7 +102,7 @@ export function QuestionFinalization({ question, attachedImages, onQuestionCreat
   const [isLoading, setIsLoading] = useState(true)
 
   // Function to automatically assign category based on educational content
-  const getAutoCategoryId = (sourceContent: any): string => {
+  const getAutoCategoryId = (sourceContent: unknown): string => {
     if (!sourceContent) return ''
 
     const { category, subject } = sourceContent

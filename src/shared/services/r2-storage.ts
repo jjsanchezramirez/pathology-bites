@@ -218,7 +218,7 @@ export async function getR2FileInfo(key: string): Promise<R2FileInfo | null> {
       contentType: response.ContentType || 'application/octet-stream',
       exists: true
     }
-  } catch (error: any) {
+  } catch (error) {
     if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
       return {
         size: 0,
@@ -250,7 +250,7 @@ export async function getFileContent(bucket: string, key: string): Promise<Uint8
     }
 
     // Convert stream to bytes
-    const chunks: any[] = []
+    const chunks: unknown[] = []
     const stream = response.Body as any
     
     // Handle different stream types
@@ -283,7 +283,7 @@ export async function getFileContent(bucket: string, key: string): Promise<Uint8
     }
 
     return result
-  } catch (error: any) {
+  } catch (error) {
     if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) {
       return null
     }

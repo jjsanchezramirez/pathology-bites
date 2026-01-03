@@ -31,7 +31,7 @@ interface Activity {
   quiz_id?: string
   goal_id?: string
   subject_id?: string
-  data: Record<string, any>
+  data: Record<string, unknown>
   is_read: boolean
   priority: 'low' | 'medium' | 'high'
 }

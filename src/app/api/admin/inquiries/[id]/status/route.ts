@@ -85,7 +85,7 @@ export async function PATCH(
       inquiry: updatedInquiry
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error updating inquiry status:', error)
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },

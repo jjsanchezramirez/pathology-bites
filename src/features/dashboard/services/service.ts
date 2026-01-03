@@ -29,7 +29,7 @@ export interface RecentActivity {
   score?: number
   navigationUrl?: string
   priority?: 'low' | 'medium' | 'high'
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface QuickAction {
@@ -325,7 +325,7 @@ export class DashboardService {
   }
 
   // Role-specific activity methods
-  private async getAdminActivities(supabase: any, activities: RecentActivity[]): Promise<void> {
+  private async getAdminActivities(supabase: unknown, activities: RecentActivity[]): Promise<void> {
     // Admins see comprehensive activity: users, questions, reviews, system events
     const [questionsData, usersData, inquiriesData] = await Promise.allSettled([
       supabase
@@ -397,7 +397,7 @@ export class DashboardService {
     }
   }
 
-  private async getCreatorActivities(supabase: any, activities: RecentActivity[], userId?: string): Promise<void> {
+  private async getCreatorActivities(supabase: unknown, activities: RecentActivity[], userId?: string): Promise<void> {
     if (!userId) return
 
     // Creators see their own questions and status changes
@@ -444,7 +444,7 @@ export class DashboardService {
     }
   }
 
-  private async getReviewerActivities(supabase: any, activities: RecentActivity[], userId?: string): Promise<void> {
+  private async getReviewerActivities(supabase: unknown, activities: RecentActivity[], userId?: string): Promise<void> {
     // Reviewers see pending reviews and their review activity
     const [pendingData, reviewedData] = await Promise.allSettled([
       supabase
@@ -507,7 +507,7 @@ export class DashboardService {
     }
   }
 
-  private async getGeneralActivities(supabase: any, activities: RecentActivity[]): Promise<void> {
+  private async getGeneralActivities(supabase: unknown, activities: RecentActivity[]): Promise<void> {
     // Default: get general recent questions
     const { data: recentQuestions } = await supabase
       .from('questions')

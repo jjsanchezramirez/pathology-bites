@@ -236,7 +236,7 @@ export interface Database {
           module_id: string
           sort_order: number
           is_required: boolean
-          unlock_criteria: any | null
+          unlock_criteria: unknown | null
           custom_description: string | null
           estimated_duration_override: number | null
           created_at: string
@@ -247,7 +247,7 @@ export interface Database {
           module_id: string
           sort_order: number
           is_required?: boolean
-          unlock_criteria?: any | null
+          unlock_criteria?: unknown | null
           custom_description?: string | null
           estimated_duration_override?: number | null
           created_at?: string
@@ -258,7 +258,7 @@ export interface Database {
           module_id?: string
           sort_order?: number
           is_required?: boolean
-          unlock_criteria?: any | null
+          unlock_criteria?: unknown | null
           custom_description?: string | null
           estimated_duration_override?: number | null
           created_at?: string

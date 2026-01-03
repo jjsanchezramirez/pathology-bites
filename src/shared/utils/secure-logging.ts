@@ -15,7 +15,7 @@ const SENSITIVE_FIELDS = [
   'refresh_token'
 ]
 
-export function sanitizeForLogging(obj: any): any {
+export function sanitizeForLogging(obj: unknown): unknown {
   if (obj === null || obj === undefined) return obj
   
   if (typeof obj === 'string') {
@@ -32,7 +32,7 @@ export function sanitizeForLogging(obj: any): any {
   }
   
   if (typeof obj === 'object') {
-    const sanitized: any = {}
+    const sanitized: unknown = {}
     for (const [key, value] of Object.entries(obj)) {
       const lowerKey = key.toLowerCase()
       if (SENSITIVE_FIELDS.some(field => lowerKey.includes(field))) {
@@ -49,15 +49,15 @@ export function sanitizeForLogging(obj: any): any {
 
 // Secure console methods
 export const secureLog = {
-  info: (message: string, data?: any) => {
+  info: (message: string, data?: unknown) => {
     console.info(message, data ? sanitizeForLogging(data) : '')
   },
   
-  warn: (message: string, data?: any) => {
+  warn: (message: string, data?: unknown) => {
     console.warn(message, data ? sanitizeForLogging(data) : '')
   },
   
-  error: (message: string, error?: any) => {
+  error: (message: string, error?: unknown) => {
     // For errors, log the message and stack trace but sanitize any data
     if (error instanceof Error) {
       console.error(message, {

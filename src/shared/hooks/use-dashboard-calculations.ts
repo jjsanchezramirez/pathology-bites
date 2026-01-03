@@ -4,14 +4,14 @@ interface QuizSession {
   id: string
   score: number
   completedAt: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 interface DashboardStats {
   totalQuizzes?: number
   studyStreak?: number
   averageScore?: number
-  [key: string]: any
+  [key: string]: unknown
 }
 
 interface UseDashboardCalculationsProps {

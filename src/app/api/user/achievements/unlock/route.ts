@@ -10,7 +10,7 @@ interface UnlockAchievementRequest {
   category: string
   quizId?: string
   subjectId?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export async function POST(request: NextRequest) {

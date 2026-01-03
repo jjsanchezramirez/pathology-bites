@@ -145,7 +145,7 @@ export default function QuizSessionPage() {
       
       // Initialize all explanations to be visible
       const initialExplanations: {[key: string]: boolean} = {}
-      resultsData.data.questionDetails?.forEach((q: any) => {
+      resultsData.data.questionDetails?.forEach((q: unknown) => {
         initialExplanations[q.id] = true
       })
       setShowExplanations(initialExplanations)
@@ -429,7 +429,7 @@ export default function QuizSessionPage() {
     }
     
     // Create attempts array for sidebar from results
-    const reviewAttempts = reviewResult.questionDetails.map((q: any) => ({
+    const reviewAttempts = reviewResult.questionDetails.map((q: unknown) => ({
       questionId: q.id,
       selectedAnswerId: q.selectedAnswerId,
       isCorrect: q.isCorrect,

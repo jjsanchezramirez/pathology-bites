@@ -105,7 +105,7 @@ export async function POST(
 
     // Copy question options
     if (originalQuestion.question_options && originalQuestion.question_options.length > 0) {
-      const newOptions = originalQuestion.question_options.map((option: any) => ({
+      const newOptions = originalQuestion.question_options.map((option: unknown) => ({
         question_id: newQuestion.id,
         text: option.text,
         is_correct: option.is_correct,
@@ -125,7 +125,7 @@ export async function POST(
 
     // Copy question images
     if (originalQuestion.question_images && originalQuestion.question_images.length > 0) {
-      const newImages = originalQuestion.question_images.map((image: any) => ({
+      const newImages = originalQuestion.question_images.map((image: unknown) => ({
         question_id: newQuestion.id,
         image_id: image.image_id,
         question_section: image.question_section,
@@ -144,7 +144,7 @@ export async function POST(
 
     // Copy question tags
     if (originalQuestion.question_tags && originalQuestion.question_tags.length > 0) {
-      const newTags = originalQuestion.question_tags.map((tag: any) => ({
+      const newTags = originalQuestion.question_tags.map((tag: unknown) => ({
         question_id: newQuestion.id,
         tag_id: tag.tag_id
       }))
@@ -161,7 +161,7 @@ export async function POST(
 
     // Copy question categories
     if (originalQuestion.question_categories && originalQuestion.question_categories.length > 0) {
-      const newCategories = originalQuestion.question_categories.map((category: any) => ({
+      const newCategories = originalQuestion.question_categories.map((category: unknown) => ({
         question_id: newQuestion.id,
         category_id: category.category_id
       }))

@@ -70,7 +70,7 @@ export async function DELETE(
       deletedInquiry: inquiry
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deleting inquiry:', error)
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },

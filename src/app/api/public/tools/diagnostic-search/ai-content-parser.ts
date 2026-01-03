@@ -44,7 +44,7 @@ interface ParsedContent {
  * Parse content using AI
  */
 export async function parseContentWithAI(
-  rawContent: any,
+  rawContent: unknown,
   entity: string,
   modelIndex: number = 0
 ): Promise<ParsedContent | null> {
@@ -174,7 +174,7 @@ export async function parseContentWithAI(
 /**
  * Create parsing prompt
  */
-function createParsingPrompt(rawContent: any, entity: string): string {
+function createParsingPrompt(rawContent: unknown, entity: string): string {
   const contentText = JSON.stringify(rawContent, null, 2)
 
   return `You are a pathology expert. Extract and organize diagnostic information about "${entity}" from this educational content.

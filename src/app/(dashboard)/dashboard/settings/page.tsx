@@ -96,7 +96,7 @@ export default function SettingsPage() {
     }
   }
 
-  const handleQuizSettingChange = async (key: keyof QuizSettings, value: any) => {
+  const handleQuizSettingChange = async (key: keyof QuizSettings, value: unknown) => {
     try {
       setSaving(true)
       const newSettings = { ...quizSettings, [key]: value }

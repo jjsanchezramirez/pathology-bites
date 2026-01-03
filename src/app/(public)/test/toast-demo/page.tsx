@@ -233,7 +233,7 @@ export default function ToastDemoPage() {
                   simulateAsyncOperation(),
                   {
                     loading: 'Loading questions...',
-                    success: (data: any) => `Loaded ${data.count} questions successfully`,
+                    success: (data: unknown) => `Loaded ${data.count} questions successfully`,
                     error: (err: Error) => `Error: ${err.message}`
                   }
                 )

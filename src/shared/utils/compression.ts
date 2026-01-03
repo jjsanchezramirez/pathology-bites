@@ -20,7 +20,7 @@ interface CompressionOptions {
  * IMPORTANT: Disable manual compression to avoid conflicts with Next.js built-in compression
  */
 export async function createOptimizedResponse(
-  data: any,
+  data: unknown,
   options: CompressionOptions = {}
 ): Promise<NextResponse> {
   const {

@@ -6,7 +6,7 @@ import { isPublicRoute } from '@/shared/utils/route-helpers'
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 type AuthListener = (event: AuthChangeEvent, session: Session | null) => void
-type DatabaseListener = (payload: any) => void
+type DatabaseListener = (payload: unknown) => void
 
 interface DatabaseSubscription {
   table: string
@@ -20,7 +20,7 @@ class RealtimeService {
   private supabase = createClient()
 
   // Auth subscription management
-  private authSubscription: any = null
+  private authSubscription: unknown = null
   private authListeners: Set<AuthListener> = new Set()
 
   // Database subscription management
@@ -139,7 +139,7 @@ class RealtimeService {
 
     const channel = this.supabase.channel(`shared-${key}`)
 
-    const config: any = {
+    const config: unknown = {
       event: subscription.event,
       schema: 'public',
       table: subscription.table

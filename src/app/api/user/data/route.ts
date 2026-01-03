@@ -199,7 +199,7 @@ export async function GET(request: NextRequest) {
 
     // Flatten all attempts
     const allAttempts = sessions.flatMap(s =>
-      (s.quiz_attempts || []).map((a: any) => ({
+      (s.quiz_attempts || []).map((a: unknown) => ({
         ...a,
         session_id: s.id,
         session_created_at: s.created_at,
@@ -210,7 +210,7 @@ export async function GET(request: NextRequest) {
     )
 
     // Get all unique question IDs
-    const questionIds = [...new Set(allAttempts.map((a: any) => a.question_id))]
+    const questionIds = [...new Set(allAttempts.map((a: unknown) => a.question_id))]
 
     const { data: questions } = await supabase
       .from('questions')
@@ -219,7 +219,7 @@ export async function GET(request: NextRequest) {
 
     // Get category names
     const questionCategoryMap = new Map(
-      questions?.map((q: any) => [q.id, q.category_id]) || []
+      questions?.map((q: unknown) => [q.id, q.category_id]) || []
     )
 
     const _categoryIds = [...new Set(
@@ -234,13 +234,13 @@ export async function GET(request: NextRequest) {
       .limit(100)
 
     const categoryMap = new Map(
-      allCategories?.map((cat: any) => [cat.id, cat.name]) || []
+      allCategories?.map((cat: unknown) => [cat.id, cat.name]) || []
     )
 
     // Calculate completed sessions
     const completedSessions = sessions.filter(s => s.status === 'completed')
     const totalAttempts = allAttempts.length
-    const correctAttempts = allAttempts.filter((a: any) => a.is_correct).length
+    const correctAttempts = allAttempts.filter((a: unknown) => a.is_correct).length
     const overallScore = totalAttempts > 0
       ? Math.round((correctAttempts / totalAttempts) * 100)
       : 0
@@ -261,7 +261,7 @@ export async function GET(request: NextRequest) {
       const allScores = allUsersScoresResult.data
       const userScores = new Map<string, number[]>()
 
-      allScores.forEach((item: any) => {
+      allScores.forEach((item: unknown) => {
         const scores = userScores.get(item.user_id) || []
         scores.push(item.score)
         userScores.set(item.user_id, scores)
@@ -292,7 +292,7 @@ export async function GET(request: NextRequest) {
       attempts: Array<{ is_correct: boolean; attempted_at: string; time_spent: number | null }>
     }>()
 
-    allAttempts.forEach((attempt: any) => {
+    allAttempts.forEach((attempt: unknown) => {
       const categoryId = questionCategoryMap.get(attempt.question_id)
       if (!categoryId) return
 
@@ -453,7 +453,7 @@ export async function GET(request: NextRequest) {
       dailyActivity[date].quizzes++
     })
 
-    allAttempts.forEach((attempt: any) => {
+    allAttempts.forEach((attempt: unknown) => {
       const date = new Date(attempt.attempted_at).toISOString().split('T')[0]
       if (!dailyActivity[date]) {
         dailyActivity[date] = { quizzes: 0, questions: 0 }
@@ -536,7 +536,7 @@ export async function GET(request: NextRequest) {
     let speedRecords25in2min = 0
 
     const perfectQuizzes = completedSessions.filter(s => s.score === 100)
-    perfectQuizzes.forEach((quiz: any) => {
+    perfectQuizzes.forEach((quiz: unknown) => {
       // Use total_questions and total_time_spent from the session (more reliable)
       const totalQuestions = quiz.total_questions || 0
       const totalTime = quiz.total_time_spent || 0
@@ -646,7 +646,7 @@ export async function GET(request: NextRequest) {
     // Calculate mastered/needs review from attempts
     const questionAttempts = new Map<string, { correct: number; incorrect: number }>()
 
-    allAttempts.forEach((attempt: any) => {
+    allAttempts.forEach((attempt: unknown) => {
       const existing = questionAttempts.get(attempt.question_id) || { correct: 0, incorrect: 0 }
       if (attempt.is_correct) {
         existing.correct++
@@ -685,7 +685,7 @@ export async function GET(request: NextRequest) {
     }> = []
 
     // Add completed quiz sessions
-    completedSessions.forEach((session: any) => {
+    completedSessions.forEach((session: unknown) => {
       const isCompleted = session.status === 'completed'
       recentActivity.push({
         id: `session-${session.id}`,
@@ -700,7 +700,7 @@ export async function GET(request: NextRequest) {
 
     // Add pending quizzes (in-progress sessions)
     const pendingSessions = sessions.filter(s => s.status === 'in_progress')
-    pendingSessions.forEach((session: any) => {
+    pendingSessions.forEach((session: unknown) => {
       recentActivity.push({
         id: `pending-${session.id}`,
         type: 'quiz_started',
@@ -713,7 +713,7 @@ export async function GET(request: NextRequest) {
 
     // Add recently unlocked achievements
     const recentAchievements = (unlockedAchievements || []).slice(0, 10)
-    recentAchievements.forEach((achievement: any) => {
+    recentAchievements.forEach((achievement: unknown) => {
       const achievementDef = ACHIEVEMENT_DEFINITIONS.find(def => def.id === achievement.group_key)
       if (achievementDef) {
         recentActivity.push({
@@ -757,11 +757,11 @@ export async function GET(request: NextRequest) {
 
     // Extract session titles (last 100 sessions)
     // Sessions data already includes title field from the initial query
-    const sessionTitles = sessions.slice(0, 100).map((s: any) => s.title)
+    const sessionTitles = sessions.slice(0, 100).map((s: unknown) => s.title)
 
     // Process categories for quiz init
-    const subcategories = allCategories?.filter((cat: any) => cat.level === 2) || []
-    const parentCategories = allCategories?.filter((cat: any) => cat.level === 1) || []
+    const subcategories = allCategories?.filter((cat: unknown) => cat.level === 2) || []
+    const parentCategories = allCategories?.filter((cat: unknown) => cat.level === 1) || []
 
     // Create parent lookup
     const parentLookup = new Map<string, string>()
@@ -770,7 +770,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get category IDs for stats calculation
-    const allCategoryIds = subcategories.map((cat: any) => cat.id)
+    const allCategoryIds = subcategories.map((cat: unknown) => cat.id)
 
     // Fetch user stats for ALL categories using optimized database function
     const { data: allUserStatsData } = await supabase
@@ -793,7 +793,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build categories with user stats for quiz init
-    const categoriesForQuizInit = subcategories.map((category: any) => {
+    const categoriesForQuizInit = subcategories.map((category: unknown) => {
       const stats = allStatsMap.get(category.id) || {
         all: 0,
         unused: 0,

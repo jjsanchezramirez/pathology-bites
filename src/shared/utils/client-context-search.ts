@@ -5,7 +5,7 @@ interface EducationalContent {
   subject: string
   lesson: string
   topic: string
-  content: any
+  content: unknown
 }
 
 interface ContextSearchResult {

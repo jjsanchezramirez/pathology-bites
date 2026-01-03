@@ -21,7 +21,7 @@ interface FormFieldProps {
   children?: ReactNode;
   defaultValue?: string;
   // Allow any additional props for react-hook-form integration
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(({

@@ -8,7 +8,7 @@ interface ActivityData {
   quiz_id?: string
   goal_id?: string
   subject_id?: string
-  data?: Record<string, any>
+  data?: Record<string, unknown>
   priority?: 'low' | 'medium' | 'high'
 }
 

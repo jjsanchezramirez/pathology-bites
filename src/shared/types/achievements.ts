@@ -20,7 +20,7 @@ export interface Achievement {
   requirement: {
     type: string
     value: number
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   }
   points: number
   unlocked: boolean

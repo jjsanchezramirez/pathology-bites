@@ -70,7 +70,7 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
       const res = await fetchWithTimeout(VIRTUAL_SLIDES_JSON_URL, { cache: 'force-cache', timeoutMs: 8000 })
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       return res
-    } catch (e: any) {
+    } catch (e) {
       const msg = e?.name === 'AbortError'
         ? 'Timed out fetching virtual slides. Please check your network and try again.'
         : (e?.message || 'Failed to fetch virtual slides dataset.')

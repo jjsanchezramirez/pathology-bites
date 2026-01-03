@@ -13,8 +13,8 @@ import {
 export const dynamic = 'force-dynamic'
 
 interface UserInitData {
-  userData: any
-  settings: any
+  userData: unknown
+  settings: unknown
 }
 
 export async function GET(_request: NextRequest) {

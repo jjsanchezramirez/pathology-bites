@@ -393,7 +393,7 @@ function extractShortName(name: string): string {
   return match ? match[1] : name.split(' ').map(word => word[0]).join('').toUpperCase()
 }
 
-function calculateOverallStats(categories: any[]) {
+function calculateOverallStats(categories: unknown[]) {
   return categories.reduce((acc, cat) => ({
     all: acc.all + cat.questionStats.all,
     unused: acc.unused + cat.questionStats.unused,
@@ -403,7 +403,7 @@ function calculateOverallStats(categories: any[]) {
   }), { all: 0, unused: 0, incorrect: 0, marked: 0, correct: 0 })
 }
 
-function calculateStatsForParent(categories: any[], parent: 'AP' | 'CP') {
+function calculateStatsForParent(categories: unknown[], parent: 'AP' | 'CP') {
   return categories
     .filter(cat => cat.parent === parent)
     .reduce((acc, cat) => ({

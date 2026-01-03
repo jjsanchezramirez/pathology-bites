@@ -72,7 +72,7 @@ export class QuizCompletionHandler {
   private async saveQuizResults(
     userId: string,
     quizAttemptId: string,
-    quizResults: any
+    quizResults: unknown
   ): Promise<void> {
     try {
       // Update quiz attempt with results
@@ -94,7 +94,7 @@ export class QuizCompletionHandler {
       }
 
       // Save individual question results
-      const questionResults = quizResults.answers.map((answer: any) => ({
+      const questionResults = quizResults.answers.map((answer: unknown) => ({
         quiz_attempt_id: quizAttemptId,
         question_id: answer.questionId,
         selected_answer: answer.selectedAnswer,
@@ -120,7 +120,7 @@ export class QuizCompletionHandler {
     }
   }
 
-  private async updateUserStatistics(userId: string, quizResults: any): Promise<void> {
+  private async updateUserStatistics(userId: string, quizResults: unknown): Promise<void> {
     try {
       // Get current user stats
       const { data: currentStats, error: statsError } = await this.supabase
@@ -206,7 +206,7 @@ export class QuizCompletionHandler {
     }
   }
 
-  private async updateCategoryStatistics(userId: string, quizResults: any): Promise<void> {
+  private async updateCategoryStatistics(userId: string, quizResults: unknown): Promise<void> {
     try {
       // Group answers by category
       const categoryStats: Record<string, { correct: number; total: number }> = {}

@@ -27,7 +27,7 @@ export function addDevCacheHeaders(response: NextResponse): NextResponse {
 /**
  * Create a NextResponse with development-friendly cache headers
  */
-export function createDevFriendlyResponse(data: any, init?: ResponseInit): NextResponse {
+export function createDevFriendlyResponse(data: unknown, init?: ResponseInit): NextResponse {
   const response = NextResponse.json(data, init)
   return addDevCacheHeaders(response)
 }
@@ -35,7 +35,7 @@ export function createDevFriendlyResponse(data: any, init?: ResponseInit): NextR
 /**
  * Wrapper to disable caching in development for API route handlers
  */
-export function withDevCacheDisabled<T extends any[]>(
+export function withDevCacheDisabled<T extends unknown[]>(
   handler: (...args: T) => Promise<NextResponse>
 ) {
   return async (...args: T): Promise<NextResponse> => {

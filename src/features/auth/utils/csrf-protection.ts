@@ -119,7 +119,7 @@ export function createCSRFErrorResponse(): Response {
 // Note: Client-side CSRF hook moved to src/features/auth/hooks/use-csrf-token.ts
 
 // Server action wrapper with CSRF protection
-export function withCSRFProtection<T extends any[], R>(
+export function withCSRFProtection<T extends unknown[], R>(
   action: (...args: T) => Promise<R>
 ) {
   return async (...args: T): Promise<R> => {

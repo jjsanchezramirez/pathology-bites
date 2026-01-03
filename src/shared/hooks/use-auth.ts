@@ -37,8 +37,8 @@ interface AuthState {
 }
 
 interface UserData {
-  stats: any
-  settings: any
+  stats: unknown
+  settings: unknown
 }
 
 interface UseAuthReturn extends AuthState {

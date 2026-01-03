@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // Cache for gene lookup results with 1-hour TTL
 const CACHE_TTL = 60 * 60 * 1000 // 1 hour
-const geneCache = new Map<string, { data: any, timestamp: number }>()
+const geneCache = new Map<string, { data: unknown, timestamp: number }>()
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -166,7 +166,7 @@ function parseHGNCData(xmlData: string) {
   }
 }
 
-function parseHarmonizomeData(data: any) {
+function parseHarmonizomeData(data: unknown) {
   return {
     aliasSymbols: data.synonyms || [],
     description: data.description || ''

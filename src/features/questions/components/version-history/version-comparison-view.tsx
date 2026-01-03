@@ -11,7 +11,7 @@ interface QuestionVersion {
   version_string: string
   update_type: string
   change_summary?: string
-  question_snapshot: any
+  question_snapshot: unknown
   created_by: string
   created_at: string
   creator?: {
@@ -52,7 +52,7 @@ function transformQuestionData(version: QuestionVersion) {
 }
 
 // Utility function to compare two objects and find differences
-function getChanges(oldData: any, newData: any): string[] {
+function getChanges(oldData: unknown, newData: unknown): string[] {
   const changes: string[] = []
 
   if (!oldData || !newData) return changes
@@ -73,7 +73,7 @@ function getChanges(oldData: any, newData: any): string[] {
   if (oldOptions.length !== newOptions.length) {
     changes.push(`Number of answer options changed (${oldOptions.length} → ${newOptions.length})`)
   } else {
-    oldOptions.forEach((oldOption: any, index: number) => {
+    oldOptions.forEach((oldOption: unknown, index: number) => {
       const newOption = newOptions[index]
       if (oldOption?.text !== newOption?.text) {
         changes.push(`Answer option ${index + 1} text changed`)

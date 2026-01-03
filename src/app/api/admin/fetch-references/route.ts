@@ -54,8 +54,8 @@ export async function POST(request: NextRequest) {
     const papers = data.data || []
 
     // Format references as strings
-    const references = papers.map((paper: any) => {
-      const authors = paper.authors?.map((a: any) => a.name).slice(0, 3).join(', ') || 'Unknown'
+    const references = papers.map((paper: unknown) => {
+      const authors = paper.authors?.map((a: unknown) => a.name).slice(0, 3).join(', ') || 'Unknown'
       const moreAuthors = paper.authors?.length > 3 ? ' et al.' : ''
       const year = paper.year || 'n.d.'
       const title = paper.title || 'Untitled'
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
 
     // Apply filters
     if (onlyReviews) {
-      papers = papers.filter((paper: any) => {
+      papers = papers.filter((paper: unknown) => {
         const title = paper.title?.toLowerCase() || ''
         const abstract = paper.abstract?.toLowerCase() || ''
         const publicationTypes = paper.publicationTypes || []
@@ -166,16 +166,16 @@ export async function GET(request: NextRequest) {
     }
 
     if (onlyOpenAccess) {
-      papers = papers.filter((paper: any) => paper.isOpenAccess === true)
+      papers = papers.filter((paper: unknown) => paper.isOpenAccess === true)
     }
 
     if (minCitations > 0) {
-      papers = papers.filter((paper: any) => (paper.citationCount || 0) >= minCitations)
+      papers = papers.filter((paper: unknown) => (paper.citationCount || 0) >= minCitations)
     }
 
     // Filter by pathology journals if specified
     if (venue === 'pathology-journals') {
-      papers = papers.filter((paper: any) => {
+      papers = papers.filter((paper: unknown) => {
         const paperVenue = paper.venue || paper.journal?.name || ''
         return PATHOLOGY_JOURNALS.some(journal =>
           paperVenue.toLowerCase().includes(journal.toLowerCase()) ||
@@ -187,29 +187,29 @@ export async function GET(request: NextRequest) {
     // Sort results based on sortBy parameter
     switch (sortBy) {
       case 'citations':
-        papers.sort((a: any, b: any) => (b.citationCount || 0) - (a.citationCount || 0))
+        papers.sort((a: unknown, b: unknown) => (b.citationCount || 0) - (a.citationCount || 0))
         break
       case 'year-desc':
-        papers.sort((a: any, b: any) => (b.year || 0) - (a.year || 0))
+        papers.sort((a: unknown, b: unknown) => (b.year || 0) - (a.year || 0))
         break
       case 'year-asc':
-        papers.sort((a: any, b: any) => (a.year || 0) - (b.year || 0))
+        papers.sort((a: unknown, b: unknown) => (a.year || 0) - (b.year || 0))
         break
       case 'relevance':
         // Keep original order from Semantic Scholar (already sorted by relevance)
         break
       default:
-        papers.sort((a: any, b: any) => (b.citationCount || 0) - (a.citationCount || 0))
+        papers.sort((a: unknown, b: unknown) => (b.citationCount || 0) - (a.citationCount || 0))
     }
 
     const results = papers
 
     return NextResponse.json({
       total: results.length,
-      papers: results.map((paper: any) => ({
+      papers: results.map((paper: unknown) => ({
         paperId: paper.paperId,
         title: paper.title,
-        authors: paper.authors?.map((a: any) => a.name) || [],
+        authors: paper.authors?.map((a: unknown) => a.name) || [],
         year: paper.year,
         venue: paper.venue,
         journal: paper.journal?.name || paper.venue,

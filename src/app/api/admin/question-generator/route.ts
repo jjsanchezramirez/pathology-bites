@@ -195,7 +195,7 @@ async function callMetaAPI(model: string, prompt: string, apiKey: string) {
 }
 
 // Robust JSON parser with multiple fallback strategies (from proven old system)
-function parseQuestionJSON(content: string): any {
+function parseQuestionJSON(content: string): unknown {
   console.log(`[JSON Parser] Raw content length: ${content.length}`)
   console.log(`[JSON Parser] Raw content (first 200 chars): ${content.substring(0, 200)}`)
 
@@ -364,7 +364,7 @@ ${JSON.stringify(QUESTION_SCHEMA, null, 2)}`
       throw new Error('Question must have exactly 4 answer options')
     }
 
-    const correctOptions = questionData.answer_options.filter((opt: any) => opt.is_correct)
+    const correctOptions = questionData.answer_options.filter((opt: unknown) => opt.is_correct)
     if (correctOptions.length !== 1) {
       throw new Error('Question must have exactly 1 correct answer')
     }
@@ -375,7 +375,7 @@ ${JSON.stringify(QUESTION_SCHEMA, null, 2)}`
       status: 'draft',
       question_set_id: '',
       category_id: '',
-      answer_options: questionData.answer_options.map((option: any, index: number) => ({
+      answer_options: questionData.answer_options.map((option: unknown, index: number) => ({
         ...option,
         order_index: index
       })),

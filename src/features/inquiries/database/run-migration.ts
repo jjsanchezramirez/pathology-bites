@@ -27,7 +27,7 @@ async function runMigration() {
     console.log('   3. Copy and paste the SQL above')
     console.log('   4. Click "Run"')
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('❌ Error reading migration file:', error.message)
     process.exit(1)
   }

@@ -48,7 +48,7 @@ export function CompactAnswerOptions({ options, onChange, errors }: CompactAnswe
     onChange(reorderedOptions);
   }, [options, onChange]);
 
-  const updateOption = useCallback((index: number, field: keyof AnswerOptionFormData, value: any) => {
+  const updateOption = useCallback((index: number, field: keyof AnswerOptionFormData, value: unknown) => {
     const updatedOptions = options.map((option, i) => {
       if (i === index) {
         return { ...option, [field]: value };

@@ -259,7 +259,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update flag
-    const updateData: any = {
+    const updateData: unknown = {
       status,
       updated_at: new Date().toISOString()
     };

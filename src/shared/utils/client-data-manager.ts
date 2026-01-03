@@ -26,7 +26,7 @@ interface EducationalContent {
   subject: string
   lesson: string
   topic: string
-  content: any
+  content: unknown
 }
 
 // Use direct R2 access for WSI data (same source as use-client-wsi-data.ts)
@@ -136,7 +136,7 @@ class ClientDataManager {
       const pathPresenterCases = json.cases || []
       
       // Convert PathPresenter cases to VirtualSlide format
-      const entries: VirtualSlide[] = pathPresenterCases.map((pathCase: any, index: number) => {
+      const entries: VirtualSlide[] = pathPresenterCases.map((pathCase: unknown, index: number) => {
         // Generate consistent ID
         const caseId = `pathpresenter_${index + 1}`
         
@@ -277,7 +277,7 @@ class ClientDataManager {
   /**
    * Preload all content files (smart chunking - only if not already loaded)
    */
-  async preloadAllContent(onProgress?: (progress: any) => void): Promise<void> {
+  async preloadAllContent(onProgress?: (progress: unknown) => void): Promise<void> {
     console.log('[DataManager] 🚀 Starting content preload...')
     
     const loadPromises = CONTENT_FILES.map(async (filename) => {
@@ -375,7 +375,7 @@ class ClientDataManager {
   async initialize(options: {
     loadWSIMetadata?: boolean
     preloadContent?: boolean
-    onProgress?: (progress: any) => void
+    onProgress?: (progress: unknown) => void
   } = {}): Promise<void> {
     const { loadWSIMetadata = true, preloadContent = false, onProgress } = options
 

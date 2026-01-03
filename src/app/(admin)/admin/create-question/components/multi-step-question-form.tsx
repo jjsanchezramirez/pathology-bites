@@ -40,7 +40,7 @@ export interface FormState {
   // Step 1: Source & AI Config
   jsonData: string
   selectedAIModel: string | null
-  selectedContent: any | null
+  selectedContent: unknown | null
   
   // Step 2: Content
   title: string

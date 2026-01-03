@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find correct answer
-    const correctAnswer = question.answer_options?.find((opt: any) => opt.is_correct)
+    const correctAnswer = question.answer_options?.find((opt: unknown) => opt.is_correct)
     const isCorrect = selectedAnswerId === correctAnswer?.id
 
     // Create the attempt record
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       .from('questions')
       .select('id')
       .eq('question_set_id', (await supabase.from('quiz_sessions').select('question_set_id').eq('id', sessionId).single()).data?.question_set_id)
-      .not('id', 'in', `(${(await supabase.from('quiz_attempts').select('question_id').eq('quiz_session_id', sessionId)).data?.map((a: any) => a.question_id).join(',')})`)
+      .not('id', 'in', `(${(await supabase.from('quiz_attempts').select('question_id').eq('quiz_session_id', sessionId)).data?.map((a: unknown) => a.question_id).join(',')})`)
       .limit(1)
       .single()
 

@@ -98,7 +98,7 @@ export interface AutoSaveResult {
 export interface OfflineQueueItem {
   id: string;
   sessionId: string;
-  data: any;
+  data: unknown;
   trigger: AutoSaveTrigger;
   timestamp: number;
   retryCount: number;
@@ -126,7 +126,7 @@ export function shouldRetry(item: OfflineQueueItem): boolean {
 /**
  * Debug logger
  */
-export function debugLog(message: string, ...args: any[]): void {
+export function debugLog(message: string, ...args: unknown[]): void {
   if (AUTO_SAVE_CONFIG.enableDebugLogging) {
     console.log(`[AutoSave] ${message}`, ...args);
   }

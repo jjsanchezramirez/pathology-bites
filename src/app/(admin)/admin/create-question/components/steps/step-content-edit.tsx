@@ -65,7 +65,7 @@ export function StepContentEdit({ formState, updateFormState, questionSetAIModel
       if (data.stem) updateFormState({ stem: data.stem })
       if (data.teaching_point) updateFormState({ teaching_point: data.teaching_point })
       if (data.answer_options) {
-        const enhancedOptions = data.answer_options.map((option: any, index: number) => ({
+        const enhancedOptions = data.answer_options.map((option: unknown, index: number) => ({
           text: option.text || '',
           is_correct: option.is_correct || false,
           explanation: option.explanation || '',
@@ -177,7 +177,7 @@ export function StepContentEdit({ formState, updateFormState, questionSetAIModel
 
 
   // Handle answer option changes
-  const updateAnswerOption = (index: number, field: string, value: any) => {
+  const updateAnswerOption = (index: number, field: string, value: unknown) => {
     const updatedOptions = [...formState.answerOptions]
     updatedOptions[index] = { ...updatedOptions[index], [field]: value }
     

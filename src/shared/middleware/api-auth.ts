@@ -22,7 +22,7 @@ export interface AuthorizedRequest extends NextRequest {
  *   // ... your handler code
  * })
  */
-export function withAuth<T extends any[]>(
+export function withAuth<T extends unknown[]>(
   requiredRoles: UserRole[],
   handler: (request: AuthorizedRequest, ...args: T) => Promise<NextResponse>
 ) {
@@ -54,7 +54,7 @@ export function withAuth<T extends any[]>(
 /**
  * Simpler version that just checks authentication (any logged-in user)
  */
-export function requireAuth<T extends any[]>(
+export function requireAuth<T extends unknown[]>(
   handler: (request: AuthorizedRequest, ...args: T) => Promise<NextResponse>
 ) {
   return withAuth(['admin', 'creator', 'reviewer', 'user'], handler)
@@ -63,7 +63,7 @@ export function requireAuth<T extends any[]>(
 /**
  * Admin-only routes
  */
-export function requireAdmin<T extends any[]>(
+export function requireAdmin<T extends unknown[]>(
   handler: (request: AuthorizedRequest, ...args: T) => Promise<NextResponse>
 ) {
   return withAuth(['admin'], handler)
@@ -72,7 +72,7 @@ export function requireAdmin<T extends any[]>(
 /**
  * Content roles (admin, creator, reviewer)
  */
-export function requireContentRole<T extends any[]>(
+export function requireContentRole<T extends unknown[]>(
   handler: (request: AuthorizedRequest, ...args: T) => Promise<NextResponse>
 ) {
   return withAuth(['admin', 'creator', 'reviewer'], handler)

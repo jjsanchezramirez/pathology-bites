@@ -27,9 +27,9 @@ interface QuizOptions {
     }
   }>
   questionTypeStats: {
-    all: any
-    ap_only: any
-    cp_only: any
+    all: unknown
+    ap_only: unknown
+    cp_only: unknown
   }
 }
 

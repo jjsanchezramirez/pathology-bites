@@ -57,7 +57,7 @@ export class NotificationGenerators {
     milestoneType: string,
     title: string,
     description: string,
-    milestoneData: Record<string, any> = {}
+    milestoneData: Record<string, unknown> = {}
   ): Promise<void> {
     try {
       // Create milestone record
@@ -209,7 +209,7 @@ export class NotificationGenerators {
     achievementType: string,
     title: string,
     description: string,
-    achievementData: Record<string, any> = {}
+    achievementData: Record<string, unknown> = {}
   ): Promise<void> {
     try {
       // Use the existing admin notification system for achievement notifications

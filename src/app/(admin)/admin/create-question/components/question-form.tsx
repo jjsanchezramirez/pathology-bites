@@ -24,7 +24,7 @@ interface EducationalContent {
   subject: string
   lesson: string
   topic: string
-  content: any
+  content: unknown
 }
 
 interface GeneratedQuestion {
@@ -50,7 +50,7 @@ interface GeneratedQuestion {
     caption: string
   }>
   tag_ids: string[]
-  metadata: any
+  metadata: unknown
 }
 
 
@@ -240,7 +240,7 @@ export function QuestionForm({
             status: 'draft',
             question_set_id: '', // Will be set during finalization
             category_id: '', // Will be set during finalization
-            answer_options: (questionData.question_options || []).map((option: any, index: number) => ({
+            answer_options: (questionData.question_options || []).map((option: unknown, index: number) => ({
               text: option.text,
               is_correct: option.is_correct,
               explanation: option.explanation,

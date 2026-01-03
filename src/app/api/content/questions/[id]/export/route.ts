@@ -87,7 +87,7 @@ export async function GET(
       category_id: question.category_id,
       
       // Transform answer options to match import format
-      answer_options: question.question_options?.map((option: any) => ({
+      answer_options: question.question_options?.map((option: unknown) => ({
         text: option.text,
         is_correct: option.is_correct,
         explanation: option.explanation || '',
@@ -95,7 +95,7 @@ export async function GET(
       })) || [],
 
       // Transform question images to include image data
-      question_images: question.question_images?.map((qi: any) => ({
+      question_images: question.question_images?.map((qi: unknown) => ({
         question_section: qi.question_section,
         order_index: qi.order_index,
         image_url: qi.image?.url,
@@ -104,7 +104,7 @@ export async function GET(
       })) || [],
 
       // Include tag IDs for import compatibility
-      tag_ids: question.question_tags?.map((qt: any) => qt.tag.id) || [],
+      tag_ids: question.question_tags?.map((qt: unknown) => qt.tag.id) || [],
 
       // Include metadata for reference
       metadata: {
@@ -122,7 +122,7 @@ export async function GET(
           name: (question.category as any).name,
           parent_id: (question.category as any).parent_id
         } : null,
-        tags: question.question_tags?.map((qt: any) => ({
+        tags: question.question_tags?.map((qt: unknown) => ({
           id: qt.tag.id,
           name: qt.tag.name
         })) || [],

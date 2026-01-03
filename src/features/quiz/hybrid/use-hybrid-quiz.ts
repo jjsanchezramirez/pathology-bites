@@ -30,7 +30,7 @@ export interface UseHybridQuizOptions {
   autoSync?: boolean;
   syncOnComplete?: boolean;
   csrfTokenGetter?: () => Promise<string>;
-  onAnswerSubmitted?: (questionId: string, answerId: string, result: { isCorrect: boolean; feedback?: any }) => void;
+  onAnswerSubmitted?: (questionId: string, answerId: string, result: { isCorrect: boolean; feedback?: unknown }) => void;
   onQuizCompleted?: (result: { score: number; totalQuestions: number; timeSpent: number }) => void;
   onError?: (error: string) => void;
   onSyncStatusChange?: (status: 'syncing' | 'synced' | 'error' | 'offline') => void;
@@ -89,7 +89,7 @@ export interface HybridQuizActions {
   completeQuiz: () => Promise<SyncResult>;
 
   // Answer Management
-  submitAnswer: (questionId: string, answerId: string) => { isCorrect: boolean; feedback?: any } | null;
+  submitAnswer: (questionId: string, answerId: string) => { isCorrect: boolean; feedback?: unknown } | null;
 
   // Navigation
   nextQuestion: () => boolean;
@@ -98,7 +98,7 @@ export interface HybridQuizActions {
 
   // Data Access
   getCurrentQuestion: () => any | null; // UI-compatible question format
-  getQuestions: () => any[]; // UI-compatible question format
+  getQuestions: () => unknown[]; // UI-compatible question format
   getAnswerForQuestion: (questionId: string) => QuizAnswer | null;
   getQuizConfig: () => QuizState['config'] | null;
 

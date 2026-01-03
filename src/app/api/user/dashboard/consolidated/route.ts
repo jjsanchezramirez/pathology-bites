@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 
 // Cache for dashboard data to reduce database load and Vercel function costs
-const dashboardCache = new Map<string, { data: any; timestamp: number }>()
+const dashboardCache = new Map<string, { data: unknown; timestamp: number }>()
 const CACHE_TTL = 10 * 60 * 1000 // 10 minutes for dashboard data (increased from 2 minutes)
 
 export async function GET(request: NextRequest) {
@@ -134,7 +134,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Optimized stats calculation
-async function getDashboardStats(supabase: any, userId: string) {
+async function getDashboardStats(supabase: unknown, userId: string) {
   try {
     // Fetch quiz sessions and attempts for stats calculation
     const [sessionsResult, attemptsResult] = await Promise.all([
@@ -213,7 +213,7 @@ function getDefaultSettings() {
   }
 }
 
-function formatActivities(sessions: any[]) {
+function formatActivities(sessions: unknown[]) {
   return sessions.map(session => ({
     id: `session-${session.id}`,
     type: session.status === 'completed' ? 'quiz_completed' : 'quiz_started',
@@ -229,7 +229,7 @@ function formatActivities(sessions: any[]) {
   })).slice(0, 8) // Limit to most recent activities
 }
 
-function formatRecentQuizzes(sessions: any[]) {
+function formatRecentQuizzes(sessions: unknown[]) {
   return sessions.map(session => ({
     id: session.id,
     title: session.title || 'Quiz',
@@ -242,7 +242,7 @@ function formatRecentQuizzes(sessions: any[]) {
   }))
 }
 
-function calculateStudyStreak(completedSessions: any[]): number {
+function calculateStudyStreak(completedSessions: unknown[]): number {
   if (!completedSessions || completedSessions.length === 0) return 0
 
   // Group sessions by date

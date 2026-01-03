@@ -22,9 +22,9 @@ export interface QuizQuestion {
   category?: string;
   difficulty?: 'easy' | 'medium' | 'hard';
   metadata?: {
-    images?: any[];
+    images?: unknown[];
     tags?: string[];
-    originalData?: any; // Preserve original API data
+    originalData?: unknown; // Preserve original API data
   };
 }
 
@@ -107,13 +107,13 @@ export class QuizQuestionTransformer {
   /**
    * Transform API response to hybrid system format
    */
-  static apiToHybrid(apiQuestion: any): QuizQuestion {
+  static apiToHybrid(apiQuestion: unknown): QuizQuestion {
     const options = apiQuestion.question_options || [];
 
     return {
       id: apiQuestion.id,
       text: apiQuestion.stem || apiQuestion.text,
-      question_options: options.map((opt: any) => ({
+      question_options: options.map((opt: unknown) => ({
         id: opt.id,
         text: opt.text,
         is_correct: opt.is_correct || opt.isCorrect,

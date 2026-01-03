@@ -36,7 +36,7 @@ const RETRY_CONFIG = {
 }
 
 // Enhanced error classification for retry vs fallback decisions
-function classifyError(error: any): 'retryable' | 'fallback' | 'fatal' {
+function classifyError(error: unknown): 'retryable' | 'fallback' | 'fatal' {
   const errorStr = typeof error === 'string' ? error : (error instanceof Error ? error.message : String(error))
   const lowerError = errorStr.toLowerCase()
 
@@ -115,7 +115,7 @@ function normalizeWSI(wsi: VirtualSlide): VirtualSlide {
 }
 
 // API call functions with token usage tracking
-async function callMetaAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+async function callMetaAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
   // Add AbortController for timeout
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 20000) // 20 second timeout
@@ -237,7 +237,7 @@ async function callMetaAPI(prompt: string, model: string, apiKey: string): Promi
   }
 }
 
-async function callGroqAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+async function callGroqAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
   // Add AbortController for timeout
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 second timeout
@@ -281,7 +281,7 @@ async function callGroqAPI(prompt: string, model: string, apiKey: string): Promi
   }
 }
 
-async function callGoogleAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+async function callGoogleAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -310,7 +310,7 @@ async function callGoogleAPI(prompt: string, model: string, apiKey: string): Pro
 }
 
 // Fast AI service dispatcher - eliminates switch statement overhead
-async function callAIService(provider: string, prompt: string, modelId: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+async function callAIService(provider: string, prompt: string, modelId: string, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
   switch (provider) {
     case 'llama':
       return await callMetaAPI(prompt, modelId, apiKey)
@@ -325,7 +325,7 @@ async function callAIService(provider: string, prompt: string, modelId: string, 
   }
 }
 
-async function callMistralAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+async function callMistralAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
   const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -468,14 +468,14 @@ function preprocessWSI(wsi: VirtualSlide): { normalizedWSI: VirtualSlide; isVali
 }
 
 // Fast prompt builder - Pre-compute prompt structure
-function buildOptimizedPrompt(normalizedWSI: VirtualSlide, context: any | null = null, customPrompt?: string): string {
+function buildOptimizedPrompt(normalizedWSI: VirtualSlide, context: unknown | null = null, customPrompt?: string): string {
   if (customPrompt) return customPrompt
   return buildQuestionPrompt(normalizedWSI, context)
 }
 
 // Enhanced question generation with retry logic for each model
-async function generateQuestionWithRetries(wsi: VirtualSlide, modelId: string, context: any | null = null, customPrompt?: string): Promise<{ questionData: QuestionData; debug: any; modelUsed: string; tokenUsage?: any; retryInfo?: any }> {
-  let lastError: any = null
+async function generateQuestionWithRetries(wsi: VirtualSlide, modelId: string, context: unknown | null = null, customPrompt?: string): Promise<{ questionData: QuestionData; debug: unknown; modelUsed: string; tokenUsage?: unknown; retryInfo?: unknown }> {
+  let lastError: unknown = null
   const retryInfo = { attempts: 0, totalTime: 0, retries: 0 }
   const startTime = Date.now()
 
@@ -552,7 +552,7 @@ function getAPIConfig(modelId: string): { provider: string; apiKey: string } {
 }
 
 // Single question generation attempt (no retries) - optimized
-async function generateQuestionSingle(wsi: VirtualSlide, modelId: string, prompt: string): Promise<{ questionData: QuestionData; debug: any; modelUsed: string; tokenUsage?: any }> {
+async function generateQuestionSingle(wsi: VirtualSlide, modelId: string, prompt: string): Promise<{ questionData: QuestionData; debug: unknown; modelUsed: string; tokenUsage?: unknown }> {
   // Fast config lookup
   const { provider, apiKey } = getAPIConfig(modelId)
 

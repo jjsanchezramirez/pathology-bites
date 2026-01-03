@@ -14,7 +14,7 @@ export interface ParsedAIResponse {
 /**
  * Extract actual response from Mistral thinking format
  */
-export function extractMistralResponse(content: any): ParsedAIResponse {
+export function extractMistralResponse(content: unknown): ParsedAIResponse {
   let originalContent = ''
   let cleanedContent = ''
   let thinkingContent = ''
@@ -201,7 +201,7 @@ export function extractMistralResponse(content: any): ParsedAIResponse {
 /**
  * Extract response content from LLAMA API format
  */
-export function extractLlamaResponse(data: any): ParsedAIResponse {
+export function extractLlamaResponse(data: unknown): ParsedAIResponse {
   let content = ''
   
   // LLAMA API format: { id, completion_message: { content: { text: "..." } }, metrics }
@@ -227,7 +227,7 @@ export function extractLlamaResponse(data: any): ParsedAIResponse {
 /**
  * Generic AI response parser that handles all providers
  */
-export function parseAIResponse(data: any, provider: string): ParsedAIResponse {
+export function parseAIResponse(data: unknown, provider: string): ParsedAIResponse {
   switch (provider) {
     case 'mistral':
       if (data.choices?.[0]?.message?.content) {
@@ -300,7 +300,7 @@ export function hasThinkingContent(content: string): boolean {
 /**
  * Extract token usage from different API formats
  */
-export function extractTokenUsage(data: any, provider: string): any {
+export function extractTokenUsage(data: unknown, provider: string): unknown {
   switch (provider) {
     case 'llama':
       if (data.metrics) {

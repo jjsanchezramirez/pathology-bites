@@ -256,7 +256,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
   }, [handleJSONInput])
 
   // Handle AI content selection
-  const handleContentSelected = (content: any) => {
+  const handleContentSelected = (content: unknown) => {
     updateFormState({ selectedContent: content })
   }
 
@@ -306,7 +306,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
       console.log('🎯 AI generation response:', data)
 
       // Extract and normalize the generated question data
-      const generatedData: any = {
+      const generatedData: unknown = {
         title: data.title || '',
         stem: data.stem || data.question || '',
         answerOptions: data.answer_options || data.question_options || [],

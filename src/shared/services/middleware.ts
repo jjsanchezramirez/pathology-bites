@@ -507,7 +507,7 @@ export async function updateSession(request: NextRequest) {
 }
 
 // Helper function to get user role with caching and race condition prevention
-async function getUserRoleWithCache(userId: string, user: any, supabase: any): Promise<string> {
+async function getUserRoleWithCache(userId: string, user: unknown, supabase: unknown): Promise<string> {
   // Check if we're already processing this user's role
   if (processingRequests.has(userId)) {
     // Wait a bit and check cache again

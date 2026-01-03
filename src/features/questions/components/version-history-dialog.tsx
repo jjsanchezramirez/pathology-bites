@@ -36,7 +36,7 @@ interface QuestionVersion {
   version_string: string
   update_type: string
   change_summary?: string
-  question_snapshot: any
+  question_snapshot: unknown
   created_by: string
   created_at: string
   creator?: {
@@ -102,7 +102,7 @@ export function VersionHistoryDialog({
 
       if (result.success && result.versions) {
         // Transform the API response to match our interface
-        const transformedVersions = result.versions.map((version: any) => ({
+        const transformedVersions = result.versions.map((version: unknown) => ({
           id: version.id,
           question_id: questionId,
           version_major: version.version_major,

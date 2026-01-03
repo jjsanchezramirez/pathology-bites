@@ -42,7 +42,7 @@ export interface MedicalTerms {
 
 export interface SearchResult {
   score: number
-  content: any
+  content: unknown
   filename: string
   lesson: string
   topic: string

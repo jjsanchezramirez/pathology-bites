@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 
 interface DiagnosticContentProps {
-  content: any
+  content: unknown
   entity: string
 }
 
@@ -35,7 +35,7 @@ export function DiagnosticContent({ content, entity }: DiagnosticContentProps) {
   const sections = []
 
   // Helper to check if a section has content
-  const hasContent = (data: any) => {
+  const hasContent = (data: unknown) => {
     if (Array.isArray(data)) return data.length > 0
     if (typeof data === 'object' && data !== null) {
       return Object.keys(data).length > 0
@@ -163,7 +163,7 @@ export function DiagnosticContent({ content, entity }: DiagnosticContentProps) {
   }
 
   // Render a data section
-  const renderData = (data: any, depth: number = 0): React.ReactNode => {
+  const renderData = (data: unknown, depth: number = 0): React.ReactNode => {
     if (data === null || data === undefined) {
       return null
     }
@@ -253,7 +253,7 @@ export function DiagnosticContent({ content, entity }: DiagnosticContentProps) {
   }
 
   // Render individual item (handles nested objects in arrays)
-  const renderDataItem = (item: any, _depth: number = 0): React.ReactNode => {
+  const renderDataItem = (item: unknown, _depth: number = 0): React.ReactNode => {
     if (item === null || item === undefined) {
       return null
     }
@@ -267,7 +267,7 @@ export function DiagnosticContent({ content, entity }: DiagnosticContentProps) {
             <div className="leading-relaxed">{mainText}</div>
             {item.sub_points && Array.isArray(item.sub_points) && item.sub_points.length > 0 && (
               <ul className="ml-6 space-y-1 text-muted-foreground border-l-2 border-muted pl-3">
-                {item.sub_points.map((subPoint: any, idx: number) => {
+                {item.sub_points.map((subPoint: unknown, idx: number) => {
                   const subText = typeof subPoint === 'object'
                     ? addSmartSpacing(String(subPoint.text || subPoint))
                     : addSmartSpacing(String(subPoint))

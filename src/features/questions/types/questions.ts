@@ -220,7 +220,7 @@ export interface QuestionVersionHistory {
   version_minor: number;
   version_patch: number;
   version_string: string;
-  question_data: any; // JSONB data
+  question_data: unknown; // JSONB data
   update_type: UpdateType;
   change_summary?: string;
   changed_by: string;
@@ -258,7 +258,7 @@ export interface QuestionWithReviewDetails extends QuestionWithDetails {
 export interface ReviewFormData {
   action: ReviewAction;
   feedback?: string;
-  changes_made?: Record<string, any>;
+  changes_made?: Record<string, unknown>;
 }
 
 // Flag form data

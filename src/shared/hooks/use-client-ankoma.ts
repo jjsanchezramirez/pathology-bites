@@ -28,7 +28,7 @@ async function loadClientAnkoma(): Promise<AnkomaData> {
       const res = await fetchWithTimeout(ANKOMA_JSON_URL, { cache: 'force-cache', timeoutMs: 15000 })
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       return res
-    } catch (e: any) {
+    } catch (e) {
       const msg = e?.name === 'AbortError'
         ? 'Timed out fetching Ankoma data. Please check your network and try again.'
         : (e?.message || 'Failed to fetch Ankoma dataset.')

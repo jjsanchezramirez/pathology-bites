@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // Server-side cache for DOI lookups (24 hour TTL)
-const doiCache = new Map<string, { data: any; timestamp: number }>()
+const doiCache = new Map<string, { data: unknown; timestamp: number }>()
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
 
 function cleanExpiredDOICache() {
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
         if (work) {
           const result = {
             title: work.title?.[0] || 'Unknown Title',
-            authors: work.author?.map((author: any) =>
+            authors: work.author?.map((author: unknown) =>
               author.family && author.given
                 ? `${author.family}, ${author.given}`
                 : author.family || author.given || 'Unknown Author'

@@ -86,7 +86,7 @@ export const devLog = {
   /**
    * Log debug information (only in development with verbose logging)
    */
-  debug: (message: string, data?: any) => {
+  debug: (message: string, data?: unknown) => {
     if (!isDevelopment || !isVerbose) return;
 
     console.log(`[Debug] ${message}`, data ? { ...data, timestamp: new Date().toISOString() } : '');
@@ -95,7 +95,7 @@ export const devLog = {
   /**
    * Log info (development only, always uses secureLog in production)
    */
-  info: (message: string, data?: any) => {
+  info: (message: string, data?: unknown) => {
     if (isDevelopment) {
       console.log(`[Info] ${message}`, data || '');
     }
@@ -106,7 +106,7 @@ export const devLog = {
   /**
    * Log warnings (always logged, uses secureLog)
    */
-  warn: (message: string, data?: any) => {
+  warn: (message: string, data?: unknown) => {
     if (isDevelopment) {
       console.warn(`[Warning] ${message}`, data || '');
     }
@@ -116,7 +116,7 @@ export const devLog = {
   /**
    * Log errors (always logged, uses secureLog)
    */
-  error: (message: string, error?: any) => {
+  error: (message: string, error?: unknown) => {
     if (isDevelopment) {
       console.error(`[Error] ${message}`, error || '');
     }
@@ -165,7 +165,7 @@ export const devLog = {
   /**
    * Log performance metrics (only in development)
    */
-  performance: (operation: string, duration: number, metadata?: any) => {
+  performance: (operation: string, duration: number, metadata?: unknown) => {
     if (!isDevelopment) return;
 
     const performanceEmoji = duration > 1000 ? '🐌' : duration > 500 ? '⚡' : '🚀';

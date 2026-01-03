@@ -199,8 +199,8 @@ export function withRateLimit(
     onLimitReached?: (request: NextRequest) => NextResponse
   } = {}
 ) {
-  return function(handler: (request: NextRequest, ...args: any[]) => Promise<NextResponse>) {
-    return async function(request: NextRequest, ...args: any[]): Promise<NextResponse> {
+  return function(handler: (request: NextRequest, ...args: unknown[]) => Promise<NextResponse>) {
+    return async function(request: NextRequest, ...args: unknown[]): Promise<NextResponse> {
       const identifier = options.keyGenerator ? 
         options.keyGenerator(request) : 
         getClientIP(request)

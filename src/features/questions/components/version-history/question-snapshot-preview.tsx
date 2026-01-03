@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Badge } from "@/shared/components/ui/badge"
 
 interface QuestionSnapshotPreviewProps {
-  question: any
+  question: unknown
   isComparison?: boolean
 }
 
@@ -17,15 +17,15 @@ export function QuestionSnapshotPreview({
 
   // Get question images for the stem and explanation
   const stemImages = Array.isArray(question.question_images)
-    ? question.question_images.filter((qi: any) => qi.question_section === 'stem')
+    ? question.question_images.filter((qi: unknown) => qi.question_section === 'stem')
     : []
   const explanationImages = Array.isArray(question.question_images)
-    ? question.question_images.filter((qi: any) => qi.question_section === 'explanation')
+    ? question.question_images.filter((qi: unknown) => qi.question_section === 'explanation')
     : []
 
   // Get incorrect options with explanations
   const incorrectOptions = Array.isArray(question.question_options)
-    ? question.question_options.filter((option: any) => !option.is_correct && option.explanation)
+    ? question.question_options.filter((option: unknown) => !option.is_correct && option.explanation)
     : []
 
   return (
@@ -46,8 +46,8 @@ export function QuestionSnapshotPreview({
       {stemImages.length > 0 && (
         <div className={`space-y-${isComparison ? '2' : '3'}`}>
           {stemImages
-            .filter((si: any) => si && si.image)
-            .map((si: any, index: number) => {
+            .filter((si: unknown) => si && si.image)
+            .map((si: unknown, index: number) => {
               if (!si.image?.url) return null
 
               return (
@@ -78,8 +78,8 @@ export function QuestionSnapshotPreview({
         {Array.isArray(question.question_options) && question.question_options.length > 0 ? (
           <>
             {question.question_options
-              .filter((option: any) => option && typeof option === 'object')
-              .map((option: any, index: number) => {
+              .filter((option: unknown) => option && typeof option === 'object')
+              .map((option: unknown, index: number) => {
                 const optionLabel = optionLabels[index] || (index + 1).toString()
                 const isCorrect = option.is_correct
 
@@ -130,8 +130,8 @@ export function QuestionSnapshotPreview({
             <div>
               <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} uppercase mb-2`}>Incorrect Option Explanations</h5>
               <div className="space-y-2">
-                {incorrectOptions.map((option: any, index: number) => {
-                  const originalIndex = question.question_options?.findIndex((opt: any) => opt.id === option.id) || 0
+                {incorrectOptions.map((option: unknown, index: number) => {
+                  const originalIndex = question.question_options?.findIndex((opt: unknown) => opt.id === option.id) || 0
                   const optionLabel = optionLabels[originalIndex] || (originalIndex + 1).toString()
 
                   return (
@@ -151,8 +151,8 @@ export function QuestionSnapshotPreview({
               <h5 className={`font-medium ${isComparison ? 'text-xs' : 'text-sm'} uppercase mb-${isComparison ? '1' : '2'}`}>Reference Images</h5>
               <div className={`space-y-${isComparison ? '2' : '3'}`}>
                 {explanationImages
-                  .filter((ei: any) => ei && ei.image)
-                  .map((ei: any, index: number) => {
+                  .filter((ei: unknown) => ei && ei.image)
+                  .map((ei: unknown, index: number) => {
                     if (!ei.image?.url) return null
 
                     return (

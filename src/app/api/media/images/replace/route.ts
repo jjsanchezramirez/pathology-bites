@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Prepare update data (use actual file buffer size, not original file.size)
-    const updateData: any = {
+    const updateData: unknown = {
       url: uploadResult.url,
       file_type: file.type,
       file_size_bytes: fileBuffer.length, // Use actual uploaded file size

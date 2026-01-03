@@ -9,7 +9,7 @@ export interface BaseNotification {
   updated_at: string
   title?: string
   message?: string
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 }
 
 export type NotificationSourceType =
@@ -78,7 +78,7 @@ export interface MilestoneNotification extends BaseNotification {
   source_type: 'milestone'
   metadata: {
     milestoneType: string
-    milestoneData: Record<string, any>
+    milestoneData: Record<string, unknown>
     achievedAt: string
   }
 }
@@ -95,7 +95,7 @@ export interface AchievementNotification extends BaseNotification {
   source_type: 'achievement'
   metadata: {
     achievementType: string
-    achievementData: Record<string, any>
+    achievementData: Record<string, unknown>
   }
 }
 
@@ -145,7 +145,7 @@ export interface MilestonePayload {
   milestone_type: string
   title: string
   description: string
-  milestone_data: Record<string, any>
+  milestone_data: Record<string, unknown>
   achieved_at: string
 }
 

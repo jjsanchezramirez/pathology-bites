@@ -11,7 +11,7 @@ interface QuestionGenerationRequest {
     subject: string
     lesson: string
     topic: string
-    content?: any
+    content?: unknown
     // For metadata suggestion mode
     title?: string
     stem?: string
@@ -23,7 +23,7 @@ interface QuestionGenerationRequest {
   currentQuestion?: {
     title: string
     stem: string
-    answer_options: any[]
+    answer_options: unknown[]
     teaching_point: string
     question_references: string
   }
@@ -33,7 +33,7 @@ interface QuestionGenerationRequest {
 }
 
 // AI API call functions
-async function callAIService(provider: string, prompt: string, modelId: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+async function callAIService(provider: string, prompt: string, modelId: string, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
   switch (provider) {
     case 'llama':
       return await callMetaAPI(prompt, modelId, apiKey)
@@ -46,7 +46,7 @@ async function callAIService(provider: string, prompt: string, modelId: string, 
   }
 }
 
-async function callMetaAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+async function callMetaAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 20000) // 20 second timeout
 
@@ -135,7 +135,7 @@ async function callMetaAPI(prompt: string, model: string, apiKey: string): Promi
   return { content: content || '', tokenUsage }
 }
 
-async function callGoogleAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+async function callGoogleAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -163,7 +163,7 @@ async function callGoogleAPI(prompt: string, model: string, apiKey: string): Pro
   }
 }
 
-async function callMistralAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+async function callMistralAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
   const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -203,7 +203,7 @@ async function callMistralAPI(prompt: string, model: string, apiKey: string): Pr
 }
 
 
-function buildAdminQuestionPrompt(content: any, instructions: string, additionalContext: string, mode: string = 'educational_content'): string {
+function buildAdminQuestionPrompt(content: unknown, instructions: string, additionalContext: string, mode: string = 'educational_content'): string {
   if (mode === 'educational_content') {
     return `Create a high-quality medical/pathology question based on the following educational content:
 
@@ -293,13 +293,13 @@ Teaching Point: ${content.teaching_point || 'Not provided'}
 AVAILABLE OPTIONS:
 
 Categories:
-${content.available_categories?.map((cat: any) => `- ${cat.name} (ID: ${cat.id})`).join('\n') || 'None available'}
+${content.available_categories?.map((cat: unknown) => `- ${cat.name} (ID: ${cat.id})`).join('\n') || 'None available'}
 
 Question Sets:
-${content.available_question_sets?.map((qs: any) => `- ${qs.name} (ID: ${qs.id})`).join('\n') || 'None available'}
+${content.available_question_sets?.map((qs: unknown) => `- ${qs.name} (ID: ${qs.id})`).join('\n') || 'None available'}
 
 Available Tags:
-${content.available_tags?.map((tag: any) => `- ${tag.name} (ID: ${tag.id})`).join('\n') || 'None available'}
+${content.available_tags?.map((tag: unknown) => `- ${tag.name} (ID: ${tag.id})`).join('\n') || 'None available'}
 
 INSTRUCTIONS:
 Based on the question content, suggest the most appropriate:
@@ -329,7 +329,7 @@ Teaching Point: ${content.teaching_point}
 References: ${content.question_references}
 
 CURRENT ANSWER OPTIONS:
-${content.answer_options.map((opt: any, i: number) =>
+${content.answer_options.map((opt: unknown, i: number) =>
   `${String.fromCharCode(65 + i)}. ${opt.text} ${opt.is_correct ? '(CORRECT)' : '(INCORRECT)'}\n   Explanation: ${opt.explanation}`
 ).join('\n')}
 
@@ -395,7 +395,7 @@ function sanitizeJSONString(jsonStr: string): string {
     .replace(/___ESCAPED_QUOTE___/g, '\\"') // Restore escaped quotes
 }
 
-function extractJSON(text: string): any {
+function extractJSON(text: string): unknown {
   console.log(`[Admin AI] Extracting JSON from response (${text.length} chars)`)
 
   // Handle Mistral thinking format first
@@ -646,14 +646,14 @@ export async function POST(request: NextRequest) {
         throw new Error('AI response must contain exactly 5 options')
       }
 
-      const correctCount = questionData.question_options.filter((opt: any) => opt.is_correct).length
+      const correctCount = questionData.question_options.filter((opt: unknown) => opt.is_correct).length
       if (correctCount !== 1) {
         throw new Error(`AI response must have exactly 1 correct answer, found ${correctCount}`)
       }
     }
 
     // Return the data in the format expected by the frontend
-    let responseData: any
+    let responseData: unknown
 
     if (normalizedMode === 'metadata_suggestion') {
       responseData = {

@@ -180,9 +180,9 @@ export async function GET(request: Request) {
       try {
         // Process the question data to match expected format
         const stemImages = questionImagesWithDetails
-          ?.filter((qi: any) => qi.question_section === 'stem')
-          ?.sort((a: any, b: any) => a.order_index - b.order_index)
-          ?.map((qi: any) => {
+          ?.filter((qi: unknown) => qi.question_section === 'stem')
+          ?.sort((a: unknown, b: unknown) => a.order_index - b.order_index)
+          ?.map((qi: unknown) => {
             const imageDetail = Array.isArray(qi.images) ? qi.images[0] : qi.images;
             return {
               url: imageDetail?.url || '',
@@ -192,7 +192,7 @@ export async function GET(request: Request) {
           }) || [];
 
         const explanationImageData = questionImagesWithDetails
-          ?.find((qi: any) => qi.question_section === 'explanation');
+          ?.find((qi: unknown) => qi.question_section === 'explanation');
         const explanationImageDetail = Array.isArray(explanationImageData?.images) 
           ? explanationImageData?.images[0] 
           : explanationImageData?.images;
@@ -202,14 +202,14 @@ export async function GET(request: Request) {
           title: questionData.title,
           body: questionData.stem,
           images: stemImages,
-          options: answerOptions?.map((option: any) => ({
+          options: answerOptions?.map((option: unknown) => ({
             id: option.id,
             text: option.text,
             correct: option.is_correct,
             explanation: option.explanation
           })) || [],
           teachingPoint: questionData.teaching_point,
-          incorrectExplanations: answerOptions?.reduce((acc: Record<string, string>, option: any) => {
+          incorrectExplanations: answerOptions?.reduce((acc: Record<string, string>, option: unknown) => {
             if (!option.is_correct && option.explanation) {
               acc[option.id] = option.explanation;
             }
@@ -335,9 +335,9 @@ export async function GET(request: Request) {
 
       try {
         const stemImages = questionImagesWithDetails
-          ?.filter((qi: any) => qi.question_section === 'stem')
-          ?.sort((a: any, b: any) => a.order_index - b.order_index)
-          ?.map((qi: any) => {
+          ?.filter((qi: unknown) => qi.question_section === 'stem')
+          ?.sort((a: unknown, b: unknown) => a.order_index - b.order_index)
+          ?.map((qi: unknown) => {
             const imageDetail = Array.isArray(qi.images) ? qi.images[0] : qi.images;
             return {
               url: imageDetail?.url || '',
@@ -347,7 +347,7 @@ export async function GET(request: Request) {
           }) || [];
 
         const explanationImageData = questionImagesWithDetails
-          ?.find((qi: any) => qi.question_section === 'explanation');
+          ?.find((qi: unknown) => qi.question_section === 'explanation');
         const explanationImageDetail = Array.isArray(explanationImageData?.images)
           ? explanationImageData?.images[0]
           : explanationImageData?.images;
@@ -357,14 +357,14 @@ export async function GET(request: Request) {
           title: questionData.title,
           body: questionData.stem,
           images: stemImages,
-          options: answerOptions?.map((option: any) => ({
+          options: answerOptions?.map((option: unknown) => ({
             id: option.id,
             text: option.text,
             correct: option.is_correct,
             explanation: option.explanation
           })) || [],
           teachingPoint: questionData.teaching_point,
-          incorrectExplanations: answerOptions?.reduce((acc: Record<string, string>, option: any) => {
+          incorrectExplanations: answerOptions?.reduce((acc: Record<string, string>, option: unknown) => {
             if (!option.is_correct && option.explanation) {
               acc[option.id] = option.explanation;
             }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // Server-side cache for ISBN lookups (24 hour TTL)
-const isbnCache = new Map<string, { data: any; timestamp: number }>()
+const isbnCache = new Map<string, { data: unknown; timestamp: number }>()
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
 
 function cleanExpiredISBNCache() {
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
 
           const result = {
             title: book.title || 'Unknown Title',
-            authors: book.authors?.map((author: any) => author.name).filter((name: string) => name) || ['Unknown Author'],
+            authors: book.authors?.map((author: unknown) => author.name).filter((name: string) => name) || ['Unknown Author'],
             year: extractYearFromDate(book.publish_date),
             publisher: publisher,
             type: 'book'

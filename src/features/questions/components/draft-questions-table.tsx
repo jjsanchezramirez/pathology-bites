@@ -125,7 +125,7 @@ export function DraftQuestionsTable() {
         .map(q => q.question_set_id)
         .filter(id => id !== null)
 
-      let questionSetsData: any[] = []
+      let questionSetsData: unknown[] = []
       if (questionSetIds.length > 0) {
         const { data } = await supabase
           .from('question_sets')

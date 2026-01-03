@@ -148,7 +148,7 @@ class APIClient {
   /**
    * Convenience method for POST requests
    */
-  async post(url: string, body?: any, options: RequestInit = {}): Promise<Response> {
+  async post(url: string, body?: unknown, options: RequestInit = {}): Promise<Response> {
     return this.fetch(url, {
       ...options,
       method: 'POST',
@@ -159,7 +159,7 @@ class APIClient {
   /**
    * Convenience method for PATCH requests
    */
-  async patch(url: string, body?: any, options: RequestInit = {}): Promise<Response> {
+  async patch(url: string, body?: unknown, options: RequestInit = {}): Promise<Response> {
     return this.fetch(url, {
       ...options,
       method: 'PATCH',
@@ -170,7 +170,7 @@ class APIClient {
   /**
    * Convenience method for PUT requests
    */
-  async put(url: string, body?: any, options: RequestInit = {}): Promise<Response> {
+  async put(url: string, body?: unknown, options: RequestInit = {}): Promise<Response> {
     return this.fetch(url, {
       ...options,
       method: 'PUT',
@@ -181,7 +181,7 @@ class APIClient {
   /**
    * Convenience method for DELETE requests
    */
-  async delete(url: string, body?: any, options: RequestInit = {}): Promise<Response> {
+  async delete(url: string, body?: unknown, options: RequestInit = {}): Promise<Response> {
     return this.fetch(url, {
       ...options,
       method: 'DELETE',

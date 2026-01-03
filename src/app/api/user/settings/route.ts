@@ -145,11 +145,11 @@ export async function PATCH(request: NextRequest) {
     // Validate quiz settings if that's what we're updating
     if (section === 'quiz_settings') {
       const validQuizSettings = {
-        default_question_count: (val: any) => typeof val === 'number' && [5, 10, 25, 50].includes(val),
-        default_mode: (val: any) => typeof val === 'string' && ['tutor', 'practice'].includes(val),
-        default_timing: (val: any) => typeof val === 'string' && ['timed', 'untimed'].includes(val),
-        default_question_type: (val: any) => typeof val === 'string' && ['all', 'unused', 'needsReview', 'marked', 'mastered', 'incorrect', 'correct'].includes(val),
-        default_category_selection: (val: any) => typeof val === 'string' && ['all', 'ap_only', 'cp_only', 'custom'].includes(val)
+        default_question_count: (val: unknown) => typeof val === 'number' && [5, 10, 25, 50].includes(val),
+        default_mode: (val: unknown) => typeof val === 'string' && ['tutor', 'practice'].includes(val),
+        default_timing: (val: unknown) => typeof val === 'string' && ['timed', 'untimed'].includes(val),
+        default_question_type: (val: unknown) => typeof val === 'string' && ['all', 'unused', 'needsReview', 'marked', 'mastered', 'incorrect', 'correct'].includes(val),
+        default_category_selection: (val: unknown) => typeof val === 'string' && ['all', 'ap_only', 'cp_only', 'custom'].includes(val)
       }
 
       for (const [key, value] of Object.entries(settings)) {
@@ -179,7 +179,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Prepare the update object based on the section
-    const updateData: any = {
+    const updateData: unknown = {
       user_id: userId,
       updated_at: new Date().toISOString()
     }

@@ -93,7 +93,7 @@ export function QuestionVersionHistory({ questionId, open, onOpenChange }: Quest
     return new Date(dateString).toLocaleString()
   }
 
-  const getChangerName = (changer: any) => {
+  const getChangerName = (changer: unknown) => {
     if (!changer) return 'Unknown'
     return `${changer.first_name} ${changer.last_name}`
   }

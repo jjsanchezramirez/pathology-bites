@@ -73,7 +73,7 @@ interface MediaSectionProps {
 
 function MediaSection({ images, section, maxImages, onImagesChange }: MediaSectionProps) {
   const [showImagePicker, setShowImagePicker] = useState(false);
-  const [availableImages, setAvailableImages] = useState<any[]>([]);
+  const [availableImages, setAvailableImages] = useState<unknown[]>([]);
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -325,8 +325,8 @@ export function CreateQuestionDialog({
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [tagSearch, setTagSearch] = useState('');
-  const [availableTags, setAvailableTags] = useState<any[]>([]);
-  const [availableCategories, setAvailableCategories] = useState<any[]>([]);
+  const [availableTags, setAvailableTags] = useState<unknown[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<unknown[]>([]);
   const { questionSets } = useQuestionSets();
   const { user } = useAuth({ minimal: true });
 

@@ -91,13 +91,13 @@ interface GeneratedQuestion {
   id: string
   wsi: VirtualSlide
   question: QuestionData
-  context: any
+  context: unknown
   metadata: {
     generated_at: string
     model: string
     generation_time_ms: number
     modelIndex?: number
-    image_verification?: any
+    image_verification?: unknown
     fallback_attempts?: number
     successful_model?: string
     token_usage?: {
@@ -193,7 +193,7 @@ export function WSIQuestionGenerator({
     
     // Extract unique categories from loaded WSI data
     const categories = Array.from(new Set(
-      wsiData.map((slide: any) => (slide.category || '').toString().trim())
+      wsiData.map((slide: unknown) => (slide.category || '').toString().trim())
     ))
       .filter((val: string) => val.length > 0)
       .sort()
@@ -307,7 +307,7 @@ export function WSIQuestionGenerator({
   }
 
   // Ensure WSI object has repository field
-  const ensureWSIRepository = (wsi: any) => {
+  const ensureWSIRepository = (wsi: unknown) => {
     if (!wsi.repository && wsi.id) {
       wsi.repository = getRepositoryFromId(wsi.id)
     }

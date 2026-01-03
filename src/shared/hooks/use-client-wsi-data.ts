@@ -49,7 +49,7 @@ export async function loadClientWSIData(): Promise<VirtualSlide[]> {
       const pathPresenterCases = json.cases || []
       
       // Convert PathPresenter cases to VirtualSlide format
-      const entries: VirtualSlide[] = pathPresenterCases.map((pathCase: any, index: number) => {
+      const entries: VirtualSlide[] = pathPresenterCases.map((pathCase: unknown, index: number) => {
         // Generate consistent ID
         const caseId = `pathpresenter_${index + 1}`
         

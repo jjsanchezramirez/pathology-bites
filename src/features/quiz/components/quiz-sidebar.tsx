@@ -84,7 +84,7 @@ export function QuizSidebar({
     }
   }
 
-  const getQuestionSnippet = (question: any) => {
+  const getQuestionSnippet = (question: unknown) => {
     if (!question.stem) return 'Question content...'
 
     // Remove HTML tags and get first 40 characters

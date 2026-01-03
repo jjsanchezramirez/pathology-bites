@@ -322,7 +322,7 @@ export class NotificationTriggers {
   }
 
   // Helper methods
-  private async updateUserStats(_userId: string, _quizData: any): Promise<void> {
+  private async updateUserStats(_userId: string, _quizData: unknown): Promise<void> {
     // This would update user statistics in the database
     // Implementation depends on your user stats schema
   }

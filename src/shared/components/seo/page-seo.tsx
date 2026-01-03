@@ -36,7 +36,7 @@ interface PageSEOProps {
     question: string
     answer: string
   }>
-  customSchema?: Record<string, any> | Record<string, any>[]
+  customSchema?: Record<string, unknown> | Record<string, unknown>[]
 }
 
 export function PageSEO({ 

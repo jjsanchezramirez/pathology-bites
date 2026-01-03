@@ -94,7 +94,7 @@ async function executeMigration() {
     console.log('\n💡 To update TypeScript types, run:')
     console.log('   npx supabase gen types typescript --project-id YOUR_PROJECT_ID > src/shared/types/supabase.ts')
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('\n❌ Migration failed!')
     console.error('Error:', error.message)
     

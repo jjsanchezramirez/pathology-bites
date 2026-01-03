@@ -87,7 +87,7 @@ export function InquiryStatistics({ onStatsChange, refreshTrigger }: InquiryStat
   }: {
     title: string
     value: number
-    icon: any
+    icon: unknown
   }) => (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

@@ -1,7 +1,7 @@
 // src/shared/components/seo/structured-data.tsx
 
 interface StructuredDataProps {
-  data: Record<string, any> | Record<string, any>[]
+  data: Record<string, unknown> | Record<string, unknown>[]
 }
 
 export function StructuredData({ data }: StructuredDataProps) {
@@ -100,7 +100,7 @@ interface WebsiteSchemaProps {
   name?: string
   url?: string
   description?: string
-  potentialAction?: any
+  potentialAction?: unknown
 }
 
 export function WebsiteSchema({

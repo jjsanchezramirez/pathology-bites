@@ -37,7 +37,7 @@ interface GeneratedQuestion {
     caption: string
   }>
   tag_ids: string[]
-  metadata: any
+  metadata: unknown
 }
 
 interface QuestionPreviewProps {
@@ -182,7 +182,7 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
           const convertedQuestion = {
             ...refinedQuestion,
             // Convert to question_options format if needed
-            question_options: refinedQuestion.question_options || (refinedQuestion.options || []).map((option: any, index: number) => ({
+            question_options: refinedQuestion.question_options || (refinedQuestion.options || []).map((option: unknown, index: number) => ({
               text: option.text,
               is_correct: option.is_correct,
               explanation: option.explanation,

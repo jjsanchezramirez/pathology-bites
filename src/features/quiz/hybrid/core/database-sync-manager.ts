@@ -32,7 +32,7 @@ export interface QuizSyncData {
     totalTimeSpent: number;
   };
   status: QuizState['status'];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface QuizProgressData {
@@ -53,7 +53,7 @@ export interface SyncResult {
   success: boolean;
   timestamp: number;
   error?: string;
-  serverResponse?: any;
+  serverResponse?: unknown;
 }
 
 export interface DatabaseSyncManagerOptions {
@@ -102,8 +102,8 @@ export class DatabaseSyncManager {
    * - Review mode (uses cached quiz data + results)
    */
   async fetchQuizData(sessionId: string): Promise<{
-    questions: any[];
-    config: any;
+    questions: unknown[];
+    config: unknown;
     status?: string;
     existingAnswers?: QuizAnswer[];
     timeRemaining?: number | null;
@@ -138,7 +138,7 @@ export class DatabaseSyncManager {
       const data = response_data.data || response_data;
 
       // Transform QuestionWithDetails[] to QuizQuestion[] format using standardized transformer
-      const transformedQuestions = (data.questions || []).map((q: any) =>
+      const transformedQuestions = (data.questions || []).map((q: unknown) =>
         QuizQuestionTransformer.apiToHybrid(q)
       );
 
@@ -174,7 +174,7 @@ export class DatabaseSyncManager {
    * Get data from localStorage cache
    * Compatible with CacheEntry format from cache-service.ts
    */
-  private getFromCache(key: string): any | null {
+  private getFromCache(key: string): unknown | null {
     try {
       if (typeof window === 'undefined') return null;
 
@@ -204,7 +204,7 @@ export class DatabaseSyncManager {
    * Uses CacheEntry format compatible with cache-service.ts
    * Default 7-day TTL for quiz sessions (needed for review, ~10-20KB per quiz)
    */
-  private saveToCache(key: string, data: any, ttl: number = 7 * 24 * 60 * 60 * 1000): void {
+  private saveToCache(key: string, data: unknown, ttl: number = 7 * 24 * 60 * 60 * 1000): void {
     try {
       if (typeof window === 'undefined') return;
 
@@ -499,7 +499,7 @@ export class DatabaseSyncManager {
    * Compress payload for efficient transmission
    * This helps reduce bandwidth usage on Vercel's free tier
    */
-  private compressPayload(data: QuizSyncData): any {
+  private compressPayload(data: QuizSyncData): unknown {
     // Simple compression: remove redundant data and use shorter keys
     return {
       sid: data.sessionId,

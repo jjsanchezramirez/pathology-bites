@@ -7,7 +7,7 @@ const CACHE_VERSION = 'v1'
 const DEFAULT_TTL = 30 * 24 * 60 * 60 * 1000
 
 interface LottieCacheEntry {
-  data: any // Lottie animation JSON
+  data: unknown // Lottie animation JSON
   timestamp: number
   version: string
 }
@@ -30,7 +30,7 @@ class LottieCacheService {
    * Get Lottie animation from cache
    * Returns null if not found or expired
    */
-  public get(animationType: string): any | null {
+  public get(animationType: string): unknown | null {
     // Try memory cache first (fastest)
     if (this.memoryCache.has(animationType)) {
       return this.memoryCache.get(animationType)
@@ -77,7 +77,7 @@ class LottieCacheService {
   /**
    * Store Lottie animation in cache
    */
-  public set(animationType: string, data: any): void {
+  public set(animationType: string, data: unknown): void {
     // Store in memory cache
     this.memoryCache.set(animationType, data)
 

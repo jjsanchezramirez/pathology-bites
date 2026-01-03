@@ -1,6 +1,6 @@
 // src/features/questions/utils/display-helpers.ts
 
-export function getCategoryPathString(category: any, categoryPaths: Map<number, any>): string {
+export function getCategoryPathString(category: unknown, categoryPaths: Map<number, any>): string {
   const path = [];
   let current = category;
   

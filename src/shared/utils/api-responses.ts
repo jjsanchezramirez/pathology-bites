@@ -6,7 +6,7 @@ export interface APIResponse<T = any> {
   data?: T
   error?: string
   message?: string
-  details?: any
+  details?: unknown
 }
 
 export class APIResponseBuilder {
@@ -29,7 +29,7 @@ export class APIResponseBuilder {
   static error(
     error: string,
     status: number = 500,
-    details?: any
+    details?: unknown
   ): NextResponse {
     return NextResponse.json({
       success: false,
@@ -38,7 +38,7 @@ export class APIResponseBuilder {
     } as APIResponse, { status })
   }
 
-  static badRequest(error: string, details?: any): NextResponse {
+  static badRequest(error: string, details?: unknown): NextResponse {
     return this.error(error, 400, details)
   }
 
@@ -54,7 +54,7 @@ export class APIResponseBuilder {
     return this.error(error, 404)
   }
 
-  static conflict(error: string, details?: any): NextResponse {
+  static conflict(error: string, details?: unknown): NextResponse {
     return this.error(error, 409, details)
   }
 

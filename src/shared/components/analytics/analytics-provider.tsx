@@ -11,7 +11,7 @@ import { useEffect, Suspense } from 'react'
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
 // Custom event tracking functions
-export const trackEvent = (eventName: string, parameters?: Record<string, any>) => {
+export const trackEvent = (eventName: string, parameters?: Record<string, unknown>) => {
   if (typeof window !== 'undefined' && window.gtag) {
     window.gtag('event', eventName, {
       ...parameters,
@@ -181,8 +181,8 @@ declare global {
     gtag: (
       command: 'config' | 'event' | 'js' | 'set' | 'consent',
       targetId: string | Date | 'default' | 'update',
-      config?: Record<string, any>
+      config?: Record<string, unknown>
     ) => void
-    dataLayer: any[]
+    dataLayer: unknown[]
   }
 }

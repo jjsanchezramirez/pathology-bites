@@ -79,7 +79,7 @@ export function transformImagePath(imagePath: string, isAnkiContent: boolean = f
 /**
  * Transform image URLs in cell quiz data structure
  */
-export function transformCellQuizData(cellData: any): any {
+export function transformCellQuizData(cellData: unknown): unknown {
   if (!cellData || typeof cellData !== 'object') return cellData
   
   const transformed = { ...cellData }
@@ -100,7 +100,7 @@ export function transformCellQuizData(cellData: any): any {
  * Transform image URLs in ankoma data structure
  * Note: This function extracts image paths from HTML content for use with Next.js Image components
  */
-export function transformAnkomaData(ankomaData: any): any {
+export function transformAnkomaData(ankomaData: unknown): unknown {
   if (!ankomaData) return ankomaData
   
   const extractAndTransformImagePaths = (htmlContent: string): { html: string; imagePaths: string[] } => {
@@ -120,7 +120,7 @@ export function transformAnkomaData(ankomaData: any): any {
     return { html: htmlContent, imagePaths }
   }
   
-  const transformNote = (note: any): any => {
+  const transformNote = (note: unknown): unknown => {
     if (!note || !note.fields) return note
     
     const transformedNote = { ...note }
@@ -136,7 +136,7 @@ export function transformAnkomaData(ankomaData: any): any {
     return transformedNote
   }
   
-  const transformDeck = (deck: any): any => {
+  const transformDeck = (deck: unknown): unknown => {
     if (!deck) return deck
     
     const transformedDeck = { ...deck }

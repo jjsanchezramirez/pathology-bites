@@ -48,7 +48,7 @@ export function ContentTab({
   const [fetchDialogOpen, setFetchDialogOpen] = useState(false);
 
   // Handle answer option changes
-  const updateAnswerOption = (index: number, field: string, value: any) => {
+  const updateAnswerOption = (index: number, field: string, value: unknown) => {
     const updatedOptions = [...answerOptions];
     updatedOptions[index] = { ...updatedOptions[index], [field]: value };
 

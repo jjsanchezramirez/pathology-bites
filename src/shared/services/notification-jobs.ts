@@ -193,7 +193,7 @@ export class NotificationJobs {
     }
   }
 
-  private async checkGoalCompletion(_goal: any): Promise<boolean> {
+  private async checkGoalCompletion(_goal: unknown): Promise<boolean> {
     // Placeholder implementation
     // Would check actual goal criteria against user progress
     return false

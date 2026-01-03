@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic' // Prevent pre-rendering during build
 export const revalidate = 86400 // 24h ISR-like caching
 
 // In-memory cache for the full dataset to avoid repeated fetches
-let cachedData: any = null
+let cachedData: unknown = null
 let cacheTimestamp: number = 0
 const CACHE_TTL = 86400 * 1000 // 24 hours in ms
 
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     let filteredSlides = slides
     if (search) {
       const searchTerm = search.toLowerCase()
-      filteredSlides = slides.filter((slide: any) => 
+      filteredSlides = slides.filter((slide: unknown) => 
         (slide.diagnosis || '').toLowerCase().includes(searchTerm) ||
         (slide.category || '').toLowerCase().includes(searchTerm) ||
         (slide.subcategory || '').toLowerCase().includes(searchTerm)
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
         'Cache-Control': 'public, max-age=86400, stale-while-revalidate=300'
       }
     })
-  } catch (err: any) {
+  } catch (err) {
     return NextResponse.json({ error: 'Proxy fetch error', message: err?.message || 'Unknown error' }, { status: 500 })
   }
 }

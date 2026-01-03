@@ -20,7 +20,7 @@ import { type QuizSettings } from '@/shared/services/user-settings'
 interface QuizSettingsProps {
   quizSettings: QuizSettings
   saving: boolean
-  onQuizSettingChange: (key: keyof QuizSettings, value: any) => void
+  onQuizSettingChange: (key: keyof QuizSettings, value: unknown) => void
 }
 
 export function QuizSettingsCard({

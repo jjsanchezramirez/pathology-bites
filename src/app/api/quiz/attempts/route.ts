@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   let selectedAnswerId: string | undefined
   let firstAnswerId: string | undefined
   let timeSpent: number | undefined
-  let user: any
+  let user: unknown
 
   try {
     const supabase = await createClient()

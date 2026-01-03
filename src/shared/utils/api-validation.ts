@@ -5,14 +5,14 @@ import { NextRequest, NextResponse } from 'next/server'
 export interface ValidationResult {
   isValid: boolean
   errors?: string[]
-  data?: any
+  data?: unknown
 }
 
 // Generic request body validator
 export async function validateRequestBody(
   request: NextRequest,
-  validator: (data: any) => ValidationResult
-): Promise<{ isValid: boolean; data?: any; response?: NextResponse }> {
+  validator: (data: unknown) => ValidationResult
+): Promise<{ isValid: boolean; data?: unknown; response?: NextResponse }> {
   try {
     const body = await request.json()
     const validation = validator(body)
@@ -50,7 +50,7 @@ export async function validateRequestBody(
 export function validateQueryParams(
   searchParams: URLSearchParams,
   validator: (params: Record<string, string>) => ValidationResult
-): { isValid: boolean; data?: any; response?: NextResponse } {
+): { isValid: boolean; data?: unknown; response?: NextResponse } {
   const params: Record<string, string> = {}
   searchParams.forEach((value, key) => {
     params[key] = value
@@ -79,8 +79,8 @@ export function validateQueryParams(
 export const validators = {
   email: (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
   uuid: (id: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id),
-  positiveInteger: (num: any): boolean => Number.isInteger(num) && num > 0,
-  nonEmptyString: (str: any): boolean => typeof str === 'string' && str.trim().length > 0
+  positiveInteger: (num: unknown): boolean => Number.isInteger(num) && num > 0,
+  nonEmptyString: (str: unknown): boolean => typeof str === 'string' && str.trim().length > 0
 }
 
 // Example usage in an endpoint:

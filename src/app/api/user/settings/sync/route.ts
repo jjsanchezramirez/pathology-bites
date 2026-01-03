@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare the update object - merge all sections
-    const updateData: any = {
+    const updateData: unknown = {
       user_id: userId,
       updated_at: new Date().toISOString()
     }

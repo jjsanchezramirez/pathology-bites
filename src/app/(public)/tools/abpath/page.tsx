@@ -202,10 +202,10 @@ export default function ABPathContentPage() {
           }
 
           if (subsection.sections) {
-            filteredSubsection.sections = subsection.sections.map((subSection: any) => ({
+            filteredSubsection.sections = subsection.sections.map((subSection: unknown) => ({
               ...subSection,
               items: subSection.items ? filterItems(subSection.items, '') : undefined
-            })).filter((subSection: any) => !subSection.items || subSection.items.length > 0);
+            })).filter((subSection: unknown) => !subSection.items || subSection.items.length > 0);
           }
 
           return filteredSubsection;
@@ -833,19 +833,19 @@ export default function ABPathContentPage() {
                                 {/* Subsection direct items */}
                                 {subsection.items && subsection.items.length > 0 && (
                                   <div className="mb-3">
-                                    {subsection.items.map((item: any) => renderItem(item, 0, subsectionKey))}
+                                    {subsection.items.map((item: unknown) => renderItem(item, 0, subsectionKey))}
                                   </div>
                                 )}
 
                                 {/* Subsection sections */}
-                                {subsection.sections && subsection.sections.map((subSection: any, subSectionIndex: number) => (
+                                {subsection.sections && subsection.sections.map((subSection: unknown, subSectionIndex: number) => (
                                   <div key={`${subsectionKey}-section-${subSectionIndex}`} className="mb-3 last:mb-0">
                                     <div className="font-medium text-sm text-gray-600 mb-1 pl-2 border-l-2 border-gray-200">
                                       {subSection.title}
                                     </div>
                                     {subSection.items && subSection.items.length > 0 && (
                                       <div className="ml-4">
-                                        {subSection.items.map((item: any) => renderItem(item, 0, `${subsectionKey}-section-${subSectionIndex}`))}
+                                        {subSection.items.map((item: unknown) => renderItem(item, 0, `${subsectionKey}-section-${subSectionIndex}`))}
                                       </div>
                                     )}
                                   </div>

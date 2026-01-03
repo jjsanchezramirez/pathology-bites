@@ -27,7 +27,7 @@ export class OfflineQueueManager {
    */
   addToQueue(
     sessionId: string,
-    data: any,
+    data: unknown,
     trigger: AutoSaveTrigger
   ): OfflineQueueItem {
     const queue = this.getQueue();
@@ -120,7 +120,7 @@ export class OfflineQueueManager {
    * Process queue - attempt to sync all ready items
    */
   async processQueue(
-    syncFunction: (sessionId: string, data: any) => Promise<boolean>
+    syncFunction: (sessionId: string, data: unknown) => Promise<boolean>
   ): Promise<{ succeeded: number; failed: number; queued: number }> {
     const items = this.getItemsReadyForRetry();
     let succeeded = 0;

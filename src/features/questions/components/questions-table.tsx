@@ -152,7 +152,7 @@ function TableControls({
   difficultyFilter: string;
   statusFilter: string;
   questionSetFilter: string;
-  questionSets: any[];
+  questionSets: unknown[];
   selectedQuestions: string[];
   onBulkOperation: (action: string) => void;
   isAdmin: boolean;

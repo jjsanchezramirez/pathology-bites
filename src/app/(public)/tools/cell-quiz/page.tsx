@@ -20,13 +20,13 @@ interface Question {
 }
 
 // Helper function to find reference cell info by cell data key
-function findReferenceCellInfo(cellDataKey: string, bloodCellsReference: any) {
+function findReferenceCellInfo(cellDataKey: string, bloodCellsReference: unknown) {
   if (!bloodCellsReference?.cells) {
     console.warn('⚠️ No reference cells available for matching')
     return null
   }
   
-  const match = bloodCellsReference.cells.find((refCell: any) => {
+  const match = bloodCellsReference.cells.find((refCell: unknown) => {
     // Convert reference cell name to match cellData key format (lowercase, underscores)
     const normalizedRefName = refCell.name.toLowerCase().replace(/\s+/g, '_')
     const isMatch = normalizedRefName === cellDataKey
@@ -41,14 +41,14 @@ function findReferenceCellInfo(cellDataKey: string, bloodCellsReference: any) {
   
   if (!match && process.env.NODE_ENV === 'development') {
     console.warn(`⚠️ No reference match found for cell key: "${cellDataKey}"`)
-    console.log('Available reference cell names:', bloodCellsReference.cells.map((c: any) => c.name))
+    console.log('Available reference cell names:', bloodCellsReference.cells.map((c: unknown) => c.name))
   }
   
   return match
 }
 
 // Helper function to generate a single random question with biological relationships
-function generateRandomQuestion(cellData: any, bloodCellsReference: any): Question {
+function generateRandomQuestion(cellData: unknown, bloodCellsReference: unknown): Question {
   if (!cellData || !bloodCellsReference) {
     throw new Error('Cell data not loaded')
   }
@@ -68,7 +68,7 @@ function generateRandomQuestion(cellData: any, bloodCellsReference: any): Questi
   if (validCells.length === 0) {
     console.error('❌ No cells found with both image and reference data')
     console.log('Available cell keys:', allCells)
-    console.log('Available reference names:', bloodCellsReference?.cells?.map((c: any) => c.name) || [])
+    console.log('Available reference names:', bloodCellsReference?.cells?.map((c: unknown) => c.name) || [])
     throw new Error('No valid cells found for quiz generation')
   }
   
@@ -558,8 +558,8 @@ export default function CellQuizPage() {
 // Cell Tutorial Component
 function CellTutorial({ onBack, bloodCellsReference, cellData }: {
   onBack: () => void
-  bloodCellsReference: any
-  cellData: any
+  bloodCellsReference: unknown
+  cellData: unknown
 }) {
   const [currentCellIndex, setCurrentCellIndex] = useState(0)
 
@@ -585,7 +585,7 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
       exists: !!bloodCellsReference,
       hasCells: !!bloodCellsReference?.cells,
       cellCount: bloodCellsReference?.cells?.length || 0,
-      sampleCellNames: bloodCellsReference?.cells?.slice(0, 5)?.map((c: any) => c.name) || []
+      sampleCellNames: bloodCellsReference?.cells?.slice(0, 5)?.map((c: unknown) => c.name) || []
     },
     cellData: {
       exists: !!cellData,

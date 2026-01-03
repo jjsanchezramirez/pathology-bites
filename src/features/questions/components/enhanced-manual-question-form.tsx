@@ -83,8 +83,8 @@ export function EnhancedManualQuestionForm({
   const [questionImages, setQuestionImages] = useState<QuestionImageFormData[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
-  const [availableTags, setAvailableTags] = useState<any[]>([]);
-  const [availableCategories, setAvailableCategories] = useState<any[]>([]);
+  const [availableTags, setAvailableTags] = useState<unknown[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<unknown[]>([]);
 
   // Load question sets
   const { questionSets } = useQuestionSets();

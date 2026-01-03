@@ -6,7 +6,7 @@
  * This is safe for client-side expiry checking since we're not trusting the data,
  * just using it to avoid unnecessary API calls
  */
-export function decodeJWT(token: string): any | null {
+export function decodeJWT(token: string): unknown | null {
   try {
     const parts = token.split('.')
     if (parts.length !== 3) {

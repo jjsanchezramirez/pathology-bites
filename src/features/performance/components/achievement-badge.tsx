@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { Progress } from '@/shared/components/ui/progress'
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, unknown> = {
   Play,
   BookOpen,
   GraduationCap,

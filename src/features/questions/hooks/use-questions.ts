@@ -29,8 +29,8 @@ export interface UseQuestionsReturn {
     options?: {
       updateType?: 'patch' | 'minor' | 'major';
       changeSummary?: string;
-      answerOptions?: any[];
-      questionImages?: any[];
+      answerOptions?: unknown[];
+      questionImages?: unknown[];
       tagIds?: string[];
       categoryId?: string;
     }
@@ -143,8 +143,8 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
       // Fetch categories for all questions that have category_id
       const questionIds = (data || []).map(q => q.id);
       const categoryIds = [...new Set((data || []).map(q => q.category_id).filter(Boolean))];
-      let categoriesData: any[] = [];
-      let latestVersionsData: any[] = [];
+      let categoriesData: unknown[] = [];
+      let latestVersionsData: unknown[] = [];
 
       if (categoryIds.length > 0) {
         const { data: categoriesResult } = await supabase
@@ -175,7 +175,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
           .order('created_at', { ascending: false });
 
         // Group by question_id and get the latest version for each
-        const versionsByQuestion = (versionsResult || []).reduce((acc: any, version: any) => {
+        const versionsByQuestion = (versionsResult || []).reduce((acc: unknown, version: unknown) => {
           if (!acc[version.question_id]) {
             acc[version.question_id] = version.version_string;
           }
@@ -202,7 +202,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
             : 'Unknown',
           image_count: question.question_images?.[0]?.count || 0,
           categories: questionCategory ? [questionCategory] : [],
-          tags: question.question_tags?.map((qt: any) => qt.tag).filter(Boolean) || [],
+          tags: question.question_tags?.map((qt: unknown) => qt.tag).filter(Boolean) || [],
           version_string: latestVersion,
           version: latestVersion // Update the version field with the latest version
         };
@@ -257,8 +257,8 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
     options?: {
       updateType?: 'patch' | 'minor' | 'major';
       changeSummary?: string;
-      answerOptions?: any[];
-      questionImages?: any[];
+      answerOptions?: unknown[];
+      questionImages?: unknown[];
       tagIds?: string[];
       categoryId?: string;
       isPatchEdit?: boolean;

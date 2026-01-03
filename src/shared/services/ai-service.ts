@@ -81,7 +81,7 @@ export class AIService {
    */
   async generateStructured<T>(
     request: AIRequest, 
-    validator?: (data: any) => T
+    validator?: (data: unknown) => T
   ): Promise<AIResponse & { parsed?: T }> {
     const response = await this.generateText(request)
 
@@ -155,7 +155,7 @@ export class AIService {
     provider: string,
     request: AIRequest,
     apiKey: string
-  ): Promise<{ content: string; tokenUsage?: any }> {
+  ): Promise<{ content: string; tokenUsage?: unknown }> {
     switch (provider) {
       case 'llama':
         return await this.callMetaAPI(request, apiKey)
@@ -171,7 +171,7 @@ export class AIService {
   /**
    * Meta/Llama API implementation
    */
-  private async callMetaAPI(request: AIRequest, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+  private async callMetaAPI(request: AIRequest, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), this.config.timeout)
 
@@ -232,7 +232,7 @@ export class AIService {
   /**
    * Google/Gemini API implementation
    */
-  private async callGoogleAPI(request: AIRequest, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+  private async callGoogleAPI(request: AIRequest, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${request.model}:generateContent?key=${apiKey}`,
       {
@@ -268,7 +268,7 @@ export class AIService {
   /**
    * Mistral API implementation
    */
-  private async callMistralAPI(request: AIRequest, apiKey: string): Promise<{ content: string; tokenUsage?: any }> {
+  private async callMistralAPI(request: AIRequest, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
     const messages = []
     
     if (request.systemPrompt) {
@@ -311,7 +311,7 @@ export class AIService {
   /**
    * Extract JSON from AI response text
    */
-  private extractJSON(text: string): any {
+  private extractJSON(text: string): unknown {
     // Strategy 1: Smart brace counting
     const firstBrace = text.indexOf('{')
     if (firstBrace !== -1) {
@@ -384,7 +384,7 @@ export class AIService {
   /**
    * Extract token usage from various response formats
    */
-  private extractTokenUsage(data: any, paths: string[]): any {
+  private extractTokenUsage(data: unknown, paths: string[]): unknown {
     for (const path of paths) {
       const usage = this.getNestedValue(data, path)
       if (usage && typeof usage === 'object') {
@@ -401,7 +401,7 @@ export class AIService {
   /**
    * Get nested object value by dot notation path
    */
-  private getNestedValue(obj: any, path: string): any {
+  private getNestedValue(obj: unknown, path: string): unknown {
     return path.split('.').reduce((current, key) => current?.[key], obj)
   }
 
@@ -441,7 +441,7 @@ export class AIService {
   /**
    * Handle and classify errors
    */
-  private handleError(error: any): AIError {
+  private handleError(error: unknown): AIError {
     if (error.type) {
       return error // Already an AIError
     }
@@ -469,7 +469,7 @@ export async function generateText(request: AIRequest): Promise<AIResponse> {
 
 export async function generateStructured<T>(
   request: AIRequest, 
-  validator?: (data: any) => T
+  validator?: (data: unknown) => T
 ): Promise<AIResponse & { parsed?: T }> {
   return aiService.generateStructured(request, validator)
 }

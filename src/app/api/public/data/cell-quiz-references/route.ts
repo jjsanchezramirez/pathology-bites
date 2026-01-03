@@ -15,7 +15,7 @@ export async function GET() {
         'Cache-Control': 'public, max-age=86400, stale-while-revalidate=300',
       }
     })
-  } catch (err: any) {
+  } catch (err) {
     return NextResponse.json({ error: 'Proxy fetch error', message: err?.message || 'Unknown error' }, { status: 500 })
   }
 }

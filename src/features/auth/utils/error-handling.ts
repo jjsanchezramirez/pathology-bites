@@ -23,7 +23,7 @@ export interface AuthError {
 /**
  * Categorize Supabase auth errors into user-friendly messages
  */
-export function categorizeAuthError(error: any): AuthError {
+export function categorizeAuthError(error: unknown): AuthError {
   // Handle null/undefined
   if (!error) {
     return {
@@ -164,21 +164,21 @@ export function categorizeAuthError(error: any): AuthError {
 /**
  * Get user-friendly error message
  */
-export function getErrorMessage(error: any): string {
+export function getErrorMessage(error: unknown): string {
   return categorizeAuthError(error).userMessage
 }
 
 /**
  * Check if error is retryable
  */
-export function isRetryableError(error: any): boolean {
+export function isRetryableError(error: unknown): boolean {
   return categorizeAuthError(error).retryable
 }
 
 /**
  * Get error severity
  */
-export function getErrorSeverity(error: any): 'low' | 'medium' | 'high' {
+export function getErrorSeverity(error: unknown): 'low' | 'medium' | 'high' {
   return categorizeAuthError(error).severity || 'medium'
 }
 
@@ -205,7 +205,7 @@ export function handleAuthConflict(message?: string): void {
 /**
  * Check if an error is an auth conflict that should trigger a redirect
  */
-export function isAuthConflictError(error: any): boolean {
+export function isAuthConflictError(error: unknown): boolean {
   if (!error) return false
 
   const authError = categorizeAuthError(error)

@@ -144,7 +144,7 @@ export function TagsManagementGrid() {
   const [mergeTargetTag, setMergeTargetTag] = useState<Tag | null>(null)
   const [showViewQuestionsDialog, setShowViewQuestionsDialog] = useState(false)
   const [viewQuestionsTag, setViewQuestionsTag] = useState<Tag | null>(null)
-  const [tagQuestions, setTagQuestions] = useState<any[]>([])
+  const [tagQuestions, setTagQuestions] = useState<unknown[]>([])
   const [loadingQuestions, setLoadingQuestions] = useState(false)
 
   const _supabase = createClient()

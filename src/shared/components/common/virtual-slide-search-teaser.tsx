@@ -44,7 +44,7 @@ export function VirtualSlideSearchTeaser() {
 
       // Simple search: find first slide that matches query in diagnosis
       const term = query.toLowerCase()
-      const firstMatch = slides.find((slide: any) =>
+      const firstMatch = slides.find((slide: unknown) =>
         slide.diagnosis?.toLowerCase().includes(term)
       )
 

@@ -21,7 +21,7 @@ export class QuizService {
   /**
    * Create a new quiz session
    */
-  async createQuizSession(userId: string, formData: QuizCreationForm, authenticatedSupabase?: any): Promise<QuizSession> {
+  async createQuizSession(userId: string, formData: QuizCreationForm, authenticatedSupabase?: unknown): Promise<QuizSession> {
     try {
       // Use authenticated client if provided, otherwise fall back to default
       const supabaseClient = authenticatedSupabase || this.getSupabase()
@@ -226,7 +226,7 @@ export class QuizService {
   /**
    * Get quiz session by ID
    */
-  async getQuizSession(sessionId: string, authenticatedSupabase?: any): Promise<QuizSession | null> {
+  async getQuizSession(sessionId: string, authenticatedSupabase?: unknown): Promise<QuizSession | null> {
     try {
       // Use authenticated client if provided, otherwise fall back to default
       const supabaseClient = authenticatedSupabase || this.getSupabase()
@@ -275,7 +275,7 @@ export class QuizService {
   /**
    * Get questions for a session
    */
-  private async getQuestionsForSession(questionIds: string[], authenticatedSupabase?: any): Promise<QuestionWithDetails[]> {
+  private async getQuestionsForSession(questionIds: string[], authenticatedSupabase?: unknown): Promise<QuestionWithDetails[]> {
     if (!questionIds || questionIds.length === 0) {
       return []
     }
@@ -311,8 +311,8 @@ export class QuizService {
     if (error) throw error
 
     // Maintain the order from questionIds and map to expected format
-    const questionMap = new Map(questions?.map((q: any) => [q.id, q]) || [])
-    const orderedQuestions = questionIds.map(id => questionMap.get(id)).filter(Boolean) as any[]
+    const questionMap = new Map(questions?.map((q: unknown) => [q.id, q]) || [])
+    const orderedQuestions = questionIds.map(id => questionMap.get(id)).filter(Boolean) as unknown[]
 
     // Map to QuestionWithDetails format with proper answer_options mapping
     const mappedQuestions = orderedQuestions.map(q => ({
@@ -332,7 +332,7 @@ export class QuizService {
     questionId: string,
     selectedAnswerId: string | null,
     timeSpent: number,
-    authenticatedSupabase?: any,
+    authenticatedSupabase?: unknown,
     firstAnswerId?: string | null
   ): Promise<QuizAttempt> {
     try {
@@ -388,7 +388,7 @@ export class QuizService {
   /**
    * Update quiz session progress
    */
-  async updateQuizSession(sessionId: string, updates: Partial<QuizSession>, authenticatedSupabase?: any): Promise<void> {
+  async updateQuizSession(sessionId: string, updates: Partial<QuizSession>, authenticatedSupabase?: unknown): Promise<void> {
     try {
       // Use authenticated client if provided, otherwise fall back to default
       const supabaseClient = authenticatedSupabase || this.getSupabase()
@@ -420,7 +420,7 @@ export class QuizService {
   /**
    * Start a quiz session
    */
-  async startQuizSession(sessionId: string, authenticatedSupabase?: any): Promise<void> {
+  async startQuizSession(sessionId: string, authenticatedSupabase?: unknown): Promise<void> {
     try {
       const now = new Date().toISOString()
       await this.updateQuizSession(sessionId, {
@@ -438,7 +438,7 @@ export class QuizService {
    * Pause a quiz session
    * Note: Status remains 'in_progress' - pause state is tracked locally
    */
-  async pauseQuizSession(sessionId: string, timeRemaining: number, authenticatedSupabase?: any): Promise<void> {
+  async pauseQuizSession(sessionId: string, timeRemaining: number, authenticatedSupabase?: unknown): Promise<void> {
     try {
       await this.updateQuizSession(sessionId, {
         timeRemaining // Save current time remaining when pausing
@@ -452,7 +452,7 @@ export class QuizService {
   /**
    * Resume a quiz session
    */
-  async resumeQuizSession(sessionId: string, authenticatedSupabase?: any): Promise<void> {
+  async resumeQuizSession(sessionId: string, authenticatedSupabase?: unknown): Promise<void> {
     try {
       await this.updateQuizSession(sessionId, {
         status: 'in_progress',
@@ -467,7 +467,7 @@ export class QuizService {
   /**
    * Update time remaining for a quiz session
    */
-  async updateTimeRemaining(sessionId: string, timeRemaining: number, authenticatedSupabase?: any): Promise<void> {
+  async updateTimeRemaining(sessionId: string, timeRemaining: number, authenticatedSupabase?: unknown): Promise<void> {
     try {
       await this.updateQuizSession(sessionId, {
         timeRemaining
@@ -575,7 +575,7 @@ export class QuizService {
   /**
    * Get quiz results for a completed session
    */
-  async getQuizResults(sessionId: string, authenticatedSupabase?: any): Promise<QuizResult | null> {
+  async getQuizResults(sessionId: string, authenticatedSupabase?: unknown): Promise<QuizResult | null> {
     try {
       // Get session details
       const session = await this.getQuizSession(sessionId, authenticatedSupabase)
@@ -596,12 +596,12 @@ export class QuizService {
       if (attemptsError) throw attemptsError
 
       // Calculate results
-      const correctAnswers = attempts?.filter((a: any) => a.is_correct).length || 0
+      const correctAnswers = attempts?.filter((a: unknown) => a.is_correct).length || 0
       const totalQuestions = session.totalQuestions
       const score = Math.round((correctAnswers / totalQuestions) * 100)
 
       // Calculate total time spent from individual attempts (more accurate than session.totalTimeSpent)
-      const totalTimeSpent = attempts?.reduce((sum: number, a: any) => {
+      const totalTimeSpent = attempts?.reduce((sum: number, a: unknown) => {
         const timeSpent = a.time_spent || 0
         return sum + timeSpent
       }, 0) || 0
@@ -628,7 +628,7 @@ export class QuizService {
       }
 
       // If we have parent IDs, fetch parent short forms separately
-      const parentIds = [...new Set(categories?.map((c: any) => c.parent_id).filter(Boolean) || [])]
+      const parentIds = [...new Set(categories?.map((c: unknown) => c.parent_id).filter(Boolean) || [])]
       let parentMap = new Map<string, string>()
 
       if (parentIds.length > 0) {
@@ -637,10 +637,10 @@ export class QuizService {
           .select('id, short_form')
           .in('id', parentIds)
 
-        parentMap = new Map(parents?.map((p: any) => [p.id, p.short_form]) || [])
+        parentMap = new Map(parents?.map((p: unknown) => [p.id, p.short_form]) || [])
       }
 
-      const categoryInfoMap = new Map(categories?.map((c: any) => [
+      const categoryInfoMap = new Map(categories?.map((c: unknown) => [
         c.id,
         {
           name: c.name,
@@ -652,7 +652,7 @@ export class QuizService {
 
       session.questions.forEach(question => {
         const difficulty = question.difficulty as 'easy' | 'medium' | 'hard'
-        const attempt = attempts?.find((a: any) => a.question_id === question.id)
+        const attempt = attempts?.find((a: unknown) => a.question_id === question.id)
 
         // Only count if difficulty is valid
         if (difficulty && difficultyBreakdown[difficulty]) {
@@ -673,16 +673,16 @@ export class QuizService {
       // Calculate success rates for all questions
       const successRateMap = new Map<string, number>()
       questionIds.forEach(questionId => {
-        const questionAttempts = allQuestionAttempts?.filter((a: any) => a.question_id === questionId) || []
+        const questionAttempts = allQuestionAttempts?.filter((a: unknown) => a.question_id === questionId) || []
         const totalAttempts = questionAttempts.length
-        const correctAttempts = questionAttempts.filter((a: any) => a.is_correct).length
+        const correctAttempts = questionAttempts.filter((a: unknown) => a.is_correct).length
         const successRate = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 0
         successRateMap.set(questionId, successRate)
       })
 
       // Get detailed question information for review
       const questionDetails = session.questions.map(question => {
-        const attempt = attempts?.find((a: any) => a.question_id === question.id)
+        const attempt = attempts?.find((a: unknown) => a.question_id === question.id)
 
         const timeSpent = attempt?.time_spent || 0
 
@@ -751,7 +751,7 @@ export class QuizService {
         difficultyBreakdown,
         categoryBreakdown,
         questionDetails,
-        attempts: attempts?.map((a: any) => ({
+        attempts: attempts?.map((a: unknown) => ({
           ...a,
           quizSessionId: a.quiz_session_id,
           questionId: a.question_id,
@@ -772,7 +772,7 @@ export class QuizService {
   /**
    * Complete a quiz and calculate results
    */
-  async completeQuiz(sessionId: string, authenticatedSupabase?: any): Promise<QuizResult> {
+  async completeQuiz(sessionId: string, authenticatedSupabase?: unknown): Promise<QuizResult> {
     try {
       // Use authenticated client if provided, otherwise fall back to default
       const supabaseClient = authenticatedSupabase || this.getSupabase()
@@ -790,11 +790,11 @@ export class QuizService {
       if (!session) throw new Error('Quiz session not found')
 
       // Calculate results
-      const correctAnswers = attempts?.filter((a: any) => a.is_correct).length || 0
+      const correctAnswers = attempts?.filter((a: unknown) => a.is_correct).length || 0
       const totalQuestions = session.totalQuestions
       const score = Math.round((correctAnswers / totalQuestions) * 100)
       // Calculate total time spent
-      const totalTimeSpent = attempts?.reduce((sum: number, a: any) => {
+      const totalTimeSpent = attempts?.reduce((sum: number, a: unknown) => {
         const timeSpent = a.time_spent || 0
         return sum + timeSpent
       }, 0) || 0
@@ -813,7 +813,7 @@ export class QuizService {
           ? question.difficulty
           : 'medium'
 
-        const attempt = attempts?.find((a: any) => a.question_id === question.id)
+        const attempt = attempts?.find((a: unknown) => a.question_id === question.id)
 
         difficultyBreakdown[difficulty].total++
         if (attempt?.is_correct) {
@@ -859,7 +859,7 @@ export class QuizService {
         difficultyBreakdown,
         categoryBreakdown: [], // TODO: Implement category breakdown
         questionDetails: [], // TODO: Implement question details
-        attempts: attempts?.map((a: any) => ({
+        attempts: attempts?.map((a: unknown) => ({
           ...a,
           quizSessionId: a.quiz_session_id,
           questionId: a.question_id,

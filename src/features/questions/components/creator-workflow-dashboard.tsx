@@ -205,7 +205,7 @@ export function CreatorWorkflowDashboard() {
 
       // Calculate stats based on role
       const flaggedCount = workflowQuestions.filter(q =>
-        q.question_flags && q.question_flags.some((f: any) => f.status === 'open')
+        q.question_flags && q.question_flags.some((f: unknown) => f.status === 'open')
       ).length
 
       const newStats = {
@@ -602,22 +602,22 @@ export function CreatorWorkflowDashboard() {
                           )}
                         </div>
                       )}
-                      {question.question_flags && question.question_flags.filter((f: any) => f.status === 'open').length > 0 && (
+                      {question.question_flags && question.question_flags.filter((f: unknown) => f.status === 'open').length > 0 && (
                         <div className="mt-2 p-2 bg-destructive/10 border border-destructive/30 rounded-md">
                           <div className="flex items-center gap-1 mb-1">
                             <AlertTriangle className="h-3 w-3 text-destructive" />
                             <span className="text-xs font-medium text-destructive">
-                              {question.question_flags.filter((f: any) => f.status === 'open').length} Flag{question.question_flags.filter((f: any) => f.status === 'open').length !== 1 ? 's' : ''}
+                              {question.question_flags.filter((f: unknown) => f.status === 'open').length} Flag{question.question_flags.filter((f: unknown) => f.status === 'open').length !== 1 ? 's' : ''}
                             </span>
                           </div>
-                          {question.question_flags.filter((f: any) => f.status === 'open').slice(0, 2).map((flag: any, idx: number) => (
+                          {question.question_flags.filter((f: unknown) => f.status === 'open').slice(0, 2).map((flag: unknown, idx: number) => (
                             <p key={idx} className="text-xs text-destructive/80 line-clamp-1">
                               • {flag.flag_type.replace(/_/g, ' ')}: {flag.description || 'No description'}
                             </p>
                           ))}
-                          {question.question_flags.filter((f: any) => f.status === 'open').length > 2 && (
+                          {question.question_flags.filter((f: unknown) => f.status === 'open').length > 2 && (
                             <p className="text-xs text-destructive/60 mt-1">
-                              +{question.question_flags.filter((f: any) => f.status === 'open').length - 2} more
+                              +{question.question_flags.filter((f: unknown) => f.status === 'open').length - 2} more
                             </p>
                           )}
                         </div>

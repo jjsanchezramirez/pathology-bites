@@ -10,8 +10,8 @@ let cachedImagesPromise: Promise<any> | null = null
 let cachedReferencesPromise: Promise<any> | null = null
 
 interface UseCellQuizResult {
-  cellData: any | null
-  bloodCellsReference: any | null
+  cellData: unknown | null
+  bloodCellsReference: unknown | null
   isLoading: boolean
   error: string | null
 }
@@ -41,7 +41,7 @@ async function loadCellQuizImages(): Promise<any> {
       })
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       return res
-    } catch (e: any) {
+    } catch (e) {
       console.warn('[CellQuiz Images] R2 fetch failed in dev, falling back to /api/public/data/cell-quiz-images', e)
 
       // Fallback to server-side API (same as virtual slides)
@@ -102,7 +102,7 @@ async function loadCellQuizReferences(): Promise<any> {
       })
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       return res
-    } catch (e: any) {
+    } catch (e) {
       console.warn('[CellQuiz References] R2 fetch failed in dev, falling back to /api/public/data/cell-quiz-references', e)
 
       // Fallback to server-side API (same as virtual slides)
@@ -175,7 +175,7 @@ export function useClientCellQuiz(): UseCellQuizResult {
             }
           })
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error('❌ Failed to load cell quiz data:', err)
         if (mounted) {
           const errorMessage = err.message || 'Failed to load cell quiz data';

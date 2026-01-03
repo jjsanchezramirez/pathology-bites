@@ -17,8 +17,8 @@ export function checkProductionGuard(): NextResponse | null {
 /**
  * Wrapper function to apply production guard to any handler
  */
-export function withProductionGuard<T extends (...args: any[]) => any>(handler: T): T {
-  return ((...args: any[]) => {
+export function withProductionGuard<T extends (...args: unknown[]) => any>(handler: T): T {
+  return ((...args: unknown[]) => {
     const guard = checkProductionGuard()
     if (guard) return guard
     return handler(...args)

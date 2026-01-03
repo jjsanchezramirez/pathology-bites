@@ -7,7 +7,7 @@ import { lottieCacheService } from '@/shared/services/lottie-cache-service'
 const ANIMATION_BASE_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/animations'
 
 interface UseLottieAnimationResult {
-  animationData: any | null
+  animationData: unknown | null
   isLoading: boolean
   error: Error | null
 }

@@ -84,7 +84,7 @@ export async function optimizedQuery<T>(
   tableName: string,
   options: {
     select?: string
-    filters?: Record<string, any>
+    filters?: Record<string, unknown>
     pagination?: PaginationOptions
     orderBy?: string
     userId?: string
@@ -169,12 +169,12 @@ export async function optimizedQuery<T>(
 /**
  * Batch multiple queries to reduce round trips
  */
-export async function batchQueries<T extends Record<string, any>>(
+export async function batchQueries<T extends Record<string, unknown>>(
   queries: Array<{
     name: string
     table: string
     select?: string
-    filters?: Record<string, any>
+    filters?: Record<string, unknown>
     single?: boolean
   }>
 ): Promise<T> {
@@ -246,7 +246,7 @@ export async function optimizedAuth(options: {
 /**
  * Create minimal user data response (reduces payload size)
  */
-export function createMinimalUserResponse(user: any) {
+export function createMinimalUserResponse(user: unknown) {
   return {
     id: user.id,
     email: user.email,
@@ -259,7 +259,7 @@ export function createMinimalUserResponse(user: any) {
 /**
  * Compress large JSON responses
  */
-export function compressResponse(data: any): string {
+export function compressResponse(data: unknown): string {
   // Remove null/undefined values to reduce payload size
   const cleaned = JSON.parse(JSON.stringify(data, (key, value) => {
     if (value === null || value === undefined) {
@@ -277,7 +277,7 @@ export function compressResponse(data: any): string {
 export function createErrorResponse(
   message: string,
   status: number = 500,
-  details?: any
+  details?: unknown
 ) {
   return NextResponse.json(
     {

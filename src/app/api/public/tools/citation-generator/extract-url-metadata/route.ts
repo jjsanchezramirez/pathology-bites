@@ -120,7 +120,7 @@ function extractAuthors($: cheerio.CheerioAPI): string[] {
       const jsonLd = JSON.parse($(element).html() || '{}')
       if (jsonLd.author) {
         if (Array.isArray(jsonLd.author)) {
-          authors.push(...jsonLd.author.map((a: any) => a.name || a))
+          authors.push(...jsonLd.author.map((a: unknown) => a.name || a))
         } else if (typeof jsonLd.author === 'object' && jsonLd.author.name) {
           authors.push(jsonLd.author.name)
         } else if (typeof jsonLd.author === 'string') {
