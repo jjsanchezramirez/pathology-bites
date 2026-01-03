@@ -55,10 +55,10 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
                 >
                   Pathology learning{" "}
                   <span
-                    className="bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent"
+                    className="bg-gradient-to-r from-primary via-sky-400/60 to-primary/70 bg-clip-text text-transparent"
                     style={{
                       backgroundSize: showShimmer ? "200% auto" : "100% auto",
-                      animation: showShimmer ? "shimmer 2s linear forwards" : "none",
+                      animation: showShimmer ? "shimmer 3.5s ease-in-out forwards" : "none",
                       animationIterationCount: showShimmer ? "1" : "0",
                     }}
                   >
