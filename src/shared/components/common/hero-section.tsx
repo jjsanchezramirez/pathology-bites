@@ -12,9 +12,16 @@ interface HeroSectionProps {
 
 export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
   const [mounted, setMounted] = useState(false);
+  const [showShimmer, setShowShimmer] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    // Trigger shimmer after all other animations complete
+    const shimmerTimer = setTimeout(() => {
+      setShowShimmer(true);
+    }, 1800); // Start shimmer after 1.8s (when other animations finish)
+
+    return () => clearTimeout(shimmerTimer);
   }, []);
 
   const scrollToNext = () => {
@@ -42,12 +49,18 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
                   className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight opacity-0"
                   style={{
                     animation: mounted
-                      ? "slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+                      ? "slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards"
                       : "none",
                   }}
                 >
                   Pathology learning{" "}
-                  <span className="bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent">
+                  <span
+                    className="bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent"
+                    style={{
+                      backgroundSize: showShimmer ? "200% auto" : "100% auto",
+                      animation: showShimmer ? "shimmer 2s linear" : "none",
+                    }}
+                  >
                     by residents, for residents
                   </span>
                 </h1>
@@ -55,9 +68,9 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
                   className="text-lg sm:text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0 opacity-0"
                   style={{
                     animation: mounted
-                      ? "slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+                      ? "slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards"
                       : "none",
-                    animationDelay: mounted ? "0.15s" : "0s",
+                    animationDelay: mounted ? "0.2s" : "0s",
                   }}
                 >
                   Explore our virtual slide library or sharpen your skills with our question bank
@@ -71,9 +84,9 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
                   className="opacity-0"
                   style={{
                     animation: mounted
-                      ? "scaleInFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+                      ? "scaleInFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards"
                       : "none",
-                    animationDelay: mounted ? "0.3s" : "0s",
+                    animationDelay: mounted ? "0.5s" : "0s",
                   }}
                 >
                   <VirtualSlideSearchTeaser />
@@ -84,9 +97,9 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
                   className="text-center lg:text-left opacity-0"
                   style={{
                     animation: mounted
-                      ? "slideInFromLeft 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+                      ? "slideInFromLeft 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards"
                       : "none",
-                    animationDelay: mounted ? "0.5s" : "0s",
+                    animationDelay: mounted ? "0.8s" : "0s",
                   }}
                 >
                   <Link
@@ -113,9 +126,9 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
         className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 opacity-0"
         style={{
           animation: mounted
-            ? "fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+            ? "fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards"
             : "none",
-          animationDelay: mounted ? "0.7s" : "0s",
+          animationDelay: mounted ? "1.2s" : "0s",
         }}
       >
         <button

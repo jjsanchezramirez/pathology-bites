@@ -132,7 +132,7 @@ export function VirtualSlideSearchTeaser() {
             variant="secondary"
             size="lg"
             onClick={handleRandomSlide}
-            className="px-6"
+            className="px-6 transition-all hover:scale-105 hover:shadow-md"
             disabled={isLuckyLoading || isRandomLoading}
           >
             {isRandomLoading ? (
@@ -150,7 +150,7 @@ export function VirtualSlideSearchTeaser() {
             size="lg"
             onClick={handleFeelingLucky}
             disabled={isLuckyLoading || isRandomLoading}
-            className="px-6"
+            className="px-6 transition-all hover:scale-105 hover:shadow-md"
           >
             {isLuckyLoading ? (
               <>
