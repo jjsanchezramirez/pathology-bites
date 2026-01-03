@@ -3,7 +3,7 @@
 
 import { createClient } from '@/shared/services/client'
 import { isPublicRoute } from '@/shared/utils/route-helpers'
-import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js'
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 type AuthListener = (event: AuthChangeEvent, session: Session | null) => void
 type DatabaseListener = (payload: any) => void

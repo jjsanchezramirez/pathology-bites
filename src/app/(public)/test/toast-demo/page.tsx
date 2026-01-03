@@ -1,6 +1,6 @@
 'use client'
 
-import type { Metadata } from 'next'
+
 import { useState } from 'react'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'

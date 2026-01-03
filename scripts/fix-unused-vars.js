@@ -61,7 +61,7 @@ for (const [filePath, fixes] of filesToFix) {
   const relativePath = path.relative(process.cwd(), filePath);
   console.log(`\nProcessing ${relativePath} (${fixes.length} issues)...`);
   
-  let content = fs.readFileSync(filePath, 'utf8');
+  const content = fs.readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
   let modified = false;
   
