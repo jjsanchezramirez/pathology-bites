@@ -16,8 +16,9 @@ import { useEditQuestionForm } from '@/features/questions/hooks/use-edit-questio
 // Import tab components
 import { TabNavigation } from './tab-navigation'
 import { ContentTab } from './content-tab'
-import { ImagesTab } from '@/features/questions/components/edit-question-dialog/images-tab'
+import { ImagesTab } from './images-tab'
 import { MetadataTab } from './metadata-tab'
+import { AnkiLinkTab } from './anki-link-tab'
 
 interface EditQuestionClientProps {
   questionId: string
@@ -29,7 +30,10 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('content')
-  const [showConfirmSubmit, setShowConfirmSubmit] = useState(false)
+
+  // Get return URL from query params, default to /admin/my-questions
+  const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+  const returnUrl = searchParams.get('returnUrl') || '/admin/my-questions'
 
   // Fetch question data
   useEffect(() => {
@@ -80,11 +84,13 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
     open: !!question,
     onSave: () => {
       toast.success('Question updated successfully!')
-      router.push('/admin/my-questions')
+      // Use replace instead of push to avoid adding to history
+      // Then refresh to force data reload
+      router.replace(returnUrl)
       router.refresh()
     },
     onClose: () => {
-      router.push('/admin/my-questions')
+      router.push(returnUrl)
     },
   })
 
@@ -92,10 +98,10 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   const handleCancel = () => {
     if (hasUnsavedChanges) {
       if (window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
-        router.push('/admin/my-questions')
+        router.push(returnUrl)
       }
     } else {
-      router.push('/admin/my-questions')
+      router.push(returnUrl)
     }
   }
 
@@ -177,17 +183,17 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error || 'Question not found'}</AlertDescription>
         </Alert>
-        <Button variant="outline" onClick={() => router.push('/admin/my-questions')}>
+        <Button variant="outline" onClick={() => router.push(returnUrl)}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to My Questions
+          Back
         </Button>
       </div>
     )
   }
 
-  // Get reviewer feedback if question was flagged or needs revision
-  const reviewerFeedback = question.status === 'flagged' || question.status === 'needs_revision'
-    ? question.reviews?.[0]?.feedback
+  // Get reviewer feedback if question was flagged or rejected
+  const reviewerFeedback = (question.status === 'flagged' || question.status === 'rejected')
+    ? question.reviewer_feedback
     : null
 
   return (
@@ -204,29 +210,6 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
           </AlertDescription>
         </Alert>
       )}
-
-      {/* Question Status Badge */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Status:</span>
-        <span className={`text-sm font-medium px-2 py-1 rounded ${
-          question.status === 'published' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' :
-          question.status === 'pending_review' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100' :
-          question.status === 'flagged' || question.status === 'needs_revision' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100' :
-          'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
-        }`}>
-          {question.status === 'needs_revision' ? 'Needs Revision' :
-           question.status === 'pending_review' ? 'Pending Review' :
-           question.status === 'published' ? 'Published' :
-           question.status === 'flagged' ? 'Flagged' :
-           'Draft'}
-        </span>
-        {question.version && (
-          <>
-            <span className="text-sm text-muted-foreground">•</span>
-            <span className="text-sm text-muted-foreground">Version: {question.version}</span>
-          </>
-        )}
-      </div>
 
       {/* Main Form */}
       <Form {...form}>
@@ -266,6 +249,12 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                 onUnsavedChanges={handleUnsavedChanges}
                 selectedTagIds={selectedTagIds}
                 onTagsChange={setSelectedTagIds}
+              />
+            )}
+            {activeTab === 'anki' && (
+              <AnkiLinkTab
+                form={form}
+                onUnsavedChanges={handleUnsavedChanges}
               />
             )}
           </div>

@@ -2,7 +2,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Badge } from "@/shared/components/ui/badge"
-import { Check } from "lucide-react"
+import { Button } from "@/shared/components/ui/button"
+import { Check, ExternalLink } from "lucide-react"
 import { QuestionWithDetails } from '@/features/questions/types/questions'
 import { SimpleImageCarousel } from './simple-image-carousel'
 import { getCategoryColor } from '@/features/questions/utils/category-colors'
@@ -156,6 +157,32 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                   <h4 className="font-medium text-xs uppercase mb-1">References</h4>
                   <div className="text-muted-foreground text-xs">
                     {question.question_references}
+                  </div>
+                </div>
+              )}
+
+              {/* Anki Card Link */}
+              {question.anki_card_id && (
+                <div>
+                  <h4 className="font-medium text-xs uppercase mb-2">Linked Anki Card</h4>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="font-mono text-xs">
+                      ID: {question.anki_card_id}
+                    </Badge>
+                    {question.anki_deck_name && (
+                      <Badge variant="secondary" className="text-xs">
+                        {question.anki_deck_name}
+                      </Badge>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 text-xs"
+                      onClick={() => window.open(`/dashboard/anki?cardId=${encodeURIComponent(question.anki_card_id)}`, '_blank')}
+                    >
+                      <ExternalLink className="mr-1 h-3 w-3" />
+                      View
+                    </Button>
                   </div>
                 </div>
               )}

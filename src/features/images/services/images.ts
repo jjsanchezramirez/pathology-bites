@@ -3,7 +3,7 @@ import { createClient } from '@/shared/services/client';
 import type { ImageData } from '@/features/images/types/images';
 import { apiClient } from '@/shared/utils/api-client';
 
-// Aggressive client-side cache to reduce Supabase queries
+// Very aggressive client-side cache to reduce Supabase queries
 interface CacheEntry {
   data: ImageData[];
   total: number;
@@ -11,7 +11,7 @@ interface CacheEntry {
 }
 
 const imageQueryCache = new Map<string, CacheEntry>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+const CACHE_TTL = 60 * 60 * 1000; // 60 minutes cache (1 hour)
 
 function getCacheKey(params: {
   page: number;
@@ -43,11 +43,11 @@ function cleanExpiredCache() {
 
   keysToDelete.forEach(key => imageQueryCache.delete(key));
 
-  // Keep cache size under 100 entries
-  if (imageQueryCache.size > 100) {
+  // Keep cache size under 500 entries (increased from 100)
+  if (imageQueryCache.size > 500) {
     const entries = Array.from(imageQueryCache.entries());
     entries.sort((a, b) => b[1].timestamp - a[1].timestamp);
-    const toKeep = entries.slice(0, 100);
+    const toKeep = entries.slice(0, 500);
     imageQueryCache.clear();
     toKeep.forEach(([key, value]) => imageQueryCache.set(key, value));
   }

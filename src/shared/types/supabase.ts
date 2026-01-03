@@ -635,6 +635,8 @@ export interface Database {
           reviewer_id: string | null
           reviewer_feedback: string | null
           published_at: string | null
+          anki_card_id: string | null
+          anki_deck_name: string | null
           created_at: string
           updated_at: string
         }
@@ -657,6 +659,8 @@ export interface Database {
           reviewer_id?: string | null
           reviewer_feedback?: string | null
           published_at?: string | null
+          anki_card_id?: string | null
+          anki_deck_name?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -679,6 +683,8 @@ export interface Database {
           reviewer_id?: string | null
           reviewer_feedback?: string | null
           published_at?: string | null
+          anki_card_id?: string | null
+          anki_deck_name?: string | null
           created_at?: string
           updated_at?: string
         }

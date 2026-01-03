@@ -269,7 +269,7 @@ export function CreatorWorkflowDashboard() {
 
   const handleEditAndResubmit = (questionId: string) => {
     // Navigate to edit page
-    router.push(`/admin/questions/${questionId}/edit`)
+    router.push(`/admin/questions/${questionId}/edit?returnUrl=/admin/creator-workflow`)
   }
 
   const handleSubmitSuccess = async (reviewerId?: string) => {

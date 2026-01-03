@@ -151,18 +151,18 @@ export function useMyRevisionQueue(options: UseQuestionQueryOptions = {}) {
     user && enabled ? ['revision-queue', user.id] : null,
     () => fetchRejectedQuestions(user!.id),
     {
-      // Cache indefinitely - only refetch on manual refresh
-      revalidateIfStale: false,
-      revalidateOnMount: false,
+      // Always fetch fresh data on mount
+      revalidateIfStale: true,
+      revalidateOnMount: true,
 
-      // Dedupe requests indefinitely
-      dedupingInterval: Infinity,
+      // Dedupe rapid requests (5 seconds)
+      dedupingInterval: 5000,
 
-      // Don't revalidate on focus - only on manual refresh
-      revalidateOnFocus: false,
+      // Revalidate on focus to catch changes made in other tabs
+      revalidateOnFocus: true,
 
-      // Don't revalidate on reconnect
-      revalidateOnReconnect: false,
+      // Revalidate on reconnect
+      revalidateOnReconnect: true,
 
       // Keep previous data while revalidating
       keepPreviousData: true,

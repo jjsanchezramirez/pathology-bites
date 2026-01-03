@@ -254,6 +254,13 @@ export const adminNavigationSections: NavigationSection[] = [
         adminOnly: true
       },
       {
+        name: "Test Semantic Scholar",
+        href: "/admin/test-semantic-scholar",
+        icon: "FlaskConical",
+        requiredPermission: "settings.manage",
+        adminOnly: true
+      },
+      {
         name: "Settings",
         href: "/admin/settings",
         icon: "Settings",

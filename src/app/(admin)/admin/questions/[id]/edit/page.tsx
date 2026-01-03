@@ -8,7 +8,9 @@ export const metadata: Metadata = {
   description: 'Edit question details, images, and metadata',
 }
 
-export default function EditQuestionPage({ params }: { params: { id: string } }) {
+export default async function EditQuestionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+
   return (
     <RequirePermission permission="questions.update">
       <PageErrorBoundary pageName="Edit Question" showHomeButton={true} showBackButton={true}>
@@ -20,7 +22,7 @@ export default function EditQuestionPage({ params }: { params: { id: string } })
             </p>
           </div>
 
-          <EditQuestionClient questionId={params.id} />
+          <EditQuestionClient questionId={id} />
         </div>
       </PageErrorBoundary>
     </RequirePermission>

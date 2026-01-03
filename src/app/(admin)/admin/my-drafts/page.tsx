@@ -174,7 +174,7 @@ export default function MyDraftsPage() {
   }
 
   const handleEdit = (questionId: string) => {
-    router.push(`/admin/questions/${questionId}/edit`)
+    router.push(`/admin/questions/${questionId}/edit?returnUrl=/admin/my-drafts`)
   }
 
   const handleSubmitForReview = (questionId: string) => {

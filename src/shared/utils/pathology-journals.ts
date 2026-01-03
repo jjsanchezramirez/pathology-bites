@@ -83,25 +83,25 @@ export const PATHOLOGY_JOURNALS = [
   'Journal of Forensic Sciences',
   'American Journal of Forensic Medicine and Pathology',
   'Forensic Science, Medicine, and Pathology',
-  
-  // Infectious Disease Pathology
-  'Journal of Infectious Diseases',
-  'Clinical Infectious Diseases',
-  'Emerging Infectious Diseases',
-  
-  // Informatics & Digital Pathology
-  'Journal of Pathology Informatics',
-  
-  // High-Impact Interdisciplinary Journals
-  'New England Journal of Medicine',
-  'The Lancet',
-  'JAMA',
-  'Cell',
-  'Nature',
-  'Cancer Research',
-  'Cancer Cell',
-  'Clinical Cancer Research',
-  'Nature Reviews Cancer',
-  'Journal of Clinical Oncology',
+
+  // Infectious Disease Pathology (commented out - too broad)
+  // 'Journal of Infectious Diseases',
+  // 'Clinical Infectious Diseases',
+  // 'Emerging Infectious Diseases',
+
+  // Informatics & Digital Pathology (commented out - too niche)
+  // 'Journal of Pathology Informatics',
+
+  // High-Impact Interdisciplinary Journals (commented out - too broad, not pathology-specific)
+  // 'New England Journal of Medicine',
+  // 'The Lancet',
+  // 'JAMA',
+  // 'Cell',
+  // 'Nature',
+  // 'Cancer Research',
+  // 'Cancer Cell',
+  // 'Clinical Cancer Research',
+  // 'Nature Reviews Cancer',
+  // 'Journal of Clinical Oncology',
 ] as const
 

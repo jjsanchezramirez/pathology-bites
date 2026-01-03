@@ -33,7 +33,6 @@ import { useUserRole } from '@/shared/hooks/use-user-role';
 import { shouldShowDeleteButton } from '@/features/questions/utils/deletion-helpers';
 import { ComponentErrorBoundary } from '@/shared/components/common';
 import { CreateQuestionDialog } from './create-question-dialog';
-import { EditQuestionDialog } from './edit-question-dialog';
 import { QuestionFlagDialog } from './question-flag-dialog';
 import { DeleteQuestionDialog } from './delete-question-dialog';
 import { QuestionVersionHistory } from './question-version-history';
@@ -44,6 +43,7 @@ import { getQuestionSetDisplayName, getCategoryDisplayName } from '@/features/qu
 import { createClient } from '@/shared/services/client';
 import { BlurredDialog } from '@/shared/components/ui/blurred-dialog';
 import { apiClient } from '@/shared/utils/api-client';
+import { useRouter } from 'next/navigation';
 
 const DEFAULT_PAGE_SIZE = 100;
 const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
@@ -562,6 +562,7 @@ interface QuestionsTableProps {
 }
 
 export function QuestionsTable({ adminMode = 'admin' }: QuestionsTableProps) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -580,9 +581,7 @@ export function QuestionsTable({ adminMode = 'admin' }: QuestionsTableProps) {
   const showAdminFeatures = adminMode === 'admin' && isActualAdmin;
 
   const supabase = createClient();
-  const [selectedQuestion, setSelectedQuestion] = useState<QuestionWithDetails | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
@@ -641,26 +640,10 @@ export function QuestionsTable({ adminMode = 'admin' }: QuestionsTableProps) {
     setPage(0);
   }, []);
 
-  const handleEdit = useCallback(async (question: QuestionWithDetails) => {
-    try {
-      // Fetch the full question details from the API to ensure we have all related data
-      const response = await fetch(`/api/admin/questions/${question.id}`)
-
-      if (response.ok) {
-        const data = await response.json()
-        const { question: questionDetails } = data
-        setSelectedQuestion(questionDetails)
-        setShowEditDialog(true)
-      } else {
-        const errorData = await response.json().catch(() => ({}))
-        console.error('Failed to fetch question details:', response.status, errorData)
-        toast.error('Failed to load question details')
-      }
-    } catch (error) {
-      console.error('Failed to fetch question details:', error)
-      toast.error('Failed to load question details')
-    }
-  }, []);
+  const handleEdit = useCallback((question: QuestionWithDetails) => {
+    // Navigate to the edit page
+    router.push(`/admin/questions/${question.id}/edit`);
+  }, [router]);
 
   const handleDelete = useCallback((question: QuestionWithDetails) => {
     setQuestionToDelete(question);
@@ -910,12 +893,6 @@ export function QuestionsTable({ adminMode = 'admin' }: QuestionsTableProps) {
     refetch();
   }, [refetch]);
 
-  const handleEditSave = useCallback(() => {
-    setShowEditDialog(false);
-    setSelectedQuestion(null);
-    refetch();
-  }, [refetch]);
-
   const handleFlagSave = useCallback(() => {
     setShowFlagDialog(false);
     setQuestionToFlag(null);
@@ -1050,13 +1027,6 @@ export function QuestionsTable({ adminMode = 'admin' }: QuestionsTableProps) {
         question={questionToPreview}
         open={showPreviewDialog}
         onOpenChange={setShowPreviewDialog}
-      />
-
-      <EditQuestionDialog
-        question={selectedQuestion}
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-        onSave={handleEditSave}
       />
 
       {/* Flag Dialog */}

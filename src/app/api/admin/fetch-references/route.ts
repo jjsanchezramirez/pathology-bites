@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PATHOLOGY_JOURNALS } from '@/lib/constants/pathology-journals'
+import { PATHOLOGY_JOURNALS } from '@/shared/utils/pathology-journals'
 
 /**
  * Semantic Scholar API route for fetching academic references

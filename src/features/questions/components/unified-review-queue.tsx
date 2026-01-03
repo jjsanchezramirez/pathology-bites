@@ -138,7 +138,7 @@ export function UnifiedReviewQueue() {
   }
 
   const handleEdit = (item: ReviewQueueItem) => {
-    router.push(`/admin/questions/${item.id}/edit`)
+    router.push(`/admin/questions/${item.id}/edit?returnUrl=/admin/review-queue`)
   }
 
   const handleResolveFlags = async (item: ReviewQueueItem) => {

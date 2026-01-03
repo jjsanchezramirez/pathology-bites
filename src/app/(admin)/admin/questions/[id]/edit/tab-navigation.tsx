@@ -17,6 +17,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
     { id: 'content', name: 'Content', description: 'Edit question details' },
     { id: 'images', name: 'Images', description: 'Manage visual content' },
     { id: 'metadata', name: 'Metadata', description: 'Update categorization' },
+    { id: 'anki', name: 'Anki Link', description: 'Link to Anki card' },
   ];
 
   const currentStepIndex = steps.findIndex(step => step.id === activeTab);
@@ -66,6 +67,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
             >
               {/* Circle */}
               <button
+                type="button"
                 onClick={() => onTabChange(step.id)}
                 className={`
                   relative z-10 w-10 h-10 rounded-full flex items-center justify-center
@@ -87,6 +89,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
 
               {/* Text */}
               <button
+                type="button"
                 onClick={() => onTabChange(step.id)}
                 className="mt-3 text-center"
               >

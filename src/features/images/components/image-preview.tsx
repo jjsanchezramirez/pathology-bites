@@ -15,6 +15,7 @@ interface ImagePreviewProps {
   alt: string;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  disableFullscreen?: boolean;
 }
 
 const sizeClasses = {
@@ -27,7 +28,8 @@ export function ImagePreview({
   src,
   alt,
   className,
-  size = 'sm'
+  size = 'sm',
+  disableFullscreen = false
 }: ImagePreviewProps) {
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
   const [isFullSizeVisible, setIsFullSizeVisible] = useState(false);
@@ -133,25 +135,26 @@ export function ImagePreview({
       <div
         ref={containerRef}
         className={cn(
-          "relative rounded-md overflow-hidden bg-muted cursor-zoom-in",
+          "relative rounded-md overflow-hidden bg-muted",
+          !disableFullscreen && "cursor-zoom-in",
           "transition-all duration-200 ease-in-out",
-          "hover:ring-2 hover:ring-primary/50",
+          !disableFullscreen && "hover:ring-2 hover:ring-primary/50",
           // Only apply size classes if className doesn't contain sizing
           !className?.includes('w-') && !className?.includes('h-') && !className?.includes('aspect-') ? sizeClasses[size] : '',
           className
         )}
         onMouseEnter={handleShowPreview}
         onMouseLeave={handleHidePreview}
-        onClick={() => setIsFullSizeVisible(true)}
-        onKeyDown={(e) => {
+        onClick={!disableFullscreen ? () => setIsFullSizeVisible(true) : undefined}
+        onKeyDown={!disableFullscreen ? (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             setIsFullSizeVisible(true);
           }
-        }}
-        role="button"
-        tabIndex={0}
-        aria-label={`View ${alt}`}
+        } : undefined}
+        role={!disableFullscreen ? "button" : undefined}
+        tabIndex={!disableFullscreen ? 0 : undefined}
+        aria-label={!disableFullscreen ? `View ${alt}` : undefined}
       >
         <Image
           src={src}
@@ -177,8 +180,8 @@ export function ImagePreview({
             left: position.left,
             opacity: 0,
             animation: 'preview-fade-in 200ms ease-out forwards',
-            maxWidth: '320px',
-            maxHeight: '320px'
+            maxWidth: '480px',
+            maxHeight: '480px'
           }}
         >
           <style jsx>{`
@@ -196,10 +199,10 @@ export function ImagePreview({
           <Image
             src={src}
             alt={alt}
-            width={320}
-            height={320}
+            width={480}
+            height={480}
             unoptimized
-            sizes="320px"
+            sizes="480px"
             className="w-full h-full object-cover rounded-lg"
             style={{
               width: '100%',
@@ -210,7 +213,7 @@ export function ImagePreview({
       )}
 
       {/* Full Size Modal - True fullscreen with Portal */}
-      {isFullSizeVisible && typeof document !== 'undefined' && createPortal(
+      {!disableFullscreen && isFullSizeVisible && typeof document !== 'undefined' && createPortal(
         <div
           className="fixed inset-0 z-[9999] bg-black/20 backdrop-blur-md flex items-center justify-center p-4"
           onClick={() => setIsFullSizeVisible(false)}

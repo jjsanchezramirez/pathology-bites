@@ -1,7 +1,6 @@
 // Barrel export for questions components
 export * from './compact-answer-options'
 export * from './create-question-dialog'
-export * from './edit-question-dialog'
 export * from './import-question-dialog'
 export * from './enhanced-import-dialog'
 export * from './image-search'

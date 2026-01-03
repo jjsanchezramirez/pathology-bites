@@ -170,7 +170,7 @@ export function FlaggedQuestionsTable() {
   }
 
   const handleEditQuestion = (question: FlaggedQuestion) => {
-    router.push(`/admin/questions/${question.id}/edit`)
+    router.push(`/admin/questions/${question.id}/edit?returnUrl=/admin/flagged-questions`)
   }
 
   const handleResolveFlags = (question: FlaggedQuestion) => {

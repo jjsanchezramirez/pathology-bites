@@ -146,7 +146,7 @@ export function CreatorQuestionsDashboard() {
   }
 
   const handleEdit = (question: CreatorQuestion) => {
-    router.push(`/admin/questions/${question.id}/edit`)
+    router.push(`/admin/questions/${question.id}/edit?returnUrl=/admin/creator-dashboard`)
   }
 
   const handleSubmitForReview = (question: CreatorQuestion) => {

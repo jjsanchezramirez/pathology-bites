@@ -9,7 +9,6 @@ import { fetchImages } from '@/features/images/services/images';
 import { ImageData } from '@/features/images/types/images';
 import { ImagePreview } from '@/features/images/components/image-preview';
 import { QuestionImageFormData } from '@/features/questions/types/questions';
-import Image from 'next/image';
 
 interface ImageAttachmentProps {
   selectedImages: QuestionImageFormData[];
@@ -235,7 +234,7 @@ export function ImageAttachment({
               <p className="text-xs">Try adjusting your search or category filter</p>
             </div>
           ) : (
-            <div className="grid grid-cols-5 gap-2 max-h-96 overflow-y-auto pr-2">
+            <div className="grid grid-cols-6 gap-2 max-h-96 overflow-y-auto pr-2">
               {availableImages.map((image) => {
                 const isSelected = selectedImageIds.includes(image.id);
                 const selectedIndex = selectedImages.findIndex(img => img.image_id === image.id);
@@ -251,31 +250,18 @@ export function ImageAttachment({
                       } ${!isSelected ? 'cursor-pointer' : ''}`}
                       onClick={() => !isSelected && handleAddImage(image.id)}
                     >
-                      <Image
+                      <ImagePreview
                         src={image.url}
                         alt={image.alt_text || ''}
-                        fill
-                        unoptimized
-                        className="object-cover"
+                        size="sm"
+                        className="w-full h-full !rounded-none"
+                        disableFullscreen={true}
                       />
-                      {isSelected && orderNumber && (
+                      {isSelected && orderNumber !== null && (
                         <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-white z-20 pointer-events-none">
                           {orderNumber}
                         </div>
                       )}
-                    </div>
-
-                    {/* Hover Preview */}
-                    <div className="hidden group-hover:block fixed z-[100] pointer-events-none">
-                      <div className="absolute left-full ml-4 top-0 w-64 h-64 rounded-lg shadow-2xl border-2 border-white overflow-hidden bg-white">
-                        <Image
-                          src={image.url}
-                          alt={image.alt_text || ''}
-                          fill
-                          unoptimized
-                          className="object-contain"
-                        />
-                      </div>
                     </div>
                   </div>
                 );

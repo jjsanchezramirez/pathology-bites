@@ -147,6 +147,8 @@ export interface QuestionFormData {
   status: Database['public']['Enums']['question_status'];
   question_set_id?: string;
   category_id?: string; // Single category ID since each question has only one category
+  anki_card_id?: number | null;
+  anki_deck_name?: string | null;
   question_options: QuestionOptionFormData[];
   answer_options?: QuestionOptionFormData[]; // Legacy field for backward compatibility
   question_images: QuestionImageFormData[];

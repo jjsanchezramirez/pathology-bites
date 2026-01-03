@@ -63,8 +63,8 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
   const canDelete = shouldShowDeleteButton(question, role, user?.id || null)
 
   const handleEdit = useCallback(() => {
-    // Navigate to edit page
-    router.push(`/admin/questions/${question.id}/edit`)
+    // Navigate to edit page - returnUrl will be /admin/my-questions by default
+    router.push(`/admin/questions/${question.id}/edit?returnUrl=/admin/my-questions`)
   }, [router, question.id])
 
   const handleDelete = useCallback(async () => {

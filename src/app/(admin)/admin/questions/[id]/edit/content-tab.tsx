@@ -15,17 +15,18 @@ import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { RefreshCw, Loader2 } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { toast } from '@/shared/utils/toast';
 
 import { QuestionWithDetails } from '@/features/questions/types/questions';
 import { EditQuestionFormData } from '@/features/questions/hooks/use-edit-question-form';
+import { FetchReferencesDialog } from '@/features/questions/components/fetch-references-dialog';
 
 interface QuestionOptionFormData {
   id?: string;
   text: string;
   is_correct: boolean;
-  explanation: string;
+  explanation?: string | null;
   order_index: number;
 }
 
@@ -44,7 +45,7 @@ export function ContentTab({
   answerOptions,
   onAnswerOptionsChange
 }: ContentTabProps) {
-  const [isFetchingReferences, setIsFetchingReferences] = useState(false);
+  const [fetchDialogOpen, setFetchDialogOpen] = useState(false);
 
   // Handle answer option changes
   const updateAnswerOption = (index: number, field: string, value: any) => {
@@ -62,12 +63,9 @@ export function ContentTab({
     onUnsavedChanges();
   };
 
-  // Handle fetching references from Semantic Scholar
-  const handleFetchReferences = async () => {
+  // Get search query for references
+  const getSearchQuery = () => {
     const formValues = form.getValues();
-
-    // Build search query: category (without "Pathology") + title
-    // Example: "Dermatopathology" + "Fibrofolliculoma"
     const searchParts: string[] = [];
 
     // Add category if available (remove redundant "Pathology" words)
@@ -91,59 +89,18 @@ export function ContentTab({
       searchParts.push(formValues.stem.substring(0, 100));
     }
 
-    if (searchParts.length === 0) {
-      toast.error('Please add a question title, teaching point, or stem first');
-      return;
-    }
+    return searchParts.join(' ');
+  };
 
-    const searchTerms = searchParts.join(' ');
+  const handleReferencesSelected = (references: string[]) => {
+    const currentRefs = form.getValues('question_references') || '';
+    const newRefs = references.join('\n\n');
+    const updatedRefs = currentRefs
+      ? `${currentRefs}\n\n${newRefs}`
+      : newRefs;
 
-    setIsFetchingReferences(true);
-    try {
-      const response = await fetch('/api/admin/fetch-references', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          searchTerms: searchTerms.trim()
-        }),
-      });
-
-      const data = await response.json();
-
-      // Handle different response scenarios
-      if (!response.ok) {
-        if (response.status === 429) {
-          toast.warning('Rate limited by Semantic Scholar. Please wait a moment and try again.', {
-            duration: 4000
-          });
-          return;
-        }
-        toast.error(data.error || 'Failed to fetch references. Please try again.');
-        return;
-      }
-
-      // Success with references
-      if (data.success && data.references && data.references.length > 0) {
-        const referencesText = data.references.join('\n');
-        form.setValue('question_references', referencesText);
-        onUnsavedChanges();
-
-        if (data.cached) {
-          toast.success(`Added ${data.references.length} cached references`);
-        } else {
-          toast.success(`Added ${data.references.length} references from Semantic Scholar`);
-        }
-      } else {
-        toast.info('No references found for this topic. Try again in a moment or add references manually.');
-      }
-    } catch (error) {
-      console.error('Fetch references error:', error);
-      toast.error('Network error. Please check your connection and try again.');
-    } finally {
-      setIsFetchingReferences(false);
-    }
+    form.setValue('question_references', updatedRefs);
+    onUnsavedChanges();
   };
 
   return (
@@ -292,21 +249,18 @@ export function ContentTab({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={handleFetchReferences}
-                disabled={isFetchingReferences || (!form.getValues('title') && !form.getValues('teaching_point') && !form.getValues('stem'))}
+                onClick={() => {
+                  const query = getSearchQuery();
+                  if (!query.trim()) {
+                    toast.error('Please add a question title, teaching point, or stem first');
+                    return;
+                  }
+                  setFetchDialogOpen(true);
+                }}
                 className="h-8"
               >
-                {isFetchingReferences ? (
-                  <>
-                    <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
-                    Fetching...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="h-3 w-3 mr-1.5" />
-                    Fetch References
-                  </>
-                )}
+                <BookOpen className="h-3 w-3 mr-1.5" />
+                Fetch References
               </Button>
             </div>
             <FormControl>
@@ -324,6 +278,13 @@ export function ContentTab({
             <FormMessage />
           </FormItem>
         )}
+      />
+
+      <FetchReferencesDialog
+        open={fetchDialogOpen}
+        onOpenChange={setFetchDialogOpen}
+        searchQuery={getSearchQuery()}
+        onReferencesSelected={handleReferencesSelected}
       />
     </div>
   );

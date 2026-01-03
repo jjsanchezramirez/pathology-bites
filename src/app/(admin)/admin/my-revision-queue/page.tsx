@@ -58,13 +58,27 @@ export default function MyRevisionQueuePage() {
     }
   }, [searchTerm, questions])
 
+  // Refresh data when page becomes visible (e.g., returning from edit page)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refresh()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [refresh])
+
   const handlePreview = (question: typeof questions[0]) => {
     setSelectedQuestion(question)
     setPreviewOpen(true)
   }
 
   const handleEditAndResubmit = (questionId: string) => {
-    router.push(`/admin/questions/${questionId}/edit`)
+    router.push(`/admin/questions/${questionId}/edit?returnUrl=/admin/my-revision-queue`)
   }
 
   const toggleFeedback = (questionId: string) => {

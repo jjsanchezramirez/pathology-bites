@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, X, Plus, Image as ImageIcon } from 'lucide-react'
 import { fetchImages } from '@/features/images/services/images'
 import { ImageData } from '@/features/images/types/images'
+import { ImagePreview } from '@/features/images/components/image-preview'
 import Image from 'next/image'
 
 interface ImageAttachment {
@@ -71,8 +72,48 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
   useEffect(() => {
     if (showImagePicker) {
       loadImages()
+      // Pre-populate selectedImageIds with already attached images
+      setSelectedImageIds(images.map(img => img.image_id))
     }
   }, [showImagePicker, searchTerm, categoryFilter])
+
+  // Load metadata for already attached images on mount and when images change
+  useEffect(() => {
+    const loadAttachedImagesMetadata = async () => {
+      if (images.length === 0) return
+
+      // Get image IDs that aren't already in cache
+      const uncachedImageIds = images
+        .map(img => img.image_id)
+        .filter(id => !imageCache.has(id))
+
+      if (uncachedImageIds.length === 0) return
+
+      try {
+        // Fetch a larger set to catch our attached images
+        const result = await fetchImages({
+          page: 0,
+          pageSize: 100,
+          showUnusedOnly: false
+        })
+
+        if (!result.error && result.data) {
+          // Update cache with fetched images
+          const newCache = new Map(imageCache)
+          result.data.forEach(img => {
+            if (uncachedImageIds.includes(img.id)) {
+              newCache.set(img.id, img)
+            }
+          })
+          setImageCache(newCache)
+        }
+      } catch (error) {
+        console.error('Failed to load attached images metadata:', error)
+      }
+    }
+
+    loadAttachedImagesMetadata()
+  }, [images])
 
   const getImageInfo = (imageId: string): ImageData | null => {
     // First check cache, then check availableImages
@@ -90,19 +131,13 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
   }
 
   const handleImageToggle = (imageId: string) => {
-    // Check if image is already added to this section
-    const imageAlreadyExists = images.some(img => img.image_id === imageId)
-    if (imageAlreadyExists) {
-      return // Don't allow selecting already added images
-    }
-
     setSelectedImageIds(prev => {
       if (prev.includes(imageId)) {
+        // Allow deselection
         return prev.filter(id => id !== imageId)
       } else {
         // Check if we would exceed the limit
-        const remainingSlots = maxImages - images.length
-        if (prev.length >= remainingSlots) {
+        if (prev.length >= maxImages) {
           return prev // Don't add more if it would exceed limit
         }
         return [...prev, imageId]
@@ -111,13 +146,14 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
   }
 
   const handleSelectImages = () => {
+    // Replace images with current selection
     const newImages = selectedImageIds.map((imageId, index) => ({
       image_id: imageId,
       question_section: section,
-      order_index: images.length + index + 1,
+      order_index: index + 1,
     }))
 
-    onImagesChange([...images, ...newImages])
+    onImagesChange(newImages)
     setSelectedImageIds([])
     setShowImagePicker(false)
   }
@@ -217,10 +253,10 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                       </Button>
                     </div>
 
-                    {/* Image Grid - 4 rows x 5 columns (20 images) with bigger previews */}
-                    <div className="grid grid-cols-5 gap-4 overflow-y-auto flex-1" style={{ minHeight: 0 }}>
+                    {/* Image Grid - 6 columns with smaller thumbnails */}
+                    <div className="grid grid-cols-6 gap-2 overflow-y-auto flex-1" style={{ minHeight: 0 }}>
                       {availableImages.length === 0 && !loading ? (
-                        <div className="col-span-5 flex flex-col items-center justify-center h-full text-muted-foreground">
+                        <div className="col-span-6 flex flex-col items-center justify-center h-full text-muted-foreground">
                           <ImageIcon className="h-12 w-12 mb-2 opacity-50" />
                           <p>No images found</p>
                           {searchTerm && <p className="text-sm">Try a different search term</p>}
@@ -228,39 +264,32 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                       ) : (
                         availableImages.map((image) => {
                           const isSelected = selectedImageIds.includes(image.id)
-                          const isAlreadyAdded = images.some(img => img.image_id === image.id)
-                          const canSelect = !isAlreadyAdded && (selectedImageIds.length < maxImages - images.length || isSelected)
+                          const canSelect = selectedImageIds.length < maxImages || isSelected
+                          const orderNumber = isSelected ? selectedImageIds.indexOf(image.id) + 1 : null
 
                           return (
                             <div key={image.id} className="relative group">
                               <div
                                 className={`aspect-square overflow-hidden rounded border-2 transition-all relative ${
-                                  isAlreadyAdded
-                                    ? 'border-muted bg-muted/50 opacity-50 cursor-not-allowed'
-                                    : isSelected
-                                      ? 'border-primary ring-2 ring-primary/20'
-                                      : canSelect
-                                        ? 'border-border hover:border-primary/50 cursor-pointer'
-                                        : 'border-muted opacity-50 cursor-not-allowed'
+                                  isSelected
+                                    ? 'border-primary ring-2 ring-primary/20'
+                                    : canSelect
+                                      ? 'border-border hover:border-primary/50 cursor-pointer'
+                                      : 'border-muted opacity-50 cursor-not-allowed'
                                 }`}
                                 onClick={() => canSelect && handleImageToggle(image.id)}
-                                title={isAlreadyAdded ? 'Already added to this section' : image.alt_text || ''}
+                                title={image.alt_text || ''}
                               >
-                                <Image
+                                <ImagePreview
                                   src={image.url}
                                   alt={image.alt_text || ''}
-                                  fill
-                                  className="object-cover"
-                                  unoptimized
+                                  size="sm"
+                                  className="w-full h-full !rounded-none"
+                                  disableFullscreen={true}
                                 />
-                                {isSelected && (
+                                {isSelected && orderNumber !== null && (
                                   <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-white z-20 pointer-events-none">
-                                    ✓
-                                  </div>
-                                )}
-                                {isAlreadyAdded && (
-                                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
-                                    <span className="text-white text-sm font-medium">Added</span>
+                                    {orderNumber}
                                   </div>
                                 )}
                               </div>
@@ -280,7 +309,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                         onClick={handleSelectImages}
                         disabled={selectedImageIds.length === 0}
                       >
-                        Add {selectedImageIds.length} Image{selectedImageIds.length !== 1 ? 's' : ''}
+                        Save {selectedImageIds.length} Image{selectedImageIds.length !== 1 ? 's' : ''}
                       </Button>
                     </div>
                   </div>

@@ -379,8 +379,11 @@ export async function PATCH(
       // Update the main question data - only include valid question table fields
       // For published questions with minor/major edits, change status to pending_review
       let statusToSet = questionData.status
+      let reviewerToSet = currentQuestion.reviewer_id
       if (currentQuestion.status === 'published' && !isPatchEdit && updateType && ['minor', 'major'].includes(updateType)) {
         statusToSet = 'pending_review'
+        // Keep the existing reviewer if there is one, otherwise this will need to be assigned by an admin
+        // The constraint requires a reviewer, so we keep the current one to avoid constraint violation
         console.log(`PATCH - Changing status from published to pending_review for ${updateType} edit`)
       }
 
@@ -390,8 +393,12 @@ export async function PATCH(
         ...(questionData.difficulty && { difficulty: questionData.difficulty }),
         ...(questionData.teaching_point && { teaching_point: questionData.teaching_point }),
         ...(questionData.question_references !== undefined && { question_references: questionData.question_references }),
+        ...(questionData.anki_card_id !== undefined && { anki_card_id: questionData.anki_card_id }),
+        ...(questionData.anki_deck_name !== undefined && { anki_deck_name: questionData.anki_deck_name }),
         ...(statusToSet && { status: statusToSet }),
         ...(questionData.question_set_id !== undefined && { question_set_id: questionData.question_set_id }),
+        // Ensure reviewer_id is preserved when moving to pending_review (required by constraint)
+        ...(statusToSet === 'pending_review' && reviewerToSet && { reviewer_id: reviewerToSet }),
         updated_by: user.id,
         updated_at: new Date().toISOString()
       }

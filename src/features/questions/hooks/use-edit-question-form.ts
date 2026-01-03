@@ -16,9 +16,11 @@ const editQuestionSchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']),
   teaching_point: z.string().min(10, 'Teaching point must be at least 10 characters').max(1000, 'Teaching point too long'),
   question_references: z.string().max(1000, 'References too long (max 1000 characters)').optional(),
-  status: z.enum(['draft', 'pending_review', 'approved', 'flagged']),
+  status: z.enum(['draft', 'pending_review', 'flagged', 'rejected', 'published', 'archived']),
   question_set_id: z.string(),
   category_id: z.string().nullable().optional(),
+  anki_card_id: z.union([z.number().positive(), z.string().min(1)]).nullable().optional(),
+  anki_deck_name: z.string().max(100, 'Deck name too long').nullable().optional(),
   updateType: z.enum(['patch', 'minor', 'major']).optional(),
   isPatchEdit: z.boolean().optional(),
   patchEditReason: z.string().max(500, 'Reason too long').optional(),
@@ -59,6 +61,8 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
       status: 'draft',
       question_set_id: 'none',
       category_id: null,
+      anki_card_id: null,
+      anki_deck_name: null,
       updateType: 'patch',
       isPatchEdit: false,
       patchEditReason: '',
@@ -93,6 +97,8 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
         status: (question.status as 'draft' | 'pending_review' | 'approved' | 'flagged') || 'draft',
         question_set_id: question.question_set_id || 'none',
         category_id: question.category_id || null,
+        anki_card_id: question.anki_card_id || null,
+        anki_deck_name: question.anki_deck_name || null,
         updateType: isPublished ? 'patch' : 'minor',
         isPatchEdit: isPublished,
         patchEditReason: '',
@@ -149,6 +155,8 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
         ...data,
         question_set_id: data.question_set_id === 'none' ? null : data.question_set_id,
         question_references: data.question_references || null,
+        anki_card_id: data.anki_card_id || null,
+        anki_deck_name: data.anki_deck_name || null,
       };
 
       await updateQuestion(question.id, updateData, {
@@ -166,6 +174,7 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
       onSave();
       onClose();
     } catch (error) {
+      console.error('Error in handleSubmit:', error);
       toast.error('Failed to update question');
       throw error;
     } finally {

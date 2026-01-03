@@ -50,6 +50,64 @@ export default function AnkiPage() {
     checkMobile()
   }, [])
 
+  // Handle direct cardId navigation from URL
+  useEffect(() => {
+    if (!ankomaData || !window) return
+
+    const urlParams = new URLSearchParams(window.location.search)
+    const cardId = urlParams.get('cardId')
+
+    if (cardId) {
+      // Find the card with this GUID (could be full card.id like "guid-ord" or just "guid")
+      const getAllCards = (sections: AnkomaSection[]): AnkiCard[] => {
+        const allCards: AnkiCard[] = []
+        for (const section of sections) {
+          allCards.push(...section.cards)
+          allCards.push(...getAllCards(section.subsections))
+        }
+        return allCards
+      }
+
+      const allCards = getAllCards(ankomaData.sections)
+
+      // Try to find by exact card.id match first, then by GUID prefix
+      let targetCard = allCards.find(card => card.id === cardId)
+      if (!targetCard) {
+        // If not found, try matching just the GUID part (before the "-ord" suffix)
+        targetCard = allCards.find(card => card.id.startsWith(cardId + '-') || card.id === cardId)
+      }
+
+      if (targetCard) {
+        // Extract deck and category from the card's tags
+        const ankomaTag = targetCard.tags.find(tag => tag.startsWith('#ANKOMA::'))
+        if (ankomaTag) {
+          const tagParts = ankomaTag.replace('#ANKOMA::', '').split('::')
+          if (tagParts.length >= 2) {
+            const deckType = tagParts[0] as 'AP' | 'CP'
+            const rawCategoryName = tagParts[1]
+            const categoryName = formatTagName(rawCategoryName)
+            const subcategoryName = tagParts[2] ? formatTagName(tagParts[2], rawCategoryName) : null
+
+            const deckId = deckType
+            const categoryId = `${deckType}::${categoryName}`
+
+            // Set the deck and category
+            setSelectedDeckId(deckId)
+            setSelectedCategoryId(categoryId)
+            if (subcategoryName) {
+              setSelectedSubcategory(subcategoryName)
+              setExpandedCategoryId(categoryId)
+            }
+
+            // Expand the right sidebar
+            setLeftSidebarExpanded(false)
+            setRightSidebarExpanded(true)
+          }
+        }
+      }
+    }
+  }, [ankomaData])
+
   // Cards to ignore by ID (excluded from all views)
   const IGNORED_CARD_IDS = new Set([
     'e;+G?PkVD5',
@@ -289,6 +347,27 @@ export default function AnkiPage() {
   }, [selectedCategory, selectedSubcategory, isShuffled])
 
   const currentCard = currentCards[currentCardIndex]
+
+  // Set card index when navigating via URL with cardId
+  useEffect(() => {
+    if (!window || currentCards.length === 0) return
+
+    const urlParams = new URLSearchParams(window.location.search)
+    const cardId = urlParams.get('cardId')
+
+    if (cardId) {
+      // Find the index of the card with this GUID in currentCards
+      let targetIndex = currentCards.findIndex(card => card.id === cardId)
+      if (targetIndex === -1) {
+        // Try matching just the GUID part
+        targetIndex = currentCards.findIndex(card => card.id.startsWith(cardId + '-') || card.id === cardId)
+      }
+
+      if (targetIndex !== -1) {
+        setCurrentCardIndex(targetIndex)
+      }
+    }
+  }, [currentCards])
 
   const handleDeckSelect = (deckId: string) => {
     setSelectedDeckId(deckId)
