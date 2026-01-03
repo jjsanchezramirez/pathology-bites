@@ -11,7 +11,7 @@ interface EducationalContent {
   subject: string
   lesson: string
   topic: string
-  content: any
+  content: unknown
 }
 
 interface ContentSelectorProps {
@@ -36,7 +36,7 @@ interface ContentData {
       topics: Record<string, {
         name: string
         url: string
-        content: any
+        content: unknown
       }>
     }>
   }
