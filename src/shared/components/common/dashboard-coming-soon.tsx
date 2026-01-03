@@ -119,30 +119,30 @@ export const DashboardComingSoonPresets = {
     title: "Quiz Creation",
     description:
       "Create custom quizzes tailored to your learning needs. Choose topics, difficulty levels, and question types.",
-    expectedDate: "February 2025",
+    expectedDate: "February 2026",
   },
   myQuizzes: {
     title: "Quiz History",
     description:
       "View your completed quizzes, track your progress, and review your performance over time.",
-    expectedDate: "February 2025",
+    expectedDate: "February 2026",
   },
   learningModules: {
     title: "Learning Modules",
     description:
       "Structured learning paths covering key pathology topics with interactive content and assessments.",
-    expectedDate: "March 2025",
+    expectedDate: "March 2026",
   },
   performance: {
     title: "Performance Analytics",
     description:
       "Detailed analytics on your learning progress, strengths, weaknesses, and improvement areas.",
-    expectedDate: "February 2025",
+    expectedDate: "February 2026",
   },
   goals: {
     title: "Learning Goals",
     description:
       "Set and track your learning objectives with personalized goal management and progress tracking.",
-    expectedDate: "March 2025",
+    expectedDate: "March 2026",
   },
 };

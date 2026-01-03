@@ -14,7 +14,7 @@ let JOURNAL_ABBREVIATIONS: Record<string, string> = {};
  * Load journal abbreviations from JSON file
  */
 const STORAGE_KEY = "nlm-journal-abbreviations";
-const STORAGE_VERSION = "2025.1";
+const STORAGE_VERSION = "2026.1";
 
 async function loadJournalAbbreviations(): Promise<void> {
   // Only load in browser environment to avoid SSR issues
