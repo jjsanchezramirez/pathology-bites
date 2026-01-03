@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/shared/components/ui/table"
 import { Button } from "@/shared/components/ui/button"
-import { Badge } from "@/shared/components/ui/badge"
+
 import { Input } from "@/shared/components/ui/input"
 import {
   Select,
@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select"
-import { Search, Filter, MessageSquare, AlertCircle, Trash2 } from 'lucide-react'
+import { Search, MessageSquare, Trash2 } from 'lucide-react'
 import { Checkbox } from '@/shared/components/ui/checkbox'
 import { InquiryDetailsDialog } from './inquiry-details-dialog'
 import { InquiryActionsDropdown } from './inquiry-actions-dropdown'

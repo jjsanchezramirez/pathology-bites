@@ -198,7 +198,7 @@ async function compressImage(
 }
 
 // GET endpoint - Preview files that would be uploaded
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const mediaDir = path.join(process.cwd(), 'anki', 'media')
     
@@ -260,7 +260,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST endpoint - Perform bulk upload with compression
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const mediaDir = path.join(process.cwd(), 'anki', 'media')
     const targetBucket = 'pathology-bites-images'

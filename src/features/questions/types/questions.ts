@@ -1,6 +1,6 @@
 // src/types/questions.ts
 import { Database } from '@/shared/types/supabase';
-import { SetData, QuestionSetData } from './question-sets';
+import { SetData } from './question-sets';
 import { ImageData } from '@/features/images/types/images';
 
 // Database types

@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { Search, X, Check, Plus } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { fetchImages } from '@/features/images/services/images';
 import { ImageData } from '@/features/images/types/images';
 import { ImagePreview } from '@/features/images/components/image-preview';

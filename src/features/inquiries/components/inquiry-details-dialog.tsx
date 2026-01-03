@@ -12,9 +12,9 @@ import { Badge } from "@/shared/components/ui/badge"
 import { Button } from "@/shared/components/ui/button"
 import { Textarea } from "@/shared/components/ui/textarea"
 import { Label } from "@/shared/components/ui/label"
-import { Separator } from "@/shared/components/ui/separator"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { Mail, Building, Calendar, User, Send, MessageSquare } from 'lucide-react'
+import { Mail, Calendar, User, Send, MessageSquare } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from '@/shared/utils/toast'
 import { InquiryStatusBadge } from './inquiry-status-badge'

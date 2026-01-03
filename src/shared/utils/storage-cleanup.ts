@@ -111,7 +111,7 @@ export function cleanupOldQuizSessions(maxAge = QUIZ_SESSION_MAX_AGE): number {
           // No timestamp, consider it old
           keysToRemove.push(key)
         }
-      } catch (error) {
+      } catch (_error) {
         // Invalid JSON, remove it
         keysToRemove.push(key)
       }
@@ -157,7 +157,7 @@ export function cleanupOldQuizResults(maxAge = QUIZ_RESULTS_MAX_AGE): number {
         if (timestamp && now - timestamp > maxAge) {
           keysToRemove.push(key)
         }
-      } catch (error) {
+      } catch (_error) {
         // Invalid JSON, remove it
         keysToRemove.push(key)
       }

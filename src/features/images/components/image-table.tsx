@@ -24,9 +24,9 @@ import { ImagePreview } from './image-preview';
 import { EditImageDialog } from './edit-dialog';
 import { UploadDialog } from './upload-dialog';
 import { DeleteImageDialog } from './delete-image-dialog';
-import { fetchImages, deleteImage } from '@/features/images/services/images';
-import { getImageUsageStats, getStorageStats, ImageUsageStats } from '@/features/images/services/image-analytics';
-import { formatSize } from '@/features/images/services/image-upload';
+import { fetchImages } from '@/features/images/services/images';
+import { getImageUsageStats, ImageUsageStats } from '@/features/images/services/image-analytics';
+
 import {
   ImageData,
   ImageCategory,

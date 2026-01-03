@@ -68,7 +68,7 @@ export function SystemStatus() {
 
           // If API fails, fall back to direct check
           const startTime = performance.now()
-          const { data, error } = await supabase
+          const { _data, error } = await supabase
             .from('users')
             .select('id', { count: 'exact', head: true })
             .limit(1)

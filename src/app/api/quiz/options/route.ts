@@ -87,7 +87,7 @@ async function getOptimizedUserStats(
     // So we need to fall back to the real-time calculation for now
     return await getFallbackUserStats(supabase, userId, categoryIds)
 
-  } catch (error) {
+  } catch (_error) {
     return await getFallbackUserStats(supabase, userId, categoryIds)
   }
 }
@@ -210,7 +210,7 @@ async function getFallbackUserStats(
     }
 
     return categoryStats
-  } catch (error) {
+  } catch (_error) {
     // Return empty stats as last resort
     const categoryStats = new Map()
     for (const categoryId of categoryIds) {

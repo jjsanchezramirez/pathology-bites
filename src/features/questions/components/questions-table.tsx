@@ -7,7 +7,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { toast } from '@/shared/utils/toast';
-import { Search, Loader2, Plus, MoreVertical, Edit, Trash2, Image as ImageIcon, ChevronDown, Flag, ChevronRight, History, GitBranch, Eye, Download, Check, X, Send } from 'lucide-react';
+import { Search, Loader2, MoreVertical, Edit, Trash2, Image as Flag, History, GitBranch, Eye, Download, Check, X, Send } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -35,11 +35,11 @@ import { ComponentErrorBoundary } from '@/shared/components/common';
 import { CreateQuestionDialog } from './create-question-dialog';
 import { QuestionFlagDialog } from './question-flag-dialog';
 import { DeleteQuestionDialog } from './delete-question-dialog';
-import { QuestionVersionHistory } from './question-version-history';
+
 import { VersionHistoryDialog } from './version-history-dialog';
 import { AdminVersionUpdateDialog } from './admin-version-update-dialog';
 import { QuestionPreviewDialog } from './question-preview-dialog';
-import { getQuestionSetDisplayName, getCategoryDisplayName } from '@/features/questions/utils/display-helpers';
+
 import { createClient } from '@/shared/services/client';
 import { BlurredDialog } from '@/shared/components/ui/blurred-dialog';
 import { apiClient } from '@/shared/utils/api-client';

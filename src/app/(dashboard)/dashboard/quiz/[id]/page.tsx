@@ -33,14 +33,14 @@ export default function QuizSessionPage() {
   const [reviewLoading, setReviewLoading] = useState(isReviewMode)
   const [reviewError, setReviewError] = useState<string | null>(null)
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0)
-  const [showExplanations, setShowExplanations] = useState<{[key: string]: boolean}>({})
+  const [_showExplanations, setShowExplanations] = useState<{[key: string]: boolean}>({})
 
   // Local pause state (not stored in database)
   const [isPaused, setIsPaused] = useState(false)
 
   // Exit confirmation dialog state
   const [showExitDialog, setShowExitDialog] = useState(false)
-  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+  const [_pendingNavigation, setPendingNavigation] = useState<string | null>(null)
 
   // Mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)

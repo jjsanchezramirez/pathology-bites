@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Button } from "@/shared/components/ui/button";
+
 import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
 import { X, Tag, Loader2 } from 'lucide-react';
@@ -112,7 +112,7 @@ export function UniversalTagSelector({
     try {
       const newTag = await createTag(tagName.trim());
       handleTagSelect(newTag);
-    } catch (error) {
+    } catch (_error) {
       // Error handled in hook
     }
   };

@@ -80,7 +80,7 @@ export function ImageAttachment({
   // Drag and drop functionality
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-  const handleDragStart = (index: number, section: string) => {
+  const handleDragStart = (index: number, _section: string) => {
     setDraggedIndex(index);
   };
 
@@ -88,7 +88,7 @@ export function ImageAttachment({
     e.preventDefault();
   };
 
-  const handleDrop = (e: React.DragEvent, dropIndex: number, section: string) => {
+  const handleDrop = (e: React.DragEvent, dropIndex: number, _section: string) => {
     e.preventDefault();
 
     if (draggedIndex === null || draggedIndex === dropIndex) {

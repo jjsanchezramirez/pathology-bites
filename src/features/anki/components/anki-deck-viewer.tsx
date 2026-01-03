@@ -19,7 +19,7 @@ import {
   Clock,
   Target
 } from 'lucide-react'
-import { AnkiDeck, AnkiDeckViewerProps, AnkiCard } from '../types/anki-card'
+import { AnkiDeckViewerProps, AnkiCard } from '../types/anki-card'
 
 import { cn } from '@/shared/utils'
 

@@ -4,7 +4,7 @@
 import React, { useState, memo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { ImageIcon, PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon, Loader2 } from 'lucide-react'
+import { ImageIcon, PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
 import {

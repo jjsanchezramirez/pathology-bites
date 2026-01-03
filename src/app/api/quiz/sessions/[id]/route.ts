@@ -163,7 +163,7 @@ export async function PATCH(
     }
 
     // Remove answers from updates object before passing to service
-    const { answers, ...sessionUpdates } = updates
+    const { _answers, ...sessionUpdates } = updates
 
     // Skip session updates if quiz is already completed
     if (existingSession.status === 'completed') {

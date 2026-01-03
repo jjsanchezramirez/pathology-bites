@@ -33,7 +33,7 @@ export async function POST(
     let body
     try {
       body = await request.json()
-    } catch (parseError) {
+    } catch (_parseError) {
       return NextResponse.json(
         { error: 'Invalid request body. Expected JSON format.' },
         { status: 400 }

@@ -5,10 +5,10 @@ import React, { useCallback, useState } from 'react';
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { Badge } from "@/shared/components/ui/badge";
-import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
-import { Label } from "@/shared/components/ui/label";
-import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
+
+
+
+import { Plus, Trash2 } from 'lucide-react';
 import { AnswerOptionFormData } from '@/features/questions/types/questions';
 
 interface CompactAnswerOptionsProps {

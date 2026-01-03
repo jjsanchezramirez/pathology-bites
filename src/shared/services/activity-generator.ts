@@ -196,7 +196,7 @@ export class ActivityGenerator {
       }
 
       return true
-    } catch (error) {
+    } catch (_error) {
       return false
     }
   }

@@ -59,7 +59,7 @@ interface UseWSIQuestionGeneratorReturn {
 export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { wsiData, isLoading: isLoadingWSI, error: wsiError, selectRandomWSI, getWSIByCategory } = useClientWSIData()
+  const { wsiData, isLoading: isLoadingWSI, error: wsiError, _selectRandomWSI, getWSIByCategory } = useClientWSIData()
   
   console.log('[WSI Hook] Loaded - SINGLE ENDPOINT VERSION - no prepare/parse routes')
 
@@ -260,7 +260,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
           const errorMsg = errorData.error || `All models exhausted: ${response.status} ${response.statusText}`
           throw new Error(errorMsg)
         }
-      } catch (parseError) {
+      } catch (_parseError) {
         throw new Error(`Fallback failed: ${response.status} ${response.statusText}`)
       }
     }

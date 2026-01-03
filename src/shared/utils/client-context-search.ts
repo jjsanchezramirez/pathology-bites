@@ -262,7 +262,7 @@ function identifyOrganSystem(diagnosis: string): string {
 /**
  * Get targeted files based on category/subcategory (from server logic)
  */
-function getTargetedFiles(category: string, subcategory: string, diagnosis: string): string[] {
+function getTargetedFiles(category: string, subcategory: string, _diagnosis: string): string[] {
   const primaryFiles: string[] = []
   const secondaryFiles: string[] = []
   const fallbackFiles: string[] = []

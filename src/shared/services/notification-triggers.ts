@@ -58,7 +58,7 @@ export class NotificationTriggers {
           }
         }
       }
-    } catch (error) {
+    } catch (_error) {
     }
   }
 
@@ -76,7 +76,7 @@ export class NotificationTriggers {
       setTimeout(async () => {
         await this.checkDailyQuizReminder(userId)
       }, 2 * 60 * 60 * 1000) // 2 hours after login
-    } catch (error) {
+    } catch (_error) {
     }
   }
 
@@ -106,7 +106,7 @@ export class NotificationTriggers {
           achieved_value: goalData.currentValue
         }
       )
-    } catch (error) {
+    } catch (_error) {
     }
   }
 
@@ -141,7 +141,7 @@ export class NotificationTriggers {
           }
         )
       }
-    } catch (error) {
+    } catch (_error) {
     }
   }
 
@@ -278,7 +278,7 @@ export class NotificationTriggers {
           }
         )
       }
-    } catch (error) {
+    } catch (_error) {
     }
   }
 
@@ -298,7 +298,7 @@ export class NotificationTriggers {
         'warning',
         'all'
       )
-    } catch (error) {
+    } catch (_error) {
     }
   }
 
@@ -317,17 +317,17 @@ export class NotificationTriggers {
         'info',
         targetAudience
       )
-    } catch (error) {
+    } catch (_error) {
     }
   }
 
   // Helper methods
-  private async updateUserStats(userId: string, quizData: any): Promise<void> {
+  private async updateUserStats(_userId: string, _quizData: any): Promise<void> {
     // This would update user statistics in the database
     // Implementation depends on your user stats schema
   }
 
-  private async getUserStats(userId: string): Promise<{
+  private async getUserStats(_userId: string): Promise<{
     totalQuestionsAnswered: number
     currentQuizStreak: number
   } | null> {
@@ -339,7 +339,7 @@ export class NotificationTriggers {
     }
   }
 
-  private async getCategoryStats(userId: string, category: string): Promise<{
+  private async getCategoryStats(_userId: string, _category: string): Promise<{
     accuracy: number
     questionsAnswered: number
   } | null> {
@@ -351,13 +351,13 @@ export class NotificationTriggers {
     }
   }
 
-  private async updateLoginStreak(userId: string): Promise<number> {
+  private async updateLoginStreak(_userId: string): Promise<number> {
     // This would update and return the user's login streak
     // For now, return mock data
     return 1
   }
 
-  private async updateStudyTime(userId: string, minutes: number): Promise<number> {
+  private async updateStudyTime(_userId: string, _minutes: number): Promise<number> {
     // This would update and return total study time in hours
     // For now, return mock data
     return 1

@@ -493,7 +493,7 @@ function extractJSON(text: string): any {
 
         try {
           return JSON.parse(sanitizeJSONString(fixedJson))
-        } catch (sanitizeError) {
+        } catch (_sanitizeError) {
           try {
             return JSON.parse(fixedJson)
           } catch (finalError) {
@@ -518,7 +518,7 @@ function extractJSON(text: string): any {
 export async function POST(request: NextRequest) {
   try {
     const body: QuestionGenerationRequest = await request.json()
-    const { mode = 'educational_content', content, currentQuestion, instructions, additionalContext = '', model } = body
+    const { mode = 'educational_content', content, _currentQuestion, instructions, additionalContext = '', model } = body
 
     // Normalize mode (enhance_question is an alias for refinement)
     const normalizedMode = mode === 'enhance_question' ? 'refinement' : mode

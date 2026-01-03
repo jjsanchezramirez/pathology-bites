@@ -226,7 +226,7 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
           setParsedQuestions(validatedQuestions);
           toast.success(`Successfully parsed ${validatedQuestions.length} questions`);
         }
-      } catch (error) {
+      } catch (_error) {
         setValidationError('Invalid JSON file format');
         setParsedQuestions([]);
       }

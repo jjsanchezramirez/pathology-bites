@@ -1,5 +1,5 @@
 // src/features/anki/utils/interactive-cloze-processor.ts
-import { ClozeMatch, ProcessedCloze } from '../types/anki-card'
+import { ClozeMatch } from '../types/anki-card'
 
 // Regex to match Anki cloze format: {{c1::content}} or {{c1::content::hint}}
 // Content can contain single colons (e.g., {{c1::2:1}} for ratios like AST:ALT)

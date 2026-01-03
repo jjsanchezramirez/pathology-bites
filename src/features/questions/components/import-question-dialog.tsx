@@ -175,7 +175,7 @@ export function ImportQuestionDialog({ open, onOpenChange, onSave }: ImportQuest
     }
   };
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (_data: FormData) => {
     if (!user) {
       toast.error('You must be logged in to import questions');
       return;

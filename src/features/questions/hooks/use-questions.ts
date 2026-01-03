@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { createClient } from '@/shared/services/client';
 import { toast } from '@/shared/utils/toast';
 import { QuestionData, QuestionInsert, QuestionUpdate, QuestionWithDetails } from '@/features/questions/types/questions';
-import { QuestionSetData } from '@/features/questions/types/question-sets';
+
 import { TABLE_NAMES } from '@/shared/constants/database-types';
 import { apiClient } from '@/shared/utils/api-client';
 

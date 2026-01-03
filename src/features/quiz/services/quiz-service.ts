@@ -11,7 +11,7 @@ import {
   QUIZ_TIMING_CONFIG
 } from '@/features/quiz/types/quiz'
 import { QuestionWithDetails } from '@/features/questions/types/questions'
-import { Database } from '@/shared/types/supabase'
+
 
 export class QuizService {
   private getSupabase() {

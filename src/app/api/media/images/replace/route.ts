@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
-import { uploadToR2, deleteFromR2 } from '@/shared/services/r2-storage'
+import { uploadToR2 } from '@/shared/services/r2-storage'
 import { formatImageName } from '@/features/images/services/image-upload'
 import { getImageDimensionsFromFile } from '@/shared/utils/server-image-utils'
 import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'

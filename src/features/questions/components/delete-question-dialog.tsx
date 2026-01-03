@@ -49,7 +49,7 @@ export function DeleteQuestionDialog({
       await onDelete(question.id);
       onOpenChange(false);
       onSuccess();
-    } catch (error) {
+    } catch (_error) {
       // Error is handled by the hook
     } finally {
       setIsDeleting(false);

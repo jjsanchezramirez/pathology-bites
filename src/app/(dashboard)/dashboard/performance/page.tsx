@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { toast } from '@/shared/utils/toast'
+
 import { PerformanceAnalytics, FeaturePlaceholder } from '@/features/dashboard/components'
 import { PerformanceLoading, CategoryPerformanceCard } from '@/features/performance/components'
 import {

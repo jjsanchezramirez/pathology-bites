@@ -15,7 +15,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useHybridQuiz, HybridPresets, HybridUtils } from '../index';
+import { useHybridQuiz, HybridUtils } from '../index';
 
 interface HybridQuizDemoProps {
   sessionId: string;

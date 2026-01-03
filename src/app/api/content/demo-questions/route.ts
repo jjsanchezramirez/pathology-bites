@@ -116,7 +116,7 @@ export async function GET(request: Request) {
       const [
         { data: questionData, error: questionError },
         { data: answerOptions, error: optionsError },
-        { data: questionImagesWithDetails, error: imagesError }
+        { data: questionImagesWithDetails, error: _imagesError }
       ] = await Promise.all([
         // Get question data
         supabase

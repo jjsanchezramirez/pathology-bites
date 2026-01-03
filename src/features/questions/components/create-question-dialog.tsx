@@ -44,7 +44,7 @@ import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { toast } from '@/shared/utils/toast';
 import { Loader2, Plus, X } from 'lucide-react';
-import { useQuestions } from '@/features/questions/hooks/use-questions';
+
 import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
 import { useAuth } from '@/shared/hooks/use-auth';
 import { CompactAnswerOptions } from './compact-answer-options';

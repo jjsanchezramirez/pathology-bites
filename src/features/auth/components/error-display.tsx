@@ -14,7 +14,7 @@ import {
   Server,
   Clock
 } from 'lucide-react'
-import { AuthError, AuthErrorType } from '@/features/auth/utils/error-handling'
+import { AuthError } from '@/features/auth/utils/error-handling'
 
 interface ErrorDisplayProps {
   error: AuthError | null
@@ -218,7 +218,7 @@ export function useErrorDisplay() {
     try {
       await operation()
       dismissError()
-    } catch (error) {
+    } catch (_error) {
       // Error will be handled by the operation itself
     } finally {
       setIsRetrying(false)

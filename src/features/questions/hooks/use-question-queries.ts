@@ -6,7 +6,7 @@ import { createClient } from '@/shared/services/client'
 import { useAuth } from '@/shared/hooks/use-auth'
 import { toast } from '@/shared/utils/toast'
 import { QuestionWithDetails } from '@/features/questions/types/questions'
-import { formatDistanceToNow } from 'date-fns'
+
 
 interface RejectedQuestion extends QuestionWithDetails {
   creator_name?: string
@@ -191,7 +191,7 @@ export function useMyRevisionQueue(options: UseQuestionQueryOptions = {}) {
 /**
  * Fetch questions pending review (for reviewers)
  */
-async function fetchPendingReviewQuestions(userId: string) {
+async function fetchPendingReviewQuestions(_userId: string) {
   const supabase = createClient()
 
   const { data, error } = await supabase

@@ -20,7 +20,7 @@ interface StatsCardsProps {
 }
 
 export function StatsCards({ stats }: StatsCardsProps) {
-  const { isAdmin, isCreator, isReviewer, canAccess } = useUserRole()
+  const { isAdmin, _isCreator, _isReviewer, canAccess } = useUserRole()
   const { adminMode } = useDashboardTheme()
 
   const allCards = [
@@ -137,7 +137,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
     }
   }
 
-  const getCardBorderColor = (trend: string) => {
+  const getCardBorderColor = (_trend: string) => {
     // All cards have the same border and background
     return ""
   }

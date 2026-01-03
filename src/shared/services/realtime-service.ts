@@ -60,7 +60,7 @@ class RealtimeService {
         this.authListeners.forEach(listener => {
           try {
             listener(event, session)
-          } catch (error) {
+          } catch (_error) {
           }
         })
       }
@@ -155,7 +155,7 @@ class RealtimeService {
         listeners.forEach(listener => {
           try {
             listener(payload)
-          } catch (error) {
+          } catch (_error) {
           }
         })
       }
@@ -192,7 +192,7 @@ class RealtimeService {
     this.authListeners.clear()
 
     // Cleanup database subscriptions
-    this.databaseSubscriptions.forEach((subscription, key) => {
+    this.databaseSubscriptions.forEach((subscription, _key) => {
       subscription.unsubscribe()
     })
     this.databaseSubscriptions.clear()

@@ -30,7 +30,7 @@ import {
   Eye
 } from 'lucide-react'
 import { Checkbox } from '@/shared/components/ui/checkbox'
-import { format } from 'date-fns'
+
 import { CreateTagDialog } from './create-tag-dialog'
 import { EditTagDialog } from './edit-tag-dialog'
 import { BlurredDialog } from '@/shared/components/ui/blurred-dialog'
@@ -126,7 +126,7 @@ export function TagsManagementGrid() {
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
-  const [totalTags, setTotalTags] = useState(0)
+  const [_totalTags, setTotalTags] = useState(0)
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)

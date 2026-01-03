@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { notificationsService } from '@/shared/services/service'
-import { NotificationWithSource, PaginatedNotifications } from '@/shared/types/notifications'
+import { NotificationWithSource } from '@/shared/types/notifications'
 import { useAuth } from '@/shared/hooks/use-auth'
 
 export function useNotifications(page: number = 1, limit: number = 20) {

@@ -5,9 +5,9 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/shared/services/server'
 import { z } from 'zod'
-import { validateCSRFToken } from '@/features/auth/utils/csrf-protection'
+
 import { headers, cookies } from 'next/headers'
-import { loginRateLimiter, getClientIP } from '@/features/auth/utils/rate-limiter'
+import { loginRateLimiter } from '@/features/auth/utils/rate-limiter'
 
 // Validation schema for signup
 const signupSchema = z.object({

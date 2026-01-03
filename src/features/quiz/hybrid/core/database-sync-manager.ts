@@ -9,7 +9,7 @@
  * API Call #2: Final batch submission of all answers and completion data
  */
 
-import { QuizState, QuizAnswer, QuizQuestion, QuizQuestionTransformer } from '../../types/quiz-question';
+import { QuizState, QuizAnswer, QuizQuestionTransformer } from '../../types/quiz-question';
 
 export interface QuizSyncData {
   sessionId: string;

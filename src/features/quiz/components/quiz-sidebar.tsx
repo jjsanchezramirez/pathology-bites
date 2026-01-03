@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from "@/shared/components/ui/button"
-import { CheckCircle, XCircle, Circle, Clock, Target } from "lucide-react"
+
+import { CheckCircle, XCircle, Circle, Clock } from "lucide-react"
 import { QuizSession } from "@/features/quiz/types/quiz"
 import { cn } from "@/shared/utils/utils"
 

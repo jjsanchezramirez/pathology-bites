@@ -243,7 +243,7 @@ export function getCategoryByName(name: string): CategoryConfig | undefined {
 }
 
 // Helper function to convert HSL color to Tailwind-compatible classes
-export function getCategoryBadgeClasses(color: string): string {
+export function getCategoryBadgeClasses(_color: string): string {
   // Parse HSL color and generate appropriate Tailwind classes
   // For now, return a default class since we're using inline styles
   return 'border'

@@ -253,7 +253,7 @@ export function DiagnosticContent({ content, entity }: DiagnosticContentProps) {
   }
 
   // Render individual item (handles nested objects in arrays)
-  const renderDataItem = (item: any, depth: number = 0): React.ReactNode => {
+  const renderDataItem = (item: any, _depth: number = 0): React.ReactNode => {
     if (item === null || item === undefined) {
       return null
     }

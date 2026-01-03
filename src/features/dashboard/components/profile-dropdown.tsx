@@ -69,7 +69,7 @@ export function ProfileDropdown() {
           }
           setUserProfile(fallbackProfile)
         }
-      } catch (err) {
+      } catch (_err) {
         if (!mounted) return
         setUserProfile(null)
       } finally {
@@ -111,7 +111,7 @@ export function ProfileDropdown() {
 
       // Force a hard refresh to clear all cached data and redirect to login
       window.location.href = '/login'
-    } catch (err) {
+    } catch (_err) {
       // Still redirect to login even if there's an error
       window.location.href = '/login'
     }

@@ -1,6 +1,6 @@
 // src/features/achievements/data/achievements-data.ts
 
-import { Achievement, AchievementCategory } from '../types/achievement'
+import { AchievementCategory } from '../types/achievement'
 
 // Mock data - will be replaced with real user data from the database
 const mockUserStats = {

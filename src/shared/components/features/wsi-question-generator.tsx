@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent } from '@/shared/components/ui/card'
-import { Badge } from '@/shared/components/ui/badge'
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import {
   Check, X, Loader2, AlertCircle,
@@ -14,7 +14,7 @@ import { WSIViewer } from '@/shared/components/common/wsi-viewer'
 
 // Import client-side hook for WSI question generation
 import { useWSIQuestionGenerator } from '@/shared/hooks/use-wsi-question-generator'
-import { dataManager } from '@/shared/utils/client-data-manager'
+
 
 // Import the canonical VirtualSlide interface
 import { VirtualSlide } from '@/shared/types/virtual-slides'
@@ -180,7 +180,7 @@ export function WSIQuestionGenerator({
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
   const [currentLoadingMessage, setCurrentLoadingMessage] = useState('')
-  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
+  const [_loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 

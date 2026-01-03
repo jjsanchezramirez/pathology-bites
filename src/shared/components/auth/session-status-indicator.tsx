@@ -21,7 +21,7 @@ export function SessionStatusIndicator({
   const { session, isAuthenticated } = useAuth({ enableSecurity: true })
   const securityRisk = 'low' // Placeholder for future security implementation
   const [lastSessionRefresh, setLastSessionRefresh] = useState<number>(0)
-  const [sessionRefreshCount, setSessionRefreshCount] = useState(0)
+  const [_sessionRefreshCount, setSessionRefreshCount] = useState(0)
 
   // Monitor session changes for refresh detection
   useEffect(() => {

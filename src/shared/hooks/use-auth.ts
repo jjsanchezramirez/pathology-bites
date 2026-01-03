@@ -139,7 +139,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
           isAuthenticated: state.isAuthenticated,
           error: null
         }))
-      } catch (e) {
+      } catch (_e) {
         // Ignore storage errors (quota exceeded, etc.)
       }
     }
@@ -150,7 +150,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
     if (typeof window !== 'undefined') {
       try {
         sessionStorage.removeItem('auth-state')
-      } catch (e) {
+      } catch (_e) {
         // Ignore errors
       }
     }

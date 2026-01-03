@@ -1,10 +1,10 @@
 // src/shared/components/common/admin-mode-toggle.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/shared/components/ui/button'
-import { Skeleton } from '@/shared/components/ui/skeleton'
-import { Shield, User, Loader2, PenTool, Eye } from 'lucide-react'
+
+import { Shield, User, PenTool, Eye } from 'lucide-react'
 import { useUserRole } from '@/shared/hooks/use-user-role'
 import { useDashboardTheme } from '@/shared/contexts/dashboard-theme-context'
 import { useRouter } from 'next/navigation'

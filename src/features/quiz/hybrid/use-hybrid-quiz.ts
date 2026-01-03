@@ -19,7 +19,7 @@ import { useQuizStateMachine } from './hooks/use-quiz-state-machine';
 import { DatabaseSyncManager, SyncResult } from './core/database-sync-manager';
 import { AutoSaveManager } from '../services/auto-save-manager';
 import { AUTO_SAVE_CONFIG, type SyncStatus, type AutoSaveTrigger } from '../config/auto-save-config';
-import { QuizQuestion, QuizAnswer, QuizState, QuizQuestionTransformer } from '../types/quiz-question';
+import { QuizAnswer, QuizState, QuizQuestionTransformer } from '../types/quiz-question';
 import { toast } from '@/shared/utils/toast';
 import { onQuizComplete } from '@/shared/utils/cache-helpers';
 
@@ -644,7 +644,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
               if (data.lastSaved && data.lastSaved < oneWeekAgo) {
                 localStorage.removeItem(key);
               }
-            } catch (error) {
+            } catch (_error) {
               // Remove corrupted entries
               localStorage.removeItem(key);
             }

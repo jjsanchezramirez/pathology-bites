@@ -47,7 +47,7 @@ import {
 } from 'lucide-react'
 import { CreateSetDialog } from './create-set-dialog'
 import { EditSetDialog } from './edit-set-dialog'
-import { getQuestionSetDisplayName } from '@/features/questions/utils/display-helpers'
+
 import { SOURCE_TYPE_CONFIG } from '@/features/questions/types/question-sets'
 
 interface QuestionSet {

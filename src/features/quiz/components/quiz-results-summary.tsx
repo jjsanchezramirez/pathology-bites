@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
 import { CircularProgress } from "@/shared/components/ui/circular-progress"
-import { Clock, Target, TrendingUp, RotateCcw, Eye, Trophy } from "lucide-react"
+import { Clock, Target, TrendingUp, RotateCcw, Trophy } from "lucide-react"
 import { QuizResult } from "@/features/quiz/types/quiz"
 import { AchievementLottie } from "@/features/achievements/components/achievement-lottie"
 import { AchievementCelebrationModal } from "@/features/achievements/components/achievement-celebration-modal"

@@ -28,7 +28,7 @@ import { Textarea } from '@/shared/components/ui/textarea';
 import { Button } from '@/shared/components/ui/button';
 
 
-import { Loader2, Upload, AlertTriangle } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 
 interface EditImageDialogProps {
   image: ImageData | null;
@@ -48,7 +48,7 @@ export function EditImageDialog({
   const [altText, setAltText] = useState('');
   const [category, setCategory] = useState<'gross' | 'microscopic' | 'figure' | 'table'>('microscopic');
   const [sourceRef, setSourceRef] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [_selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
 import { Badge } from '@/shared/components/ui/badge'
 import { AchievementBadge } from './achievement-badge'
-import { Achievement, getCategoryLabel } from '@/shared/types/achievements'
+import { Achievement } from '@/shared/types/achievements'
 import { groupAchievementsByCategory, calculateTotalPoints } from '../services/achievement-service'
 import { Trophy, Star, TrendingUp } from 'lucide-react'
 

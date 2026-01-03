@@ -14,7 +14,7 @@ import {
 import { Plus, X, Tag, FolderTree } from 'lucide-react';
 import { useTags } from '@/features/questions/hooks/use-tags';
 import { useCategories } from '@/features/questions/hooks/use-categories';
-import { TagData, CategoryData } from '@/features/questions/types/questions';
+
 import { getCategoryDisplayName } from '@/features/questions/utils/display-helpers';
 
 interface TagsCategoriesSelectorProps {
@@ -60,7 +60,7 @@ export function TagsCategoriesSelector({
       onTagsChange([...selectedTagIds, newTag.id]);
       setNewTagName('');
       setShowTagInput(false);
-    } catch (error) {
+    } catch (_error) {
       // Error handled in hook
     }
   };

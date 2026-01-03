@@ -30,7 +30,7 @@ import {
   FLAG_RESOLUTION_CONFIG
 } from '@/features/questions/types/questions'
 import { createClient } from '@/shared/services/client'
-import { CheckCircle, X, Flag, User, Calendar } from 'lucide-react'
+import { CheckCircle, X, Flag, Calendar } from 'lucide-react'
 
 interface FlagResolutionDialogProps {
   flags: QuestionFlagData[]

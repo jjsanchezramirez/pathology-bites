@@ -131,7 +131,7 @@ export async function prefetchUnifiedData() {
  * Check if cache is stale
  * Returns true if cache was last updated more than maxAge milliseconds ago
  */
-export function isCacheStale(cacheKey: string, maxAge: number): boolean {
+export function isCacheStale(_cacheKey: string, _maxAge: number): boolean {
   // This is a simplified implementation
   // In a real scenario, you'd need to access the SWR cache metadata
   // For now, we rely on SWR's built-in staleness checking

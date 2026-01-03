@@ -44,7 +44,7 @@ export function TagsSelector({
       onTagsChange([...selectedTagIds, newTag.id]);
       setNewTagName('');
       setShowTagInput(false);
-    } catch (error) {
+    } catch (_error) {
       // Error handled in hook
     }
   };

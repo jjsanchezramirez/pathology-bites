@@ -1,7 +1,7 @@
 // src/features/achievements/services/achievement-service.server.ts
 // SERVER-SIDE ONLY - Do not import in client components
 import { createClient } from '@/shared/services/server'
-import { UserStats, AchievementDefinition, checkAchievements, ACHIEVEMENT_DEFINITIONS } from './achievement-checker'
+import { UserStats, AchievementDefinition, checkAchievements } from './achievement-checker'
 
 /**
  * Get user stats from the database

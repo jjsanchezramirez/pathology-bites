@@ -1,13 +1,13 @@
 // src/app/(public)/tools/images/page.tsx
 'use client'
 
-import { useState, useCallback, useEffect, useRef, useMemo, memo, Suspense } from 'react'
+import { useState, useCallback, useEffect, useRef, memo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Card } from "@/shared/components/ui/card"
 import { Input } from "@/shared/components/ui/input"
 import { Button } from "@/shared/components/ui/button"
-import { Search, Loader2, ImageIcon } from 'lucide-react'
+import { Search, ImageIcon } from 'lucide-react'
 import {
   Select,
   SelectContent,

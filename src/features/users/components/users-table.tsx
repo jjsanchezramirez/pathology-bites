@@ -234,7 +234,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
   }, [page, searchTerm, roleFilter, statusFilter])
 
   // Use SWR for data fetching with caching and deduplication
-  const { data, error, isLoading, mutate } = useSWR(
+  const { data, _error, isLoading, mutate } = useSWR(
     apiUrl,
     async (url) => {
       console.log('[UsersTable] 🌐 Fetching:', url)

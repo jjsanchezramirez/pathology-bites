@@ -32,7 +32,7 @@ import {
   STATUS_CONFIG
 } from '@/features/questions/types/questions'
 import { createClient } from '@/shared/services/client'
-import { Eye, Clock, User, FileText, MessageSquare } from 'lucide-react'
+import { Eye, Clock, User, MessageSquare } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 
 interface QuestionReviewDialogProps {

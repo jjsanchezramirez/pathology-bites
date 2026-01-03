@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/shared/components/ui/button'
+
 import {
   Dialog,
   DialogContent,

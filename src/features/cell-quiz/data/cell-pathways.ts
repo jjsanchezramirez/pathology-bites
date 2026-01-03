@@ -100,7 +100,7 @@ export function generateCellRelationships(): Record<string, CellRelationship> {
     }
 
     // Moderately related: same pathway but not adjacent
-    pathway.cells.forEach((cell, index) => {
+    pathway.cells.forEach((cell, _index) => {
       if (cell !== cellType && !closelyRelated.includes(cell)) {
         moderatelyRelated.push(cell);
       }

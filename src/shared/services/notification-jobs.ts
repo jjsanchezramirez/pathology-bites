@@ -40,12 +40,12 @@ export class NotificationJobs {
               )
             }
           }
-        } catch (error) {
+        } catch (_error) {
           // Continue with other users
         }
       }
 
-    } catch (error) {
+    } catch (_error) {
     }
   }
 
@@ -74,11 +74,11 @@ export class NotificationJobs {
               "It's time for your weekly review! Check your progress and identify areas that need more attention."
             )
           }
-        } catch (error) {
+        } catch (_error) {
         }
       }
 
-    } catch (error) {
+    } catch (_error) {
     }
   }
 
@@ -98,11 +98,11 @@ export class NotificationJobs {
       for (const user of users || []) {
         try {
           await this.checkUserMilestones(user.user_id)
-        } catch (error) {
+        } catch (_error) {
         }
       }
 
-    } catch (error) {
+    } catch (_error) {
     }
   }
 
@@ -130,7 +130,7 @@ export class NotificationJobs {
           }
         }
       }
-    } catch (error) {
+    } catch (_error) {
     }
   }
 
@@ -188,12 +188,12 @@ export class NotificationJobs {
         loginStreak: 0, // Would calculate from actual data
         categoryStats: [] // Would calculate from actual data
       }
-    } catch (error) {
+    } catch (_error) {
       return null
     }
   }
 
-  private async checkGoalCompletion(goal: any): Promise<boolean> {
+  private async checkGoalCompletion(_goal: any): Promise<boolean> {
     // Placeholder implementation
     // Would check actual goal criteria against user progress
     return false
@@ -216,7 +216,7 @@ export class NotificationJobs {
         return
       }
 
-    } catch (error) {
+    } catch (_error) {
     }
   }
 }

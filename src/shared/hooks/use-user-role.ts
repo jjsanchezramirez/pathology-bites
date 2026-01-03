@@ -3,8 +3,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/shared/hooks/use-auth'
-import { createClient } from '@/shared/services/client'
-import { TABLE_NAMES, USER_ROLES, UserRole as DatabaseUserRole } from '@/shared/constants/database-types'
+
+import { UserRole as DatabaseUserRole } from '@/shared/constants/database-types'
 
 export type UserRole = DatabaseUserRole | null
 
@@ -56,7 +56,7 @@ const FEATURE_PERMISSIONS: Record<string, UserRole[]> = {
 } as const
 
 export function useUserRole(): UserRoleData {
-  const { user, role: authRole, isLoading: authLoading } = useAuth({ minimal: true })
+  const { _user, role: authRole, isLoading: authLoading } = useAuth({ minimal: true })
   const [role, setRole] = useState<UserRole>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 import { NextRequest } from 'next/server'
-import { useState, useCallback } from 'react'
+
 
 // CSRF token configuration
 const CSRF_TOKEN_NAME = 'csrf-token'

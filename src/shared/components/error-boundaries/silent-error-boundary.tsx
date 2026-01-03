@@ -42,7 +42,7 @@ export class SilentErrorBoundary extends React.Component<SilentErrorBoundaryProp
     }
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error: Error, _errorInfo: React.ErrorInfo) {
     const { maxRetries = 2, retryDelay = 1000, onError, onMaxRetriesReached } = this.props
     const { retryCount } = this.state
 

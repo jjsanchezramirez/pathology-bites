@@ -1,9 +1,9 @@
 // src/features/performance/components/interactive-chart-demos.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card'
-import { Badge } from '@/shared/components/ui/badge'
+
 import { Skeleton } from '@/shared/components/ui/skeleton'
 import { TrendingUp, Calendar, Target } from 'lucide-react'
 import {

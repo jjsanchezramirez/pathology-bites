@@ -35,7 +35,7 @@ export async function POST(
       if (text) {
         requestBody = JSON.parse(text)
       }
-    } catch (e) {
+    } catch (_e) {
       // Empty body is fine - means no final answers to submit
     }
 

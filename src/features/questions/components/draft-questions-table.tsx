@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select"
 import { Checkbox } from "@/shared/components/ui/checkbox"
-import { Eye, Search, Filter, Check, X, CheckSquare, FileQuestion, Send } from 'lucide-react'
+import { Eye, Search, Filter, Check, X, FileQuestion, Send } from 'lucide-react'
 import { QuestionPreviewDialog } from './question-preview-dialog'
 import { SubmitForReviewButton } from './submit-for-review-button'
 import { toast } from '@/shared/utils/toast'

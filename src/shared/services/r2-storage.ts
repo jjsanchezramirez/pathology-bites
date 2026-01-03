@@ -312,7 +312,7 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
 
     // For private buckets, return a placeholder that indicates signed URL needed
     return `[PRIVATE:${bucketName}]${key}`
-  } catch (error) {
+  } catch (_error) {
     // Fallback for client-side or when env vars are not available
     const bucketName = bucket || 'pathology-bites-images'
 
@@ -351,7 +351,7 @@ export function extractR2KeyFromUrl(url: string): string | null {
  * Generate standardized storage path for images in library folder
  * Format: library/YYYYMMDDHHMMSS-{cleaned-filename}
  */
-export function generateImageStoragePath(filename: string, category: string): string {
+export function generateImageStoragePath(filename: string, _category: string): string {
   const now = new Date()
   const dateStr = now.toISOString().slice(0, 19).replace(/[-:T]/g, '').slice(0, 14) // YYYYMMDDHHMMSS (no hyphens)
 

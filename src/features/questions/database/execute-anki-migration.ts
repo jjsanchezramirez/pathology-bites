@@ -50,7 +50,7 @@ async function executeMigration() {
       console.log(`Executing statement ${i + 1}/${statements.length}...`)
       
       // Use the rpc method to execute raw SQL
-      const { data, error } = await supabase.rpc('exec_sql', { 
+      const { _data, error } = await supabase.rpc('exec_sql', { 
         sql_query: statement + ';' 
       })
 

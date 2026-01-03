@@ -1,7 +1,7 @@
 // src/components/question-management/edit-category-dialog.tsx
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from '@/shared/utils/toast'
 import { BlurredDialog } from '@/shared/components/ui/blurred-dialog'
 import { Button } from '@/shared/components/ui/button'

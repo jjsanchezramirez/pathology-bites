@@ -19,7 +19,7 @@ import {
   Hash,
   BookOpen
 } from 'lucide-react'
-import { AnkiCard, AnkiCardViewerProps } from '../types/anki-card'
+import { AnkiCardViewerProps } from '../types/anki-card'
 import {
   processClozeText,
   hasClozes,
@@ -30,7 +30,7 @@ import {
 import { cn } from '@/shared/utils'
 
 // Separate component for cached images to avoid hook violations
-function CachedAnkiImage({ src, alt, index }: { src: string; alt: string; index: number }) {
+function CachedAnkiImage({ src, alt, index }: { src: string; alt: string; _index: number }) {
   const handleImageLoad = useImageCacheHandler(src, true)
 
   return (

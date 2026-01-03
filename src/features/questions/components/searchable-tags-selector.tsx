@@ -1,7 +1,7 @@
 // src/components/questions/searchable-tags-selector.tsx
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badge";
@@ -55,7 +55,7 @@ export function SearchableTagsSelector({
       onTagsChange([...selectedTagIds, newTag.id]);
       setNewTagName('');
       setShowTagInput(false);
-    } catch (error) {
+    } catch (_error) {
       // Error handled in hook
     }
   };

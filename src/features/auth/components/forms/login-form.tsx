@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import Link from "next/link"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { toast } from '@/shared/utils/toast'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { FormField } from "@/features/auth/components/ui/form-field"
@@ -15,7 +15,7 @@ import { GoogleSignInButton } from "@/features/auth/components/google-sign-in-bu
 import { AuthDivider } from "@/features/auth/components/ui/auth-divider"
 import { useCSRFToken } from '@/features/auth/hooks/use-csrf-token'
 import { useTurnstile } from '@/features/auth/hooks/use-turnstile'
-import { useAuth } from '@/shared/hooks/use-auth'
+
 
 // Form schema definition
 const formSchema = z.object({

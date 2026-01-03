@@ -98,9 +98,9 @@ export function MultiStepQuestionForm({
   const [isTransitioning, setIsTransitioning] = useState(false)
 
   // Data for AI Assistant
-  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([])
-  const [questionSets, setQuestionSets] = useState<Array<{ id: string; name: string }>>([])
-  const [tags, setTags] = useState<Array<{ id: string; name: string }>>([])
+  const [_categories, setCategories] = useState<Array<{ id: string; name: string }>>([])
+  const [_questionSets, setQuestionSets] = useState<Array<{ id: string; name: string }>>([])
+  const [_tags, setTags] = useState<Array<{ id: string; name: string }>>([])
 
   // Fetch data for AI Assistant
   useEffect(() => {

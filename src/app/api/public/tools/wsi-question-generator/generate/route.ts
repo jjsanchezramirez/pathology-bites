@@ -825,7 +825,7 @@ function parseAndValidateQuestion(response: string): QuestionData {
       try {
         parsedQuestion = JSON.parse(fixedJson)
         console.log('[Question Gen] Successfully parsed JSON after fixing common issues')
-      } catch (fixError) {
+      } catch (_fixError) {
         throw new Error(`JSON parsing failed: ${jsonError instanceof Error ? jsonError.message : 'Unknown parse error'}`)
       }
     }

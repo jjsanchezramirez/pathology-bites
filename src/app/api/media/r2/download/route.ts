@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       try {
         const jsonContent = JSON.parse(textContent)
         return NextResponse.json(jsonContent)
-      } catch (e) {
+      } catch (_e) {
         return NextResponse.json({ raw_text: textContent })
       }
     }

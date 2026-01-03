@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Button } from "@/shared/components/ui/button";
+
 import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
 import { X } from 'lucide-react';
@@ -55,7 +55,7 @@ export function SimpleTagsSelector({
       try {
         const newTag = await createTag(tagName);
         onTagsChange([...selectedTagIds, newTag.id]);
-      } catch (error) {
+      } catch (_error) {
         // Error handled in hook
       }
     }

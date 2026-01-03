@@ -23,7 +23,7 @@ export function LazyComponent({
   id,
   onVisible,
 }: LazyComponentProps) {
-  const [isVisible, setIsVisible] = useState(false)
+  const [_isVisible, setIsVisible] = useState(false)
   const [hasBeenVisible, setHasBeenVisible] = useState(false)
 
   useEffect(() => {

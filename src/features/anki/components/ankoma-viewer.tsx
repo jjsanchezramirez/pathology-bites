@@ -3,12 +3,12 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
-import { Input } from '@/shared/components/ui/input'
-import { Separator } from '@/shared/components/ui/separator'
-import { ScrollArea } from '@/shared/components/ui/scroll-area'
+
+
+
 import {
   BookOpen,
   Loader2,
@@ -25,7 +25,7 @@ import {
 } from 'lucide-react'
 
 import { SimplifiedSubdeckSidebar } from './simplified-subdeck-sidebar'
-import { AnkomaData, AnkomaSection, AnkomaViewerProps } from '../types/anki-card'
+import { AnkomaSection, AnkomaViewerProps } from '../types/anki-card'
 import {
   findSectionById,
   getAllCardsFromSection,
@@ -75,9 +75,9 @@ export function AnkomaViewer({
 
   // Loading message cycling state
   const [currentLoadingMessage, setCurrentLoadingMessage] = useState('')
-  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
+  const [_loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const [showAnswer, setShowAnswer] = useState(false)
+  const [_showAnswer, setShowAnswer] = useState(false)
   const [isShuffled, setIsShuffled] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 

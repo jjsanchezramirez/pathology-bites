@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+
 import { Button } from '@/shared/components/ui/button'
-import { AlertTriangle, RefreshCw, Home, ArrowLeft } from 'lucide-react'
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -76,7 +76,7 @@ export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, E
         )
       }
 
-      const { level = 'component', context, showHomeButton, showBackButton } = this.props
+      const { level = 'component', _context, showHomeButton, _showBackButton } = this.props
       const isPageLevel = level === 'page'
       const isFeatureLevel = level === 'feature'
 

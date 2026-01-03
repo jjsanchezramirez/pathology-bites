@@ -338,7 +338,7 @@ export class AIService {
               const jsonStr = text.substring(firstBrace, i + 1)
               try {
                 return JSON.parse(jsonStr)
-              } catch (e) {
+              } catch (_e) {
                 break
               }
             }
@@ -353,7 +353,7 @@ export class AIService {
     if (codeBlockMatch) {
       try {
         return JSON.parse(codeBlockMatch[1])
-      } catch (e) {
+      } catch (_e) {
         // Continue to next strategy
       }
     }
@@ -372,7 +372,7 @@ export class AIService {
 
         try {
           return JSON.parse(fixedJson)
-        } catch (fixError) {
+        } catch (_fixError) {
           throw new Error(`JSON parsing failed: ${e instanceof Error ? e.message : 'Parse error'}`)
         }
       }
