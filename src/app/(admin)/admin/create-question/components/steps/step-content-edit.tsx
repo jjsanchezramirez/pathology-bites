@@ -10,7 +10,6 @@ import { Button } from '@/shared/components/ui/button'
 import { Sparkles, Loader2, RefreshCw } from 'lucide-react'
 import { toast } from '@/shared/utils/toast'
 import { FormState } from '../multi-step-question-form'
-import { getModelById } from '@/shared/config/ai-models'
 
 interface StepContentEditProps {
   formState: FormState

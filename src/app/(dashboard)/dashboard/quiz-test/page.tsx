@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { cn } from '@/shared/utils'
-import { Target, CheckCircle, XCircle, Circle, Clock, Play, Pause, ArrowLeft, ArrowRight, PanelLeftOpen } from 'lucide-react'
+import { CheckCircle, XCircle, Circle, Clock, Pause, ArrowLeft, ArrowRight, PanelLeftOpen } from 'lucide-react'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 

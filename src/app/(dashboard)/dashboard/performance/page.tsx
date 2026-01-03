@@ -49,36 +49,6 @@ interface CategoryDetail {
   trend?: 'up' | 'down' | 'stable'
 }
 
-interface UnifiedPerformanceData {
-  summary: {
-    overallScore: number
-    completedQuizzes: number
-    totalAttempts: number
-    correctAttempts: number
-    userPercentile: number
-    peerRank: number
-    totalUsers: number
-  }
-  subjects: {
-    needsImprovement: Array<{ name: string; score: number; attempts: number }>
-    mastered: Array<{ name: string; score: number; attempts: number }>
-  }
-  timeline: Array<{ date: string; accuracy: number; quizzes: number }>
-  categories: CategoryDetail[]
-  heatmap: {
-    data: Array<{ date: string; quizzes: number; questions: number }>
-    stats: {
-      avgQuestionsPerDay: number
-      avgQuizzesPerDay: string
-      longestStreak: number
-      currentStreak: number
-      totalQuestions: number
-      totalQuizzes: number
-      daysWithActivity: number
-    }
-  }
-}
-
 export default function PerformancePage() {
   const featuresEnabled = isQuizFeaturesEnabled()
   const { data: unifiedData, isLoading } = useUnifiedData()

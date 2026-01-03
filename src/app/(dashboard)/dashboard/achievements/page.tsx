@@ -9,13 +9,6 @@ import { Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { useUnifiedData } from '@/shared/hooks/use-unified-data'
 
-interface UserAchievement {
-  id: string
-  group_key: string
-  created_at: string
-  data: any
-}
-
 export default function AchievementsPage() {
   const { data: unifiedData, isLoading, mutate } = useUnifiedData()
   const [checking, setChecking] = useState(false)

@@ -6,10 +6,9 @@ import { useParams, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 import { Button } from "@/shared/components/ui/button"
-import { Play, Pause, PanelLeftOpen, PanelLeftClose, Clock } from "lucide-react"
+import { Play, Pause, PanelLeftOpen, Clock } from "lucide-react"
 import { QuizSidebar } from "@/features/quiz/components/quiz-sidebar"
 import { QuestionFlagDialog } from "@/features/questions/components/question-flag-dialog"
-import { QuizHeader } from "@/features/quiz/components/quiz-header"
 import { QuizQuestionDisplay } from "@/features/quiz/components/quiz-question-display"
 import { QuizNavigation } from "@/features/quiz/components/quiz-navigation"
 import { FeatureErrorBoundary } from "@/shared/components/common"
@@ -54,7 +53,7 @@ export default function QuizSessionPage() {
     sessionId: isReviewMode ? '' : (sessionId || ''), // Disable in review mode
     ...HybridPresets.TUTOR_MODE,
     csrfTokenGetter: getToken,
-    onAnswerSubmitted: (questionId, answerId, result) => {
+    onAnswerSubmitted: () => {
       if (isReviewMode) return; // Skip in review mode
       // Toast messages removed for better UX
     },
