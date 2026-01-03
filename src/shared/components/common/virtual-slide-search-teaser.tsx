@@ -2,13 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Loader2 } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 
 export function VirtualSlideSearchTeaser() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLuckyLoading, setIsLuckyLoading] = useState(false);
-  const [isRandomLoading, setIsRandomLoading] = useState(false);
   const router = useRouter();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -28,7 +26,6 @@ export function VirtualSlideSearchTeaser() {
       return;
     }
 
-    setIsLuckyLoading(true);
     try {
       // Use the same client-side data loading as the search page
       const { VIRTUAL_SLIDES_JSON_URL } = await import("@/shared/config/virtual-slides");
@@ -63,13 +60,10 @@ export function VirtualSlideSearchTeaser() {
       console.error("Feeling lucky search failed:", error);
       // Fallback to regular search
       router.push(`/tools/virtual-slides?search=${encodeURIComponent(query)}`);
-    } finally {
-      setIsLuckyLoading(false);
     }
   };
 
   const handleRandomSlide = async () => {
-    setIsRandomLoading(true);
     try {
       // Use the same client-side data loading as the search page
       const { VIRTUAL_SLIDES_JSON_URL } = await import("@/shared/config/virtual-slides");
@@ -98,8 +92,6 @@ export function VirtualSlideSearchTeaser() {
     } catch (error) {
       console.error("Random slide fetch failed:", error);
       router.push("/tools/virtual-slides?random=true");
-    } finally {
-      setIsRandomLoading(false);
     }
   };
 
@@ -119,7 +111,6 @@ export function VirtualSlideSearchTeaser() {
             type="submit"
             size="lg"
             className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary/90 px-6 sm:px-8"
-            disabled={isLuckyLoading}
           >
             Search
           </Button>
@@ -133,33 +124,17 @@ export function VirtualSlideSearchTeaser() {
             size="lg"
             onClick={handleRandomSlide}
             className="px-6 transition-all hover:scale-105 hover:shadow-md"
-            disabled={isLuckyLoading || isRandomLoading}
           >
-            {isRandomLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              "Visit Random Slide"
-            )}
+            Visit Random Slide
           </Button>
           <Button
             type="button"
             variant="secondary"
             size="lg"
             onClick={handleFeelingLucky}
-            disabled={isLuckyLoading || isRandomLoading}
             className="px-6 transition-all hover:scale-105 hover:shadow-md"
           >
-            {isLuckyLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              "I'm Feeling Lucky"
-            )}
+            I'm Feeling Lucky
           </Button>
         </div>
       </form>
