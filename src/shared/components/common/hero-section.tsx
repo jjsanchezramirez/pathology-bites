@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from "next/link"
 import { ChevronDown } from "lucide-react"
 import { OrganicImageGallery } from "@/shared/components/common/organic-image-gallery"
@@ -10,6 +11,12 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const scrollToNext = () => {
     const nextSection = document.getElementById('learn-more-section')
     if (nextSection) {
@@ -31,7 +38,12 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
             {/* Left Column - Text Content (3/5 width) */}
             <div className="lg:col-span-3 space-y-8 lg:space-y-10 text-center lg:text-left">
               {/* Main Headline & Value Proposition */}
-              <div className="space-y-5 animate-fade-in">
+              <div
+                className="space-y-5 opacity-0"
+                style={{
+                  animation: mounted ? 'fadeIn 0.6s ease-out forwards' : 'none'
+                }}
+              >
                 <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
                   Pathology learning{" "}
                   <span className="bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent">
@@ -44,7 +56,13 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
               </div>
 
               {/* Dual CTAs Section */}
-              <div className="animate-fade-in space-y-5" style={{ animationDelay: '0.2s' }}>
+              <div
+                className="space-y-5 opacity-0"
+                style={{
+                  animation: mounted ? 'fadeIn 0.6s ease-out forwards' : 'none',
+                  animationDelay: mounted ? '0.2s' : '0s'
+                }}
+              >
                 {/* Search Bar */}
                 <div>
                   <VirtualSlideSearchTeaser />
