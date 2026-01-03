@@ -1,5 +1,7 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+import type { Config } from 'tailwindcss'
+import tailwindcssAnimate from 'tailwindcss-animate'
+
+const config: Config = {
   darkMode: ["class"],
   content: [
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
@@ -90,8 +92,10 @@ module.exports = {
     },
   },
   plugins: [
-    require("tailwindcss-animate")
+    tailwindcssAnimate
     // Container queries plugin removed - now built into Tailwind core
     // Line-clamp is built into Tailwind CSS v3.3+ - no plugin needed
   ],
 }
+
+export default config

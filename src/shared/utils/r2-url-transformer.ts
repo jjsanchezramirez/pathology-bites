@@ -157,10 +157,12 @@ export function transformAnkomaData(ankomaData: unknown): unknown {
   return transformDeck(ankomaData)
 }
 
-export default {
+const r2UrlTransformer = {
   transformCellQuizImageUrl,
   transformAnkiMediaUrl,
   transformImagePath,
   transformCellQuizData,
   transformAnkomaData
 }
+
+export default r2UrlTransformer

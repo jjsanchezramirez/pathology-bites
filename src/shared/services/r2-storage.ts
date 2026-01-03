@@ -546,7 +546,7 @@ export async function getBucketSize(bucketName?: string): Promise<{ totalSize: n
   }
 }
 
-export default {
+const r2Storage = {
   upload: uploadToR2,
   delete: deleteFromR2,
   bulkDelete: bulkDeleteFromR2,
@@ -562,3 +562,5 @@ export default {
   moveFolder: moveR2Folder,
   getBucketSize: getBucketSize
 }
+
+export default r2Storage

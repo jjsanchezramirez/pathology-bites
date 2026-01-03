@@ -138,7 +138,7 @@ export function isCacheStale(_cacheKey: string, _maxAge: number): boolean {
   return false
 }
 
-export default {
+const cacheHelpers = {
   invalidateUnifiedData,
   invalidateUserSettings,
   invalidateAllCaches,
@@ -149,3 +149,5 @@ export default {
   prefetchUnifiedData,
   isCacheStale,
 }
+
+export default cacheHelpers

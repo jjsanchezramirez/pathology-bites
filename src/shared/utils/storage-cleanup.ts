@@ -365,7 +365,7 @@ export function autoCleanup() {
   })
 }
 
-export default {
+const storageCleanup = {
   getStorageStats,
   cleanupOldQuizSessions,
   cleanupOldQuizResults,
@@ -375,3 +375,5 @@ export default {
   isStorageNearQuota,
   autoCleanup
 }
+
+export default storageCleanup

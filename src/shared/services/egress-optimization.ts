@@ -293,7 +293,7 @@ export function createErrorResponse(
   )
 }
 
-export default {
+const egressOptimization = {
   createOptimizedResponse,
   optimizedQuery,
   batchQueries,
@@ -302,3 +302,5 @@ export default {
   compressResponse,
   createErrorResponse
 }
+
+export default egressOptimization

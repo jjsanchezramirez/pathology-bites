@@ -91,8 +91,10 @@ export function sanitizeHtmlForSafeRendering(html: string): string {
   return sanitized
 }
 
-export default {
+const htmlImageExtractor = {
   extractImagesFromHtml,
   replaceImagePlaceholders,
   sanitizeHtmlForSafeRendering
 }
+
+export default htmlImageExtractor
