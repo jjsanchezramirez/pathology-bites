@@ -11,6 +11,7 @@ import { VirtualSlideSearchEngine } from "@/shared/components/common/virtual-sli
 import { HeroSection } from "@/shared/components/common/hero-section";
 import { DemoQuestionSection } from "@/shared/components/common/demo-question-section";
 import { FinalCTASection } from "@/shared/components/common/final-cta-section";
+import { ScrollReveal } from "@/shared/components/common/scroll-reveal";
 
 export default function LandingPage() {
   const [bypassEnabled, setBypassEnabled] = useState(false);
@@ -63,11 +64,21 @@ export default function LandingPage() {
   return (
     <>
       <HeroSection />
-      <WhyChoosePathologyBites id="learn-more-section" />
-      <VirtualSlideSearchEngine />
-      <DemoQuestionSection />
-      <PublicStatsSection variant="landing" className="bg-muted/30" />
-      <FinalCTASection />
+      <ScrollReveal animation="fade-up">
+        <WhyChoosePathologyBites id="learn-more-section" />
+      </ScrollReveal>
+      <ScrollReveal animation="fade-up">
+        <VirtualSlideSearchEngine />
+      </ScrollReveal>
+      <ScrollReveal animation="scale-in">
+        <DemoQuestionSection />
+      </ScrollReveal>
+      <ScrollReveal animation="fade-up">
+        <PublicStatsSection variant="landing" className="bg-muted/30" />
+      </ScrollReveal>
+      <ScrollReveal animation="fade-up">
+        <FinalCTASection />
+      </ScrollReveal>
       <ScrollToTopButton />
     </>
   );

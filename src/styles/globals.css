@@ -480,6 +480,60 @@
     animation: float-gentle 8s ease-in-out infinite;
   }
 
+  /* Scroll animations - subtle entrance effects */
+  .scroll-fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  .scroll-fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .scroll-fade-in {
+    opacity: 0;
+    transition: opacity 0.8s ease-out;
+  }
+
+  .scroll-fade-in.visible {
+    opacity: 1;
+  }
+
+  .scroll-scale-in {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  .scroll-scale-in.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .scroll-slide-left {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  .scroll-slide-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .scroll-slide-right {
+    opacity: 0;
+    transform: translateX(30px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  .scroll-slide-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
   /* Define CSS variables in base layer */
 }
 @layer base {
